@@ -1,15 +1,16 @@
 # $Id$
 
 PROG = mon
-SRCS = mon.c
+SRCS = mon.c parse.c
 LIBS = -lGL -lglut
+CFLAGS += -Wall
 
 OBJS = ${SRCS:.c=.o}
 
 all: ${PROG}
 
 ${PROG}: ${OBJS}
-	${CC} ${OBJS} > $@
+	${CC} ${LIBS} ${OBJS} -o $@
 
 .c.o:
 	${CC} ${CFLAGS} ${CFLAGS} -c $<
