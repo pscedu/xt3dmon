@@ -1,7 +1,7 @@
 # $Id$
 
 PROG = mon
-SRCS = mon.c parse.c
+SRCS = mon.c
 LIBS = -lGL -lglut
 CFLAGS += -Wall
 
