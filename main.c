@@ -63,8 +63,9 @@ struct state {
 	float		 st_b;
 };
 
-void			 orient(float);
-void			 move(int);
+void			 orientx(float);
+void			 orienty(float);
+void			 move(int, int, int);
 void			 parse_jobmap(void);
 void			 parse_physmap(void);
 struct job		*getjob(int);
@@ -77,10 +78,11 @@ struct job		**jobs;
 size_t			 njobs;
 size_t			 maxjobs;
 struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
-GLfloat 		 angle;
-float			 x, y, z, lx, ly, lz;
+GLfloat 		 anglex, angley;
+float			 x = 0.0f, y = 1.75f, z = 5.0f, lx = 0.0f, ly = 0.0f, lz = -1.0f;
 GLint			 cluster_dl;
 struct node		*invmap[NROWS * NCABS * NCAGES * NMODS * NNODES];
+struct timeval		 lastsync;
 
 struct state states[] = {
 #define ST_FREE		0
@@ -103,20 +105,27 @@ struct state states[] = {
 };
 
 void
-reshape(int width, int height)
+reshape(int w, int h)
 {
+
 printf("reshape()\n");
-	glViewport(0, 0, (GLint)width, (GLint)height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(-50.0, 50.0, -50.0, 50.0, -150.0, 150.0);
+
+	glViewport(0, 0, w, h);
+	gluPerspective(45, 1.0f * w / h, 1, 1000);
 	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	gluLookAt(x, y, z,
+	    x + lx, y + ly, z + lz,
+	    0.0f, 1.0f, 0.0f);
+
+//	glOrtho(-50.0, 50.0, -50.0, 50.0, -150.0, 150.0);
 }
 
 void
 key(unsigned char key, int x, int y)
 {
-printf("key pressed\n");
 	switch (key) {
 	case 'q':
 	case 'Q':
@@ -148,49 +157,95 @@ printf("key pressed\n");
 void
 sp_key(int key, int x, int y)
 {
-printf("special key pressed (%d)\n", key);
 	switch (key) {
 	case GLUT_KEY_LEFT:
-		angle -= 0.8f;
-		orient(angle);
+		move(1, 0, 0);
 		break;
 	case GLUT_KEY_RIGHT:
-		angle += 0.8f;
-		orient(angle);
+		move(-1, 0, 0);
 		break;
 	case GLUT_KEY_UP:
-		move(1);
+		move(0, 1, 0);
 		break;
 	case GLUT_KEY_DOWN:
-		move(-1);
+		move(0, -1, 0);
 		break;
 	case GLUT_KEY_PAGE_UP:
-		move(1);
+		move(0, 0, 1);
 		break;
 	case GLUT_KEY_PAGE_DOWN:
-		move(-1);
+		move(0, 0, -1);
 		break;
 	}
 }
 
+int spkey;
+
 void
-orient(float angle)
+mouse(int button, int state, int u, int v)
+{
+	spkey = glutGetModifiers();
+}
+
+void
+orientx(float angle)
 {
 	lx = sin(angle);
-	ly = -cos(angle);
+	lz = -cos(angle);
 	glLoadIdentity();
-printf("[%f,%f] [%f,%f] [%f,%f]\n", x, lx, y, ly, z, 0);
 	gluLookAt(x, y, z,
-	    x + lx, y + ly, z,
+	    x + lx, y + ly, z + lz,
 	    0.0f, 1.0f, 0.0f);
 }
 
 void
-move(int dir)
+orienty(float angle)
 {
-	x += dir * lx * 0.1;
-	z += dir * lz * 0.1;
-printf("[%f,%f] [%f,%f] [%f,%f]\n", x, lx, y, ly, z, lz);
+	ly = sin(angle);
+	lz = -cos(angle);
+	glLoadIdentity();
+	gluLookAt(x, y, z,
+	    x + lx, y + ly, z + lz,
+	    0.0f, 1.0f, 0.0f);
+}
+
+int xpos, ypos;
+
+void
+active_m(int u, int v)
+{
+	int du = u - xpos, dv = v - ypos;
+
+	if (spkey != GLUT_ACTIVE_CTRL)
+		return;
+
+	if (du != 0) {
+		anglex += (du < 0) ? 0.0025f : -0.0025f;
+		orientx(anglex);
+	}
+	if (dv != 0) {
+		angley += (dv < 0) ? 0.0025f : -0.0025f;
+		orienty(angley);
+	}
+
+	xpos = u;
+	ypos = v;
+}
+
+void
+passive_m(int u, int v)
+{
+}
+
+void
+move(int pan, int zoom, int height)
+{
+printf("cam[%f, %f, %f] %f, %f\n", x, y, z, anglex, angley);
+	x += zoom * lx * 0.3;
+	z += zoom * lz * 0.3;
+	x += pan * lx * 0.3;
+	z -= pan * lz * 0.3;
+	y += height;
 	glLoadIdentity();
 	gluLookAt(x, y, z,
 	    x + lx, y + ly, z + lz,
@@ -200,16 +255,37 @@ printf("[%f,%f] [%f,%f] [%f,%f]\n", x, lx, y, ly, z, lz);
 void
 draw(void)
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glLoadIdentity();
+	struct timeval tv;
 
-	glRotatef(angle, 1.0, 0.0, 0.0);
+	if (gettimeofday(&tv, NULL) == -1)
+		err(1, "gettimeofday");
+	if (lastsync.tv_sec + SLEEP_INTV < tv.tv_sec) {
+		lastsync.tv_sec = tv.tv_sec;
+	}
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	/* Ground */
+	glColor4f(0.4f, 0.4f, 0.4f, 0.5f);
+	glBegin(GL_QUADS);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 0.0f, 50.0f);
+	glVertex3f(150.0f, 0.0f, 50.0f);
+	glVertex3f(150.0f, 0.0f, 0.0f);
+	glEnd();
+
+/*
+	glLoadIdentity();
+	glRotatef(anglex, 1.0, 0.0, 0.0);
+
 	glTranslatef(0.0, -30.0, 0.0);
-	glCallList(cluster_dl);
 
 	glFlush();
+*/
+	glCallList(cluster_dl);
+
 	glutSwapBuffers();
-usleep(750);
+usleep(250);
 }
 
 /*
@@ -293,18 +369,20 @@ make_cluster(void)
 	int cageheight, cagespace;
 	int modwidth, modspace;
 	int nodewidth, nodeheight, nodedepth;
+	int x = 0, y = 0, z = 0;
 
-	rowspace = 50;
-	cabspace = 25;
-	cagespace = 10;
-	modspace = 5;
+	rowspace = 10;
+	cabspace = 5;
+	cagespace = 1;
+	modspace = 1;
 
-	nodewidth = nodeheight = nodedepth = 10;
+	nodewidth = 1;
+	nodeheight = nodedepth = 2;
 	modwidth = nodewidth;
 	cageheight = nodeheight * 2;
-	cabwidth = modwidth * NMODS;
+	cabwidth = (modwidth + modspace) * NMODS;
 	rowdepth = nodedepth * 2;
-printf("make_cluster()\n");
+
 	cluster_dl = glGenLists(1);
 	glNewList(cluster_dl, GL_COMPILE);
 	glBegin(GL_QUADS);
@@ -317,7 +395,6 @@ printf("make_cluster()\n");
 						    y + nodeheight * (n % (NNODES/2)),
 						    z + nodedepth * (n / (NNODES/2)),
 						    nodewidth, nodeheight, nodedepth);
-goto end;
 					}
 				}
 				x -= (modwidth + modspace) * NMODS;
@@ -329,27 +406,31 @@ goto end;
 end:
 	glEnd();
 	glEndList();
+printf("njobs: %d\n", njobs);
 }
 
 int
 main(int argc, char *argv[])
 {
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE);
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
 	glutInitWindowPosition(0, 0);
 	glutInitWindowSize(WIN_WIDTH, WIN_HEIGHT);
-	if (glutCreateWindow("Monitor") == GL_FALSE)
+	if (glutCreateWindow("XT3 Monitor") == GL_FALSE)
 		errx(1, "CreateWindow");
 
-	glClearColor(0.0, 0.0, 0.0, 0.0);
+/*
+	glClearColor(0.5, 0.5, 0.5, 0.5);
+*/
 	glShadeModel(GL_FLAT);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glEnable(GL_DEPTH_TEST);
 
 	parse_physmap();
+	parse_jobmap();
 	make_cluster();
 
-	angle = -39.0;
+//	angle = -39.0;
 
 	/* glutExposeFunc(reshape); */
 	glutReshapeFunc(reshape);
@@ -357,7 +438,12 @@ main(int argc, char *argv[])
 	glutSpecialFunc(sp_key);
 	glutDisplayFunc(draw);
 	glutIdleFunc(draw);
+	glutMouseFunc(mouse);
+	glutMotionFunc(active_m);
+	glutPassiveMotionFunc(passive_m);
+
 	glutMainLoop();
+
 	exit(0);
 }
 
@@ -743,7 +829,7 @@ getjob(int id)
 	struct job **jj, *j = NULL;
 	int n;
 
-	if (jobs == NULL)
+	if (jobs != NULL)
 		for (n = 0, jj = jobs; n < njobs; jj++, n++)
 			if ((*jj)->j_id == id)
 				return (j);
@@ -768,4 +854,3 @@ getcol(int n, struct job *j)
 	j->j_g = sin(div) * sin(div);
 	j->j_b = fabs(tan(div + PI * 3/4));
 }
-
