@@ -7,6 +7,7 @@
 
 #include <sys/param.h>
 #include <sys/queue.h>
+#include <sys/time.h>
 
 #include <GL/gl.h>
 #include <GL/glut.h>
@@ -17,11 +18,19 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
+/*
 #define _PATH_JOBMAP	"/usr/users/torque/nids_list_login%d"
 #define _PATH_BADMAP	"/usr/users/torque/bad_nids_list_login%d"
 #define _PATH_CHECKMAP	"/usr/users/torque/check_nids_list_login%d"
 #define _PATH_PHYSMAP	"/opt/tmp-harness/default/ssconfig/sys%d/nodelist"
+*/
+
+#define _PATH_JOBMAP	"/home/yanovich/3d-data/nids_list_login%d"
+#define _PATH_PHYSMAP	"/home/yanovich/3d-data/nodelist%d"
+#define _PATH_BADMAP	"/usr/users/torque/bad_nids_list_login%d"
+#define _PATH_CHECKMAP	"/usr/users/torque/check_nids_list_login%d"
 
 #define WIN_WIDTH	800
 #define WIN_HEIGHT	600
@@ -78,8 +87,9 @@ struct job		**jobs;
 size_t			 njobs;
 size_t			 maxjobs;
 struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
-GLfloat 		 anglex, angley;
-float			 x = 0.0f, y = 1.75f, z = 5.0f, lx = 0.0f, ly = 0.0f, lz = -1.0f;
+GLfloat 		 anglex = -5.0f, angley = 0.1f;
+float			 x = -5.0f, y = 4.75f, z = 45.0f;
+float			 lx = 0.0f, ly = 0.0f, lz = -1.0f;
 GLint			 cluster_dl;
 struct node		*invmap[NROWS * NCABS * NCAGES * NMODS * NNODES];
 struct timeval		 lastsync;
@@ -107,8 +117,6 @@ struct state states[] = {
 void
 reshape(int w, int h)
 {
-
-printf("reshape()\n");
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
@@ -216,10 +224,12 @@ active_m(int u, int v)
 {
 	int du = u - xpos, dv = v - ypos;
 
+	xpos = u;
+	ypos = v;
 	if (spkey != GLUT_ACTIVE_CTRL)
 		return;
-
 	if (du != 0) {
+printf("%s\n", du < 0 ? "neg" : "pos");
 		anglex += (du < 0) ? 0.0025f : -0.0025f;
 		orientx(anglex);
 	}
@@ -227,9 +237,6 @@ active_m(int u, int v)
 		angley += (dv < 0) ? 0.0025f : -0.0025f;
 		orienty(angley);
 	}
-
-	xpos = u;
-	ypos = v;
 }
 
 void
@@ -243,8 +250,8 @@ move(int pan, int zoom, int height)
 printf("cam[%f, %f, %f] %f, %f\n", x, y, z, anglex, angley);
 	x += zoom * lx * 0.3;
 	z += zoom * lz * 0.3;
-	x += pan * lx * 0.3;
-	z -= pan * lz * 0.3;
+	x += pan * lx * 0.5;
+//	z -= pan * lz * 0.3;
 	y += height;
 	glLoadIdentity();
 	gluLookAt(x, y, z,
@@ -262,16 +269,58 @@ draw(void)
 	if (lastsync.tv_sec + SLEEP_INTV < tv.tv_sec) {
 		lastsync.tv_sec = tv.tv_sec;
 	}
-
+usleep(100);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	/* Ground */
-	glColor4f(0.4f, 0.4f, 0.4f, 0.5f);
+	glColor3f(0.4f, 0.4f, 0.4f);
 	glBegin(GL_QUADS);
-	glVertex3f(0.0f, 0.0f, 0.0f);
-	glVertex3f(0.0f, 0.0f, 50.0f);
-	glVertex3f(150.0f, 0.0f, 50.0f);
-	glVertex3f(150.0f, 0.0f, 0.0f);
+	glVertex3f( -5.0f, 0.0f, -5.0f);
+	glVertex3f( -5.0f, 0.0f, 25.0f);
+	glVertex3f(250.0f, 0.0f, 25.0f);
+	glVertex3f(250.0f, 0.0f, -5.0f);
+	glEnd();
+
+	/* x-axis */
+	glColor3f(1.0f, 1.0f, 1.0f);
+	glBegin(GL_QUADS);
+	glVertex3f(-200.0f, -0.1f, -0.1f);
+	glVertex3f(-200.0f, -0.1f,  0.1f);
+	glVertex3f( 200.0f, -0.1f,  0.1f);
+	glVertex3f( 200.0f, -0.1f, -0.1f);
+
+	glVertex3f( 200.0f,  0.1f, -0.1f);
+	glVertex3f( 200.0f,  0.1f,  0.1f);
+	glVertex3f(-200.0f,  0.1f,  0.1f);
+	glVertex3f(-200.0f,  0.1f, -0.1f);
+	glEnd();
+
+	/* y-axis */
+	glColor3f(0.6f, 0.6f, 1.0f);
+	glBegin(GL_QUADS);
+	glVertex3f(-0.1f, -200.0f, -0.1f);
+	glVertex3f(-0.1f, -200.0f,  0.1f);
+	glVertex3f(-0.1f,  200.0f,  0.1f);
+	glVertex3f(-0.1f,  200.0f, -0.1f);
+
+	glVertex3f( 0.1f, -200.0f, -0.1f);
+	glVertex3f( 0.1f, -200.0f,  0.1f);
+	glVertex3f( 0.1f,  200.0f,  0.1f);
+	glVertex3f( 0.1f,  200.0f, -0.1f);
+	glEnd();
+
+	/* z-axis */
+	glColor3f(1.0f, 0.9f, 0.0f);
+	glBegin(GL_QUADS);
+	glVertex3f(-0.1f, -0.1f, -200.0f);
+	glVertex3f(-0.1f,  0.1f, -200.0f);
+	glVertex3f(-0.1f,  0.1f,  200.0f);
+	glVertex3f(-0.1f, -0.1f,  200.0f);
+                                        
+	glVertex3f( 0.1f, -0.1f, -200.0f);
+	glVertex3f( 0.1f,  0.1f, -200.0f);
+	glVertex3f( 0.1f,  0.1f,  200.0f);
+	glVertex3f( 0.1f, -0.1f,  200.0f);
 	glEnd();
 
 /*
@@ -285,7 +334,6 @@ draw(void)
 	glCallList(cluster_dl);
 
 	glutSwapBuffers();
-usleep(250);
 }
 
 /*
@@ -848,7 +896,12 @@ getjob(int id)
 void
 getcol(int n, struct job *j)
 {
-	double div = n / (njobs - 1);
+	double div;
+
+	if (njobs == 1)
+		div = 0.0;
+	else
+		div = n / (njobs - 1);
 
 	j->j_r = cos(div);
 	j->j_g = sin(div) * sin(div);
