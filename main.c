@@ -72,9 +72,7 @@ struct state {
 	float		 st_b;
 };
 
-void			 orientx(float);
-void			 orienty(float);
-void			 move(int, int, int);
+void			 adjcam(void);
 void			 parse_jobmap(void);
 void			 parse_physmap(void);
 struct job		*getjob(int);
@@ -88,8 +86,9 @@ size_t			 njobs;
 size_t			 maxjobs;
 struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 GLfloat 		 anglex = -5.0f, angley = 0.1f;
-float			 x = -5.0f, y = 4.75f, z = 45.0f;
-float			 lx = 0.0f, ly = 0.0f, lz = -1.0f;
+float			 x = -15.0f, y = 4.75f, z = 15.0f;
+float			 lx = 0.9f, ly = 0.0f, lz = -0.3f;
+int			 spkey, xpos, ypos;
 GLint			 cluster_dl;
 struct node		*invmap[NROWS * NCABS * NCAGES * NMODS * NNODES];
 struct timeval		 lastsync;
@@ -114,6 +113,16 @@ struct state states[] = {
 #define NST		8
 };
 
+__inline void
+adjcam(void)
+{
+printf("(%f, %f, %f) -> (%f, %f, %f)\n", x, y, z, lx, ly, lz);
+	glLoadIdentity();
+	gluLookAt(x, y, z,
+	    x + lx, y + ly, z + lz,
+	    0.0f, 1.0f, 0.0f);
+}
+
 void
 reshape(int w, int h)
 {
@@ -123,11 +132,7 @@ reshape(int w, int h)
 	glViewport(0, 0, w, h);
 	gluPerspective(45, 1.0f * w / h, 1, 1000);
 	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	gluLookAt(x, y, z,
-	    x + lx, y + ly, z + lz,
-	    0.0f, 1.0f, 0.0f);
-
+	adjcam();
 //	glOrtho(-50.0, 50.0, -50.0, 50.0, -150.0, 150.0);
 }
 
@@ -163,61 +168,43 @@ key(unsigned char key, int x, int y)
  *	y
  */
 void
-sp_key(int key, int x, int y)
+sp_key(int key, int u, int v)
 {
 	switch (key) {
 	case GLUT_KEY_LEFT:
-		move(1, 0, 0);
+printf("lz: %f [%f]\n", lz, lz * 0.3);
+		x += lz * 0.3;
+		z -= lx * 0.3;
 		break;
 	case GLUT_KEY_RIGHT:
-		move(-1, 0, 0);
+		x -= lz * 0.3;
+		z += lx * 0.3;
 		break;
 	case GLUT_KEY_UP:
-		move(0, 1, 0);
+		x += lx * 0.3;
+		z += lz * 0.3;
 		break;
 	case GLUT_KEY_DOWN:
-		move(0, -1, 0);
+		x -= lx * 0.3;
+		z -= lz * 0.3;
 		break;
 	case GLUT_KEY_PAGE_UP:
-		move(0, 0, 1);
+		y += 1;
 		break;
 	case GLUT_KEY_PAGE_DOWN:
-		move(0, 0, -1);
+		y -= 1;
 		break;
+	default:
+		return;
 	}
+	adjcam();
 }
-
-int spkey;
 
 void
 mouse(int button, int state, int u, int v)
 {
 	spkey = glutGetModifiers();
 }
-
-void
-orientx(float angle)
-{
-	lx = sin(angle);
-	lz = -cos(angle);
-	glLoadIdentity();
-	gluLookAt(x, y, z,
-	    x + lx, y + ly, z + lz,
-	    0.0f, 1.0f, 0.0f);
-}
-
-void
-orienty(float angle)
-{
-	ly = sin(angle);
-	lz = -cos(angle);
-	glLoadIdentity();
-	gluLookAt(x, y, z,
-	    x + lx, y + ly, z + lz,
-	    0.0f, 1.0f, 0.0f);
-}
-
-int xpos, ypos;
 
 void
 active_m(int u, int v)
@@ -228,14 +215,18 @@ active_m(int u, int v)
 	ypos = v;
 	if (spkey != GLUT_ACTIVE_CTRL)
 		return;
+printf("du: %d, dv: %d\n", du, dv);
 	if (du != 0) {
-printf("%s\n", du < 0 ? "neg" : "pos");
 		anglex += (du < 0) ? 0.0025f : -0.0025f;
-		orientx(anglex);
+		lx = sin(anglex);
+		lz = -cos(anglex);
+		adjcam();
 	}
 	if (dv != 0) {
 		angley += (dv < 0) ? 0.0025f : -0.0025f;
-		orienty(angley);
+		ly = sin(angley);
+		lz = -cos(angley);
+		adjcam();
 	}
 }
 
@@ -245,31 +236,23 @@ passive_m(int u, int v)
 }
 
 void
-move(int pan, int zoom, int height)
-{
-printf("cam[%f, %f, %f] %f, %f\n", x, y, z, anglex, angley);
-	x += zoom * lx * 0.3;
-	z += zoom * lz * 0.3;
-	x += pan * lx * 0.5;
-//	z -= pan * lz * 0.3;
-	y += height;
-	glLoadIdentity();
-	gluLookAt(x, y, z,
-	    x + lx, y + ly, z + lz,
-	    0.0f, 1.0f, 0.0f);
-}
-
-void
 draw(void)
 {
 	struct timeval tv;
+static int cnt = 0;
+cnt++;
 
+/*
 	if (gettimeofday(&tv, NULL) == -1)
 		err(1, "gettimeofday");
 	if (lastsync.tv_sec + SLEEP_INTV < tv.tv_sec) {
+printf("fps: %d\n", cnt / SLEEP_INTV);
+cnt = 0;
 		lastsync.tv_sec = tv.tv_sec;
 	}
-usleep(100);
+*/
+
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	/* Ground */
@@ -361,7 +344,8 @@ usleep(100);
  *         y
  */
 __inline void
-draw_node(struct node *n, int x, int y, int z, int width, int height, int depth)
+draw_node(struct node *n, float x, float y, float z, float width,
+    float height, float depth)
 {
 	float r, g, b;
 
@@ -375,61 +359,111 @@ draw_node(struct node *n, int x, int y, int z, int width, int height, int depth)
 	glColor3f(r, g, b);
 
 	/* Bottom */
-	glVertex3d(x, y + height, z);
-	glVertex3d(x, y + height, z + depth);
-	glVertex3d(x + width, y + height, z + depth);
-	glVertex3d(x + width, y + height, z);
+	glVertex3f(x, y + height, z);
+	glVertex3f(x, y + height, z + depth);
+	glVertex3f(x + width, y + height, z + depth);
+	glVertex3f(x + width, y + height, z);
 	/* Top */
-	glVertex3d(x, y, z);
-	glVertex3d(x, y, z + depth);
-	glVertex3d(x + width, y, z + depth);
-	glVertex3d(x + width, y, z);
+	glVertex3f(x, y, z);
+	glVertex3f(x, y, z + depth);
+	glVertex3f(x + width, y, z + depth);
+	glVertex3f(x + width, y, z);
 
 	/* Front */
-	glVertex3d(x, y + height, z);
-	glVertex3d(x, y, z);
-	glVertex3d(x + width, y, z);
-	glVertex3d(x + width, y + height, z);
+	glVertex3f(x, y + height, z);
+	glVertex3f(x, y, z);
+	glVertex3f(x + width, y, z);
+	glVertex3f(x + width, y + height, z);
 	/* Back */
-	glVertex3d(x, y, z + depth);
-	glVertex3d(x + width, y, z + depth);
-	glVertex3d(x + width, y + height, z + depth);
-	glVertex3d(x, y + height, z + depth);
+	glVertex3f(x, y, z + depth);
+	glVertex3f(x + width, y, z + depth);
+	glVertex3f(x + width, y + height, z + depth);
+	glVertex3f(x, y + height, z + depth);
 
 	/* Left */
-	glVertex3d(x, y, z);
-	glVertex3d(x, y, z + depth);
-	glVertex3d(x, y + height, z + depth);
-	glVertex3d(x, y + height, z);
+	glVertex3f(x, y, z);
+	glVertex3f(x, y, z + depth);
+	glVertex3f(x, y + height, z + depth);
+	glVertex3f(x, y + height, z);
 	/* Right */
-	glVertex3d(x + width, y, z);
-	glVertex3d(x + width, y, z + depth);
-	glVertex3d(x + width, y + height, z + depth);
-	glVertex3d(x + width, y + height, z);
+	glVertex3f(x + width, y, z);
+	glVertex3f(x + width, y, z + depth);
+	glVertex3f(x + width, y + height, z + depth);
+	glVertex3f(x + width, y + height, z);
+}
+
+void
+draw_mod(float x, float y, float z, float width, float height, float depth)
+{
+	glPushMatrix();
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glColor3f(1.0f, 0.0f, 0.0f);
+
+	/* Bottom */
+	glVertex3f(x, y + height, z);
+	glVertex3f(x, y + height, z + depth);
+	glVertex3f(x + width, y + height, z + depth);
+	glVertex3f(x + width, y + height, z);
+	/* Top */
+	glVertex3f(x, y, z);
+	glVertex3f(x, y, z + depth);
+	glVertex3f(x + width, y, z + depth);
+	glVertex3f(x + width, y, z);
+
+	/* Front */
+	glVertex3f(x, y + height, z);
+	glVertex3f(x, y, z);
+	glVertex3f(x + width, y, z);
+	glVertex3f(x + width, y + height, z);
+	/* Back */
+	glVertex3f(x, y, z + depth);
+	glVertex3f(x + width, y, z + depth);
+	glVertex3f(x + width, y + height, z + depth);
+	glVertex3f(x, y + height, z + depth);
+
+	/* Left */
+	glVertex3f(x, y, z);
+	glVertex3f(x, y, z + depth);
+	glVertex3f(x, y + height, z + depth);
+	glVertex3f(x, y + height, z);
+	/* Right */
+	glVertex3f(x + width, y, z);
+	glVertex3f(x + width, y, z + depth);
+	glVertex3f(x + width, y + height, z + depth);
+	glVertex3f(x + width, y + height, z);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glPopMatrix();
 }
 
 void
 make_cluster(void)
 {
 	int r, cb, cg, m, n;
-	int rowdepth, rowspace;
-	int cabwidth, cabspace;
-	int cageheight, cagespace;
-	int modwidth, modspace;
-	int nodewidth, nodeheight, nodedepth;
-	int x = 0, y = 0, z = 0;
+	float rowdepth, rowspace;
+	float cabwidth, cabspace;
+	float cageheight, cagespace;
+	float modwidth, modheight, moddepth, modspace;
+	float nodewidth, nodeheight, nodedepth, nodespace;
+	float x = 0.0f, y = 0.0f, z = 0.0f;
 
-	rowspace = 10;
-	cabspace = 5;
-	cagespace = 1;
-	modspace = 1;
+	rowspace = 10.0f;
+	cabspace = 5.0f;
+	cagespace = 1.0f;
+	modspace = 1.0f;
 
-	nodewidth = 1;
-	nodeheight = nodedepth = 2;
-	modwidth = nodewidth;
-	cageheight = nodeheight * 2;
+	modwidth = 1.0f;
+	modheight = 2.0f;
+	moddepth = 2.0f;
+
+	nodespace = 0.2f;
+	nodewidth = modwidth - 2.0f * nodespace;
+	nodeheight = modheight - 4.0f * nodespace;
+	nodedepth = modheight - 4.0f * nodespace;
+printf("nodewidth: %f, nodedepth: %f\n", nodewidth, nodedepth);
+
+	cageheight = modheight * 2.0f;
 	cabwidth = (modwidth + modspace) * NMODS;
-	rowdepth = nodedepth * 2;
+	rowdepth = moddepth * 2.0f;
 
 	cluster_dl = glGenLists(1);
 	glNewList(cluster_dl, GL_COMPILE);
@@ -439,11 +473,17 @@ make_cluster(void)
 			for (cg = 0; cg < NCAGES; cg++, y += cageheight + cagespace) {
 				for (m = 0; m < NMODS; m++, x += modwidth + modspace) {
 					for (n = 0; n < NNODES; n++) {
-						draw_node(&nodes[r][cb][cg][m][n], x,
-						    y + nodeheight * (n % (NNODES/2)),
-						    z + nodedepth * (n / (NNODES/2)),
+						draw_node(&nodes[r][cb][cg][m][n],
+						    x + nodespace,
+						    y + (2.0f * nodespace + nodeheight) *
+						      (n % (NNODES/2)) + nodespace,
+						    z + (2.0f * nodespace + nodedepth) *
+						      (n / (NNODES/2)) +
+						      (nodespace * (n % (NNODES/2))),
 						    nodewidth, nodeheight, nodedepth);
 					}
+//					draw_mod(x, y, z, modwidth,
+//					    modheight, moddepth);
 				}
 				x -= (modwidth + modspace) * NMODS;
 			}
@@ -454,7 +494,6 @@ make_cluster(void)
 end:
 	glEnd();
 	glEndList();
-printf("njobs: %d\n", njobs);
 }
 
 int
@@ -466,13 +505,16 @@ main(int argc, char *argv[])
 	glutInitWindowSize(WIN_WIDTH, WIN_HEIGHT);
 	if (glutCreateWindow("XT3 Monitor") == GL_FALSE)
 		errx(1, "CreateWindow");
-
+printf("x: white, y: blue, z: yellow\n");
 /*
 	glClearColor(0.5, 0.5, 0.5, 0.5);
 */
-	glShadeModel(GL_FLAT);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glShadeModel(GL_SMOOTH);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_LINE_SMOOTH);
 
 	parse_physmap();
 	parse_jobmap();
