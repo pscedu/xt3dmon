@@ -29,8 +29,6 @@
 #define YORIGIN		((cageheight * NCAGES + cagespace * (NCAGES - 1)) / 2)
 #define	ZORIGIN		((rowdepth * NROWS + rowspace * (NROWS - 1)) / 2)
 
-#define PI		3.14159265358979323
-
 #define SLEEP_INTV	5
 
 #define DIR_X 0
@@ -40,11 +38,9 @@
 void			 adjcam(void);
 void			 parse_jobmap(void);
 void			 parse_physmap(void);
-void			 getcol(int, struct job *);
 
 struct job		**jobs;
 size_t			 njobs;
-size_t			 maxjobs;
 struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 GLfloat 		 anglex = -5.0f, angley = 0.1f;
 float			 x = -15.0f, y = 9.0f, z = 15.0f;
