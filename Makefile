@@ -2,7 +2,7 @@
 
 PROG = mon
 SRCS = mon.c parse.o
-LIBS = -lGL -lglut
+LIBS = -lGL -lglut -lGLU
 CFLAGS += -Wall
 
 OBJS = ${SRCS:.c=.o}

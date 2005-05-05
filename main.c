@@ -10,7 +10,7 @@
 #include <sys/time.h>
 
 #include <GL/gl.h>
-#include <GL/glut.h>
+#include <GL/freeglut.h>
 
 #include <ctype.h>
 #include <err.h>
@@ -42,7 +42,7 @@ void			 parse_physmap(void);
 struct job		**jobs;
 size_t			 njobs;
 struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
-GLfloat 		 anglex = -5.0f, angley = 0.1f;
+GLfloat 		 angle = 0.1f;
 float			 x = -15.0f, y = 9.0f, z = 15.0f;
 float			 lx = 0.9f, ly = 0.0f, lz = -0.3f;
 int			 spkey, xpos, ypos;
@@ -125,7 +125,6 @@ sp_key(int key, int u, int v)
 {
 	switch (key) {
 	case GLUT_KEY_LEFT:
-printf("lz: %f [%f]\n", lz, lz * 0.3);
 		x += lz * 0.3;
 		z -= lx * 0.3;
 		break;
@@ -169,6 +168,7 @@ active_m(int u, int v)
 
 	xpos = u;
 	ypos = v;
+
 	if (spkey != GLUT_ACTIVE_CTRL)
 		return;
 	if (du != 0) {
@@ -176,33 +176,21 @@ active_m(int u, int v)
 		    (z - ZORIGIN) * (z - ZORIGIN));
 
 		t = acosf((x - XORIGIN) / r);
+		if (z < ZORIGIN)
+			t = 2.0f * PI - t;
+		t += .025 * (float)du;
+		if (t < 0)
+			t += PI * 2.0f;
 
-		if (x > XORIGIN)
-			t += PI;
-	//	else if (x < XORIGIN && z < ZORIGIN)
-	//		t += 3 * PI / 2;
-
-printf("r: %.2f [%.2f -> ", r, t);
-		t += .05 * (float)du;
-printf("%.2f] (%.2f,%.2f) -> ", t, x, z);
 		x = r * cos(t) + XORIGIN;
 		z = r * sin(t) + ZORIGIN;
 		lx = (XORIGIN - x) / r;
 		lz = (ZORIGIN - z) / r;
-printf("(%.2f,%.2f) [du: %d, dv: %d] c(%.2f,%.2f) [%.2f,%.2f]\n",
-    x, z, du, dv, XORIGIN, ZORIGIN, lx, lz);
-/*
-		anglex += (du < 0) ? 0.0025f : -0.0025f;
-		lx = sin(anglex);
-		lz = -cos(anglex);
-*/
 	}
 	if (dv != 0) {
-/*
-		angley += (dv < 0) ? 0.0025f : -0.0025f;
-		ly = sin(angley);
-		lz = -cos(angley);
-*/
+		angle += (dv < 0) ? 0.0025f : -0.0025f;
+		ly = sin(angle);
+		lz = -cos(angle);
 	}
 	adjcam();
 }
@@ -287,7 +275,7 @@ cnt = 0;
 
 /*
 	glLoadIdentity();
-	glRotatef(anglex, 1.0, 0.0, 0.0);
+	//glRotatef(anglex, 1.0, 0.0, 0.0);
 
 	glTranslatef(0.0, -30.0, 0.0);
 
@@ -492,8 +480,6 @@ printf("x: white, y: blue, z: yellow\n");
 	parse_physmap();
 	parse_jobmap();
 	make_cluster();
-
-//	angle = -39.0;
 
 	/* glutExposeFunc(reshape); */
 	glutReshapeFunc(reshape);
