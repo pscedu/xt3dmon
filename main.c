@@ -41,6 +41,10 @@
 #define NMODS		8
 #define NNODES		4
 
+#define XORIGIN		((cabwidth * NCABS + cabspace * (NCABS - 1)) / 2)
+#define YORIGIN		((cageheight * NCAGES + cagespace * (NCAGES - 1)) / 2)
+#define	ZORIGIN		((rowdepth * NROWS + rowspace * (NROWS - 1)) / 2)
+
 #define PI		3.14159265358979323
 
 #define NID_MAX		(NROWS * NCABS * NCAGES * NMODS * NNODES)
@@ -86,12 +90,17 @@ size_t			 njobs;
 size_t			 maxjobs;
 struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 GLfloat 		 anglex = -5.0f, angley = 0.1f;
-float			 x = -15.0f, y = 4.75f, z = 15.0f;
+float			 x = -15.0f, y = 9.0f, z = 15.0f;
 float			 lx = 0.9f, ly = 0.0f, lz = -0.3f;
 int			 spkey, xpos, ypos;
 GLint			 cluster_dl;
 struct node		*invmap[NROWS * NCABS * NCAGES * NMODS * NNODES];
 struct timeval		 lastsync;
+float			 rowdepth, rowspace;
+float			 cabwidth, cabspace;
+float			 cageheight, cagespace;
+float			 modwidth, modheight, moddepth, modspace;
+float			 nodewidth, nodeheight, nodedepth, nodespace;
 
 struct state states[] = {
 #define ST_FREE		0
@@ -116,7 +125,7 @@ struct state states[] = {
 __inline void
 adjcam(void)
 {
-printf("(%f, %f, %f) -> (%f, %f, %f)\n", x, y, z, lx, ly, lz);
+//printf("(%f, %f, %f) -> (%f, %f, %f)\n", x, y, z, lx, ly, lz);
 	glLoadIdentity();
 	gluLookAt(x, y, z,
 	    x + lx, y + ly, z + lz,
@@ -204,35 +213,61 @@ void
 mouse(int button, int state, int u, int v)
 {
 	spkey = glutGetModifiers();
+	xpos = u;
+	ypos = v;
 }
 
 void
 active_m(int u, int v)
 {
 	int du = u - xpos, dv = v - ypos;
+	float t, r;
 
 	xpos = u;
 	ypos = v;
 	if (spkey != GLUT_ACTIVE_CTRL)
 		return;
-printf("du: %d, dv: %d\n", du, dv);
 	if (du != 0) {
+		r = sqrt((x - XORIGIN) * (x - XORIGIN) +
+		    (z - ZORIGIN) * (z - ZORIGIN));
+
+		t = acosf((x - XORIGIN) / r);
+
+		if (x > XORIGIN)
+			t += PI;
+	//	else if (x < XORIGIN && z < ZORIGIN)
+	//		t += 3 * PI / 2;
+
+printf("r: %.2f [%.2f -> ", r, t);
+		t += .05 * (float)du;
+printf("%.2f] (%.2f,%.2f) -> ", t, x, z);
+		x = r * cos(t) + XORIGIN;
+		z = r * sin(t) + ZORIGIN;
+		lx = (XORIGIN - x) / r;
+		lz = (ZORIGIN - z) / r;
+printf("(%.2f,%.2f) [du: %d, dv: %d] c(%.2f,%.2f) [%.2f,%.2f]\n",
+    x, z, du, dv, XORIGIN, ZORIGIN, lx, lz);
+/*
 		anglex += (du < 0) ? 0.0025f : -0.0025f;
 		lx = sin(anglex);
 		lz = -cos(anglex);
-		adjcam();
+*/
 	}
 	if (dv != 0) {
+/*
 		angley += (dv < 0) ? 0.0025f : -0.0025f;
 		ly = sin(angley);
 		lz = -cos(angley);
-		adjcam();
+*/
 	}
+	adjcam();
 }
 
 void
 passive_m(int u, int v)
 {
+	xpos = u;
+	ypos = v;
 }
 
 void
@@ -299,7 +334,7 @@ cnt = 0;
 	glVertex3f(-0.1f,  0.1f, -200.0f);
 	glVertex3f(-0.1f,  0.1f,  200.0f);
 	glVertex3f(-0.1f, -0.1f,  200.0f);
-                                        
+
 	glVertex3f( 0.1f, -0.1f, -200.0f);
 	glVertex3f( 0.1f,  0.1f, -200.0f);
 	glVertex3f( 0.1f,  0.1f,  200.0f);
@@ -439,11 +474,6 @@ void
 make_cluster(void)
 {
 	int r, cb, cg, m, n;
-	float rowdepth, rowspace;
-	float cabwidth, cabspace;
-	float cageheight, cagespace;
-	float modwidth, modheight, moddepth, modspace;
-	float nodewidth, nodeheight, nodedepth, nodespace;
 	float x = 0.0f, y = 0.0f, z = 0.0f;
 
 	rowspace = 10.0f;
@@ -459,7 +489,6 @@ make_cluster(void)
 	nodewidth = modwidth - 2.0f * nodespace;
 	nodeheight = modheight - 4.0f * nodespace;
 	nodedepth = modheight - 4.0f * nodespace;
-printf("nodewidth: %f, nodedepth: %f\n", nodewidth, nodedepth);
 
 	cageheight = modheight * 2.0f;
 	cabwidth = (modwidth + modspace) * NMODS;
