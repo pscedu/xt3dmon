@@ -27,8 +27,8 @@
 #define _PATH_PHYSMAP	"/opt/tmp-harness/default/ssconfig/sys%d/nodelist"
 */
 
-#define _PATH_JOBMAP	"/home/yanovich/3d-data/nids_list_login%d"
-#define _PATH_PHYSMAP	"/home/yanovich/3d-data/nodelist%d"
+#define _PATH_JOBMAP	"data/nids_list_login%d"
+#define _PATH_PHYSMAP	"data/nodelist%d"
 #define _PATH_BADMAP	"/usr/users/torque/bad_nids_list_login%d"
 #define _PATH_CHECKMAP	"/usr/users/torque/check_nids_list_login%d"
 
