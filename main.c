@@ -1,10 +1,5 @@
 /* $Id$ */
 
-/*
- * Compile using:
- *	gcc -lGL -lglut mon.c
- */
-
 #include <sys/param.h>
 #include <sys/queue.h>
 #include <sys/time.h>
@@ -25,35 +20,43 @@
 #define WIN_WIDTH	800
 #define WIN_HEIGHT	600
 
-#define XORIGIN		((cabwidth * NCABS + cabspace * (NCABS - 1)) / 2)
-#define YORIGIN		((cageheight * NCAGES + cagespace * (NCAGES - 1)) / 2)
-#define	ZORIGIN		((rowdepth * NROWS + rowspace * (NROWS - 1)) / 2)
-
 #define SLEEP_INTV	5
 
-#define DIR_X 0
-#define DIR_Y 1
-#define DIR_Z 2
+#define ROWSPACE	(10.0f)
+#define CABSPACE	(5.0f)
+#define CAGESPACE	(1.0f)
+#define MODSPACE	(1.0f)
 
-void			 adjcam(void);
-void			 parse_jobmap(void);
-void			 parse_physmap(void);
+#define MODWIDTH	(1.0f)
+#define MODHEIGHT	(2.0f)
+#define MODDEPTH	(2.0f)
 
-struct job		**jobs;
-size_t			 njobs;
-struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
-GLfloat 		 angle = 0.1f;
-float			 x = -15.0f, y = 9.0f, z = 15.0f;
-float			 lx = 0.9f, ly = 0.0f, lz = -0.3f;
-int			 spkey, xpos, ypos;
-GLint			 cluster_dl;
-struct node		*invmap[NROWS * NCABS * NCAGES * NMODS * NNODES];
-struct timeval		 lastsync;
-float			 rowdepth, rowspace;
-float			 cabwidth, cabspace;
-float			 cageheight, cagespace;
-float			 modwidth, modheight, moddepth, modspace;
-float			 nodewidth, nodeheight, nodedepth, nodespace;
+#define NODESPACE	(0.2f)
+#define NODEWIDTH	(MODWIDTH - 2.0f * NODESPACE)
+#define NODEHEIGHT	(MODHEIGHT - 4.0f * NODESPACE)
+#define NODEDEPTH	(MODHEIGHT - 4.0f * NODESPACE)
+
+#define CAGEHEIGHT	(MODHEIGHT * 2.0f)
+#define CABWIDTH	((MODWIDTH + MODSPACE) * NMODS)
+#define ROWDEPTH	(MODDEPTH * 2.0f)
+
+#define XORIGIN		((CABWIDTH * NCABS + CABSPACE * (NCABS - 1)) / 2)
+#define YORIGIN		((CAGEHEIGHT * NCAGES + CAGESPACE * (NCAGES - 1)) / 2)
+#define ZORIGIN		((ROWDEPTH * NROWS + ROWSPACE * (NROWS - 1)) / 2)
+
+#define FRAMEWIDTH	(0.001f)
+
+struct job	**jobs;
+size_t		 njobs;
+struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
+struct node	*invmap[NROWS * NCABS * NCAGES * NMODS * NNODES];
+
+GLfloat 	 angle = 0.1f;
+float		 x = -15.0f, y = 9.0f, z = 15.0f;
+float		 lx = 0.9f, ly = 0.0f, lz = -0.3f;
+int		 spkey, xpos, ypos;
+GLint		 cluster_dl;
+struct timeval	 lastsync;
 
 struct state states[] = {
 	{ "Free",		1.0, 1.0, 1.0 },
@@ -69,7 +72,6 @@ struct state states[] = {
 __inline void
 adjcam(void)
 {
-//printf("(%f, %f, %f) -> (%f, %f, %f)\n", x, y, z, lx, ly, lz);
 	glLoadIdentity();
 	gluLookAt(x, y, z,
 	    x + lx, y + ly, z + lz,
@@ -101,50 +103,41 @@ key(unsigned char key, int x, int y)
 }
 
 /*
- *	       z
- *	      /
- *	     / PageUp /\
- *	    /
- *	   /
- *	  / PageDown \/
- *	 /
- *	+------------------------------------------ x
- *	|	Left <-		-> Right
- *	|
- *	|
- *	| Up /\
- *	|
- *	|
- *	| Down \/
- *	|
- *	|
- *	y
+ *    z
+ *   /  Up  /|
+ *  / Down |/
+ * +------------------- x
+ * |  Left <-  -> Right
+ * |
+ * |   PageUp /\
+ * | PageDown \/
+ * y
  */
 void
 sp_key(int key, int u, int v)
 {
 	switch (key) {
 	case GLUT_KEY_LEFT:
-		x += lz * 0.3;
-		z -= lx * 0.3;
+		x += lz * 0.3f;
+		z -= lx * 0.3f;
 		break;
 	case GLUT_KEY_RIGHT:
-		x -= lz * 0.3;
-		z += lx * 0.3;
+		x -= lz * 0.3f;
+		z += lx * 0.3f;
 		break;
 	case GLUT_KEY_UP:
-		x += lx * 0.3;
-		z += lz * 0.3;
+		x += lx * 0.3f;
+		z += lz * 0.3f;
 		break;
 	case GLUT_KEY_DOWN:
-		x -= lx * 0.3;
-		z -= lz * 0.3;
+		x -= lx * 0.3f;
+		z -= lz * 0.3f;
 		break;
 	case GLUT_KEY_PAGE_UP:
-		y += 1;
+		y += 0.3f;
 		break;
 	case GLUT_KEY_PAGE_DOWN:
-		y -= 1;
+		y -= 0.3f;
 		break;
 	default:
 		return;
@@ -169,16 +162,14 @@ active_m(int u, int v)
 	xpos = u;
 	ypos = v;
 
-	if (spkey != GLUT_ACTIVE_CTRL)
-		return;
-	if (du != 0) {
+	if (du != 0 && spkey & GLUT_ACTIVE_CTRL) {
 		r = sqrt((x - XORIGIN) * (x - XORIGIN) +
 		    (z - ZORIGIN) * (z - ZORIGIN));
 
 		t = acosf((x - XORIGIN) / r);
 		if (z < ZORIGIN)
 			t = 2.0f * PI - t;
-		t += .025 * (float)du;
+		t += .01 * (float)du;
 		if (t < 0)
 			t += PI * 2.0f;
 
@@ -187,10 +178,9 @@ active_m(int u, int v)
 		lx = (XORIGIN - x) / r;
 		lz = (ZORIGIN - z) / r;
 	}
-	if (dv != 0) {
-		angle += (dv < 0) ? 0.0025f : -0.0025f;
+	if (dv != 0 && spkey & GLUT_ACTIVE_SHIFT) {
+		angle += (dv < 0) ? 0.005f : -0.005f;
 		ly = sin(angle);
-		lz = -cos(angle);
 	}
 	adjcam();
 }
@@ -206,19 +196,14 @@ void
 draw(void)
 {
 	struct timeval tv;
-static int cnt = 0;
-cnt++;
 
 /*
 	if (gettimeofday(&tv, NULL) == -1)
 		err(1, "gettimeofday");
 	if (lastsync.tv_sec + SLEEP_INTV < tv.tv_sec) {
-printf("fps: %d\n", cnt / SLEEP_INTV);
-cnt = 0;
 		lastsync.tv_sec = tv.tv_sec;
 	}
 */
-
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -226,37 +211,27 @@ cnt = 0;
 	glColor3f(0.4f, 0.4f, 0.4f);
 	glBegin(GL_QUADS);
 	glVertex3f( -5.0f, 0.0f, -5.0f);
-	glVertex3f( -5.0f, 0.0f, 25.0f);
-	glVertex3f(250.0f, 0.0f, 25.0f);
-	glVertex3f(250.0f, 0.0f, -5.0f);
+	glVertex3f( -5.0f, 0.0f, 22.0f);
+	glVertex3f(230.0f, 0.0f, 22.0f);
+	glVertex3f(230.0f, 0.0f, -5.0f);
 	glEnd();
 
 	/* x-axis */
 	glColor3f(1.0f, 1.0f, 1.0f);
 	glBegin(GL_QUADS);
-	glVertex3f(-200.0f, -0.1f, -0.1f);
-	glVertex3f(-200.0f, -0.1f,  0.1f);
-	glVertex3f( 200.0f, -0.1f,  0.1f);
-	glVertex3f( 200.0f, -0.1f, -0.1f);
-
-	glVertex3f( 200.0f,  0.1f, -0.1f);
-	glVertex3f( 200.0f,  0.1f,  0.1f);
-	glVertex3f(-200.0f,  0.1f,  0.1f);
-	glVertex3f(-200.0f,  0.1f, -0.1f);
+	glVertex2f(-200.0f, -0.1f);
+	glVertex2f(-200.0f,  0.1f);
+	glVertex2f( 200.0f,  0.1f);
+	glVertex2f( 200.0f, -0.1f);
 	glEnd();
 
 	/* y-axis */
 	glColor3f(0.6f, 0.6f, 1.0f);
 	glBegin(GL_QUADS);
-	glVertex3f(-0.1f, -200.0f, -0.1f);
-	glVertex3f(-0.1f, -200.0f,  0.1f);
-	glVertex3f(-0.1f,  200.0f,  0.1f);
-	glVertex3f(-0.1f,  200.0f, -0.1f);
-
-	glVertex3f( 0.1f, -200.0f, -0.1f);
-	glVertex3f( 0.1f, -200.0f,  0.1f);
-	glVertex3f( 0.1f,  200.0f,  0.1f);
-	glVertex3f( 0.1f,  200.0f, -0.1f);
+	glVertex2f(-0.1f, -200.0f);
+	glVertex2f(-0.1f,  200.0f);
+	glVertex2f( 0.1f,  200.0f);
+	glVertex2f( 0.1f, -200.0f);
 	glEnd();
 
 	/* z-axis */
@@ -266,7 +241,6 @@ cnt = 0;
 	glVertex3f(-0.1f,  0.1f, -200.0f);
 	glVertex3f(-0.1f,  0.1f,  200.0f);
 	glVertex3f(-0.1f, -0.1f,  200.0f);
-
 	glVertex3f( 0.1f, -0.1f, -200.0f);
 	glVertex3f( 0.1f,  0.1f, -200.0f);
 	glVertex3f( 0.1f,  0.1f,  200.0f);
@@ -275,7 +249,7 @@ cnt = 0;
 
 /*
 	glLoadIdentity();
-	//glRotatef(anglex, 1.0, 0.0, 0.0);
+//	glRotatef(anglex, 1.0, 0.0, 0.0);
 
 	glTranslatef(0.0, -30.0, 0.0);
 
@@ -287,28 +261,35 @@ cnt = 0;
 }
 
 /*
- *             z
- *            /
- *           /
- *          /
- * (0,0,0) +-------------------------------------------------------- x
- *         |                 (x,y,z+DEPTH)   (x+WIDTH,y,z+DEPTH)
- *         |                         +----------+
- *         |                        /   Top    /|
- *         |                       / |        / |
- *         |              (x,y,z) +----------+  | (x+WIDTH,y,z)
- *         |                      |   (Back) |  |
- *         |                      |  |       |  | Right
- *         |                      |          |  |
- *         |                 Left |  | Front |  |
- *         |                      |          |  |
- *         | (x,y+HEIGHT,z+DEPTH) |  +  -  - |- + (x+WIDTH,y+HEIGHT,z+DEPTH)
- *         |                      | /        | /
- *         |                      | (Bottom) |/
- *         |                      +----------+
- *         |        (x,y+HEIGHT,z) (x+WIDTH,y+HEIGHT,z)
- *         |
- *         y
+ * y
+ * |        (x,y+height,z+depth) (x+width,y+height,z+depth)
+ * |                      +-------------+
+ * |                (11) /      10     /|
+ * |                    / |           / |
+ * |                   /     top  15 /  |
+ * |                6 /   |         /   |
+ * |                 /      12     /    |
+ * | (x,y+height,z) +-------------+ (x+width,y+height,z)
+ * |                |             |     |
+ * |                |     |       |     | front
+ * |                |      (right)|     |
+ * |                |   7 |       |     | 9
+ * |                |             |(14) |
+ * |         (back) |     |       |     |
+ * |                |    left     | 13  |
+ * |              5 |     |       |     |
+ * |                |         2   |     |
+ * |                |     + - - - | - - + (x+width,y,z+depth)
+ * |  (x,y,z+depth) |    /   (8)  |    /
+ * |                | 1 /         |   /
+ * |     z          |  / (bottom) |  / 3
+ * |    /           | /           | /
+ * |   /            |/     4      |/
+ * |  /             +-------------+
+ * | /           (x,y,z)    (x+width,y,z)
+ * |/
+ * +--------------------------------------------------- x
+ * (0,0,0)
  */
 __inline void
 draw_node(struct node *n, float x, float y, float z, float width,
@@ -325,81 +306,66 @@ draw_node(struct node *n, float x, float y, float z, float width,
 	}
 	glColor3f(r, g, b);
 
+	glBegin(GL_POLYGON);
 	/* Bottom */
-	glVertex3f(x, y + height, z);
-	glVertex3f(x, y + height, z + depth);
-	glVertex3f(x + width, y + height, z + depth);
-	glVertex3f(x + width, y + height, z);
-	/* Top */
 	glVertex3f(x, y, z);
-	glVertex3f(x, y, z + depth);
-	glVertex3f(x + width, y, z + depth);
-	glVertex3f(x + width, y, z);
-
-	/* Front */
-	glVertex3f(x, y + height, z);
-	glVertex3f(x, y, z);
-	glVertex3f(x + width, y, z);
-	glVertex3f(x + width, y + height, z);
+	glVertex3f(x, y, z+depth);		/*  1 */
+	glVertex3f(x+width, y, z+depth);	/*  2 */
+	glVertex3f(x+width, y, z);		/*  3 */
+	glVertex3f(x, y, z);			/*  4 */
 	/* Back */
-	glVertex3f(x, y, z + depth);
-	glVertex3f(x + width, y, z + depth);
-	glVertex3f(x + width, y + height, z + depth);
-	glVertex3f(x, y + height, z + depth);
+	glVertex3f(x, y+height, z);		/*  5 */
+	glVertex3f(x, y+height, z+depth);	/*  6 */
+	glVertex3f(x, y, z+depth);		/*  7 */
+	/* Right */
+	glVertex3f(x+width, y, z+depth);	/*  8 */
+	glVertex3f(x+width, y+height, z+depth);	/*  9 */
+	glVertex3f(x, y+height, z+depth);	/* 10 */
+
+	glVertex3f(x, y+height, z);		/* 11 */
 
 	/* Left */
-	glVertex3f(x, y, z);
-	glVertex3f(x, y, z + depth);
-	glVertex3f(x, y + height, z + depth);
-	glVertex3f(x, y + height, z);
-	/* Right */
-	glVertex3f(x + width, y, z);
-	glVertex3f(x + width, y, z + depth);
-	glVertex3f(x + width, y + height, z + depth);
-	glVertex3f(x + width, y + height, z);
-}
-
-void
-draw_mod(float x, float y, float z, float width, float height, float depth)
-{
-	glPushMatrix();
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	glColor3f(1.0f, 0.0f, 0.0f);
-
-	/* Bottom */
-	glVertex3f(x, y + height, z);
-	glVertex3f(x, y + height, z + depth);
-	glVertex3f(x + width, y + height, z + depth);
-	glVertex3f(x + width, y + height, z);
-	/* Top */
-	glVertex3f(x, y, z);
-	glVertex3f(x, y, z + depth);
-	glVertex3f(x + width, y, z + depth);
-	glVertex3f(x + width, y, z);
-
+	glVertex3f(x+width, y+height, z);	/* 12 */
+	glVertex3f(x+width, y, z);		/* 13 */
+	glVertex3f(x+width, y+height, z);	/* 14 */
 	/* Front */
-	glVertex3f(x, y + height, z);
+	glVertex3f(x+width, y+height, z+depth);	/* 15 */
+	glEnd();
+
+	/* Wireframe outline */
+	x -= FRAMEWIDTH;
+	y -= FRAMEWIDTH;
+	z -= FRAMEWIDTH;
+	width += 2.0f * FRAMEWIDTH;
+	height += 2.0f * FRAMEWIDTH;
+	depth += 2.0f * FRAMEWIDTH;
+
+	glColor3f(0.0f, 0.0f, 0.0f);
+	glBegin(GL_LINE_STRIP);
+	/* Bottom */
 	glVertex3f(x, y, z);
-	glVertex3f(x + width, y, z);
-	glVertex3f(x + width, y + height, z);
+	glVertex3f(x, y, z+depth);		/*  1 */
+	glVertex3f(x+width, y, z+depth);	/*  2 */
+	glVertex3f(x+width, y, z);		/*  3 */
+	glVertex3f(x, y, z);			/*  4 */
 	/* Back */
-	glVertex3f(x, y, z + depth);
-	glVertex3f(x + width, y, z + depth);
-	glVertex3f(x + width, y + height, z + depth);
-	glVertex3f(x, y + height, z + depth);
+	glVertex3f(x, y+height, z);		/*  5 */
+	glVertex3f(x, y+height, z+depth);	/*  6 */
+	glVertex3f(x, y, z+depth);		/*  7 */
+	/* Right */
+	glVertex3f(x+width, y, z+depth);	/*  8 */
+	glVertex3f(x+width, y+height, z+depth);	/*  9 */
+	glVertex3f(x, y+height, z+depth);	/* 10 */
+
+	glVertex3f(x, y+height, z);		/* 11 */
 
 	/* Left */
-	glVertex3f(x, y, z);
-	glVertex3f(x, y, z + depth);
-	glVertex3f(x, y + height, z + depth);
-	glVertex3f(x, y + height, z);
-	/* Right */
-	glVertex3f(x + width, y, z);
-	glVertex3f(x + width, y, z + depth);
-	glVertex3f(x + width, y + height, z + depth);
-	glVertex3f(x + width, y + height, z);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glPopMatrix();
+	glVertex3f(x+width, y+height, z);	/* 12 */
+	glVertex3f(x+width, y, z);		/* 13 */
+	glVertex3f(x+width, y+height, z);	/* 14 */
+	/* Front */
+	glVertex3f(x+width, y+height, z+depth);	/* 15 */
+	glEnd();
 }
 
 void
@@ -408,52 +374,29 @@ make_cluster(void)
 	int r, cb, cg, m, n;
 	float x = 0.0f, y = 0.0f, z = 0.0f;
 
-	rowspace = 10.0f;
-	cabspace = 5.0f;
-	cagespace = 1.0f;
-	modspace = 1.0f;
-
-	modwidth = 1.0f;
-	modheight = 2.0f;
-	moddepth = 2.0f;
-
-	nodespace = 0.2f;
-	nodewidth = modwidth - 2.0f * nodespace;
-	nodeheight = modheight - 4.0f * nodespace;
-	nodedepth = modheight - 4.0f * nodespace;
-
-	cageheight = modheight * 2.0f;
-	cabwidth = (modwidth + modspace) * NMODS;
-	rowdepth = moddepth * 2.0f;
-
 	cluster_dl = glGenLists(1);
 	glNewList(cluster_dl, GL_COMPILE);
-	glBegin(GL_QUADS);
-	for (r = 0; r < NROWS; r++, z += rowdepth + rowspace) {
-		for (cb = 0; cb < NCABS; cb++, x += cabwidth + cabspace) {
-			for (cg = 0; cg < NCAGES; cg++, y += cageheight + cagespace) {
-				for (m = 0; m < NMODS; m++, x += modwidth + modspace) {
+	for (r = 0; r < NROWS; r++, z += ROWDEPTH + ROWSPACE) {
+		for (cb = 0; cb < NCABS; cb++, x += CABWIDTH + CABSPACE) {
+			for (cg = 0; cg < NCAGES; cg++, y += CAGEHEIGHT + CAGESPACE) {
+				for (m = 0; m < NMODS; m++, x += MODWIDTH + MODSPACE) {
 					for (n = 0; n < NNODES; n++) {
 						draw_node(&nodes[r][cb][cg][m][n],
-						    x + nodespace,
-						    y + (2.0f * nodespace + nodeheight) *
-						      (n % (NNODES/2)) + nodespace,
-						    z + (2.0f * nodespace + nodedepth) *
+						    x + NODESPACE,
+						    y + (2.0f * NODESPACE + NODEHEIGHT) *
+						      (n % (NNODES/2)) + NODESPACE,
+						    z + (2.0f * NODESPACE + NODEDEPTH) *
 						      (n / (NNODES/2)) +
-						      (nodespace * (n % (NNODES/2))),
-						    nodewidth, nodeheight, nodedepth);
+						      (NODESPACE * (n % (NNODES/2))),
+						    NODEWIDTH, NODEHEIGHT, NODEDEPTH);
 					}
-//					draw_mod(x, y, z, modwidth,
-//					    modheight, moddepth);
 				}
-				x -= (modwidth + modspace) * NMODS;
+				x -= (MODWIDTH + MODSPACE) * NMODS;
 			}
-			y -= (cageheight + cagespace) * NCAGES;
+			y -= (CAGEHEIGHT + CAGESPACE) * NCAGES;
 		}
-		x -= (cabwidth + cabspace) * NCABS;
+		x -= (CABWIDTH + CABSPACE) * NCABS;
 	}
-end:
-	glEnd();
 	glEndList();
 }
 
@@ -466,15 +409,11 @@ main(int argc, char *argv[])
 	glutInitWindowSize(WIN_WIDTH, WIN_HEIGHT);
 	if (glutCreateWindow("XT3 Monitor") == GL_FALSE)
 		errx(1, "CreateWindow");
-printf("x: white, y: blue, z: yellow\n");
-/*
-	glClearColor(0.5, 0.5, 0.5, 0.5);
-*/
+
 	glShadeModel(GL_SMOOTH);
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_LINE_SMOOTH);
 
 	parse_physmap();
@@ -490,8 +429,6 @@ printf("x: white, y: blue, z: yellow\n");
 	glutMouseFunc(mouse);
 	glutMotionFunc(active_m);
 	glutPassiveMotionFunc(passive_m);
-
 	glutMainLoop();
-
 	exit(0);
 }
