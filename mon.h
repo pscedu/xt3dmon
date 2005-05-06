@@ -53,6 +53,9 @@ struct state {
 	float		 st_b;
 };
 
+void			 parse_jobmap(void);
+void			 parse_physmap(void);
+
 extern struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 extern struct node	*invmap[NROWS * NCABS * NCAGES * NMODS * NNODES];
 extern size_t		 njobs;
