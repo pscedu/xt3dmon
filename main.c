@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "mon.h"
 
@@ -22,16 +23,18 @@
 
 #define SLEEP_INTV	5
 
-#define ROWSPACE	(10.0f)
-#define CABSPACE	(5.0f)
-#define CAGESPACE	(1.0f)
-#define MODSPACE	(1.0f)
+#define SCALE (1.0f)
 
-#define MODWIDTH	(1.0f)
-#define MODHEIGHT	(2.0f)
-#define MODDEPTH	(2.0f)
+#define ROWSPACE	((10.0f)*SCALE)
+#define CABSPACE	((5.0f)*SCALE)
+#define CAGESPACE	((1.0f)*SCALE)
+#define MODSPACE	((1.0f)*SCALE)
 
-#define NODESPACE	(0.2f)
+#define MODWIDTH	((1.0f)*SCALE)
+#define MODHEIGHT	((2.0f)*SCALE)
+#define MODDEPTH	((2.0f)*SCALE)
+
+#define NODESPACE	((0.2f)*SCALE)
 #define NODEWIDTH	(MODWIDTH - 2.0f * NODESPACE)
 #define NODEHEIGHT	(MODHEIGHT - 4.0f * NODESPACE)
 #define NODEDEPTH	(MODHEIGHT - 4.0f * NODESPACE)
@@ -59,14 +62,14 @@ GLint		 cluster_dl;
 struct timeval	 lastsync;
 
 struct state states[] = {
-	{ "Free",		1.0, 1.0, 1.0 },
-	{ "Disabled (PBS)",	1.0, 0.0, 0.0 },
-	{ "Disabled (HW)",	0.66, 0.66, 0.66 },
-	{ NULL,			0.0, 0.0, 0.0 },
-	{ "I/O",		1.0, 1.0, 0.0 },
-	{ "Unaccounted",	0.0, 0.0, 1.0 },
-	{ "Bad",		1.0, 0.75, 0.75 },
-	{ "Checking",		0.0, 1.0, 0.0 }
+	{ "Free",		1.0, 1.0, 1.0, 1 },
+	{ "Disabled (PBS)",	1.0, 0.0, 0.0, 1 },
+	{ "Disabled (HW)",	0.66, 0.66, 0.66, 1 },
+	{ NULL,			0.0, 0.0, 0.0, 1 },
+	{ "I/O",		1.0, 1.0, 0.0, 1 },
+	{ "Unaccounted",	0.0, 0.0, 1.0, 1 },
+	{ "Bad",		1.0, 0.75, 0.75, 1 },
+	{ "Checking",		0.0, 1.0, 0.0, 1 }
 };
 
 __inline void
@@ -118,26 +121,26 @@ sp_key(int key, int u, int v)
 {
 	switch (key) {
 	case GLUT_KEY_LEFT:
-		x += lz * 0.3f;
-		z -= lx * 0.3f;
+		x += lz * 0.3f * SCALE;
+		z -= lx * 0.3f * SCALE;
 		break;
 	case GLUT_KEY_RIGHT:
-		x -= lz * 0.3f;
-		z += lx * 0.3f;
+		x -= lz * 0.3f * SCALE;
+		z += lx * 0.3f * SCALE;
 		break;
 	case GLUT_KEY_UP:
-		x += lx * 0.3f;
-		z += lz * 0.3f;
+		x += lx * 0.3f * SCALE;
+		z += lz * 0.3f * SCALE;
 		break;
 	case GLUT_KEY_DOWN:
-		x -= lx * 0.3f;
-		z -= lz * 0.3f;
+		x -= lx * 0.3f * SCALE;
+		z -= lz * 0.3f * SCALE;
 		break;
 	case GLUT_KEY_PAGE_UP:
-		y += 0.3f;
+		y += 0.3f * SCALE;
 		break;
 	case GLUT_KEY_PAGE_DOWN:
-		y -= 0.3f;
+		y -= 0.3f * SCALE;
 		break;
 	default:
 		return;
@@ -165,7 +168,7 @@ active_m(int u, int v)
 	if (du != 0 && spkey & GLUT_ACTIVE_CTRL) {
 		r = sqrt((x - XORIGIN) * (x - XORIGIN) +
 		    (z - ZORIGIN) * (z - ZORIGIN));
-
+printf("r: %f\n", r);
 		t = acosf((x - XORIGIN) / r);
 		if (z < ZORIGIN)
 			t = 2.0f * PI - t;
@@ -177,6 +180,7 @@ active_m(int u, int v)
 		z = r * sin(t) + ZORIGIN;
 		lx = (XORIGIN - x) / r;
 		lz = (ZORIGIN - z) / r;
+printf("gaze(%f,%f)\n", lx, lz);
 	}
 	if (dv != 0 && spkey & GLUT_ACTIVE_SHIFT) {
 		angle += (dv < 0) ? 0.005f : -0.005f;
@@ -195,7 +199,7 @@ passive_m(int u, int v)
 void
 draw(void)
 {
-	struct timeval tv;
+//	struct timeval tv;
 
 /*
 	if (gettimeofday(&tv, NULL) == -1)
@@ -291,8 +295,9 @@ draw(void)
  * +--------------------------------------------------- x
  * (0,0,0)
  */
+
 __inline void
-draw_node(struct node *n, float x, float y, float z, float width,
+draw_filled_node(struct node *n, float x, float y, float z, float width,
     float height, float depth)
 {
 	float r, g, b;
@@ -304,6 +309,7 @@ draw_node(struct node *n, float x, float y, float z, float width,
 		g = states[n->n_state].st_g;
 		b = states[n->n_state].st_b;
 	}
+	
 	glColor3f(r, g, b);
 
 	glBegin(GL_POLYGON);
@@ -331,7 +337,12 @@ draw_node(struct node *n, float x, float y, float z, float width,
 	/* Front */
 	glVertex3f(x+width, y+height, z+depth);	/* 15 */
 	glEnd();
+}
 
+__inline void
+draw_wireframe_node(struct node *n, float x, float y, float z, float width,
+    float height, float depth)
+{
 	/* Wireframe outline */
 	x -= FRAMEWIDTH;
 	y -= FRAMEWIDTH;
@@ -368,6 +379,144 @@ draw_node(struct node *n, float x, float y, float z, float width,
 	glEnd();
 }
 
+
+__inline void
+draw_textured_node(struct node *n, float x, float y, float z, float width,
+    float height, float depth)
+{
+//	float ux, uy, uz;
+	float uw, uh, ud;
+
+	/* Convert to texture Units */
+#if 0
+	/* Too Big */
+	ud = depth / TEX_SIZE;
+	uh = height / TEX_SIZE;
+	uw = width / TEX_SIZE;
+
+	/* Too Small*/
+	ud = depth;
+	uh = height;
+	uw = width;
+#endif
+
+	uw = 1.0;
+	ud = 2.0;
+	uh = 2.0;
+
+//	ux = 0.0;
+//	uy = 0.0;
+//	uz = 0.0;
+
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	glBindTexture(GL_TEXTURE_2D, states[n->n_state].st_texid);
+
+
+	/* Back  */
+	glBegin(GL_POLYGON);
+	glVertex3f(x, y, z);
+	glTexCoord2f(0.0, 0.0);
+	glVertex3f(x, y+height, z);
+	glTexCoord2f(0.0, uw);
+	glVertex3f(x+width, y+height, z);
+	glTexCoord2f(uh, uw);
+	glVertex3f(x+width, y, z);
+	glTexCoord2f(uh, 0.0);
+	glEnd();
+
+
+	/* Front */
+	glBegin(GL_POLYGON);
+	
+/*
+	Same as Below, execpt using 3f
+	glVertex3f(x, y, z+depth);
+	glTexCoord3f(0.0, 0.0, 0.0);
+	glVertex3f(x, y+height, z+depth);
+	glTexCoord3f(0.0, uw, 0.0);
+	glVertex3f(x+width, y+height, z+depth);
+	glTexCoord3f(uh, uw, 0.0);
+	glVertex3f(x+width, y, z+depth);
+	glTexCoord3f(uh, 0.0, 0.0);
+*/
+
+	glVertex3f(x, y, z+depth);
+	glTexCoord2f(0.0, 0.0);
+	glVertex3f(x, y+height, z+depth);
+	glTexCoord2f(0.0, uw);
+	glVertex3f(x+width, y+height, z+depth);
+	glTexCoord2f(uh, uw);
+	glVertex3f(x+width, y, z+depth);
+	glTexCoord2f(uh, 0.0);
+	glEnd();
+
+	/* Right */
+	glBegin(GL_POLYGON);
+	glVertex3f(x+width, y, z);
+	glTexCoord2f(0.0, 0.0);
+	glVertex3f(x+width, y, z+depth);
+	glTexCoord2f(0.0, ud);
+	glVertex3f(x+width, y+height, z+depth);
+	glTexCoord2f(uh, ud);
+	glVertex3f(x+width, y+height, z);
+	glTexCoord2f(uh, 0.0);
+	glEnd();
+
+	/* Left */
+	glBegin(GL_POLYGON);
+	glVertex3f(x, y, z);
+	glTexCoord2f(0.0, 0.0);
+	glVertex3f(x, y, z+depth);
+	glTexCoord2f(0.0, ud);
+	glVertex3f(x, y+height, z+depth);
+	glTexCoord2f(uh, ud);
+	glVertex3f(x, y+height, z);
+	glTexCoord2f(uh, 0.0);
+	glEnd();
+
+	/* Use 2nd Texture for testing */
+//	glDisable(GL_TEXTURE_2D);
+//	glEnable(GL_TEXTURE_2D);
+//	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+//	glBindTexture(GL_TEXTURE_2D, 1);
+
+	/* Top */
+	glBegin(GL_POLYGON);
+	glVertex3f(x, y+height, z);
+	glTexCoord2f(0.0, 0.0);
+	glVertex3f(x, y+height, z+depth);
+	glTexCoord2f(0.0, uw);
+	glVertex3f(x+width, y+height, z+depth);
+	glTexCoord2f(ud, uw);
+	glVertex3f(x+width, y+height, z);
+	glTexCoord2f(ud, 0.0);
+	glEnd();
+
+	/* Bottom */
+	glBegin(GL_POLYGON);
+	glVertex3f(x, y, z);
+	glTexCoord2f(0.0, 0.0);
+	glVertex3f(x, y, z+depth);
+	glTexCoord2f(0.0, uw);
+	glVertex3f(x+width, y, z+depth);
+	glTexCoord2f(ud, uw);
+	glVertex3f(x+width, y, z);
+	glTexCoord2f(ud, 0.0);
+	glEnd();
+
+	glDisable(GL_TEXTURE_2D);
+}
+
+__inline void
+draw_node(struct node *n, float x, float y, float z, float width,
+    float height, float depth)
+{
+	//draw_filled_node(n,x,y,z,width,height,depth);
+	draw_wireframe_node(n,x,y,z,width,height,depth);
+	draw_textured_node(n,x,y,z,width,height,depth);
+}
+
 void
 make_cluster(void)
 {
@@ -400,6 +549,44 @@ make_cluster(void)
 	glEndList();
 }
 
+
+void
+load_textures(void)
+{
+	/* TODO: num_states = 8, when we use all 8 */
+	int num_states = 8;
+	void *data;
+	int i;
+
+	/* "data/texture%d.png" %d -> state */
+	char base_path[] = "data/texture";
+	char ext[] = ".png";
+	char *path;
+	int m = strlen(base_path);
+	int n = strlen(ext);
+
+	int o = 1;  /* number of chars in id */
+	char id[2]; /* o+1 */
+
+	
+	/* Loop and read in texture id's */
+	for(i = 0; i < num_states; i++)
+	{
+		snprintf(id, o+1, "%d", i);
+		path = malloc((m+n+o+1)*sizeof(char));
+		strncat(path, base_path, m);
+		strncat(path, id, o);
+		strncat(path, ext, n);
+		path[m+n+o+1] = '\0';
+
+		data = LoadPNG(path);
+		LoadTexture(data, i+1);
+
+		states[i].st_texid = i+1;
+		free(path);
+	}
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -416,6 +603,7 @@ main(int argc, char *argv[])
 	glEnable(GL_BLEND);
 	glEnable(GL_LINE_SMOOTH);
 
+	load_textures();
 	parse_physmap();
 	parse_jobmap();
 	make_cluster();

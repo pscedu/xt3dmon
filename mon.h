@@ -32,6 +32,8 @@
 
 #define NLOGIDS		(sizeof(logids) / sizeof(logids[0]))
 
+//#define TEX_SIZE 128
+
 struct job {
 	int		 j_id;
 	float		 j_r;
@@ -51,10 +53,13 @@ struct state {
 	float		 st_r;
 	float		 st_g;
 	float		 st_b;
+	int		 st_texid;
 };
 
 void			 parse_jobmap(void);
 void			 parse_physmap(void);
+void*			 LoadPNG(char *file);
+void			 LoadTexture(void *data, int id);
 
 extern struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 extern struct node	*invmap[NROWS * NCABS * NCAGES * NMODS * NNODES];

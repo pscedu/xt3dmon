@@ -1,8 +1,8 @@
 # $Id$
 
 PROG = mon
-SRCS = mon.c parse.o
-LIBS = -lGL -lglut -lGLU
+SRCS = mon.c parse.c load_png.c
+LIBS = -lGL -lglut -lGLU -lpng
 CFLAGS += -Wall
 
 OBJS = ${SRCS:.c=.o}
