@@ -61,6 +61,9 @@ int		 spkey, xpos, ypos;
 GLint		 cluster_dl;
 struct timeval	 lastsync;
 
+/* DEBUG */
+int gBlend = 0;
+
 struct state states[] = {
 	{ "Free",		1.0, 1.0, 1.0, 1 },
 	{ "Disabled (PBS)",	1.0, 0.0, 0.0, 1 },
@@ -409,6 +412,13 @@ draw_textured_node(struct node *n, float x, float y, float z, float width,
 //	uz = 0.0;
 
 	glEnable(GL_TEXTURE_2D);
+
+	/* DEBUG */
+	if(gBlend){
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_ONE, GL_ONE);
+	}
+
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	glBindTexture(GL_TEXTURE_2D, states[n->n_state].st_texid);
 
@@ -505,6 +515,10 @@ draw_textured_node(struct node *n, float x, float y, float z, float width,
 	glTexCoord2f(ud, 0.0);
 	glEnd();
 
+	/* DEBUG */
+	if(gBlend)
+		glDisable(GL_BLEND);
+
 	glDisable(GL_TEXTURE_2D);
 }
 
@@ -513,8 +527,8 @@ draw_node(struct node *n, float x, float y, float z, float width,
     float height, float depth)
 {
 	//draw_filled_node(n,x,y,z,width,height,depth);
-	draw_wireframe_node(n,x,y,z,width,height,depth);
 	draw_textured_node(n,x,y,z,width,height,depth);
+	draw_wireframe_node(n,x,y,z,width,height,depth);
 }
 
 void
