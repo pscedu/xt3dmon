@@ -52,7 +52,7 @@
 struct job	**jobs;
 size_t		 njobs;
 struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
-struct node	*invmap[NROWS * NCABS * NCAGES * NMODS * NNODES];
+struct node	*invmap[NLOGIDS][NROWS * NCABS * NCAGES * NMODS * NNODES];
 
 GLfloat 	 angle = 0.1f;
 float		 x = -15.0f, y = 9.0f, z = 15.0f;
@@ -306,7 +306,9 @@ draw_filled_node(struct node *n, float x, float y, float z, float width,
 	float r, g, b;
 
 	if (n->n_state == ST_USED)
-		r = states[n->n_state].st_r;
+		r = n->n_job->j_r;
+		g = n->n_job->j_g;
+		b = n->n_job->j_b;
 	else {
 		r = states[n->n_state].st_r;
 		g = states[n->n_state].st_g;
