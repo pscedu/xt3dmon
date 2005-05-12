@@ -62,7 +62,7 @@ GLint		 cluster_dl;
 struct timeval	 lastsync;
 
 /* DEBUG */
-int gBlend = 0;
+int gBlend = 1;
 
 struct state states[] = {
 	{ "Free",		1.0, 1.0, 1.0, 1 },
@@ -416,7 +416,13 @@ draw_textured_node(struct node *n, float x, float y, float z, float width,
 	/* DEBUG */
 	if(gBlend){
 		glEnable(GL_BLEND);
-		glBlendFunc(GL_ONE, GL_ONE);
+		glBlendFunc(GL_SRC_ALPHA_SATURATE, GL_ONE_MINUS_DST_ALPHA);
+		//glBlendFunc(GL_SRC_COLOR, GL_CONSTANT_ALPHA);
+		//glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
+		//glBlendFunc(GL_SRC_COLOR, GL_DST_ALPHA);
+		//glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
+		//glBlendFunc(GL_ONE_MINUS_SRC_COLOR, GL_ONE_MINUS_DST_COLOR);
+		//glBlendFunc(GL_ONE, GL_ONE);
 	}
 
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
@@ -484,12 +490,6 @@ draw_textured_node(struct node *n, float x, float y, float z, float width,
 	glVertex3f(x, y+height, z);
 	glTexCoord2f(uh, 0.0);
 	glEnd();
-
-	/* Use 2nd Texture for testing */
-//	glDisable(GL_TEXTURE_2D);
-//	glEnable(GL_TEXTURE_2D);
-//	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-//	glBindTexture(GL_TEXTURE_2D, 1);
 
 	/* Top */
 	glBegin(GL_POLYGON);
