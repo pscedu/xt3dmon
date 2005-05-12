@@ -563,11 +563,9 @@ make_cluster(void)
 	glEndList();
 }
 
-
 void
 load_textures(void)
 {
-	/* TODO: num_states = 8, when we use all 8 */
 	int num_states = 8;
 	void *data;
 	int i;
@@ -587,12 +585,17 @@ load_textures(void)
 	for(i = 0; i < num_states; i++)
 	{
 		snprintf(id, o+1, "%d", i);
+
+		/* Must memset to zero data!! */
 		path = malloc((m+n+o+1)*sizeof(char));
+		memset(path, '\0', sizeof(path));
+
 		strncat(path, base_path, m);
 		strncat(path, id, o);
 		strncat(path, ext, n);
-		path[m+n+o+1] = '\0';
+		//path[m+n+o+1] = '\0';
 
+		
 		data = LoadPNG(path);
 		LoadTexture(data, i+1);
 
