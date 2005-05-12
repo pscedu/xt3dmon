@@ -17,7 +17,7 @@
 struct job		*getjob(int);
 void			 getcol(int, struct job *);
 
-int	 		 logids[] = { 0, 8 };
+int			 logids[] = { 0, 8 };
 size_t			 maxjobs;
 
 /*
@@ -144,7 +144,7 @@ parse_physmap(void)
 			node = &nodes[r][cb][cg][m][n];
 			node->n_nid = nid;
 			node->n_logid = logids[j];
-			invmap[nid] = node;
+			invmap[j][nid] = node;
 
 			/* state */
 			while (isspace(*++s))
@@ -200,6 +200,7 @@ parse_jobmap(void)
 		free(jobs[j]);
 	njobs = 0;
 	for (j = 0; j < NLOGIDS; j++) {
+printf("LOGID(%d)\n", logids[j]);
 		snprintf(fn, sizeof(fn), _PATH_JOBMAP, logids[j]);
 		if ((fp = fopen(fn, "r")) == NULL) {
 			warn("%s", fn);
@@ -255,7 +256,7 @@ parse_jobmap(void)
 				goto bad;
 			jobid = (int)l;
 
-			node = invmap[nid];
+			node = invmap[j][nid];
 			if (node == NULL && enabled) {
 				warnx("inconsistency: node %d should be "
 				    "disabled in jobmap", nid);
@@ -268,8 +269,10 @@ parse_jobmap(void)
 				node->n_state = ST_FREE;
 			else {
 				node->n_state = ST_USED;
-				node->n_jobid = jobid;
-				getjob(jobid);
+				node->n_job = getjob(jobid);
+printf("off: %lu, siz: %lx, row: %lu\n",
+    node - &nodes[0][0][0][0][0], sizeof(struct node)*NNODES*NMODS*NCAGES*NCABS,
+    (node - &nodes[0][0][0][0][0]) / (sizeof(struct node)*NNODES*NMODS*NCAGES*NCABS));
 			}
 			continue;
 bad:
@@ -323,7 +326,7 @@ bad:
 
 				if (bad)
 					/* XXX:  check validity. */
-					invmap[nid]->n_state = ST_BAD;
+					invmap[j][nid]->n_state = ST_BAD;
 				continue;
 badbad:
 				warnx("%s:%d: malformed line", fn, lineno);
@@ -377,7 +380,7 @@ badbad:
 
 				if (checking)
 					/* XXX:  check validity. */
-					invmap[nid]->n_state = ST_CHECK;
+					invmap[j][nid]->n_state = ST_CHECK;
 				continue;
 badcheck:
 				warnx("%s:%d: malformed line", fn, lineno);
@@ -405,7 +408,7 @@ getjob(int id)
 	if (jobs != NULL)
 		for (n = 0, jj = jobs; n < njobs; jj++, n++)
 			if ((*jj)->j_id == id)
-				return (j);
+				return (*jj);
 	if (njobs + 1 >= maxjobs) {
 		maxjobs += JINCR;
 		if ((jobs = realloc(jobs, sizeof(*jobs) * maxjobs)) == NULL)
@@ -426,9 +429,13 @@ getcol(int n, struct job *j)
 	if (njobs == 1)
 		div = 0.0;
 	else
-		div = n / (njobs - 1);
+		div = ((double)n) / ((double)(njobs - 1));
 
 	j->j_r = cos(div);
 	j->j_g = sin(div) * sin(div);
 	j->j_b = fabs(tan(div + PI * 3/4));
+
+printf("njobs: %d/%lu (%.2f,%.2f,%.2f)\n", n, njobs,
+    j->j_r, j->j_g, j->j_b);
+
 }
