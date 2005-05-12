@@ -44,7 +44,7 @@ struct job {
 struct node {
 	int		 n_nid;
 	int		 n_logid;
-	int		 n_jobid;
+	struct job	*n_job;
 	int		 n_state;
 };
 
@@ -61,7 +61,8 @@ void			 parse_physmap(void);
 void*			 LoadPNG(char *file);
 void			 LoadTexture(void *data, int id);
 
+extern int		 logids[2];
 extern struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
-extern struct node	*invmap[NROWS * NCABS * NCAGES * NMODS * NNODES];
+extern struct node	*invmap[NLOGIDS][NROWS * NCABS * NCAGES * NMODS * NNODES];
 extern size_t		 njobs;
 extern struct job	**jobs;
