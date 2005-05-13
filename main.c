@@ -54,9 +54,6 @@
 
 #define FRAMEWIDTH	(0.001f)
 
-#define FILL_BLEND 1
-#define TEX_BLEND 1
-
 struct job	**jobs;
 size_t		 njobs;
 struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
@@ -68,6 +65,8 @@ float		 lx = 0.9f, ly = 0.0f, lz = -0.3f;
 int		 spkey, xpos, ypos;
 GLint		 cluster_dl;
 struct timeval	 lastsync;
+
+struct option options = {1,0,0.9,0.3};
 
 struct state states[] = {
 	{ "Free",		1.0, 1.0, 1.0, 1 },
@@ -315,21 +314,24 @@ draw_filled_node(struct node *n, float x, float y, float z, float width,
 		r = n->n_job->j_r;
 		g = n->n_job->j_g;
 		b = n->n_job->j_b;
+		a = options.op_alpha1;
 	} else {
 		r = states[n->n_state].st_r;
 		g = states[n->n_state].st_g;
 		b = states[n->n_state].st_b;
+		a = options.op_alpha2;
 	}
 	
 
 
-	a = 1.0;
 
-	if (FILL_BLEND) {
+	if (options.op_blend) {
 		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		a = 0.5;
-	}
+		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
+	} else
+		a = 1.0;
+	
 		
 	glColor4f(r, g, b, a);
 
@@ -360,7 +362,7 @@ draw_filled_node(struct node *n, float x, float y, float z, float width,
 	glVertex3f(x+width, y+height, z+depth);	/* 15 */
 	glEnd();
 
-	if(FILL_BLEND)
+	if(options.op_blend)
 		glDisable(GL_BLEND);
 }
 
@@ -412,6 +414,7 @@ draw_textured_node(struct node *n, float x, float y, float z, float width,
 //	float ux, uy, uz;
 	float uw, uh, ud;
 	float color[4];
+	GLenum param;
 
 	/* Convert to texture Units */
 #if 0
@@ -437,36 +440,42 @@ draw_textured_node(struct node *n, float x, float y, float z, float width,
 	glEnable(GL_TEXTURE_2D);
 
 	/* DEBUG */
-	if(TEX_BLEND){
+	if(options.op_blend){
 		glEnable(GL_BLEND);
-		//glBlendFunc(GL_SRC_ALPHA_SATURATE, GL_ONE);
+
+		/* 1 */
 		//glBlendFunc(GL_SRC_COLOR, GL_CONSTANT_ALPHA);
 
-		/* 2 */
-		//glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
+		/* 2 Works with: GL_INTENSITY */
+		glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
 
-		/* 3 */
-		glBlendFunc(GL_SRC_COLOR, GL_DST_ALPHA);
+		/* 3 Transparent, but alpha value doesn't effect */
+		//glBlendFunc(GL_SRC_COLOR, GL_DST_ALPHA);
 
+		/* 4 Works with: GL_INTENSITY */
 		//glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
-		//glBlendFunc(GL_ONE_MINUS_SRC_COLOR, GL_ONE_MINUS_DST_COLOR);
-		//glBlendFunc(GL_ONE, GL_ONE);
-	}
 
-	//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	//glBindTexture(GL_TEXTURE_2D, states[n->n_state].st_texid);
+		param = GL_BLEND;
+	} else
+		param = GL_REPLACE;
 
 	glBindTexture(GL_TEXTURE_2D, states[n->n_state].st_texid);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);
 
 	if (n->n_state == ST_USED) {
 		color[0] = n->n_job->j_r;
 		color[1] = n->n_job->j_g;
 		color[2] = n->n_job->j_b;
-		color[3] = 1.00;
-		glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, color);
+		color[3] = options.op_alpha1;
+	} else {
+		/* Default Color, with alpha */
+		color[0] = 0.90;
+		color[1] = 0.80;
+		color[2] = 0.50;
+		color[3] = options.op_alpha2;
 	}
 
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, param);
+	glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, color);
 
 
 	/* Back  */
@@ -485,7 +494,7 @@ draw_textured_node(struct node *n, float x, float y, float z, float width,
 	/* Front */
 	glBegin(GL_POLYGON);
 	
-/*
+#if 0
 	Same as Below, execpt using 3f
 	glVertex3f(x, y, z+depth);
 	glTexCoord3f(0.0, 0.0, 0.0);
@@ -495,7 +504,7 @@ draw_textured_node(struct node *n, float x, float y, float z, float width,
 	glTexCoord3f(uh, uw, 0.0);
 	glVertex3f(x+width, y, z+depth);
 	glTexCoord3f(uh, 0.0, 0.0);
-*/
+#endif
 
 	glVertex3f(x, y, z+depth);
 	glTexCoord2f(0.0, 0.0);
@@ -556,7 +565,7 @@ draw_textured_node(struct node *n, float x, float y, float z, float width,
 	glEnd();
 
 	/* DEBUG */
-	if(TEX_BLEND)
+	if(options.op_blend)
 		glDisable(GL_BLEND);
 
 	glDisable(GL_TEXTURE_2D);
@@ -566,8 +575,11 @@ __inline void
 draw_node(struct node *n, float x, float y, float z, float width,
     float height, float depth)
 {
-	//draw_filled_node(n,x,y,z,width,height,depth);
-	draw_textured_node(n,x,y,z,width,height,depth);
+	if(options.op_tex)
+		draw_textured_node(n,x,y,z,width,height,depth);
+	else
+		draw_filled_node(n,x,y,z,width,height,depth);
+
 	draw_wireframe_node(n,x,y,z,width,height,depth);
 }
 
