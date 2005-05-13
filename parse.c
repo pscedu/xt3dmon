@@ -200,7 +200,6 @@ parse_jobmap(void)
 		free(jobs[j]);
 	njobs = 0;
 	for (j = 0; j < NLOGIDS; j++) {
-printf("LOGID(%d)\n", logids[j]);
 		snprintf(fn, sizeof(fn), _PATH_JOBMAP, logids[j]);
 		if ((fp = fopen(fn, "r")) == NULL) {
 			warn("%s", fn);
@@ -270,9 +269,6 @@ printf("LOGID(%d)\n", logids[j]);
 			else {
 				node->n_state = ST_USED;
 				node->n_job = getjob(jobid);
-printf("off: %lu, siz: %lx, row: %lu\n",
-    node - &nodes[0][0][0][0][0], sizeof(struct node)*NNODES*NMODS*NCAGES*NCABS,
-    (node - &nodes[0][0][0][0][0]) / (sizeof(struct node)*NNODES*NMODS*NCAGES*NCABS));
 			}
 			continue;
 bad:
@@ -434,8 +430,4 @@ getcol(int n, struct job *j)
 	j->j_r = cos(div);
 	j->j_g = sin(div) * sin(div);
 	j->j_b = fabs(tan(div + PI * 3/4));
-
-printf("njobs: %d/%lu (%.2f,%.2f,%.2f)\n", n, njobs,
-    j->j_r, j->j_g, j->j_b);
-
 }
