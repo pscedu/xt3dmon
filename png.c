@@ -195,8 +195,8 @@ void LoadTexture(void *data, int id)
    //glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width,
    //glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, width,
 
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_INTENSITY, width,
-   //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width,
+   //glTexImage2D(GL_TEXTURE_2D, 0, GL_INTENSITY, width,
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width,
                height, 0, GL_RGBA,
                GL_UNSIGNED_BYTE, data);
 
