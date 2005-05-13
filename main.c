@@ -4,8 +4,13 @@
 #include <sys/queue.h>
 #include <sys/time.h>
 
+#if defined(__APPLE_CC__)
+#include<OpenGL/gl.h>
+#include<GLUT/glut.h>
+#else
 #include <GL/gl.h>
 #include <GL/freeglut.h>
+#endif
 
 #include <ctype.h>
 #include <err.h>
@@ -49,6 +54,9 @@
 
 #define FRAMEWIDTH	(0.001f)
 
+#define FILL_BLEND 1
+#define TEX_BLEND 1
+
 struct job	**jobs;
 size_t		 njobs;
 struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
@@ -60,9 +68,6 @@ float		 lx = 0.9f, ly = 0.0f, lz = -0.3f;
 int		 spkey, xpos, ypos;
 GLint		 cluster_dl;
 struct timeval	 lastsync;
-
-/* DEBUG */
-int gBlend = 1;
 
 struct state states[] = {
 	{ "Free",		1.0, 1.0, 1.0, 1 },
@@ -171,7 +176,6 @@ active_m(int u, int v)
 	if (du != 0 && spkey & GLUT_ACTIVE_CTRL) {
 		r = sqrt((x - XORIGIN) * (x - XORIGIN) +
 		    (z - ZORIGIN) * (z - ZORIGIN));
-printf("r: %f\n", r);
 		t = acosf((x - XORIGIN) / r);
 		if (z < ZORIGIN)
 			t = 2.0f * PI - t;
@@ -183,7 +187,6 @@ printf("r: %f\n", r);
 		z = r * sin(t) + ZORIGIN;
 		lx = (XORIGIN - x) / r;
 		lz = (ZORIGIN - z) / r;
-printf("gaze(%f,%f)\n", lx, lz);
 	}
 	if (dv != 0 && spkey & GLUT_ACTIVE_SHIFT) {
 		angle += (dv < 0) ? 0.005f : -0.005f;
@@ -215,6 +218,7 @@ draw(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	/* Ground */
+#if 0
 	glColor3f(0.4f, 0.4f, 0.4f);
 	glBegin(GL_QUADS);
 	glVertex3f( -5.0f, 0.0f, -5.0f);
@@ -222,6 +226,8 @@ draw(void)
 	glVertex3f(230.0f, 0.0f, 22.0f);
 	glVertex3f(230.0f, 0.0f, -5.0f);
 	glEnd();
+
+#endif
 
 	/* x-axis */
 	glColor3f(1.0f, 1.0f, 1.0f);
@@ -303,21 +309,32 @@ __inline void
 draw_filled_node(struct node *n, float x, float y, float z, float width,
     float height, float depth)
 {
-	float r, g, b;
+	float r, g, b, a;
 
-	if (n->n_state == ST_USED)
+	if (n->n_state == ST_USED) {
 		r = n->n_job->j_r;
 		g = n->n_job->j_g;
 		b = n->n_job->j_b;
-	else {
+	} else {
 		r = states[n->n_state].st_r;
 		g = states[n->n_state].st_g;
 		b = states[n->n_state].st_b;
 	}
 	
-	glColor3f(r, g, b);
+
+
+	a = 1.0;
+
+	if (FILL_BLEND) {
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		a = 0.5;
+	}
+		
+	glColor4f(r, g, b, a);
 
 	glBegin(GL_POLYGON);
+
 	/* Bottom */
 	glVertex3f(x, y, z);
 	glVertex3f(x, y, z+depth);		/*  1 */
@@ -342,6 +359,9 @@ draw_filled_node(struct node *n, float x, float y, float z, float width,
 	/* Front */
 	glVertex3f(x+width, y+height, z+depth);	/* 15 */
 	glEnd();
+
+	if(FILL_BLEND)
+		glDisable(GL_BLEND);
 }
 
 __inline void
@@ -391,6 +411,7 @@ draw_textured_node(struct node *n, float x, float y, float z, float width,
 {
 //	float ux, uy, uz;
 	float uw, uh, ud;
+	float color[4];
 
 	/* Convert to texture Units */
 #if 0
@@ -416,19 +437,36 @@ draw_textured_node(struct node *n, float x, float y, float z, float width,
 	glEnable(GL_TEXTURE_2D);
 
 	/* DEBUG */
-	if(gBlend){
+	if(TEX_BLEND){
 		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA_SATURATE, GL_ONE_MINUS_DST_ALPHA);
+		//glBlendFunc(GL_SRC_ALPHA_SATURATE, GL_ONE);
 		//glBlendFunc(GL_SRC_COLOR, GL_CONSTANT_ALPHA);
+
+		/* 2 */
 		//glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
-		//glBlendFunc(GL_SRC_COLOR, GL_DST_ALPHA);
+
+		/* 3 */
+		glBlendFunc(GL_SRC_COLOR, GL_DST_ALPHA);
+
 		//glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
 		//glBlendFunc(GL_ONE_MINUS_SRC_COLOR, GL_ONE_MINUS_DST_COLOR);
 		//glBlendFunc(GL_ONE, GL_ONE);
 	}
 
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	//glBindTexture(GL_TEXTURE_2D, states[n->n_state].st_texid);
+
 	glBindTexture(GL_TEXTURE_2D, states[n->n_state].st_texid);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);
+
+	if (n->n_state == ST_USED) {
+		color[0] = n->n_job->j_r;
+		color[1] = n->n_job->j_g;
+		color[2] = n->n_job->j_b;
+		color[3] = 1.00;
+		glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, color);
+	}
+
 
 
 	/* Back  */
@@ -518,7 +556,7 @@ draw_textured_node(struct node *n, float x, float y, float z, float width,
 	glEnd();
 
 	/* DEBUG */
-	if(gBlend)
+	if(TEX_BLEND)
 		glDisable(GL_BLEND);
 
 	glDisable(GL_TEXTURE_2D);
