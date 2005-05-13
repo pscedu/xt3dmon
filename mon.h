@@ -59,6 +59,7 @@ struct state {
 struct option {
 	int op_tex;
 	int op_blend;
+	int op_wire;
 	float op_alpha1;
 	float op_alpha2;
 };
