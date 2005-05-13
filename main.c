@@ -66,7 +66,7 @@ int		 spkey, xpos, ypos;
 GLint		 cluster_dl;
 struct timeval	 lastsync;
 
-struct option options = {1,0,0.9,0.3};
+struct option options = {1,0,1,1.0f,1.0};
 
 struct state states[] = {
 	{ "Free",		1.0, 1.0, 1.0, 1 },
@@ -204,20 +204,10 @@ passive_m(int u, int v)
 void
 draw(void)
 {
-//	struct timeval tv;
-
-/*
-	if (gettimeofday(&tv, NULL) == -1)
-		err(1, "gettimeofday");
-	if (lastsync.tv_sec + SLEEP_INTV < tv.tv_sec) {
-		lastsync.tv_sec = tv.tv_sec;
-	}
-*/
-
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	/* Ground */
-#if 0
+
 	glColor3f(0.4f, 0.4f, 0.4f);
 	glBegin(GL_QUADS);
 	glVertex3f( -5.0f, 0.0f, -5.0f);
@@ -226,7 +216,6 @@ draw(void)
 	glVertex3f(230.0f, 0.0f, -5.0f);
 	glEnd();
 
-#endif
 
 	/* x-axis */
 	glColor3f(1.0f, 1.0f, 1.0f);
@@ -259,17 +248,37 @@ draw(void)
 	glVertex3f( 0.1f, -0.1f,  200.0f);
 	glEnd();
 
-/*
-	glLoadIdentity();
-//	glRotatef(anglex, 1.0, 0.0, 0.0);
-
-	glTranslatef(0.0, -30.0, 0.0);
-
-	glFlush();
-*/
 	glCallList(cluster_dl);
 
 	glutSwapBuffers();
+}
+
+#define MAXCNT 100
+
+void
+idle(void)
+{
+	static int cnt = 0;
+	static int tcnt = 0;
+
+	tcnt++;
+	if (cnt++ >= MAXCNT) {
+		struct timeval tv;
+
+		if (gettimeofday(&tv, NULL) == -1)
+			err(1, "gettimeofday");
+if (tv.tv_sec - lastsync.tv_sec)
+  printf("fps: %d\n", tcnt / (tv.tv_sec - lastsync.tv_sec));
+		if (lastsync.tv_sec + SLEEP_INTV < tv.tv_sec) {
+			tcnt = 0;
+			lastsync.tv_sec = tv.tv_sec;
+			glDeleteLists(cluster_dl, 1);
+			parse_jobmap();
+			make_cluster();
+		}
+		cnt = 0;
+	}
+	draw();
 }
 
 /*
@@ -475,7 +484,9 @@ draw_textured_node(struct node *n, float x, float y, float z, float width,
 	}
 
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, param);
-	glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, color);
+
+	if (options.op_blend)
+		glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, color);
 
 
 	/* Back  */
@@ -580,7 +591,8 @@ draw_node(struct node *n, float x, float y, float z, float width,
 	else
 		draw_filled_node(n,x,y,z,width,height,depth);
 
-	draw_wireframe_node(n,x,y,z,width,height,depth);
+	if(options.op_wire)
+		draw_wireframe_node(n,x,y,z,width,height,depth);
 }
 
 void
@@ -612,6 +624,7 @@ make_cluster(void)
 		}
 		x -= (CABWIDTH + CABSPACE) * NCABS;
 	}
+end:
 	glEndList();
 }
 
@@ -682,7 +695,7 @@ main(int argc, char *argv[])
 	glutKeyboardFunc(key);
 	glutSpecialFunc(sp_key);
 	glutDisplayFunc(draw);
-	glutIdleFunc(draw);
+	glutIdleFunc(idle);
 	glutMouseFunc(mouse);
 	glutMotionFunc(active_m);
 	glutPassiveMotionFunc(passive_m);
