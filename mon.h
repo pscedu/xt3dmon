@@ -56,6 +56,13 @@ struct state {
 	int		 st_texid;
 };
 
+struct option {
+	int op_tex;
+	int op_blend;
+	float op_alpha1;
+	float op_alpha2;
+};
+
 void			 parse_jobmap(void);
 void			 parse_physmap(void);
 void*			 LoadPNG(char *file);
