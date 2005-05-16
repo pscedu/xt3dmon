@@ -181,7 +181,7 @@ void* LoadPNG(char *file)
 	return (void*)(data);
 }
 
-void LoadTexture(void *data, int id)
+void LoadTexture(void *data, GLint fmt, int id)
 {
    glGenTextures(1, &id);
    glBindTexture(GL_TEXTURE_2D, id);
@@ -193,12 +193,8 @@ void LoadTexture(void *data, int id)
    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_NEAREST);
    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_NEAREST);
    
-   //glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, width,
-   //glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width,
-   //glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, width,
-
-   //glTexImage2D(GL_TEXTURE_2D, 0, GL_INTENSITY, width,
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width,
+   /* fmt is either GL_INTENSITY, GL_RGBA, ... */
+   glTexImage2D(GL_TEXTURE_2D, 0, fmt, width,
                height, 0, GL_RGBA,
                GL_UNSIGNED_BYTE, data);
 
