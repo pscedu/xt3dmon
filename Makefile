@@ -15,5 +15,8 @@ ${PROG}: ${OBJS}
 .c.o:
 	${CC} ${CFLAGS} ${CFLAGS} -c $<
 
+depend:
+	mkdep ${SRCS}
+
 clean:
 	rm -rf ${PROG} ${OBJS}
