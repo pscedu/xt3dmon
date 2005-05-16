@@ -12,6 +12,8 @@
 #define _PATH_BADMAP	"/usr/users/torque/bad_nids_list_login%d"
 #define _PATH_CHECKMAP	"/usr/users/torque/check_nids_list_login%d"
 
+#define _PATH_TEX	"data/texture%d.png"
+
 #define NROWS		2
 #define NCABS		11
 #define NCAGES		3
@@ -56,21 +58,18 @@ struct state {
 	int		 st_texid;
 };
 
-struct option {
-	int op_tex;
-	int op_blend;
-	int op_wire;
-	float op_alpha1;
-	float op_alpha2;
-};
-
 void			 parse_jobmap(void);
 void			 parse_physmap(void);
-void*			 LoadPNG(char *file);
-void			 LoadTexture(void *data, int id);
+void			*LoadPNG(char *);
+void			 LoadTexture(void *, int);
 
 extern int		 logids[2];
 extern struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 extern struct node	*invmap[NLOGIDS][NROWS * NCABS * NCAGES * NMODS * NNODES];
 extern size_t		 njobs;
 extern struct job	**jobs;
+extern int		 op_tex;		/* Use textures */
+extern int		 op_blend;		/* Transparency */
+extern int		 op_wire;		/* Draw wireframe */
+extern float		 op_alpha1;		/* ST_USED */
+extern float		 op_alpha2;		/* Other states */
