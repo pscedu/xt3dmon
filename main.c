@@ -55,6 +55,11 @@
 #define FRAMEWIDTH	(0.001f)
 
 void		 make_cluster(void);
+void		 load_textures(void);
+void 		 del_textures(void);
+void		 LoadTexture(void*, GLint, int);
+void 		*LoadPNG(char*);
+
 
 struct job	**jobs;
 size_t		 njobs;
@@ -65,6 +70,7 @@ int		 op_blend = 0;
 int		 op_wire = 1;
 float		 op_alpha_job = 1.0f;
 float		 op_alpha_oth = 1.0f;
+GLint		 op_fmt = GL_RGBA;
 
 GLfloat 	 angle = 0.1f;
 float		 x = -15.0f, y = 9.0f, z = 15.0f;
@@ -110,11 +116,34 @@ void
 key(unsigned char key, int x, int y)
 {
 	switch (key) {
+	case 't':
+	case 'T':
+		op_tex = !op_tex;
+		break;
+	case 'b':
+	case 'B':
+		op_blend = !op_blend;
+		break;
+	case 'w':
+	case 'W':
+		op_wire = !op_wire;
+		break;
+	case 'f':
+	case 'F':
+		op_fmt = ((op_fmt == GL_RGBA) ? GL_INTENSITY : GL_RGBA);
+		del_textures();
+		load_textures();
+		break;
 	case 'q':
 	case 'Q':
 		exit(0);
 		/* NOTREACHED */
 	}
+
+	/* resync */
+	glDeleteLists(cluster_dl, 1);
+	make_cluster();
+
 }
 
 /*
@@ -634,8 +663,19 @@ load_textures(void)
 	for (i = 0; i < NST; i++) {
 		snprintf(path, sizeof(path), _PATH_TEX, i);
 		data = LoadPNG(path);
-		LoadTexture(data, i + 1);
+		LoadTexture(data, op_fmt, i + 1);
 		states[i].st_texid = i + 1;
+	}
+}
+
+void
+del_textures(void)
+{
+	int i;
+
+	/* Delete textures from vid memory */
+	for(i = 0; i < NST; i++) {
+		glDeleteTextures(1, &states[i].st_texid);
 	}
 }
 
