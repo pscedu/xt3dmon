@@ -2,5 +2,5 @@
 
 MAKE=${pmake}
 
-all clean obj:
+all depend clean obj:
 	@pmake $@
