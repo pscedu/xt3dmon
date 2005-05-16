@@ -60,8 +60,6 @@ struct state {
 
 void			 parse_jobmap(void);
 void			 parse_physmap(void);
-void			*LoadPNG(char *);
-void			 LoadTexture(void *, int);
 
 extern int		 logids[2];
 extern struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
