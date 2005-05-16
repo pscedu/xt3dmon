@@ -620,7 +620,6 @@ make_cluster(void)
 		}
 		x -= (CABWIDTH + CABSPACE) * NCABS;
 	}
-end:
 	glEndList();
 }
 
