@@ -1,0 +1,78 @@
+.\" $Id$
+.Dd May 15, 2005
+.Dt MON 1
+.Os
+.Sh NAME
+.Nm mon
+.Nd XT3 monitor
+.Sh SYNOPSIS
+.Nm mon
+.Sh DESCRIPTION
+.Nm
+is a 3D program that graphically displays the activity of the XT3
+Redstorm cluster.
+At regular intervals, the data files are re-read and the display is
+updated to reality.
+.Pp
+Cluster nodes may be in any of the following states, differentiated by
+color or texture:
+.Pp
+.Bl -tag -width "Disabled (PBS)" -offset indent -compact
+.It Free
+The node is available.
+.It Disabled (PBS)
+The node is administratively disabled and is not allocated by PBS.
+.It Disabled (HW)
+The node is disabled in the physical map (hardware).
+.It Used
+The node is in use by a job.
+.It I/O
+The node is an I/O node, not a compute node.
+.It Unaccounted
+The node is not accounted for in the physical map.
+.It Bad
+The node has failed required probe tests.
+.It Checking
+The node is current being probe tested.
+.El
+.Pp
+The following key bindings are available:
+.Bl -tag -width Ds -offset indent
+.It left, right, up, down
+Pan along the x/z plane.
+.It pageup, pagedown
+Pan along the y-axis (up and down).
+.It left click
+Select a node for extended information.
+.Pp
+While holding left click, scroll the mouse to rotate the cluster view.
+.Pp
+While holding shift, scroll the mouse to peer along the y-axis.
+.It Ic b
+Toggle translucency (blending).
+.It Ic f
+Toggle texture load format (required for blending).
+.It Ic q
+Quit.
+.It Ic t
+Toggle texture mapping.
+.It Ic w
+Toggle wireframe.
+.It Ic + , _
+Adjust job node translucency.
+.It Ic = , -
+Adjust other node translucency.
+.El
+.Sh FILES
+.Bl -tag -width Pa -compact
+.It Pa data/texture Ns Em %d Ns Pa .png
+node state textures
+.It Pa data/nodelist Ns Em %d
+physical mapping
+.It Pa data/nids_list_login Ns Em %d
+job mapping
+.It Pa data/bad_list_login Ns Em %d
+bad list
+.It Pa data/check_list_login Ns Em %d
+check list
+.El
