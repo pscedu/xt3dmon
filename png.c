@@ -1,3 +1,5 @@
+/* $Id$ */
+
 #if defined(__APPLE_CC__)
 #include<OpenGL/gl.h>
 #else
@@ -213,5 +215,3 @@ void RedAlert(char *str)
 	printf("%s",str);
 	exit(1);
 }
-
-
