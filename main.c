@@ -27,6 +27,7 @@
 #define WIN_HEIGHT	600
 
 #define SLEEP_INTV	5
+#define TRANS_INC	0.10
 
 #define SCALE (1.0f)
 
@@ -134,6 +135,21 @@ key(unsigned char key, int x, int y)
 		del_textures();
 		load_textures();
 		break;
+
+		/* Transparency Value Inc/Dec */
+	case '+':
+		op_alpha_job += ((op_alpha_job+TRANS_INC > 1.0) ? 0.0 : TRANS_INC);
+		break;
+	case '_':
+		op_alpha_job -= ((op_alpha_job+TRANS_INC < 0.0) ? 0.0 : TRANS_INC);
+		break;
+	case '=':
+		op_alpha_oth += ((op_alpha_oth+TRANS_INC > 1.0) ? 0.0 : TRANS_INC);
+		break;
+	case '-':
+		op_alpha_oth -= ((op_alpha_oth+TRANS_INC < 0.0) ? 0.0 : TRANS_INC);
+		break;
+
 	case 'q':
 	case 'Q':
 		exit(0);
