@@ -54,10 +54,17 @@
 
 #define FRAMEWIDTH	(0.001f)
 
+void		 make_cluster(void);
+
 struct job	**jobs;
 size_t		 njobs;
 struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 struct node	*invmap[NLOGIDS][NROWS * NCABS * NCAGES * NMODS * NNODES];
+int		 op_tex = 1;
+int		 op_blend = 0;
+int		 op_wire = 1;
+float		 op_alpha_job = 1.0f;
+float		 op_alpha_oth = 1.0f;
 
 GLfloat 	 angle = 0.1f;
 float		 x = -15.0f, y = 9.0f, z = 15.0f;
@@ -65,8 +72,6 @@ float		 lx = 0.9f, ly = 0.0f, lz = -0.3f;
 int		 spkey, xpos, ypos;
 GLint		 cluster_dl;
 struct timeval	 lastsync;
-
-struct option options = {1,0,1,1.0f,1.0};
 
 struct state states[] = {
 	{ "Free",		1.0, 1.0, 1.0, 1 },
@@ -207,7 +212,6 @@ draw(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	/* Ground */
-
 	glColor3f(0.4f, 0.4f, 0.4f);
 	glBegin(GL_QUADS);
 	glVertex3f( -5.0f, 0.0f, -5.0f);
@@ -215,7 +219,6 @@ draw(void)
 	glVertex3f(230.0f, 0.0f, 22.0f);
 	glVertex3f(230.0f, 0.0f, -5.0f);
 	glEnd();
-
 
 	/* x-axis */
 	glColor3f(1.0f, 1.0f, 1.0f);
@@ -249,7 +252,6 @@ draw(void)
 	glEnd();
 
 	glCallList(cluster_dl);
-
 	glutSwapBuffers();
 }
 
@@ -268,7 +270,7 @@ idle(void)
 		if (gettimeofday(&tv, NULL) == -1)
 			err(1, "gettimeofday");
 if (tv.tv_sec - lastsync.tv_sec)
-  printf("fps: %d\n", tcnt / (tv.tv_sec - lastsync.tv_sec));
+  printf("fps: %ld\n", tcnt / (tv.tv_sec - lastsync.tv_sec));
 		if (lastsync.tv_sec + SLEEP_INTV < tv.tv_sec) {
 			tcnt = 0;
 			lastsync.tv_sec = tv.tv_sec;
@@ -323,29 +325,23 @@ draw_filled_node(struct node *n, float x, float y, float z, float width,
 		r = n->n_job->j_r;
 		g = n->n_job->j_g;
 		b = n->n_job->j_b;
-		a = options.op_alpha1;
+		a = op_alpha_job;
 	} else {
 		r = states[n->n_state].st_r;
 		g = states[n->n_state].st_g;
 		b = states[n->n_state].st_b;
-		a = options.op_alpha2;
+		a = op_alpha_oth;
 	}
-	
 
-
-
-	if (options.op_blend) {
+	if (op_blend) {
 		glEnable(GL_BLEND);
 		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
 	} else
 		a = 1.0;
-	
-		
+
 	glColor4f(r, g, b, a);
-
 	glBegin(GL_POLYGON);
-
 	/* Bottom */
 	glVertex3f(x, y, z);
 	glVertex3f(x, y, z+depth);		/*  1 */
@@ -371,7 +367,7 @@ draw_filled_node(struct node *n, float x, float y, float z, float width,
 	glVertex3f(x+width, y+height, z+depth);	/* 15 */
 	glEnd();
 
-	if(options.op_blend)
+	if (op_blend)
 		glDisable(GL_BLEND);
 }
 
@@ -449,7 +445,7 @@ draw_textured_node(struct node *n, float x, float y, float z, float width,
 	glEnable(GL_TEXTURE_2D);
 
 	/* DEBUG */
-	if(options.op_blend){
+	if (op_blend){
 		glEnable(GL_BLEND);
 
 		/* 1 */
@@ -474,18 +470,18 @@ draw_textured_node(struct node *n, float x, float y, float z, float width,
 		color[0] = n->n_job->j_r;
 		color[1] = n->n_job->j_g;
 		color[2] = n->n_job->j_b;
-		color[3] = options.op_alpha1;
+		color[3] = op_alpha_job;
 	} else {
-		/* Default Color, with alpha */
+		/* Default color, with alpha */
 		color[0] = 0.90;
 		color[1] = 0.80;
 		color[2] = 0.50;
-		color[3] = options.op_alpha2;
+		color[3] = op_alpha_oth;
 	}
 
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, param);
 
-	if (options.op_blend)
+	if (op_blend)
 		glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, color);
 
 
@@ -504,7 +500,7 @@ draw_textured_node(struct node *n, float x, float y, float z, float width,
 
 	/* Front */
 	glBegin(GL_POLYGON);
-	
+
 #if 0
 	Same as Below, execpt using 3f
 	glVertex3f(x, y, z+depth);
@@ -576,7 +572,7 @@ draw_textured_node(struct node *n, float x, float y, float z, float width,
 	glEnd();
 
 	/* DEBUG */
-	if(options.op_blend)
+	if (op_blend)
 		glDisable(GL_BLEND);
 
 	glDisable(GL_TEXTURE_2D);
@@ -586,13 +582,13 @@ __inline void
 draw_node(struct node *n, float x, float y, float z, float width,
     float height, float depth)
 {
-	if(options.op_tex)
-		draw_textured_node(n,x,y,z,width,height,depth);
+	if (op_tex)
+		draw_textured_node(n, x, y, z, width, height, depth);
 	else
-		draw_filled_node(n,x,y,z,width,height,depth);
+		draw_filled_node(n, x, y, z, width, height, depth);
 
-	if(options.op_wire)
-		draw_wireframe_node(n,x,y,z,width,height,depth);
+	if (op_wire)
+		draw_wireframe_node(n, x, y, z, width, height, depth);
 }
 
 void
@@ -631,41 +627,16 @@ end:
 void
 load_textures(void)
 {
-	int num_states = 8;
+	char path[NAME_MAX];
 	void *data;
 	int i;
 
-	/* "data/texture%d.png" %d -> state */
-	char base_path[] = "data/texture";
-	char ext[] = ".png";
-	char *path;
-	int m = strlen(base_path);
-	int n = strlen(ext);
-
-	int o = 1;  /* number of chars in id */
-	char id[2]; /* o+1 */
-
-	
-	/* Loop and read in texture id's */
-	for(i = 0; i < num_states; i++)
-	{
-		snprintf(id, o+1, "%d", i);
-
-		/* Must memset to zero data!! */
-		path = malloc((m+n+o+1)*sizeof(char));
-		memset(path, '\0', sizeof(path));
-
-		strncat(path, base_path, m);
-		strncat(path, id, o);
-		strncat(path, ext, n);
-		//path[m+n+o+1] = '\0';
-
-		
+	/* Read in texture IDs */
+	for (i = 0; i < NST; i++) {
+		snprintf(path, sizeof(path), _PATH_TEX, i);
 		data = LoadPNG(path);
-		LoadTexture(data, i+1);
-
-		states[i].st_texid = i+1;
-		free(path);
+		LoadTexture(data, i + 1);
+		states[i].st_texid = i + 1;
 	}
 }
 
