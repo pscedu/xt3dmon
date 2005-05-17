@@ -18,18 +18,19 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "mon.h"
+#include "slist.h"
 
-#define WIN_WIDTH	800
-#define WIN_HEIGHT	600
-
-#define SLEEP_INTV	5
+#define SLEEP_INTV	500
 #define TRANS_INC	0.10
 
-#define SCALE (1.0f)
+#define FOVY		(45.0f)
+#define ASPECT		(win_width / (double)win_height)
+
+#define SCALE		(1.0f)
 
 #define ROWSPACE	((10.0f)*SCALE)
 #define CABSPACE	((5.0f)*SCALE)
@@ -49,11 +50,29 @@
 #define CABWIDTH	((MODWIDTH + MODSPACE) * NMODS)
 #define ROWDEPTH	(MODDEPTH * 2.0f)
 
-#define XORIGIN		((CABWIDTH * NCABS + CABSPACE * (NCABS - 1)) / 2)
-#define YORIGIN		((CAGEHEIGHT * NCAGES + CAGESPACE * (NCAGES - 1)) / 2)
-#define ZORIGIN		((ROWDEPTH * NROWS + ROWSPACE * (NROWS - 1)) / 2)
+#define ROWWIDTH	(CABWIDTH * NCABS + CABSPACE * (NCABS - 1))
 
-#define FRAMEWIDTH	(0.001f)
+#define XCENTER		(ROWWIDTH / 2)
+#define YCENTER		((CAGEHEIGHT * NCAGES + CAGESPACE * (NCAGES - 1)) / 2)
+#define ZCENTER		((ROWDEPTH * NROWS + ROWSPACE * (NROWS - 1)) / 2)
+
+#define STARTX		(-150.0f)
+#define STARTY		(30.0f)
+#define STARTZ		(150.0f)
+
+#define STARTLX		(1.0f)		/* Must form a unit vector. */
+#define STARTLY		(0.0f)
+#define STARTLZ		(0.0f)
+
+#define WFRAMEWIDTH	(0.001f)
+
+#define TWEEN_THRES 0.01
+
+struct lineseg {
+	float		sx, sy, sz;
+	float		ex, ey, ez;
+	SLIST_ENTRY(lineseg) ln_next;
+};
 
 void		 make_cluster(void);
 void		 load_textures(void);
@@ -61,24 +80,30 @@ void 		 del_textures(void);
 void		 LoadTexture(void*, GLint, int);
 void 		*LoadPNG(char*);
 
-
 struct job	**jobs;
 size_t		 njobs;
 struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 struct node	*invmap[NLOGIDS][NROWS * NCABS * NCAGES * NMODS * NNODES];
-int		 op_tex = 1;
+int		 op_tex = 0;
 int		 op_blend = 0;
 int		 op_wire = 1;
 float		 op_alpha_job = 1.0f;
 float		 op_alpha_oth = 1.0f;
 GLint		 op_fmt = GL_RGBA;
+float		 op_tween = .05;
+int		 op_lines = 1;
+int		 op_env = 1;
+int		 win_width = 1024;
+int		 win_height = 768;
 
 GLfloat 	 angle = 0.1f;
-float		 x = -15.0f, y = 9.0f, z = 15.0f;
-float		 lx = 0.9f, ly = 0.0f, lz = -0.3f;
+float		 x = STARTX, tx = STARTX, lx = STARTLX, tlx = STARTLX;
+float		 y = STARTY, ty = STARTY, ly = STARTLY, tly = STARTLY;
+float		 z = STARTZ, tz = STARTZ, lz = STARTLZ, tlz = STARTLZ;
 int		 spkey, xpos, ypos;
 GLint		 cluster_dl;
 struct timeval	 lastsync;
+SLIST_HEAD(, lineseg) seglh;
 
 struct state states[] = {
 	{ "Free",		1.0, 1.0, 1.0, 1 },
@@ -106,11 +131,13 @@ reshape(int w, int h)
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
+	win_width = w;
+	win_height = h;
 	glViewport(0, 0, w, h);
-	gluPerspective(45, 1.0f * w / h, 1, 1000);
+	gluPerspective(FOVY, ASPECT, 1, 1000);
 	glMatrixMode(GL_MODELVIEW);
+
 	adjcam();
-//	glOrtho(-50.0, 50.0, -50.0, 50.0, -150.0, 150.0);
 }
 
 void
@@ -118,25 +145,41 @@ key(unsigned char key, int x, int y)
 {
 	switch (key) {
 	case 't':
-	case 'T':
 		op_tex = !op_tex;
 		break;
 	case 'b':
-	case 'B':
 		op_blend = !op_blend;
 		break;
 	case 'w':
-	case 'W':
 		op_wire = !op_wire;
 		break;
 	case 'f':
-	case 'F':
 		op_fmt = ((op_fmt == GL_RGBA) ? GL_INTENSITY : GL_RGBA);
 		del_textures();
 		load_textures();
 		break;
+	case 'e':
+		op_tween = !op_tween;
+		tx = x;
+		ty = y;
+		tz = z;
+		break;
+	case 'g':
+		op_env = !op_env;
+		break;
+	case 'l': {
+		struct lineseg *ln, *pln;
 
-		/* Transparency Value Inc/Dec */
+		op_lines = !op_lines;
+		for (ln = SLIST_FIRST(&seglh); ln != NULL; ln = pln) {
+			pln = SLIST_NEXT(ln, ln_next);
+			free(ln);
+		}
+		SLIST_INIT(&seglh);
+		break;
+	    }
+
+		/* Transparency value inc/dec */
 	case '+':
 		op_alpha_job += ((op_alpha_job+TRANS_INC > 1.0) ? 0.0 : TRANS_INC);
 		break;
@@ -151,7 +194,6 @@ key(unsigned char key, int x, int y)
 		break;
 
 	case 'q':
-	case 'Q':
 		exit(0);
 		/* NOTREACHED */
 	}
@@ -159,7 +201,6 @@ key(unsigned char key, int x, int y)
 	/* resync */
 	glDeleteLists(cluster_dl, 1);
 	make_cluster();
-
 }
 
 /*
@@ -176,33 +217,113 @@ key(unsigned char key, int x, int y)
 void
 sp_key(int key, int u, int v)
 {
+	float sx, sy, sz;
+	float r = sqrt((x - XCENTER) * (x - XCENTER) +
+	    (z - ZCENTER) * (z - ZCENTER));
+	float adj = r / (ROWWIDTH / 2.0f);
+	adj = pow(2, adj);
+	if (adj > 50.0f)
+		adj = 50.0f;
+
+	sx = sy = sz = 0.0f; /* gcc */
+	if (op_tween) {
+		sx = x;  x = tx;
+		sy = y;  y = ty;
+		sz = z;  z = tz;
+	}
+
 	switch (key) {
 	case GLUT_KEY_LEFT:
-		x += lz * 0.3f * SCALE;
-		z -= lx * 0.3f * SCALE;
+		x += lz * 0.3f * SCALE * adj;
+		z -= lx * 0.3f * SCALE * adj;
 		break;
 	case GLUT_KEY_RIGHT:
-		x -= lz * 0.3f * SCALE;
-		z += lx * 0.3f * SCALE;
+		x -= lz * 0.3f * SCALE * adj;
+		z += lx * 0.3f * SCALE * adj;
 		break;
-	case GLUT_KEY_UP:
-		x += lx * 0.3f * SCALE;
-		z += lz * 0.3f * SCALE;
+	case GLUT_KEY_UP:			/* Forward */
+		x += lx * 0.3f * SCALE * adj;
+		y += ly * 0.3f * SCALE * adj;
+		z += lz * 0.3f * SCALE * adj;
 		break;
-	case GLUT_KEY_DOWN:
-		x -= lx * 0.3f * SCALE;
-		z -= lz * 0.3f * SCALE;
+	case GLUT_KEY_DOWN:			/* Backward */
+		x -= lx * 0.3f * SCALE * adj;
+		y -= ly * 0.3f * SCALE * adj;
+		z -= lz * 0.3f * SCALE * adj;
 		break;
 	case GLUT_KEY_PAGE_UP:
+		x += ly * 0.3f * SCALE * adj;
 		y += 0.3f * SCALE;
+		z += ly * 0.3f * SCALE * adj;
 		break;
 	case GLUT_KEY_PAGE_DOWN:
+		x -= ly * 0.3f * SCALE * adj;
 		y -= 0.3f * SCALE;
+		z -= ly * 0.3f * SCALE * adj;
 		break;
 	default:
 		return;
 	}
-	adjcam();
+
+	if (op_tween) {
+		tx = x;  x = sx;
+		ty = y;  y = sy;
+		tz = z;  z = sz;
+	} else
+		adjcam();
+}
+
+/*
+ * Node selection
+ *
+ * This assumes that the camera never "tilts" (rotates).
+ */
+void
+sel_node(int u, int v)
+{
+	struct lineseg *ln;
+
+	float r = sqrt((x - XCENTER) * (x - XCENTER) +
+	    (z - ZCENTER) * (z - ZCENTER));
+	float dist = r + ROWWIDTH;
+
+	float adju = FOVY * ASPECT * 2.0f * PI / 360.0f * (u - win_width / 2.0f) / win_width;
+	float angleu = acosf(lx);
+	if (lz < 0)
+		angleu = 2.0f * PI - angleu;
+	float dx = cos(angleu + adju);
+	float dz = sin(angleu + adju);
+
+	float adjv = FOVY * 2.0f * PI / 360.0f * (win_height / 2.0f - v) / win_height;
+	float anglev = asinf(ly);
+//	if (ly < 0)
+//		anglev = 2.0f * PI - anglev;
+	float dy = sin(anglev + adjv);
+
+	dx = x + dist * dx;
+	dy = y + dist * dy;
+	dz = z + dist * dz;
+
+//printf("ly: %.2f, anglev: %.2f, adjv: %.2f\n", ly, anglev, adjv);
+
+#if 0
+printf("adju: [%.2f,%.2f] adjv: [%.2f,%.2f] r: %.2f src(%.2f,%.2f,%.2f) -> dst(%.2f,%.2f,%.2f)\n",
+    adju, FOVY * ASPECT * 2.0f * PI / 360.0f,
+    adjv, FOVY * 2.0f * PI / 360.0f,
+    r, x, y, z, dx, dy, dz
+    );
+#endif
+
+	if ((ln = malloc(sizeof(*ln))) == NULL)
+		err(1, NULL);
+	ln->sx = x;
+	ln->sy = y;
+	ln->sz = z;
+
+	ln->ex = dx;
+	ln->ey = dy;
+	ln->ez = dz;
+	SLIST_INSERT_HEAD(&seglh, ln, ln_next);
 }
 
 void
@@ -211,6 +332,8 @@ mouse(int button, int state, int u, int v)
 	spkey = glutGetModifiers();
 	xpos = u;
 	ypos = v;
+	if (!spkey)
+		sel_node(u, v);
 }
 
 void
@@ -218,30 +341,52 @@ active_m(int u, int v)
 {
 	int du = u - xpos, dv = v - ypos;
 	float t, r;
+	float sx, sy, sz;
 
 	xpos = u;
 	ypos = v;
 
+	sx = sy = sz = 0.0f; /* gcc */
+	if (op_tween) {
+		sx = x;  x = tx;
+		sy = y;  y = ty;
+		sz = z;  z = tz;
+	}
+
 	if (du != 0 && spkey & GLUT_ACTIVE_CTRL) {
-		r = sqrt((x - XORIGIN) * (x - XORIGIN) +
-		    (z - ZORIGIN) * (z - ZORIGIN));
-		t = acosf((x - XORIGIN) / r);
-		if (z < ZORIGIN)
+		r = sqrt((x - XCENTER) * (x - XCENTER) +
+		    (z - ZCENTER) * (z - ZCENTER));
+		t = acosf((x - XCENTER) / r);
+		if (z < ZCENTER)
 			t = 2.0f * PI - t;
-		t += .01 * (float)du;
+		t += .01f * (float)du;
 		if (t < 0)
 			t += PI * 2.0f;
 
-		x = r * cos(t) + XORIGIN;
-		z = r * sin(t) + ZORIGIN;
-		lx = (XORIGIN - x) / r;
-		lz = (ZORIGIN - z) / r;
+		x = r * cos(t) + XCENTER;
+		z = r * sin(t) + ZCENTER;
+		lx = (XCENTER - x) / r;
+		lz = (ZCENTER - z) / r;
 	}
 	if (dv != 0 && spkey & GLUT_ACTIVE_SHIFT) {
-		angle += (dv < 0) ? 0.005f : -0.005f;
-		ly = sin(angle);
+		float adj = (dv < 0) ? 0.005f : -0.005f;
+		if (fabs(angle + adj) < PI / 2.0f) {
+			angle += adj;
+			ly = sin(angle);
+		}
 	}
-	adjcam();
+	float mag = sqrt(lx*lx + ly*ly + lz*lz);
+	lx /= mag;
+	ly /= mag;
+	lz /= mag;
+	mag = sqrt(lx*lx + ly*ly + lz*lz);
+
+	if (op_tween) {
+		tx = x;  x = sx;
+		ty = y;  y = sy;
+		tz = z;  z = sz;
+	} else
+		adjcam();
 }
 
 void
@@ -254,47 +399,73 @@ passive_m(int u, int v)
 void
 draw(void)
 {
+	struct lineseg *ln;
+
+	if (op_tween && (tx - x || ty - y || tz - z)) {
+		x += (tx - x) * op_tween;
+		y += (ty - y) * op_tween;
+		z += (tz - z) * op_tween;
+		adjcam();
+		if (fabs(tx - x) < TWEEN_THRES)
+			x = tx;
+		if (fabs(ty - y) < TWEEN_THRES)
+			y = ty;
+		if (fabs(tz - z) < TWEEN_THRES)
+			z = tz;
+	}
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	/* Ground */
-	glColor3f(0.4f, 0.4f, 0.4f);
-	glBegin(GL_QUADS);
-	glVertex3f( -5.0f, 0.0f, -5.0f);
-	glVertex3f( -5.0f, 0.0f, 22.0f);
-	glVertex3f(230.0f, 0.0f, 22.0f);
-	glVertex3f(230.0f, 0.0f, -5.0f);
-	glEnd();
+	if (op_env) {
+		/* Ground */
+		glColor3f(0.4f, 0.4f, 0.4f);
+		glBegin(GL_QUADS);
+		glVertex3f( -5.0f, 0.0f, -5.0f);
+		glVertex3f( -5.0f, 0.0f, 22.0f);
+		glVertex3f(230.0f, 0.0f, 22.0f);
+		glVertex3f(230.0f, 0.0f, -5.0f);
+		glEnd();
 
-	/* x-axis */
-	glColor3f(1.0f, 1.0f, 1.0f);
-	glBegin(GL_QUADS);
-	glVertex2f(-200.0f, -0.1f);
-	glVertex2f(-200.0f,  0.1f);
-	glVertex2f( 200.0f,  0.1f);
-	glVertex2f( 200.0f, -0.1f);
-	glEnd();
+		/* x-axis */
+		glColor3f(1.0f, 1.0f, 1.0f);
+		glBegin(GL_QUADS);
+		glVertex2f(-200.0f, -0.1f);
+		glVertex2f(-200.0f,  0.1f);
+		glVertex2f( 200.0f,  0.1f);
+		glVertex2f( 200.0f, -0.1f);
+		glEnd();
 
-	/* y-axis */
-	glColor3f(0.6f, 0.6f, 1.0f);
-	glBegin(GL_QUADS);
-	glVertex2f(-0.1f, -200.0f);
-	glVertex2f(-0.1f,  200.0f);
-	glVertex2f( 0.1f,  200.0f);
-	glVertex2f( 0.1f, -200.0f);
-	glEnd();
+		/* y-axis */
+		glColor3f(0.6f, 0.6f, 1.0f);
+		glBegin(GL_QUADS);
+		glVertex2f(-0.1f, -200.0f);
+		glVertex2f(-0.1f,  200.0f);
+		glVertex2f( 0.1f,  200.0f);
+		glVertex2f( 0.1f, -200.0f);
+		glEnd();
 
-	/* z-axis */
-	glColor3f(1.0f, 0.9f, 0.0f);
-	glBegin(GL_QUADS);
-	glVertex3f(-0.1f, -0.1f, -200.0f);
-	glVertex3f(-0.1f,  0.1f, -200.0f);
-	glVertex3f(-0.1f,  0.1f,  200.0f);
-	glVertex3f(-0.1f, -0.1f,  200.0f);
-	glVertex3f( 0.1f, -0.1f, -200.0f);
-	glVertex3f( 0.1f,  0.1f, -200.0f);
-	glVertex3f( 0.1f,  0.1f,  200.0f);
-	glVertex3f( 0.1f, -0.1f,  200.0f);
-	glEnd();
+		/* z-axis */
+		glColor3f(1.0f, 0.9f, 0.0f);
+		glBegin(GL_QUADS);
+		glVertex3f(-0.1f, -0.1f, -200.0f);
+		glVertex3f(-0.1f,  0.1f, -200.0f);
+		glVertex3f(-0.1f,  0.1f,  200.0f);
+		glVertex3f(-0.1f, -0.1f,  200.0f);
+		glVertex3f( 0.1f, -0.1f, -200.0f);
+		glVertex3f( 0.1f,  0.1f, -200.0f);
+		glVertex3f( 0.1f,  0.1f,  200.0f);
+		glVertex3f( 0.1f, -0.1f,  200.0f);
+		glEnd();
+	}
+
+	SLIST_FOREACH(&seglh, ln, ln_next) {
+		glColor3f(1.0f, 1.0f, 1.0f);
+		glBegin(GL_LINES);
+		glLineWidth(2.0f);
+		glVertex3f(ln->sx, ln->sy, ln->sz);
+		glVertex3f(ln->ex, ln->ey, ln->ez);
+		glEnd();
+	}
 
 	glCallList(cluster_dl);
 	glutSwapBuffers();
@@ -421,12 +592,12 @@ draw_wireframe_node(struct node *n, float x, float y, float z, float width,
     float height, float depth)
 {
 	/* Wireframe outline */
-	x -= FRAMEWIDTH;
-	y -= FRAMEWIDTH;
-	z -= FRAMEWIDTH;
-	width += 2.0f * FRAMEWIDTH;
-	height += 2.0f * FRAMEWIDTH;
-	depth += 2.0f * FRAMEWIDTH;
+	x -= WFRAMEWIDTH;
+	y -= WFRAMEWIDTH;
+	z -= WFRAMEWIDTH;
+	width += 2.0f * WFRAMEWIDTH;
+	height += 2.0f * WFRAMEWIDTH;
+	depth += 2.0f * WFRAMEWIDTH;
 
 	glColor3f(0.0f, 0.0f, 0.0f);
 	glBegin(GL_LINE_STRIP);
@@ -690,9 +861,8 @@ del_textures(void)
 	int i;
 
 	/* Delete textures from vid memory */
-	for(i = 0; i < NST; i++) {
+	for (i = 0; i < NST; i++)
 		glDeleteTextures(1, &states[i].st_texid);
-	}
 }
 
 int
@@ -701,7 +871,7 @@ main(int argc, char *argv[])
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
 	glutInitWindowPosition(0, 0);
-	glutInitWindowSize(WIN_WIDTH, WIN_HEIGHT);
+	glutInitWindowSize(win_width, win_height);
 	if (glutCreateWindow("XT3 Monitor") == GL_FALSE)
 		errx(1, "CreateWindow");
 
@@ -710,6 +880,8 @@ main(int argc, char *argv[])
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glEnable(GL_LINE_SMOOTH);
+
+	SLIST_INIT(&seglh);
 
 	load_textures();
 	parse_physmap();
