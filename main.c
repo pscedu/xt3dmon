@@ -24,7 +24,7 @@
 #include "mon.h"
 #include "slist.h"
 
-#define SLEEP_INTV	500
+#define SLEEP_INTV	5
 #define TRANS_INC	0.10
 
 #define FOVY		(45.0f)
@@ -66,7 +66,8 @@
 
 #define WFRAMEWIDTH	(0.001f)
 
-#define TWEEN_THRES 0.01
+#define TWEEN_THRES	(0.01)
+#define TWEEN_AMT	(.05)
 
 struct lineseg {
 	float		sx, sy, sz;
@@ -90,7 +91,7 @@ int		 op_wire = 1;
 float		 op_alpha_job = 1.0f;
 float		 op_alpha_oth = 1.0f;
 GLint		 op_fmt = GL_RGBA;
-float		 op_tween = .05;
+float		 op_tween = TWEEN_AMT;
 int		 op_lines = 1;
 int		 op_env = 1;
 int		 win_width = 1024;
@@ -141,7 +142,7 @@ reshape(int w, int h)
 }
 
 void
-key(unsigned char key, int x, int y)
+key(unsigned char key, int u, int v)
 {
 	switch (key) {
 	case 't':
@@ -159,10 +160,14 @@ key(unsigned char key, int x, int y)
 		load_textures();
 		break;
 	case 'e':
-		op_tween = !op_tween;
-		tx = x;
-		ty = y;
-		tz = z;
+		if (op_tween)
+			op_tween = 0;
+		else {
+			op_tween = TWEEN_AMT;
+			tx = x;  tlx = lx;
+			ty = y;  tly = ly;
+			tz = z;  tlz = lz;
+		}
 		break;
 	case 'g':
 		op_env = !op_env;
@@ -179,8 +184,7 @@ key(unsigned char key, int x, int y)
 		break;
 	    }
 
-		/* Transparency value inc/dec */
-	case '+':
+	case '+':		/* Transparency value inc/dec */
 		op_alpha_job += ((op_alpha_job+TRANS_INC > 1.0) ? 0.0 : TRANS_INC);
 		break;
 	case '_':
@@ -252,14 +256,14 @@ sp_key(int key, int u, int v)
 		z -= lz * 0.3f * SCALE * adj;
 		break;
 	case GLUT_KEY_PAGE_UP:
-		x += ly * 0.3f * SCALE * adj;
+		x += lx * ly * 0.3f * SCALE * adj;
 		y += 0.3f * SCALE;
-		z += ly * 0.3f * SCALE * adj;
+		z += lz * ly * 0.3f * SCALE * adj;
 		break;
 	case GLUT_KEY_PAGE_DOWN:
-		x -= ly * 0.3f * SCALE * adj;
+		x -= lx * ly * 0.3f * SCALE * adj;
 		y -= 0.3f * SCALE;
-		z -= ly * 0.3f * SCALE * adj;
+		z -= lz * ly * 0.3f * SCALE * adj;
 		break;
 	default:
 		return;
@@ -341,16 +345,21 @@ active_m(int u, int v)
 {
 	int du = u - xpos, dv = v - ypos;
 	float t, r;
-	float sx, sy, sz;
+	float sx, sy, sz, slx, sly, slz;
 
 	xpos = u;
 	ypos = v;
 
 	sx = sy = sz = 0.0f; /* gcc */
+	slx = sly = slz = 0.0f; /* gcc */
 	if (op_tween) {
 		sx = x;  x = tx;
 		sy = y;  y = ty;
 		sz = z;  z = tz;
+
+		slx = lx;  lx = tlx;
+		sly = ly;  ly = tly;
+		slz = lz;  lz = tlz;
 	}
 
 	if (du != 0 && spkey & GLUT_ACTIVE_CTRL) {
@@ -385,6 +394,10 @@ active_m(int u, int v)
 		tx = x;  x = sx;
 		ty = y;  y = sy;
 		tz = z;  z = sz;
+
+		tlx = lx;  lx = slx;
+		tly = ly;  ly = sly;
+		tlz = lz;  lz = slz;
 	} else
 		adjcam();
 }
@@ -401,17 +414,28 @@ draw(void)
 {
 	struct lineseg *ln;
 
-	if (op_tween && (tx - x || ty - y || tz - z)) {
+	if (op_tween && (tx - x || ty - y || tz - z ||
+	    tlx - lx || tly - ly || tlz - lz)) {
 		x += (tx - x) * op_tween;
 		y += (ty - y) * op_tween;
 		z += (tz - z) * op_tween;
-		adjcam();
 		if (fabs(tx - x) < TWEEN_THRES)
 			x = tx;
 		if (fabs(ty - y) < TWEEN_THRES)
 			y = ty;
 		if (fabs(tz - z) < TWEEN_THRES)
 			z = tz;
+
+		lx += (tlx - lx) * op_tween;
+		ly += (tly - ly) * op_tween;
+		lz += (tlz - lz) * op_tween;
+		if (fabs(tlx - lx) < TWEEN_THRES)
+			lx = tlx;
+		if (fabs(tly - ly) < TWEEN_THRES)
+			ly = tly;
+		if (fabs(tlz - lz) < TWEEN_THRES)
+			lz = tlz;
+		adjcam();
 	}
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
