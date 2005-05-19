@@ -94,7 +94,8 @@ GLint		 op_fmt = GL_RGBA;
 float		 op_tween = TWEEN_AMT;
 int		 op_lines = 1;
 int		 op_env = 1;
-int		 op_fps = 1;
+int		 op_fps = 0;
+int		 fps_active = 0;
 int 		 op_ninfo = 1;
 int		 win_width = 800;
 int		 win_height = 600;
@@ -163,6 +164,7 @@ key(unsigned char key, int u, int v)
 		break;
 	case 'f':
 		op_fps = !op_fps;
+		fps_active = 1;
 		break;
 	case 'g':
 		op_env = !op_env;
@@ -418,15 +420,18 @@ passive_m(int u, int v)
 
 #define FPS_STRING 10
 #define TEXT_HEIGHT 25
+#define X_SPEED 2
 
 void
-draw_fps(void)
+draw_fps(int on)
 {
 	int i;
 	char frate[FPS_STRING];
 	double x, y, w, h;
 	double cx, cy;
 	int vp[4];
+	static double sx = 0;
+	static double sy = 0;
 
 	/* Save our state and set things up for 2d */
 	glPushAttrib(GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
@@ -452,6 +457,18 @@ draw_fps(void)
 	x = vp[2] - w;
 	y = vp[3];
 
+	/*
+	** Adjust current pos, on = 1, move onto screen
+	** off = 0, move off screen */
+	if(sx == 0)
+		sx = vp[2];
+	else if(sx > x - 1 && on)
+		sx -= X_SPEED;
+	else if(sx < vp[2]+1 && !on)
+		sx += X_SPEED;
+	else
+		fps_active = 0;
+
 	/* Draw the frame rate */
 	glColor4f(1.0,1.0,1.0,1.0);
 
@@ -459,7 +476,7 @@ draw_fps(void)
 	cx = (fps > 999 ? 0 : 8);
 	cy = 8;
 
-	glRasterPos2d(x+cx,y-TEXT_HEIGHT+cy);
+	glRasterPos2d(sx+cx,y-TEXT_HEIGHT+cy);
 
 
 	for(i = 0; i < sizeof(frate); i++) 
@@ -477,10 +494,10 @@ draw_fps(void)
 			glColor4f(0.40, 0.80, 1.0, 1.0);
 		}
 
-		glVertex2d(x, y);
-		glVertex2d(x+w, y);
-		glVertex2d(x+w, y-h);
-		glVertex2d(x, y-h);
+		glVertex2d(sx, y);
+		glVertex2d(sx+w, y);
+		glVertex2d(sx+w, y-h);
+		glVertex2d(sx, y-h);
 
 		glEnd();
 	}
@@ -676,8 +693,8 @@ draw(void)
 
 	if(op_ninfo)
 		draw_node_info();
-	if(op_fps)
-		draw_fps();
+	if(op_fps || fps_active)
+		draw_fps((op_fps));
 
 	glCallList(cluster_dl);
 	glutSwapBuffers();
