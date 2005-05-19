@@ -94,6 +94,8 @@ GLint		 op_fmt = GL_RGBA;
 float		 op_tween = TWEEN_AMT;
 int		 op_lines = 1;
 int		 op_env = 1;
+int		 op_fps = 1;
+int 		 op_ninfo = 1;
 int		 win_width = 1024;
 int		 win_height = 768;
 
@@ -104,6 +106,7 @@ float		 z = STARTZ, tz = STARTZ, lz = STARTLZ, tlz = STARTLZ;
 int		 spkey, xpos, ypos;
 GLint		 cluster_dl;
 struct timeval	 lastsync;
+long		 fps;
 SLIST_HEAD(, lineseg) seglh;
 
 struct state states[] = {
@@ -145,19 +148,8 @@ void
 key(unsigned char key, int u, int v)
 {
 	switch (key) {
-	case 't':
-		op_tex = !op_tex;
-		break;
 	case 'b':
 		op_blend = !op_blend;
-		break;
-	case 'w':
-		op_wire = !op_wire;
-		break;
-	case 'f':
-		op_fmt = ((op_fmt == GL_RGBA) ? GL_INTENSITY : GL_RGBA);
-		del_textures();
-		load_textures();
 		break;
 	case 'e':
 		if (op_tween)
@@ -168,6 +160,9 @@ key(unsigned char key, int u, int v)
 			ty = y;  tly = ly;
 			tz = z;  tlz = lz;
 		}
+		break;
+	case 'f':
+		op_fps = !op_fps;
 		break;
 	case 'g':
 		op_env = !op_env;
@@ -183,8 +178,24 @@ key(unsigned char key, int u, int v)
 		SLIST_INIT(&seglh);
 		break;
 	    }
-
-	case '+':		/* Transparency value inc/dec */
+	case 'q':
+		exit(0);
+		/* NOTREACHED */
+	case 't':
+		op_tex = !op_tex;
+		break;
+	case 'T':
+		op_fmt = ((op_fmt == GL_RGBA) ? GL_INTENSITY : GL_RGBA);
+		del_textures();
+		load_textures();
+		break;
+	case 'n':
+		op_ninfo = !op_ninfo;
+		break;
+	case 'w':
+		op_wire = !op_wire;
+		break;
+	case '+':
 		op_alpha_job += ((op_alpha_job+TRANS_INC > 1.0) ? 0.0 : TRANS_INC);
 		break;
 	case '_':
@@ -196,10 +207,6 @@ key(unsigned char key, int u, int v)
 	case '-':
 		op_alpha_oth -= ((op_alpha_oth+TRANS_INC < 0.0) ? 0.0 : TRANS_INC);
 		break;
-
-	case 'q':
-		exit(0);
-		/* NOTREACHED */
 	}
 
 	/* resync */
@@ -409,6 +416,143 @@ passive_m(int u, int v)
 	ypos = v;
 }
 
+
+/* Ratio for pixels to coordinates */
+#define X_MAX(X) ((0.55/800)*X)
+#define Y_MAX(X) ((0.41/600)*X)
+
+#define X_CONV(X) ((X_MAX(X))/X)
+#define Y_CONV(X) ((Y_MAX(X))/X)
+
+#define FPS_STRING 10
+
+void
+draw_fps(void)
+{
+	int i;
+	char frate[FPS_STRING];
+	double mx, my;
+	int vp[4];
+
+
+	/* Get the viewport */
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	glGetIntegerv(GL_VIEWPORT, vp);
+	glPopMatrix();
+
+	/*
+	** Calculate the Max width/height using a ratio
+	** based on our 800x600 default */
+	mx = X_MAX(vp[2]);
+	my = Y_MAX(vp[3]);
+
+	/* Frame Rate In Corner */
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glColor4f(1.0,1.0,1.0,1.0);
+
+	/* Set the position of the text */
+	glRasterPos3f(680*X_CONV(vp[2]), 580*Y_CONV(vp[3]), -1.0);
+
+	memset(frate, '\0', FPS_STRING);
+	snprintf(frate, sizeof(frate), "FPS: %ld", fps);
+
+	for(i = 0; i < sizeof(frate); i++) 
+		glutBitmapCharacter(GLUT_BITMAP_8_BY_13, frate[i]);
+
+	/* Draw a Polygon around framerate */
+	for(i = 0; i < 2; i++){
+	
+		if(i == 0){
+			glBegin(GL_POLYGON);
+			glColor4f(0.20, 0.40, 0.5, 1.0);
+		}else{
+			glLineWidth(2.0);
+			glBegin(GL_LINE_LOOP);
+			glColor4f(0.40, 0.80, 1.0, 1.0);
+		}
+
+		/* Draw the Polygon around the framerate */
+		glVertex3d(640*X_CONV(vp[2]), my, -1.0);
+		glVertex3d(mx, my, -1.0);
+		glVertex3d(mx, 560*Y_CONV(vp[3]), -1.0);
+		glVertex3d(640*X_CONV(vp[2]), 560*Y_CONV(vp[3]), -1.0);
+
+		glEnd();
+	}
+
+	glPopMatrix();
+}
+
+#define MAX_INFO 50
+#define INFO_ITEMS 4
+
+void
+draw_node_info(void)
+{
+	int i, j;
+	double mx, my;
+	int vp[4];
+	char str[INFO_ITEMS][MAX_INFO] = {
+	"Owner: %s", "Job Name: %s", "Duration: %d", "Number CPU's: %d"};
+
+
+	/* Get the viewport */
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	glGetIntegerv(GL_VIEWPORT, vp);
+	glPopMatrix();
+
+	/*
+	** Calculate the Max width/height using a ratio
+	** based on our 800x600 default */
+	mx = X_MAX(vp[2]);
+	my = Y_MAX(vp[3]);
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glColor4f(1.0,1.0,1.0,1.0);
+
+	for(i = 0; i < INFO_ITEMS; i++) {
+
+		/* Set the position of the text */
+		glRasterPos3f(600*X_CONV(vp[2]), (530-i*25)*Y_CONV(vp[3]), -1.0);
+
+		for(j = 0; j < sizeof(str[i]); j++) 
+			glutBitmapCharacter(GLUT_BITMAP_8_BY_13, str[i][j]);
+	}
+
+	/* Draw a Polygon around node legend */
+	for(i = 0; i < 2; i++){
+	
+		if(i == 0){
+			glBegin(GL_POLYGON);
+			glColor4f(0.20, 0.40, 0.5, 1.0);
+		}else{
+			glLineWidth(2.0);
+			glBegin(GL_LINE_LOOP);
+			glColor4f(0.40, 0.80, 1.0, 1.0);
+		}
+
+		/* Draw the Polygon around the framerate */
+		glVertex3d(590*X_CONV(vp[2]), 550*Y_CONV(vp[3]), -1.0);
+		glVertex3d(mx, 550*Y_CONV(vp[3]), -1.0);
+		glVertex3d(mx, 450*Y_CONV(vp[3]), -1.0);
+		glVertex3d(590*X_CONV(vp[2]), 450*Y_CONV(vp[3]), -1.0);
+
+		glEnd();
+	}
+
+	glPopMatrix();
+}
+
 void
 draw(void)
 {
@@ -491,6 +635,11 @@ draw(void)
 		glEnd();
 	}
 
+	if(op_ninfo)
+		draw_node_info();
+	if(op_fps)
+		draw_fps();
+
 	glCallList(cluster_dl);
 	glutSwapBuffers();
 }
@@ -509,8 +658,10 @@ idle(void)
 
 		if (gettimeofday(&tv, NULL) == -1)
 			err(1, "gettimeofday");
-if (tv.tv_sec - lastsync.tv_sec)
-  printf("fps: %ld\n", tcnt / (tv.tv_sec - lastsync.tv_sec));
+		if (tv.tv_sec - lastsync.tv_sec) {
+			fps = tcnt / (tv.tv_sec - lastsync.tv_sec);
+  //			printf("fps: %ld\n", fps);
+		}
 		if (lastsync.tv_sec + SLEEP_INTV < tv.tv_sec) {
 			tcnt = 0;
 			lastsync.tv_sec = tv.tv_sec;
