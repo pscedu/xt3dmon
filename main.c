@@ -450,16 +450,16 @@ draw_fps(void)
 	w = sizeof(frate)*8;
 	h = TEXT_HEIGHT;
 	x = vp[2] - w;
-	y = vp[3] - h;
+	y = vp[3];
 
 	/* Draw the frame rate */
 	glColor4f(1.0,1.0,1.0,1.0);
 
-	/* DEBUG: this should be calculated somehow */
-	cx = 8;
+	/* Account for text height, and fps digit len */
+	cx = (fps > 999 ? 0 : 8);
 	cy = 8;
 
-	glRasterPos2i(x+cx,y+cy);
+	glRasterPos2d(x+cx,y-TEXT_HEIGHT+cy);
 
 
 	for(i = 0; i < sizeof(frate); i++) 
@@ -479,8 +479,8 @@ draw_fps(void)
 
 		glVertex2d(x, y);
 		glVertex2d(x+w, y);
-		glVertex2d(x+w, y+h);
-		glVertex2d(x, y+h);
+		glVertex2d(x+w, y-h);
+		glVertex2d(x, y-h);
 
 		glEnd();
 	}
@@ -518,8 +518,16 @@ draw_node_info(void)
 	double cy;
 	char str[INFO_ITEMS][MAX_INFO] = {
 	"Owner: %s", "Job Name: %s", "Duration: %d", "Number CPU's: %d"};
-//	static int len = maxlen(str, INFO_ITEMS);
+	static int len = 0;
 
+	/* TODO: snprintf any data into our above strings */
+
+	/* Calculate the max string length */
+	if(len == 0)
+		for(i = 0, j = 0; i < INFO_ITEMS; i++) {
+			len = (j > strlen(str[i]) ? j : strlen(str[i]));
+			j = len;
+		}
 
 	/* Save our state and set things up for 2d */
 	glPushAttrib(GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
@@ -535,21 +543,14 @@ draw_node_info(void)
 
 	gluOrtho2D(0.0, vp[2], 0.0, vp[3]);
 
-
-
-	/* TODO: need to get max strlen from str[][] */
-	w = strlen(str[3])*8;
-
 	/* Take into account draw_fps (1 Row) */
+	w = len*8;
 	h = INFO_ITEMS*TEXT_HEIGHT;
 	x = vp[2] - w;
 	y = vp[3] - 1.25*TEXT_HEIGHT;
 
 	/* Factor to center text on y axis */
 	cy = 8;
-
-//	printf("x %lf, y %lf, w %lf, h %lf\n", x,y,w,h);
-//	printf("vp[2] %d, vp[3] %d\n", vp[2], vp[3]);
 
 	/* Draw Node Info */
 	glColor4f(1.0,1.0,1.0,1.0);
