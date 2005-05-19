@@ -96,8 +96,8 @@ int		 op_lines = 1;
 int		 op_env = 1;
 int		 op_fps = 1;
 int 		 op_ninfo = 1;
-int		 win_width = 1024;
-int		 win_height = 768;
+int		 win_width = 800;
+int		 win_height = 600;
 
 GLfloat 	 angle = 0.1f;
 float		 x = STARTX, tx = STARTX, lx = STARTLX, tlx = STARTLX;
@@ -416,55 +416,56 @@ passive_m(int u, int v)
 	ypos = v;
 }
 
-
-/* Ratio for pixels to coordinates */
-#define X_MAX(X) ((0.55/800)*X)
-#define Y_MAX(X) ((0.41/600)*X)
-
-#define X_CONV(X) ((X_MAX(X))/X)
-#define Y_CONV(X) ((Y_MAX(X))/X)
-
 #define FPS_STRING 10
+#define TEXT_HEIGHT 25
 
 void
 draw_fps(void)
 {
 	int i;
 	char frate[FPS_STRING];
-	double mx, my;
+	double x, y, w, h;
+	double cx, cy;
 	int vp[4];
 
+	/* Save our state and set things up for 2d */
+	glPushAttrib(GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
 
-	/* Get the viewport */
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
 	glGetIntegerv(GL_VIEWPORT, vp);
-	glPopMatrix();
 
-	/*
-	** Calculate the Max width/height using a ratio
-	** based on our 800x600 default */
-	mx = X_MAX(vp[2]);
-	my = Y_MAX(vp[3]);
-
-	/* Frame Rate In Corner */
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();
 
-	glColor4f(1.0,1.0,1.0,1.0);
+	gluOrtho2D(0.0, vp[2], 0.0, vp[3]);
 
-	/* Set the position of the text */
-	glRasterPos3f(680*X_CONV(vp[2]), 580*Y_CONV(vp[3]), -1.0);
-
+	/* Create String */
 	memset(frate, '\0', FPS_STRING);
 	snprintf(frate, sizeof(frate), "FPS: %ld", fps);
+
+	/* Coordinates */
+	w = sizeof(frate)*8;
+	h = TEXT_HEIGHT;
+	x = vp[2] - w;
+	y = vp[3] - h;
+
+	/* Draw the frame rate */
+	glColor4f(1.0,1.0,1.0,1.0);
+
+	/* DEBUG: this should be calculated somehow */
+	cx = 8;
+	cy = 8;
+
+	glRasterPos2i(x+cx,y+cy);
+
 
 	for(i = 0; i < sizeof(frate); i++) 
 		glutBitmapCharacter(GLUT_BITMAP_8_BY_13, frate[i]);
 
-	/* Draw a Polygon around framerate */
+	/* Draw polygon/wireframe around fps */
 	for(i = 0; i < 2; i++){
 	
 		if(i == 0){
@@ -476,54 +477,87 @@ draw_fps(void)
 			glColor4f(0.40, 0.80, 1.0, 1.0);
 		}
 
-		/* Draw the Polygon around the framerate */
-		glVertex3d(640*X_CONV(vp[2]), my, -1.0);
-		glVertex3d(mx, my, -1.0);
-		glVertex3d(mx, 560*Y_CONV(vp[3]), -1.0);
-		glVertex3d(640*X_CONV(vp[2]), 560*Y_CONV(vp[3]), -1.0);
+		glVertex2d(x, y);
+		glVertex2d(x+w, y);
+		glVertex2d(x+w, y+h);
+		glVertex2d(x, y+h);
 
 		glEnd();
 	}
 
 	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	
+	glPopAttrib();
 }
 
 #define MAX_INFO 50
 #define INFO_ITEMS 4
 
+int maxlen(char *str[MAX_INFO], int size)
+{
+	int len;
+	int t, i;
+
+	for(i = 0, t = 0; i < size; i++)
+	{
+		len = (t > strlen(str[i]) ? t: strlen(str[i]));
+		t = len;
+	}
+	
+	return len;
+}
+
 void
 draw_node_info(void)
 {
 	int i, j;
-	double mx, my;
 	int vp[4];
+	double x, y, w, h;
+	double cy;
 	char str[INFO_ITEMS][MAX_INFO] = {
 	"Owner: %s", "Job Name: %s", "Duration: %d", "Number CPU's: %d"};
+//	static int len = maxlen(str, INFO_ITEMS);
 
 
-	/* Get the viewport */
+	/* Save our state and set things up for 2d */
+	glPushAttrib(GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
+
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
 	glGetIntegerv(GL_VIEWPORT, vp);
-	glPopMatrix();
-
-	/*
-	** Calculate the Max width/height using a ratio
-	** based on our 800x600 default */
-	mx = X_MAX(vp[2]);
-	my = Y_MAX(vp[3]);
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();
 
+	gluOrtho2D(0.0, vp[2], 0.0, vp[3]);
+
+
+
+	/* TODO: need to get max strlen from str[][] */
+	w = strlen(str[3])*8;
+
+	/* Take into account draw_fps (1 Row) */
+	h = INFO_ITEMS*TEXT_HEIGHT;
+	x = vp[2] - w;
+	y = vp[3] - 1.25*TEXT_HEIGHT;
+
+	/* Factor to center text on y axis */
+	cy = 8;
+
+//	printf("x %lf, y %lf, w %lf, h %lf\n", x,y,w,h);
+//	printf("vp[2] %d, vp[3] %d\n", vp[2], vp[3]);
+
+	/* Draw Node Info */
 	glColor4f(1.0,1.0,1.0,1.0);
-
 	for(i = 0; i < INFO_ITEMS; i++) {
+	
 
-		/* Set the position of the text */
-		glRasterPos3f(600*X_CONV(vp[2]), (530-i*25)*Y_CONV(vp[3]), -1.0);
+		/* Set the position of the text (account for fps!) */
+		glRasterPos2d(x, (y-(i+1)*TEXT_HEIGHT)+cy);
 
 		for(j = 0; j < sizeof(str[i]); j++) 
 			glutBitmapCharacter(GLUT_BITMAP_8_BY_13, str[i][j]);
@@ -542,15 +576,19 @@ draw_node_info(void)
 		}
 
 		/* Draw the Polygon around the framerate */
-		glVertex3d(590*X_CONV(vp[2]), 550*Y_CONV(vp[3]), -1.0);
-		glVertex3d(mx, 550*Y_CONV(vp[3]), -1.0);
-		glVertex3d(mx, 450*Y_CONV(vp[3]), -1.0);
-		glVertex3d(590*X_CONV(vp[2]), 450*Y_CONV(vp[3]), -1.0);
+		glVertex2d(x, y);
+		glVertex2d(x+w, y);
+		glVertex2d(x+w, y-h);
+		glVertex2d(x, y-h);
 
 		glEnd();
 	}
 
 	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+
+	glPopAttrib();
 }
 
 void
