@@ -96,7 +96,8 @@ int		 op_lines = 1;
 int		 op_env = 1;
 int		 op_fps = 0;
 int		 fps_active = 0;
-int 		 op_ninfo = 1;
+int 		 op_ninfo = 0;
+int		 ninfo_active = 0;
 int		 win_width = 800;
 int		 win_height = 600;
 
@@ -193,6 +194,7 @@ key(unsigned char key, int u, int v)
 		break;
 	case 'n':
 		op_ninfo = !op_ninfo;
+		ninfo_active = 1;
 		break;
 	case 'w':
 		op_wire = !op_wire;
@@ -527,7 +529,7 @@ int maxlen(char *str[MAX_INFO], int size)
 }
 
 void
-draw_node_info(void)
+draw_node_info(int on)
 {
 	int i, j;
 	int vp[4];
@@ -536,6 +538,7 @@ draw_node_info(void)
 	char str[INFO_ITEMS][MAX_INFO] = {
 	"Owner: %s", "Job Name: %s", "Duration: %d", "Number CPU's: %d"};
 	static int len = 0;
+	static double sx = 0;
 
 	/* TODO: snprintf any data into our above strings */
 
@@ -566,6 +569,18 @@ draw_node_info(void)
 	x = vp[2] - w;
 	y = vp[3] - 1.25*TEXT_HEIGHT;
 
+	/*
+	** Adjust current pos, on = 1, move onto screen
+	** off = 0, move off screen */
+	if(sx == 0)
+		sx = vp[2];
+	else if(sx > x - 1 && on)
+		sx -= X_SPEED;
+	else if(sx < vp[2]+1 && !on)
+		sx += X_SPEED;
+	else
+		ninfo_active = 0;
+
 	/* Factor to center text on y axis */
 	cy = 8;
 
@@ -575,7 +590,7 @@ draw_node_info(void)
 	
 
 		/* Set the position of the text (account for fps!) */
-		glRasterPos2d(x, (y-(i+1)*TEXT_HEIGHT)+cy);
+		glRasterPos2d(sx, (y-(i+1)*TEXT_HEIGHT)+cy);
 
 		for(j = 0; j < sizeof(str[i]); j++) 
 			glutBitmapCharacter(GLUT_BITMAP_8_BY_13, str[i][j]);
@@ -594,10 +609,10 @@ draw_node_info(void)
 		}
 
 		/* Draw the Polygon around the framerate */
-		glVertex2d(x, y);
-		glVertex2d(x+w, y);
-		glVertex2d(x+w, y-h);
-		glVertex2d(x, y-h);
+		glVertex2d(sx, y);
+		glVertex2d(sx+w, y);
+		glVertex2d(sx+w, y-h);
+		glVertex2d(sx, y-h);
 
 		glEnd();
 	}
@@ -691,8 +706,8 @@ draw(void)
 		glEnd();
 	}
 
-	if(op_ninfo)
-		draw_node_info();
+	if(op_ninfo || ninfo_active)
+		draw_node_info(op_ninfo);
 	if(op_fps || fps_active)
 		draw_fps((op_fps));
 
