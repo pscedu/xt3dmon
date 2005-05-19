@@ -166,6 +166,8 @@ key(unsigned char key, int u, int v)
 	case 'f':
 		op_fps = !op_fps;
 		fps_active = 1;
+		if(op_ninfo)
+			ninfo_active = 1;
 		break;
 	case 'g':
 		op_env = !op_env;
@@ -423,6 +425,7 @@ passive_m(int u, int v)
 #define FPS_STRING 10
 #define TEXT_HEIGHT 25
 #define X_SPEED 2
+#define Y_SPEED 1
 
 void
 draw_fps(int on)
@@ -514,6 +517,7 @@ draw_fps(int on)
 #define MAX_INFO 50
 #define INFO_ITEMS 4
 
+#if 0
 int maxlen(char *str[MAX_INFO], int size)
 {
 	int len;
@@ -527,9 +531,10 @@ int maxlen(char *str[MAX_INFO], int size)
 	
 	return len;
 }
+#endif
 
 void
-draw_node_info(int on)
+draw_node_info(int on, int fon)
 {
 	int i, j;
 	int vp[4];
@@ -539,6 +544,7 @@ draw_node_info(int on)
 	"Owner: %s", "Job Name: %s", "Duration: %d", "Number CPU's: %d"};
 	static int len = 0;
 	static double sx = 0;
+	static double sy = 0;
 
 	/* TODO: snprintf any data into our above strings */
 
@@ -567,7 +573,7 @@ draw_node_info(int on)
 	w = len*8;
 	h = INFO_ITEMS*TEXT_HEIGHT;
 	x = vp[2] - w;
-	y = vp[3] - 1.25*TEXT_HEIGHT;
+	y = vp[3] - (op_fps ? 1.25 : 0.25)*TEXT_HEIGHT;
 
 	/*
 	** Adjust current pos, on = 1, move onto screen
@@ -580,6 +586,24 @@ draw_node_info(int on)
 		sx += X_SPEED;
 	else
 		ninfo_active = 0;
+	
+	/*
+	** autoslide up or down if the fps
+	** menu is enabled...
+	** on = 1 means go up, off = 0 means
+	** slide down... */
+	if(fps_active) {
+	
+		if(sy == 0)
+			sy = y;
+		else if(sy > y && fon)
+			sy -= Y_SPEED;
+		else if(sy < y && !fon)
+			sy += Y_SPEED;
+		else
+			ninfo_active = 0;
+		y = sy;
+	}
 
 	/* Factor to center text on y axis */
 	cy = 8;
@@ -707,7 +731,7 @@ draw(void)
 	}
 
 	if(op_ninfo || ninfo_active)
-		draw_node_info(op_ninfo);
+		draw_node_info(op_ninfo, op_fps);
 	if(op_fps || fps_active)
 		draw_fps((op_fps));
 
