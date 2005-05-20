@@ -42,3 +42,8 @@
 		SLIST_FIRST(slh) = (elem);			\
 	} while (0)
 #endif
+
+#ifndef SLIST_EMPTY
+#define SLIST_EMPTY(slh)					\
+	(SLIST_FIRST(slh) == NULL)
+#endif
