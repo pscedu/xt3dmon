@@ -30,7 +30,7 @@
 #endif
 
 #ifndef SLIST_FOREACH
-#define SLIST_FOREACH(slh, elem, memb)				\
+#define SLIST_FOREACH(elem, slh, memb)				\
 	for ((elem) = SLIST_FIRST(slh); ln != NULL;		\
 	    (elem) = SLIST_NEXT((elem), memb))
 #endif
