@@ -28,7 +28,8 @@
 #define ST_UNACC	5
 #define ST_BAD		6
 #define ST_CHECK	7
-#define NST		8
+#define ST_INFO		8
+#define NST		9
 
 #define PI		3.14159265358979323
 
@@ -48,6 +49,12 @@ struct node {
 	int		 n_logid;
 	struct job	*n_job;
 	int		 n_state;
+	int		 n_savst;
+	struct {
+		float	 np_x;
+		float	 np_y;
+		float	 np_z;
+	}		 n_pos;
 };
 
 struct state {
