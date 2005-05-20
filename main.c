@@ -56,13 +56,13 @@
 #define YCENTER		((CAGEHEIGHT * NCAGES + CAGESPACE * (NCAGES - 1)) / 2)
 #define ZCENTER		((ROWDEPTH * NROWS + ROWSPACE * (NROWS - 1)) / 2)
 
-#define STARTX		(-150.0f)
-#define STARTY		(30.0f)
-#define STARTZ		(150.0f)
+#define STARTX		(-30.0f)
+#define STARTY		(10.0f)
+#define STARTZ		(25.0f)
 
-#define STARTLX		(1.0f)		/* Must form a unit vector. */
+#define STARTLX		(0.707f)	/* Must form a unit vector. */
 #define STARTLY		(0.0f)
-#define STARTLZ		(0.0f)
+#define STARTLZ		(-0.707f)
 
 #define WFRAMEWIDTH	(0.001f)
 
@@ -85,6 +85,7 @@ struct job	**jobs;
 size_t		 njobs;
 struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 struct node	*invmap[NLOGIDS][NROWS * NCABS * NCAGES * NMODS * NNODES];
+struct node	 *selnode;
 int		 op_tex = 0;
 int		 op_blend = 0;
 int		 op_wire = 1;
@@ -92,7 +93,7 @@ float		 op_alpha_job = 1.0f;
 float		 op_alpha_oth = 1.0f;
 GLint		 op_fmt = GL_RGBA;
 float		 op_tween = TWEEN_AMT;
-int		 op_lines = 1;
+int		 op_lines = 0;
 int		 op_env = 1;
 int		 op_fps = 0;
 int		 fps_active = 0;
@@ -112,14 +113,15 @@ long		 fps;
 SLIST_HEAD(, lineseg) seglh;
 
 struct state states[] = {
-	{ "Free",		1.0, 1.0, 1.0, 1 },
-	{ "Disabled (PBS)",	1.0, 0.0, 0.0, 1 },
-	{ "Disabled (HW)",	0.66, 0.66, 0.66, 1 },
-	{ NULL,			0.0, 0.0, 0.0, 1 },
-	{ "I/O",		1.0, 1.0, 0.0, 1 },
-	{ "Unaccounted",	0.0, 0.0, 1.0, 1 },
-	{ "Bad",		1.0, 0.75, 0.75, 1 },
-	{ "Checking",		0.0, 1.0, 0.0, 1 }
+	{ "Free",		1.0, 1.0, 1.0, 1 },	/* White */
+	{ "Disabled (PBS)",	1.0, 0.0, 0.0, 1 },	/* Red */
+	{ "Disabled (HW)",	0.66, 0.66, 0.66, 1 },	/* Gray */
+	{ NULL,			0.0, 0.0, 0.0, 1 },	/* (dynamic) */
+	{ "I/O",		1.0, 1.0, 0.0, 1 },	/* Yellow */
+	{ "Unaccounted",	0.0, 0.0, 1.0, 1 },	/* Blue */
+	{ "Bad",		1.0, 0.75, 0.75, 1 },	/* Pink */
+	{ "Checking",		0.0, 1.0, 0.0, 1 },	/* Green */
+	{ "Info",		0.2, 0.4, 0.6, 1 }	/* Dark blue */
 };
 
 __inline void
@@ -153,6 +155,10 @@ key(unsigned char key, int u, int v)
 	case 'b':
 		op_blend = !op_blend;
 		break;
+	case 'c':
+		if (selnode != NULL && selnode->n_savst)
+			selnode->n_state = selnode->n_savst;
+		break;
 	case 'e':
 		if (op_tween)
 			op_tween = 0;
@@ -175,7 +181,8 @@ key(unsigned char key, int u, int v)
 	case 'l': {
 		struct lineseg *ln, *pln;
 
-		op_lines = !op_lines;
+		if (++op_lines == 3)
+			op_lines = 0;
 		for (ln = SLIST_FIRST(&seglh); ln != NULL; ln = pln) {
 			pln = SLIST_NEXT(ln, ln_next);
 			free(ln);
@@ -183,6 +190,14 @@ key(unsigned char key, int u, int v)
 		SLIST_INIT(&seglh);
 		break;
 	    }
+	case 'n':
+		op_ninfo = !op_ninfo;
+		ninfo_active = 1;
+		break;
+	case 'p':
+		printf("pos[%.2f,%.2f,%.2f] look[%.2f,%.2f,%.2f]\n",
+		    x, y, z, lx, ly, lz);
+		break;
 	case 'q':
 		exit(0);
 		/* NOTREACHED */
@@ -193,10 +208,6 @@ key(unsigned char key, int u, int v)
 		op_fmt = ((op_fmt == GL_RGBA) ? GL_INTENSITY : GL_RGBA);
 		del_textures();
 		load_textures();
-		break;
-	case 'n':
-		op_ninfo = !op_ninfo;
-		ninfo_active = 1;
 		break;
 	case 'w':
 		op_wire = !op_wire;
@@ -216,7 +227,6 @@ key(unsigned char key, int u, int v)
 	}
 
 	/* resync */
-	glDeleteLists(cluster_dl, 1);
 	make_cluster();
 }
 
@@ -291,56 +301,169 @@ sp_key(int key, int u, int v)
 }
 
 /*
+ * y
+ * |        (x+w,y+h,z)    (x+w,y+h,z+d)
+ * |            -----------------
+ * |           /               /
+ * |          /               /
+ * |         -----------------
+ * |    (x,y+h,z)       (x,y+h,z+d)
+ * |
+ * |             +--------------+
+ * |     /|      |              |     /|
+ * |    / |      |              |    / |
+ * |   /  |      |              |   /  |
+ * |  /   |      |              |  /   |
+ * | |    |  +--------------+   | |    |
+ * | |    |  |      / \     |   | |    |
+ * | |    |  |       |      |   | |    |
+ * | |    |  |     lt_y     |   | |    |
+ * | |    |  |       |      |   | |    |
+ * | |    |  |       |      |---+ |    |
+ * | |   /   |<--- lt_z --->|     |   /
+ * | |  /    |       |      |     |  /
+ * | | /     |       |      |     | /
+ * | |/      |      \ /     |     |/
+ * |         +--------------+
+ * |      x
+ * |     /  (x+w,y,z)       (x+w,y,z+d)
+ * |    /       -----------------
+ * |   /       /               /
+ * |  /       /               /
+ * | /       -----------------
+ * |/    (x,y,z)         (x,y,z+d)
+ * +------------------------------------- z
+ */
+__inline int
+collide(struct node *n,
+   float w, float h, float d,
+   float sx, float sy, float sz,
+   float ex, float ey, float ez)
+{
+	float x = n->n_pos.np_x;
+	float y = n->n_pos.np_y;
+	float z = n->n_pos.np_z;
+	float lo_x, hi_x;
+	float lo_y, hi_y, y_sxbox, y_exbox;
+	float lo_z, hi_z, z_sxbox, z_exbox;
+
+	if (ex < sx) {
+		lo_x = ex;
+		hi_x = sx;
+	} else {
+		lo_x = sx;
+		hi_x = ex;
+	}
+
+	if (hi_x < x || lo_x > x+w)
+		return (0);
+	y_sxbox = sy + ((ey - sy) / (ex - sx)) * (x - sx);
+	y_exbox = sy + ((ey - sy) / (ex - sx)) * (x+h - sx);
+
+	if (y_exbox < y_sxbox) {
+		lo_y = y_exbox;
+		hi_y = y_sxbox;
+	} else {
+		lo_y = y_sxbox;
+		hi_y = y_exbox;
+	}
+
+	if (hi_y < y || lo_y > y+h)
+		return (0);
+	z_sxbox = sz + ((ez - sz) / (ex - sx)) * (x - sx);
+	z_exbox = sz + ((ez - sz) / (ex - sx)) * (x+w - sx);
+
+	if (z_exbox < z_sxbox) {
+		lo_z = z_exbox;
+		hi_z = z_sxbox;
+	} else {
+		lo_z = z_sxbox;
+		hi_z = z_exbox;
+	}
+
+	if (hi_z < z || lo_z > z+d)
+		return (0);
+	if (selnode == n)
+		return (1);
+	if (selnode != NULL)
+		selnode->n_state = selnode->n_savst;
+	selnode = n;
+	if (n->n_state != ST_INFO)
+		n->n_savst = n->n_state;
+	n->n_state = ST_INFO;
+	make_cluster();
+	return (1);
+}
+
+/*
  * Node selection
- *
- * This assumes that the camera never "tilts" (rotates).
  */
 void
 sel_node(int u, int v)
 {
-	struct lineseg *ln;
+	int r, cb, cg, m, n;
+	int pr, pcb, pcg, pm;
+	int n0, n1, pn;
 
-	float r = sqrt((x - XCENTER) * (x - XCENTER) +
+	float rad = sqrt((x - XCENTER) * (x - XCENTER) +
 	    (z - ZCENTER) * (z - ZCENTER));
-	float dist = r + ROWWIDTH;
+	float dist = rad + ROWWIDTH;
 
-	float adju = FOVY * ASPECT * 2.0f * PI / 360.0f * (u - win_width / 2.0f) / win_width;
+	float adju = FOVY * ASPECT * 2.0f * PI / 360.0f *
+	    (u - win_width / 2.0f) / win_width;
 	float angleu = acosf(lx);
 	if (lz < 0)
 		angleu = 2.0f * PI - angleu;
 	float dx = cos(angleu + adju);
 	float dz = sin(angleu + adju);
 
-	float adjv = FOVY * 2.0f * PI / 360.0f * (win_height / 2.0f - v) / win_height;
+	float adjv = FOVY * 2.0f * PI / 360.0f *
+	    (win_height / 2.0f - v) / win_height;
 	float anglev = asinf(ly);
-//	if (ly < 0)
-//		anglev = 2.0f * PI - anglev;
 	float dy = sin(anglev + adjv);
 
 	dx = x + dist * dx;
 	dy = y + dist * dy;
 	dz = z + dist * dz;
 
-//printf("ly: %.2f, anglev: %.2f, adjv: %.2f\n", ly, anglev, adjv);
+	if (op_lines) {
+		struct lineseg *ln;
 
-#if 0
-printf("adju: [%.2f,%.2f] adjv: [%.2f,%.2f] r: %.2f src(%.2f,%.2f,%.2f) -> dst(%.2f,%.2f,%.2f)\n",
-    adju, FOVY * ASPECT * 2.0f * PI / 360.0f,
-    adjv, FOVY * 2.0f * PI / 360.0f,
-    r, x, y, z, dx, dy, dz
-    );
-#endif
+		if (op_lines == 1 || SLIST_EMPTY(&seglh)) {
+			if ((ln = malloc(sizeof(*ln))) == NULL)
+				err(1, NULL);
+			SLIST_INSERT_HEAD(&seglh, ln, ln_next);
+		} else
+			ln = SLIST_FIRST(&seglh);
+		ln->sx = x + 1.0f * lx;  ln->ex = dx;
+		ln->sy = y + 1.0f * ly;  ln->ey = dy;
+		ln->sz = z + 1.0f * lz;  ln->ez = dz;
+	}
 
-	if ((ln = malloc(sizeof(*ln))) == NULL)
-		err(1, NULL);
-	ln->sx = x;
-	ln->sy = y;
-	ln->sz = z;
+	for (r = 0; r < NROWS; r++) {
+		for (cb = 0; cb < NCABS; cb++) {
+			for (cg = 0; cg < NCAGES; cg++) {
+				for (m = 0; m < NMODS; m++) {
+					for (n = 0; n < NNODES; n++) {
+						n0 = lz > 0.0f ? n : NNODES - n - 1;
+						n1 = ly > 0.0f ? n : NNODES - n - 1;
+						pn = 2 * (n0 / (NNODES / 2)) +
+						    n1 % (NNODES / 2);
 
-	ln->ex = dx;
-	ln->ey = dy;
-	ln->ez = dz;
-	SLIST_INSERT_HEAD(&seglh, ln, ln_next);
+						pr  = lz > 0.0f ? r  : NROWS  - r  - 1;
+						pcb = lx > 0.0f ? cb : NCABS  - cb - 1;
+						pcg = ly > 0.0f ? cg : NCAGES - cg - 1;
+						pm  = lx > 0.0f ? m  : NMODS  - m  - 1;
+
+						if (collide(&nodes[pr][pcb][pcg][pm][pn],
+						    NODEWIDTH, NODEHEIGHT, NODEDEPTH,
+						    x, y, z, dx, dy, dz))
+							return;
+					}
+				}
+			}
+		}
+	}
 }
 
 void
@@ -349,15 +472,15 @@ mouse(int button, int state, int u, int v)
 	spkey = glutGetModifiers();
 	xpos = u;
 	ypos = v;
-	if (!spkey)
-		sel_node(u, v);
+//	if (!spkey)
+//		sel_node(u, v);
 }
 
 void
 active_m(int u, int v)
 {
 	int du = u - xpos, dv = v - ypos;
-	float t, r;
+	float t, r, mag;
 	float sx, sy, sz, slx, sly, slz;
 
 	xpos = u;
@@ -391,17 +514,16 @@ active_m(int u, int v)
 		lz = (ZCENTER - z) / r;
 	}
 	if (dv != 0 && spkey & GLUT_ACTIVE_SHIFT) {
-		float adj = (dv < 0) ? 0.005f : -0.005f;
-		if (fabs(angle + adj) < PI / 2.0f) {
-			angle += adj;
+		t = (dv < 0) ? 0.005f : -0.005f;
+		if (fabs(angle + t) < PI / 2.0f) {
+			angle += t;
 			ly = sin(angle);
 		}
 	}
-	float mag = sqrt(lx*lx + ly*ly + lz*lz);
+	mag = sqrt(lx*lx + ly*ly + lz*lz);
 	lx /= mag;
 	ly /= mag;
 	lz /= mag;
-	mag = sqrt(lx*lx + ly*ly + lz*lz);
 
 	if (op_tween) {
 		tx = x;  x = sx;
@@ -420,6 +542,8 @@ passive_m(int u, int v)
 {
 	xpos = u;
 	ypos = v;
+
+	sel_node(u, v);
 }
 
 #define FPS_STRING 10
@@ -452,24 +576,25 @@ draw_fps(int on)
 
 	gluOrtho2D(0.0, vp[2], 0.0, vp[3]);
 
-	/* Create String */
+	/* Create string */
 	memset(frate, '\0', FPS_STRING);
 	snprintf(frate, sizeof(frate), "FPS: %ld", fps);
 
 	/* Coordinates */
-	w = sizeof(frate)*8;
+	w = sizeof(frate) * 8;
 	h = TEXT_HEIGHT;
 	x = vp[2] - w;
 	y = vp[3];
 
 	/*
-	** Adjust current pos, on = 1, move onto screen
-	** off = 0, move off screen */
-	if(sx == 0)
+	 * Adjust current pos, on = 1, move onto screen
+	 * off = 0, move off screen
+	 */
+	if (sx == 0)
 		sx = vp[2];
-	else if(sx > x - 1 && on)
+	else if (sx > x - 1 && on)
 		sx -= X_SPEED;
-	else if(sx < vp[2]+1 && !on)
+	else if (sx < vp[2]+1 && !on)
 		sx += X_SPEED;
 	else
 		fps_active = 0;
@@ -483,17 +608,15 @@ draw_fps(int on)
 
 	glRasterPos2d(sx+cx,y-TEXT_HEIGHT+cy);
 
-
-	for(i = 0; i < sizeof(frate); i++) 
+	for (i = 0; i < sizeof(frate); i++)
 		glutBitmapCharacter(GLUT_BITMAP_8_BY_13, frate[i]);
 
 	/* Draw polygon/wireframe around fps */
-	for(i = 0; i < 2; i++){
-	
-		if(i == 0){
+	for (i = 0; i < 2; i++){
+		if (i == 0){
 			glBegin(GL_POLYGON);
 			glColor4f(0.20, 0.40, 0.5, 1.0);
-		}else{
+		} else {
 			glLineWidth(2.0);
 			glBegin(GL_LINE_LOOP);
 			glColor4f(0.40, 0.80, 1.0, 1.0);
@@ -510,7 +633,7 @@ draw_fps(int on)
 	glPopMatrix();
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
-	
+
 	glPopAttrib();
 }
 
@@ -528,7 +651,7 @@ int maxlen(char *str[MAX_INFO], int size)
 		len = (t > strlen(str[i]) ? t: strlen(str[i]));
 		t = len;
 	}
-	
+
 	return len;
 }
 #endif
@@ -536,21 +659,23 @@ int maxlen(char *str[MAX_INFO], int size)
 void
 draw_node_info(int on, int fon)
 {
-	int i, j;
-	int vp[4];
-	double x, y, w, h;
-	double cy;
-	char str[INFO_ITEMS][MAX_INFO] = {
-	"Owner: %s", "Job Name: %s", "Duration: %d", "Number CPU's: %d"};
 	static int len = 0;
 	static double sx = 0;
 	static double sy = 0;
+	double x, y, w, h, cy;
+	int i, j, vp[4];
+	char str[INFO_ITEMS][MAX_INFO] = {
+		"Owner: %s",
+		"Job Name: %s",
+		"Duration: %d",
+		"Number CPU's: %d"
+	};
 
 	/* TODO: snprintf any data into our above strings */
 
 	/* Calculate the max string length */
-	if(len == 0)
-		for(i = 0, j = 0; i < INFO_ITEMS; i++) {
+	if (len == 0)
+		for (i = 0, j = 0; i < INFO_ITEMS; i++) {
 			len = (j > strlen(str[i]) ? j : strlen(str[i]));
 			j = len;
 		}
@@ -569,36 +694,35 @@ draw_node_info(int on, int fon)
 
 	gluOrtho2D(0.0, vp[2], 0.0, vp[3]);
 
-	/* Take into account draw_fps (1 Row) */
-	w = len*8;
-	h = INFO_ITEMS*TEXT_HEIGHT;
+	/* Take into account draw_fps (1 row) */
+	w = len * 8;
+	h = INFO_ITEMS * TEXT_HEIGHT;
 	x = vp[2] - w;
-	y = vp[3] - (op_fps ? 1.25 : 0.25)*TEXT_HEIGHT;
+	y = vp[3] - (op_fps ? 1.25 : 0.25) * TEXT_HEIGHT;
 
 	/*
-	** Adjust current pos, on = 1, move onto screen
-	** off = 0, move off screen */
-	if(sx == 0)
+	 * Adjust current pos, on = 1, move onto screen
+	 * off = 0, move off screen
+	 */
+	if (sx == 0)
 		sx = vp[2];
-	else if(sx > x - 1 && on)
+	else if (sx > x - 1 && on)
 		sx -= X_SPEED;
-	else if(sx < vp[2]+1 && !on)
+	else if (sx < vp[2]+1 && !on)
 		sx += X_SPEED;
 	else
 		ninfo_active = 0;
-	
+
 	/*
-	** autoslide up or down if the fps
-	** menu is enabled...
-	** on = 1 means go up, off = 0 means
-	** slide down... */
-	if(fps_active) {
-	
-		if(sy == 0)
+	 * autoslide up or down if the fps menu is enabled.
+	 * on = 1 means go up, off = 0 means slide down.
+	 */
+	if (fps_active) {
+		if (sy == 0)
 			sy = y;
-		else if(sy > y && fon)
+		else if (sy > y && fon)
 			sy -= Y_SPEED;
-		else if(sy < y && !fon)
+		else if (sy < y && !fon)
 			sy += Y_SPEED;
 		else
 			ninfo_active = 0;
@@ -608,31 +732,28 @@ draw_node_info(int on, int fon)
 	/* Factor to center text on y axis */
 	cy = 8;
 
-	/* Draw Node Info */
+	/* Draw node info */
 	glColor4f(1.0,1.0,1.0,1.0);
-	for(i = 0; i < INFO_ITEMS; i++) {
-	
-
+	for (i = 0; i < INFO_ITEMS; i++) {
 		/* Set the position of the text (account for fps!) */
 		glRasterPos2d(sx, (y-(i+1)*TEXT_HEIGHT)+cy);
 
-		for(j = 0; j < sizeof(str[i]); j++) 
+		for (j = 0; j < sizeof(str[i]); j++)
 			glutBitmapCharacter(GLUT_BITMAP_8_BY_13, str[i][j]);
 	}
 
-	/* Draw a Polygon around node legend */
-	for(i = 0; i < 2; i++){
-	
-		if(i == 0){
+	/* Draw a polygon around node legend */
+	for (i = 0; i < 2; i++) {
+		if (i == 0) {
 			glBegin(GL_POLYGON);
 			glColor4f(0.20, 0.40, 0.5, 1.0);
-		}else{
+		} else {
 			glLineWidth(2.0);
 			glBegin(GL_LINE_LOOP);
 			glColor4f(0.40, 0.80, 1.0, 1.0);
 		}
 
-		/* Draw the Polygon around the framerate */
+		/* Draw the polygon around the framerate */
 		glVertex2d(sx, y);
 		glVertex2d(sx+w, y);
 		glVertex2d(sx+w, y-h);
@@ -724,7 +845,7 @@ draw(void)
 	SLIST_FOREACH(&seglh, ln, ln_next) {
 		glColor3f(1.0f, 1.0f, 1.0f);
 		glBegin(GL_LINES);
-		glLineWidth(2.0f);
+		glLineWidth(1.0f);
 		glVertex3f(ln->sx, ln->sy, ln->sz);
 		glVertex3f(ln->ex, ln->ey, ln->ez);
 		glEnd();
@@ -753,14 +874,11 @@ idle(void)
 
 		if (gettimeofday(&tv, NULL) == -1)
 			err(1, "gettimeofday");
-		if (tv.tv_sec - lastsync.tv_sec) {
+		if (tv.tv_sec - lastsync.tv_sec)
 			fps = tcnt / (tv.tv_sec - lastsync.tv_sec);
-  //			printf("fps: %ld\n", fps);
-		}
 		if (lastsync.tv_sec + SLEEP_INTV < tv.tv_sec) {
 			tcnt = 0;
 			lastsync.tv_sec = tv.tv_sec;
-			glDeleteLists(cluster_dl, 1);
 			parse_jobmap();
 			make_cluster();
 		}
@@ -802,9 +920,11 @@ idle(void)
  */
 
 __inline void
-draw_filled_node(struct node *n, float x, float y, float z, float width,
-    float height, float depth)
+draw_filled_node(struct node *n, float w, float h, float d)
 {
+	float x = n->n_pos.np_x;
+	float y = n->n_pos.np_y;
+	float z = n->n_pos.np_z;
 	float r, g, b, a;
 
 	if (n->n_state == ST_USED) {
@@ -830,27 +950,27 @@ draw_filled_node(struct node *n, float x, float y, float z, float width,
 	glBegin(GL_POLYGON);
 	/* Bottom */
 	glVertex3f(x, y, z);
-	glVertex3f(x, y, z+depth);		/*  1 */
-	glVertex3f(x+width, y, z+depth);	/*  2 */
-	glVertex3f(x+width, y, z);		/*  3 */
-	glVertex3f(x, y, z);			/*  4 */
+	glVertex3f(x, y, z+d);		/*  1 */
+	glVertex3f(x+w, y, z+d);	/*  2 */
+	glVertex3f(x+w, y, z);		/*  3 */
+	glVertex3f(x, y, z);		/*  4 */
 	/* Back */
-	glVertex3f(x, y+height, z);		/*  5 */
-	glVertex3f(x, y+height, z+depth);	/*  6 */
-	glVertex3f(x, y, z+depth);		/*  7 */
+	glVertex3f(x, y+h, z);		/*  5 */
+	glVertex3f(x, y+h, z+d);	/*  6 */
+	glVertex3f(x, y, z+d);		/*  7 */
 	/* Right */
-	glVertex3f(x+width, y, z+depth);	/*  8 */
-	glVertex3f(x+width, y+height, z+depth);	/*  9 */
-	glVertex3f(x, y+height, z+depth);	/* 10 */
+	glVertex3f(x+w, y, z+d);	/*  8 */
+	glVertex3f(x+w, y+h, z+d);	/*  9 */
+	glVertex3f(x, y+h, z+d);	/* 10 */
 
-	glVertex3f(x, y+height, z);		/* 11 */
+	glVertex3f(x, y+h, z);		/* 11 */
 
 	/* Left */
-	glVertex3f(x+width, y+height, z);	/* 12 */
-	glVertex3f(x+width, y, z);		/* 13 */
-	glVertex3f(x+width, y+height, z);	/* 14 */
+	glVertex3f(x+w, y+h, z);	/* 12 */
+	glVertex3f(x+w, y, z);		/* 13 */
+	glVertex3f(x+w, y+h, z);	/* 14 */
 	/* Front */
-	glVertex3f(x+width, y+height, z+depth);	/* 15 */
+	glVertex3f(x+w, y+h, z+d);	/* 15 */
 	glEnd();
 
 	if (op_blend)
@@ -858,66 +978,72 @@ draw_filled_node(struct node *n, float x, float y, float z, float width,
 }
 
 __inline void
-draw_wireframe_node(struct node *n, float x, float y, float z, float width,
-    float height, float depth)
+draw_wireframe_node(struct node *n, float w, float h, float d)
 {
+	float x = n->n_pos.np_x;
+	float y = n->n_pos.np_y;
+	float z = n->n_pos.np_z;
+
 	/* Wireframe outline */
 	x -= WFRAMEWIDTH;
 	y -= WFRAMEWIDTH;
 	z -= WFRAMEWIDTH;
-	width += 2.0f * WFRAMEWIDTH;
-	height += 2.0f * WFRAMEWIDTH;
-	depth += 2.0f * WFRAMEWIDTH;
+	w += 2.0f * WFRAMEWIDTH;
+	h += 2.0f * WFRAMEWIDTH;
+	d += 2.0f * WFRAMEWIDTH;
 
+	glLineWidth(1.0);
 	glColor3f(0.0f, 0.0f, 0.0f);
 	glBegin(GL_LINE_STRIP);
 	/* Bottom */
 	glVertex3f(x, y, z);
-	glVertex3f(x, y, z+depth);		/*  1 */
-	glVertex3f(x+width, y, z+depth);	/*  2 */
-	glVertex3f(x+width, y, z);		/*  3 */
-	glVertex3f(x, y, z);			/*  4 */
+	glVertex3f(x, y, z+d);		/*  1 */
+	glVertex3f(x+w, y, z+d);	/*  2 */
+	glVertex3f(x+w, y, z);		/*  3 */
+	glVertex3f(x, y, z);		/*  4 */
 	/* Back */
-	glVertex3f(x, y+height, z);		/*  5 */
-	glVertex3f(x, y+height, z+depth);	/*  6 */
-	glVertex3f(x, y, z+depth);		/*  7 */
+	glVertex3f(x, y+h, z);		/*  5 */
+	glVertex3f(x, y+h, z+d);	/*  6 */
+	glVertex3f(x, y, z+d);		/*  7 */
 	/* Right */
-	glVertex3f(x+width, y, z+depth);	/*  8 */
-	glVertex3f(x+width, y+height, z+depth);	/*  9 */
-	glVertex3f(x, y+height, z+depth);	/* 10 */
+	glVertex3f(x+w, y, z+d);	/*  8 */
+	glVertex3f(x+w, y+h, z+d);	/*  9 */
+	glVertex3f(x, y+h, z+d);	/* 10 */
 
-	glVertex3f(x, y+height, z);		/* 11 */
+	glVertex3f(x, y+h, z);		/* 11 */
 
 	/* Left */
-	glVertex3f(x+width, y+height, z);	/* 12 */
-	glVertex3f(x+width, y, z);		/* 13 */
-	glVertex3f(x+width, y+height, z);	/* 14 */
+	glVertex3f(x+w, y+h, z);	/* 12 */
+	glVertex3f(x+w, y, z);		/* 13 */
+	glVertex3f(x+w, y+h, z);	/* 14 */
 	/* Front */
-	glVertex3f(x+width, y+height, z+depth);	/* 15 */
+	glVertex3f(x+w, y+h, z+d);	/* 15 */
 	glEnd();
 }
 
 
 __inline void
-draw_textured_node(struct node *n, float x, float y, float z, float width,
-    float height, float depth)
+draw_textured_node(struct node *n, float w, float h, float d)
 {
+	float x = n->n_pos.np_x;
+	float y = n->n_pos.np_y;
+	float z = n->n_pos.np_z;
 //	float ux, uy, uz;
 	float uw, uh, ud;
 	float color[4];
 	GLenum param;
 
-	/* Convert to texture Units */
+	/* Convert to texture units */
 #if 0
 	/* Too Big */
-	ud = depth / TEX_SIZE;
-	uh = height / TEX_SIZE;
-	uw = width / TEX_SIZE;
+	ud = d / TEX_SIZE;
+	uh = h / TEX_SIZE;
+	uw = w / TEX_SIZE;
 
-	/* Too Small*/
-	ud = depth;
-	uh = height;
-	uw = width;
+	/* Too small*/
+	ud = d;
+	uh = h;
+	uw = w;
 #endif
 
 	uw = 1.0;
@@ -975,11 +1101,11 @@ draw_textured_node(struct node *n, float x, float y, float z, float width,
 	glBegin(GL_POLYGON);
 	glVertex3f(x, y, z);
 	glTexCoord2f(0.0, 0.0);
-	glVertex3f(x, y+height, z);
+	glVertex3f(x, y+h, z);
 	glTexCoord2f(0.0, uw);
-	glVertex3f(x+width, y+height, z);
+	glVertex3f(x+w, y+h, z);
 	glTexCoord2f(uh, uw);
-	glVertex3f(x+width, y, z);
+	glVertex3f(x+w, y, z);
 	glTexCoord2f(uh, 0.0);
 	glEnd();
 
@@ -989,35 +1115,35 @@ draw_textured_node(struct node *n, float x, float y, float z, float width,
 
 #if 0
 	Same as Below, execpt using 3f
-	glVertex3f(x, y, z+depth);
+	glVertex3f(x, y, z+d);
 	glTexCoord3f(0.0, 0.0, 0.0);
-	glVertex3f(x, y+height, z+depth);
+	glVertex3f(x, y+h, z+d);
 	glTexCoord3f(0.0, uw, 0.0);
-	glVertex3f(x+width, y+height, z+depth);
+	glVertex3f(x+w, y+h, z+d);
 	glTexCoord3f(uh, uw, 0.0);
-	glVertex3f(x+width, y, z+depth);
+	glVertex3f(x+w, y, z+d);
 	glTexCoord3f(uh, 0.0, 0.0);
 #endif
 
-	glVertex3f(x, y, z+depth);
+	glVertex3f(x, y, z+d);
 	glTexCoord2f(0.0, 0.0);
-	glVertex3f(x, y+height, z+depth);
+	glVertex3f(x, y+h, z+d);
 	glTexCoord2f(0.0, uw);
-	glVertex3f(x+width, y+height, z+depth);
+	glVertex3f(x+w, y+h, z+d);
 	glTexCoord2f(uh, uw);
-	glVertex3f(x+width, y, z+depth);
+	glVertex3f(x+w, y, z+d);
 	glTexCoord2f(uh, 0.0);
 	glEnd();
 
 	/* Right */
 	glBegin(GL_POLYGON);
-	glVertex3f(x+width, y, z);
+	glVertex3f(x+w, y, z);
 	glTexCoord2f(0.0, 0.0);
-	glVertex3f(x+width, y, z+depth);
+	glVertex3f(x+w, y, z+d);
 	glTexCoord2f(0.0, ud);
-	glVertex3f(x+width, y+height, z+depth);
+	glVertex3f(x+w, y+h, z+d);
 	glTexCoord2f(uh, ud);
-	glVertex3f(x+width, y+height, z);
+	glVertex3f(x+w, y+h, z);
 	glTexCoord2f(uh, 0.0);
 	glEnd();
 
@@ -1025,23 +1151,23 @@ draw_textured_node(struct node *n, float x, float y, float z, float width,
 	glBegin(GL_POLYGON);
 	glVertex3f(x, y, z);
 	glTexCoord2f(0.0, 0.0);
-	glVertex3f(x, y, z+depth);
+	glVertex3f(x, y, z+d);
 	glTexCoord2f(0.0, ud);
-	glVertex3f(x, y+height, z+depth);
+	glVertex3f(x, y+h, z+d);
 	glTexCoord2f(uh, ud);
-	glVertex3f(x, y+height, z);
+	glVertex3f(x, y+h, z);
 	glTexCoord2f(uh, 0.0);
 	glEnd();
 
 	/* Top */
 	glBegin(GL_POLYGON);
-	glVertex3f(x, y+height, z);
+	glVertex3f(x, y+h, z);
 	glTexCoord2f(0.0, 0.0);
-	glVertex3f(x, y+height, z+depth);
+	glVertex3f(x, y+h, z+d);
 	glTexCoord2f(0.0, uw);
-	glVertex3f(x+width, y+height, z+depth);
+	glVertex3f(x+w, y+h, z+d);
 	glTexCoord2f(ud, uw);
-	glVertex3f(x+width, y+height, z);
+	glVertex3f(x+w, y+h, z);
 	glTexCoord2f(ud, 0.0);
 	glEnd();
 
@@ -1049,11 +1175,11 @@ draw_textured_node(struct node *n, float x, float y, float z, float width,
 	glBegin(GL_POLYGON);
 	glVertex3f(x, y, z);
 	glTexCoord2f(0.0, 0.0);
-	glVertex3f(x, y, z+depth);
+	glVertex3f(x, y, z+d);
 	glTexCoord2f(0.0, uw);
-	glVertex3f(x+width, y, z+depth);
+	glVertex3f(x+w, y, z+d);
 	glTexCoord2f(ud, uw);
-	glVertex3f(x+width, y, z);
+	glVertex3f(x+w, y, z);
 	glTexCoord2f(ud, 0.0);
 	glEnd();
 
@@ -1065,24 +1191,26 @@ draw_textured_node(struct node *n, float x, float y, float z, float width,
 }
 
 __inline void
-draw_node(struct node *n, float x, float y, float z, float width,
-    float height, float depth)
+draw_node(struct node *n, float w, float h, float d)
 {
 	if (op_tex)
-		draw_textured_node(n, x, y, z, width, height, depth);
+		draw_textured_node(n, w, h, d);
 	else
-		draw_filled_node(n, x, y, z, width, height, depth);
+		draw_filled_node(n, w, h, d);
 
 	if (op_wire)
-		draw_wireframe_node(n, x, y, z, width, height, depth);
+		draw_wireframe_node(n, w, h, d);
 }
 
 void
 make_cluster(void)
 {
-	int r, cb, cg, m, n;
 	float x = 0.0f, y = 0.0f, z = 0.0f;
+	int r, cb, cg, m, n;
+	struct node *node;
 
+	if (cluster_dl)
+		glDeleteLists(cluster_dl, 1);
 	cluster_dl = glGenLists(1);
 	glNewList(cluster_dl, GL_COMPILE);
 	for (r = 0; r < NROWS; r++, z += ROWDEPTH + ROWSPACE) {
@@ -1090,14 +1218,18 @@ make_cluster(void)
 			for (cg = 0; cg < NCAGES; cg++, y += CAGEHEIGHT + CAGESPACE) {
 				for (m = 0; m < NMODS; m++, x += MODWIDTH + MODSPACE) {
 					for (n = 0; n < NNODES; n++) {
-						draw_node(&nodes[r][cb][cg][m][n],
-						    x + NODESPACE,
-						    y + (2.0f * NODESPACE + NODEHEIGHT) *
-						      (n % (NNODES/2)) + NODESPACE,
-						    z + (2.0f * NODESPACE + NODEDEPTH) *
-						      (n / (NNODES/2)) +
-						      (NODESPACE * (n % (NNODES/2))),
-						    NODEWIDTH, NODEHEIGHT, NODEDEPTH);
+						node = &nodes[r][cb][cg][m][n];
+						node->n_pos.np_x = x + NODESPACE;
+						node->n_pos.np_y = y +
+						    (2.0f * NODESPACE + NODEHEIGHT) *
+						    (n % (NNODES/2)) + NODESPACE,
+						node->n_pos.np_z = z +
+						    (2.0f * NODESPACE + NODEDEPTH) *
+						    (n / (NNODES/2)) +
+						    (NODESPACE * (1 + n % (NNODES/2))),
+
+						draw_node(node, NODEWIDTH,
+						    NODEHEIGHT, NODEDEPTH);
 					}
 				}
 				x -= (MODWIDTH + MODSPACE) * NMODS;
