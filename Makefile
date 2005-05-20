@@ -3,7 +3,7 @@
 PROG = mon
 SRCS = mon.c parse.c load_png.c
 LIBS = -lGL -lglut -lGLU -lpng
-CFLAGS += -Wall
+CFLAGS += -Wall -W -g
 
 OBJS = ${SRCS:.c=.o}
 
