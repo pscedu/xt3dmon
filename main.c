@@ -842,7 +842,7 @@ draw(void)
 		glEnd();
 	}
 
-	SLIST_FOREACH(&seglh, ln, ln_next) {
+	SLIST_FOREACH(ln, &seglh, ln_next) {
 		glColor3f(1.0f, 1.0f, 1.0f);
 		glBegin(GL_LINES);
 		glLineWidth(1.0f);
