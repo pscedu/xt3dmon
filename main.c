@@ -60,9 +60,9 @@
 #define STARTY		(10.0f)
 #define STARTZ		(25.0f)
 
-#define STARTLX		(0.707f)	/* Must form a unit vector. */
+#define STARTLX		(0.99f)		/* Must form a unit vector. */
 #define STARTLY		(0.0f)
-#define STARTLZ		(-0.707f)
+#define STARTLZ		(-0.12f)
 
 #define WFRAMEWIDTH	(0.001f)
 
@@ -102,7 +102,6 @@ int		 ninfo_active = 0;
 int		 win_width = 800;
 int		 win_height = 600;
 
-GLfloat 	 angle = 0.1f;
 float		 x = STARTX, tx = STARTX, lx = STARTLX, tlx = STARTLX;
 float		 y = STARTY, ty = STARTY, ly = STARTLY, tly = STARTLY;
 float		 z = STARTZ, tz = STARTZ, lz = STARTLZ, tlz = STARTLZ;
@@ -124,7 +123,7 @@ struct state states[] = {
 	{ "Info",		0.2, 0.4, 0.6, 1 }	/* Dark blue */
 };
 
-__inline void
+void
 adjcam(void)
 {
 	glLoadIdentity();
@@ -480,8 +479,8 @@ void
 active_m(int u, int v)
 {
 	int du = u - xpos, dv = v - ypos;
-	float t, r, mag;
 	float sx, sy, sz, slx, sly, slz;
+	float adj, t, r, mag;
 
 	xpos = u;
 	ypos = v;
@@ -508,22 +507,26 @@ active_m(int u, int v)
 		if (t < 0)
 			t += PI * 2.0f;
 
+		/*
+		 * Maintain the magnitude of lx*lx + lz*lz.
+		 */
+		mag = sqrt(lx*lx + lz*lz);
 		x = r * cos(t) + XCENTER;
 		z = r * sin(t) + ZCENTER;
-		lx = (XCENTER - x) / r;
-		lz = (ZCENTER - z) / r;
+		lx = (XCENTER - x) / r * mag;
+		lz = (ZCENTER - z) / r * mag;
 	}
 	if (dv != 0 && spkey & GLUT_ACTIVE_SHIFT) {
-		t = (dv < 0) ? 0.005f : -0.005f;
-		if (fabs(angle + t) < PI / 2.0f) {
-			angle += t;
-			ly = sin(angle);
+		adj = (dv < 0) ? 0.005f : -0.005f;
+		t = asinf(ly);
+		if (fabs(t + adj) < PI / 2.0f) {
+			ly = sin(t + adj);
+			mag = sqrt(lx*lx + ly*ly + lz*lz);
+			lx /= mag;
+			ly /= mag;
+			lz /= mag;
 		}
 	}
-	mag = sqrt(lx*lx + ly*ly + lz*lz);
-	lx /= mag;
-	ly /= mag;
-	lz /= mag;
 
 	if (op_tween) {
 		tx = x;  x = sx;
