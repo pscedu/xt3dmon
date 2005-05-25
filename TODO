@@ -1,0 +1,5 @@
+$Id$
+
+commands
+	C - send a command to a node
+	G - goto a node (tween to viable state)
