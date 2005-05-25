@@ -4,12 +4,12 @@
 #include <sys/queue.h>
 #include <sys/time.h>
 
-#if defined(__APPLE_CC__)
-#include<OpenGL/gl.h>
-#include<GLUT/glut.h>
+#ifdef __APPLE_CC__
+# include <OpenGL/gl.h>
+# include <GLUT/glut.h>
 #else
-#include <GL/gl.h>
-#include <GL/freeglut.h>
+# include <GL/gl.h>
+# include <GL/freeglut.h>
 #endif
 
 #include <ctype.h>
@@ -65,100 +65,67 @@
 #define STARTLY		(0.0f)
 #define STARTLZ		(-0.12f)
 
-#define WFRAMEWIDTH	(0.001f)
+void			 load_textures(void);
+void			 del_textures(void);
+void			 make_cluster(void);
 
-#define TWEEN_THRES	(0.01)
-#define TWEEN_AMT	(.05)
+struct job		**jobs;
+size_t			 njobs;
+struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
+struct node		*invmap[NLOGIDS][NROWS * NCABS * NCAGES * NMODS * NNODES];
+struct node		 *selnode;
+int			 win_width = 800;
+int			 win_height = 600;
 
-struct lineseg {
-	float		sx, sy, sz;
-	float		ex, ey, ez;
-	SLIST_ENTRY(lineseg) ln_next;
+int			 active_fps = 0;
+int			 active_ninfo = 0;
+int			 active_flyby = 0;
+
+float			 tx = STARTX, tlx = STARTLX;
+float			 ty = STARTY, tly = STARTLY;
+float			 tz = STARTZ, tlz = STARTLZ;
+int			 spkey, xpos, ypos;
+GLint			 cluster_dl;
+struct timeval		 lastsync;
+long			 fps;
+struct lineseglh	 seglh;
+
+struct state st = {
+	STARTX, STARTY, STARTZ,				/* (x,y,z) */
+	STARTLX, STARTLY, STARTLZ,			/* (lx,ly,lz) */
+	OP_WIRES | OP_TWEEN | OP_GROUND,		/* options */
+	0,						/* panels */
+	1.0f,						/* job alpha */
+	1.0f,						/* other alpha */
+	GL_RGBA,					/* alpha blend format */
+	{ 0, 0 }					/* timeval (unused) */
 };
 
-struct flybypos {
-	float		fp_x;
-	float		fp_y;
-	float		fp_z;
-	float		fp_lx;
-	float		fp_ly;
-	float		fp_lz;
-	struct {
-		int	fpo_opts;
-		int	fpo_panels;
-		int	fpo_alpha_job;
-		int	fpo_alpha_oth;
-		int	fpo_alpha_fmt;
-	}		fp_op;
-	struct timeval	fp_tv;
-#define fp_op_tex fp_op.fpo_tex
-} flybypath[] = {
+struct state flybypath[] = {
 };
 
 #define NAIMST (sizeof(animpath) / sizeof(animpath[0]))
 
-void		 make_cluster(void);
-void		 load_textures(void);
-void 		 del_textures(void);
-void		 LoadTexture(void *, GLint, int);
-void 		*LoadPNG(char*);
-
-#define OP_TEX		(1<<0)
-#define OP_BLEND	(1<<1)
-#define OP_WIRES	(1<<2)
-#define OP_LINEFOLLOW	(1<<3)
-#define OP_LINELEAVE	(1<<4)
-#define OP_GROUND	(1<<5)
-#define OP_TWEEN	(1<<6)
-
-#define PANEL_FPS	(1<<0)
-#define PANEL_NINFO	(1<<1)
-
-struct job	**jobs;
-size_t		 njobs;
-struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
-struct node	*invmap[NLOGIDS][NROWS * NCABS * NCAGES * NMODS * NNODES];
-struct node	 *selnode;
-int		 options = OP_WIRES | OP_TWEEN | OP_GROUND;
-int		 panels = 0;
-int		 win_width = 800;
-int		 win_height = 600;
-
-float		 alpha_job = 1.0f;
-float		 alpha_oth = 1.0f;
-GLint		 alpha_fmt = GL_RGBA;
-
-int		 active_fps = 0;
-int		 active_ninfo = 0;
-int		 active_tour = 0;
-
-float		 x = STARTX, tx = STARTX, lx = STARTLX, tlx = STARTLX;
-float		 y = STARTY, ty = STARTY, ly = STARTLY, tly = STARTLY;
-float		 z = STARTZ, tz = STARTZ, lz = STARTLZ, tlz = STARTLZ;
-int		 spkey, xpos, ypos;
-GLint		 cluster_dl;
-struct timeval	 lastsync;
-long		 fps;
-SLIST_HEAD(, lineseg) seglh;
-
-struct state states[] = {
-	{ "Free",		1.0, 1.0, 1.0, 1 },	/* White */
-	{ "Disabled (PBS)",	1.0, 0.0, 0.0, 1 },	/* Red */
+struct nstate nstates[] = {
+	{ "Free",		1.00, 1.00, 1.00, 1 },	/* White */
+	{ "Disabled (PBS)",	1.00, 0.00, 0.00, 1 },	/* Red */
 	{ "Disabled (HW)",	0.66, 0.66, 0.66, 1 },	/* Gray */
-	{ NULL,			0.0, 0.0, 0.0, 1 },	/* (dynamic) */
-	{ "I/O",		1.0, 1.0, 0.0, 1 },	/* Yellow */
-	{ "Unaccounted",	0.0, 0.0, 1.0, 1 },	/* Blue */
-	{ "Bad",		1.0, 0.75, 0.75, 1 },	/* Pink */
-	{ "Checking",		0.0, 1.0, 0.0, 1 },	/* Green */
-	{ "Info",		0.2, 0.4, 0.6, 1 }	/* Dark blue */
+	{ NULL,			0.00, 0.00, 0.00, 1 },	/* (dynamic) */
+	{ "I/O",		1.00, 1.00, 0.00, 1 },	/* Yellow */
+	{ "Unaccounted",	0.00, 0.00, 1.00, 1 },	/* Blue */
+	{ "Bad",		1.00, 0.75, 0.75, 1 },	/* Pink */
+	{ "Checking",		0.00, 1.00, 0.00, 1 },	/* Green */
+	{ "Info",		0.20, 0.40, 0.60, 1 }	/* Dark blue */
 };
 
 void
 adjcam(void)
 {
 	glLoadIdentity();
-	gluLookAt(x, y, z,
-	    x + lx, y + ly, z + lz,
+	gluLookAt(st.st_x, st.st_y, st.st_z,
+	    st.st_x + st.st_lx,
+	    st.st_y + st.st_ly,
+	    st.st_z + st.st_lz,
 	    0.0f, 1.0f, 0.0f);
 }
 
@@ -182,40 +149,43 @@ key(unsigned char key, __unused int u, __unused int v)
 {
 	switch (key) {
 	case 'b':
-		options ^= OP_BLEND;
+		st.st_opts ^= OP_BLEND;
 		break;
 	case 'c':
 		if (selnode != NULL && selnode->n_savst)
 			selnode->n_state = selnode->n_savst;
 		break;
 	case 'e':
-		if (options & OP_TWEEN)
-			options &= ~OP_TWEEN;
+		if (st.st_opts & OP_TWEEN)
+			st.st_opts &= ~OP_TWEEN;
 		else {
-			options |= OP_TWEEN;
-			tx = x;  tlx = lx;
-			ty = y;  tly = ly;
-			tz = z;  tlz = lz;
+			st.st_opts |= OP_TWEEN;
+			tx = st.st_x;  tlx = st.st_lx;
+			ty = st.st_y;  tly = st.st_ly;
+			tz = st.st_z;  tlz = st.st_lz;
 		}
 		break;
+	case 'F':
+		active_flyby = !active_flyby;
+		break;
 	case 'f':
-		panels ^= PANEL_FPS;
+		st.st_panels ^= PANEL_FPS;
 		active_fps = 1;
-		if (panels & PANEL_NINFO)
+		if (st.st_panels & PANEL_NINFO)
 			active_ninfo = 1;
 		break;
 	case 'g':
-		options ^= OP_GROUND;
+		st.st_opts ^= OP_GROUND;
 		break;
 	case 'l': {
 		struct lineseg *ln, *pln;
 
-		if (options & OP_LINELEAVE)
-			options = (options & ~OP_LINELEAVE) | OP_LINEFOLLOW;
-		else if (options & OP_LINEFOLLOW)
-			options &= ~OP_LINEFOLLOW;
+		if (st.st_opts & OP_LINELEAVE)
+			st.st_opts = (st.st_opts & ~OP_LINELEAVE) | OP_LINEFOLLOW;
+		else if (st.st_opts & OP_LINEFOLLOW)
+			st.st_opts &= ~OP_LINEFOLLOW;
 		else
-			options = OP_LINELEAVE;
+			st.st_opts = OP_LINELEAVE;
 
 		for (ln = SLIST_FIRST(&seglh); ln != NULL; ln = pln) {
 			pln = SLIST_NEXT(ln, ln_next);
@@ -225,38 +195,39 @@ key(unsigned char key, __unused int u, __unused int v)
 		break;
 	    }
 	case 'n':
-		panels ^= PANEL_NINFO;
+		st.st_panels ^= PANEL_NINFO;
 		active_ninfo = 1;
 		break;
 	case 'p':
 		printf("pos[%.2f,%.2f,%.2f] look[%.2f,%.2f,%.2f]\n",
-		    x, y, z, lx, ly, lz);
+		    st.st_x, st.st_y, st.st_z,
+		    st.st_lx, st.st_ly, st.st_lz);
 		break;
 	case 'q':
 		exit(0);
 		/* NOTREACHED */
 	case 't':
-		options ^= OP_TEX;
+		st.st_opts ^= OP_TEX;
 		break;
 	case 'T':
-		alpha_fmt = (alpha_fmt == GL_RGBA ? GL_INTENSITY : GL_RGBA);
+		st.st_alpha_fmt = (st.st_alpha_fmt == GL_RGBA ? GL_INTENSITY : GL_RGBA);
 		del_textures();
 		load_textures();
 		break;
 	case 'w':
-		options ^= OP_WIRES;
+		st.st_opts ^= OP_WIRES;
 		break;
 	case '+':
-		alpha_job += (alpha_job + TRANS_INC > 1.0 ? 0.0 : TRANS_INC);
+		st.st_alpha_job += (st.st_alpha_job + TRANS_INC > 1.0 ? 0.0 : TRANS_INC);
 		break;
 	case '_':
-		alpha_job -= (alpha_job + TRANS_INC < 0.0 ? 0.0 : TRANS_INC);
+		st.st_alpha_job -= (st.st_alpha_job + TRANS_INC < 0.0 ? 0.0 : TRANS_INC);
 		break;
 	case '=':
-		alpha_oth += (alpha_oth + TRANS_INC > 1.0 ? 0.0 : TRANS_INC);
+		st.st_alpha_oth += (st.st_alpha_oth + TRANS_INC > 1.0 ? 0.0 : TRANS_INC);
 		break;
 	case '-':
-		alpha_oth -= (alpha_oth + TRANS_INC < 0.0 ? 0.0 : TRANS_INC);
+		st.st_alpha_oth -= (st.st_alpha_oth + TRANS_INC < 0.0 ? 0.0 : TRANS_INC);
 		break;
 	}
 
@@ -279,57 +250,56 @@ void
 sp_key(int key, __unused int u, __unused int v)
 {
 	float sx, sy, sz;
-	float r = sqrt((x - XCENTER) * (x - XCENTER) +
-	    (z - ZCENTER) * (z - ZCENTER));
+	float r = sqrt(SQUARE(st.st_x - XCENTER) + SQUARE(st.st_z - ZCENTER));
 	float adj = r / (ROWWIDTH / 2.0f);
 	adj = pow(2, adj);
 	if (adj > 50.0f)
 		adj = 50.0f;
 
 	sx = sy = sz = 0.0f; /* gcc */
-	if (options & OP_TWEEN) {
-		sx = x;  x = tx;
-		sy = y;  y = ty;
-		sz = z;  z = tz;
+	if (st.st_opts & OP_TWEEN) {
+		sx = st.st_x;  st.st_x = tx;
+		sy = st.st_y;  st.st_y = ty;
+		sz = st.st_z;  st.st_z = tz;
 	}
 
 	switch (key) {
 	case GLUT_KEY_LEFT:
-		x += lz * 0.3f * SCALE * adj;
-		z -= lx * 0.3f * SCALE * adj;
+		st.st_x += st.st_lz * 0.3f * SCALE * adj;
+		st.st_z -= st.st_lx * 0.3f * SCALE * adj;
 		break;
 	case GLUT_KEY_RIGHT:
-		x -= lz * 0.3f * SCALE * adj;
-		z += lx * 0.3f * SCALE * adj;
+		st.st_x -= st.st_lz * 0.3f * SCALE * adj;
+		st.st_z += st.st_lx * 0.3f * SCALE * adj;
 		break;
 	case GLUT_KEY_UP:			/* Forward */
-		x += lx * 0.3f * SCALE * adj;
-		y += ly * 0.3f * SCALE * adj;
-		z += lz * 0.3f * SCALE * adj;
+		st.st_x += st.st_lx * 0.3f * SCALE * adj;
+		st.st_y += st.st_ly * 0.3f * SCALE * adj;
+		st.st_z += st.st_lz * 0.3f * SCALE * adj;
 		break;
 	case GLUT_KEY_DOWN:			/* Backward */
-		x -= lx * 0.3f * SCALE * adj;
-		y -= ly * 0.3f * SCALE * adj;
-		z -= lz * 0.3f * SCALE * adj;
+		st.st_x -= st.st_lx * 0.3f * SCALE * adj;
+		st.st_y -= st.st_ly * 0.3f * SCALE * adj;
+		st.st_z -= st.st_lz * 0.3f * SCALE * adj;
 		break;
 	case GLUT_KEY_PAGE_UP:
-		x += lx * ly * 0.3f * SCALE * adj;
-		y += 0.3f * SCALE;
-		z += lz * ly * 0.3f * SCALE * adj;
+		st.st_x += st.st_lx * st.st_ly * 0.3f * SCALE * adj;
+		st.st_y += 0.3f * SCALE;
+		st.st_z += st.st_lz * st.st_ly * 0.3f * SCALE * adj;
 		break;
 	case GLUT_KEY_PAGE_DOWN:
-		x -= lx * ly * 0.3f * SCALE * adj;
-		y -= 0.3f * SCALE;
-		z -= lz * ly * 0.3f * SCALE * adj;
+		st.st_x -= st.st_lx * st.st_ly * 0.3f * SCALE * adj;
+		st.st_y -= 0.3f * SCALE;
+		st.st_z -= st.st_lz * st.st_ly * 0.3f * SCALE * adj;
 		break;
 	default:
 		return;
 	}
 
-	if (options & OP_TWEEN) {
-		tx = x;  x = sx;
-		ty = y;  y = sy;
-		tz = z;  z = sz;
+	if (st.st_opts & OP_TWEEN) {
+		tx = st.st_x;  st.st_x = sx;
+		ty = st.st_y;  st.st_y = sy;
+		tz = st.st_z;  st.st_z = sz;
 	} else
 		adjcam();
 }
@@ -439,39 +409,38 @@ sel_node(int u, int v)
 	int pr, pcb, pcg, pm;
 	int n0, n1, pn;
 
-	float rad = sqrt((x - XCENTER) * (x - XCENTER) +
-	    (z - ZCENTER) * (z - ZCENTER));
+	float rad = sqrt(SQUARE(st.st_x - XCENTER) + SQUARE(st.st_z - ZCENTER));
 	float dist = rad + ROWWIDTH;
 
 	float adju = FOVY * ASPECT * 2.0f * PI / 360.0f *
 	    (u - win_width / 2.0f) / win_width;
-	float angleu = acosf(lx);
-	if (lz < 0)
+	float angleu = acosf(st.st_lx);
+	if (st.st_lz < 0)
 		angleu = 2.0f * PI - angleu;
 	float dx = cos(angleu + adju);
 	float dz = sin(angleu + adju);
 
 	float adjv = FOVY * 2.0f * PI / 360.0f *
 	    (win_height / 2.0f - v) / win_height;
-	float anglev = asinf(ly);
+	float anglev = asinf(st.st_ly);
 	float dy = sin(anglev + adjv);
 
-	dx = x + dist * dx;
-	dy = y + dist * dy;
-	dz = z + dist * dz;
+	dx = st.st_x + dist * dx;
+	dy = st.st_y + dist * dy;
+	dz = st.st_z + dist * dz;
 
-	if (options & (OP_LINELEAVE | OP_LINEFOLLOW)) {
+	if (st.st_opts & (OP_LINELEAVE | OP_LINEFOLLOW)) {
 		struct lineseg *ln;
 
-		if (options & OP_LINEFOLLOW || SLIST_EMPTY(&seglh)) {
+		if (st.st_opts & OP_LINEFOLLOW || SLIST_EMPTY(&seglh)) {
 			if ((ln = malloc(sizeof(*ln))) == NULL)
 				err(1, NULL);
 			SLIST_INSERT_HEAD(&seglh, ln, ln_next);
 		} else
 			ln = SLIST_FIRST(&seglh);
-		ln->sx = x + 1.0f * lx;  ln->ex = dx;
-		ln->sy = y + 1.0f * ly;  ln->ey = dy;
-		ln->sz = z + 1.0f * lz;  ln->ez = dz;
+		ln->ln_sx = st.st_x + 1.0f * st.st_lx;  ln->ln_ex = dx;
+		ln->ln_sy = st.st_y + 1.0f * st.st_ly;  ln->ln_ey = dy;
+		ln->ln_sz = st.st_z + 1.0f * st.st_lz;  ln->ln_ez = dz;
 	}
 
 	for (r = 0; r < NROWS; r++) {
@@ -479,19 +448,19 @@ sel_node(int u, int v)
 			for (cg = 0; cg < NCAGES; cg++) {
 				for (m = 0; m < NMODS; m++) {
 					for (n = 0; n < NNODES; n++) {
-						n0 = lz > 0.0f ? n : NNODES - n - 1;
-						n1 = ly > 0.0f ? n : NNODES - n - 1;
+						n0 = st.st_lz > 0.0f ? n : NNODES - n - 1;
+						n1 = st.st_ly > 0.0f ? n : NNODES - n - 1;
 						pn = 2 * (n0 / (NNODES / 2)) +
 						    n1 % (NNODES / 2);
 
-						pr  = lz > 0.0f ? r  : NROWS  - r  - 1;
-						pcb = lx > 0.0f ? cb : NCABS  - cb - 1;
-						pcg = ly > 0.0f ? cg : NCAGES - cg - 1;
-						pm  = lx > 0.0f ? m  : NMODS  - m  - 1;
+						pr  = st.st_lz > 0.0f ? r  : NROWS  - r  - 1;
+						pcb = st.st_lx > 0.0f ? cb : NCABS  - cb - 1;
+						pcg = st.st_ly > 0.0f ? cg : NCAGES - cg - 1;
+						pm  = st.st_lx > 0.0f ? m  : NMODS  - m  - 1;
 
 						if (collide(&nodes[pr][pcb][pcg][pm][pn],
 						    NODEWIDTH, NODEHEIGHT, NODEDEPTH,
-						    x, y, z, dx, dy, dz))
+						    st.st_x, st.st_y, st.st_z, dx, dy, dz))
 							return;
 					}
 				}
@@ -520,21 +489,21 @@ active_m(int u, int v)
 
 	sx = sy = sz = 0.0f; /* gcc */
 	slx = sly = slz = 0.0f; /* gcc */
-	if (options & OP_TWEEN) {
-		sx = x;  x = tx;
-		sy = y;  y = ty;
-		sz = z;  z = tz;
+	if (st.st_opts & OP_TWEEN) {
+		sx = st.st_x;  st.st_x = tx;
+		sy = st.st_y;  st.st_y = ty;
+		sz = st.st_z;  st.st_z = tz;
 
-		slx = lx;  lx = tlx;
-		sly = ly;  ly = tly;
-		slz = lz;  lz = tlz;
+		slx = st.st_lx;  st.st_lx = tlx;
+		sly = st.st_ly;  st.st_ly = tly;
+		slz = st.st_lz;  st.st_lz = tlz;
 	}
 
 	if (du != 0 && spkey & GLUT_ACTIVE_CTRL) {
-		r = sqrt((x - XCENTER) * (x - XCENTER) +
-		    (z - ZCENTER) * (z - ZCENTER));
-		t = acosf((x - XCENTER) / r);
-		if (z < ZCENTER)
+		r = sqrt(SQUARE(st.st_x - XCENTER) +
+		    SQUARE(st.st_z - ZCENTER));
+		t = acosf((st.st_x - XCENTER) / r);
+		if (st.st_z < ZCENTER)
 			t = 2.0f * PI - t;
 		t += .01f * (float)du;
 		if (t < 0)
@@ -543,32 +512,33 @@ active_m(int u, int v)
 		/*
 		 * Maintain the magnitude of lx*lx + lz*lz.
 		 */
-		mag = sqrt(lx*lx + lz*lz);
-		x = r * cos(t) + XCENTER;
-		z = r * sin(t) + ZCENTER;
-		lx = (XCENTER - x) / r * mag;
-		lz = (ZCENTER - z) / r * mag;
+		mag = sqrt(SQUARE(st.st_lx) + SQUARE(st.st_lz));
+		st.st_x = r * cos(t) + XCENTER;
+		st.st_z = r * sin(t) + ZCENTER;
+		st.st_lx = (XCENTER - st.st_x) / r * mag;
+		st.st_lz = (ZCENTER - st.st_z) / r * mag;
 	}
 	if (dv != 0 && spkey & GLUT_ACTIVE_SHIFT) {
 		adj = (dv < 0) ? 0.005f : -0.005f;
-		t = asinf(ly);
+		t = asinf(st.st_ly);
 		if (fabs(t + adj) < PI / 2.0f) {
-			ly = sin(t + adj);
-			mag = sqrt(lx*lx + ly*ly + lz*lz);
-			lx /= mag;
-			ly /= mag;
-			lz /= mag;
+			st.st_ly = sin(t + adj);
+			mag = sqrt(SQUARE(st.st_lx) + SQUARE(st.st_ly) +
+			    SQUARE(st.st_lz));
+			st.st_lx /= mag;
+			st.st_ly /= mag;
+			st.st_lz /= mag;
 		}
 	}
 
-	if (options & OP_TWEEN) {
-		tx = x;  x = sx;
-		ty = y;  y = sy;
-		tz = z;  z = sz;
+	if (st.st_opts & OP_TWEEN) {
+		tx = st.st_x;  st.st_x = sx;
+		ty = st.st_y;  st.st_y = sy;
+		tz = st.st_z;  st.st_z = sz;
 
-		tlx = lx;  lx = slx;
-		tly = ly;  ly = sly;
-		tlz = lz;  lz = slz;
+		tlx = st.st_lx;  st.st_lx = slx;
+		tly = st.st_ly;  st.st_ly = sly;
+		tlz = st.st_lz;  st.st_lz = slz;
 	} else
 		adjcam();
 }
@@ -580,320 +550,6 @@ passive_m(int u, int v)
 	ypos = v;
 
 	sel_node(u, v);
-}
-
-#define FPS_STRING 10
-#define TEXT_HEIGHT 25
-#define X_SPEED 2
-#define Y_SPEED 1
-
-void
-draw_fps(void)
-{
-	size_t i;
-	char frate[FPS_STRING];
-	double x, y, w, h;
-	double cx, cy;
-	int vp[4];
-	static double sx = 0;
-
-	/* Save our state and set things up for 2d */
-	glPushAttrib(GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
-
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glGetIntegerv(GL_VIEWPORT, vp);
-
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-
-	gluOrtho2D(0.0, vp[2], 0.0, vp[3]);
-
-	/* Create string */
-	memset(frate, '\0', FPS_STRING);
-	snprintf(frate, sizeof(frate), "FPS: %ld", fps);
-
-	/* Coordinates */
-	w = sizeof(frate) * 8;
-	h = TEXT_HEIGHT;
-	x = vp[2] - w;
-	y = vp[3];
-
-	/*
-	 * Adjust current pos, on = 1, move onto screen
-	 * off = 0, move off screen
-	 */
-	if (sx == 0)
-		sx = vp[2];
-	else if (sx > x - 1 && (panels & PANEL_FPS))
-		sx -= X_SPEED;
-	else if (sx < vp[2]+1 && (panels & PANEL_FPS) == 0)
-		sx += X_SPEED;
-	else
-		active_fps = 0;
-
-	/* Draw the frame rate */
-	glColor4f(1.0,1.0,1.0,1.0);
-
-	/* Account for text height, and fps digit len */
-	cx = (fps > 999 ? 0 : 8);
-	cy = 8;
-
-	glRasterPos2d(sx+cx,y-TEXT_HEIGHT+cy);
-
-	for (i = 0; i < sizeof(frate); i++)
-		glutBitmapCharacter(GLUT_BITMAP_8_BY_13, frate[i]);
-
-	/* Draw polygon/wireframe around fps */
-	for (i = 0; i < 2; i++){
-		if (i == 0){
-			glBegin(GL_POLYGON);
-			glColor4f(0.20, 0.40, 0.5, 1.0);
-		} else {
-			glLineWidth(2.0);
-			glBegin(GL_LINE_LOOP);
-			glColor4f(0.40, 0.80, 1.0, 1.0);
-		}
-
-		glVertex2d(sx, y);
-		glVertex2d(sx+w, y);
-		glVertex2d(sx+w, y-h);
-		glVertex2d(sx, y-h);
-
-		glEnd();
-	}
-
-	glPopMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-
-	glPopAttrib();
-}
-
-#define MAX_INFO 50
-#define INFO_ITEMS 4
-
-#if 0
-int maxlen(char *str[MAX_INFO], int size)
-{
-	int len;
-	int t, i;
-
-	for(i = 0, t = 0; i < size; i++)
-	{
-		len = (t > strlen(str[i]) ? t: strlen(str[i]));
-		t = len;
-	}
-
-	return len;
-}
-#endif
-
-void
-draw_node_info(void)
-{
-	static size_t len = 0;
-	static double sx = 0;
-	static double sy = 0;
-	double x, y, w, h, cy;
-	int i, vp[4];
-	size_t j;
-	char str[INFO_ITEMS][MAX_INFO] = {
-		"Owner: %s",
-		"Job Name: %s",
-		"Duration: %d",
-		"Number CPU's: %d"
-	};
-
-	/* TODO: snprintf any data into our above strings */
-
-	/* Calculate the max string length */
-	if (len == 0)
-		for (i = 0, j = 0; i < INFO_ITEMS; i++) {
-			len = (j > strlen(str[i]) ? j : strlen(str[i]));
-			j = len;
-		}
-
-	/* Save our state and set things up for 2d */
-	glPushAttrib(GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
-
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glGetIntegerv(GL_VIEWPORT, vp);
-
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-
-	gluOrtho2D(0.0, vp[2], 0.0, vp[3]);
-
-	/* Take into account draw_fps (1 row). */
-	w = len * 8;
-	h = INFO_ITEMS * TEXT_HEIGHT;
-	x = vp[2] - w;
-	y = vp[3] - (panels & PANEL_FPS ? 1.25 : 0.25) * TEXT_HEIGHT;
-
-	/*
-	 * Adjust current position.
-	 * If on, move onto screen.  If off, move off screen.
-	 */
-	if (sx == 0)
-		sx = vp[2];
-	else if (sx > x - 1 && (panels & PANEL_NINFO))
-		sx -= X_SPEED;
-	else if (sx < vp[2]+1 && (panels & PANEL_NINFO) == 0)
-		sx += X_SPEED;
-	else
-		active_ninfo = 0;
-
-	/*
-	 * Autoslide up or down if the fps menu is enabled.
-	 * If on, go up.  If off, slide down.
-	 */
-	if (active_fps) {
-		if (sy == 0)
-			sy = y;
-		else if (sy > y && (panels & PANEL_FPS))
-			sy -= Y_SPEED;
-		else if (sy < y && (panels & PANEL_FPS) == 0)
-			sy += Y_SPEED;
-		else
-			active_ninfo = 0;
-		y = sy;
-	}
-
-	/* Factor to center text on y axis */
-	cy = 8;
-
-	/* Draw node info */
-	glColor4f(1.0,1.0,1.0,1.0);
-	for (i = 0; i < INFO_ITEMS; i++) {
-		/* Set the position of the text (account for fps!) */
-		glRasterPos2d(sx, (y-(i+1)*TEXT_HEIGHT)+cy);
-
-		for (j = 0; j < sizeof(str[i]); j++)
-			glutBitmapCharacter(GLUT_BITMAP_8_BY_13, str[i][j]);
-	}
-
-	/* Draw a polygon around node legend */
-	for (i = 0; i < 2; i++) {
-		if (i == 0) {
-			glBegin(GL_POLYGON);
-			glColor4f(0.20, 0.40, 0.5, 1.0);
-		} else {
-			glLineWidth(2.0);
-			glBegin(GL_LINE_LOOP);
-			glColor4f(0.40, 0.80, 1.0, 1.0);
-		}
-
-		/* Draw the polygon around the framerate */
-		glVertex2d(sx, y);
-		glVertex2d(sx+w, y);
-		glVertex2d(sx+w, y-h);
-		glVertex2d(sx, y-h);
-
-		glEnd();
-	}
-
-	glPopMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-
-	glPopAttrib();
-}
-
-void
-draw(void)
-{
-	struct lineseg *ln;
-
-	if (options & OP_TWEEN && (tx - x || ty - y || tz - z ||
-	    tlx - lx || tly - ly || tlz - lz)) {
-		x += (tx - x) * TWEEN_AMT;
-		y += (ty - y) * TWEEN_AMT;
-		z += (tz - z) * TWEEN_AMT;
-		if (fabs(tx - x) < TWEEN_THRES)
-			x = tx;
-		if (fabs(ty - y) < TWEEN_THRES)
-			y = ty;
-		if (fabs(tz - z) < TWEEN_THRES)
-			z = tz;
-
-		lx += (tlx - lx) * TWEEN_AMT;
-		ly += (tly - ly) * TWEEN_AMT;
-		lz += (tlz - lz) * TWEEN_AMT;
-		if (fabs(tlx - lx) < TWEEN_THRES)
-			lx = tlx;
-		if (fabs(tly - ly) < TWEEN_THRES)
-			ly = tly;
-		if (fabs(tlz - lz) < TWEEN_THRES)
-			lz = tlz;
-		adjcam();
-	}
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	if (options & OP_GROUND) {
-		/* Ground */
-		glColor3f(0.4f, 0.4f, 0.4f);
-		glBegin(GL_QUADS);
-		glVertex3f( -5.0f, 0.0f, -5.0f);
-		glVertex3f( -5.0f, 0.0f, 22.0f);
-		glVertex3f(230.0f, 0.0f, 22.0f);
-		glVertex3f(230.0f, 0.0f, -5.0f);
-		glEnd();
-
-		/* x-axis */
-		glColor3f(1.0f, 1.0f, 1.0f);
-		glBegin(GL_QUADS);
-		glVertex2f(-200.0f, -0.1f);
-		glVertex2f(-200.0f,  0.1f);
-		glVertex2f( 200.0f,  0.1f);
-		glVertex2f( 200.0f, -0.1f);
-		glEnd();
-
-		/* y-axis */
-		glColor3f(0.6f, 0.6f, 1.0f);
-		glBegin(GL_QUADS);
-		glVertex2f(-0.1f, -200.0f);
-		glVertex2f(-0.1f,  200.0f);
-		glVertex2f( 0.1f,  200.0f);
-		glVertex2f( 0.1f, -200.0f);
-		glEnd();
-
-		/* z-axis */
-		glColor3f(1.0f, 0.9f, 0.0f);
-		glBegin(GL_QUADS);
-		glVertex3f(-0.1f, -0.1f, -200.0f);
-		glVertex3f(-0.1f,  0.1f, -200.0f);
-		glVertex3f(-0.1f,  0.1f,  200.0f);
-		glVertex3f(-0.1f, -0.1f,  200.0f);
-		glVertex3f( 0.1f, -0.1f, -200.0f);
-		glVertex3f( 0.1f,  0.1f, -200.0f);
-		glVertex3f( 0.1f,  0.1f,  200.0f);
-		glVertex3f( 0.1f, -0.1f,  200.0f);
-		glEnd();
-	}
-
-	SLIST_FOREACH(ln, &seglh, ln_next) {
-		glColor3f(1.0f, 1.0f, 1.0f);
-		glBegin(GL_LINES);
-		glLineWidth(1.0f);
-		glVertex3f(ln->sx, ln->sy, ln->sz);
-		glVertex3f(ln->ex, ln->ey, ln->ez);
-		glEnd();
-	}
-
-	if (panels & PANEL_NINFO || active_ninfo)
-		draw_node_info();
-	if (panels & PANEL_FPS || active_fps)
-		draw_fps();
-
-	glCallList(cluster_dl);
-	glutSwapBuffers();
 }
 
 #define MAXCNT 100
@@ -921,319 +577,6 @@ idle(void)
 		cnt = 0;
 	}
 	draw();
-}
-
-/*
- * y
- * |        (x,y+height,z+depth) (x+width,y+height,z+depth)
- * |                      +-------------+
- * |                (11) /      10     /|
- * |                    / |           / |
- * |                   /     top  15 /  |
- * |                6 /   |         /   |
- * |                 /      12     /    |
- * | (x,y+height,z) +-------------+ (x+width,y+height,z)
- * |                |             |     |
- * |                |     |       |     | front
- * |                |      (right)|     |
- * |                |   7 |       |     | 9
- * |                |             |(14) |
- * |         (back) |     |       |     |
- * |                |    left     | 13  |
- * |              5 |     |       |     |
- * |                |         2   |     |
- * |                |     + - - - | - - + (x+width,y,z+depth)
- * |  (x,y,z+depth) |    /   (8)  |    /
- * |                | 1 /         |   /
- * |     z          |  / (bottom) |  / 3
- * |    /           | /           | /
- * |   /            |/     4      |/
- * |  /             +-------------+
- * | /           (x,y,z)    (x+width,y,z)
- * |/
- * +--------------------------------------------------- x
- * (0,0,0)
- */
-
-__inline void
-draw_filled_node(struct node *n, float w, float h, float d)
-{
-	float x = n->n_pos.np_x;
-	float y = n->n_pos.np_y;
-	float z = n->n_pos.np_z;
-	float r, g, b, a;
-
-	if (n->n_state == ST_USED) {
-		r = n->n_job->j_r;
-		g = n->n_job->j_g;
-		b = n->n_job->j_b;
-		a = alpha_job;
-	} else {
-		r = states[n->n_state].st_r;
-		g = states[n->n_state].st_g;
-		b = states[n->n_state].st_b;
-		a = alpha_oth;
-	}
-
-	if (options & OP_BLEND) {
-		glEnable(GL_BLEND);
-		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
-	} else
-		a = 1.0;
-
-	glColor4f(r, g, b, a);
-	glBegin(GL_POLYGON);
-	/* Bottom */
-	glVertex3f(x, y, z);
-	glVertex3f(x, y, z+d);		/*  1 */
-	glVertex3f(x+w, y, z+d);	/*  2 */
-	glVertex3f(x+w, y, z);		/*  3 */
-	glVertex3f(x, y, z);		/*  4 */
-	/* Back */
-	glVertex3f(x, y+h, z);		/*  5 */
-	glVertex3f(x, y+h, z+d);	/*  6 */
-	glVertex3f(x, y, z+d);		/*  7 */
-	/* Right */
-	glVertex3f(x+w, y, z+d);	/*  8 */
-	glVertex3f(x+w, y+h, z+d);	/*  9 */
-	glVertex3f(x, y+h, z+d);	/* 10 */
-
-	glVertex3f(x, y+h, z);		/* 11 */
-
-	/* Left */
-	glVertex3f(x+w, y+h, z);	/* 12 */
-	glVertex3f(x+w, y, z);		/* 13 */
-	glVertex3f(x+w, y+h, z);	/* 14 */
-	/* Front */
-	glVertex3f(x+w, y+h, z+d);	/* 15 */
-	glEnd();
-
-	if (options & OP_BLEND)
-		glDisable(GL_BLEND);
-}
-
-__inline void
-draw_wireframe_node(struct node *n, float w, float h, float d)
-{
-	float x = n->n_pos.np_x;
-	float y = n->n_pos.np_y;
-	float z = n->n_pos.np_z;
-
-	/* Wireframe outline */
-	x -= WFRAMEWIDTH;
-	y -= WFRAMEWIDTH;
-	z -= WFRAMEWIDTH;
-	w += 2.0f * WFRAMEWIDTH;
-	h += 2.0f * WFRAMEWIDTH;
-	d += 2.0f * WFRAMEWIDTH;
-
-	glLineWidth(1.0);
-	glColor3f(0.0f, 0.0f, 0.0f);
-	glBegin(GL_LINE_STRIP);
-	/* Bottom */
-	glVertex3f(x, y, z);
-	glVertex3f(x, y, z+d);		/*  1 */
-	glVertex3f(x+w, y, z+d);	/*  2 */
-	glVertex3f(x+w, y, z);		/*  3 */
-	glVertex3f(x, y, z);		/*  4 */
-	/* Back */
-	glVertex3f(x, y+h, z);		/*  5 */
-	glVertex3f(x, y+h, z+d);	/*  6 */
-	glVertex3f(x, y, z+d);		/*  7 */
-	/* Right */
-	glVertex3f(x+w, y, z+d);	/*  8 */
-	glVertex3f(x+w, y+h, z+d);	/*  9 */
-	glVertex3f(x, y+h, z+d);	/* 10 */
-
-	glVertex3f(x, y+h, z);		/* 11 */
-
-	/* Left */
-	glVertex3f(x+w, y+h, z);	/* 12 */
-	glVertex3f(x+w, y, z);		/* 13 */
-	glVertex3f(x+w, y+h, z);	/* 14 */
-	/* Front */
-	glVertex3f(x+w, y+h, z+d);	/* 15 */
-	glEnd();
-}
-
-__inline void
-draw_textured_node(struct node *n, float w, float h, float d)
-{
-	float x = n->n_pos.np_x;
-	float y = n->n_pos.np_y;
-	float z = n->n_pos.np_z;
-//	float ux, uy, uz;
-	float uw, uh, ud;
-	float color[4];
-	GLenum param;
-
-	/* Convert to texture units */
-#if 0
-	/* Too Big */
-	ud = d / TEX_SIZE;
-	uh = h / TEX_SIZE;
-	uw = w / TEX_SIZE;
-
-	/* Too small*/
-	ud = d;
-	uh = h;
-	uw = w;
-#endif
-
-	uw = 1.0;
-	ud = 2.0;
-	uh = 2.0;
-
-//	ux = 0.0;
-//	uy = 0.0;
-//	uz = 0.0;
-
-	glEnable(GL_TEXTURE_2D);
-
-	/* DEBUG */
-	if (options & OP_BLEND){
-		glEnable(GL_BLEND);
-
-		/* 1 */
-		//glBlendFunc(GL_SRC_COLOR, GL_CONSTANT_ALPHA);
-
-		/* 2 Works with: GL_INTENSITY */
-		glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
-
-		/* 3 Transparent, but alpha value doesn't effect */
-		//glBlendFunc(GL_SRC_COLOR, GL_DST_ALPHA);
-
-		/* 4 Works with: GL_INTENSITY */
-		//glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
-
-		param = GL_BLEND;
-	} else
-		param = GL_REPLACE;
-
-	glBindTexture(GL_TEXTURE_2D, states[n->n_state].st_texid);
-
-	if (n->n_state == ST_USED) {
-		color[0] = n->n_job->j_r;
-		color[1] = n->n_job->j_g;
-		color[2] = n->n_job->j_b;
-		color[3] = alpha_job;
-	} else {
-		/* Default color, with alpha */
-		color[0] = 0.90;
-		color[1] = 0.80;
-		color[2] = 0.50;
-		color[3] = alpha_oth;
-	}
-
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, param);
-
-	if (options & OP_BLEND)
-		glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, color);
-
-
-	/* Back  */
-	glBegin(GL_POLYGON);
-	glVertex3f(x, y, z);
-	glTexCoord2f(0.0, 0.0);
-	glVertex3f(x, y+h, z);
-	glTexCoord2f(0.0, uw);
-	glVertex3f(x+w, y+h, z);
-	glTexCoord2f(uh, uw);
-	glVertex3f(x+w, y, z);
-	glTexCoord2f(uh, 0.0);
-	glEnd();
-
-
-	/* Front */
-	glBegin(GL_POLYGON);
-
-#if 0
-	Same as Below, execpt using 3f
-	glVertex3f(x, y, z+d);
-	glTexCoord3f(0.0, 0.0, 0.0);
-	glVertex3f(x, y+h, z+d);
-	glTexCoord3f(0.0, uw, 0.0);
-	glVertex3f(x+w, y+h, z+d);
-	glTexCoord3f(uh, uw, 0.0);
-	glVertex3f(x+w, y, z+d);
-	glTexCoord3f(uh, 0.0, 0.0);
-#endif
-
-	glVertex3f(x, y, z+d);
-	glTexCoord2f(0.0, 0.0);
-	glVertex3f(x, y+h, z+d);
-	glTexCoord2f(0.0, uw);
-	glVertex3f(x+w, y+h, z+d);
-	glTexCoord2f(uh, uw);
-	glVertex3f(x+w, y, z+d);
-	glTexCoord2f(uh, 0.0);
-	glEnd();
-
-	/* Right */
-	glBegin(GL_POLYGON);
-	glVertex3f(x+w, y, z);
-	glTexCoord2f(0.0, 0.0);
-	glVertex3f(x+w, y, z+d);
-	glTexCoord2f(0.0, ud);
-	glVertex3f(x+w, y+h, z+d);
-	glTexCoord2f(uh, ud);
-	glVertex3f(x+w, y+h, z);
-	glTexCoord2f(uh, 0.0);
-	glEnd();
-
-	/* Left */
-	glBegin(GL_POLYGON);
-	glVertex3f(x, y, z);
-	glTexCoord2f(0.0, 0.0);
-	glVertex3f(x, y, z+d);
-	glTexCoord2f(0.0, ud);
-	glVertex3f(x, y+h, z+d);
-	glTexCoord2f(uh, ud);
-	glVertex3f(x, y+h, z);
-	glTexCoord2f(uh, 0.0);
-	glEnd();
-
-	/* Top */
-	glBegin(GL_POLYGON);
-	glVertex3f(x, y+h, z);
-	glTexCoord2f(0.0, 0.0);
-	glVertex3f(x, y+h, z+d);
-	glTexCoord2f(0.0, uw);
-	glVertex3f(x+w, y+h, z+d);
-	glTexCoord2f(ud, uw);
-	glVertex3f(x+w, y+h, z);
-	glTexCoord2f(ud, 0.0);
-	glEnd();
-
-	/* Bottom */
-	glBegin(GL_POLYGON);
-	glVertex3f(x, y, z);
-	glTexCoord2f(0.0, 0.0);
-	glVertex3f(x, y, z+d);
-	glTexCoord2f(0.0, uw);
-	glVertex3f(x+w, y, z+d);
-	glTexCoord2f(ud, uw);
-	glVertex3f(x+w, y, z);
-	glTexCoord2f(ud, 0.0);
-	glEnd();
-
-	/* DEBUG */
-	if (options & OP_BLEND)
-		glDisable(GL_BLEND);
-
-	glDisable(GL_TEXTURE_2D);
-}
-
-__inline void
-draw_node(struct node *n, float w, float h, float d)
-{
-	if (options & OP_TEX)
-		draw_textured_node(n, w, h, d);
-	else
-		draw_filled_node(n, w, h, d);
-	if (options & OP_WIRES)
-		draw_wireframe_node(n, w, h, d);
 }
 
 void
@@ -1285,9 +628,9 @@ load_textures(void)
 	/* Read in texture IDs */
 	for (i = 0; i < NST; i++) {
 		snprintf(path, sizeof(path), _PATH_TEX, i);
-		data = LoadPNG(path);
-		LoadTexture(data, alpha_fmt, i + 1);
-		states[i].st_texid = i + 1;
+		data = load_png(path);
+		load_texture(data, st.st_alpha_fmt, i + 1);
+		nstates[i].nst_texid = i + 1;
 	}
 }
 
@@ -1298,7 +641,7 @@ del_textures(void)
 
 	/* Delete textures from vid memory */
 	for (i = 0; i < NST; i++)
-		glDeleteTextures(1, &states[i].st_texid);
+		glDeleteTextures(1, &nstates[i].nst_texid);
 }
 
 int
