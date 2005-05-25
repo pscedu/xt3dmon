@@ -50,6 +50,32 @@ draw(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (st.st_opts & OP_GROUND) {
+
+		if(0){
+		float sx = -13.0;
+		float w = 256;
+		float d = 256;
+		float sz = -128.0;
+		float f = 20.0;
+//		float t = 128;
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, 5);
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+		glBegin(GL_QUADS);
+		glVertex3f(sx+w, 0.0f, sz);
+		glTexCoord3f(0.0, 0.0, 1.0);
+		glVertex3f(sx, 0.0f, sz);
+		glTexCoord3f(0.0, f, 1.0);
+		glVertex3f(sx, 0.0f, sz+d);
+		glTexCoord3f(f, f, 1.0);
+		glVertex3f(sx+w, 0.0f, sz+d);
+		glTexCoord3f(f, 0.0, 1.0);
+		glEnd();
+		glDisable(GL_TEXTURE_2D);
+		}
+
+
+
 		/* Ground */
 		glColor3f(0.4f, 0.4f, 0.4f);
 		glBegin(GL_QUADS);
@@ -106,6 +132,11 @@ draw(void)
 		draw_fps();
 
 	glCallList(cluster_dl);
+	
+	glClearColor(0.0, 0.0, 0.0, 1.0);
+	if(st.st_opts & OP_CAPTURE)
+		capture_fb();
+		
 	glutSwapBuffers();
 }
 
