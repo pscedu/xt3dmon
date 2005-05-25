@@ -23,6 +23,7 @@
 
 #include "mon.h"
 #include "slist.h"
+#include "cdefs.h"
 
 #define SLEEP_INTV	5
 #define TRANS_INC	0.10
@@ -75,32 +76,61 @@ struct lineseg {
 	SLIST_ENTRY(lineseg) ln_next;
 };
 
+struct flybypos {
+	float		fp_x;
+	float		fp_y;
+	float		fp_z;
+	float		fp_lx;
+	float		fp_ly;
+	float		fp_lz;
+	struct {
+		int	fpo_opts;
+		int	fpo_panels;
+		int	fpo_alpha_job;
+		int	fpo_alpha_oth;
+		int	fpo_alpha_fmt;
+	}		fp_op;
+	struct timeval	fp_tv;
+#define fp_op_tex fp_op.fpo_tex
+} flybypath[] = {
+};
+
+#define NAIMST (sizeof(animpath) / sizeof(animpath[0]))
+
 void		 make_cluster(void);
 void		 load_textures(void);
 void 		 del_textures(void);
-void		 LoadTexture(void*, GLint, int);
+void		 LoadTexture(void *, GLint, int);
 void 		*LoadPNG(char*);
+
+#define OP_TEX		(1<<0)
+#define OP_BLEND	(1<<1)
+#define OP_WIRES	(1<<2)
+#define OP_LINEFOLLOW	(1<<3)
+#define OP_LINELEAVE	(1<<4)
+#define OP_GROUND	(1<<5)
+#define OP_TWEEN	(1<<6)
+
+#define PANEL_FPS	(1<<0)
+#define PANEL_NINFO	(1<<1)
 
 struct job	**jobs;
 size_t		 njobs;
 struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 struct node	*invmap[NLOGIDS][NROWS * NCABS * NCAGES * NMODS * NNODES];
 struct node	 *selnode;
-int		 op_tex = 0;
-int		 op_blend = 0;
-int		 op_wire = 1;
-float		 op_alpha_job = 1.0f;
-float		 op_alpha_oth = 1.0f;
-GLint		 op_fmt = GL_RGBA;
-float		 op_tween = TWEEN_AMT;
-int		 op_lines = 0;
-int		 op_env = 1;
-int		 op_fps = 0;
-int		 fps_active = 0;
-int 		 op_ninfo = 0;
-int		 ninfo_active = 0;
+int		 options = OP_WIRES | OP_TWEEN | OP_GROUND;
+int		 panels = 0;
 int		 win_width = 800;
 int		 win_height = 600;
+
+float		 alpha_job = 1.0f;
+float		 alpha_oth = 1.0f;
+GLint		 alpha_fmt = GL_RGBA;
+
+int		 active_fps = 0;
+int		 active_ninfo = 0;
+int		 active_tour = 0;
 
 float		 x = STARTX, tx = STARTX, lx = STARTLX, tlx = STARTLX;
 float		 y = STARTY, ty = STARTY, ly = STARTLY, tly = STARTLY;
@@ -148,40 +178,45 @@ reshape(int w, int h)
 }
 
 void
-key(unsigned char key, int u, int v)
+key(unsigned char key, __unused int u, __unused int v)
 {
 	switch (key) {
 	case 'b':
-		op_blend = !op_blend;
+		options ^= OP_BLEND;
 		break;
 	case 'c':
 		if (selnode != NULL && selnode->n_savst)
 			selnode->n_state = selnode->n_savst;
 		break;
 	case 'e':
-		if (op_tween)
-			op_tween = 0;
+		if (options & OP_TWEEN)
+			options &= ~OP_TWEEN;
 		else {
-			op_tween = TWEEN_AMT;
+			options |= OP_TWEEN;
 			tx = x;  tlx = lx;
 			ty = y;  tly = ly;
 			tz = z;  tlz = lz;
 		}
 		break;
 	case 'f':
-		op_fps = !op_fps;
-		fps_active = 1;
-		if(op_ninfo)
-			ninfo_active = 1;
+		panels ^= PANEL_FPS;
+		active_fps = 1;
+		if (panels & PANEL_NINFO)
+			active_ninfo = 1;
 		break;
 	case 'g':
-		op_env = !op_env;
+		options ^= OP_GROUND;
 		break;
 	case 'l': {
 		struct lineseg *ln, *pln;
 
-		if (++op_lines == 3)
-			op_lines = 0;
+		if (options & OP_LINELEAVE)
+			options = (options & ~OP_LINELEAVE) | OP_LINEFOLLOW;
+		else if (options & OP_LINEFOLLOW)
+			options &= ~OP_LINEFOLLOW;
+		else
+			options = OP_LINELEAVE;
+
 		for (ln = SLIST_FIRST(&seglh); ln != NULL; ln = pln) {
 			pln = SLIST_NEXT(ln, ln_next);
 			free(ln);
@@ -190,8 +225,8 @@ key(unsigned char key, int u, int v)
 		break;
 	    }
 	case 'n':
-		op_ninfo = !op_ninfo;
-		ninfo_active = 1;
+		panels ^= PANEL_NINFO;
+		active_ninfo = 1;
 		break;
 	case 'p':
 		printf("pos[%.2f,%.2f,%.2f] look[%.2f,%.2f,%.2f]\n",
@@ -201,27 +236,27 @@ key(unsigned char key, int u, int v)
 		exit(0);
 		/* NOTREACHED */
 	case 't':
-		op_tex = !op_tex;
+		options ^= OP_TEX;
 		break;
 	case 'T':
-		op_fmt = ((op_fmt == GL_RGBA) ? GL_INTENSITY : GL_RGBA);
+		alpha_fmt = (alpha_fmt == GL_RGBA ? GL_INTENSITY : GL_RGBA);
 		del_textures();
 		load_textures();
 		break;
 	case 'w':
-		op_wire = !op_wire;
+		options ^= OP_WIRES;
 		break;
 	case '+':
-		op_alpha_job += ((op_alpha_job+TRANS_INC > 1.0) ? 0.0 : TRANS_INC);
+		alpha_job += (alpha_job + TRANS_INC > 1.0 ? 0.0 : TRANS_INC);
 		break;
 	case '_':
-		op_alpha_job -= ((op_alpha_job+TRANS_INC < 0.0) ? 0.0 : TRANS_INC);
+		alpha_job -= (alpha_job + TRANS_INC < 0.0 ? 0.0 : TRANS_INC);
 		break;
 	case '=':
-		op_alpha_oth += ((op_alpha_oth+TRANS_INC > 1.0) ? 0.0 : TRANS_INC);
+		alpha_oth += (alpha_oth + TRANS_INC > 1.0 ? 0.0 : TRANS_INC);
 		break;
 	case '-':
-		op_alpha_oth -= ((op_alpha_oth+TRANS_INC < 0.0) ? 0.0 : TRANS_INC);
+		alpha_oth -= (alpha_oth + TRANS_INC < 0.0 ? 0.0 : TRANS_INC);
 		break;
 	}
 
@@ -241,7 +276,7 @@ key(unsigned char key, int u, int v)
  * y
  */
 void
-sp_key(int key, int u, int v)
+sp_key(int key, __unused int u, __unused int v)
 {
 	float sx, sy, sz;
 	float r = sqrt((x - XCENTER) * (x - XCENTER) +
@@ -252,7 +287,7 @@ sp_key(int key, int u, int v)
 		adj = 50.0f;
 
 	sx = sy = sz = 0.0f; /* gcc */
-	if (op_tween) {
+	if (options & OP_TWEEN) {
 		sx = x;  x = tx;
 		sy = y;  y = ty;
 		sz = z;  z = tz;
@@ -291,7 +326,7 @@ sp_key(int key, int u, int v)
 		return;
 	}
 
-	if (op_tween) {
+	if (options & OP_TWEEN) {
 		tx = x;  x = sx;
 		ty = y;  y = sy;
 		tz = z;  z = sz;
@@ -425,10 +460,10 @@ sel_node(int u, int v)
 	dy = y + dist * dy;
 	dz = z + dist * dz;
 
-	if (op_lines) {
+	if (options & (OP_LINELEAVE | OP_LINEFOLLOW)) {
 		struct lineseg *ln;
 
-		if (op_lines == 1 || SLIST_EMPTY(&seglh)) {
+		if (options & OP_LINEFOLLOW || SLIST_EMPTY(&seglh)) {
 			if ((ln = malloc(sizeof(*ln))) == NULL)
 				err(1, NULL);
 			SLIST_INSERT_HEAD(&seglh, ln, ln_next);
@@ -466,13 +501,11 @@ sel_node(int u, int v)
 }
 
 void
-mouse(int button, int state, int u, int v)
+mouse(__unused int button, __unused int state, int u, int v)
 {
 	spkey = glutGetModifiers();
 	xpos = u;
 	ypos = v;
-//	if (!spkey)
-//		sel_node(u, v);
 }
 
 void
@@ -487,7 +520,7 @@ active_m(int u, int v)
 
 	sx = sy = sz = 0.0f; /* gcc */
 	slx = sly = slz = 0.0f; /* gcc */
-	if (op_tween) {
+	if (options & OP_TWEEN) {
 		sx = x;  x = tx;
 		sy = y;  y = ty;
 		sz = z;  z = tz;
@@ -528,7 +561,7 @@ active_m(int u, int v)
 		}
 	}
 
-	if (op_tween) {
+	if (options & OP_TWEEN) {
 		tx = x;  x = sx;
 		ty = y;  y = sy;
 		tz = z;  z = sz;
@@ -555,15 +588,14 @@ passive_m(int u, int v)
 #define Y_SPEED 1
 
 void
-draw_fps(int on)
+draw_fps(void)
 {
-	int i;
+	size_t i;
 	char frate[FPS_STRING];
 	double x, y, w, h;
 	double cx, cy;
 	int vp[4];
 	static double sx = 0;
-	static double sy = 0;
 
 	/* Save our state and set things up for 2d */
 	glPushAttrib(GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
@@ -595,12 +627,12 @@ draw_fps(int on)
 	 */
 	if (sx == 0)
 		sx = vp[2];
-	else if (sx > x - 1 && on)
+	else if (sx > x - 1 && (panels & PANEL_FPS))
 		sx -= X_SPEED;
-	else if (sx < vp[2]+1 && !on)
+	else if (sx < vp[2]+1 && (panels & PANEL_FPS) == 0)
 		sx += X_SPEED;
 	else
-		fps_active = 0;
+		active_fps = 0;
 
 	/* Draw the frame rate */
 	glColor4f(1.0,1.0,1.0,1.0);
@@ -660,13 +692,14 @@ int maxlen(char *str[MAX_INFO], int size)
 #endif
 
 void
-draw_node_info(int on, int fon)
+draw_node_info(void)
 {
-	static int len = 0;
+	static size_t len = 0;
 	static double sx = 0;
 	static double sy = 0;
 	double x, y, w, h, cy;
-	int i, j, vp[4];
+	int i, vp[4];
+	size_t j;
 	char str[INFO_ITEMS][MAX_INFO] = {
 		"Owner: %s",
 		"Job Name: %s",
@@ -697,38 +730,38 @@ draw_node_info(int on, int fon)
 
 	gluOrtho2D(0.0, vp[2], 0.0, vp[3]);
 
-	/* Take into account draw_fps (1 row) */
+	/* Take into account draw_fps (1 row). */
 	w = len * 8;
 	h = INFO_ITEMS * TEXT_HEIGHT;
 	x = vp[2] - w;
-	y = vp[3] - (op_fps ? 1.25 : 0.25) * TEXT_HEIGHT;
+	y = vp[3] - (panels & PANEL_FPS ? 1.25 : 0.25) * TEXT_HEIGHT;
 
 	/*
-	 * Adjust current pos, on = 1, move onto screen
-	 * off = 0, move off screen
+	 * Adjust current position.
+	 * If on, move onto screen.  If off, move off screen.
 	 */
 	if (sx == 0)
 		sx = vp[2];
-	else if (sx > x - 1 && on)
+	else if (sx > x - 1 && (panels & PANEL_NINFO))
 		sx -= X_SPEED;
-	else if (sx < vp[2]+1 && !on)
+	else if (sx < vp[2]+1 && (panels & PANEL_NINFO) == 0)
 		sx += X_SPEED;
 	else
-		ninfo_active = 0;
+		active_ninfo = 0;
 
 	/*
-	 * autoslide up or down if the fps menu is enabled.
-	 * on = 1 means go up, off = 0 means slide down.
+	 * Autoslide up or down if the fps menu is enabled.
+	 * If on, go up.  If off, slide down.
 	 */
-	if (fps_active) {
+	if (active_fps) {
 		if (sy == 0)
 			sy = y;
-		else if (sy > y && fon)
+		else if (sy > y && (panels & PANEL_FPS))
 			sy -= Y_SPEED;
-		else if (sy < y && !fon)
+		else if (sy < y && (panels & PANEL_FPS) == 0)
 			sy += Y_SPEED;
 		else
-			ninfo_active = 0;
+			active_ninfo = 0;
 		y = sy;
 	}
 
@@ -777,11 +810,11 @@ draw(void)
 {
 	struct lineseg *ln;
 
-	if (op_tween && (tx - x || ty - y || tz - z ||
+	if (options & OP_TWEEN && (tx - x || ty - y || tz - z ||
 	    tlx - lx || tly - ly || tlz - lz)) {
-		x += (tx - x) * op_tween;
-		y += (ty - y) * op_tween;
-		z += (tz - z) * op_tween;
+		x += (tx - x) * TWEEN_AMT;
+		y += (ty - y) * TWEEN_AMT;
+		z += (tz - z) * TWEEN_AMT;
 		if (fabs(tx - x) < TWEEN_THRES)
 			x = tx;
 		if (fabs(ty - y) < TWEEN_THRES)
@@ -789,9 +822,9 @@ draw(void)
 		if (fabs(tz - z) < TWEEN_THRES)
 			z = tz;
 
-		lx += (tlx - lx) * op_tween;
-		ly += (tly - ly) * op_tween;
-		lz += (tlz - lz) * op_tween;
+		lx += (tlx - lx) * TWEEN_AMT;
+		ly += (tly - ly) * TWEEN_AMT;
+		lz += (tlz - lz) * TWEEN_AMT;
 		if (fabs(tlx - lx) < TWEEN_THRES)
 			lx = tlx;
 		if (fabs(tly - ly) < TWEEN_THRES)
@@ -803,7 +836,7 @@ draw(void)
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	if (op_env) {
+	if (options & OP_GROUND) {
 		/* Ground */
 		glColor3f(0.4f, 0.4f, 0.4f);
 		glBegin(GL_QUADS);
@@ -854,10 +887,10 @@ draw(void)
 		glEnd();
 	}
 
-	if(op_ninfo || ninfo_active)
-		draw_node_info(op_ninfo, op_fps);
-	if(op_fps || fps_active)
-		draw_fps((op_fps));
+	if (panels & PANEL_NINFO || active_ninfo)
+		draw_node_info();
+	if (panels & PANEL_FPS || active_fps)
+		draw_fps();
 
 	glCallList(cluster_dl);
 	glutSwapBuffers();
@@ -934,15 +967,15 @@ draw_filled_node(struct node *n, float w, float h, float d)
 		r = n->n_job->j_r;
 		g = n->n_job->j_g;
 		b = n->n_job->j_b;
-		a = op_alpha_job;
+		a = alpha_job;
 	} else {
 		r = states[n->n_state].st_r;
 		g = states[n->n_state].st_g;
 		b = states[n->n_state].st_b;
-		a = op_alpha_oth;
+		a = alpha_oth;
 	}
 
-	if (op_blend) {
+	if (options & OP_BLEND) {
 		glEnable(GL_BLEND);
 		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
@@ -976,7 +1009,7 @@ draw_filled_node(struct node *n, float w, float h, float d)
 	glVertex3f(x+w, y+h, z+d);	/* 15 */
 	glEnd();
 
-	if (op_blend)
+	if (options & OP_BLEND)
 		glDisable(GL_BLEND);
 }
 
@@ -1024,7 +1057,6 @@ draw_wireframe_node(struct node *n, float w, float h, float d)
 	glEnd();
 }
 
-
 __inline void
 draw_textured_node(struct node *n, float w, float h, float d)
 {
@@ -1060,7 +1092,7 @@ draw_textured_node(struct node *n, float w, float h, float d)
 	glEnable(GL_TEXTURE_2D);
 
 	/* DEBUG */
-	if (op_blend){
+	if (options & OP_BLEND){
 		glEnable(GL_BLEND);
 
 		/* 1 */
@@ -1085,18 +1117,18 @@ draw_textured_node(struct node *n, float w, float h, float d)
 		color[0] = n->n_job->j_r;
 		color[1] = n->n_job->j_g;
 		color[2] = n->n_job->j_b;
-		color[3] = op_alpha_job;
+		color[3] = alpha_job;
 	} else {
 		/* Default color, with alpha */
 		color[0] = 0.90;
 		color[1] = 0.80;
 		color[2] = 0.50;
-		color[3] = op_alpha_oth;
+		color[3] = alpha_oth;
 	}
 
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, param);
 
-	if (op_blend)
+	if (options & OP_BLEND)
 		glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, color);
 
 
@@ -1187,7 +1219,7 @@ draw_textured_node(struct node *n, float w, float h, float d)
 	glEnd();
 
 	/* DEBUG */
-	if (op_blend)
+	if (options & OP_BLEND)
 		glDisable(GL_BLEND);
 
 	glDisable(GL_TEXTURE_2D);
@@ -1196,12 +1228,11 @@ draw_textured_node(struct node *n, float w, float h, float d)
 __inline void
 draw_node(struct node *n, float w, float h, float d)
 {
-	if (op_tex)
+	if (options & OP_TEX)
 		draw_textured_node(n, w, h, d);
 	else
 		draw_filled_node(n, w, h, d);
-
-	if (op_wire)
+	if (options & OP_WIRES)
 		draw_wireframe_node(n, w, h, d);
 }
 
@@ -1255,7 +1286,7 @@ load_textures(void)
 	for (i = 0; i < NST; i++) {
 		snprintf(path, sizeof(path), _PATH_TEX, i);
 		data = LoadPNG(path);
-		LoadTexture(data, op_fmt, i + 1);
+		LoadTexture(data, alpha_fmt, i + 1);
 		states[i].st_texid = i + 1;
 	}
 }
