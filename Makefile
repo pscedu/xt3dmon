@@ -1,7 +1,7 @@
 # $Id$
 
 PROG = mon
-SRCS = draw.c load_png.c mon.c panel.c parse.c
+SRCS = capture.c draw.c load_png.c mon.c panel.c parse.c
 LIBS = -lGL -lglut -lGLU -lpng
 CFLAGS += -Wall -W -g
 
