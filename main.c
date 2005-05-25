@@ -98,13 +98,18 @@ struct state st = {
 	1.0f,						/* job alpha */
 	1.0f,						/* other alpha */
 	GL_RGBA,					/* alpha blend format */
-	{ 0, 0 }					/* timeval (unused) */
+	0,						/* tween mode (unused) */
+	0						/* nframes (unused) */
 };
 
-struct state flybypath[] = {
-};
+#define TM_STRAIGHT	1
+#define TM_RADIUS	2
 
-#define NAIMST (sizeof(animpath) / sizeof(animpath[0]))
+const struct state flybypath[] = {
+	{  50.00f,  20.00f,  10.00f, -0.40f,  0.10f,  0.40f, OP_WIRES | OP_TWEEN | OP_GROUND, 0, 0, 1.0f, 1.0f, TM_STRAIGHT, 100 },
+	{ -10.00f,  80.00f,  12.00f,  0.60f, -0.15f,  0.50f, OP_WIRES | OP_TWEEN | OP_GROUND, 0, 0, 1.0f, 1.0f, TM_RADIUS,   100 },
+	{   0.00f,   0.00f,   0.00f,  0.00f,  0.00f,  0.00f, 0,                               0, 0, 0.0f, 0.0f, 0,           0   }
+};
 
 struct nstate nstates[] = {
 	{ "Free",		1.00, 1.00, 1.00, 1 },	/* White */
@@ -117,6 +122,40 @@ struct nstate nstates[] = {
 	{ "Checking",		0.00, 1.00, 0.00, 1 },	/* Green */
 	{ "Info",		0.20, 0.40, 0.60, 1 }	/* Dark blue */
 };
+
+void
+calc_flyby(void)
+{
+	static const struct state *curst = NULL;
+	static struct state lastst;
+	float frac;
+
+	if (curst == NULL) {
+		curst = flybypath;
+		lastst = st;
+		lastst.st_nframes = 1;
+	} else if (++lastst.st_nframes > curst->st_nframes) {
+		if ((++curst)->st_nframes == 0) {
+			active_flyby = 0;
+			curst = NULL;
+			return;
+		}
+		lastst.st_nframes = 0;
+		st.st_opts = curst->st_opts;
+		st.st_panels = curst->st_panels;
+		st.st_alpha_fmt = curst->st_alpha_fmt;
+		st.st_alpha_job = curst->st_alpha_job;
+		st.st_alpha_oth = curst->st_alpha_oth;
+	}
+
+	frac = (lastst.st_nframes / curst->st_nframes);
+	st.st_x = (curst->st_x - lastst.st_x) / frac;
+	st.st_y = (curst->st_y - lastst.st_y) / frac;
+	st.st_z = (curst->st_z - lastst.st_z) / frac;
+	st.st_lx = (curst->st_lx - lastst.st_lx) / frac;
+	st.st_ly = (curst->st_ly - lastst.st_ly) / frac;
+	st.st_lz = (curst->st_lz - lastst.st_lz) / frac;
+}
 
 void
 adjcam(void)
@@ -147,6 +186,12 @@ reshape(int w, int h)
 void
 key(unsigned char key, __unused int u, __unused int v)
 {
+	if (active_flyby) {
+		if (key == 'F')
+			active_flyby = 0;
+		return;
+	}
+
 	switch (key) {
 	case 'b':
 		st.st_opts ^= OP_BLEND;
@@ -250,9 +295,13 @@ void
 sp_key(int key, __unused int u, __unused int v)
 {
 	float sx, sy, sz;
-	float r = sqrt(SQUARE(st.st_x - XCENTER) + SQUARE(st.st_z - ZCENTER));
-	float adj = r / (ROWWIDTH / 2.0f);
-	adj = pow(2, adj);
+	float r, adj;
+
+	if (active_flyby)
+		return;
+
+	r = sqrt(SQUARE(st.st_x - XCENTER) + SQUARE(st.st_z - ZCENTER));
+	adj = pow(2, r / (ROWWIDTH / 2.0f));
 	if (adj > 50.0f)
 		adj = 50.0f;
 
@@ -302,6 +351,20 @@ sp_key(int key, __unused int u, __unused int v)
 		tz = st.st_z;  st.st_z = sz;
 	} else
 		adjcam();
+}
+
+void
+select_node(struct node *n)
+{
+	if (selnode == n)
+		return;
+	if (selnode != NULL)
+		selnode->n_state = selnode->n_savst;
+	selnode = n;
+	if (n->n_state != ST_INFO)
+		n->n_savst = n->n_state;
+	n->n_state = ST_INFO;
+	make_cluster();
 }
 
 /*
@@ -387,23 +450,15 @@ collide(struct node *n,
 
 	if (hi_z < z || lo_z > z+d)
 		return (0);
-	if (selnode == n)
-		return (1);
-	if (selnode != NULL)
-		selnode->n_state = selnode->n_savst;
-	selnode = n;
-	if (n->n_state != ST_INFO)
-		n->n_savst = n->n_state;
-	n->n_state = ST_INFO;
-	make_cluster();
+	select_node(n);
 	return (1);
 }
 
 /*
- * Node selection
+ * Node detection
  */
 void
-sel_node(int u, int v)
+detect_node(int u, int v)
 {
 	int r, cb, cg, m, n;
 	int pr, pcb, pcg, pm;
@@ -472,6 +527,9 @@ sel_node(int u, int v)
 void
 mouse(__unused int button, __unused int state, int u, int v)
 {
+	if (active_flyby)
+		return;
+
 	spkey = glutGetModifiers();
 	xpos = u;
 	ypos = v;
@@ -483,6 +541,9 @@ active_m(int u, int v)
 	int du = u - xpos, dv = v - ypos;
 	float sx, sy, sz, slx, sly, slz;
 	float adj, t, r, mag;
+
+	if (active_flyby)
+		return;
 
 	xpos = u;
 	ypos = v;
@@ -549,7 +610,7 @@ passive_m(int u, int v)
 	xpos = u;
 	ypos = v;
 
-	sel_node(u, v);
+	detect_node(u, v);
 }
 
 #define MAXCNT 100
