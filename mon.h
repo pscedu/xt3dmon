@@ -1,7 +1,6 @@
 /* $Id$ */
 
 #include <sys/queue.h>
-#include <sys/time.h>
 
 #ifdef __APPLE_CC__
 # include <OpenGL/gl.h>
@@ -106,7 +105,9 @@ struct state {
 	float		 st_alpha_job;
 	float		 st_alpha_oth;
 	GLint		 st_alpha_fmt;
-	struct timeval	 st_tv;
+
+	int		 st_tween_mode;
+	int		 st_nframes;
 };
 
 struct lineseg {
@@ -131,6 +132,7 @@ void 			*load_png(char *);
 
 /* mon.c */
 void			 adjcam(void);
+void			 calc_flyby(void);
 
 /* panel.c */
 void			 draw_fps(void);
