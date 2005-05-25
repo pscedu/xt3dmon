@@ -50,6 +50,7 @@
 #define OP_LINELEAVE	(1<<4)
 #define OP_GROUND	(1<<5)
 #define OP_TWEEN	(1<<6)
+#define OP_CAPTURE	(1<<7)
 
 #define PANEL_FPS	(1<<0)
 #define PANEL_NINFO	(1<<1)
@@ -141,6 +142,9 @@ void			 draw_node_info(void);
 /* parse.c */
 void			 parse_jobmap(void);
 void			 parse_physmap(void);
+
+/* capture.c */
+void			 capture_fb(void);
 
 extern int		 logids[2];
 extern struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
