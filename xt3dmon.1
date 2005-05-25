@@ -34,6 +34,8 @@ The node is not accounted for in the physical map.
 The node has failed required probe tests.
 .It Checking
 The node is current being probe tested.
+.It Selected
+The node has been selected for extended information viewing.
 .El
 .Pp
 The following key bindings are available:
@@ -50,12 +52,44 @@ While holding left click, scroll the mouse to rotate the cluster view.
 While holding shift, scroll the mouse to peer along the y-axis.
 .It Ic b
 Toggle translucency (blending).
+.It Ic c
+Clear the selected node.
+.It Ic e
+Toggle movement interpolation
+.Pq Dq tweening .
+.It Ic F
+Activate/deactivate flyby overview.
 .It Ic f
 Toggle texture load format (required for blending).
+.It Ic g
+Toggle display of the ground and axes.
+.It Ic
+Toggle line mode.
+There are two line modes:
+.Dq line leave
+mode, which leaves lines all over the place, constructed
+from the current
+.Em ( x , y , z )
+position to a spot some distance away in the direction of the mouse
+cursor, and
+.Dq line follow
+mode, which continually plots a single line that follows the mouse
+cursor, constructed from the current
+.Em ( x , y , z )
+position to a spot some distance away in the direction of the mouse
+cursor.
+.It Ic n
+Toggle the extended node information panel.
+.It Ic p
+Print the current
+.Em ( x , y , z )
+position and look unit vector.
 .It Ic q
 Quit.
 .It Ic t
 Toggle texture mapping.
+.It Ic
+Toggle texture mapping format.
 .It Ic w
 Toggle wireframe.
 .It Ic + , _
