@@ -3,10 +3,10 @@
 #include <err.h>
 #include <stdlib.h>
 
-#if defined(__APPLE_CC__)
-#include <OpenGL/gl.h>
+#ifdef __APPLE_CC__
+# include <OpenGL/gl.h>
 #else
-#include <GL/gl.h>
+# include <GL/gl.h>
 #endif
 
 #include <png.h>
@@ -20,9 +20,8 @@ static png_uint_32 height;
  * (Note: must call free() to dispose!)
  */
 void *
-LoadPNG(char *file)
+load_png(char *file)
 {
-	FILE *fp = NULL;
 	unsigned char header[10];
 	png_bytepp rows = NULL;
 	png_structp ptr = NULL;
@@ -30,7 +29,8 @@ LoadPNG(char *file)
 	png_infop einfo = NULL;
 	png_bytep data = NULL;
 	png_uint_32 depth, ctype;
-	short i;
+	FILE *fp = NULL;
+	size_t i;
 
 	/* Open the PNG in binary mode */
 	if ((fp = fopen(file, "rb")) == NULL)
@@ -156,7 +156,7 @@ LoadPNG(char *file)
 }
 
 void
-LoadTexture(void *data, GLint fmt, int id)
+load_texture(void *data, GLint fmt, int id)
 {
 	glGenTextures(1, &id);
 	glBindTexture(GL_TEXTURE_2D, id);
