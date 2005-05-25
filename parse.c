@@ -32,9 +32,10 @@ void
 parse_physmap(void)
 {
 	char fn[MAXPATHLEN], buf[BUFSIZ], *p, *s;
-	int j, lineno, r, cb, cg, m, n, nid;
+	int lineno, r, cb, cg, m, n, nid;
 	struct node *node;
 	FILE *fp;
+	size_t j;
 	long l;
 
 	/* Explicitly initialize all nodes. */
@@ -190,10 +191,11 @@ bad:
 void
 parse_jobmap(void)
 {
-	int jobid, nid, j, lineno, enabled, bad, checking;
+	int jobid, nid, lineno, enabled, bad, checking;
 	char fn[MAXPATHLEN], buf[BUFSIZ], *p, *s;
 	struct node *node;
 	FILE *fp;
+	size_t j;
 	long l;
 
 	for (j = 0; j < njobs; j++)
@@ -399,7 +401,7 @@ struct job *
 getjob(int id)
 {
 	struct job **jj, *j = NULL;
-	int n;
+	size_t n;
 
 	if (jobs != NULL)
 		for (n = 0, jj = jobs; n < njobs; jj++, n++)
