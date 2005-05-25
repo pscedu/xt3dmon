@@ -200,6 +200,8 @@ key(unsigned char key, __unused int u, __unused int v)
 		if (selnode != NULL && selnode->n_savst)
 			selnode->n_state = selnode->n_savst;
 		break;
+	case 'd':
+		st.st_opts ^= OP_CAPTURE;
 	case 'e':
 		if (st.st_opts & OP_TWEEN)
 			st.st_opts &= ~OP_TWEEN;
