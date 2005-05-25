@@ -19,6 +19,9 @@ draw(void)
 {
 	struct lineseg *ln;
 
+	if (active_flyby)
+		calc_flyby();
+
 	if (st.st_opts & OP_TWEEN &&
 	    (tx - st.st_x || ty - st.st_y || tz - st.st_z ||
 	    tlx - st.st_lx || tly - st.st_ly || tlz - st.st_lz)) {
