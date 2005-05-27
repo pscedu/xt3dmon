@@ -102,15 +102,6 @@ struct state st = {
 	0						/* nframes (unused) */
 };
 
-#define TM_STRAIGHT	1
-#define TM_RADIUS	2
-
-const struct state flybypath[] = {
-	{  50.00f,  20.00f,  10.00f, -0.40f,  0.10f,  0.40f, OP_WIRES | OP_TWEEN | OP_GROUND, 0, 0, 1.0f, 1.0f, TM_STRAIGHT, 100 },
-	{ -10.00f,  80.00f,  12.00f,  0.60f, -0.15f,  0.50f, OP_WIRES | OP_TWEEN | OP_GROUND, 0, 0, 1.0f, 1.0f, TM_RADIUS,   100 },
-	{   0.00f,   0.00f,   0.00f,  0.00f,  0.00f,  0.00f, 0,                               0, 0, 0.0f, 0.0f, 0,           0   }
-};
-
 struct nstate nstates[] = {
 	{ "Free",		1.00, 1.00, 1.00, 1 },	/* White */
 	{ "Disabled (PBS)",	1.00, 0.00, 0.00, 1 },	/* Red */

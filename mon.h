@@ -55,14 +55,16 @@
 #define PANEL_FPS	(1<<0)
 #define PANEL_NINFO	(1<<1)
 
-#define PI		3.14159265358979323
+#define PI		(3.14159265358979323)
 
 #define NLOGIDS		(sizeof(logids) / sizeof(logids[0]))
 
 #define SQUARE(x)	((x) * (x))
 
-#define TWEEN_THRES	(0.01)
-#define TWEEN_AMT	(.05)
+#define TWEEN_THRES	(0.01f)
+#define TWEEN_AMT	(0.05f)
+#define TM_STRAIGHT	1
+#define TM_RADIUS	2
 
 #define WFRAMEWIDTH	(0.001f)
 
@@ -164,5 +166,5 @@ extern int		 active_ninfo;
 extern int		 active_flyby;
 
 extern struct lineseglh	 seglh;
-
 extern struct nstate	 nstates[];
+extern const struct state flybypath[];
