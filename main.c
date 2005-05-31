@@ -93,7 +93,7 @@ struct lineseglh	 seglh;
 struct state st = {
 	STARTX, STARTY, STARTZ,				/* (x,y,z) */
 	STARTLX, STARTLY, STARTLZ,			/* (lx,ly,lz) */
-	OP_WIRES | OP_TWEEN | OP_GROUND,		/* options */
+	OP_WIRES | OP_TWEEN | OP_GROUND | OP_DISPLAY,	/* options */
 	0,						/* panels */
 	1.0f,						/* job alpha */
 	1.0f,						/* other alpha */
@@ -193,6 +193,10 @@ key(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 'd':
 		st.st_opts ^= OP_CAPTURE;
+		break;
+	case 'D':
+		st.st_opts ^= OP_DISPLAY;
+		break;
 	case 'e':
 		if (st.st_opts & OP_TWEEN)
 			st.st_opts &= ~OP_TWEEN;
@@ -218,12 +222,17 @@ key(unsigned char key, __unused int u, __unused int v)
 	case 'l': {
 		struct lineseg *ln, *pln;
 
-		if (st.st_opts & OP_LINELEAVE)
-			st.st_opts = (st.st_opts & ~OP_LINELEAVE) | OP_LINEFOLLOW;
-		else if (st.st_opts & OP_LINEFOLLOW)
-			st.st_opts &= ~OP_LINEFOLLOW;
+		/*
+		 * first hit -> line follow
+		 * second hit -> line leave
+		 * third hit -> off (repeat)
+		 */
+		if (st.st_opts & OP_LINEFOLLOW)
+			st.st_opts = (st.st_opts & ~OP_LINEFOLLOW) | OP_LINELEAVE;
+		else if (st.st_opts & OP_LINELEAVE)
+			st.st_opts &= ~OP_LINELEAVE;
 		else
-			st.st_opts = OP_LINELEAVE;
+			st.st_opts |= OP_LINEFOLLOW;
 
 		for (ln = SLIST_FIRST(&seglh); ln != NULL; ln = pln) {
 			pln = SLIST_NEXT(ln, ln_next);
@@ -460,18 +469,25 @@ detect_node(int u, int v)
 	float rad = sqrt(SQUARE(st.st_x - XCENTER) + SQUARE(st.st_z - ZCENTER));
 	float dist = rad + ROWWIDTH;
 
+	float mag = sqrt(SQUARE(st.st_lx) + SQUARE(st.st_lz));
 	float adju = FOVY * ASPECT * 2.0f * PI / 360.0f *
 	    (u - win_width / 2.0f) / win_width;
-	float angleu = acosf(st.st_lx);
+	float angleu = acosf(st.st_lx / mag);
 	if (st.st_lz < 0)
 		angleu = 2.0f * PI - angleu;
-	float dx = cos(angleu + adju);
-	float dz = sin(angleu + adju);
+	angleu += adju;
+	if (angleu < 0)
+		angleu += 2.0f * PI;
+	float dx = cos(angleu);
+	float dz = sin(angleu);
 
 	float adjv = FOVY * 2.0f * PI / 360.0f *
 	    (win_height / 2.0f - v) / win_height;
 	float anglev = asinf(st.st_ly);
-	float dy = sin(anglev + adjv);
+	anglev += adjv;
+	if (anglev < 0)
+		anglev += 2.0f * PI;
+	float dy = sin(anglev);
 
 	dx = st.st_x + dist * dx;
 	dy = st.st_y + dist * dy;
@@ -480,7 +496,7 @@ detect_node(int u, int v)
 	if (st.st_opts & (OP_LINELEAVE | OP_LINEFOLLOW)) {
 		struct lineseg *ln;
 
-		if (st.st_opts & OP_LINEFOLLOW || SLIST_EMPTY(&seglh)) {
+		if (st.st_opts & OP_LINELEAVE || SLIST_EMPTY(&seglh)) {
 			if ((ln = malloc(sizeof(*ln))) == NULL)
 				err(1, NULL);
 			SLIST_INSERT_HEAD(&seglh, ln, ln_next);
