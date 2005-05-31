@@ -1,6 +1,7 @@
 /* $Id$ */
 
 #include <sys/queue.h>
+#include <sys/types.h>
 
 #ifdef __APPLE_CC__
 # include <OpenGL/gl.h>

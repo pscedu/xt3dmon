@@ -11,6 +11,7 @@
 #endif
 
 #include <math.h>
+#include <stdio.h>
 
 #include "mon.h"
 
