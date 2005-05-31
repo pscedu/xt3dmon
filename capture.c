@@ -17,6 +17,8 @@
 # include <GL/freeglut.h>
 #endif
 
+#define MAX_FILENAME 50
+
 /* Take a screenshot from the current framebuffer (PPM) */
 void screenshot_ppm(char *file, int x, int y, int w, int h)
 {
