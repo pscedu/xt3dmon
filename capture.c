@@ -23,6 +23,7 @@ void screenshot_ppm(char *file, int x, int y, int w, int h)
 	long size;
 	unsigned char *buf;
 	FILE *fp;
+	char cmd[MAX_FILENAME+100];
 
 	if ((fp = fopen(file,"wb")) == NULL)
 		err(1, "%s", file);
@@ -39,6 +40,11 @@ void screenshot_ppm(char *file, int x, int y, int w, int h)
 	fprintf(fp, "P6 %d %d %d\n", w, h, 255);
 	fwrite(buf, size, 1, fp);
 	fclose(fp);
+	
+	// DEBUG
+//	memset(cmd, '\0', sizeof(cmd));
+//	snprintf(cmd, sizeof(cmd),"/usr/local/bin/cjpeg -quality 100 %s | /usr/local/bin/jpegtran -flip vertical > %s.jpg; rm %s", file, file, file);
+//	system(cmd);
 }
 
 /* Take a screenshot from the current framebuffer (PNG) */
@@ -87,7 +93,7 @@ void screenshot_png(char *file, int x, int y, int w, int h)
 	png_set_compression_level(png, Z_NO_COMPRESSION);
 
 	/* Set the header/info */
-	png_set_IHDR(png, info, w, h, 8, PNG_COLOR_TYPE_RGB_ALPHA,
+	png_set_IHDR(png, info, w, h, 16, PNG_COLOR_TYPE_RGB_ALPHA,
 		PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
 		PNG_FILTER_TYPE_DEFAULT);
 
@@ -138,8 +144,9 @@ void capture_fb(void)
 
 	glMatrixMode(GL_PROJECTION);
 	glGetIntegerv(GL_VIEWPORT, vp);
-
-	screenshot_png(file, vp[0], vp[1], vp[2], vp[3]);
-
+	
+//	screenshot_png(file, vp[0], vp[1], vp[2], vp[3]);
+	screenshot_ppm(file, vp[0], vp[1], vp[2], vp[3]);
+	
 	glMatrixMode(GL_MODELVIEW);
 }
