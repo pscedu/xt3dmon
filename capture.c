@@ -17,15 +17,13 @@
 # include <GL/freeglut.h>
 #endif
 
-#define MAX_FILENAME 50
-
 /* Take a screenshot from the current framebuffer (PPM) */
 void screenshot_ppm(char *file, int x, int y, int w, int h)
 {
 	long size;
 	unsigned char *buf;
 	FILE *fp;
-	char cmd[MAX_FILENAME+100];
+	char cmd[NAME_MAX];
 
 	if ((fp = fopen(file,"wb")) == NULL)
 		err(1, "%s", file);
@@ -95,7 +93,7 @@ void screenshot_png(char *file, int x, int y, int w, int h)
 	png_set_compression_level(png, Z_NO_COMPRESSION);
 
 	/* Set the header/info */
-	png_set_IHDR(png, info, w, h, 16, PNG_COLOR_TYPE_RGB_ALPHA,
+	png_set_IHDR(png, info, w, h, 8, PNG_COLOR_TYPE_RGB_ALPHA,
 		PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
 		PNG_FILTER_TYPE_DEFAULT);
 
@@ -147,8 +145,8 @@ void capture_fb(void)
 	glMatrixMode(GL_PROJECTION);
 	glGetIntegerv(GL_VIEWPORT, vp);
 	
-//	screenshot_png(file, vp[0], vp[1], vp[2], vp[3]);
-	screenshot_ppm(file, vp[0], vp[1], vp[2], vp[3]);
+	screenshot_png(file, vp[0], vp[1], vp[2], vp[3]);
+//	screenshot_ppm(file, vp[0], vp[1], vp[2], vp[3]);
 	
 	glMatrixMode(GL_MODELVIEW);
 }
