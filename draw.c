@@ -138,7 +138,8 @@ draw(void)
 	if(st.st_opts & OP_CAPTURE)
 		capture_fb();
 		
-	glutSwapBuffers();
+	if(st.st_opts & OP_DISPLAY)
+		glutSwapBuffers();
 }
 
 /*

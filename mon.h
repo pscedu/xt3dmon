@@ -52,6 +52,7 @@
 #define OP_GROUND	(1<<5)
 #define OP_TWEEN	(1<<6)
 #define OP_CAPTURE	(1<<7)
+#define OP_DISPLAY	(1<<8)
 
 #define PANEL_FPS	(1<<0)
 #define PANEL_NINFO	(1<<1)
