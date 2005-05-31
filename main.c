@@ -456,57 +456,39 @@ collide(struct node *n,
 	return (1);
 }
 
-/*
- * Node detection
- */
+/* Node Detection */
 void
 detect_node(int u, int v)
 {
+	GLint vp[4];
+	GLdouble mvm[16];
+	GLdouble pvm[16];
+	GLint x, y, z;
+	GLdouble sx, sy, sz;
+	GLdouble ex, ey, ez;
+
 	int r, cb, cg, m, n;
 	int pr, pcb, pcg, pm;
 	int n0, n1, pn;
 
-	float rad = sqrt(SQUARE(st.st_x - XCENTER) + SQUARE(st.st_z - ZCENTER));
-	float dist = rad + ROWWIDTH;
+	/* Grab world info */
+	glGetIntegerv(GL_VIEWPORT, vp);
+	glGetDoublev(GL_MODELVIEW_MATRIX, mvm);
+	glGetDoublev(GL_PROJECTION_MATRIX, pvm);
+	
+	/* Fix y coordinate */
+	y = vp[3] - v - 1;
+	x = u;
 
-	float mag = sqrt(SQUARE(st.st_lx) + SQUARE(st.st_lz));
-	float adju = FOVY * ASPECT * 2.0f * PI / 360.0f *
-	    (u - win_width / 2.0f) / win_width;
-	float angleu = acosf(st.st_lx / mag);
-	if (st.st_lz < 0)
-		angleu = 2.0f * PI - angleu;
-	angleu += adju;
-	if (angleu < 0)
-		angleu += 2.0f * PI;
-	float dx = cos(angleu);
-	float dz = sin(angleu);
+	/* Transform 2d to 3d coordinates accoring to z */
+	z = 0.0;
+	gluUnProject(x, y, z, mvm, pvm, vp, &sx, &sy, &sz);
 
-	float adjv = FOVY * 2.0f * PI / 360.0f *
-	    (win_height / 2.0f - v) / win_height;
-	float anglev = asinf(st.st_ly);
-	anglev += adjv;
-	if (anglev < 0)
-		anglev += 2.0f * PI;
-	float dy = sin(anglev);
-
-	dx = st.st_x + dist * dx;
-	dy = st.st_y + dist * dy;
-	dz = st.st_z + dist * dz;
-
-	if (st.st_opts & (OP_LINELEAVE | OP_LINEFOLLOW)) {
-		struct lineseg *ln;
-
-		if (st.st_opts & OP_LINELEAVE || SLIST_EMPTY(&seglh)) {
-			if ((ln = malloc(sizeof(*ln))) == NULL)
-				err(1, NULL);
-			SLIST_INSERT_HEAD(&seglh, ln, ln_next);
-		} else
-			ln = SLIST_FIRST(&seglh);
-		ln->ln_sx = st.st_x + 1.0f * st.st_lx;  ln->ln_ex = dx;
-		ln->ln_sy = st.st_y + 1.0f * st.st_ly;  ln->ln_ey = dy;
-		ln->ln_sz = st.st_z + 1.0f * st.st_lz;  ln->ln_ez = dz;
-	}
-
+	z = 1.0;
+	gluUnProject(x, y, z, mvm, pvm, vp, &ex, &ey, &ez);
+	
+	
+	/* Check for collision */
 	for (r = 0; r < NROWS; r++) {
 		for (cb = 0; cb < NCABS; cb++) {
 			for (cg = 0; cg < NCAGES; cg++) {
@@ -524,7 +506,7 @@ detect_node(int u, int v)
 
 						if (collide(&nodes[pr][pcb][pcg][pm][pn],
 						    NODEWIDTH, NODEHEIGHT, NODEDEPTH,
-						    st.st_x, st.st_y, st.st_z, dx, dy, dz))
+						   sx, sy, sz, ex, ey, ez))
 							return;
 					}
 				}
