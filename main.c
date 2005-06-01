@@ -88,7 +88,6 @@ int			 spkey, xpos, ypos;
 GLint			 cluster_dl;
 struct timeval		 lastsync;
 long			 fps;
-struct lineseglh	 seglh;
 
 struct state st = {
 	STARTX, STARTY, STARTZ,				/* (x,y,z) */
@@ -122,30 +121,73 @@ calc_flyby(void)
 	float frac;
 
 	if (curst == NULL) {
+printf("start\n");
 		curst = flybypath;
 		lastst = st;
 		lastst.st_nframes = 1;
 	} else if (++lastst.st_nframes > curst->st_nframes) {
+printf("next state\n");
 		if ((++curst)->st_nframes == 0) {
+printf("done\n");
 			active_flyby = 0;
 			curst = NULL;
 			return;
 		}
-		lastst.st_nframes = 0;
+		lastst.st_nframes = 1;
+	}
+	if (lastst.st_nframes == 1) {
 		st.st_opts = curst->st_opts;
 		st.st_panels = curst->st_panels;
 		st.st_alpha_fmt = curst->st_alpha_fmt;
 		st.st_alpha_job = curst->st_alpha_job;
 		st.st_alpha_oth = curst->st_alpha_oth;
+		if (st.st_opts & OP_TWEEN) {
+			tx = curst->st_x;
+			ty = curst->st_y;
+			tz = curst->st_z;
+			tlx = curst->st_lx;
+			tly = curst->st_ly;
+			tlz = curst->st_lz;
+			/* tween_amt = 1 / (float)curst->st_nframes; */
+		}
 	}
+	if (st.st_opts & OP_TWEEN)
+		return;
+if(0)
+printf("(%.3f,%.3f,%.3f)->(%.3f,%.3f,%.3f)->(%.3f,%.3f,%.3f) ",
+  lastst.st_x, lastst.st_y, lastst.st_z,
+  st.st_x, st.st_y, st.st_z,
+  curst->st_x, curst->st_y, curst->st_z);
 
-	frac = (lastst.st_nframes / curst->st_nframes);
-	st.st_x = (curst->st_x - lastst.st_x) / frac;
-	st.st_y = (curst->st_y - lastst.st_y) / frac;
-	st.st_z = (curst->st_z - lastst.st_z) / frac;
-	st.st_lx = (curst->st_lx - lastst.st_lx) / frac;
-	st.st_ly = (curst->st_ly - lastst.st_ly) / frac;
-	st.st_lz = (curst->st_lz - lastst.st_lz) / frac;
+//	frac = (lastst.st_nframes / (float)curst->st_nframes);
+	frac = curst->st_nframes;
+//printf("xadj: %.2f\n", (curst->st_x - lastst.st_x) / frac);
+
+if (0)
+printf("(%.3f,%.3f,%.3f):(%.3f,%.3f,%.3f) ",
+  st.st_x, st.st_y, st.st_z,
+  st.st_lx, st.st_ly, st.st_lz);
+
+printf("."); fflush(stdout);
+	st.st_x += (curst->st_x - lastst.st_x) / frac;
+	st.st_y += (curst->st_y - lastst.st_y) / frac;
+	st.st_z += (curst->st_z - lastst.st_z) / frac;
+	st.st_lx += (curst->st_lx - lastst.st_lx) / frac;
+	st.st_ly += (curst->st_ly - lastst.st_ly) / frac;
+	st.st_lz += (curst->st_lz - lastst.st_lz) / frac;
+if (0)
+printf("(%.3f,%.3f,%.3f):(%.3f,%.3f,%.3f)\n",
+  st.st_x, st.st_y, st.st_z,
+  st.st_lx, st.st_ly, st.st_lz);
+
+if(0)
+printf("+(%.3f,%.3f,%.3f) l(%.3f,%.3f,%.3f)\n",
+       (curst->st_x - lastst.st_x) / frac,
+       (curst->st_y - lastst.st_y) / frac,
+       (curst->st_z - lastst.st_z) / frac,
+        (curst->st_lx - lastst.st_lx) / frac,
+        (curst->st_ly - lastst.st_ly) / frac,
+        (curst->st_lz - lastst.st_lz) / frac);
 }
 
 void
@@ -186,10 +228,13 @@ key(unsigned char key, __unused int u, __unused int v)
 	switch (key) {
 	case 'b':
 		st.st_opts ^= OP_BLEND;
+		make_cluster();
 		break;
 	case 'c':
-		if (selnode != NULL && selnode->n_savst)
+		if (selnode != NULL) {
 			selnode->n_state = selnode->n_savst;
+			selnode = NULL;
+		}
 		break;
 	case 'd':
 		st.st_opts ^= OP_CAPTURE;
@@ -219,28 +264,6 @@ key(unsigned char key, __unused int u, __unused int v)
 	case 'g':
 		st.st_opts ^= OP_GROUND;
 		break;
-	case 'l': {
-		struct lineseg *ln, *pln;
-
-		/*
-		 * first hit -> line follow
-		 * second hit -> line leave
-		 * third hit -> off (repeat)
-		 */
-		if (st.st_opts & OP_LINEFOLLOW)
-			st.st_opts = (st.st_opts & ~OP_LINEFOLLOW) | OP_LINELEAVE;
-		else if (st.st_opts & OP_LINELEAVE)
-			st.st_opts &= ~OP_LINELEAVE;
-		else
-			st.st_opts |= OP_LINEFOLLOW;
-
-		for (ln = SLIST_FIRST(&seglh); ln != NULL; ln = pln) {
-			pln = SLIST_NEXT(ln, ln_next);
-			free(ln);
-		}
-		SLIST_INIT(&seglh);
-		break;
-	    }
 	case 'n':
 		st.st_panels ^= PANEL_NINFO;
 		active_ninfo = 1;
@@ -255,31 +278,35 @@ key(unsigned char key, __unused int u, __unused int v)
 		/* NOTREACHED */
 	case 't':
 		st.st_opts ^= OP_TEX;
+		make_cluster();
 		break;
 	case 'T':
 		st.st_alpha_fmt = (st.st_alpha_fmt == GL_RGBA ? GL_INTENSITY : GL_RGBA);
 		del_textures();
 		load_textures();
+		make_cluster();
 		break;
 	case 'w':
 		st.st_opts ^= OP_WIRES;
+		make_cluster();
 		break;
 	case '+':
 		st.st_alpha_job += (st.st_alpha_job + TRANS_INC > 1.0 ? 0.0 : TRANS_INC);
+		make_cluster();
 		break;
 	case '_':
 		st.st_alpha_job -= (st.st_alpha_job + TRANS_INC < 0.0 ? 0.0 : TRANS_INC);
+		make_cluster();
 		break;
 	case '=':
 		st.st_alpha_oth += (st.st_alpha_oth + TRANS_INC > 1.0 ? 0.0 : TRANS_INC);
+		make_cluster();
 		break;
 	case '-':
 		st.st_alpha_oth -= (st.st_alpha_oth + TRANS_INC < 0.0 ? 0.0 : TRANS_INC);
+		make_cluster();
 		break;
 	}
-
-	/* resync */
-	make_cluster();
 }
 
 /*
@@ -456,7 +483,7 @@ collide(struct node *n,
 	return (1);
 }
 
-/* Node Detection */
+/* Node detection */
 void
 detect_node(int u, int v)
 {
@@ -475,19 +502,18 @@ detect_node(int u, int v)
 	glGetIntegerv(GL_VIEWPORT, vp);
 	glGetDoublev(GL_MODELVIEW_MATRIX, mvm);
 	glGetDoublev(GL_PROJECTION_MATRIX, pvm);
-	
+
 	/* Fix y coordinate */
 	y = vp[3] - v - 1;
 	x = u;
 
-	/* Transform 2d to 3d coordinates accoring to z */
+	/* Transform 2d to 3d coordinates according to z */
 	z = 0.0;
 	gluUnProject(x, y, z, mvm, pvm, vp, &sx, &sy, &sz);
 
 	z = 1.0;
 	gluUnProject(x, y, z, mvm, pvm, vp, &ex, &ey, &ez);
-	
-	
+
 	/* Check for collision */
 	for (r = 0; r < NROWS; r++) {
 		for (cb = 0; cb < NCABS; cb++) {
@@ -624,6 +650,11 @@ idle(void)
 			tcnt = 0;
 			lastsync.tv_sec = tv.tv_sec;
 			parse_jobmap();
+			if (selnode != NULL) {
+				if (selnode->n_state != ST_INFO)
+					selnode->n_savst = selnode->n_state;
+				selnode->n_state = ST_INFO;
+			}
 			make_cluster();
 		}
 		cnt = 0;
@@ -711,8 +742,6 @@ main(int argc, char *argv[])
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glEnable(GL_LINE_SMOOTH);
-
-	SLIST_INIT(&seglh);
 
 	load_textures();
 	parse_physmap();
