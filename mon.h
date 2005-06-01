@@ -47,12 +47,10 @@
 #define OP_TEX		(1<<0)
 #define OP_BLEND	(1<<1)
 #define OP_WIRES	(1<<2)
-#define OP_LINEFOLLOW	(1<<3)
-#define OP_LINELEAVE	(1<<4)
-#define OP_GROUND	(1<<5)
-#define OP_TWEEN	(1<<6)
-#define OP_CAPTURE	(1<<7)
-#define OP_DISPLAY	(1<<8)
+#define OP_GROUND	(1<<3)
+#define OP_TWEEN	(1<<4)
+#define OP_CAPTURE	(1<<5)
+#define OP_DISPLAY	(1<<6)
 
 #define PANEL_FPS	(1<<0)
 #define PANEL_NINFO	(1<<1)
@@ -115,18 +113,6 @@ struct state {
 	int		 st_nframes;
 };
 
-struct lineseg {
-	float			ln_sx;
-	float			ln_sy;
-	float			ln_sz;
-	float			ln_ex;
-	float			ln_ey;
-	float			ln_ez;
-	SLIST_ENTRY(lineseg)	ln_next;
-};
-
-SLIST_HEAD(lineseglh, lineseg);
-
 /* draw.c */
 void			 draw(void);
 void			 draw_node(struct node *, float, float, float);
@@ -167,6 +153,5 @@ extern int		 active_fps;
 extern int		 active_ninfo;
 extern int		 active_flyby;
 
-extern struct lineseglh	 seglh;
 extern struct nstate	 nstates[];
 extern const struct state flybypath[];

@@ -18,8 +18,6 @@
 void
 draw(void)
 {
-	struct lineseg *ln;
-
 	if (active_flyby)
 		calc_flyby();
 
@@ -115,15 +113,6 @@ draw(void)
 		glVertex3f( 0.1f,  0.1f, -200.0f);
 		glVertex3f( 0.1f,  0.1f,  200.0f);
 		glVertex3f( 0.1f, -0.1f,  200.0f);
-		glEnd();
-	}
-
-	SLIST_FOREACH(ln, &seglh, ln_next) {
-		glColor3f(1.0f, 1.0f, 1.0f);
-		glBegin(GL_LINES);
-		glLineWidth(1.0f);
-		glVertex3f(ln->ln_sx, ln->ln_sy, ln->ln_sz);
-		glVertex3f(ln->ln_ex, ln->ln_ey, ln->ln_ez);
 		glEnd();
 	}
 
