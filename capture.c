@@ -146,7 +146,7 @@ void data2png(char *file, unsigned char *buf, long w, long h)
 }
 
 /* Dump Framebuffer into memory write at end */
-#define NUM_FRAMES 50
+#define NUM_FRAMES 200
 static unsigned char *fb[NUM_FRAMES];
 
 void screenshot_raw(int x, int y, int w, int h)
@@ -155,24 +155,23 @@ void screenshot_raw(int x, int y, int w, int h)
 	long size;
 	FILE *fp;
 	static int i = 0;
+	static int j = 0;
 
-	if(i < 0)
-		return;
 	/*
 	** After we reach max frames dump them. NOTE: this is
 	** extremely nasty and will probably take awhile...
 	*/
 	if(i >= NUM_FRAMES)
 	{
-		int j;
-		for(j = 0; j < NUM_FRAMES; j++)
+		int k;
+		for(k = 0; k < NUM_FRAMES; k++)
 		{
-			snprintf(file, sizeof(file), "ppm/%d.png", j);
-			data2png(file, fb[j], w, h);
-			free(fb[j]);
+			snprintf(file, sizeof(file), "ppm/%d.png", j++);
+			data2png(file, fb[k], w, h);
+			free(fb[k]);
 		}
 
-		i = -4;
+		i = 0;
 	}
 
 	/* Size = num pixels * 3 bytes per pixel (RGB) */
