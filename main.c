@@ -93,10 +93,10 @@ struct state st = {
 	STARTX, STARTY, STARTZ,				/* (x,y,z) */
 	STARTLX, STARTLY, STARTLZ,			/* (lx,ly,lz) */
 	OP_WIRES | OP_TWEEN | OP_GROUND | OP_DISPLAY,	/* options */
-	0,						/* panels */
 	1.0f,						/* job alpha */
 	1.0f,						/* other alpha */
 	GL_RGBA,					/* alpha blend format */
+	0,						/* panels (unused) */
 	0,						/* tween mode (unused) */
 	0						/* nframes (unused) */
 };
@@ -168,7 +168,7 @@ printf("(%.3f,%.3f,%.3f):(%.3f,%.3f,%.3f) ",
   st.st_x, st.st_y, st.st_z,
   st.st_lx, st.st_ly, st.st_lz);
 
-printf("."); fflush(stdout);
+//printf("."); fflush(stdout);
 	st.st_x += (curst->st_x - lastst.st_x) / frac;
 	st.st_y += (curst->st_y - lastst.st_y) / frac;
 	st.st_z += (curst->st_z - lastst.st_z) / frac;
@@ -216,14 +216,39 @@ reshape(int w, int h)
 	glMatrixMode(GL_MODELVIEW);
 
 	adjcam();
+	adjpanels();
 }
 
 void
 key(unsigned char key, __unused int u, __unused int v)
 {
+	static int panel = 0;
+
 	if (active_flyby) {
 		if (key == 'F')
 			active_flyby = 0;
+		return;
+	}
+
+	if (panel) {
+		switch (key) {
+		case 'c':
+			panel_toggle(PANEL_CMD);
+			break;
+		case 'n':
+			panel_toggle(PANEL_NINFO);
+			break;
+		case 'F': /* failure */
+			panel_toggle(PANEL_FLEGEND);
+			break;
+		case 'l':
+			panel_toggle(PANEL_JLEGEND);
+			break;
+		case 'f':
+			panel_toggle(PANEL_FPS);
+			break;
+		}
+		panel = 0;
 		return;
 	}
 
@@ -238,11 +263,11 @@ key(unsigned char key, __unused int u, __unused int v)
 			selnode = NULL;
 		}
 		break;
-	case 'd':
-		st.st_opts ^= OP_CAPTURE;
-		break;
 	case 'D':
 		st.st_opts ^= OP_DISPLAY;
+		break;
+	case 'd':
+		st.st_opts ^= OP_CAPTURE;
 		break;
 	case 'e':
 		if (st.st_opts & OP_TWEEN)
@@ -257,18 +282,11 @@ key(unsigned char key, __unused int u, __unused int v)
 	case 'F':
 		active_flyby = !active_flyby;
 		break;
-	case 'f':
-		st.st_panels ^= PANEL_FPS;
-		active_fps = 1;
-		if (st.st_panels & PANEL_NINFO)
-			active_ninfo = 1;
-		break;
 	case 'g':
 		st.st_opts ^= OP_GROUND;
 		break;
-	case 'n':
-		st.st_panels ^= PANEL_NINFO;
-		active_ninfo = 1;
+	case 'P':
+		panel = 1;
 		break;
 	case 'p':
 		printf("pos[%.2f,%.2f,%.2f] look[%.2f,%.2f,%.2f]\n",
@@ -278,14 +296,14 @@ key(unsigned char key, __unused int u, __unused int v)
 	case 'q':
 		exit(0);
 		/* NOTREACHED */
-	case 't':
-		st.st_opts ^= OP_TEX;
-		make_cluster();
-		break;
 	case 'T':
 		st.st_alpha_fmt = (st.st_alpha_fmt == GL_RGBA ? GL_INTENSITY : GL_RGBA);
 		del_textures();
 		load_textures();
+		make_cluster();
+		break;
+	case 't':
+		st.st_opts ^= OP_TEX;
 		make_cluster();
 		break;
 	case 'w':
@@ -744,6 +762,8 @@ main(int argc, char *argv[])
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glEnable(GL_LINE_SMOOTH);
+
+	SLIST_INIT(&panels);
 
 	load_textures();
 	parse_physmap();
