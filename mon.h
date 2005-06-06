@@ -22,7 +22,6 @@
 
 #define _PATH_JOBMAP	"data/nids_list_login%d"
 #define _PATH_PHYSMAP	"data/nodelist%d"
-#define _PATH_FAILMAP	"data/fail%d"
 #define _PATH_BADMAP	"/usr/users/torque/bad_nids_list_login%d"
 #define _PATH_CHECKMAP	"/usr/users/torque/check_nids_list_login%d"
 
@@ -55,9 +54,6 @@
 
 #define PANEL_FPS	(1<<0)
 #define PANEL_NINFO	(1<<1)
-#define PANEL_CMD	(1<<2)
-#define PANEL_FLEGEND	(1<<3)
-#define PANEL_JLEGEND	(1<<4)
 
 #define PI		(3.14159265358979323)
 
@@ -77,10 +73,6 @@ struct job {
 	float		 j_r;
 	float		 j_g;
 	float		 j_b;
-	const char	*j_owner;
-	const char	*j_name;
-	int		 j_dur;
-	int		 j_cpus;
 };
 
 struct node {
@@ -121,34 +113,6 @@ struct state {
 	int		 st_nframes;
 };
 
-struct panel {
-	int			  p_id;
-	char			 *p_str;
-	size_t			  p_strlen;
-	float			  p_u;
-	float			  p_v;
-	float			  p_su;
-	float			  p_sv;
-	float			  p_adju;
-	float			  p_adjv;
-	float			  p_w;
-	float			  p_h;
-	struct {
-		float		  pc_r;
-		float		  pc_g;
-		float		  pc_b;
-		float		  pc_a;
-	}			  p_col;
-#define p_r p_col.pc_r
-#define p_g p_col.pc_g
-#define p_b p_col.pc_b
-#define p_a p_col.pc_a
-	void			(*p_refresh)(struct panel *);
-	SLIST_ENTRY(panel)	  p_next;
-};
-
-SLIST_HEAD(panel_slh, panel);
-
 /* draw.c */
 void			 draw(void);
 void			 draw_node(struct node *, float, float, float);
@@ -162,9 +126,8 @@ void			 adjcam(void);
 void			 calc_flyby(void);
 
 /* panel.c */
-void			 draw_panels(void);
-void			 adjpanels(void);
-void			 panel_toggle(int);
+void			 draw_fps(void);
+void			 draw_node_info(void);
 
 /* parse.c */
 void			 parse_jobmap(void);
@@ -190,12 +153,5 @@ extern int		 active_fps;
 extern int		 active_ninfo;
 extern int		 active_flyby;
 
-extern int		 win_width;
-extern int		 win_height;
-
 extern struct nstate	 nstates[];
 extern const struct state flybypath[];
-
-extern struct node	*selnode;
-
-extern struct panel_slh	panels;
