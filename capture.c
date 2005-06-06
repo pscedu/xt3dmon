@@ -17,13 +17,14 @@
 # include <GL/freeglut.h>
 #endif
 
+void data2png(char *, unsigned char *, long, long);
+
 /* Take a screenshot from the current framebuffer (PPM) */
 void screenshot_ppm(char *file, int x, int y, int w, int h)
 {
 	long size;
 	unsigned char *buf;
 	FILE *fp;
-	char cmd[NAME_MAX];
 
 	if ((fp = fopen(file,"wb")) == NULL)
 		err(1, "%s", file);
@@ -82,7 +83,6 @@ void data2png(char *file, unsigned char *buf, long w, long h)
 {
 	FILE *fp;
 	int i;
-	long size;
 	png_structp png;
 	png_infop info;
 	png_bytepp rows;
@@ -153,7 +153,6 @@ void screenshot_raw(int x, int y, int w, int h)
 {
 	char file[PATH_MAX];
 	long size;
-	FILE *fp;
 	static int i = 0;
 	static int j = 0;
 
