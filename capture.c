@@ -17,8 +17,6 @@
 # include <GL/freeglut.h>
 #endif
 
-void data2png(char *, unsigned char *, long, long);
-
 /* Take a screenshot from the current framebuffer (PPM) */
 void screenshot_ppm(char *file, int x, int y, int w, int h)
 {
@@ -48,26 +46,6 @@ void screenshot_ppm(char *file, int x, int y, int w, int h)
 //	memset(cmd, '\0', sizeof(cmd));
 //	snprintf(cmd, sizeof(cmd),"/usr/local/bin/cjpeg -quality 100 %s | /usr/local/bin/jpegtran -flip vertical > %s.jpg; rm %s", file, file, file);
 //	system(cmd);
-}
-
-/* Take a screenshot from the current framebuffer (PNG) */
-void screenshot_png(char *file, int x, int y, int w, int h)
-{
-	long size;
-	unsigned char *buf;
-
-	/* Size = num pixels * 4 bytes per pixel (RGBA) */
-	size = w*h*4;
-	if ((buf = malloc(size * sizeof(unsigned char))) == NULL)
-		err(1, "malloc");
-
-	/* Read data from the framebuffer */
-	glReadPixels(x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, buf);
-
-	/* Write data to buf */
-	data2png(file, buf, w, h);
-
-	free(buf);
 }
 
 /*
@@ -145,8 +123,37 @@ void data2png(char *file, unsigned char *buf, long w, long h)
 	fclose(fp);
 }
 
+/* Take a screenshot from the current framebuffer (PNG) */
+void screenshot_png(char *file, int x, int y, int w, int h)
+{
+	long size;
+	unsigned char *buf;
+
+	/* Size = num pixels * 4 bytes per pixel (RGBA) */
+	size = w*h*4;
+	if ((buf = malloc(size * sizeof(unsigned char))) == NULL)
+		err(1, "malloc");
+
+	/* Read data from the framebuffer */
+	glReadPixels(x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, buf);
+
+	/* Write data to buf */
+	data2png(file, buf, w, h);
+
+	free(buf);
+}
+
+/*
+** Invert the y pixels because OpenGL
+void invert()
+{
+
+}
+*/
+
 /* Dump Framebuffer into memory write at end */
-#define NUM_FRAMES 200
+#define NUM_FRAMES 100
+#define MAX_FRAMES 10000
 static unsigned char *fb[NUM_FRAMES];
 
 void screenshot_raw(int x, int y, int w, int h)
@@ -184,7 +191,80 @@ void screenshot_raw(int x, int y, int w, int h)
 
 	i++;
 }
+
+/* Create proper filenames so they are ordered in png->mpg */
+void filename(char *ascii, int i)
+{
+	char num[PATH_MAX];
+	int t = i;
+
+	memset(ascii, '\0', sizeof(ascii));
+
+	while(i < MAX_FRAMES)
+	{
+		i *= 10;
+		strcat(ascii, "0");
+	}
+
+	snprintf(num, sizeof(num), "%d", t);
+	strcat(ascii, num); 
+
+	return ascii;
+}
+
+/* Capture Screenshots (buffered) and save as PPM (Portable Pixmaps) */
+void screenshot_buf_ppm(int x, int y, int w, int h)
+{
+	long size;
+	FILE *fp;
+	char file[PATH_MAX];
+	static int i = 0;
+	static int j = 1;
+	char num[PATH_MAX];
+	char cmd[NAME_MAX];
 	
+	/* Size = num pixels * 3 bytes per pixel (RGB) */
+	size = w*h*3;
+	
+	/*
+	** After we reach max frames dump them. NOTE: this is
+	** extremely nasty and will probably take awhile...
+	*/
+	if(i >= NUM_FRAMES)
+	{
+		int k;
+		for(k = 0; k < NUM_FRAMES; k++)
+		{
+			filename(num, j++);
+			snprintf(file, sizeof(file), "ppm/%s.ppm", num);
+
+			if ((fp = fopen(file,"wb")) == NULL)
+				err(1, "%s", file);
+
+			/* Currently uses PPM format */
+			fprintf(fp, "P6 %d %d %d\n", w, h, 255);
+			fwrite(fb[k], size, 1, fp);
+			fclose(fp);
+
+			free(fb[k]);
+			
+			// DEBUG
+			memset(cmd, '\0', sizeof(cmd));
+			snprintf(cmd, sizeof(cmd),"`which cjpeg` -quality 100 %s | `which jpegtran` -flip vertical > %s.jpg; rm %s", file, file, file);
+			system(cmd);
+		}
+
+		i = 0;
+	}
+
+	if ((fb[i]= malloc(size * sizeof(unsigned char))) == NULL)
+		err(1, "malloc");
+
+	/* Read data from the framebuffer */
+	glReadPixels(x, y, w, h, GL_RGB, GL_UNSIGNED_BYTE, fb[i]);
+
+	i++;
+}
 
 /* Dump the entire framebuffer */
 void capture_fb(void)
@@ -199,9 +279,10 @@ void capture_fb(void)
 	glMatrixMode(GL_PROJECTION);
 	glGetIntegerv(GL_VIEWPORT, vp);
 	
-	screenshot_png(file, vp[0], vp[1], vp[2], vp[3]);
+//	screenshot_png(file, vp[0], vp[1], vp[2], vp[3]);
 //	screenshot_ppm(file, vp[0], vp[1], vp[2], vp[3]);
 //	screenshot_raw(vp[0], vp[1], vp[2], vp[3]);
+	screenshot_buf_ppm(vp[0], vp[1], vp[2], vp[3]);
 	
 	glMatrixMode(GL_MODELVIEW);
 }
