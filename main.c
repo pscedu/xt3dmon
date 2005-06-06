@@ -188,6 +188,8 @@ printf("+(%.3f,%.3f,%.3f) l(%.3f,%.3f,%.3f)\n",
         (curst->st_lx - lastst.st_lx) / frac,
         (curst->st_ly - lastst.st_ly) / frac,
         (curst->st_lz - lastst.st_lz) / frac);
+
+	adjcam();
 }
 
 void
