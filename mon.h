@@ -22,6 +22,7 @@
 
 #define _PATH_JOBMAP	"data/nids_list_login%d"
 #define _PATH_PHYSMAP	"data/nodelist%d"
+#define _PATH_FAILMAP	"data/fail%d"
 #define _PATH_BADMAP	"/usr/users/torque/bad_nids_list_login%d"
 #define _PATH_CHECKMAP	"/usr/users/torque/check_nids_list_login%d"
 
@@ -32,6 +33,8 @@
 #define NCAGES		3
 #define NMODS		8
 #define NNODES		4
+
+#define NID_MAX		(NROWS * NCABS * NCAGES * NMODS * NNODES)
 
 #define ST_FREE		0
 #define ST_DOWN		1
@@ -54,6 +57,9 @@
 
 #define PANEL_FPS	(1<<0)
 #define PANEL_NINFO	(1<<1)
+#define PANEL_CMD	(1<<2)
+#define PANEL_FLEGEND	(1<<3)
+#define PANEL_JLEGEND	(1<<4)
 
 #define PI		(3.14159265358979323)
 
@@ -73,12 +79,17 @@ struct job {
 	float		 j_r;
 	float		 j_g;
 	float		 j_b;
+	const char	*j_owner;
+	const char	*j_name;
+	int		 j_dur;
+	int		 j_cpus;
 };
 
 struct node {
 	int		 n_nid;
 	int		 n_logid;
 	struct job	*n_job;
+	int		 n_fails;
 	int		 n_state;
 	int		 n_savst;
 	struct {
@@ -104,14 +115,42 @@ struct state {
 	float		 st_ly;
 	float		 st_lz;
 	int		 st_opts;
-	int		 st_panels;
 	float		 st_alpha_job;
 	float		 st_alpha_oth;
 	GLint		 st_alpha_fmt;
 
+	int		 st_panels;
 	int		 st_tween_mode;
 	int		 st_nframes;
 };
+
+struct panel {
+	int			  p_id;
+	char			 *p_str;
+	size_t			  p_strlen;
+	int			  p_u;
+	int			  p_v;
+	int			  p_su;
+	int			  p_sv;
+	int			  p_adju;
+	int			  p_adjv;
+	int			  p_w;
+	int			  p_h;
+	struct {
+		float		  pc_r;
+		float		  pc_g;
+		float		  pc_b;
+		float		  pc_a;
+	}			  p_col;
+#define p_r p_col.pc_r
+#define p_g p_col.pc_g
+#define p_b p_col.pc_b
+#define p_a p_col.pc_a
+	void			(*p_refresh)(struct panel *);
+	SLIST_ENTRY(panel)	  p_next;
+};
+
+SLIST_HEAD(panel_slh, panel);
 
 /* draw.c */
 void			 draw(void);
@@ -126,8 +165,9 @@ void			 adjcam(void);
 void			 calc_flyby(void);
 
 /* panel.c */
-void			 draw_fps(void);
-void			 draw_node_info(void);
+void			 draw_panels(void);
+void			 adjpanels(void);
+void			 panel_toggle(int);
 
 /* parse.c */
 void			 parse_jobmap(void);
@@ -153,5 +193,12 @@ extern int		 active_fps;
 extern int		 active_ninfo;
 extern int		 active_flyby;
 
+extern int		 win_width;
+extern int		 win_height;
+
 extern struct nstate	 nstates[];
 extern const struct state flybypath[];
+
+extern struct node	*selnode;
+
+extern struct panel_slh	panels;
