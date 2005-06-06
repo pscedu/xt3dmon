@@ -12,8 +12,6 @@
 
 #include "mon.h"
 
-#define NID_MAX		(NROWS * NCABS * NCAGES * NMODS * NNODES)
-
 struct job		*getjob(int);
 void			 getcol(int, struct job *);
 
