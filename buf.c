@@ -8,13 +8,6 @@
 
 #define BUF_GROWAMT 30
 
-struct buf {
-	int	 buf_pos;
-	int	 buf_max;
-	int	 buf_opts; /* FATAL_ALLOCS */
-	char	*buf_buf;
-};
-
 void
 buf_init(struct buf *buf)
 {
