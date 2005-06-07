@@ -81,3 +81,24 @@
 		}							\
 	} while (0)
 #endif
+
+#ifndef TAILQ_END
+#define TAILQ_END(tqh) NULL
+#endif
+
+#ifndef TAILQ_FIRST
+#define TAILQ_FIRST(tqh)						\
+	((tqh)->tqh_first)
+#endif
+
+#ifndef TAILQ_NEXT
+#define TAILQ_NEXT(elem, memb)						\
+	(((elem)->memb).tqe_next)
+#endif
+
+#ifndef TAILQ_FOREACH
+#define TAILQ_FOREACH(elem, tqh, memb)					\
+	for ((elem) = TAILQ_FIRST(tqh);					\
+	    (elem) != TAILQ_END(tqh);					\
+	    (elem) = TAILQ_NEXT((elem), memb))
+#endif
