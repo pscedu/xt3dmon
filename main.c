@@ -23,7 +23,7 @@
 
 #include "mon.h"
 #include "cdefs.h"
-#include "lbuf.h"
+#include "buf.h"
 
 #define SLEEP_INTV	5
 #define TRANS_INC	0.10
@@ -246,7 +246,7 @@ printf("%d\n", key);
 		    }
 		case 'c':
 			panel_toggle(PANEL_CMD);
-			command = !command;
+			command_mode = !command_mode;
 			break;
 		case 'n':
 			panel_toggle(PANEL_NINFO);
