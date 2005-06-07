@@ -6,6 +6,8 @@
 #include <string.h>
 #include <sysexits.h>
 
+#include "buf.h"
+
 #define BUF_GROWAMT 30
 
 void
