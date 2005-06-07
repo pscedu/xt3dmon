@@ -17,9 +17,12 @@
 #include <string.h>
 
 #include "mon.h"
+#include "queue.h"
 
 #define LETTER_HEIGHT 13
 #define LETTER_WIDTH 8
+#define PANEL_PADDING 3
+#define PANEL_BWIDTH 2.0f
 
 void panel_refresh_fps(struct panel *);
 void panel_refresh_ninfo(struct panel *);
@@ -35,7 +38,8 @@ void (*refreshf[])(struct panel *) = {
 	panel_refresh_jlegend
 };
 
-struct panel_slh panels;
+struct panels panels;
+int panel_offset;
 
 int
 baseconv(int n)
@@ -48,11 +52,10 @@ baseconv(int n)
 	return (0);
 }
 
-/* Return the height of the panel.  I know, hackish. */
-float
-draw_panel(struct panel *p, float offset)
+void
+draw_panel(struct panel *p)
 {
-	int lineno, curlen, off;
+	int lineno, curlen, line_offset, toff;
 	char *s;
 
 #if 0
@@ -60,7 +63,8 @@ draw_panel(struct panel *p, float offset)
 		p->p_su += p->p_adju;
 		if (p->p_su <= 0) {
 printf("removing\n");
-			SLIST_REMOVE(&panels, p, panel, p_next);
+			TAILQ_REMOVE(p, p_link);
+			panel_offset -= p->p_h;
 			free(p->p_str);
 			free(p);
 			return (0.0f);
@@ -90,23 +94,25 @@ printf("removing\n");
 
 	glColor4f(p->p_r, p->p_g, p->p_b, p->p_a);
 
+	toff = PANEL_PADDING + PANEL_BWIDTH;
+
 	lineno = 1;
 	curlen = p->p_w = 0;
 	for (s = p->p_str; *s != '\0'; s++, curlen++) {
 		if (*s == '\n') {
 			if (curlen > p->p_w)
 				p->p_w = curlen;
-			curlen = 0;
+			curlen = -1;
 			lineno++;
 		}
 	}
 	if (curlen > p->p_w)
 		p->p_w = curlen;
 //printf("offset: %d\n", offset);
-	p->p_w *= LETTER_WIDTH;
-	p->p_h = lineno * LETTER_HEIGHT + offset;
+	p->p_w = p->p_w * LETTER_WIDTH + 2 * toff;
+	p->p_h = lineno * LETTER_HEIGHT + 2 * toff;
 	p->p_u = win_width - p->p_w;
-	p->p_v = win_height - offset;
+	p->p_v = win_height - panel_offset;
 
 	if (p->p_su != p->p_u)
 		p->p_su += p->p_su - p->p_u < 0 ? 1 : -1;
@@ -115,12 +121,12 @@ printf("removing\n");
 
 //printf("write '%s'\n", p->p_str);
 	/* Panel content. */
-	off = 0;
-	glRasterPos2d(p->p_su, p->p_sv - p->p_h);
+	line_offset = p->p_sv - toff - LETTER_HEIGHT;
+	glRasterPos2d(p->p_su + toff, line_offset);
 	for (s = p->p_str; *s != '\0'; s++) {
 		if (*s == '\n') {
-			off += LETTER_HEIGHT;
-			glRasterPos2d(p->p_su, p->p_sv - p->p_h - off);
+			line_offset -= LETTER_HEIGHT;
+			glRasterPos2d(p->p_su + toff, line_offset);
 		} else
 			glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
 	}
@@ -128,20 +134,20 @@ printf("removing\n");
 	/* Draw background. */
 	glBegin(GL_POLYGON);
 	glColor4f(0.20, 0.40, 0.5, 1.0);
-	glVertex2d(p->p_su, p->p_sv);
-	glVertex2d(p->p_su + p->p_w, p->p_sv);
-	glVertex2d(p->p_su + p->p_w, p->p_sv - p->p_h);
-	glVertex2d(p->p_su, p->p_sv - p->p_h);
+	glVertex2d(p->p_su,		p->p_sv);
+	glVertex2d(p->p_su + p->p_w,	p->p_sv);
+	glVertex2d(p->p_su + p->p_w,	p->p_sv - p->p_h);
+	glVertex2d(p->p_su,		p->p_sv - p->p_h);
 	glEnd();
 
 	/* Draw border. */
-	glLineWidth(2.0);
+	glLineWidth(PANEL_BWIDTH);
 	glBegin(GL_LINE_LOOP);
 	glColor4f(0.40, 0.80, 1.0, 1.0);
-	glVertex2d(p->p_su, p->p_sv);
-	glVertex2d(p->p_su + p->p_w, p->p_sv);
-	glVertex2d(p->p_su + p->p_w, p->p_sv - p->p_h);
-	glVertex2d(p->p_su, p->p_sv - p->p_h);
+	glVertex2d(p->p_su,		p->p_sv);
+	glVertex2d(p->p_su + p->p_w,	p->p_sv);
+	glVertex2d(p->p_su + p->p_w,	p->p_sv - p->p_h);
+	glVertex2d(p->p_su,		p->p_sv - p->p_h);
 	glEnd();
 
 	/* End 2D mode. */
@@ -151,7 +157,7 @@ printf("removing\n");
 
 	glPopAttrib();
 
-	return (p->p_h - offset);
+	panel_offset += p->p_h + 3; /* spacing */
 }
 
 void
@@ -168,7 +174,8 @@ panel_set_content(struct panel *p, char *fmt, ...)
 		if (len >= p->p_strlen) {
 printf("resizing %d to %d\n", p->p_strlen, len);
 			p->p_strlen = len + 1;
-			if ((p->p_str = realloc(p->p_str, len)) == NULL)
+			if ((p->p_str = realloc(p->p_str,
+			    p->p_strlen)) == NULL)
 				err(1, "realloc");
 		} else
 			break;
@@ -178,7 +185,6 @@ printf("resizing %d to %d\n", p->p_strlen, len);
 void
 panel_refresh_fps(struct panel *p)
 {
-//printf("refresh_fps()\n");
 	panel_set_content(p, "FPS: %d", fps);
 }
 
@@ -194,25 +200,25 @@ panel_refresh_cmd(struct panel *p)
 void
 panel_refresh_jlegend(struct panel *p)
 {
-	panel_set_content(p, "jlegend");
+	panel_set_content(p, "Jobs: %d", njobs);
 }
 
 void
 panel_refresh_flegend(struct panel *p)
 {
-	panel_set_content(p, "flegend.");
+	panel_set_content(p, "flegend");
 }
 
 void
 panel_refresh_ninfo(struct panel *p)
 {
 	if (selnode) {
-		switch (selnode->n_state) {
+		switch (selnode->n_savst) {
 		case ST_USED:
 			panel_set_content(p,
 			    "Node ID: %d\n"
 			    "Owner: %d\n"
-			    "Job name: %s\n"
+			    "Job name: [%s]\n"
 			    "Duration: %d\n"
 			    "CPUs: %d",
 			    selnode->n_nid,
@@ -223,7 +229,7 @@ panel_refresh_ninfo(struct panel *p)
 			break;
 		default:
 			panel_set_content(p,
-			    "Node ID: %d\n",
+			    "Node ID: %d",
 			    selnode->n_nid);
 			break;
 		}
@@ -239,7 +245,7 @@ adjpanels(void)
 
 	/* Resize happening -- move panels. */
 	float v = win_height;
-	SLIST_FOREACH(p, &panels, p_next) {
+	TAILQ_FOREACH(p, &panels, p_link) {
 		if (p->p_su < win_width - p->p_w)
 			p->p_adju = 1;
 		else if (p->p_su > win_width - p->p_w)
@@ -260,17 +266,16 @@ void
 draw_panels(void)
 {
 	struct panel *p, *np;
-	float offset;
 
-	offset = 0;
 	/*
-	 * Can't use SLIST_FOREACH() since draw_panel() may remove
+	 * Can't use TAILQ_FOREACH() since draw_panel() may remove
 	 * a panel.
 	 */
-	for (p = SLIST_FIRST(&panels); p != SLIST_END(&panels); p = np) {
-		np = SLIST_NEXT(p, p_next);
+	panel_offset = 1;
+	for (p = TAILQ_FIRST(&panels); p != TAILQ_END(&panels); p = np) {
+		np = TAILQ_NEXT(p, p_link);
 		p->p_refresh(p);
-		offset += draw_panel(p, offset);
+		draw_panel(p);
 	}
 }
 
@@ -279,7 +284,7 @@ panel_toggle(int panel)
 {
 	struct panel *p;
 
-	SLIST_FOREACH(p, &panels, p_next) {
+	TAILQ_FOREACH(p, &panels, p_link) {
 		if (p->p_id == panel) {
 			/* Found; make it disappear. */
 			p->p_u = win_width;
@@ -289,16 +294,18 @@ panel_toggle(int panel)
 	/* Not found; add. */
 	if ((p = malloc(sizeof(*p))) == NULL)
 		err(1, "malloc");
-	SLIST_INSERT_HEAD(&panels, p, p_next);
 	p->p_adju = 1;
 	p->p_str = NULL;
 	p->p_strlen = 0;
-	p->p_refresh = refreshf[baseconv(panel)];
+printf("panel id %d, index %d\n", panel, baseconv(panel) - 1);
+	p->p_refresh = refreshf[baseconv(panel) - 1];
 	p->p_id = panel;
 	p->p_su = win_width;
-	p->p_sv = win_height;
+printf("showing panel with offset %d\n", panel_offset);
+	p->p_sv = win_height - panel_offset - 1;
 	p->p_r = 1.0f;
 	p->p_g = 1.0f;
 	p->p_b = 1.0f;
 	p->p_a = 1.0f;
+	TAILQ_INSERT_TAIL(&panels, p, p_link);
 }
