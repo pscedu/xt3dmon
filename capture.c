@@ -17,44 +17,9 @@
 # include <GL/freeglut.h>
 #endif
 
-/* Take a screenshot from the current framebuffer (PPM) */
-void screenshot_ppm(char *file, int x, int y, int w, int h)
-{
-	long size;
-	unsigned char *buf;
-	FILE *fp;
-
-	if ((fp = fopen(file,"wb")) == NULL)
-		err(1, "%s", file);
-
-	/* Size = num pixels * 3 bytes per pixel (RGB) */
-	size = w*h*3;
-	if ((buf = malloc(size * sizeof(unsigned char))) == NULL)
-		err(1, "malloc");
-
-	/* Read data from the framebuffer */
-	glReadPixels(x, y, w, h, GL_RGB, GL_UNSIGNED_BYTE, buf);
-
-	/* Currently uses PPM format */
-	fprintf(fp, "P6 %d %d %d\n", w, h, 255);
-	fwrite(buf, size, 1, fp);
-	fclose(fp);
-
-	free(buf);
-	
-	// DEBUG
-//	memset(cmd, '\0', sizeof(cmd));
-//	snprintf(cmd, sizeof(cmd),"/usr/local/bin/cjpeg -quality 100 %s | /usr/local/bin/jpegtran -flip vertical > %s.jpg; rm %s", file, file, file);
-//	system(cmd);
-}
-
-/*
-** Invert the y pixels because OpenGL
-void invert()
-{
-
-}
-*/
+#define NUM_FRAMES 100
+#define MAX_FRAMES 10000
+static unsigned char *fb[NUM_FRAMES];
 
 /* Convert data to png */
 void data2png(char *file, unsigned char *buf, long w, long h)
@@ -64,7 +29,6 @@ void data2png(char *file, unsigned char *buf, long w, long h)
 	png_structp png;
 	png_infop info;
 	png_bytepp rows;
-
 
 	if ((fp = fopen(file,"wb")) == NULL)
 		err(1, "%s", file);
@@ -123,75 +87,6 @@ void data2png(char *file, unsigned char *buf, long w, long h)
 	fclose(fp);
 }
 
-/* Take a screenshot from the current framebuffer (PNG) */
-void screenshot_png(char *file, int x, int y, int w, int h)
-{
-	long size;
-	unsigned char *buf;
-
-	/* Size = num pixels * 4 bytes per pixel (RGBA) */
-	size = w*h*4;
-	if ((buf = malloc(size * sizeof(unsigned char))) == NULL)
-		err(1, "malloc");
-
-	/* Read data from the framebuffer */
-	glReadPixels(x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, buf);
-
-	/* Write data to buf */
-	data2png(file, buf, w, h);
-
-	free(buf);
-}
-
-/*
-** Invert the y pixels because OpenGL
-void invert()
-{
-
-}
-*/
-
-/* Dump Framebuffer into memory write at end */
-#define NUM_FRAMES 100
-#define MAX_FRAMES 10000
-static unsigned char *fb[NUM_FRAMES];
-
-void screenshot_raw(int x, int y, int w, int h)
-{
-	char file[PATH_MAX];
-	long size;
-	static int i = 0;
-	static int j = 0;
-
-	/*
-	** After we reach max frames dump them. NOTE: this is
-	** extremely nasty and will probably take awhile...
-	*/
-	if(i >= NUM_FRAMES)
-	{
-		int k;
-		for(k = 0; k < NUM_FRAMES; k++)
-		{
-			snprintf(file, sizeof(file), "ppm/%d.png", j++);
-			data2png(file, fb[k], w, h);
-			free(fb[k]);
-		}
-
-		i = 0;
-	}
-
-	/* Size = num pixels * 3 bytes per pixel (RGB) */
-	size = w*h*4;
-
-	if ((fb[i] = malloc(size * sizeof(unsigned char))) == NULL)
-		err(1, "malloc");
-
-	/* Read data from the framebuffer */
-	glReadPixels(x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, fb[i]);
-
-	i++;
-}
-
 /* Create proper filenames so they are ordered in png->mpg */
 void filename(char *ascii, int i)
 {
@@ -212,8 +107,106 @@ void filename(char *ascii, int i)
 	return ascii;
 }
 
+/* Take a screenshot from the current framebuffer (PNG) */
+void fb_png(char *file, int x, int y, int w, int h)
+{
+	long size;
+	unsigned char *buf;
+
+	/* Size = num pixels * 4 bytes per pixel (RGBA) */
+	size = w*h*4;
+	if ((buf = malloc(size * sizeof(unsigned char))) == NULL)
+		err(1, "malloc");
+
+	/* Read data from the framebuffer */
+	glReadPixels(x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, buf);
+
+	/* Write data to buf */
+	data2png(file, buf, w, h);
+
+	free(buf);
+}
+
+/* Take a screenshot from the current framebuffer (PPM) */
+void fb_ppm(char *file, int x, int y, int w, int h)
+{
+	long size;
+	unsigned char *buf;
+	FILE *fp;
+
+	if ((fp = fopen(file,"wb")) == NULL)
+		err(1, "%s", file);
+
+	/* Size = num pixels * 3 bytes per pixel (RGB) */
+	size = w*h*3;
+	if ((buf = malloc(size * sizeof(unsigned char))) == NULL)
+		err(1, "malloc");
+
+	/* Read data from the framebuffer */
+	glReadPixels(x, y, w, h, GL_RGB, GL_UNSIGNED_BYTE, buf);
+
+	/* Currently uses PPM format */
+	fprintf(fp, "P6 %d %d %d\n", w, h, 255);
+	fwrite(buf, size, 1, fp);
+	fclose(fp);
+
+	free(buf);
+	
+	// DEBUG - Pipe to JPEG Tools
+//	memset(cmd, '\0', sizeof(cmd));
+//	snprintf(cmd, sizeof(cmd),"/usr/local/bin/cjpeg -quality 100 %s | /usr/local/bin/jpegtran -flip vertical > %s.jpg; rm %s", file, file, file);
+//	system(cmd);
+}
+
+/*
+** Invert the y pixels because OpenGL
+void invert()
+{
+
+}
+*/
+
+/* Dump Framebuffer into memory write at end */
+void fb_mem_png(int x, int y, int w, int h)
+{
+	char file[PATH_MAX];
+	char num[PATH_MAX];
+	long size;
+	static int i = 0;
+	static int j = 1;
+
+	/*
+	** After we reach max frames dump them. NOTE: this is
+	** extremely nasty and will probably take awhile...
+	*/
+	if(i >= NUM_FRAMES)
+	{
+		int k;
+		for(k = 0; k < NUM_FRAMES; k++)
+		{
+			filename(num, j++);
+			snprintf(file, sizeof(file), "ppm/%s.ppm", num);
+			data2png(file, fb[k], w, h);
+			free(fb[k]);
+		}
+
+		i = 0;
+	}
+
+	/* Size = num pixels * 3 bytes per pixel (RGB) */
+	size = w*h*4;
+
+	if ((fb[i] = malloc(size * sizeof(unsigned char))) == NULL)
+		err(1, "malloc");
+
+	/* Read data from the framebuffer */
+	glReadPixels(x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, fb[i]);
+
+	i++;
+}
+
 /* Capture Screenshots (buffered) and save as PPM (Portable Pixmaps) */
-void screenshot_buf_ppm(int x, int y, int w, int h)
+void fb_mem_ppm(int x, int y, int w, int h)
 {
 	long size;
 	FILE *fp;
@@ -269,20 +262,20 @@ void screenshot_buf_ppm(int x, int y, int w, int h)
 /* Dump the entire framebuffer */
 void capture_fb(void)
 {
-	char file[PATH_MAX];
+//	char file[PATH_MAX];
 	GLint vp[4];
-	static long f = 0;
+//	static long f = 0;
 
-	memset(file, 0, sizeof(file));
-	snprintf(file, sizeof(file), "ppm/%ld.png", f++);
+//	memset(file, 0, sizeof(file));
+//	snprintf(file, sizeof(file), "ppm/%ld.png", f++);
 
 	glMatrixMode(GL_PROJECTION);
 	glGetIntegerv(GL_VIEWPORT, vp);
 	
-//	screenshot_png(file, vp[0], vp[1], vp[2], vp[3]);
-//	screenshot_ppm(file, vp[0], vp[1], vp[2], vp[3]);
-//	screenshot_raw(vp[0], vp[1], vp[2], vp[3]);
-	screenshot_buf_ppm(vp[0], vp[1], vp[2], vp[3]);
+//	fb_png(file, vp[0], vp[1], vp[2], vp[3]);
+//	fb_ppm(file, vp[0], vp[1], vp[2], vp[3]);
+	fb_mem_png(vp[0], vp[1], vp[2], vp[3]);
+//	fb_mem_ppm(vp[0], vp[1], vp[2], vp[3]);
 	
 	glMatrixMode(GL_MODELVIEW);
 }
