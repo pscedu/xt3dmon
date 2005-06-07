@@ -103,8 +103,6 @@ void filename(char *ascii, int i)
 
 	snprintf(num, sizeof(num), "%d", t);
 	strcat(ascii, num); 
-
-	return ascii;
 }
 
 /* Take a screenshot from the current framebuffer (PNG) */
