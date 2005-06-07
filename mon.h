@@ -208,3 +208,4 @@ extern const struct state flybypath[];
 extern struct node	*selnode;
 
 extern struct panels	 panels;
+extern struct buf 	 cmdbuf;
