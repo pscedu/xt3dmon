@@ -22,8 +22,8 @@
 #include <unistd.h>
 
 #include "mon.h"
-#include "slist.h"
 #include "cdefs.h"
+#include "lbuf.h"
 
 #define SLEEP_INTV	5
 #define TRANS_INC	0.10
@@ -76,11 +76,10 @@ struct node		*invmap[NLOGIDS][NROWS * NCABS * NCAGES * NMODS * NNODES];
 struct node		 *selnode;
 int			 win_width = 800;
 int			 win_height = 600;
-
-int			 active_fps = 0;
-int			 active_ninfo = 0;
 int			 active_flyby = 0;
 int			 build_flyby = 0;
+int			 command_mode;
+struct buf		 cmdbuf;
 
 float			 tx = STARTX, tlx = STARTLX;
 float			 ty = STARTY, tly = STARTLY;
@@ -224,17 +223,30 @@ void
 key(unsigned char key, __unused int u, __unused int v)
 {
 	static int panel = 0;
-
+printf("%d\n", key);
 	if (active_flyby) {
 		if (key == 'F')
 			active_flyby = 0;
 		return;
 	}
 
+	if (command_mode && selnode != NULL) {
+		buf_append(&cmdbuf, key);
+		return;
+	}
+
 	if (panel) {
 		switch (key) {
+		case 'a': {
+			int j;
+			
+			for (j = 0; j < NPANELS; j++)
+				panel_toggle(1 << j);
+			break;
+		    }
 		case 'c':
 			panel_toggle(PANEL_CMD);
+			command = !command;
 			break;
 		case 'n':
 			panel_toggle(PANEL_NINFO);
@@ -242,7 +254,7 @@ key(unsigned char key, __unused int u, __unused int v)
 		case 'F': /* failure */
 			panel_toggle(PANEL_FLEGEND);
 			break;
-		case 'l':
+		case 'j':
 			panel_toggle(PANEL_JLEGEND);
 			break;
 		case 'f':
@@ -769,7 +781,8 @@ main(int argc, char *argv[])
 	glEnable(GL_BLEND);
 	glEnable(GL_LINE_SMOOTH);
 
-	SLIST_INIT(&panels);
+	TAILQ_INIT(&panels);
+	buf_init(&cmdbuf);
 
 	load_textures();
 	parse_physmap();
