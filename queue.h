@@ -48,6 +48,15 @@
 	} while (0)
 #endif
 
+#ifndef SLIST_INSERT_AFTER
+#define SLIST_INSERT_AFTER(elem, newelem, memb)				\
+	do {								\
+		SLIST_NEXT((newelem), memb) =				\
+		    SLIST_NEXT((elem), memb);				\
+		SLIST_NEXT((elem), memb) = newelem;			\
+	} while (0)
+#endif
+
 #ifndef SLIST_EMPTY
 #define SLIST_EMPTY(slh)						\
 	(SLIST_FIRST(slh) == SLIST_END(slh))
