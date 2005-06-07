@@ -11,8 +11,6 @@
 # include <GL/freeglut.h>
 #endif
 
-#include "slist.h"
-
 /*
 #define _PATH_JOBMAP	"/usr/users/torque/nids_list_login%d"
 #define _PATH_BADMAP	"/usr/users/torque/bad_nids_list_login%d"
@@ -60,6 +58,7 @@
 #define PANEL_CMD	(1<<2)
 #define PANEL_FLEGEND	(1<<3)
 #define PANEL_JLEGEND	(1<<4)
+#define NPANELS		5
 
 #define PI		(3.14159265358979323)
 
@@ -147,10 +146,10 @@ struct panel {
 #define p_b p_col.pc_b
 #define p_a p_col.pc_a
 	void			(*p_refresh)(struct panel *);
-	SLIST_ENTRY(panel)	  p_next;
+	TAILQ_ENTRY(panel)	  p_link;
 };
 
-SLIST_HEAD(panel_slh, panel);
+TAILQ_HEAD(panels, panel);
 
 /* draw.c */
 void			 draw(void);
@@ -208,4 +207,4 @@ extern const struct state flybypath[];
 
 extern struct node	*selnode;
 
-extern struct panel_slh	panels;
+extern struct panels	 panels;
