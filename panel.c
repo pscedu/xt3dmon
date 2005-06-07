@@ -18,6 +18,7 @@
 
 #include "mon.h"
 #include "queue.h"
+#include "buf.h"
 
 #define LETTER_HEIGHT 13
 #define LETTER_WIDTH 8
@@ -192,7 +193,8 @@ void
 panel_refresh_cmd(struct panel *p)
 {
 	if (selnode)
-		panel_set_content(p, "Sending command to host\n\n> ");
+		panel_set_content(p, "Sending command to host\n\n> %s", 
+		    buf_get(&cmdbuf));
 	else
 		panel_set_content(p, "Please select a node\nto send a command to.");
 }
