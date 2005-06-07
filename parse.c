@@ -412,6 +412,7 @@ getjob(int id)
 	}
 	if ((j = malloc(sizeof(*j))) == NULL)
 		err(1, "malloc");
+	memset(j, 0, sizeof(*j));
 	j->j_id = id;
 	jobs[njobs++] = j;
 	return (j);
