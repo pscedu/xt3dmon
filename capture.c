@@ -183,7 +183,7 @@ void fb_mem_png(int x, int y, int w, int h)
 		for(k = 0; k < NUM_FRAMES; k++)
 		{
 			filename(num, j++);
-			snprintf(file, sizeof(file), "ppm/%s.ppm", num);
+			snprintf(file, sizeof(file), "ppm/%s.png", num);
 			data2png(file, fb[k], w, h);
 			free(fb[k]);
 		}
@@ -239,7 +239,7 @@ void fb_mem_ppm(int x, int y, int w, int h)
 
 			free(fb[k]);
 			
-			// DEBUG
+			// DEBUG (Definately Remove Later!)
 			memset(cmd, '\0', sizeof(cmd));
 			snprintf(cmd, sizeof(cmd),"`which cjpeg` -quality 100 %s | `which jpegtran` -flip vertical > %s.jpg; rm %s", file, file, file);
 			system(cmd);
@@ -272,8 +272,8 @@ void capture_fb(void)
 	
 //	fb_png(file, vp[0], vp[1], vp[2], vp[3]);
 //	fb_ppm(file, vp[0], vp[1], vp[2], vp[3]);
-	fb_mem_png(vp[0], vp[1], vp[2], vp[3]);
-//	fb_mem_ppm(vp[0], vp[1], vp[2], vp[3]);
+//	fb_mem_png(vp[0], vp[1], vp[2], vp[3]);
+	fb_mem_ppm(vp[0], vp[1], vp[2], vp[3]);
 	
 	glMatrixMode(GL_MODELVIEW);
 }
