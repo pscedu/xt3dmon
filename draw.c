@@ -18,8 +18,15 @@
 void
 draw(void)
 {
-	if (active_flyby)
-		calc_flyby();
+	/* record user commands */
+	if(build_flyby)
+		write_flyby();
+
+	if (active_flyby) {
+		//calc_flyby();
+		read_flyby();
+//		restore_state();
+	}
 
 	if (st.st_opts & OP_TWEEN &&
 	    (tx - st.st_x || ty - st.st_y || tz - st.st_z ||

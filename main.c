@@ -80,6 +80,7 @@ int			 win_height = 600;
 int			 active_fps = 0;
 int			 active_ninfo = 0;
 int			 active_flyby = 0;
+int			 build_flyby = 0;
 
 float			 tx = STARTX, tlx = STARTLX;
 float			 ty = STARTY, tly = STARTLY;
@@ -279,8 +280,13 @@ key(unsigned char key, __unused int u, __unused int v)
 			tz = st.st_z;  tlz = st.st_lz;
 		}
 		break;
+	case 'f':
+		build_flyby = !build_flyby;
+		(build_flyby ? begin_flyby_build() : end_flyby_build());
+		break;
 	case 'F':
 		active_flyby = !active_flyby;
+		(active_flyby ? begin_flyby() : end_flyby());
 		break;
 	case 'g':
 		st.st_opts ^= OP_GROUND;
