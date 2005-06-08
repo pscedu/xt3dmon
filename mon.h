@@ -209,3 +209,4 @@ extern struct node	*selnode;
 
 extern struct panels	 panels;
 extern struct buf 	 cmdbuf;
+extern int		 total_failures;
