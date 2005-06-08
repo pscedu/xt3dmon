@@ -54,36 +54,37 @@ While holding shift, scroll the mouse to peer along the y-axis.
 Toggle translucency (blending).
 .It Ic c
 Clear the selected node.
+.It Ic D
+Toggle drawing to the screen.
+.It Ic d
+Toggle screen capture.
+Files are written to
+.Pa data/dump??.ppm .
 .It Ic e
 Toggle movement interpolation
 .Pq Dq tweening .
 .It Ic F
 Activate/deactivate flyby overview.
 .It Ic f
-Toggle the frames-per-second panel.
+Toggle the recording and dumping of the live state.
 .It Ic g
 Toggle display of the ground and axes.
-.It Ic l
-Toggle line mode.
-There are two line modes:
-.Dq line leave
-mode, which leaves lines all over the place, constructed
-from the current
-.Em ( x , y , z )
-position to a spot some distance away in the direction of the mouse
-cursor, and
-.Dq line follow
-mode, which continually plots a single line that follows the mouse
-cursor, constructed from the current
-.Em ( x , y , z )
-position to a spot some distance away in the direction of the mouse
-cursor.
-.It Ic n
-Toggle the extended node information panel.
-.It Ic p
+.It Ic P
 Print the current
 .Em ( x , y , z )
 position and look unit vector.
+.It Ic pa
+Toggle all panels.
+.It Ic pc
+Toggle the command panel.
+.It Ic pF
+Toggle the failure overview panel.
+.It Ic pf
+Toggle the frames-per-second panel.
+.It Ic pj
+Toggle the job overview panel.
+.It Ic pn
+Toggle the extended node information panel.
 .It Ic q
 Quit.
 .It Ic t
