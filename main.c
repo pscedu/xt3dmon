@@ -223,7 +223,7 @@ void
 key(unsigned char key, __unused int u, __unused int v)
 {
 	static int panel = 0;
-printf("%d\n", key);
+
 	if (active_flyby) {
 		if (key == 'F')
 			active_flyby = 0;
