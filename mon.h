@@ -172,6 +172,9 @@ void			 panel_toggle(int);
 void			 parse_jobmap(void);
 void			 parse_physmap(void);
 
+/* parse-fail.c */
+void			 parse_failmap(void);
+
 /* capture.c */
 void			 capture_fb(void);
 
