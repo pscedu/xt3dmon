@@ -11,6 +11,8 @@
 
 #define MAXFAILS INT_MAX
 
+int total_failures;
+
 /*
  * Parse failure data entries.
  *
@@ -41,6 +43,7 @@ parse_failmap(void)
 					for (n = 0; n < NNODES; n++)
 						nodes[r][cb][cg][m][n].n_fails = 0;
 
+	total_failures = 0;
 	for (j = 0; j < NLOGIDS; j++) {
 		snprintf(fn, sizeof(fn), _PATH_FAILMAP, logids[j]);
 		if ((fp = fopen(fn, "r")) == NULL) {
@@ -75,6 +78,7 @@ parse_failmap(void)
 			nid = (int)l;
 
 			invmap[j][nid]->n_fails = fails;
+			total_failures += fails;
 			continue;
 bad:
 			warnx("%s:%d: malformed line", fn, lineno);
