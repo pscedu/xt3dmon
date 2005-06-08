@@ -208,7 +208,7 @@ panel_refresh_jlegend(struct panel *p)
 void
 panel_refresh_flegend(struct panel *p)
 {
-	panel_set_content(p, "flegend");
+	panel_set_content(p, "Failures: %d", total_failures);
 }
 
 void
