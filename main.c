@@ -231,7 +231,27 @@ printf("%d\n", key);
 	}
 
 	if (command_mode && selnode != NULL) {
-		buf_append(&cmdbuf, key);
+		switch (key) {
+		case 13: /* enter */
+			/* FALLTHROUGH */
+		case 27: /* escape */
+			buf_reset(&cmdbuf);
+			buf_append(&cmdbuf, '\0');
+			command_mode = 0;
+			break;
+		case 8:
+			if (strlen(buf_get(&cmdbuf)) > 0) {
+				buf_chop(&cmdbuf);
+				buf_chop(&cmdbuf);
+				buf_append(&cmdbuf, '\0');
+			}
+			break;
+		default:
+			buf_chop(&cmdbuf);
+			buf_append(&cmdbuf, key);
+			buf_append(&cmdbuf, '\0');
+			break;
+		}
 		return;
 	}
 
@@ -303,10 +323,10 @@ printf("%d\n", key);
 	case 'g':
 		st.st_opts ^= OP_GROUND;
 		break;
-	case 'P':
+	case 'p':
 		panel = 1;
 		break;
-	case 'p':
+	case 'P':
 		printf("pos[%.2f,%.2f,%.2f] look[%.2f,%.2f,%.2f]\n",
 		    st.st_x, st.st_y, st.st_z,
 		    st.st_lx, st.st_ly, st.st_lz);
@@ -688,6 +708,7 @@ idle(void)
 			tcnt = 0;
 			lastsync.tv_sec = tv.tv_sec;
 			parse_jobmap();
+			parse_failmap();
 			if (selnode != NULL) {
 				if (selnode->n_state != ST_INFO)
 					selnode->n_savst = selnode->n_state;
@@ -783,6 +804,7 @@ main(int argc, char *argv[])
 
 	TAILQ_INIT(&panels);
 	buf_init(&cmdbuf);
+	buf_append(&cmdbuf, '\0');
 
 	load_textures();
 	parse_physmap();
