@@ -94,12 +94,10 @@ keyh_mode(unsigned char key, __unused int u, __unused int v)
 void
 keyh_default(unsigned char key, __unused int u, __unused int v)
 {
-	int ro = 0;
-
 	switch (key) {
 	case 'b':
 		st.st_opts ^= OP_BLEND;
-		ro |= RO_COMPILE;
+		st.st_ro |= RO_COMPILE;
 		break;
 	case 'c':
 		if (st.st_selnode != NULL) {
@@ -143,33 +141,34 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		/* NOTREACHED */
 	case 'T':
 		st.st_alpha_fmt = (st.st_alpha_fmt == GL_RGBA ? GL_INTENSITY : GL_RGBA);
-		ro |= RO_TEX | RO_COMPILE;
+		st.st_ro |= RO_TEX | RO_COMPILE;
 		break;
 	case 't':
 		st.st_opts ^= OP_TEX;
-		ro |= RO_COMPILE;
+		st.st_ro |= RO_COMPILE;
 		break;
 	case 'w':
 		st.st_opts ^= OP_WIRES;
 		break;
 	case '+':
 		st.st_alpha_job += (st.st_alpha_job + TRANS_INC > 1.0 ? 0.0 : TRANS_INC);
-		ro |= RO_COMPILE;
+		st.st_ro |= RO_COMPILE;
 		break;
 	case '_':
 		st.st_alpha_job -= (st.st_alpha_job + TRANS_INC < 0.0 ? 0.0 : TRANS_INC);
-		ro |= RO_COMPILE;
+		st.st_ro |= RO_COMPILE;
 		break;
 	case '=':
 		st.st_alpha_oth += (st.st_alpha_oth + TRANS_INC > 1.0 ? 0.0 : TRANS_INC);
-		ro |= RO_COMPILE;
+		st.st_ro |= RO_COMPILE;
 		break;
 	case '-':
 		st.st_alpha_oth -= (st.st_alpha_oth + TRANS_INC < 0.0 ? 0.0 : TRANS_INC);
-		ro |= RO_COMPILE;
+		st.st_ro |= RO_COMPILE;
 		break;
 	}
-	restore_state(ro);
+
+	restore_state();
 }
 
 void
