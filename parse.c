@@ -51,6 +51,49 @@ int fail_eq(void *elem, void *arg)
 	return (((struct fail *)elem)->f_fails == *(int *)arg);
 }
 
+void *
+getobj(void *arg, void ***data, size_t *cursiz, size_t *maxsiz,
+    cmpf_t eq, int inc, size_t objlen)
+{
+	void **jj, *j = NULL;
+	size_t n, newmax;
+
+	if (jobs != NULL)
+		for (n = 0, jj = *data; n < *cursiz; jj++, n++)
+			if (eq(*jj, arg))
+				return (*jj);
+	/* Not found; add. */
+	if (*cursiz + 1 >= *maxsiz) {
+		newmax = *maxsiz + inc;
+		if ((*data = realloc(*data,
+		    newmax * sizeof(**data))) == NULL)
+			err(1, "realloc");
+		for (n = *maxsiz; n < newmax; n++) {
+			if ((j = malloc(objlen)) == NULL)
+				err(1, "malloc");
+			memset(j, 0, objlen);
+			(*data)[n] = j;
+		}
+		*maxsiz = newmax;
+	}
+	return ((*data)[(*cursiz)++]);
+}
+
+void
+getcol(int n, size_t total, struct fill *fillp)
+{
+	double div;
+
+	if (total == 1)
+		div = 0.0;
+	else
+		div = ((double)n) / ((double)(total - 1));
+
+	fillp->f_r = cos(div);
+	fillp->f_g = sin(div) * sin(div);
+	fillp->f_b = fabs(tan(div + PI * 3/4));
+}
+
 /*
  * Example line:
  *	c0-1c0s1 3 7 c
@@ -436,49 +479,6 @@ badcheck:
 
 	for (j = 0; j < njobs; j++)
 		getcol(j, njobs, &jobs[j]->j_fill);
-}
-
-void *
-getobj(void *arg, void ***data, size_t *cursiz, size_t *maxsiz,
-    cmpf_t eq, int inc, size_t objlen)
-{
-	void **jj, *j = NULL;
-	size_t n, newmax;
-
-	if (jobs != NULL)
-		for (n = 0, jj = *data; n < *cursiz; jj++, n++)
-			if (eq(*jj, arg))
-				return (*jj);
-	/* Not found; add. */
-	if (*cursiz + 1 >= *maxsiz) {
-		newmax = *maxsiz + inc;
-		if ((*data = realloc(*data,
-		    newmax * sizeof(**data))) == NULL)
-			err(1, "realloc");
-		for (n = *maxsiz; n < newmax; n++) {
-			if ((j = malloc(objlen)) == NULL)
-				err(1, "malloc");
-			memset(j, 0, objlen);
-			(*data)[n] = j;
-		}
-		*maxsiz = newmax;
-	}
-	return ((*data)[(*cursiz)++]);
-}
-
-void
-getcol(int n, size_t total, struct fill *fillp)
-{
-	double div;
-
-	if (total == 1)
-		div = 0.0;
-	else
-		div = ((double)n) / ((double)(total - 1));
-
-	fillp->f_r = cos(div);
-	fillp->f_g = sin(div) * sin(div);
-	fillp->f_b = fabs(tan(div + PI * 3/4));
 }
 
 /*
