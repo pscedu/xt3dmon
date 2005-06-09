@@ -25,7 +25,7 @@ draw(void)
 	if (active_flyby) {
 		//calc_flyby();
 		read_flyby();
-//		restore_state();
+		restore_state();
 	}
 
 	if (st.st_opts & OP_TWEEN &&
@@ -243,6 +243,11 @@ draw_wireframe_node(struct node *n, float w, float h, float d)
 	w += 2.0f * WFRAMEWIDTH;
 	h += 2.0f * WFRAMEWIDTH;
 	d += 2.0f * WFRAMEWIDTH;
+
+	/*
+	** XXX - readd antialiasing
+	**     - fix linewidth changes when turning on blend mode
+	*/
 
 	glLineWidth(1.0);
 	glColor3f(0.0f, 0.0f, 0.0f);
