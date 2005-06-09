@@ -15,10 +15,11 @@
 #define MAXFAILS INT_MAX
 
 struct job		*getjob(int);
-void			 getcol(int, struct job *);
+void			 getcol(int, int, float *, float *, float *);
 
 int			 logids[] = { 0, 8 };
-size_t			 maxjobs;
+size_t			 maxjobs, maxfails;
+struct fail_state	**fail_states;
 int			 total_failures;
 
 /*
@@ -393,7 +394,7 @@ badcheck:
 	}
 
 	for (j = 0; j < njobs; j++)
-		getcol(j, jobs[j]);
+		getcol(j, njobs, &jobs[j]->j_r, &jobs[j]->j_g, &jobs[j]->j_b);
 }
 
 #define JINCR 10
@@ -422,18 +423,18 @@ getjob(int id)
 }
 
 void
-getcol(int n, struct job *j)
+getcol(int n, int total, float *r, float *g, float *b)
 {
 	double div;
 
-	if (njobs == 1)
+	if (total == 1)
 		div = 0.0;
 	else
-		div = ((double)n) / ((double)(njobs - 1));
+		div = ((double)n) / ((double)(total - 1));
 
-	j->j_r = cos(div);
-	j->j_g = sin(div) * sin(div);
-	j->j_b = fabs(tan(div + PI * 3/4));
+	*r = cos(div);
+	*g = sin(div) * sin(div);
+	*b = fabs(tan(div + PI * 3/4));
 }
 
 /*
@@ -449,10 +450,10 @@ getcol(int n, struct job *j)
 void
 parse_failmap(void)
 {
-	int nid, lineno, fails, r, cb, cg, m, n;
 	char *p, *s, fn[PATH_MAX], buf[BUFSIZ];
+	int nid, lineno, r, cb, cg, m, n;
+	size_t j, newmax, fails;
 	FILE *fp;
-	size_t j;
 	long l;
 
 	/*
@@ -466,7 +467,7 @@ parse_failmap(void)
 					for (n = 0; n < NNODES; n++)
 						nodes[r][cb][cg][m][n].n_fails = 0;
 
-	total_failures = 0;
+	total_failures = newmax = 0;
 	for (j = 0; j < NLOGIDS; j++) {
 		snprintf(fn, sizeof(fn), _PATH_FAILMAP, logids[j]);
 		if ((fp = fopen(fn, "r")) == NULL) {
@@ -502,6 +503,8 @@ parse_failmap(void)
 
 			invmap[j][nid]->n_fails = fails;
 			total_failures += fails;
+			if (fails > newmax)
+				newmax = fails;
 			continue;
 bad:
 			warnx("%s:%d: malformed line", fn, lineno);
@@ -512,4 +515,20 @@ bad:
 		errno = 0;
 	}
 
+	if (newmax + 1> maxfails) {
+		if ((fail_states = realloc(fail_states,
+		    (newmax + 1) * sizeof(*fail_states))) == NULL)
+			err(1, "realloc");
+		for (j = maxfails; j <= newmax; j++)
+			if ((fail_states[j] =
+			    malloc(sizeof(**fail_states))) == NULL)
+				err(1, "malloc");
+		maxfails = newmax;	
+	}
+
+	for (j = 0; j <= maxfails; j++)
+		getcol(j, maxfails + 1,
+		    &(fail_states[j]->fs_r),
+		    &(fail_states[j]->fs_g),
+		    &(fail_states[j]->fs_b));
 }
