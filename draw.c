@@ -171,7 +171,13 @@ draw_filled_node(struct node *n, float w, float h, float d)
 	r = n->n_fillp->f_r;
 	g = n->n_fillp->f_g;
 	b = n->n_fillp->f_b;
-	a = n->n_fillp->f_a;
+//	a = n->n_fillp->f_a;
+
+	/* Set alpha depending on usage */
+	if(n->n_state == JST_USED)
+		a = st.st_alpha_job;
+	else
+		a = st.st_alpha_oth;
 
 	if (st.st_opts & OP_BLEND) {
 		glEnable(GL_BLEND);
