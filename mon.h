@@ -60,9 +60,8 @@
 #define PANEL_FPS	(1<<0)
 #define PANEL_NINFO	(1<<1)
 #define PANEL_CMD	(1<<2)
-#define PANEL_FLEGEND	(1<<3)
-#define PANEL_JLEGEND	(1<<4)
-#define NPANELS		5
+#define PANEL_LEGEND	(1<<3)
+#define NPANELS		4
 
 #define PI		(3.14159265358979323)
 
@@ -137,6 +136,7 @@ struct state {
 	int		 st_panels;
 	int		 st_tween_mode;
 	int		 st_nframes;
+	int		 st_ro;
 };
 
 struct job_state {
@@ -166,6 +166,13 @@ TAILQ_HEAD(panels, panel);
 /* draw.c */
 void			 draw(void);
 void			 draw_node(struct node *, float, float, float);
+
+/* key.c */
+void			 keyh_flyby(unsigned char, int, int);
+void			 keyh_cmd(unsigned char, int, int);
+void			 keyh_panel(unsigned char, int, int);
+void			 keyh_mode(unsigned char, int, int);
+void			 keyh_default(unsigned char, int, int);
 
 /* load_png.c */
 void			 load_texture(void *, GLint, int);
