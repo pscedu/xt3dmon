@@ -74,8 +74,11 @@ parse_physmap(void)
 		for (cb = 0; cb < NCABS; cb++)
 			for (cg = 0; cg < NCAGES; cg++)
 				for (m = 0; m < NMODS; m++)
-					for (n = 0; n < NNODES; n++)
-						nodes[r][cb][cg][m][n].n_state = JST_UNACC;
+					for (n = 0; n < NNODES; n++) {
+						node = &nodes[r][cb][cg][m][n];
+						node->n_state = JST_UNACC;
+						node->n_fillp = &jstates[JST_UNACC].js_fill;
+					}
 
 	for (j = 0; j < NLOGIDS; j++) {
 		snprintf(fn, sizeof(fn), _PATH_PHYSMAP, logids[j]);
@@ -196,6 +199,7 @@ parse_physmap(void)
 			default:
 				goto bad;
 			}
+			node->n_fillp = &jstates[node->n_state].js_fill;
 			continue;
 bad:
 			warnx("%s:%d: malformed line [%s] [%s]", fn, lineno, buf, p);
@@ -225,15 +229,13 @@ parse_jobmap(void)
 	int jobid, nid, lineno, enabled, bad, checking;
 	char fn[MAXPATHLEN], buf[BUFSIZ], *p, *s;
 	struct node *node;
-	size_t newjobs;
 	FILE *fp;
 	size_t j;
 	long l;
 
 //	for (j = 0; j < njobs; j++)
 //		free(jobs[j]);
-//	njobs = 0;
-	newjobs = 0;
+	njobs = 0;
 	for (j = 0; j < NLOGIDS; j++) {
 		snprintf(fn, sizeof(fn), _PATH_JOBMAP, logids[j]);
 		if ((fp = fopen(fn, "r")) == NULL) {
@@ -308,6 +310,7 @@ parse_jobmap(void)
 				    sizeof(struct job));
 				node->n_job->j_id = jobid;
 			}
+			node->n_fillp = &jstates[node->n_state].js_fill;
 			continue;
 bad:
 			warn("%s:%d: malformed line", fn, lineno);
@@ -358,9 +361,11 @@ bad:
 					goto badbad;
 				bad = (int)l;
 
-				if (bad)
+				if (bad) {
 					/* XXX:  check validity. */
 					invmap[j][nid]->n_state = JST_BAD;
+					invmap[j][nid]->n_fillp = &jstates[JST_BAD].js_fill;
+				}
 				continue;
 badbad:
 				warnx("%s:%d: malformed line", fn, lineno);
@@ -412,9 +417,11 @@ badbad:
 					goto badcheck;
 				checking = (int)l;
 
-				if (checking)
+				if (checking) {
 					/* XXX:  check validity. */
 					invmap[j][nid]->n_state = JST_CHECK;
+					invmap[j][nid]->n_fillp = &jstates[JST_BAD].js_fill;
+				}
 				continue;
 badcheck:
 				warnx("%s:%d: malformed line", fn, lineno);
