@@ -56,8 +56,7 @@ draw(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (st.st_opts & OP_GROUND) {
-
-		if(0){
+#if 0
 		float sx = -13.0;
 		float w = 256;
 		float d = 256;
@@ -78,9 +77,7 @@ draw(void)
 		glTexCoord3f(f, 0.0, 1.0);
 		glEnd();
 		glDisable(GL_TEXTURE_2D);
-		}
-
-
+#endif
 
 		/* Ground */
 		glColor3f(0.4f, 0.4f, 0.4f);
@@ -126,11 +123,10 @@ draw(void)
 	draw_panels();
 
 	glCallList(cluster_dl);
-	
+
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	if (st.st_opts & OP_CAPTURE)
 		capture_fb();
-		
 	if (st.st_opts & OP_DISPLAY)
 		glutSwapBuffers();
 }
@@ -175,16 +171,24 @@ draw_filled_node(struct node *n, float w, float h, float d)
 	float z = n->n_pos.np_z;
 	float r, g, b, a;
 
-	if (n->n_state == ST_USED) {
-		r = n->n_job->j_r;
-		g = n->n_job->j_g;
-		b = n->n_job->j_b;
-		a = st.st_alpha_job;
-	} else {
-		r = nstates[n->n_state].nst_r;
-		g = nstates[n->n_state].nst_g;
-		b = nstates[n->n_state].nst_b;
-		a = st.st_alpha_oth;
+	switch (st.st_mode) {
+	case SM_JOBS:
+		if (n->n_state == JST_USED) {
+			r = n->n_job->j_fill.f_r;
+			g = n->n_job->j_fill.f_g;
+			b = n->n_job->j_fill.f_b;
+			a = st.st_alpha_job;
+		} else {
+			r = jstates[n->n_state].js_fill.f_r;
+			g = jstates[n->n_state].js_fill.f_g;
+			b = jstates[n->n_state].js_fill.f_b;
+			a = st.st_alpha_oth;
+		}
+		break;
+	case SM_TEMP:
+		break;
+	case SM_FAIL:
+		break;
 	}
 
 	if (st.st_opts & OP_BLEND) {
@@ -323,19 +327,27 @@ draw_textured_node(struct node *n, float w, float h, float d)
 	} else
 		param = GL_REPLACE;
 
-	glBindTexture(GL_TEXTURE_2D, nstates[n->n_state].nst_texid);
+	glBindTexture(GL_TEXTURE_2D, jstates[n->n_state].js_fill.f_texid);
 
-	if (n->n_state == ST_USED) {
-		color[0] = n->n_job->j_r;
-		color[1] = n->n_job->j_g;
-		color[2] = n->n_job->j_b;
-		color[3] = st.st_alpha_job;
-	} else {
-		/* Default color, with alpha */
-		color[0] = 0.90;
-		color[1] = 0.80;
-		color[2] = 0.50;
-		color[3] = st.st_alpha_oth;
+	switch (st.st_mode) {
+	case SM_JOBS:
+		if (n->n_state == JST_USED) {
+			color[0] = n->n_job->j_fill.f_r;
+			color[1] = n->n_job->j_fill.f_g;
+			color[2] = n->n_job->j_fill.f_b;
+			color[3] = st.st_alpha_job;
+		} else {
+			/* Default color, with alpha */
+			color[0] = 0.90;
+			color[1] = 0.80;
+			color[2] = 0.50;
+			color[3] = st.st_alpha_oth;
+		}
+		break;
+	case SM_TEMP:
+		break;
+	case SM_FAIL:
+		break;
 	}
 
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, param);
