@@ -101,6 +101,9 @@ struct state st = {
 	0						/* nframes (unused) */
 };
 
+/* Save (some of) the previous state */
+struct state pst;
+
 struct nstate nstates[] = {
 	{ "Free",		1.00, 1.00, 1.00, 1 },	/* White */
 	{ "Disabled (PBS)",	1.00, 0.00, 0.00, 1 },	/* Red */
@@ -113,6 +116,7 @@ struct nstate nstates[] = {
 	{ "Info",		0.20, 0.40, 0.60, 1 }	/* Dark blue */
 };
 
+#if 0
 void
 calc_flyby(void)
 {
@@ -191,6 +195,7 @@ printf("+(%.3f,%.3f,%.3f) l(%.3f,%.3f,%.3f)\n",
 
 	adjcam();
 }
+#endif
 
 void
 adjcam(void)
@@ -219,11 +224,52 @@ reshape(int w, int h)
 	adjpanels();
 }
 
+void restore_state(int ro)
+{
+	int rebuild = 0;
+
+	/* Restore Tweening state */
+	if (!(st.st_opts & OP_TWEEN)) {
+		tx = st.st_x;  tlx = st.st_lx;
+		ty = st.st_y;  tly = st.st_ly;
+		tz = st.st_z;  tlz = st.st_lz;
+	}
+
+	/* Check if flyby record/play changed */
+	if(build_flyby)
+		begin_flyby('w');
+
+	if(active_flyby)
+		begin_flyby('r');
+
+	if(!build_flyby && !active_flyby)
+		end_flyby();
+
+	/* 
+	** Below: States that require make_cluster
+	** ---------------------------------------
+	*/
+	
+	/* Restore Selected Node */
+#if 0
+	if (selnode != NULL) {
+		selnode->n_state = selnode->n_savst;
+		selnode = NULL;
+	}
+#endif
+
+	rebuild(ro);
+}
+
 void
 key(unsigned char key, __unused int u, __unused int v)
 {
 	static int panel = 0;
+	int ro = 0;
 
+	/* save pre state */
+	pst = st;
+	
 	if (active_flyby) {
 		if (key == 'F')
 			active_flyby = 0;
@@ -288,7 +334,6 @@ key(unsigned char key, __unused int u, __unused int v)
 	switch (key) {
 	case 'b':
 		st.st_opts ^= OP_BLEND;
-		make_cluster();
 		break;
 	case 'c':
 		if (selnode != NULL) {
@@ -305,20 +350,14 @@ key(unsigned char key, __unused int u, __unused int v)
 	case 'e':
 		if (st.st_opts & OP_TWEEN)
 			st.st_opts &= ~OP_TWEEN;
-		else {
+		else
 			st.st_opts |= OP_TWEEN;
-			tx = st.st_x;  tlx = st.st_lx;
-			ty = st.st_y;  tly = st.st_ly;
-			tz = st.st_z;  tlz = st.st_lz;
-		}
 		break;
 	case 'f':
 		build_flyby = !build_flyby;
-		(build_flyby ? begin_flyby_build() : end_flyby_build());
 		break;
 	case 'F':
 		active_flyby = !active_flyby;
-		(active_flyby ? begin_flyby() : end_flyby());
 		break;
 	case 'g':
 		st.st_opts ^= OP_GROUND;
@@ -336,35 +375,34 @@ key(unsigned char key, __unused int u, __unused int v)
 		/* NOTREACHED */
 	case 'T':
 		st.st_alpha_fmt = (st.st_alpha_fmt == GL_RGBA ? GL_INTENSITY : GL_RGBA);
-		del_textures();
-		load_textures();
-		make_cluster();
+		ro |= RO_TEX | RO_COMPILE;
 		break;
 	case 't':
 		st.st_opts ^= OP_TEX;
-		make_cluster();
+		ro |= RO_COMPILE;
 		break;
 	case 'w':
 		st.st_opts ^= OP_WIRES;
-		make_cluster();
 		break;
 	case '+':
 		st.st_alpha_job += (st.st_alpha_job + TRANS_INC > 1.0 ? 0.0 : TRANS_INC);
-		make_cluster();
+		ro |= RO_COMPILE;
 		break;
 	case '_':
 		st.st_alpha_job -= (st.st_alpha_job + TRANS_INC < 0.0 ? 0.0 : TRANS_INC);
-		make_cluster();
+		ro |= RO_COMPILE;
 		break;
 	case '=':
 		st.st_alpha_oth += (st.st_alpha_oth + TRANS_INC > 1.0 ? 0.0 : TRANS_INC);
-		make_cluster();
+		ro |= RO_COMPILE;
 		break;
 	case '-':
 		st.st_alpha_oth -= (st.st_alpha_oth + TRANS_INC < 0.0 ? 0.0 : TRANS_INC);
-		make_cluster();
+		ro |= RO_COMPILE;
 		break;
 	}
+
+	restore_state(ro);
 }
 
 /*
@@ -766,7 +804,8 @@ load_textures(void)
 	char path[NAME_MAX];
 	void *data;
 	int i;
-
+	char buf[PATH_MAX];
+	
 	/* Read in texture IDs */
 	for (i = 0; i < NST; i++) {
 		snprintf(path, sizeof(path), _PATH_TEX, i);
@@ -810,6 +849,8 @@ main(int argc, char *argv[])
 	parse_physmap();
 	parse_jobmap();
 	parse_failmap();
+	pst = st;
+
 	make_cluster();
 
 	/* glutExposeFunc(reshape); */
