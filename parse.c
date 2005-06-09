@@ -544,7 +544,7 @@ bad:
 void
 parse_tempmap(void)
 {
-	int lineno, j, r, cb, cg, m, n, t[4];
+	int lineno, i, j, r, cb, cg, m, n, t[4];
 	char buf[BUFSIZ], *p, *s;
 	FILE *fp;
 	long l;
@@ -574,7 +574,7 @@ parse_tempmap(void)
 			if (*s != 'y')
 				goto bad;
 			*s++ = '\0';
-			if ((l = strtol(p, NULL, 10)) < 0 ||  >= NCABS)
+			if ((l = strtol(p, NULL, 10)) < 0 || l >= NCABS)
 				goto bad;
 			cb = (int)l;
 
@@ -587,7 +587,7 @@ parse_tempmap(void)
 			if (*s != 'c')
 				goto bad;
 			*s++ = '\0';
-			if ((l = strtol(p, NULL, 10)) < 0 ||  >= NROWS)
+			if ((l = strtol(p, NULL, 10)) < 0 || l >= NROWS)
 				goto bad;
 			r = (int)l;
 
@@ -600,7 +600,7 @@ parse_tempmap(void)
 			if (*s != 's')
 				goto bad;
 			*s++ = '\0';
-			if ((l = strtol(p, NULL, 10)) < 0 ||  >= NCAGES)
+			if ((l = strtol(p, NULL, 10)) < 0 || l >= NCAGES)
 				goto bad;
 			cg = (int)l;
 
@@ -613,7 +613,7 @@ parse_tempmap(void)
 			if (!isspace(*s))
 				goto bad;
 			*s++ = '\0';
-			if ((l = strtol(p, NULL, 10)) < 0 ||  >= NCAGES)
+			if ((l = strtol(p, NULL, 10)) < 0 || l >= NCAGES)
 				goto bad;
 			m = (int)l;
 
@@ -631,7 +631,7 @@ parse_tempmap(void)
 				if (!isspace(*s))
 					goto bad;
 				*s++ = '\0';
-				if ((l = strtol(p, NULL, 10)) < 0 ||  >= INT_MAX)
+				if ((l = strtol(p, NULL, 10)) < 0 || l >= INT_MAX)
 					goto bad;
 				t[i] = (int)l;
 			}
