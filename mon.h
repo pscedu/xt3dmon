@@ -123,6 +123,12 @@ struct state {
 	int		 st_nframes;
 };
 
+struct fail_state {
+	float		 fs_r;
+	float		 fs_g;
+	float		 fs_b;
+};
+
 struct panel {
 	int			  p_id;
 	char			 *p_str;
@@ -212,4 +218,6 @@ extern struct node	*selnode;
 
 extern struct panels	 panels;
 extern struct buf 	 cmdbuf;
-extern int		 total_failures;
+extern int		 total_failures;	/* total shared among all nodes */
+extern struct fail_state **fail_states;
+extern size_t		 maxfails;		/* largest # of failures */
