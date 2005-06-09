@@ -295,7 +295,13 @@ draw_textured_node(struct node *n, float w, float h, float d)
 	color[0] = n->n_fillp->f_r;
 	color[1] = n->n_fillp->f_g;
 	color[2] = n->n_fillp->f_b;
-	color[3] = n->n_fillp->f_a;
+//	color[3] = n->n_fillp->f_a;
+
+	/* Set alpha depending on usage */
+	if(n->n_state == JST_USED)
+		color[3] = st.st_alpha_job;
+	else
+		color[3] = st.st_alpha_oth;
 
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, param);
 
