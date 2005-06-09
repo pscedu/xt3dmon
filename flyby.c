@@ -23,6 +23,7 @@
  * };
  */
 
+#if 0
 const struct state flybypath[] = {
  /*      x        y        z      lx      ly      lz  options                            panels       ajob  aoth  afmt     tween_mode   nframes */
 #if 0
@@ -49,35 +50,33 @@ const struct state flybypath[] = {
  { 136.09f,   6.21f,   8.50f, -0.78f, -0.15f,  0.02f, OP_WIRES | OP_DISPLAY, PANEL_NINFO, 1.0f, 1.0f, GL_RGBA, TM_STRAIGHT, 100 },
  {   0.00f,   0.00f,   0.00f,  0.00f,  0.00f,  0.00f, 0,                                 0,           0.0f, 0.0f, 0,       0,           0   }
 };
+#endif
 
 
 #define FLYBY_FILE "flyby.data"
 static FILE *flyby_fp;
 
-void begin_flyby_build()
+/* Open the flyby data file appropriately */
+void begin_flyby(char m)
 {
-	if((flyby_fp = fopen(FLYBY_FILE, "ab")) == NULL)
-		err(1, "flyby data file err");
-}
+	if(flyby_fp != NULL)
+		return;
 
-void end_flyby_build()
-{
-	fclose(flyby_fp);
+	if(m == 'r')
+	{
+		if((flyby_fp = fopen(FLYBY_FILE, "rb")) == NULL)
+			err(1, "flyby data file err");
+	} else if (m == 'w') {
+		if((flyby_fp = fopen(FLYBY_FILE, "ab")) == NULL)
+			err(1, "flyby data file err");
+	}
 }
 
 /* Write current data for flyby */
 void write_flyby()
 {
-	size_t n;
-	
 	if(!fwrite(&st, sizeof(struct state), 1, flyby_fp))
 		err(1, "flyby data write err");
-}
-
-void begin_flyby()
-{
-	if((flyby_fp = fopen(FLYBY_FILE, "rb")) == NULL)
-		err(1, "flyby data file err");
 }
 
 /* Read a set of flyby data */
@@ -99,7 +98,10 @@ void read_flyby()
 
 void end_flyby()
 {
-	fclose(flyby_fp);
+	if(flyby_fp != NULL) {
+		fclose(flyby_fp);
+		flyby_fp = NULL;
+	}
 }
 
 
