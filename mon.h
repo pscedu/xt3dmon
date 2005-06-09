@@ -94,13 +94,25 @@ struct job {
 	struct fill	 j_fill;
 };
 
+struct temp {
+	int		 t_cel;
+	struct fill	 t_fill;
+};
+
+struct fail {
+	int		 f_fails;
+	struct fill	 f_fill;
+};
+
 struct node {
 	int		 n_nid;
 	int		 n_logid;
 	struct job	*n_job;
-	int		 n_fails;
+	struct temp	*n_temp;
+	struct fail	*n_fail;
 	int		 n_state;
 	int		 n_savst;
+	struct fill	*n_fillp;
 	struct {
 		float	 np_x;
 		float	 np_y;
@@ -130,16 +142,6 @@ struct state {
 struct job_state {
 	char		*js_name;
 	struct fill	 js_fill;
-};
-
-struct fail_state {
-	int		 fs_fails;
-	struct fill	 fs_fill;
-};
-
-struct temp_state {
-	int		 ts_celcius;
-	struct fill	 ts_fill;
 };
 
 struct panel {
@@ -172,6 +174,7 @@ void 			*load_png(char *);
 /* mon.c */
 void			 adjcam(void);
 void			 calc_flyby(void);
+void			 restore_state(int);
 
 /* panel.c */
 void			 draw_panels(void);
