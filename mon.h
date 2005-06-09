@@ -215,7 +215,7 @@ void 			*load_png(char *);
 /* mon.c */
 void			 adjcam(void);
 void			 calc_flyby(void);
-void			 restore_state(int);
+void			 restore_state(void);
 
 /* panel.c */
 void			 draw_panels(void);

@@ -94,7 +94,7 @@ void read_flyby()
 			err(1, "flyby data read err");
 	}
 
-	restore_state(st.st_ro);
+	restore_state();
 }
 
 void end_flyby()
