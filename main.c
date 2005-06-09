@@ -809,6 +809,7 @@ main(int argc, char *argv[])
 	load_textures();
 	parse_physmap();
 	parse_jobmap();
+	parse_failmap();
 	make_cluster();
 
 	/* glutExposeFunc(reshape); */
