@@ -216,6 +216,7 @@ void 			*load_png(char *);
 void			 adjcam(void);
 void			 calc_flyby(void);
 void			 restore_state(void);
+void			 rebuild(int);
 
 /* panel.c */
 void			 draw_panels(void);
