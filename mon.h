@@ -34,6 +34,32 @@
 #define NMODS		8
 #define NNODES		4
 
+#define SCALE		(1.0f)
+
+#define ROWSPACE	((10.0f) * SCALE)
+#define CABSPACE	((5.0f) * SCALE)
+#define CAGESPACE	((1.0f) * SCALE)
+#define MODSPACE	((1.0f) * SCALE)
+
+#define MODWIDTH	((1.0f) * SCALE)
+#define MODHEIGHT	((2.0f) * SCALE)
+#define MODDEPTH	((2.0f) * SCALE)
+
+#define NODESPACE	((0.2f) * SCALE)
+#define NODEWIDTH	(MODWIDTH - 2.0f * NODESPACE)
+#define NODEHEIGHT	(MODHEIGHT - 4.0f * NODESPACE)
+#define NODEDEPTH	(MODHEIGHT - 4.0f * NODESPACE)
+
+#define CAGEHEIGHT	(MODHEIGHT * 2.0f)
+#define CABWIDTH	((MODWIDTH + MODSPACE) * NMODS)
+#define ROWDEPTH	(MODDEPTH * 2.0f)
+
+#define ROWWIDTH	(CABWIDTH * NCABS + CABSPACE * (NCABS - 1))
+
+#define XCENTER		(ROWWIDTH / 2)
+#define YCENTER		((CAGEHEIGHT * NCAGES + CAGESPACE * (NCAGES - 1)) / 2)
+#define ZCENTER		((ROWDEPTH * NROWS + ROWSPACE * (NROWS - 1)) / 2)
+
 #define JST_FREE	0
 #define JST_DOWN	1
 #define JST_DISABLED	2
@@ -62,6 +88,13 @@
 #define PANEL_CMD	(1<<2)
 #define PANEL_LEGEND	(1<<3)
 #define NPANELS		4
+
+#define RO_TEX		(1<<0)
+#define RO_PHYS		(1<<1)
+#define RO_RELOAD	(1<<2)
+#define RO_COMPILE	(1<<3)
+
+#define RO_ALL		(RO_TEX | RO_PHYS | RO_RELOAD | RO_COMPILE)
 
 #define PI		(3.14159265358979323)
 
@@ -173,6 +206,7 @@ void			 keyh_cmd(unsigned char, int, int);
 void			 keyh_panel(unsigned char, int, int);
 void			 keyh_mode(unsigned char, int, int);
 void			 keyh_default(unsigned char, int, int);
+void			 spkeyh_default(int, int, int);
 
 /* load_png.c */
 void			 load_texture(void *, GLint, int);
