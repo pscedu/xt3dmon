@@ -195,7 +195,7 @@ reshape(int w, int h)
 	adjpanels();
 }
 
-void restore_state(int ro)
+void restore_state()
 {
 	/* Restore Tweening state */
 	if (!(st.st_opts & OP_TWEEN)) {
@@ -227,7 +227,7 @@ void restore_state(int ro)
 	}
 #endif
 
-	rebuild(ro);
+	rebuild(st.st_ro);
 }
 
 void
