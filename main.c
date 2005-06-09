@@ -21,41 +21,14 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "mon.h"
 #include "cdefs.h"
+#include "mon.h"
 #include "buf.h"
 
 #define SLEEP_INTV	5
-#define TRANS_INC	0.10
 
 #define FOVY		(45.0f)
 #define ASPECT		(win_width / (double)win_height)
-
-#define SCALE		(1.0f)
-
-#define ROWSPACE	((10.0f)*SCALE)
-#define CABSPACE	((5.0f)*SCALE)
-#define CAGESPACE	((1.0f)*SCALE)
-#define MODSPACE	((1.0f)*SCALE)
-
-#define MODWIDTH	((1.0f)*SCALE)
-#define MODHEIGHT	((2.0f)*SCALE)
-#define MODDEPTH	((2.0f)*SCALE)
-
-#define NODESPACE	((0.2f)*SCALE)
-#define NODEWIDTH	(MODWIDTH - 2.0f * NODESPACE)
-#define NODEHEIGHT	(MODHEIGHT - 4.0f * NODESPACE)
-#define NODEDEPTH	(MODHEIGHT - 4.0f * NODESPACE)
-
-#define CAGEHEIGHT	(MODHEIGHT * 2.0f)
-#define CABWIDTH	((MODWIDTH + MODSPACE) * NMODS)
-#define ROWDEPTH	(MODDEPTH * 2.0f)
-
-#define ROWWIDTH	(CABWIDTH * NCABS + CABSPACE * (NCABS - 1))
-
-#define XCENTER		(ROWWIDTH / 2)
-#define YCENTER		((CAGEHEIGHT * NCAGES + CAGESPACE * (NCAGES - 1)) / 2)
-#define ZCENTER		((ROWDEPTH * NROWS + ROWSPACE * (NROWS - 1)) / 2)
 
 #define STARTX		(-30.0f)
 #define STARTY		(10.0f)
@@ -64,13 +37,6 @@
 #define STARTLX		(0.99f)		/* Must form a unit vector. */
 #define STARTLY		(0.0f)
 #define STARTLZ		(-0.12f)
-
-#define RO_TEX		(1<<0)
-#define RO_PHYS		(1<<1)
-#define RO_RELOAD	(1<<2)
-#define RO_COMPILE	(1<<3)
-
-#define RO_ALL		(RO_TEX | RO_PHYS | RO_RELOAD | RO_COMPILE)
 
 void			 load_textures(void);
 void			 del_textures(void);
@@ -105,11 +71,9 @@ struct state st = {
 	NULL,						/* selected node */
 	0,						/* panels (unused) */
 	0,						/* tween mode (unused) */
-	0						/* nframes (unused) */
+	0,						/* nframes (unused) */
+	0						/* rebuild flags (unused) */
 };
-
-/* Save (some of) the previous state */
-struct state pst;
 
 struct job_state jstates[] = {
 	{ "Free",		{ 1.00f, 1.00f, 1.00f, 1.00f, 0 } },	/* White */
@@ -264,224 +228,6 @@ void restore_state(int ro)
 #endif
 
 	rebuild(ro);
-}
-
-void
-key(unsigned char key, __unused int u, __unused int v)
-{
-	static int panel = 0;
-	int ro = 0;
-
-	/* save pre state */
-	pst = st;
-	
-	if (active_flyby) {
-		if (key == 'F')
-			active_flyby = 0;
-		return;
-	}
-
-	if (command_mode && st.st_selnode != NULL) {
-		switch (key) {
-		case 13: /* enter */
-			/* FALLTHROUGH */
-		case 27: /* escape */
-			buf_reset(&cmdbuf);
-			buf_append(&cmdbuf, '\0');
-			command_mode = 0;
-			break;
-		case 8:
-			if (strlen(buf_get(&cmdbuf)) > 0) {
-				buf_chop(&cmdbuf);
-				buf_chop(&cmdbuf);
-				buf_append(&cmdbuf, '\0');
-			}
-			break;
-		default:
-			buf_chop(&cmdbuf);
-			buf_append(&cmdbuf, key);
-			buf_append(&cmdbuf, '\0');
-			break;
-		}
-		return;
-	}
-
-	if (panel) {
-		switch (key) {
-		case 'a': {
-			int j;
-
-			for (j = 0; j < NPANELS; j++)
-				panel_toggle(1 << j);
-			break;
-		    }
-		case 'c':
-			panel_toggle(PANEL_CMD);
-			command_mode = !command_mode;
-			break;
-		case 'n':
-			panel_toggle(PANEL_NINFO);
-			break;
-		case 'F': /* failure */
-			panel_toggle(PANEL_FLEGEND);
-			break;
-		case 'j':
-			panel_toggle(PANEL_JLEGEND);
-			break;
-		case 'f':
-			panel_toggle(PANEL_FPS);
-			break;
-		}
-		panel = 0;
-		return;
-	}
-
-	switch (key) {
-	case 'b':
-		st.st_opts ^= OP_BLEND;
-		ro |= RO_COMPILE;
-		break;
-	case 'c':
-		if (st.st_selnode != NULL) {
-			st.st_selnode->n_state = st.st_selnode->n_savst;
-			st.st_selnode = NULL;
-		}
-		break;
-	case 'D':
-		st.st_opts ^= OP_DISPLAY;
-		break;
-	case 'd':
-		st.st_opts ^= OP_CAPTURE;
-		break;
-	case 'e':
-		if (st.st_opts & OP_TWEEN)
-			st.st_opts &= ~OP_TWEEN;
-		else
-			st.st_opts |= OP_TWEEN;
-		break;
-	case 'f':
-		build_flyby = !build_flyby;
-		break;
-	case 'F':
-		active_flyby = !active_flyby;
-		break;
-	case 'g':
-		st.st_opts ^= OP_GROUND;
-		break;
-	case 'p':
-		panel = 1;
-		break;
-	case 'P':
-		printf("pos[%.2f,%.2f,%.2f] look[%.2f,%.2f,%.2f]\n",
-		    st.st_x, st.st_y, st.st_z,
-		    st.st_lx, st.st_ly, st.st_lz);
-		break;
-	case 'q':
-		exit(0);
-		/* NOTREACHED */
-	case 'T':
-		st.st_alpha_fmt = (st.st_alpha_fmt == GL_RGBA ? GL_INTENSITY : GL_RGBA);
-		ro |= RO_TEX | RO_COMPILE;
-		break;
-	case 't':
-		st.st_opts ^= OP_TEX;
-		ro |= RO_COMPILE;
-		break;
-	case 'w':
-		st.st_opts ^= OP_WIRES;
-		break;
-	case '+':
-		st.st_alpha_job += (st.st_alpha_job + TRANS_INC > 1.0 ? 0.0 : TRANS_INC);
-		ro |= RO_COMPILE;
-		break;
-	case '_':
-		st.st_alpha_job -= (st.st_alpha_job + TRANS_INC < 0.0 ? 0.0 : TRANS_INC);
-		ro |= RO_COMPILE;
-		break;
-	case '=':
-		st.st_alpha_oth += (st.st_alpha_oth + TRANS_INC > 1.0 ? 0.0 : TRANS_INC);
-		ro |= RO_COMPILE;
-		break;
-	case '-':
-		st.st_alpha_oth -= (st.st_alpha_oth + TRANS_INC < 0.0 ? 0.0 : TRANS_INC);
-		ro |= RO_COMPILE;
-		break;
-	}
-
-	restore_state(ro);
-}
-
-/*
- *    z
- *   /  Up  /|
- *  / Down |/
- * +------------------- x
- * |  Left <-  -> Right
- * |
- * |   PageUp /\
- * | PageDown \/
- * y
- */
-void
-sp_key(int key, __unused int u, __unused int v)
-{
-	float sx, sy, sz;
-	float r, adj;
-
-	if (active_flyby)
-		return;
-
-	r = sqrt(SQUARE(st.st_x - XCENTER) + SQUARE(st.st_z - ZCENTER));
-	adj = pow(2, r / (ROWWIDTH / 2.0f));
-	if (adj > 50.0f)
-		adj = 50.0f;
-
-	sx = sy = sz = 0.0f; /* gcc */
-	if (st.st_opts & OP_TWEEN) {
-		sx = st.st_x;  st.st_x = tx;
-		sy = st.st_y;  st.st_y = ty;
-		sz = st.st_z;  st.st_z = tz;
-	}
-
-	switch (key) {
-	case GLUT_KEY_LEFT:
-		st.st_x += st.st_lz * 0.3f * SCALE * adj;
-		st.st_z -= st.st_lx * 0.3f * SCALE * adj;
-		break;
-	case GLUT_KEY_RIGHT:
-		st.st_x -= st.st_lz * 0.3f * SCALE * adj;
-		st.st_z += st.st_lx * 0.3f * SCALE * adj;
-		break;
-	case GLUT_KEY_UP:			/* Forward */
-		st.st_x += st.st_lx * 0.3f * SCALE * adj;
-		st.st_y += st.st_ly * 0.3f * SCALE * adj;
-		st.st_z += st.st_lz * 0.3f * SCALE * adj;
-		break;
-	case GLUT_KEY_DOWN:			/* Backward */
-		st.st_x -= st.st_lx * 0.3f * SCALE * adj;
-		st.st_y -= st.st_ly * 0.3f * SCALE * adj;
-		st.st_z -= st.st_lz * 0.3f * SCALE * adj;
-		break;
-	case GLUT_KEY_PAGE_UP:
-		st.st_x += st.st_lx * st.st_ly * 0.3f * SCALE * adj;
-		st.st_y += 0.3f * SCALE;
-		st.st_z += st.st_lz * st.st_ly * 0.3f * SCALE * adj;
-		break;
-	case GLUT_KEY_PAGE_DOWN:
-		st.st_x -= st.st_lx * st.st_ly * 0.3f * SCALE * adj;
-		st.st_y -= 0.3f * SCALE;
-		st.st_z -= st.st_lz * st.st_ly * 0.3f * SCALE * adj;
-		break;
-	default:
-		return;
-	}
-
-	if (st.st_opts & OP_TWEEN) {
-		tx = st.st_x;  st.st_x = sx;
-		ty = st.st_y;  st.st_y = sy;
-		tz = st.st_z;  st.st_z = sz;
-	} else
-		adjcam();
 }
 
 void
@@ -824,7 +570,8 @@ rebuild(int opts)
 			parse_tempmap();
 			break;
 		}
-	make_cluster();
+	if (opts & RO_COMPILE)
+		make_cluster();
 }
 
 void
@@ -874,12 +621,11 @@ main(int argc, char *argv[])
 	buf_init(&cmdbuf);
 	buf_append(&cmdbuf, '\0');
 	rebuild(RO_ALL);
-	pst = st;
 
 	/* glutExposeFunc(reshape); */
 	glutReshapeFunc(reshape);
-	glutKeyboardFunc(key);
-	glutSpecialFunc(sp_key);
+	glutKeyboardFunc(keyh_default);
+	glutSpecialFunc(spkeyh_default);
 	glutDisplayFunc(draw);
 	glutIdleFunc(idle);
 	glutMouseFunc(mouse);
