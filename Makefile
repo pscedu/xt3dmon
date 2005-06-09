@@ -1,8 +1,8 @@
 # $Id$
 
 PROG = mon
-SRCS = buf.c cam.c capture.c draw.c flyby.c load_png.c mon.c panel.c \
-    parse.c
+SRCS = buf.c cam.c capture.c draw.c flyby.c key.c load_png.c mon.c \
+    panel.c parse.c
 LIBS = -lGL -lglut -lGLU -lpng
 CFLAGS += -Wall -W -g
 
