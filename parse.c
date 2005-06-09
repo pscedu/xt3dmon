@@ -47,7 +47,7 @@ parse_physmap(void)
 			for (cg = 0; cg < NCAGES; cg++)
 				for (m = 0; m < NMODS; m++)
 					for (n = 0; n < NNODES; n++)
-						nodes[r][cb][cg][m][n].n_state = ST_UNACC;
+						nodes[r][cb][cg][m][n].n_state = JST_UNACC;
 
 	for (j = 0; j < NLOGIDS; j++) {
 		snprintf(fn, sizeof(fn), _PATH_PHYSMAP, logids[j]);
@@ -157,13 +157,13 @@ parse_physmap(void)
 				goto bad;
 			switch (*s) {
 			case 'c': /* compute */
-				node->n_state = ST_FREE;	/* Good enough. */
+				node->n_state = JST_FREE;	/* Good enough. */
 				break;
 			case 'n': /* disabled */
-				node->n_state = ST_DISABLED;
+				node->n_state = JST_DISABLED;
 				break;
 			case 'i': /* I/O */
-				node->n_state = ST_IO;
+				node->n_state = JST_IO;
 				break;
 			default:
 				goto bad;
@@ -268,11 +268,11 @@ parse_jobmap(void)
 			}
 
 			if (enabled == 0)
-				node->n_state = ST_DOWN;
+				node->n_state = JST_DOWN;
 			else if (jobid == 0)
-				node->n_state = ST_FREE;
+				node->n_state = JST_FREE;
 			else {
-				node->n_state = ST_USED;
+				node->n_state = JST_USED;
 				node->n_job = getjob(jobid);
 			}
 			continue;
@@ -327,7 +327,7 @@ bad:
 
 				if (bad)
 					/* XXX:  check validity. */
-					invmap[j][nid]->n_state = ST_BAD;
+					invmap[j][nid]->n_state = JST_BAD;
 				continue;
 badbad:
 				warnx("%s:%d: malformed line", fn, lineno);
@@ -381,7 +381,7 @@ badbad:
 
 				if (checking)
 					/* XXX:  check validity. */
-					invmap[j][nid]->n_state = ST_CHECK;
+					invmap[j][nid]->n_state = JST_CHECK;
 				continue;
 badcheck:
 				warnx("%s:%d: malformed line", fn, lineno);
@@ -395,7 +395,8 @@ badcheck:
 	}
 
 	for (j = 0; j < njobs; j++)
-		getcol(j, njobs, &jobs[j]->j_r, &jobs[j]->j_g, &jobs[j]->j_b);
+		getcol(j, njobs, &jobs[j]->j_fill.f_r,
+		    &jobs[j]->j_fill.f_g, &jobs[j]->j_fill.f_b);
 }
 
 #define JINCR 10
@@ -529,9 +530,9 @@ bad:
 
 	for (j = 0; j <= maxfails; j++)
 		getcol(j, maxfails + 1,
-		    &(fail_states[j]->fs_r),
-		    &(fail_states[j]->fs_g),
-		    &(fail_states[j]->fs_b));
+		    &fail_states[j]->fs_fill.f_r,
+		    &fail_states[j]->fs_fill.f_g,
+		    &fail_states[j]->fs_fill.f_b);
 }
 
 /*
