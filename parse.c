@@ -14,14 +14,42 @@
 
 #define NID_MAX		(NROWS * NCABS * NCAGES * NMODS * NNODES)
 #define MAXFAILS	200
+#define JINCR		10
+#define FINCR		10
+#define TINCR		10
 
-struct job		*getjob(int);
-void			 getcol(int, int, float *, float *, float *);
+typedef int (*cmpf_t)(void *a, void *b);
+
+void			 getcol(int, size_t, struct fill *);
+void			*getobj(void *arg, void ***data, size_t *cursiz,
+    size_t *maxsiz, cmpf_t eq, int inc, size_t);
 
 int			 logids[] = { 0, 8 };
-size_t			 maxjobs, maxfails;
-struct fail_state	**fail_states;
+
+size_t			 njobs, maxjobs;
+size_t			 nfails, maxfails;
+size_t			 ntemps, maxtemps;
+
+struct fail		**fails;
+struct job		**jobs;
+struct temp		**temps;
+
 int			 total_failures;
+
+int job_eq(void *elem, void *arg)
+{
+	return (((struct job *)elem)->j_id == *(int *)arg);
+}
+
+int temp_eq(void *elem, void *arg)
+{
+	return (((struct temp *)elem)->t_cel == *(int *)arg);
+}
+
+int fail_eq(void *elem, void *arg)
+{
+	return (((struct fail *)elem)->f_fails == *(int *)arg);
+}
 
 /*
  * Example line:
@@ -197,13 +225,15 @@ parse_jobmap(void)
 	int jobid, nid, lineno, enabled, bad, checking;
 	char fn[MAXPATHLEN], buf[BUFSIZ], *p, *s;
 	struct node *node;
+	size_t newjobs;
 	FILE *fp;
 	size_t j;
 	long l;
 
-	for (j = 0; j < njobs; j++)
-		free(jobs[j]);
-	njobs = 0;
+//	for (j = 0; j < njobs; j++)
+//		free(jobs[j]);
+//	njobs = 0;
+	newjobs = 0;
 	for (j = 0; j < NLOGIDS; j++) {
 		snprintf(fn, sizeof(fn), _PATH_JOBMAP, logids[j]);
 		if ((fp = fopen(fn, "r")) == NULL) {
@@ -273,7 +303,10 @@ parse_jobmap(void)
 				node->n_state = JST_FREE;
 			else {
 				node->n_state = JST_USED;
-				node->n_job = getjob(jobid);
+				node->n_job = getobj(&jobid, (void ***)&jobs,
+				    &njobs, &maxjobs, job_eq, JINCR,
+				    sizeof(struct job));
+				node->n_job->j_id = jobid;
 			}
 			continue;
 bad:
@@ -395,37 +428,39 @@ badcheck:
 	}
 
 	for (j = 0; j < njobs; j++)
-		getcol(j, njobs, &jobs[j]->j_fill.f_r,
-		    &jobs[j]->j_fill.f_g, &jobs[j]->j_fill.f_b);
+		getcol(j, njobs, &jobs[j]->j_fill);
 }
 
-#define JINCR 10
-
-struct job *
-getjob(int id)
+void *
+getobj(void *arg, void ***data, size_t *cursiz, size_t *maxsiz,
+    cmpf_t eq, int inc, size_t objlen)
 {
-	struct job **jj, *j = NULL;
-	size_t n;
+	void **jj, *j = NULL;
+	size_t n, newmax;
 
 	if (jobs != NULL)
-		for (n = 0, jj = jobs; n < njobs; jj++, n++)
-			if ((*jj)->j_id == id)
+		for (n = 0, jj = *data; n < *cursiz; jj++, n++)
+			if (eq(*jj, arg))
 				return (*jj);
-	if (njobs + 1 >= maxjobs) {
-		maxjobs += JINCR;
-		if ((jobs = realloc(jobs, sizeof(*jobs) * maxjobs)) == NULL)
+	/* Not found; add. */
+	if (*cursiz + 1 >= *maxsiz) {
+		newmax = *maxsiz + inc;
+		if ((*data = realloc(*data,
+		    newmax * sizeof(**data))) == NULL)
 			err(1, "realloc");
+		for (n = *maxsiz; n < newmax; n++) {
+			if ((j = malloc(objlen)) == NULL)
+				err(1, "malloc");
+			memset(j, 0, objlen);
+			(*data)[n] = j;
+		}
+		*maxsiz = newmax;
 	}
-	if ((j = malloc(sizeof(*j))) == NULL)
-		err(1, "malloc");
-	memset(j, 0, sizeof(*j));
-	j->j_id = id;
-	jobs[njobs++] = j;
-	return (j);
+	return ((*data)[(*cursiz)++]);
 }
 
 void
-getcol(int n, int total, float *r, float *g, float *b)
+getcol(int n, size_t total, struct fill *fillp)
 {
 	double div;
 
@@ -434,9 +469,9 @@ getcol(int n, int total, float *r, float *g, float *b)
 	else
 		div = ((double)n) / ((double)(total - 1));
 
-	*r = cos(div);
-	*g = sin(div) * sin(div);
-	*b = fabs(tan(div + PI * 3/4));
+	fillp->f_r = cos(div);
+	fillp->f_g = sin(div) * sin(div);
+	fillp->f_b = fabs(tan(div + PI * 3/4));
 }
 
 /*
@@ -453,7 +488,7 @@ void
 parse_failmap(void)
 {
 	int nid, lineno, r, cb, cg, m, n;
-	size_t j, newmax, fails;
+	size_t j, newmax, nofails;
 	char *p, *s, buf[BUFSIZ];
 	FILE *fp;
 	long l;
@@ -466,8 +501,10 @@ parse_failmap(void)
 		for (cb = 0; cb < NCABS; cb++)
 			for (cg = 0; cg < NCAGES; cg++)
 				for (m = 0; m < NMODS; m++)
-					for (n = 0; n < NNODES; n++)
-						nodes[r][cb][cg][m][n].n_fails = 0;
+					for (n = 0; n < NNODES; n++) {
+						nodes[r][cb][cg][m][n].n_fail = 0;
+						nodes[r][cb][cg][m][n].n_fillp = NULL;
+					}
 
 	total_failures = newmax = 0;
 	if ((fp = fopen(_PATH_FAILMAP, "r")) == NULL)
@@ -486,7 +523,7 @@ parse_failmap(void)
 			*s = '\0';
 			if ((l = strtol(p, NULL, 10)) < 0 || l >= INT_MAX)
 				goto bad;
-			fails = (int)l;
+			nofails = (int)l;
 
 			p = s + 1;
 			while (isspace(*p))
@@ -500,13 +537,15 @@ parse_failmap(void)
 				goto bad;
 			nid = (int)l;
 
-			if (fails > MAXFAILS)
-				fails = MAXFAILS;
+			if (nofails > MAXFAILS)
+				nofails = MAXFAILS;
 
-			invmap[j][nid]->n_fails = fails;
-			total_failures += fails;
-			if (fails > newmax)
-				newmax = fails;
+			invmap[j][nid]->n_fail = getobj(&nofails,
+			    (void ***)&fails, &nfails, &maxfails, fail_eq,
+			    FINCR, sizeof(struct fail));
+			total_failures += nofails;
+			if (nofails > newmax)
+				newmax = nofails;
 			continue;
 bad:
 			warnx("%s:%d: malformed line", _PATH_FAILMAP, lineno);
@@ -517,22 +556,8 @@ bad:
 		errno = 0;
 	}
 
-	if (newmax + 1 > maxfails) {
-		if ((fail_states = realloc(fail_states,
-		    (newmax + 1) * sizeof(*fail_states))) == NULL)
-			err(1, "realloc");
-		for (j = maxfails; j <= newmax; j++)
-			if ((fail_states[j] =
-			    malloc(sizeof(**fail_states))) == NULL)
-				err(1, "malloc");
-		maxfails = newmax;
-	}
-
-	for (j = 0; j <= maxfails; j++)
-		getcol(j, maxfails + 1,
-		    &fail_states[j]->fs_fill.f_r,
-		    &fail_states[j]->fs_fill.f_g,
-		    &fail_states[j]->fs_fill.f_b);
+	for (j = 0; j < maxfails; j++)
+		getcol(j, maxfails, &fails[j]->f_fill);
 }
 
 /*
@@ -545,10 +570,22 @@ bad:
 void
 parse_tempmap(void)
 {
-	int lineno, i, j, r, cb, cg, m, n, t[4];
+	int t, lineno, i, r, cb, cg, m, n;
 	char buf[BUFSIZ], *p, *s;
+	struct node *node;
 	FILE *fp;
 	long l;
+
+	/*
+	 * We're not guarenteed to have temperature information for
+	 * every node...
+	 */
+	for (r = 0; r < NROWS; r++)
+		for (cb = 0; cb < NCABS; cb++)
+			for (cg = 0; cg < NCAGES; cg++)
+				for (m = 0; m < NMODS; m++)
+					for (n = 0; n < NNODES; n++)
+						nodes[r][cb][cg][m][n].n_temp = NULL;
 
 	if ((fp = fopen(_PATH_TEMPMAP, "r")) == NULL)
 		warn("%s", _PATH_TEMPMAP);
@@ -619,7 +656,7 @@ parse_tempmap(void)
 			m = (int)l;
 
 			/* temperatures */
-			for (i = 0; i < 4; i++) {
+			for (i = 0; i < NNODES; i++) {
 				while (isspace(*s))
 					s++;
 				if (*s == '\0')
@@ -634,7 +671,12 @@ parse_tempmap(void)
 				*s++ = '\0';
 				if ((l = strtol(p, NULL, 10)) < 0 || l >= INT_MAX)
 					goto bad;
-				t[i] = (int)l;
+				t = (int)l;
+
+				node = &nodes[r][cb][cg][m][i];
+				node->n_fail = getobj(&t, (void ***)&temps,
+				    &ntemps, &maxtemps, temp_eq, TINCR,
+				    sizeof(struct temp));
 			}
 			continue;
 bad:
