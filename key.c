@@ -183,19 +183,19 @@ spkeyh_default(int key, __unused int u, __unused int v)
 		dir = CAMDIR_LEFT;
 		break;
 	case GLUT_KEY_RIGHT:
-		dir = CAMDIR_LEFT;
+		dir = CAMDIR_RIGHT;
 		break;
 	case GLUT_KEY_UP:			/* Forward */
-		dir = CAMDIR_LEFT;
+		dir = CAMDIR_FORWARD;
 		break;
 	case GLUT_KEY_DOWN:			/* Backward */
-		dir = CAMDIR_LEFT;
+		dir = CAMDIR_BACK;
 		break;
 	case GLUT_KEY_PAGE_UP:
-		dir = CAMDIR_LEFT;
+		dir = CAMDIR_UP;
 		break;
 	case GLUT_KEY_PAGE_DOWN:
-		dir = CAMDIR_LEFT;
+		dir = CAMDIR_DOWN;
 		break;
 	default:
 		return;
