@@ -38,11 +38,6 @@
 #define STARTLY		(0.0f)
 #define STARTLZ		(-0.12f)
 
-void			 load_textures(void);
-void			 del_textures(void);
-void			 make_cluster(void);
-void			 rebuild(int);
-
 struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 struct node		*invmap[NLOGIDS][NROWS * NCABS * NCAGES * NMODS * NNODES];
 int			 win_width = 800;
@@ -544,6 +539,33 @@ make_cluster(void)
 }
 
 void
+load_textures(void)
+{
+	char path[NAME_MAX];
+	void *data;
+	int i;
+	
+	/* Read in texture IDs */
+	for (i = 0; i < NJST; i++) {
+		snprintf(path, sizeof(path), _PATH_TEX, i);
+		data = load_png(path);
+		load_texture(data, st.st_alpha_fmt, i + 1);
+		jstates[i].js_fill.f_texid = i + 1;
+	}
+}
+
+void
+del_textures(void)
+{
+	int i;
+
+	/* Delete textures from vid memory */
+	for (i = 0; i < NJST; i++)
+		if (jstates[i].js_fill.f_texid)
+			glDeleteTextures(1, &jstates[i].js_fill.f_texid);
+}
+
+void
 rebuild(int opts)
 {
 	if (opts & RO_TEX) {
@@ -572,33 +594,6 @@ rebuild(int opts)
 		}
 	if (opts & RO_COMPILE)
 		make_cluster();
-}
-
-void
-load_textures(void)
-{
-	char path[NAME_MAX];
-	void *data;
-	int i;
-	
-	/* Read in texture IDs */
-	for (i = 0; i < NJST; i++) {
-		snprintf(path, sizeof(path), _PATH_TEX, i);
-		data = load_png(path);
-		load_texture(data, st.st_alpha_fmt, i + 1);
-		jstates[i].js_fill.f_texid = i + 1;
-	}
-}
-
-void
-del_textures(void)
-{
-	int i;
-
-	/* Delete textures from vid memory */
-	for (i = 0; i < NJST; i++)
-		if (jstates[i].js_fill.f_texid)
-			glDeleteTextures(1, &jstates[i].js_fill.f_texid);
 }
 
 int
