@@ -94,7 +94,7 @@ void read_flyby()
 			active_flyby = 0;	
 		}
 	}
-	/* XXX rebuild(st.st_ro); */
+	/* XXX restore_state(st.st_ro); */
 }
 
 void end_flyby()
