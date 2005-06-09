@@ -85,14 +85,16 @@ void read_flyby()
 	if(!fread(&st, sizeof(struct state), 1, flyby_fp)) {
 
 		/* end of flyby */
-		if(feof(flyby_fp) != 0)
-			active_flyby = 0;	
-		else {
-			err(1, "flyby data read err");
-			active_flyby = 0;	
+		if(feof(flyby_fp) != 0) {
+			active_flyby = 0;
+			glutKeyboardFunc(keyh_default);
+			glutSpecialFunc(spkeyh_default);
 		}
+		else
+			err(1, "flyby data read err");
 	}
-	/* XXX restore_state(st.st_ro); */
+
+	restore_state(st.st_ro);
 }
 
 void end_flyby()
