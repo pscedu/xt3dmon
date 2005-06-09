@@ -353,7 +353,11 @@ parse_jobmap(void)
 				    sizeof(struct job));
 				node->n_job->j_id = jobid;
 			}
-			node->n_fillp = &jstates[node->n_state].js_fill;
+
+			if (node->n_state == JST_USED)
+				node->n_fillp = &node->n_job->j_fill;
+			else
+				node->n_fillp = &jstates[node->n_state].js_fill;
 			continue;
 bad:
 			warn("%s:%d: malformed line", fn, lineno);
@@ -476,7 +480,6 @@ badcheck:
 			errno = 0;
 		}
 	}
-
 	for (j = 0; j < njobs; j++)
 		getcol(j, njobs, &jobs[j]->j_fill);
 }
