@@ -2,6 +2,7 @@
 
 #include <sys/queue.h>
 #include <sys/types.h>
+#include <stdio.h>
 
 #ifdef __APPLE_CC__
 # include <OpenGL/gl.h>
@@ -187,10 +188,10 @@ void			 parse_tempmap(void);
 void			 capture_fb(void);
 
 /* flyby.c */
-void			 begin_flyby_build(void);
-void 			 end_flyby_build(void);
-void 			 begin_flyby(void);
+void 			 begin_flyby(char);
 void 			 end_flyby(void);
+void			 read_flyby(void);
+void			 write_flyby(void);
 
 extern int		 logids[2];
 extern struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
@@ -207,6 +208,7 @@ extern float		 tz, tlz;
 
 extern int		 active_flyby;
 extern int		 build_flyby;
+extern FILE		*flyby_fp;
 
 extern int		 win_width;
 extern int		 win_height;
