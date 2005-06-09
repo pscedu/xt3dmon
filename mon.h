@@ -33,16 +33,16 @@
 #define NMODS		8
 #define NNODES		4
 
-#define ST_FREE		0
-#define ST_DOWN		1
-#define ST_DISABLED	2
-#define ST_USED		3
-#define ST_IO		4
-#define ST_UNACC	5
-#define ST_BAD		6
-#define ST_CHECK	7
-#define ST_INFO		8
-#define NST		9
+#define JST_FREE	0
+#define JST_DOWN	1
+#define JST_DISABLED	2
+#define JST_USED	3
+#define JST_IO		4
+#define JST_UNACC	5
+#define JST_BAD		6
+#define JST_CHECK	7
+#define JST_INFO	8
+#define NJST		9
 
 #define OP_TEX		(1<<0)
 #define OP_BLEND	(1<<1)
@@ -76,15 +76,21 @@
 
 #define WFRAMEWIDTH	(0.001f)
 
+struct fill {
+	float		 f_r;
+	float		 f_g;
+	float		 f_b;
+	float		 f_a;
+	GLint		 f_texid;
+};
+
 struct job {
 	int		 j_id;
-	float		 j_r;
-	float		 j_g;
-	float		 j_b;
 	const char	*j_owner;
 	const char	*j_name;
 	int		 j_dur;
 	int		 j_cpus;
+	struct fill	 j_fill;
 };
 
 struct node {
@@ -101,14 +107,6 @@ struct node {
 	}		 n_pos;
 };
 
-struct nstate {
-	char		*nst_name;
-	float		 nst_r;
-	float		 nst_g;
-	float		 nst_b;
-	int		 nst_texid;
-};
-
 struct state {
 	float		 st_x;
 	float		 st_y;
@@ -121,42 +119,43 @@ struct state {
 	float		 st_alpha_oth;
 	GLint		 st_alpha_fmt;
 	int		 st_mode;
+	struct node	*st_selnode;
 
 	int		 st_panels;
 	int		 st_tween_mode;
 	int		 st_nframes;
 };
 
+struct job_state {
+	char		*js_name;
+	struct fill	 js_fill;
+};
+
 struct fail_state {
-	float		 fs_r;
-	float		 fs_g;
-	float		 fs_b;
+	int		 fs_fails;
+	struct fill	 fs_fill;
+};
+
+struct temp_state {
+	int		 ts_celcius;
+	struct fill	 ts_fill;
 };
 
 struct panel {
-	int			  p_id;
-	char			 *p_str;
-	size_t			  p_strlen;
-	int			  p_u;
-	int			  p_v;
-	int			  p_su;
-	int			  p_sv;
-	int			  p_adju;
-	int			  p_adjv;
-	int			  p_w;
-	int			  p_h;
-	struct {
-		float		  pc_r;
-		float		  pc_g;
-		float		  pc_b;
-		float		  pc_a;
-	}			  p_col;
-#define p_r p_col.pc_r
-#define p_g p_col.pc_g
-#define p_b p_col.pc_b
-#define p_a p_col.pc_a
-	void			(*p_refresh)(struct panel *);
-	TAILQ_ENTRY(panel)	  p_link;
+	int		 p_id;
+	char		*p_str;
+	size_t		 p_strlen;
+	int		 p_u;
+	int		 p_v;
+	int		 p_su;
+	int		 p_sv;
+	int		 p_adju;
+	int		 p_adjv;
+	int		 p_w;
+	int		 p_h;
+	struct fill	 p_fill;
+	void		(*p_refresh)(struct panel *);
+	TAILQ_ENTRY(panel) p_link;
 };
 
 TAILQ_HEAD(panels, panel);
@@ -181,9 +180,8 @@ void			 panel_toggle(int);
 /* parse.c */
 void			 parse_jobmap(void);
 void			 parse_physmap(void);
-
-/* parse-fail.c */
 void			 parse_failmap(void);
+void			 parse_tempmap(void);
 
 /* capture.c */
 void			 capture_fb(void);
@@ -207,18 +205,16 @@ extern float		 tx, tlx;
 extern float		 ty, tly;
 extern float		 tz, tlz;
 
-extern int		 active_fps;
-extern int		 active_ninfo;
 extern int		 active_flyby;
 extern int		 build_flyby;
 
 extern int		 win_width;
 extern int		 win_height;
 
-extern struct nstate	 nstates[];
+extern struct job_state	 jstates[];
+extern struct fail_state fstates[];
+extern struct temp_state tstates[];
 extern const struct state flybypath[];
-
-extern struct node	*selnode;
 
 extern struct panels	 panels;
 extern struct buf 	 cmdbuf;
