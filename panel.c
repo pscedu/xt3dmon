@@ -28,15 +28,13 @@
 void panel_refresh_fps(struct panel *);
 void panel_refresh_ninfo(struct panel *);
 void panel_refresh_cmd(struct panel *);
-void panel_refresh_flegend(struct panel *);
-void panel_refresh_jlegend(struct panel *);
+void panel_refresh_legend(struct panel *);
 
 void (*refreshf[])(struct panel *) = {
 	panel_refresh_fps,
 	panel_refresh_ninfo,
 	panel_refresh_cmd,
-	panel_refresh_flegend,
-	panel_refresh_jlegend
+	panel_refresh_legend
 };
 
 struct panels panels;
@@ -93,7 +91,7 @@ printf("removing\n");
 
 	gluOrtho2D(0.0, win_width, 0.0, win_height);
 
-	glColor4f(p->p_r, p->p_g, p->p_b, p->p_a);
+	glColor4f(p->p_fill.f_r, p->p_fill.f_g, p->p_fill.f_b, p->p_fill.f_a);
 
 	toff = PANEL_PADDING + PANEL_BWIDTH;
 
@@ -109,7 +107,6 @@ printf("removing\n");
 	}
 	if (curlen > p->p_w)
 		p->p_w = curlen;
-//printf("offset: %d\n", offset);
 	p->p_w = p->p_w * LETTER_WIDTH + 2 * toff;
 	p->p_h = lineno * LETTER_HEIGHT + 2 * toff;
 	p->p_u = win_width - p->p_w;
@@ -120,7 +117,6 @@ printf("removing\n");
 	if (p->p_sv != p->p_v)
 		p->p_sv += p->p_sv - p->p_v < 0 ? 1 : -1;
 
-//printf("write '%s'\n", p->p_str);
 	/* Panel content. */
 	line_offset = p->p_sv - toff - LETTER_HEIGHT;
 	glRasterPos2d(p->p_su + toff, line_offset);
@@ -173,7 +169,6 @@ panel_set_content(struct panel *p, char *fmt, ...)
 		    fmt, ap);
 		va_end(ap);
 		if (len >= p->p_strlen) {
-printf("resizing %d to %d\n", p->p_strlen, len);
 			p->p_strlen = len + 1;
 			if ((p->p_str = realloc(p->p_str,
 			    p->p_strlen)) == NULL)
@@ -192,7 +187,7 @@ panel_refresh_fps(struct panel *p)
 void
 panel_refresh_cmd(struct panel *p)
 {
-	if (selnode)
+	if (st.st_selnode)
 		panel_set_content(p, "Sending command to host\n\n> %s", 
 		    buf_get(&cmdbuf));
 	else
@@ -200,39 +195,42 @@ panel_refresh_cmd(struct panel *p)
 }
 
 void
-panel_refresh_jlegend(struct panel *p)
+panel_refresh_legend(struct panel *p)
 {
-	panel_set_content(p, "Jobs: %d", njobs);
-}
-
-void
-panel_refresh_flegend(struct panel *p)
-{
-	panel_set_content(p, "Failures: %d", total_failures);
+	switch (st.st_mode) {
+	case SM_JOBS:
+		panel_set_content(p, "Jobs: %d", njobs);
+		break;
+	case SM_FAIL:
+		panel_set_content(p, "Failures: %d", total_failures);
+		break;
+	case SM_TEMP:
+		break;
+	}
 }
 
 void
 panel_refresh_ninfo(struct panel *p)
 {
-	if (selnode) {
-		switch (selnode->n_savst) {
-		case ST_USED:
+	if (st.st_selnode) {
+		switch (st.st_selnode->n_savst) {
+		case JST_USED:
 			panel_set_content(p,
 			    "Node ID: %d\n"
 			    "Owner: %d\n"
 			    "Job name: [%s]\n"
 			    "Duration: %d\n"
 			    "CPUs: %d",
-			    selnode->n_nid,
-			    selnode->n_job->j_owner,
-			    selnode->n_job->j_name,
-			    selnode->n_job->j_dur,
-			    selnode->n_job->j_cpus);
+			    st.st_selnode->n_nid,
+			    st.st_selnode->n_job->j_owner,
+			    st.st_selnode->n_job->j_name,
+			    st.st_selnode->n_job->j_dur,
+			    st.st_selnode->n_job->j_cpus);
 			break;
 		default:
 			panel_set_content(p,
 			    "Node ID: %d",
-			    selnode->n_nid);
+			    st.st_selnode->n_nid);
 			break;
 		}
 	} else {
@@ -299,15 +297,13 @@ panel_toggle(int panel)
 	p->p_adju = 1;
 	p->p_str = NULL;
 	p->p_strlen = 0;
-printf("panel id %d, index %d\n", panel, baseconv(panel) - 1);
 	p->p_refresh = refreshf[baseconv(panel) - 1];
 	p->p_id = panel;
 	p->p_su = win_width;
-printf("showing panel with offset %d\n", panel_offset);
 	p->p_sv = win_height - panel_offset - 1;
-	p->p_r = 1.0f;
-	p->p_g = 1.0f;
-	p->p_b = 1.0f;
-	p->p_a = 1.0f;
+	p->p_fill.f_r = 1.0f;
+	p->p_fill.f_g = 1.0f;
+	p->p_fill.f_b = 1.0f;
+	p->p_fill.f_a = 1.0f;
 	TAILQ_INSERT_TAIL(&panels, p, p_link);
 }
