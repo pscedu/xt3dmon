@@ -22,11 +22,8 @@ draw(void)
 	if(build_flyby)
 		write_flyby();
 
-	if (active_flyby) {
-		//calc_flyby();
+	if (active_flyby)
 		read_flyby();
-		restore_state();
-	}
 
 	if (st.st_opts & OP_TWEEN &&
 	    (tx - st.st_x || ty - st.st_y || tz - st.st_z ||
@@ -171,25 +168,10 @@ draw_filled_node(struct node *n, float w, float h, float d)
 	float z = n->n_pos.np_z;
 	float r, g, b, a;
 
-	switch (st.st_mode) {
-	case SM_JOBS:
-		if (n->n_state == JST_USED) {
-			r = n->n_job->j_fill.f_r;
-			g = n->n_job->j_fill.f_g;
-			b = n->n_job->j_fill.f_b;
-			a = st.st_alpha_job;
-		} else {
-			r = jstates[n->n_state].js_fill.f_r;
-			g = jstates[n->n_state].js_fill.f_g;
-			b = jstates[n->n_state].js_fill.f_b;
-			a = st.st_alpha_oth;
-		}
-		break;
-	case SM_TEMP:
-		break;
-	case SM_FAIL:
-		break;
-	}
+	r = n->n_fillp->f_r;
+	g = n->n_fillp->f_g;
+	b = n->n_fillp->f_b;
+	a = n->n_fillp->f_a;
 
 	if (st.st_opts & OP_BLEND) {
 		glEnable(GL_BLEND);
@@ -284,82 +266,35 @@ draw_textured_node(struct node *n, float w, float h, float d)
 	float x = n->n_pos.np_x;
 	float y = n->n_pos.np_y;
 	float z = n->n_pos.np_z;
-//	float ux, uy, uz;
 	float uw, uh, ud;
 	float color[4];
 	GLenum param;
 
 	/* Convert to texture units */
-#if 0
-	/* Too Big */
-	ud = d / TEX_SIZE;
-	uh = h / TEX_SIZE;
-	uw = w / TEX_SIZE;
-
-	/* Too small*/
-	ud = d;
-	uh = h;
-	uw = w;
-#endif
-
 	uw = 1.0;
 	ud = 2.0;
 	uh = 2.0;
 
-//	ux = 0.0;
-//	uy = 0.0;
-//	uz = 0.0;
-
 	glEnable(GL_TEXTURE_2D);
 
-	/* DEBUG */
 	if (st.st_opts & OP_BLEND){
 		glEnable(GL_BLEND);
-
-		/* 1 */
-		//glBlendFunc(GL_SRC_COLOR, GL_CONSTANT_ALPHA);
-
-		/* 2 Works with: GL_INTENSITY */
 		glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
-
-		/* 3 Transparent, but alpha value doesn't effect */
-		//glBlendFunc(GL_SRC_COLOR, GL_DST_ALPHA);
-
-		/* 4 Works with: GL_INTENSITY */
-		//glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
-
 		param = GL_BLEND;
 	} else
 		param = GL_REPLACE;
 
 	glBindTexture(GL_TEXTURE_2D, jstates[n->n_state].js_fill.f_texid);
 
-	switch (st.st_mode) {
-	case SM_JOBS:
-		if (n->n_state == JST_USED) {
-			color[0] = n->n_job->j_fill.f_r;
-			color[1] = n->n_job->j_fill.f_g;
-			color[2] = n->n_job->j_fill.f_b;
-			color[3] = st.st_alpha_job;
-		} else {
-			/* Default color, with alpha */
-			color[0] = 0.90;
-			color[1] = 0.80;
-			color[2] = 0.50;
-			color[3] = st.st_alpha_oth;
-		}
-		break;
-	case SM_TEMP:
-		break;
-	case SM_FAIL:
-		break;
-	}
+	color[0] = n->n_fillp->f_r;
+	color[1] = n->n_fillp->f_g;
+	color[2] = n->n_fillp->f_b;
+	color[3] = n->n_fillp->f_a;
 
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, param);
 
 	if (st.st_opts & OP_BLEND)
 		glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, color);
-
 
 	/* Back  */
 	glBegin(GL_POLYGON);
@@ -373,22 +308,8 @@ draw_textured_node(struct node *n, float w, float h, float d)
 	glTexCoord2f(uh, 0.0);
 	glEnd();
 
-
 	/* Front */
 	glBegin(GL_POLYGON);
-
-#if 0
-	Same as Below, execpt using 3f
-	glVertex3f(x, y, z+d);
-	glTexCoord3f(0.0, 0.0, 0.0);
-	glVertex3f(x, y+h, z+d);
-	glTexCoord3f(0.0, uw, 0.0);
-	glVertex3f(x+w, y+h, z+d);
-	glTexCoord3f(uh, uw, 0.0);
-	glVertex3f(x+w, y, z+d);
-	glTexCoord3f(uh, 0.0, 0.0);
-#endif
-
 	glVertex3f(x, y, z+d);
 	glTexCoord2f(0.0, 0.0);
 	glVertex3f(x, y+h, z+d);
