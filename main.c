@@ -65,15 +65,20 @@
 #define STARTLY		(0.0f)
 #define STARTLZ		(-0.12f)
 
+#define RO_TEX		(1<<0)
+#define RO_PHYS		(1<<1)
+#define RO_RELOAD	(1<<2)
+#define RO_COMPILE	(1<<3)
+
+#define RO_ALL		(RO_TEX | RO_PHYS | RO_RELOAD | RO_COMPILE)
+
 void			 load_textures(void);
 void			 del_textures(void);
 void			 make_cluster(void);
+void			 rebuild(int);
 
-struct job		**jobs;
-size_t			 njobs;
 struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 struct node		*invmap[NLOGIDS][NROWS * NCABS * NCAGES * NMODS * NNODES];
-struct node		 *selnode;
 int			 win_width = 800;
 int			 win_height = 600;
 int			 active_flyby = 0;
@@ -96,6 +101,8 @@ struct state st = {
 	1.0f,						/* job alpha */
 	1.0f,						/* other alpha */
 	GL_RGBA,					/* alpha blend format */
+	SM_JOBS,					/* viewing mode */
+	NULL,						/* selected node */
 	0,						/* panels (unused) */
 	0,						/* tween mode (unused) */
 	0						/* nframes (unused) */
@@ -104,16 +111,16 @@ struct state st = {
 /* Save (some of) the previous state */
 struct state pst;
 
-struct nstate nstates[] = {
-	{ "Free",		1.00, 1.00, 1.00, 1 },	/* White */
-	{ "Disabled (PBS)",	1.00, 0.00, 0.00, 1 },	/* Red */
-	{ "Disabled (HW)",	0.66, 0.66, 0.66, 1 },	/* Gray */
-	{ NULL,			0.00, 0.00, 0.00, 1 },	/* (dynamic) */
-	{ "I/O",		1.00, 1.00, 0.00, 1 },	/* Yellow */
-	{ "Unaccounted",	0.00, 0.00, 1.00, 1 },	/* Blue */
-	{ "Bad",		1.00, 0.75, 0.75, 1 },	/* Pink */
-	{ "Checking",		0.00, 1.00, 0.00, 1 },	/* Green */
-	{ "Info",		0.20, 0.40, 0.60, 1 }	/* Dark blue */
+struct job_state jstates[] = {
+	{ "Free",		{ 1.00f, 1.00f, 1.00f, 1.00f, 0 } },	/* White */
+	{ "Disabled (PBS)",	{ 1.00f, 0.00f, 0.00f, 1.00f, 0 } },	/* Red */
+	{ "Disabled (HW)",	{ 0.66f, 0.66f, 0.66f, 1.00f, 0 } },	/* Gray */
+	{ NULL,			{ 0.00f, 0.00f, 0.00f, 1.00f, 0 } },	/* (dynamic) */
+	{ "I/O",		{ 1.00f, 1.00f, 0.00f, 1.00f, 0 } },	/* Yellow */
+	{ "Unaccounted",	{ 0.00f, 0.00f, 1.00f, 1.00f, 0 } },	/* Blue */
+	{ "Bad",		{ 1.00f, 0.75f, 0.75f, 1.00f, 0 } },	/* Pink */
+	{ "Checking",		{ 0.00f, 1.00f, 0.00f, 1.00f, 0 } },	/* Green */
+	{ "Info",		{ 0.20f, 0.40f, 0.60f, 1.00f, 0 } }	/* Dark blue */
 };
 
 #if 0
@@ -226,8 +233,6 @@ reshape(int w, int h)
 
 void restore_state(int ro)
 {
-	int rebuild = 0;
-
 	/* Restore Tweening state */
 	if (!(st.st_opts & OP_TWEEN)) {
 		tx = st.st_x;  tlx = st.st_lx;
@@ -276,7 +281,7 @@ key(unsigned char key, __unused int u, __unused int v)
 		return;
 	}
 
-	if (command_mode && selnode != NULL) {
+	if (command_mode && st.st_selnode != NULL) {
 		switch (key) {
 		case 13: /* enter */
 			/* FALLTHROUGH */
@@ -305,7 +310,7 @@ key(unsigned char key, __unused int u, __unused int v)
 		switch (key) {
 		case 'a': {
 			int j;
-			
+
 			for (j = 0; j < NPANELS; j++)
 				panel_toggle(1 << j);
 			break;
@@ -334,11 +339,12 @@ key(unsigned char key, __unused int u, __unused int v)
 	switch (key) {
 	case 'b':
 		st.st_opts ^= OP_BLEND;
+		ro |= RO_COMPILE;
 		break;
 	case 'c':
-		if (selnode != NULL) {
-			selnode->n_state = selnode->n_savst;
-			selnode = NULL;
+		if (st.st_selnode != NULL) {
+			st.st_selnode->n_state = st.st_selnode->n_savst;
+			st.st_selnode = NULL;
 		}
 		break;
 	case 'D':
@@ -481,15 +487,15 @@ sp_key(int key, __unused int u, __unused int v)
 void
 select_node(struct node *n)
 {
-	if (selnode == n)
+	if (st.st_selnode == n)
 		return;
-	if (selnode != NULL)
-		selnode->n_state = selnode->n_savst;
-	selnode = n;
-	if (n->n_state != ST_INFO)
+	if (st.st_selnode != NULL)
+		st.st_selnode->n_state = st.st_selnode->n_savst;
+	st.st_selnode = n;
+	if (n->n_state != JST_INFO)
 		n->n_savst = n->n_state;
-	n->n_state = ST_INFO;
-	make_cluster();
+	n->n_state = JST_INFO;
+	rebuild(RO_COMPILE);
 }
 
 /*
@@ -745,14 +751,7 @@ idle(void)
 		if (lastsync.tv_sec + SLEEP_INTV < tv.tv_sec) {
 			tcnt = 0;
 			lastsync.tv_sec = tv.tv_sec;
-			parse_jobmap();
-			parse_failmap();
-			if (selnode != NULL) {
-				if (selnode->n_state != ST_INFO)
-					selnode->n_savst = selnode->n_state;
-				selnode->n_state = ST_INFO;
-			}
-			make_cluster();
+			rebuild(RO_RELOAD | RO_COMPILE);
 		}
 		cnt = 0;
 	}
@@ -799,19 +798,48 @@ make_cluster(void)
 }
 
 void
+rebuild(int opts)
+{
+	if (opts & RO_TEX) {
+		del_textures();
+		load_textures();
+	}
+	if (opts & RO_PHYS)
+		parse_physmap();
+	if (opts & RO_RELOAD)
+		switch (st.st_mode) {
+		case SM_JOBS:
+			parse_jobmap();
+			if (st.st_selnode != NULL) {
+				if (st.st_selnode->n_state != JST_INFO)
+					st.st_selnode->n_savst =
+					    st.st_selnode->n_state;
+				st.st_selnode->n_state = JST_INFO;
+			}
+			break;
+		case SM_FAIL:
+			parse_failmap();
+			break;
+		case SM_TEMP:
+			parse_tempmap();
+			break;
+		}
+	make_cluster();
+}
+
+void
 load_textures(void)
 {
 	char path[NAME_MAX];
 	void *data;
 	int i;
-	char buf[PATH_MAX];
 	
 	/* Read in texture IDs */
-	for (i = 0; i < NST; i++) {
+	for (i = 0; i < NJST; i++) {
 		snprintf(path, sizeof(path), _PATH_TEX, i);
 		data = load_png(path);
 		load_texture(data, st.st_alpha_fmt, i + 1);
-		nstates[i].nst_texid = i + 1;
+		jstates[i].js_fill.f_texid = i + 1;
 	}
 }
 
@@ -821,8 +849,9 @@ del_textures(void)
 	int i;
 
 	/* Delete textures from vid memory */
-	for (i = 0; i < NST; i++)
-		glDeleteTextures(1, &nstates[i].nst_texid);
+	for (i = 0; i < NJST; i++)
+		if (jstates[i].js_fill.f_texid)
+			glDeleteTextures(1, &jstates[i].js_fill.f_texid);
 }
 
 int
@@ -844,14 +873,8 @@ main(int argc, char *argv[])
 	TAILQ_INIT(&panels);
 	buf_init(&cmdbuf);
 	buf_append(&cmdbuf, '\0');
-
-	load_textures();
-	parse_physmap();
-	parse_jobmap();
-	parse_failmap();
+	rebuild(RO_ALL);
 	pst = st;
-
-	make_cluster();
 
 	/* glutExposeFunc(reshape); */
 	glutReshapeFunc(reshape);
