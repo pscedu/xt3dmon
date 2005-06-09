@@ -82,8 +82,6 @@ void write_flyby()
 /* Read a set of flyby data */
 void read_flyby()
 {
-	size_t n;
-
 	if(!fread(&st, sizeof(struct state), 1, flyby_fp)) {
 
 		/* end of flyby */
