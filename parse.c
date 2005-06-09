@@ -12,7 +12,8 @@
 
 #include "mon.h"
 
-#define MAXFAILS INT_MAX
+#define NID_MAX		(NROWS * NCABS * NCAGES * NMODS * NNODES)
+#define MAXFAILS	200
 
 struct job		*getjob(int);
 void			 getcol(int, int, float *, float *, float *);
@@ -450,9 +451,9 @@ getcol(int n, int total, float *r, float *g, float *b)
 void
 parse_failmap(void)
 {
-	char *p, *s, fn[PATH_MAX], buf[BUFSIZ];
 	int nid, lineno, r, cb, cg, m, n;
 	size_t j, newmax, fails;
+	char *p, *s, buf[BUFSIZ];
 	FILE *fp;
 	long l;
 
@@ -468,12 +469,9 @@ parse_failmap(void)
 						nodes[r][cb][cg][m][n].n_fails = 0;
 
 	total_failures = newmax = 0;
-	for (j = 0; j < NLOGIDS; j++) {
-		snprintf(fn, sizeof(fn), _PATH_FAILMAP, logids[j]);
-		if ((fp = fopen(fn, "r")) == NULL) {
-			warn("%s", fn);
-			continue;
-		}
+	if ((fp = fopen(_PATH_FAILMAP, "r")) == NULL)
+		warn("%s", _PATH_FAILMAP);
+	else {
 		lineno = 0;
 		while (fgets(buf, sizeof(buf), fp) != NULL) {
 			lineno++;
@@ -485,7 +483,7 @@ parse_failmap(void)
 			if (s == p || !isspace(*s))
 				goto bad;
 			*s = '\0';
-			if ((l = strtol(p, NULL, 10)) < 0 || l >= MAXFAILS)
+			if ((l = strtol(p, NULL, 10)) < 0 || l >= INT_MAX)
 				goto bad;
 			fails = (int)l;
 
@@ -501,21 +499,24 @@ parse_failmap(void)
 				goto bad;
 			nid = (int)l;
 
+			if (fails > MAXFAILS)
+				fails = MAXFAILS;
+
 			invmap[j][nid]->n_fails = fails;
 			total_failures += fails;
 			if (fails > newmax)
 				newmax = fails;
 			continue;
 bad:
-			warnx("%s:%d: malformed line", fn, lineno);
+			warnx("%s:%d: malformed line", _PATH_FAILMAP, lineno);
 		}
 		if (ferror(fp))
-			warn("%s", fn);
+			warn("%s", _PATH_FAILMAP);
 		fclose(fp);
 		errno = 0;
 	}
 
-	if (newmax + 1> maxfails) {
+	if (newmax + 1 > maxfails) {
 		if ((fail_states = realloc(fail_states,
 		    (newmax + 1) * sizeof(*fail_states))) == NULL)
 			err(1, "realloc");
@@ -523,7 +524,7 @@ bad:
 			if ((fail_states[j] =
 			    malloc(sizeof(**fail_states))) == NULL)
 				err(1, "malloc");
-		maxfails = newmax;	
+		maxfails = newmax;
 	}
 
 	for (j = 0; j <= maxfails; j++)
@@ -531,4 +532,116 @@ bad:
 		    &(fail_states[j]->fs_r),
 		    &(fail_states[j]->fs_g),
 		    &(fail_states[j]->fs_b));
+}
+
+/*
+ * Temperature data.
+ *
+ * Example:
+ *	cx0y0c0s4	    20  18  18  19
+ *	position	[[[[t1] t2] t3] t4]
+ */
+void
+parse_tempmap(void)
+{
+	int lineno, j, r, cb, cg, m, n, t[4];
+	char buf[BUFSIZ], *p, *s;
+	FILE *fp;
+	long l;
+
+	if ((fp = fopen(_PATH_TEMPMAP, "r")) == NULL)
+		warn("%s", _PATH_TEMPMAP);
+	else {
+		lineno = 0;
+		while (fgets(buf, sizeof(buf), fp) != NULL) {
+			lineno++;
+			p = buf;
+
+			while (isspace(*p))
+				p++;
+			if (*p == '#')
+				continue;
+			if (*p++ != 'c')
+				goto bad;
+			if (*p++ != 'x')
+				goto bad;
+
+			/* cab */
+			if (!isdigit(*p))
+				goto bad;
+			for (s = p + 1; isdigit(*s); s++)
+				;
+			if (*s != 'y')
+				goto bad;
+			*s++ = '\0';
+			if ((l = strtol(p, NULL, 10)) < 0 ||  >= NCABS)
+				goto bad;
+			cb = (int)l;
+
+			/* row */
+			p = s;
+			while (isdigit(*s))
+				s++;
+			if (p == s)
+				goto bad;
+			if (*s != 'c')
+				goto bad;
+			*s++ = '\0';
+			if ((l = strtol(p, NULL, 10)) < 0 ||  >= NROWS)
+				goto bad;
+			r = (int)l;
+
+			/* cage */
+			p = s;
+			while (isdigit(*s))
+				s++;
+			if (p == s)
+				goto bad;
+			if (*s != 's')
+				goto bad;
+			*s++ = '\0';
+			if ((l = strtol(p, NULL, 10)) < 0 ||  >= NCAGES)
+				goto bad;
+			cg = (int)l;
+
+			/* mod */
+			p = s;
+			while (isdigit(*s))
+				s++;
+			if (p == s)
+				goto bad;
+			if (!isspace(*s))
+				goto bad;
+			*s++ = '\0';
+			if ((l = strtol(p, NULL, 10)) < 0 ||  >= NCAGES)
+				goto bad;
+			m = (int)l;
+
+			/* temperatures */
+			for (i = 0; i < 4; i++) {
+				while (isspace(*s))
+					s++;
+				if (*s == '\0')
+					break;
+				p = s;
+				while (isdigit(*s))
+					s++;
+				if (p == s)
+					goto bad;
+				if (!isspace(*s))
+					goto bad;
+				*s++ = '\0';
+				if ((l = strtol(p, NULL, 10)) < 0 ||  >= INT_MAX)
+					goto bad;
+				t[i] = (int)l;
+			}
+			continue;
+bad:
+			warn("%s:%d: malformed line", _PATH_TEMPMAP, lineno);
+		}
+		if (ferror(fp))
+			warn("%s", _PATH_TEMPMAP);
+		fclose(fp);
+		errno = 0;
+	}
 }
