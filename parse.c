@@ -58,7 +58,7 @@ getobj(void *arg, void ***data, size_t *cursiz, size_t *maxsiz,
 	void **jj, *j = NULL;
 	size_t n, newmax;
 
-	if (jobs != NULL)
+	if (*data != NULL)
 		for (n = 0, jj = *data; n < *cursiz; jj++, n++)
 			if (eq(*jj, arg))
 				return (*jj);
@@ -484,6 +484,10 @@ badcheck:
 		getcol(j, njobs, &jobs[j]->j_fill);
 }
 
+struct fail fail_notfound = {
+	0, { 0.33f, 0.66f, 0.99f, 1.00f, 0 }
+};
+
 /*
  * Parse failure data entries.
  *
@@ -500,6 +504,7 @@ parse_failmap(void)
 	int nid, lineno, r, cb, cg, m, n;
 	size_t j, newmax, nofails;
 	char *p, *s, buf[BUFSIZ];
+	struct node *node;
 	FILE *fp;
 	long l;
 
@@ -512,8 +517,8 @@ parse_failmap(void)
 			for (cg = 0; cg < NCAGES; cg++)
 				for (m = 0; m < NMODS; m++)
 					for (n = 0; n < NNODES; n++) {
-						nodes[r][cb][cg][m][n].n_fail = 0;
-						nodes[r][cb][cg][m][n].n_fillp = NULL;
+						nodes[r][cb][cg][m][n].n_fail = &fail_notfound;
+						nodes[r][cb][cg][m][n].n_fillp = &fail_notfound.f_fill;
 					}
 
 	total_failures = newmax = 0;
@@ -540,7 +545,7 @@ parse_failmap(void)
 				p++;
 			for (s = p; isdigit(*s); s++)
 				;
-			if (s == p || *s != '\n')
+			if (s == p)
 				goto bad;
 			*s = '\0';
 			if ((l = strtol(p, NULL, 10)) < 0 || l >= NID_MAX)
@@ -550,15 +555,26 @@ parse_failmap(void)
 			if (nofails > MAXFAILS)
 				nofails = MAXFAILS;
 
-			invmap[j][nid]->n_fail = getobj(&nofails,
+			node = invmap[0][nid];
+			if (node == NULL)
+				node = invmap[1][nid/2]; /* XXXXX */
+			if (node == NULL) {
+//				warnx("invmap[%d] is NULL", nid);
+				continue;
+			}
+			node->n_fail = getobj(&nofails,
 			    (void ***)&fails, &nfails, &maxfails, fail_eq,
 			    FINCR, sizeof(struct fail));
+			node->n_fail->f_fails = nofails;
+			node->n_fillp = &node->n_fail->f_fill;
 			total_failures += nofails;
 			if (nofails > newmax)
 				newmax = nofails;
 			continue;
 bad:
-			warnx("%s:%d: malformed line", _PATH_FAILMAP, lineno);
+	;
+//			warnx("%s:%d: malformed line: %s [s: %s, p: %s, l:%ld]",
+//			    _PATH_FAILMAP, lineno, buf, s, p, l);
 		}
 		if (ferror(fp))
 			warn("%s", _PATH_FAILMAP);
