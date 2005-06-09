@@ -53,6 +53,10 @@
 #define OP_CAPTURE	(1<<5)
 #define OP_DISPLAY	(1<<6)
 
+#define SM_JOBS		0
+#define SM_FAIL		1
+#define SM_TEMP		2
+
 #define PANEL_FPS	(1<<0)
 #define PANEL_NINFO	(1<<1)
 #define PANEL_CMD	(1<<2)
@@ -117,6 +121,7 @@ struct state {
 	float		 st_alpha_job;
 	float		 st_alpha_oth;
 	GLint		 st_alpha_fmt;
+	int		 st_mode;
 
 	int		 st_panels;
 	int		 st_tween_mode;
