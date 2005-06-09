@@ -77,18 +77,24 @@ keyh_panel(unsigned char key, __unused int u, __unused int v)
 void
 keyh_mode(unsigned char key, __unused int u, __unused int v)
 {
+	int ro = 0;
+
 	glutKeyboardFunc(keyh_default);
 	switch (key) {
 	case 'j':
 		st.st_mode = SM_JOBS;
+		ro |= RO_COMPILE | RO_RELOAD;
 		break;
 	case 'f':
 		st.st_mode = SM_FAIL;
+		ro |= RO_COMPILE | RO_RELOAD;
 		break;
 	case 't':
 		st.st_mode = SM_TEMP;
+		ro |= RO_COMPILE | RO_RELOAD;
 		break;
 	}
+	rebuild(ro);
 }
 
 void
@@ -127,6 +133,9 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 'g':
 		st.st_opts ^= OP_GROUND;
+		break;
+	case 'm':
+		glutKeyboardFunc(keyh_mode);
 		break;
 	case 'p':
 		glutKeyboardFunc(keyh_panel);
