@@ -20,7 +20,8 @@
 
 #define _PATH_JOBMAP	"data/nids_list_login%d"
 #define _PATH_PHYSMAP	"data/nodelist%d"
-#define _PATH_FAILMAP	"data/fail%d"
+#define _PATH_FAILMAP	"data/fail"
+#define _PATH_TEMPMAP	"data/temps"
 #define _PATH_BADMAP	"/usr/users/torque/bad_nids_list_login%d"
 #define _PATH_CHECKMAP	"/usr/users/torque/check_nids_list_login%d"
 
