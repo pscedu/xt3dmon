@@ -33,8 +33,6 @@
 #define NMODS		8
 #define NNODES		4
 
-#define NID_MAX		(NROWS * NCABS * NCAGES * NMODS * NNODES)
-
 #define ST_FREE		0
 #define ST_DOWN		1
 #define ST_DISABLED	2
