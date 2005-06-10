@@ -75,8 +75,6 @@ void begin_flyby(char m)
 /* Write current data for flyby */
 void write_flyby()
 {
-if (st.st_ro & RO_TEX)
-  printf("\nwrite: RO_TEX\n");
 	if(!fwrite(&st, sizeof(struct state), 1, flyby_fp))
 		err(1, "flyby data write err");
 }
@@ -95,10 +93,9 @@ void read_flyby()
 		else
 			err(1, "flyby data read err");
 	}
+
 	if ((st.st_ro & OP_TWEEN) == 0)
 		adjcam();
-if (st.st_ro & RO_TEX)
-  printf("\nread: RO_TEX\n");
 
 	restore_state(1);
 }
@@ -113,11 +110,6 @@ void end_flyby()
 
 void update_flyby(void)
 {
-if (st.st_ro & RO_TEX)
-  printf("RO_TEX\n");
-if (st.st_ro & RO_COMPILE)
-  printf("RO_COMPILE\n");
-
 	/* record user commands */
 	if(build_flyby) {
 		write_flyby();
@@ -125,10 +117,8 @@ if (st.st_ro & RO_COMPILE)
 	}
 
 	/* replay */
-	if(active_flyby) {
+	if(active_flyby)
 		read_flyby();
-//		make_cluster();
-	}
 }
 
 
