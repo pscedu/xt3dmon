@@ -18,12 +18,17 @@
 void
 draw(void)
 {
+#if 0
 	/* record user commands */
 	if(build_flyby)
 		write_flyby();
 
-	if (active_flyby)
+	if (active_flyby) {
 		read_flyby();
+//		make_cluster();
+	}
+#endif
+	update_flyby();
 
 	if (st.st_opts & OP_TWEEN &&
 	    (tx - st.st_x || ty - st.st_y || tz - st.st_z ||
