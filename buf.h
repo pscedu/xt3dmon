@@ -1,5 +1,8 @@
 /* $Id$ */
 
+#ifndef _BUF_H
+#define _BUF_H
+
 #include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,13 +18,15 @@ struct buf {
 	char	*buf_buf;
 };
 
-void	 buf_init(struct buf *buf);
-void	 buf_realloc(struct buf *buf);
-void	 buf_append(struct buf *buf, char ch);
-char	*buf_get(struct buf *buf);
-void	 buf_set(struct buf *buf, char *s);
-void	 buf_free(struct buf *buf);
-void	 buf_reset(struct buf *buf);
-void	 buf_chop(struct buf *buf);
-int	 buf_len(struct buf *buf);
-void	 buf_cat(struct buf *ba, struct buf *bb);
+void	 buf_init(struct buf *);
+void	 buf_realloc(struct buf *);
+void	 buf_append(struct buf *, char);
+char	*buf_get(struct buf *);
+void	 buf_set(struct buf *, char *);
+void	 buf_free(struct buf *);
+void	 buf_reset(struct buf *);
+void	 buf_chop(struct buf *);
+int	 buf_len(struct buf *);
+void	 buf_cat(struct buf *, struct buf *);
+
+#endif /* _BUF_H */
