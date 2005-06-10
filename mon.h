@@ -100,6 +100,7 @@
 #define RO_PHYS		(1<<1)
 #define RO_RELOAD	(1<<2)
 #define RO_COMPILE	(1<<3)
+#define RO_TEXTURE	(1<<4)
 
 #define RO_ALL		(RO_TEX | RO_PHYS | RO_RELOAD | RO_COMPILE)
 
@@ -226,7 +227,7 @@ void 			*load_png(char *);
 /* mon.c */
 void			 adjcam(void);
 void			 calc_flyby(void);
-void			 restore_state(void);
+void			 restore_state(int);
 void			 rebuild(int);
 
 /* panel.c */
@@ -264,7 +265,6 @@ extern float		 tz, tlz, oz, olz;
 
 extern int		 active_flyby;
 extern int		 build_flyby;
-extern FILE		*flyby_fp;
 
 extern int		 win_width;
 extern int		 win_height;
