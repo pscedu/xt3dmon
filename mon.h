@@ -207,6 +207,7 @@ void			 keyh_flyby(unsigned char, int, int);
 void			 keyh_cmd(unsigned char, int, int);
 void			 keyh_panel(unsigned char, int, int);
 void			 keyh_mode(unsigned char, int, int);
+void			 keyh_vmode(unsigned char, int, int);
 void			 keyh_default(unsigned char, int, int);
 void			 spkeyh_default(int, int, int);
 
