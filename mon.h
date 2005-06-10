@@ -12,6 +12,8 @@
 # include <GL/freeglut.h>
 #endif
 
+#include "buf.h"
+
 /*
 #define _PATH_JOBMAP	"/usr/users/torque/nids_list_login%d"
 #define _PATH_BADMAP	"/usr/users/torque/bad_nids_list_login%d"
@@ -183,6 +185,11 @@ struct job_state {
 	struct fill	 js_fill;
 };
 
+struct uinput {
+	struct buf 	  uinp_buf;
+	void		(*uinp_callback)(void);
+};
+
 struct panel {
 	int		 p_id;
 	char		*p_str;
@@ -205,7 +212,7 @@ void			 draw_node(struct node *, float, float, float);
 
 /* key.c */
 void			 keyh_flyby(unsigned char, int, int);
-void			 keyh_cmd(unsigned char, int, int);
+void			 keyh_uinput(unsigned char, int, int);
 void			 keyh_panel(unsigned char, int, int);
 void			 keyh_mode(unsigned char, int, int);
 void			 keyh_vmode(unsigned char, int, int);
@@ -268,7 +275,7 @@ extern struct temp_state tstates[];
 extern const struct state flybypath[];
 
 extern struct panels	 panels;
-extern struct buf 	 cmdbuf;
 extern int		 total_failures;	/* total shared among all nodes */
 extern struct fail_state **fail_states;
 extern size_t		 maxfails;		/* largest # of failures */
+extern struct uinput	 uinp;
