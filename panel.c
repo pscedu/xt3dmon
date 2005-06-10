@@ -77,15 +77,15 @@ draw_panel(struct panel *p)
 	if (curlen > w)
 		w = curlen;
 	if (p->p_removing) {
-		u = win_width;
-		v = win_height;
 		w = 0;
 		h = 0;
+		u = win_width;
+		v = win_height;
 	} else {
-		u = win_width - w;
-		v = win_height - panel_offset;
 		w = w * LETTER_WIDTH + 2 * toff;
 		h = lineno * LETTER_HEIGHT + 2 * toff;
+		u = win_width - w;
+		v = win_height - panel_offset;
 	}
 
 	if (p->p_u != u)
