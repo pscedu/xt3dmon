@@ -83,6 +83,9 @@
 #define SM_FAIL		1
 #define SM_TEMP		2
 
+#define VM_PHYSICAL	0
+#define VM_LOGICAL	1
+
 #define PANEL_FPS	(1<<0)
 #define PANEL_NINFO	(1<<1)
 #define PANEL_CMD	(1<<2)
@@ -165,6 +168,7 @@ struct state {
 	float		 st_alpha_oth;
 	GLint		 st_alpha_fmt;
 	int		 st_mode;
+	int		 st_vmode;
 	struct node	*st_selnode;
 
 	int		 st_panels;
