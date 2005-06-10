@@ -191,6 +191,11 @@ struct uinput {
 	void		(*uinp_callback)(void);
 };
 
+struct pwidget {
+	char		*pw_str;
+	struct fill	 pw_fill;
+};
+
 struct panel {
 	int		 p_id;
 	char		*p_str;
@@ -203,6 +208,7 @@ struct panel {
 	struct fill	 p_fill;
 	void		(*p_refresh)(struct panel *);
 	TAILQ_ENTRY(panel) p_link;
+	SLIST_ENTRY(pwidget) p_widgets;
 };
 
 TAILQ_HEAD(panels, panel);
