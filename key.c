@@ -16,6 +16,7 @@ keyh_flyby(unsigned char key, __unused int u, __unused int v)
 		glutKeyboardFunc(keyh_default);
 		glutSpecialFunc(spkeyh_default);
 		active_flyby = 0;
+		end_flyby();
 	}
 }
 
@@ -155,9 +156,14 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 'f':
 		build_flyby = !build_flyby;
+		if(build_flyby)
+			begin_flyby('w');
+		else if(!build_flyby && !active_flyby)
+			end_flyby();
 		break;
 	case 'F':
 		active_flyby = 1;
+		begin_flyby('r');
 		glutKeyboardFunc(keyh_flyby);
 		glutSpecialFunc(spkeyh_flyby);
 		break;
