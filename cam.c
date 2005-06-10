@@ -29,6 +29,10 @@ move_cam(int dir)
 
 	sx = sy = sz = 0.0f; /* gcc */
 	if (st.st_opts & OP_TWEEN) {
+		ox = st.st_x;  olx = st.st_lx;
+		oy = st.st_y;  oly = st.st_ly;
+		oz = st.st_z;  olz = st.st_lz;
+
 		sx = st.st_x;  st.st_x = tx;
 		sy = st.st_y;  st.st_y = ty;
 		sz = st.st_z;  st.st_z = tz;
