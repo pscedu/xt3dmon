@@ -119,9 +119,9 @@ draw_panel(struct panel *p)
 	/* Panel content. */
 	line_offset = p->p_v - toff;
 	for (s = p->p_str; *s != '\0'; s++) {
-		if (*s == '\n') {
+		if (*s == '\n' || s == p->p_str) {
 			line_offset -= LETTER_HEIGHT;
-			if (line_offset > p->p_v - p->p_h)
+			if (line_offset < p->p_v - p->p_h)
 				break;
 			glRasterPos2d(p->p_u + toff, line_offset);
 			if (*s == '\n')
