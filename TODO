@@ -2,3 +2,7 @@ $Id$
 
 commands
 	G - goto a node (tween to viable state)
+
+1. Profile to find bottlenecks
+2. Test straight draw() vs. make_cluster & draw()
+
