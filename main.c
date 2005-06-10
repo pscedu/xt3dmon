@@ -186,7 +186,6 @@ reshape(int w, int h)
 	glMatrixMode(GL_MODELVIEW);
 
 	adjcam();
-	adjpanels();
 }
 
 void restore_state(int flyby)
