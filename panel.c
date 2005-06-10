@@ -29,12 +29,14 @@ void panel_refresh_fps(struct panel *);
 void panel_refresh_ninfo(struct panel *);
 void panel_refresh_cmd(struct panel *);
 void panel_refresh_legend(struct panel *);
+void panel_refresh_flyby(struct panel *);
 
 void (*refreshf[])(struct panel *) = {
 	panel_refresh_fps,
 	panel_refresh_ninfo,
 	panel_refresh_cmd,
-	panel_refresh_legend
+	panel_refresh_legend,
+	panel_refresh_flyby
 };
 
 struct panels panels;
@@ -55,28 +57,51 @@ void
 draw_panel(struct panel *p)
 {
 	int lineno, curlen, line_offset, toff;
+	int u, v, w, h;
 	char *s;
 
-#if 0
-	if (p->p_adju) {
-		p->p_su += p->p_adju;
-		if (p->p_su <= 0) {
-printf("removing\n");
-			TAILQ_REMOVE(p, p_link);
-			panel_offset -= p->p_h;
-			free(p->p_str);
-			free(p);
-			return (0.0f);
-		} else if (p->p_su >= p->p_u)
-{printf("moved into place\n");
-			p->p_adju = 0;
-}
+
+
+	toff = PANEL_PADDING + PANEL_BWIDTH;
+
+	lineno = 1;
+	curlen = w = 0;
+	for (s = p->p_str; *s != '\0'; s++, curlen++) {
+		if (*s == '\n') {
+			if (curlen > w)
+				w = curlen;
+			curlen = -1;
+			lineno++;
+		}
 	}
-	if (p->p_adjv) {
-		p->p_sv += p->p_adjv;
-//		if (p->p_sv >= )
+	if (curlen > w)
+		w = curlen;
+	if (p->p_removing) {
+		u = win_width;
+		v = win_height;
+		w = 0;
+		h = 0;
+	} else {
+		u = win_width - w;
+		v = win_height - panel_offset;
+		w = w * LETTER_WIDTH + 2 * toff;
+		h = lineno * LETTER_HEIGHT + 2 * toff;
 	}
-#endif
+
+	if (p->p_u != u)
+		p->p_u += p->p_u - u < 0 ? 1 : -1;
+	if (p->p_v != v)
+		p->p_v += p->p_v - v < 0 ? 1 : -1;
+	if (p->p_w != w)
+		p->p_w += p->p_w - w < 0 ? 1 : -1;
+	if (p->p_h != h)
+		p->p_h += p->p_h - h < 0 ? 1 : -1;
+
+	if (p->p_removing && p->p_u >= win_width) {
+		TAILQ_REMOVE(&panels, p, p_link);
+		free(p->p_str);
+		free(p);
+	}
 
 	/* Save state and set things up for 2D. */
 	glPushAttrib(GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
@@ -93,37 +118,13 @@ printf("removing\n");
 
 	glColor4f(p->p_fill.f_r, p->p_fill.f_g, p->p_fill.f_b, p->p_fill.f_a);
 
-	toff = PANEL_PADDING + PANEL_BWIDTH;
-
-	lineno = 1;
-	curlen = p->p_w = 0;
-	for (s = p->p_str; *s != '\0'; s++, curlen++) {
-		if (*s == '\n') {
-			if (curlen > p->p_w)
-				p->p_w = curlen;
-			curlen = -1;
-			lineno++;
-		}
-	}
-	if (curlen > p->p_w)
-		p->p_w = curlen;
-	p->p_w = p->p_w * LETTER_WIDTH + 2 * toff;
-	p->p_h = lineno * LETTER_HEIGHT + 2 * toff;
-	p->p_u = win_width - p->p_w;
-	p->p_v = win_height - panel_offset;
-
-	if (p->p_su != p->p_u)
-		p->p_su += p->p_su - p->p_u < 0 ? 1 : -1;
-	if (p->p_sv != p->p_v)
-		p->p_sv += p->p_sv - p->p_v < 0 ? 1 : -1;
-
 	/* Panel content. */
-	line_offset = p->p_sv - toff - LETTER_HEIGHT;
-	glRasterPos2d(p->p_su + toff, line_offset);
+	line_offset = p->p_v - toff - LETTER_HEIGHT;
+	glRasterPos2d(p->p_u + toff, line_offset);
 	for (s = p->p_str; *s != '\0'; s++) {
 		if (*s == '\n') {
 			line_offset -= LETTER_HEIGHT;
-			glRasterPos2d(p->p_su + toff, line_offset);
+			glRasterPos2d(p->p_u + toff, line_offset);
 		} else
 			glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
 	}
@@ -131,20 +132,20 @@ printf("removing\n");
 	/* Draw background. */
 	glBegin(GL_POLYGON);
 	glColor4f(0.20, 0.40, 0.5, 1.0);
-	glVertex2d(p->p_su,		p->p_sv);
-	glVertex2d(p->p_su + p->p_w,	p->p_sv);
-	glVertex2d(p->p_su + p->p_w,	p->p_sv - p->p_h);
-	glVertex2d(p->p_su,		p->p_sv - p->p_h);
+	glVertex2d(p->p_u,		p->p_v);
+	glVertex2d(p->p_u + p->p_w,	p->p_v);
+	glVertex2d(p->p_u + p->p_w,	p->p_v - p->p_h);
+	glVertex2d(p->p_u,		p->p_v - p->p_h);
 	glEnd();
 
 	/* Draw border. */
 	glLineWidth(PANEL_BWIDTH);
 	glBegin(GL_LINE_LOOP);
 	glColor4f(0.40, 0.80, 1.0, 1.0);
-	glVertex2d(p->p_su,		p->p_sv);
-	glVertex2d(p->p_su + p->p_w,	p->p_sv);
-	glVertex2d(p->p_su + p->p_w,	p->p_sv - p->p_h);
-	glVertex2d(p->p_su,		p->p_sv - p->p_h);
+	glVertex2d(p->p_u,		p->p_v);
+	glVertex2d(p->p_u + p->p_w,	p->p_v);
+	glVertex2d(p->p_u + p->p_w,	p->p_v - p->p_h);
+	glVertex2d(p->p_u,		p->p_v - p->p_h);
 	glEnd();
 
 	/* End 2D mode. */
@@ -239,26 +240,32 @@ panel_refresh_ninfo(struct panel *p)
 }
 
 void
+panel_refresh_flyby(struct panel *p)
+{
+	panel_set_content(p, "Flyby");
+}
+
+void
 adjpanels(void)
 {
 	struct panel *p;
-
+return;
 	/* Resize happening -- move panels. */
 	float v = win_height;
 	TAILQ_FOREACH(p, &panels, p_link) {
-		if (p->p_su < win_width - p->p_w)
-			p->p_adju = 1;
-		else if (p->p_su > win_width - p->p_w)
-			p->p_adju = -1;
-		p->p_su = win_width - p->p_w;
+//		if (p->p_su < win_width - p->p_w)
+//			p->p_adju = 1;
+//		else if (p->p_su > win_width - p->p_w)
+//			p->p_adju = -1;
+//		p->p_su = win_width - p->p_w;
 
-		if (p->p_sv < v)
-			p->p_adjv = 1;
-		else if (p->p_sv < v)
-			p->p_adjv = -1;
-		p->p_sv = v;
+//		if (p->p_sv < v)
+//			p->p_adjv = 1;
+//		else if (p->p_sv < v)
+//			p->p_adjv = -1;
+//		p->p_sv = v;
 
-		v -= p->p_h;
+//		v -= p->p_h;
 	}
 }
 
@@ -286,15 +293,16 @@ panel_toggle(int panel)
 
 	TAILQ_FOREACH(p, &panels, p_link) {
 		if (p->p_id == panel) {
-			/* Found; make it disappear. */
-			p->p_u = win_width;
+			/* Found; toggle existence. */
+			p->p_removing = !p->p_removing;
+printf("queueing\n");
 			return;
 		}
 	}
 	/* Not found; add. */
 	if ((p = malloc(sizeof(*p))) == NULL)
 		err(1, "malloc");
-	p->p_adju = 1;
+	memset(p, 0, sizeof(*p));
 	p->p_str = NULL;
 	p->p_strlen = 0;
 	p->p_refresh = refreshf[baseconv(panel) - 1];
