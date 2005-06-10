@@ -91,7 +91,8 @@
 #define PANEL_CMD	(1<<2)
 #define PANEL_LEGEND	(1<<3)
 #define PANEL_FLYBY	(1<<4)
-#define NPANELS		5
+#define PANEL_GOTO	(1<<5)
+#define NPANELS		6
 
 #define RO_TEX		(1<<0)
 #define RO_PHYS		(1<<1)
