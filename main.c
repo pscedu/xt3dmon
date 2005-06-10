@@ -197,16 +197,6 @@ void restore_state(int flyby)
 		oz = tz = st.st_z;  olz = tlz = st.st_lz;
 	}
 
-	/* Check if flyby record/play changed */
-	if(build_flyby)
-		begin_flyby('w');
-
-	if(active_flyby)
-		begin_flyby('r');
-
-	if(!build_flyby && !active_flyby)
-		end_flyby();
-
 	/* 
 	** Below: States that require make_cluster
 	** ---------------------------------------
@@ -219,14 +209,11 @@ void restore_state(int flyby)
 		selnode = NULL;
 	}
 #endif
-if (st.st_ro & RO_TEX)
- printf("\nrestore: RO_TEX\n");
  	if (st.st_ro)
 		rebuild(st.st_ro);
 
 	if (flyby){
 		st.st_ro = 0;
-		printf(".");
 	}
 }
 
@@ -582,7 +569,6 @@ void
 rebuild(int opts)
 {
 	if (opts & RO_TEX) {
-printf("\nrebuild: RO_TEX\n");
 		del_textures();
 		load_textures();
 	}
@@ -607,11 +593,7 @@ printf("\nrebuild: RO_TEX\n");
 			break;
 		}
 	if (opts & RO_COMPILE)
-{		make_cluster();
-printf("rebuild: RO_COMPILE\n"); }
-
-	if(opts & RO_TEXTURE)
-		{ printf("RO_TEXTURE\n"); }
+		make_cluster();
 }
 
 int
