@@ -44,8 +44,6 @@ int			 win_width = 800;
 int			 win_height = 600;
 int			 active_flyby = 0;
 int			 build_flyby = 0;
-int			 command_mode;
-struct buf		 cmdbuf;
 
 float			 tx = STARTX, tlx = STARTLX, ox = STARTX, olx = STARTLX;
 float			 ty = STARTY, tly = STARTLY, oy = STARTY, oly = STARTLY;
@@ -622,8 +620,8 @@ main(int argc, char *argv[])
 	glEnable(GL_LINE_SMOOTH);
 
 	TAILQ_INIT(&panels);
-	buf_init(&cmdbuf);
-	buf_append(&cmdbuf, '\0');
+	buf_init(&uinp.uinp_buf);
+	buf_append(&uinp.uinp_buf, '\0');
 	rebuild(RO_ALL);
 
 	/* glutExposeFunc(reshape); */
