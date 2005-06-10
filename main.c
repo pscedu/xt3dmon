@@ -62,7 +62,8 @@ struct state st = {
 	1.0f,						/* job alpha */
 	1.0f,						/* other alpha */
 	GL_RGBA,					/* alpha blend format */
-	SM_JOBS,					/* viewing mode */
+	SM_JOBS,					/* which data to show */
+	VM_PHYSICAL,					/* viewing mode */
 	NULL,						/* selected node */
 	0,						/* panels (unused) */
 	0,						/* tween mode (unused) */
