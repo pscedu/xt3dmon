@@ -46,7 +46,7 @@ int
 baseconv(int n)
 {
 	unsigned int i;
-	
+
 	for (i = 0; i < sizeof(n) * 8; i++)
 		if (n & (1 << i))
 			return (i + 1);
@@ -59,8 +59,6 @@ draw_panel(struct panel *p)
 	int lineno, curlen, line_offset, toff;
 	int u, v, w, h;
 	char *s;
-
-
 
 	toff = PANEL_PADDING + PANEL_BWIDTH;
 
@@ -189,7 +187,7 @@ void
 panel_refresh_cmd(struct panel *p)
 {
 	if (st.st_selnode)
-		panel_set_content(p, "Sending command to host\n\n> %s", 
+		panel_set_content(p, "Sending command to host\n\n> %s",
 		    buf_get(&uinp.uinp_buf));
 	else
 		panel_set_content(p, "Please select a node\nto send a command to.");
@@ -242,7 +240,12 @@ panel_refresh_ninfo(struct panel *p)
 void
 panel_refresh_flyby(struct panel *p)
 {
-	panel_set_content(p, "Flyby");
+	if (active_flyby)
+		panel_set_content(p, "Playing flyby");
+	else if (build_flyby)
+		panel_set_content(p, "Recording flyby");
+	else
+		panel_set_content(p, "Flyby mode disabled");
 }
 
 void
