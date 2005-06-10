@@ -15,6 +15,7 @@ keyh_flyby(unsigned char key, __unused int u, __unused int v)
 	if (key == 'F') {
 		glutKeyboardFunc(keyh_default);
 		glutSpecialFunc(spkeyh_default);
+		active_flyby = 0;
 	}
 }
 
@@ -82,7 +83,7 @@ keyh_panel(unsigned char key, __unused int u, __unused int v)
 		panel_toggle(PANEL_FLYBY);
 		break;
 	}
-	restore_state();
+	restore_state(0);
 }
 
 void
@@ -103,7 +104,7 @@ keyh_mode(unsigned char key, __unused int u, __unused int v)
 		st.st_ro |= RO_COMPILE | RO_RELOAD;
 		break;
 	}
-	restore_state();
+	restore_state(0);
 }
 
 void
@@ -120,7 +121,7 @@ keyh_vmode(unsigned char key, __unused int u, __unused int v)
 		st.st_ro |= RO_COMPILE;
 		break;
 	}
-	restore_state();
+	restore_state(0);
 }
 
 void
@@ -156,7 +157,7 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		build_flyby = !build_flyby;
 		break;
 	case 'F':
-		active_flyby = !active_flyby;
+		active_flyby = 1;
 		glutKeyboardFunc(keyh_flyby);
 		glutSpecialFunc(spkeyh_flyby);
 		break;
@@ -184,6 +185,7 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 	case 't':
 		st.st_opts ^= OP_TEX;
 		st.st_ro |= RO_COMPILE;
+		st.st_ro |= RO_TEXTURE;
 		break;
 	case 'v':
 		glutKeyboardFunc(keyh_vmode);
@@ -209,7 +211,7 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		st.st_ro |= RO_COMPILE;
 		break;
 	}
-	restore_state();
+	restore_state(0);
 }
 
 void
