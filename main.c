@@ -189,7 +189,7 @@ reshape(int w, int h)
 	adjpanels();
 }
 
-void restore_state()
+void restore_state(int flyby)
 {
 	/* Restore Tweening state */
 	if (!(st.st_opts & OP_TWEEN)) {
@@ -220,8 +220,15 @@ void restore_state()
 		selnode = NULL;
 	}
 #endif
+if (st.st_ro & RO_TEX)
+ printf("\nrestore: RO_TEX\n");
+ 	if (st.st_ro)
+		rebuild(st.st_ro);
 
-	rebuild(st.st_ro);
+	if (flyby){
+		st.st_ro = 0;
+		printf(".");
+	}
 }
 
 void
@@ -576,6 +583,7 @@ void
 rebuild(int opts)
 {
 	if (opts & RO_TEX) {
+printf("\nrebuild: RO_TEX\n");
 		del_textures();
 		load_textures();
 	}
@@ -600,7 +608,11 @@ rebuild(int opts)
 			break;
 		}
 	if (opts & RO_COMPILE)
-		make_cluster();
+{		make_cluster();
+printf("rebuild: RO_COMPILE\n"); }
+
+	if(opts & RO_TEXTURE)
+		{ printf("RO_TEXTURE\n"); }
 }
 
 int
