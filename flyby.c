@@ -105,6 +105,19 @@ void end_flyby()
 	}
 }
 
+void update_flyby(void)
+{
+	/* record user commands */
+	if(build_flyby)
+		write_flyby();
+
+	/* replay */
+	if(active_flyby) {
+		read_flyby();
+//		make_cluster();
+	}
+}
+
 
 
 
