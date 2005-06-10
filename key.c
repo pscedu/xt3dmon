@@ -71,6 +71,9 @@ keyh_panel(unsigned char key, __unused int u, __unused int v)
 	case 'f':
 		panel_toggle(PANEL_FPS);
 		break;
+	case 'F':
+		panel_toggle(PANEL_FLYBY);
+		break;
 	}
 }
 
