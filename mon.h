@@ -87,7 +87,8 @@
 #define PANEL_NINFO	(1<<1)
 #define PANEL_CMD	(1<<2)
 #define PANEL_LEGEND	(1<<3)
-#define NPANELS		4
+#define PANEL_FLYBY	(1<<4)
+#define NPANELS		5
 
 #define RO_TEX		(1<<0)
 #define RO_PHYS		(1<<1)
@@ -102,8 +103,8 @@
 
 #define SQUARE(x)	((x) * (x))
 
-#define TWEEN_THRES	(0.01f)
-#define TWEEN_AMT	(0.05f)
+#define TWEEN_THRES	(0.001f)
+#define TWEEN_AMT	(0.025f)
 #define TM_STRAIGHT	1
 #define TM_RADIUS	2
 
@@ -183,12 +184,9 @@ struct panel {
 	size_t		 p_strlen;
 	int		 p_u;
 	int		 p_v;
-	int		 p_su;
-	int		 p_sv;
-	int		 p_adju;
-	int		 p_adjv;
 	int		 p_w;
 	int		 p_h;
+	int		 p_removing;
 	struct fill	 p_fill;
 	void		(*p_refresh)(struct panel *);
 	TAILQ_ENTRY(panel) p_link;
@@ -247,9 +245,9 @@ extern GLint		 cluster_dl;
 extern struct state	 st;
 extern long		 fps;
 
-extern float		 tx, tlx;
-extern float		 ty, tly;
-extern float		 tz, tlz;
+extern float		 tx, tlx, ox, olx;
+extern float		 ty, tly, oy, oly;
+extern float		 tz, tlz, oz, olz;
 
 extern int		 active_flyby;
 extern int		 build_flyby;
