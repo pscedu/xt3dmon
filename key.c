@@ -75,29 +75,45 @@ keyh_panel(unsigned char key, __unused int u, __unused int v)
 		panel_toggle(PANEL_FLYBY);
 		break;
 	}
+	restore_state();
 }
 
 void
 keyh_mode(unsigned char key, __unused int u, __unused int v)
 {
-	int ro = 0;
-
 	glutKeyboardFunc(keyh_default);
 	switch (key) {
 	case 'j':
 		st.st_mode = SM_JOBS;
-		ro |= RO_COMPILE | RO_RELOAD;
+		st.st_ro |= RO_COMPILE | RO_RELOAD;
 		break;
 	case 'f':
 		st.st_mode = SM_FAIL;
-		ro |= RO_COMPILE | RO_RELOAD;
+		st.st_ro |= RO_COMPILE | RO_RELOAD;
 		break;
 	case 't':
 		st.st_mode = SM_TEMP;
-		ro |= RO_COMPILE | RO_RELOAD;
+		st.st_ro |= RO_COMPILE | RO_RELOAD;
 		break;
 	}
-	rebuild(ro);
+	restore_state();
+}
+
+void
+keyh_vmode(unsigned char key, __unused int u, __unused int v)
+{
+	glutKeyboardFunc(keyh_default);
+	switch (key) {
+	case 'l':
+		st.st_vmode = VM_LOGICAL;
+		st.st_ro |= RO_COMPILE;
+		break;
+	case 'p':
+		st.st_vmode = VM_PHYSICAL;
+		st.st_ro |= RO_COMPILE;
+		break;
+	}
+	restore_state();
 }
 
 void
@@ -162,6 +178,9 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		st.st_opts ^= OP_TEX;
 		st.st_ro |= RO_COMPILE;
 		break;
+	case 'v':
+		glutKeyboardFunc(keyh_vmode);
+		break;
 	case 'w':
 		st.st_opts ^= OP_WIRES;
 		st.st_ro |= RO_COMPILE;
@@ -183,7 +202,6 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		st.st_ro |= RO_COMPILE;
 		break;
 	}
-
 	restore_state();
 }
 
