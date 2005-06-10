@@ -7,6 +7,8 @@
 
 #define TRANS_INC	0.10
 
+struct uinput uinp;
+
 void
 keyh_flyby(unsigned char key, __unused int u, __unused int v)
 {
@@ -22,27 +24,28 @@ spkeyh_flyby(__unused int key, __unused int u, __unused int v)
 }
 
 void
-keyh_cmd(unsigned char key, __unused int u, __unused int v)
+keyh_uinput(unsigned char key, __unused int u, __unused int v)
 {
 	switch (key) {
 	case 13: /* enter */
+		uinp.uinp_callback();
 		/* FALLTHROUGH */
 	case 27: /* escape */
-		buf_reset(&cmdbuf);
-		buf_append(&cmdbuf, '\0');
+		buf_reset(&uinp.uinp_buf);
+		buf_append(&uinp.uinp_buf, '\0');
 		glutKeyboardFunc(keyh_default);
 		break;
 	case 8:
-		if (strlen(buf_get(&cmdbuf)) > 0) {
-			buf_chop(&cmdbuf);
-			buf_chop(&cmdbuf);
-			buf_append(&cmdbuf, '\0');
+		if (strlen(buf_get(&uinp.uinp_buf)) > 0) {
+			buf_chop(&uinp.uinp_buf);
+			buf_chop(&uinp.uinp_buf);
+			buf_append(&uinp.uinp_buf, '\0');
 		}
 		break;
 	default:
-		buf_chop(&cmdbuf);
-		buf_append(&cmdbuf, key);
-		buf_append(&cmdbuf, '\0');
+		buf_chop(&uinp.uinp_buf);
+		buf_append(&uinp.uinp_buf, key);
+		buf_append(&uinp.uinp_buf, '\0');
 		break;
 	}
 }
@@ -60,7 +63,11 @@ keyh_panel(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 'c':
 		panel_toggle(PANEL_CMD);
-		glutKeyboardFunc(keyh_cmd);
+		glutKeyboardFunc(keyh_uinput);
+		break;
+	case 'g':
+		panel_toggle(PANEL_GOTO);
+		glutKeyboardFunc(keyh_uinput);
 		break;
 	case 'n':
 		panel_toggle(PANEL_NINFO);
