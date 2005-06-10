@@ -111,6 +111,9 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 			st.st_selnode = NULL;
 		}
 		break;
+	case 'C':
+		system("rm flyby.data");
+		break;
 	case 'D':
 		st.st_opts ^= OP_DISPLAY;
 		break;
@@ -158,6 +161,7 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 'w':
 		st.st_opts ^= OP_WIRES;
+		st.st_ro |= RO_COMPILE;
 		break;
 	case '+':
 		st.st_alpha_job += (st.st_alpha_job + TRANS_INC > 1.0 ? 0.0 : TRANS_INC);
