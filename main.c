@@ -47,10 +47,10 @@ int			 build_flyby = 0;
 int			 command_mode;
 struct buf		 cmdbuf;
 
-float			 tx = STARTX, tlx = STARTLX;
-float			 ty = STARTY, tly = STARTLY;
-float			 tz = STARTZ, tlz = STARTLZ;
-int			 spkey, xpos, ypos;
+float			 tx = STARTX, tlx = STARTLX, ox = STARTX, olx = STARTLX;
+float			 ty = STARTY, tly = STARTLY, oy = STARTY, oly = STARTLY;
+float			 tz = STARTZ, tlz = STARTLZ, oz = STARTZ, olz = STARTLZ;
+int			 spkey, lastu, lastv;
 GLint			 cluster_dl;
 struct timeval		 lastsync;
 long			 fps;
@@ -194,9 +194,9 @@ void restore_state()
 {
 	/* Restore Tweening state */
 	if (!(st.st_opts & OP_TWEEN)) {
-		tx = st.st_x;  tlx = st.st_lx;
-		ty = st.st_y;  tly = st.st_ly;
-		tz = st.st_z;  tlz = st.st_lz;
+		ox = tx = st.st_x;  olx = tlx = st.st_lx;
+		oy = ty = st.st_y;  oly = tly = st.st_ly;
+		oz = tz = st.st_z;  olz = tlz = st.st_lz;
 	}
 
 	/* Check if flyby record/play changed */
@@ -389,28 +389,36 @@ mouse(__unused int button, __unused int state, int u, int v)
 {
 	if (active_flyby)
 		return;
-
+printf("mouse()\n");
 	spkey = glutGetModifiers();
-	xpos = u;
-	ypos = v;
+	lastu = u;
+	lastv = v;
 }
 
 void
 active_m(int u, int v)
 {
-	int du = u - xpos, dv = v - ypos;
+	int du = u - lastu, dv = v - lastv;
 	float sx, sy, sz, slx, sly, slz;
 	float adj, t, r, mag;
 
 	if (active_flyby)
 		return;
 
-	xpos = u;
-	ypos = v;
+	if (abs(du) + abs(dv) <= 1)
+		return;
+
+printf("[%d,%d]\n", u, v);
+	lastu = u;
+	lastv = v;
 
 	sx = sy = sz = 0.0f; /* gcc */
 	slx = sly = slz = 0.0f; /* gcc */
 	if (st.st_opts & OP_TWEEN) {
+		ox = st.st_x;  olx = st.st_lx;
+		oy = st.st_y;  oly = st.st_ly;
+		oz = st.st_z;  olz = st.st_lz;
+
 		sx = st.st_x;  st.st_x = tx;
 		sy = st.st_y;  st.st_y = ty;
 		sz = st.st_z;  st.st_z = tz;
@@ -467,8 +475,8 @@ active_m(int u, int v)
 void
 passive_m(int u, int v)
 {
-	xpos = u;
-	ypos = v;
+	lastu = u;
+	lastv = v;
 
 	detect_node(u, v);
 }
