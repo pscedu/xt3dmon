@@ -117,14 +117,17 @@ draw_panel(struct panel *p)
 	glColor4f(p->p_fill.f_r, p->p_fill.f_g, p->p_fill.f_b, p->p_fill.f_a);
 
 	/* Panel content. */
-	line_offset = p->p_v - toff - LETTER_HEIGHT;
-	glRasterPos2d(p->p_u + toff, line_offset);
+	line_offset = p->p_v - toff;
 	for (s = p->p_str; *s != '\0'; s++) {
 		if (*s == '\n') {
 			line_offset -= LETTER_HEIGHT;
+			if (line_offset > p->p_v - p->p_h)
+				break;
 			glRasterPos2d(p->p_u + toff, line_offset);
-		} else
-			glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
+			if (*s == '\n')
+				continue;
+		}
+		glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
 	}
 
 	/* Draw background. */
@@ -246,30 +249,6 @@ panel_refresh_flyby(struct panel *p)
 		panel_set_content(p, "Recording flyby");
 	else
 		panel_set_content(p, "Flyby mode disabled");
-}
-
-void
-adjpanels(void)
-{
-	struct panel *p;
-return;
-	/* Resize happening -- move panels. */
-	float v = win_height;
-	TAILQ_FOREACH(p, &panels, p_link) {
-//		if (p->p_su < win_width - p->p_w)
-//			p->p_adju = 1;
-//		else if (p->p_su > win_width - p->p_w)
-//			p->p_adju = -1;
-//		p->p_su = win_width - p->p_w;
-
-//		if (p->p_sv < v)
-//			p->p_adjv = 1;
-//		else if (p->p_sv < v)
-//			p->p_adjv = -1;
-//		p->p_sv = v;
-
-//		v -= p->p_h;
-	}
 }
 
 void
