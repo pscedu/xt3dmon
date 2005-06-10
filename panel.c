@@ -190,7 +190,7 @@ panel_refresh_cmd(struct panel *p)
 {
 	if (st.st_selnode)
 		panel_set_content(p, "Sending command to host\n\n> %s", 
-		    buf_get(&cmdbuf));
+		    buf_get(&uinp.uinp_buf));
 	else
 		panel_set_content(p, "Please select a node\nto send a command to.");
 }
