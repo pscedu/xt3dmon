@@ -1,5 +1,9 @@
 /* $Id$ */
 
+#ifdef __GNUC__
+#define _GNU_SOURCE /* asprintf, disgusting */
+#endif
+
 #include <sys/types.h>
 
 #ifdef __APPLE_CC__
@@ -54,6 +58,44 @@ baseconv(int n)
 }
 
 void
+panel_free(struct panel *p)
+{
+	struct pwidget *pw, *nextp;
+
+	TAILQ_REMOVE(&panels, p, p_link);
+	switch (st.st_mode) {
+	case SM_JOBS:
+		for (pw = SLIST_FIRST(&p->p_widgets);
+		    pw != SLIST_END(&p->p_widgets);
+		    pw = nextp) {
+			nextp = SLIST_NEXT(pw, pw_next);
+			free(pw);
+		}
+		break;
+	case SM_FAIL:
+		for (pw = SLIST_FIRST(&p->p_widgets);
+		    pw != SLIST_END(&p->p_widgets);
+		    pw = nextp) {
+			nextp = SLIST_NEXT(pw, pw_next);
+			free(pw->pw_str);
+			free(pw);
+		}
+		break;
+	case SM_TEMP:
+		for (pw = SLIST_FIRST(&p->p_widgets);
+		    pw != SLIST_END(&p->p_widgets);
+		    pw = nextp) {
+			nextp = SLIST_NEXT(pw, pw_next);
+			free(pw->pw_str);
+			free(pw);
+		}
+		break;
+	}
+	free(p->p_str);
+	free(p);
+}
+
+void
 draw_panel(struct panel *p)
 {
 	int lineno, curlen, line_offset, toff;
@@ -74,7 +116,7 @@ draw_panel(struct panel *p)
 	}
 	if (curlen > w)
 		w = curlen;
-	if (p->p_removing) {
+	if (p->p_opts & POPT_REMOVE) {
 		w = 0;
 		h = 0;
 		u = win_width;
@@ -95,10 +137,9 @@ draw_panel(struct panel *p)
 	if (p->p_h != h)
 		p->p_h += p->p_h - h < 0 ? 1 : -1;
 
-	if (p->p_removing && p->p_u >= win_width) {
-		TAILQ_REMOVE(&panels, p, p_link);
-		free(p->p_str);
-		free(p);
+	if ((p->p_opts & POPT_REMOVE) && p->p_u >= win_width) {
+		panel_free(p);
+		return;
 	}
 
 	/* Save state and set things up for 2D. */
@@ -196,17 +237,59 @@ panel_refresh_cmd(struct panel *p)
 		panel_set_content(p, "Please select a node\nto send a command to.");
 }
 
+struct pwidget *
+panel_get_pwidget(struct panel *p, struct pwidget *pw, struct pwidget **nextp)
+{
+	if (pw == NULL) {
+		if ((pw = malloc(sizeof(*pw))) == NULL)
+			err(1, "malloc");
+		SLIST_INSERT_HEAD(&p->p_widgets, pw, pw_next);
+		*nextp = NULL;
+	} else
+		*nextp = SLIST_NEXT(pw, pw_next);
+//	memset(pw, 0, sizeof(pw));
+	return (pw);
+}
+
 void
 panel_refresh_legend(struct panel *p)
 {
+	struct pwidget *pw, *nextp;
+	int need;
+	size_t j;
+
 	switch (st.st_mode) {
 	case SM_JOBS:
 		panel_set_content(p, "Jobs: %d", njobs);
+		pw = SLIST_FIRST(&p->p_widgets);
+		need = 0;
+		for (j = 0; j < njobs; j++, pw = nextp) {
+			pw = panel_get_pwidget(p, pw, &nextp);
+			pw->pw_fillp = &jobs[j]->j_fill;
+			pw->pw_str = jobs[j]->j_name;
+		}
 		break;
 	case SM_FAIL:
 		panel_set_content(p, "Failures: %d", total_failures);
+		pw = SLIST_FIRST(&p->p_widgets);
+		for (j = 0; j < nfails; j++, pw = nextp) {
+			pw = panel_get_pwidget(p, pw, &nextp);
+			pw->pw_fillp = &fails[j]->f_fill;
+			if (asprintf(&pw->pw_str, "%d",
+			    fails[j]->f_fails) == -1)
+				err(1, "asprintf");
+		}
 		break;
 	case SM_TEMP:
+		panel_set_content(p, "Temperature");
+		pw = SLIST_FIRST(&p->p_widgets);
+		for (j = 0; j < ntemps; j++, pw = nextp) {
+			pw = panel_get_pwidget(p, pw, &nextp);
+			pw->pw_fillp = &temps[j]->t_fill;
+			if (asprintf(&pw->pw_str, "%d%cC",
+			    temps[j]->t_cel, 0xb0) == -1)
+				err(1, "asprintf");
+		}
 		break;
 	}
 }
@@ -276,7 +359,7 @@ panel_toggle(int panel)
 	TAILQ_FOREACH(p, &panels, p_link) {
 		if (p->p_id == panel) {
 			/* Found; toggle existence. */
-			p->p_removing = !p->p_removing;
+			p->p_opts ^= POPT_REMOVE;
 printf("queueing\n");
 			return;
 		}
@@ -295,5 +378,6 @@ printf("queueing\n");
 	p->p_fill.f_g = 1.0f;
 	p->p_fill.f_b = 1.0f;
 	p->p_fill.f_a = 1.0f;
+	SLIST_INIT(&p->p_widgets);
 	TAILQ_INSERT_TAIL(&panels, p, p_link);
 }
