@@ -13,6 +13,7 @@
 #endif
 
 #include "buf.h"
+#include "queue.h"
 
 /*
 #define _PATH_JOBMAP	"/usr/users/torque/nids_list_login%d"
@@ -127,8 +128,8 @@ struct fill {
 
 struct job {
 	int		 j_id;
-	const char	*j_owner;
-	const char	*j_name;
+	char		*j_owner;
+	char		*j_name;
 	int		 j_dur;
 	int		 j_cpus;
 	struct fill	 j_fill;
@@ -192,23 +193,27 @@ struct uinput {
 };
 
 struct pwidget {
-	char		*pw_str;
-	struct fill	 pw_fill;
+	char			*pw_str;
+	struct fill		*pw_fillp;
+	SLIST_ENTRY(pwidget)	 pw_next;
 };
 
+#define POPT_REMOVE	(1<<0)
+#define POPT_COMPILE	(1<<1)
+
 struct panel {
-	int		 p_id;
-	char		*p_str;
-	size_t		 p_strlen;
-	int		 p_u;
-	int		 p_v;
-	int		 p_w;
-	int		 p_h;
-	int		 p_removing;
-	struct fill	 p_fill;
-	void		(*p_refresh)(struct panel *);
-	TAILQ_ENTRY(panel) p_link;
-	SLIST_ENTRY(pwidget) p_widgets;
+	int			 p_id;
+	char			*p_str;
+	size_t			 p_strlen;
+	int			 p_u;
+	int			 p_v;
+	int			 p_w;
+	int			 p_h;
+	int			 p_opts;
+	struct fill		 p_fill;
+	void			(*p_refresh)(struct panel *);
+	TAILQ_ENTRY(panel)	 p_link;
+	SLIST_HEAD(, pwidget)	 p_widgets;
 };
 
 TAILQ_HEAD(panels, panel);
@@ -259,8 +264,14 @@ void			 write_flyby(void);
 extern int		 logids[2];
 extern struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 extern struct node	*invmap[NLOGIDS][NROWS * NCABS * NCAGES * NMODS * NNODES];
+
 extern size_t		 njobs;
 extern struct job	**jobs;
+extern size_t		 nfails;
+extern struct fail	**fails;
+extern size_t		 ntemps;
+extern struct temp	**temps;
+
 extern GLint		 cluster_dl;
 extern struct state	 st;
 extern long		 fps;
