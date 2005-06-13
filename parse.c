@@ -12,7 +12,6 @@
 
 #include "mon.h"
 
-#define NID_MAX		(NROWS * NCABS * NCAGES * NMODS * NNODES)
 #define MAXFAILS	200
 #define JINCR		10
 #define FINCR		10
