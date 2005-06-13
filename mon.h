@@ -234,6 +234,10 @@ struct panel {
 
 TAILQ_HEAD(panels, panel);
 
+/* cam.c */
+void			 move_cam(int);
+void			 rotate_cam(int, int);
+
 /* draw.c */
 void			 draw(void);
 void			 draw_node(struct node *, float, float, float);
@@ -292,9 +296,18 @@ extern struct fail	**fails;
 extern size_t		 ntemps;
 extern struct temp	**temps;
 
+extern int		 total_failures;	/* total shared among all nodes */
+
 extern GLint		 cluster_dl;
 extern struct state	 st;
+extern struct flyby	 fb;
 extern long		 fps;
+extern struct panels	 panels;
+extern struct node	*selnode;
+
+extern struct uinput	 uinp;
+extern int		 goto_logid;
+extern int		 spkey;
 
 extern float		 tx, tlx, ox, olx;
 extern float		 ty, tly, oy, oly;
@@ -309,13 +322,3 @@ extern int		 win_height;
 extern struct job_state	 jstates[];
 extern struct fail_state fstates[];
 extern struct temp_state tstates[];
-extern const struct state flybypath[];
-
-extern struct panels	 panels;
-extern int		 total_failures;	/* total shared among all nodes */
-extern struct fail_state **fail_states;
-extern size_t		 maxfails;		/* largest # of failures */
-extern struct uinput	 uinp;
-extern int		 goto_logid;
-extern struct node	*selnode;
-extern struct flyby	 fb;
