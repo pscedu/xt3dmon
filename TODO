@@ -1,9 +1,8 @@
 $Id$
 
-commands
-	G - goto a node (tween to viable state)
-
 1. Profile to find bottlenecks
 2. Test straight draw() vs. make_cluster & draw()
 3. default the logid/nodeid goto combo to selnode
 4. struct flyby - then write out multiple structs for flyby
+5. in capture.c, malloc is expensive, try to allocate all frames at once
+   and reuse slots.
