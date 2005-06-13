@@ -5,4 +5,5 @@ commands
 
 1. Profile to find bottlenecks
 2. Test straight draw() vs. make_cluster & draw()
-default the logid/nodeid goto combo to selnode
+3. default the logid/nodeid goto combo to selnode
+4. struct flyby - then write out multiple structs for flyby
