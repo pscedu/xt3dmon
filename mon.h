@@ -111,8 +111,6 @@
 
 #define SQUARE(x)	((x) * (x))
 
-#define TWEEN_THRES	(0.001f)
-#define TWEEN_AMT	(0.025f)
 #define TM_STRAIGHT	1
 #define TM_RADIUS	2
 
