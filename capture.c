@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include <png.h>
 
@@ -22,7 +23,8 @@
 static unsigned char *fb[NUM_FRAMES];
 
 /* Convert data to png */
-void data2png(char *file, unsigned char *buf, long w, long h)
+void
+data2png(char *file, unsigned char *buf, long w, long h)
 {
 	FILE *fp;
 	int i;
@@ -34,85 +36,63 @@ void data2png(char *file, unsigned char *buf, long w, long h)
 		err(1, "%s", file);
 
 	/* Setup PNG file structure */
-	png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-	if(!png)
-		errx(1, "create_write_struct failed");
+	if ((png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL,
+	    NULL, NULL)) == NULL)
+		errx(1, "png_create_write_struct failed");
 
-	info = png_create_info_struct(png);
-	if(!info)
-	{
-		png_destroy_write_struct(&png, (png_infopp)(NULL));
-		errx(1, "create_info_struct failed");
+	if ((info = png_create_info_struct(png)) == NULL) {
+		png_destroy_write_struct(&png, NULL);
+		errx(1, "png_create_info_struct failed");
 	}
 
-	if(setjmp(png_jmpbuf(png)))
-	{
-		png_destroy_write_struct(&png, (png_infopp)(NULL));
-		errx(1, "terminating");
+	if (setjmp(png_jmpbuf(png))) {
+		png_destroy_write_struct(&png, NULL);
+		err(1, "setjmp");
 	}
 
-	/* We want io with no zlib compression
-	** (highest quality, & fast) */
+	/* We want I/O without zlib compression (highest quality & fast). */
 	png_init_io(png, fp);
 	png_set_compression_level(png, Z_NO_COMPRESSION);
 
-	/* Set the header/info */
+	/* Set the header/info. */
 	png_set_IHDR(png, info, w, h, 8, PNG_COLOR_TYPE_RGB_ALPHA,
-		PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
-		PNG_FILTER_TYPE_DEFAULT);
+	    PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
+	    PNG_FILTER_TYPE_DEFAULT);
 
 	png_write_info(png, info);
 
-	/* Pack single byte pixels */
+	/* Pack single byte pixels. */
 	png_set_packing(png);
 
-	if((rows = malloc(sizeof(png_bytep)*h)) == NULL)
+	if ((rows = malloc(sizeof(png_bytep) * h)) == NULL)
 		err(1, "malloc");
 
 	/*
-	** Parse into rows [RGBA (4 pix * width)]
-	** Note: this takes into account vertical flip
-	** use rows[h] then call invert() does the same.
-	*/
-	for(i = 0; i < h; i++)
-		rows[h-i-1] = buf+(i*w*4);
+	 * Parse into rows [RGBA (4 pix * width)]
+	 * Note: this takes into account vertical flip
+	 * use rows[h] then call invert() does the same.
+	 */
+	for (i = 0; i < h; i++)
+		rows[h - i - 1] = buf + (i * w * 4);
 
-	/* Actaully write the data */
+	/* Actaully write the data. */
 	png_write_image(png, rows);
 	png_write_end(png, info);
 	png_destroy_write_struct(&png, &info);
 
 	free(rows);
-
 	fclose(fp);
 }
 
-/* Create proper filenames so they are ordered in png->mpg */
-void filename(char *ascii, int i)
+/* Take a screenshot from the current framebuffer (PNG). */
+void
+fb_png(char *file, int x, int y, int w, int h)
 {
-	char num[PATH_MAX];
-	int t = i;
-
-	memset(ascii, '\0', sizeof(ascii));
-
-	while(i < MAX_FRAMES)
-	{
-		i *= 10;
-		strcat(ascii, "0");
-	}
-
-	snprintf(num, sizeof(num), "%d", t);
-	strcat(ascii, num); 
-}
-
-/* Take a screenshot from the current framebuffer (PNG) */
-void fb_png(char *file, int x, int y, int w, int h)
-{
-	long size;
 	unsigned char *buf;
+	long size;
 
-	/* Size = num pixels * 4 bytes per pixel (RGBA) */
-	size = w*h*4;
+	/* num pixels * 4 bytes per pixel (RGBA). */
+	size = w * h * 4;
 	if ((buf = malloc(size * sizeof(unsigned char))) == NULL)
 		err(1, "malloc");
 
@@ -125,18 +105,19 @@ void fb_png(char *file, int x, int y, int w, int h)
 	free(buf);
 }
 
-/* Take a screenshot from the current framebuffer (PPM) */
-void fb_ppm(char *file, int x, int y, int w, int h)
+/* Take a screenshot from the current framebuffer (PPM). */
+void
+fb_ppm(char *file, int x, int y, int w, int h)
 {
-	long size;
 	unsigned char *buf;
+	long size;
 	FILE *fp;
 
 	if ((fp = fopen(file,"wb")) == NULL)
 		err(1, "%s", file);
 
 	/* Size = num pixels * 3 bytes per pixel (RGB) */
-	size = w*h*3;
+	size = w * h * 3;
 	if ((buf = malloc(size * sizeof(unsigned char))) == NULL)
 		err(1, "malloc");
 
@@ -149,7 +130,7 @@ void fb_ppm(char *file, int x, int y, int w, int h)
 	fclose(fp);
 
 	free(buf);
-	
+
 	// DEBUG - Pipe to JPEG Tools
 //	memset(cmd, '\0', sizeof(cmd));
 //	snprintf(cmd, sizeof(cmd),"/usr/local/bin/cjpeg -quality 100 %s | /usr/local/bin/jpegtran -flip vertical > %s.jpg; rm %s", file, file, file);
@@ -165,71 +146,64 @@ void invert()
 */
 
 /* Dump Framebuffer into memory write at end */
-void fb_mem_png(int x, int y, int w, int h)
+void
+fb_mem_png(int x, int y, int w, int h)
 {
 	char file[PATH_MAX];
-	char num[PATH_MAX];
-	long size;
 	static int i = 0;
 	static int j = 1;
+	long size;
+	int k;
 
 	/*
-	** After we reach max frames dump them. NOTE: this is
-	** extremely nasty and will probably take awhile...
-	*/
-	if(i >= NUM_FRAMES)
-	{
-		int k;
-		for(k = 0; k < NUM_FRAMES; k++)
-		{
-			filename(num, j++);
-			snprintf(file, sizeof(file), "ppm/%s.png", num);
+	 * After we reach max frames, dump them.  NOTE: this is
+	 * extremely nasty and will probably take awhile...
+	 */
+	if (i >= NUM_FRAMES) {
+		for (k = 0; k < NUM_FRAMES; k++) {
+			snprintf(file, sizeof(file), "ppm/%0*d.png",
+			    (int)ceilf(log10f(MAX_FRAMES)), j++);
 			data2png(file, fb[k], w, h);
 			free(fb[k]);
 		}
-
 		i = 0;
 	}
 
-	/* Size = num pixels * 3 bytes per pixel (RGB) */
-	size = w*h*4;
+	/* num pixels * 3 bytes per pixel (RGB). */
+	size = w * h * 4;
 
 	if ((fb[i] = malloc(size * sizeof(unsigned char))) == NULL)
 		err(1, "malloc");
 
-	/* Read data from the framebuffer */
+	/* Read data from the framebuffer. */
 	glReadPixels(x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, fb[i]);
-
 	i++;
 }
 
-/* Capture Screenshots (buffered) and save as PPM (Portable Pixmaps) */
-void fb_mem_ppm(int x, int y, int w, int h)
+/* Capture screenshots (buffered) and save as PPM (portable pixmaps). */
+void
+fb_mem_ppm(int x, int y, int w, int h)
 {
-	long size;
-	FILE *fp;
-	char file[PATH_MAX];
+	char file[PATH_MAX], cmd[NAME_MAX];
 	static int i = 0;
 	static int j = 1;
-	char num[PATH_MAX];
-	char cmd[NAME_MAX];
-	
-	/* Size = num pixels * 3 bytes per pixel (RGB) */
-	size = w*h*3;
-	
-	/*
-	** After we reach max frames dump them. NOTE: this is
-	** extremely nasty and will probably take awhile...
-	*/
-	if(i >= NUM_FRAMES)
-	{
-		int k;
-		for(k = 0; k < NUM_FRAMES; k++)
-		{
-			filename(num, j++);
-			snprintf(file, sizeof(file), "ppm/%s.ppm", num);
+	long size;
+	FILE *fp;
+	int k;
 
-			if ((fp = fopen(file,"wb")) == NULL)
+	/* num pixels * 3 bytes per pixel (RGB). */
+	size = w * h * 3;
+
+	/*
+	 * After we reach max frames, dump them.  NOTE: this is
+	 * extremely nasty and will probably take awhile...
+	 */
+	if (i >= NUM_FRAMES) {
+		for (k = 0; k < NUM_FRAMES; k++) {
+			snprintf(file, sizeof(file), "ppm/%0*d.ppm",
+			    (int)ceilf(log10f(MAX_FRAMES)), j++);
+
+			if ((fp = fopen(file, "wb")) == NULL)
 				err(1, "%s", file);
 
 			/* Currently uses PPM format */
@@ -238,10 +212,13 @@ void fb_mem_ppm(int x, int y, int w, int h)
 			fclose(fp);
 
 			free(fb[k]);
-			
-			// DEBUG (Definately Remove Later!)
+
+			// DEBUG (definately remove later!)
 			memset(cmd, '\0', sizeof(cmd));
-			snprintf(cmd, sizeof(cmd),"`which cjpeg` -quality 100 %s | `which jpegtran` -flip vertical > %s.jpg; rm %s", file, file, file);
+			snprintf(cmd, sizeof(cmd),
+			    "cjpeg -quality 100 %s | "
+			    "jpegtran -flip vertical > %s.jpg; rm %s",
+			    file, file, file);
 			system(cmd);
 		}
 
@@ -258,7 +235,8 @@ void fb_mem_ppm(int x, int y, int w, int h)
 }
 
 /* Dump the entire framebuffer */
-void capture_fb(void)
+void
+capture_fb(void)
 {
 //	char file[PATH_MAX];
 	GLint vp[4];
@@ -269,11 +247,11 @@ void capture_fb(void)
 
 	glMatrixMode(GL_PROJECTION);
 	glGetIntegerv(GL_VIEWPORT, vp);
-	
+
 //	fb_png(file, vp[0], vp[1], vp[2], vp[3]);
 //	fb_ppm(file, vp[0], vp[1], vp[2], vp[3]);
 //	fb_mem_png(vp[0], vp[1], vp[2], vp[3]);
 	fb_mem_ppm(vp[0], vp[1], vp[2], vp[3]);
-	
+
 	glMatrixMode(GL_MODELVIEW);
 }
