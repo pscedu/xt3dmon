@@ -21,9 +21,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "buf.h"
+#include "cdefs.h"
 #include "mon.h"
 #include "queue.h"
-#include "buf.h"
 
 #define LETTER_HEIGHT	13
 #define LETTER_WIDTH	8
