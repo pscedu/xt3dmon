@@ -234,11 +234,11 @@ panel_refresh_fps(struct panel *p)
 void
 panel_refresh_cmd(struct panel *p)
 {
-	if (st.st_selnode)
+	if (selnode == NULL)
+		panel_set_content(p, "Please select a node\nto send a command to.");
+	else
 		panel_set_content(p, "Sending command to host\n\n> %s",
 		    buf_get(&uinp.uinp_buf));
-	else
-		panel_set_content(p, "Please select a node\nto send a command to.");
 }
 
 struct pwidget *
@@ -301,8 +301,14 @@ panel_refresh_legend(struct panel *p)
 void
 panel_refresh_ninfo(struct panel *p)
 {
-	if (st.st_selnode) {
-		switch (st.st_selnode->n_savst) {
+	if (selnode == NULL) {
+		panel_set_content(p, "Select a node");
+		return;
+	}
+
+	switch (st.st_mode) {
+	case SM_JOBS:
+		switch (selnode->n_state) {
 		case JST_USED:
 			panel_set_content(p,
 			    "Node ID: %d\n"
@@ -311,23 +317,21 @@ panel_refresh_ninfo(struct panel *p)
 			    "Job name: [%s]\n"
 			    "Duration: %d\n"
 			    "CPUs: %d",
-			    st.st_selnode->n_nid,
-			    st.st_selnode->n_logid,
-			    st.st_selnode->n_job->j_owner,
-			    st.st_selnode->n_job->j_name,
-			    st.st_selnode->n_job->j_dur,
-			    st.st_selnode->n_job->j_cpus);
+			    selnode->n_nid,
+			    selnode->n_logid,
+			    selnode->n_job->j_owner,
+			    selnode->n_job->j_name,
+			    selnode->n_job->j_dur,
+			    selnode->n_job->j_cpus);
 			break;
 		default:
 			panel_set_content(p,
 			    "Node ID: %d\n"
 			    "Login node ID: %d",
-			    st.st_selnode->n_nid,
-			    st.st_selnode->n_logid);
+			    selnode->n_nid,
+			    selnode->n_logid);
 			break;
 		}
-	} else {
-		panel_set_content(p, "Select a node");
 	}
 }
 
@@ -381,6 +385,7 @@ panel_toggle(int panel)
 		if (p->p_id == panel) {
 			/* Found; toggle existence. */
 			p->p_opts ^= POPT_REMOVE;
+			fb.fb_panels |= panel;
 			return;
 		}
 	}
@@ -398,6 +403,7 @@ panel_toggle(int panel)
 	p->p_fill.f_g = 1.0f;
 	p->p_fill.f_b = 1.0f;
 	p->p_fill.f_a = 1.0f;
+	fb.fb_panels |= panel;
 	SLIST_INIT(&p->p_widgets);
 	TAILQ_INSERT_TAIL(&panels, p, p_link);
 }
