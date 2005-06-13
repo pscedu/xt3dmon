@@ -75,6 +75,15 @@ void begin_flyby(char m)
 /* Write current data for flyby */
 void write_flyby()
 {
+	/* Save the node id instead of ptr */
+	if(st.st_selnode != NULL) {
+		st.st_ninfo.ni_nid = st.st_selnode->n_nid;
+		st.st_ninfo.ni_nlid = st.st_selnode->n_logid;
+	} else {
+		st.st_ninfo.ni_nid = -1;
+//		st.st_ninfo.ni_nlid = -1;
+	}
+
 	if(!fwrite(&st, sizeof(struct state), 1, flyby_fp))
 		err(1, "flyby data write err");
 }
@@ -96,6 +105,10 @@ void read_flyby()
 
 	if ((st.st_ro & OP_TWEEN) == 0)
 		adjcam();
+
+	/* Restore selected node */
+	if(st.st_ninfo.ni_nid != -1)
+		st.st_selnode = invmap[st.st_ninfo.ni_nlid][st.st_ninfo.ni_nid];
 
 	restore_state(1);
 }
