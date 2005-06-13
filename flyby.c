@@ -4,57 +4,9 @@
 #include<stdio.h>
 #include<err.h>
 
-/*
- * struct state {
- *	float		st_x;
- *	float		st_y;
- *	float		st_z;
- *	float		st_lx;
- *	float		st_ly;
- *	float		st_lz;
- *	int		st_opts;
- *	int		st_panels;
- *	float		st_alpha_job;
- *	float		st_alpha_oth;
- *	GLint		st_alpha_fmt;
- *
- *	int		st_tween_mode;
- *	int		st_nframes;
- * };
- */
-
-#if 0
-const struct state flybypath[] = {
- /*      x        y        z      lx      ly      lz  options                            panels       ajob  aoth  afmt     tween_mode   nframes */
-#if 0
- {  50.00f,  20.00f,  10.00f, -0.40f,  0.10f,  0.40f, OP_WIRES | OP_CAPTURE | OP_DISPLAY, 0,           1.0f, 1.0f, GL_RGBA, TM_STRAIGHT, 200 },
- { -10.00f,   8.00f,  12.00f,  0.60f, -0.15f,  0.50f, OP_WIRES | OP_CAPTURE | OP_DISPLAY, 0,           1.0f, 1.0f, GL_RGBA, TM_RADIUS,   200 },
- { 238.29f,  26.90f, -28.59f, -0.68f, -0.15f,  0.38f, OP_WIRES | OP_CAPTURE | OP_DISPLAY, PANEL_FPS,   1.0f, 1.0f, GL_RGBA, TM_RADIUS,   500 },
- { 136.09f,   6.21f,   8.50f, -0.78f, -0.15f,  0.02f, OP_WIRES | OP_CAPTURE | OP_DISPLAY, PANEL_NINFO, 1.0f, 1.0f, GL_RGBA, TM_STRAIGHT, 100 },
- {   0.00f,   0.00f,   0.00f,  0.00f,  0.00f,  0.00f, 0,                                 0,           0.0f, 0.0f, 0,       0,           0   }
-};
- #endif
-
-#if 0
- {  50.00f,  20.00f,  10.00f, -0.40f,  0.10f,  0.40f, OP_WIRES | OP_CAPTURE | OP_TEX | OP_BLEND, 0,           1.0f, 1.0f, GL_RGBA, TM_STRAIGHT, 200 },
- { -10.00f,   8.00f,  12.00f,  0.60f, -0.15f,  0.50f, OP_WIRES | OP_CAPTURE | OP_TEX | OP_BLEND, 0,           1.0f, 1.0f, GL_RGBA, TM_RADIUS,   200 },
- { 238.29f,  26.90f, -28.59f, -0.68f, -0.15f,  0.38f, OP_WIRES | OP_CAPTURE | OP_TEX | OP_BLEND, PANEL_FPS,   1.0f, 1.0f, GL_RGBA, TM_RADIUS,   500 },
- { 136.09f,   6.21f,   8.50f, -0.78f, -0.15f,  0.02f, OP_WIRES | OP_CAPTURE | OP_TEX | OP_BLEND, PANEL_NINFO, 1.0f, 1.0f, GL_RGBA, TM_STRAIGHT, 100 },
- {   0.00f,   0.00f,   0.00f,  0.00f,  0.00f,  0.00f, 0,                                 0,           0.0f, 0.0f, 0,       0,           0   }
-};
-#endif
-
- {  50.00f,  20.00f,  10.00f, -0.40f,  0.10f,  0.40f, OP_WIRES | OP_DISPLAY, 0,           1.0f, 1.0f, GL_RGBA, TM_STRAIGHT, 200 },
- { -10.00f,   8.00f,  12.00f,  0.60f, -0.15f,  0.50f, OP_WIRES | OP_DISPLAY, 0,           1.0f, 1.0f, GL_RGBA, TM_RADIUS,   200 },
- { 238.29f,  26.90f, -28.59f, -0.68f, -0.15f,  0.38f, OP_WIRES | OP_DISPLAY, PANEL_FPS,   1.0f, 1.0f, GL_RGBA, TM_RADIUS,   500 },
- { 136.09f,   6.21f,   8.50f, -0.78f, -0.15f,  0.02f, OP_WIRES | OP_DISPLAY, PANEL_NINFO, 1.0f, 1.0f, GL_RGBA, TM_STRAIGHT, 100 },
- {   0.00f,   0.00f,   0.00f,  0.00f,  0.00f,  0.00f, 0,                                 0,           0.0f, 0.0f, 0,       0,           0   }
-};
-#endif
-
-
 #define FLYBY_FILE "flyby.data"
 static FILE *flyby_fp;
+struct flyby fb;
 
 /* Open the flyby data file appropriately */
 void begin_flyby(char m)
@@ -65,32 +17,32 @@ void begin_flyby(char m)
 	if(m == 'r')
 	{
 		if((flyby_fp = fopen(FLYBY_FILE, "rb")) == NULL)
-			err(1, "flyby data file err");
+			err(1, "%s", FLYBY_FILE);
 	} else if (m == 'w') {
 		if((flyby_fp = fopen(FLYBY_FILE, "ab")) == NULL)
-			err(1, "flyby data file err");
+			err(1, "%s", FLYBY_FILE);
 	}
 }
 
 /* Write current data for flyby */
-void write_flyby()
+void write_flyby(void)
 {
 	int tnid = -1, tnlid;
 
 	/* Save the node id instead of ptr */
-	if(st.st_selnode != NULL) {
+	if(selnode != NULL) {
 
 		/* Save node and items we need */
-		tnid = st.st_selnode->n_nid;
-		tnlid = st.st_selnode->n_logid;
+		tnid = selnode->n_nid;
+		tnlid = selnode->n_logid;
 
-		/* Switch and set ninfo (union) */
-		st.st_ninfo.ni_nid = tnid;
-		st.st_ninfo.ni_nlid = tnlid;
+		/* Switch and set nid */
+		fb.fb_nid = tnid;
+		fb.fb_nlid = tnlid;
 
 	} else {
-		st.st_ninfo.ni_nid = -1;
-//		st.st_ninfo.ni_nlid = -1;
+		fb.fb_nid = -1;
+//		fb.fb_nlid = -1;
 	}
 
 	if(!fwrite(&st, sizeof(struct state), 1, flyby_fp))
@@ -98,14 +50,14 @@ void write_flyby()
 	
 	/* Set node back */
 	if(tnid != -1)
-		st.st_selnode = invmap[tnlid][tnid];
+		selnode = invmap[tnlid][tnid];
 	else
-		st.st_selnode = NULL;
+		selnode = NULL;
 
 }
 
 /* Read a set of flyby data */
-void read_flyby()
+void read_flyby(void)
 {
 	if(!fread(&st, sizeof(struct state), 1, flyby_fp)) {
 
@@ -123,25 +75,25 @@ void read_flyby()
 		adjcam();
 
 	/* Restore selected node */
-	if(st.st_ninfo.ni_nid != -1) {
+	if(fb.fb_nid != -1) {
 
 		int tnid, tnlid;
-		tnid = st.st_ninfo.ni_nid;
-		tnlid = st.st_ninfo.ni_nlid;
-		st.st_selnode = invmap[tnlid][tnid];
+		tnid = fb.fb_nid;
+		tnlid = fb.fb_nlid;
+		selnode = invmap[tnlid][tnid];
 
 		/* Force recompile */
 		st.st_ro |= RO_COMPILE;
 printf(" Restore Selected Node: COMPILE\n");
 	} else {
-		st.st_selnode = NULL;
+		selnode = NULL;
 printf(" No node selected\n");
 	}
 
 	restore_state(1);
 }
 
-void end_flyby()
+void end_flyby(void)
 {
 	if(flyby_fp != NULL) {
 		fclose(flyby_fp);
@@ -162,6 +114,41 @@ void update_flyby(void)
 		read_flyby();
 }
 
+/*
+ * Detect which panels flipped between flyby states.
+ */
+void
+flip_panels(int panels)
+{
+	int b;
 
+	panels = fb.fb_panels;
+	while ((b = ffs(panels))) {
+		panel_toggle(b);
+		panels &= ~b;
+	}
+}
 
+/*
+ * Set panel state from the current state to the first state in the
+ * flyby.
+ */
+void
+init_panels(int new)
+{
+	struct panel *p;
+	int cur;
 
+	cur = 0;
+	TAILQ_FOREACH(p, &panels, p_link)
+		cur |= p->p_id;
+	flip_panels(cur ^ new);
+}
+
+/*
+ * Restore original panel state at end of flyby.
+ */
+void
+restore_panels(int old, int new)
+{
+}
