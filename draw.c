@@ -21,7 +21,7 @@
 #define TWEEN_AMT	(0.025f)
 
 __inline int
-tween(float start, float *cur, float stop)
+tween(__unused float start, float *cur, float stop)
 {
 	float amt;
 
