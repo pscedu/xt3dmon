@@ -5,3 +5,7 @@
 #endif
 
 #define __unused __attribute__((__unused__))
+
+#ifndef MIN
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#endif
