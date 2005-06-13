@@ -18,7 +18,7 @@
 
 #define TWEEN_MAX	(2.0f)
 #define TWEEN_THRES	(0.001f)
-#define TWEEN_AMT	(0.025f)
+#define TWEEN_AMT	(0.05f)
 
 __inline int
 tween(__unused float start, float *cur, float stop)

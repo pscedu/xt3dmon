@@ -432,7 +432,6 @@ uinpcb_goto(void)
 			uinp.uinp_panel = PANEL_GOTO;
 			return;
 		}
-printf("not found\n");
 	panel_toggle(PANEL_GOTO);
 }
 

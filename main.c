@@ -303,7 +303,6 @@ mouse(__unused int button, __unused int state, int u, int v)
 {
 	if (active_flyby)
 		return;
-printf("mouse()\n");
 	spkey = glutGetModifiers();
 	lastu = u;
 	lastv = v;
@@ -322,7 +321,6 @@ active_m(int u, int v)
 	if (abs(du) + abs(dv) <= 1)
 		return;
 
-printf("[%d,%d]\n", u, v);
 	lastu = u;
 	lastv = v;
 
