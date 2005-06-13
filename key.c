@@ -150,9 +150,9 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		st.st_ro |= RO_COMPILE;
 		break;
 	case 'c':
-		if (st.st_selnode != NULL) {
-			st.st_selnode->n_state = st.st_selnode->n_savst;
-			st.st_selnode = NULL;
+		if (selnode != NULL) {
+			selnode->n_fillp = selnode->n_ofillp;
+			selnode = NULL;
 		}
 		break;
 	case 'C':
@@ -165,10 +165,7 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		st.st_opts ^= OP_CAPTURE;
 		break;
 	case 'e':
-		if (st.st_opts & OP_TWEEN)
-			st.st_opts &= ~OP_TWEEN;
-		else
-			st.st_opts |= OP_TWEEN;
+		st.st_opts ^= OP_TWEEN;
 		break;
 	case 'f':
 		build_flyby = !build_flyby;
