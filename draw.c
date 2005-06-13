@@ -13,7 +13,45 @@
 #include <math.h>
 #include <stdio.h>
 
+#include "cdefs.h"
 #include "mon.h"
+
+#define TWEEN_MAX	(2.0f)
+#define TWEEN_THRES	(0.001f)
+#define TWEEN_AMT	(0.025f)
+
+__inline int
+tween(float start, float *cur, float stop)
+{
+	float amt;
+
+	if (stop != *cur) {
+		amt = (stop - *cur) * TWEEN_AMT;
+		amt = MIN(amt, TWEEN_MAX);
+		*cur += amt;
+		if (fabs(stop - *cur) < TWEEN_THRES)
+			*cur = stop;
+		return (1);
+	}
+	return (0);
+
+#if 0
+	if (stop - *cur) {
+//printf("[%.3f] ", stop - *cur);
+//printf("[frac: %.3f] ", (*cur - start) / (stop - start));
+//		*cur += (stop - start) * TWEEN_AMT;
+//printf("[%.3f, o %.3f ", *cur, (stop - start) *
+// expf(-powf((*cur - start) * 3.0f / (stop - start), 2.0f) / 2.0f) / (2.0f * PI));
+		float x = (*cur - start) * 6.0f / (stop - start) - 3.0f;
+		*cur = start + (stop - start) * expf(-powf(x, 2.0f) / 2.0f) / (2.0f * PI);
+//printf("%.3f] ", *cur);
+		if (fabs(stop - *cur) < TWEEN_THRES)
+			*cur = stop;
+		return (1);
+	}
+	return (0);
+#endif
+}
 
 void
 draw(void)
@@ -30,30 +68,17 @@ draw(void)
 #endif
 	update_flyby();
 
-	if (st.st_opts & OP_TWEEN &&
-	    (tx - st.st_x || ty - st.st_y || tz - st.st_z ||
-	    tlx - st.st_lx || tly - st.st_ly || tlz - st.st_lz)) {
-		st.st_x += (tx - st.st_x) * TWEEN_AMT;
-		st.st_y += (ty - st.st_y) * TWEEN_AMT;
-		st.st_z += (tz - st.st_z) * TWEEN_AMT;
-		if (fabs(tx - st.st_x) < TWEEN_THRES)
-			st.st_x = tx;
-		if (fabs(ty - st.st_y) < TWEEN_THRES)
-			st.st_y = ty;
-		if (fabs(tz - st.st_z) < TWEEN_THRES)
-			st.st_z = tz;
-
-		st.st_lx += (tlx - st.st_lx) * TWEEN_AMT;
-		st.st_ly += (tly - st.st_ly) * TWEEN_AMT;
-		st.st_lz += (tlz - st.st_lz) * TWEEN_AMT;
-		if (fabs(tlx - st.st_lx) < TWEEN_THRES)
-			st.st_lx = tlx;
-		if (fabs(tly - st.st_ly) < TWEEN_THRES)
-			st.st_ly = tly;
-		if (fabs(tlz - st.st_lz) < TWEEN_THRES)
-			st.st_lz = tlz;
-		adjcam();
-	}
+//printf("."); fflush(stdout);
+	if (st.st_opts & OP_TWEEN)
+		if (tween(ox, &st.st_x, tx) |
+		    tween(oy, &st.st_y, ty) |
+		    tween(oz, &st.st_z, tz) |
+		    tween(olx, &st.st_lx, tlx) |
+		    tween(oly, &st.st_ly, tly) |
+		    tween(olz, &st.st_lz, tlz))
+{			adjcam();
+//printf("#");
+}
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
