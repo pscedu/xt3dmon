@@ -25,10 +25,14 @@
 #include "queue.h"
 #include "buf.h"
 
-#define LETTER_HEIGHT 13
-#define LETTER_WIDTH 8
-#define PANEL_PADDING 3
-#define PANEL_BWIDTH 2.0f
+#define LETTER_HEIGHT	13
+#define LETTER_WIDTH	8
+#define PANEL_PADDING	3
+#define PANEL_BWIDTH	(2.0f)
+#define PWIDGET_LENGTH	10
+#define PWIDGET_HEIGHT	7
+#define PWLABEL_LENGTH	30
+#define PWIDGET_PADDING	3
 
 void panel_refresh_fps(struct panel *);
 void panel_refresh_ninfo(struct panel *);
@@ -102,32 +106,38 @@ panel_free(struct panel *p)
 void
 draw_panel(struct panel *p)
 {
-	int lineno, curlen, line_offset, toff;
+	int lineno, curlen, toff, uoff, voff, npw;
+	struct pwidget *pw;
 	int u, v, w, h;
 	char *s;
 
 	toff = PANEL_PADDING + PANEL_BWIDTH;
 
-	lineno = 1;
-	curlen = w = 0;
-	for (s = p->p_str; *s != '\0'; s++, curlen++) {
-		if (*s == '\n') {
-			if (curlen > w)
-				w = curlen;
-			curlen = -1;
-			lineno++;
-		}
-	}
-	if (curlen > w)
-		w = curlen;
 	if (p->p_opts & POPT_REMOVE) {
 		w = 0;
 		h = 0;
 		u = win_width;
 		v = win_height;
 	} else {
+		lineno = 1;
+		curlen = w = 0;
+		for (s = p->p_str; *s != '\0'; s++, curlen++) {
+			if (*s == '\n') {
+				if (curlen > w)
+					w = curlen;
+				curlen = -1;
+				lineno++;
+			}
+		}
+		if (curlen > w)
+			w = curlen;
 		w = w * LETTER_WIDTH + 2 * toff;
 		h = lineno * LETTER_HEIGHT + 2 * toff;
+		if (p->p_nwidgets) {
+			w = MAX(w, 2 * PWLABEL_LENGTH);
+			h += p->p_nwidgets * PWIDGET_HEIGHT +
+			    (p->p_nwidgets - 1) * PWIDGET_PADDING;
+		}
 		u = win_width - w;
 		v = win_height - panel_offset;
 	}
@@ -162,17 +172,51 @@ draw_panel(struct panel *p)
 	glColor4f(p->p_fill.f_r, p->p_fill.f_g, p->p_fill.f_b, p->p_fill.f_a);
 
 	/* Panel content. */
-	line_offset = p->p_v - toff;
+	voff = p->p_v - toff;
+	uoff = p->p_u + toff;
 	for (s = p->p_str; *s != '\0'; s++) {
 		if (*s == '\n' || s == p->p_str) {
-			line_offset -= LETTER_HEIGHT;
-			if (line_offset < p->p_v - p->p_h)
+			voff -= LETTER_HEIGHT;
+			if (voff < p->p_v - p->p_h)
 				break;
-			glRasterPos2d(p->p_u + toff, line_offset);
+			glRasterPos2d(uoff, voff);
 			if (*s == '\n')
 				continue;
 		}
 		glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
+	}
+
+	npw = 0;
+	SLIST_FOREACH(pw, &p->p_widgets, pw_next) {
+		struct fill *fp = pw->pw_fillp;
+
+		uoff += p->p_w / 2 * (npw / 2 ? 1 : -1);
+		if (npw % 2)
+			voff -= PWIDGET_HEIGHT;
+
+		/* Draw widget background. */
+		glBegin(GL_POLYGON);
+		glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
+		glVertex2d(uoff,			voff);
+		glVertex2d(uoff + PWIDGET_LENGTH,	voff);
+		glVertex2d(uoff + PWIDGET_LENGTH,	voff - PWIDGET_HEIGHT);
+		glVertex2d(uoff,			voff - PWIDGET_HEIGHT);
+		glEnd();
+
+		/* Draw widget border. */
+		glLineWidth(1.0f);
+		glBegin(GL_LINE_LOOP);
+		glColor4f(0.00f, 0.00f, 0.00f, 1.00f);
+		glVertex2d(uoff,			voff);
+		glVertex2d(uoff + PWIDGET_LENGTH,	voff);
+		glVertex2d(uoff + PWIDGET_LENGTH,	voff - PWIDGET_HEIGHT);
+		glVertex2d(uoff,			voff - PWIDGET_HEIGHT);
+		glEnd();
+
+		glRasterPos2d(uoff, voff);
+		for (s = pw->pw_str; *s != '\0'; s++)
+			glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
+		npw++;
 	}
 
 	/* Draw background. */
@@ -259,23 +303,22 @@ void
 panel_refresh_legend(struct panel *p)
 {
 	struct pwidget *pw, *nextp;
-	int need;
 	size_t j;
 
+	p->p_nwidgets = 0;
+	pw = SLIST_FIRST(&p->p_widgets);
 	switch (st.st_mode) {
 	case SM_JOBS:
 		panel_set_content(p, "Jobs: %d", njobs);
-		pw = SLIST_FIRST(&p->p_widgets);
-		need = 0;
 		for (j = 0; j < njobs; j++, pw = nextp) {
 			pw = panel_get_pwidget(p, pw, &nextp);
 			pw->pw_fillp = &jobs[j]->j_fill;
 			pw->pw_str = jobs[j]->j_name;
+			p->p_nwidgets++;
 		}
 		break;
 	case SM_FAIL:
 		panel_set_content(p, "Failures: %d", total_failures);
-		pw = SLIST_FIRST(&p->p_widgets);
 		for (j = 0; j < nfails; j++, pw = nextp) {
 			pw = panel_get_pwidget(p, pw, &nextp);
 			pw->pw_fillp = &fails[j]->f_fill;
@@ -286,7 +329,6 @@ panel_refresh_legend(struct panel *p)
 		break;
 	case SM_TEMP:
 		panel_set_content(p, "Temperature");
-		pw = SLIST_FIRST(&p->p_widgets);
 		for (j = 0; j < ntemps; j++, pw = nextp) {
 			pw = panel_get_pwidget(p, pw, &nextp);
 			pw->pw_fillp = &temps[j]->t_fill;
@@ -405,6 +447,7 @@ panel_toggle(int panel)
 	p->p_fill.f_a = 1.0f;
 	fb.fb_panels |= panel;
 	SLIST_INIT(&p->p_widgets);
+	p->p_nwidgets = 0;
 	TAILQ_INSERT_TAIL(&panels, p, p_link);
 }
 
@@ -451,7 +494,7 @@ uinpcb_goto2(void)
 	if (n == NULL)
 		return;
 	if (st.st_opts & OP_TWEEN) {
-		tx = n->n_pos.np_x;  
+		tx = n->n_pos.np_x;
 		ty = n->n_pos.np_y;
 		tz = n->n_pos.np_z;
 	} else {

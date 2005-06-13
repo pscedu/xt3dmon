@@ -218,6 +218,7 @@ struct panel {
 	void			(*p_refresh)(struct panel *);
 	TAILQ_ENTRY(panel)	  p_link;
 	SLIST_HEAD(, pwidget)	  p_widgets;
+	int			  p_nwidgets;
 };
 
 #define PANEL_FPS	(1<<0)
