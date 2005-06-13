@@ -23,3 +23,5 @@ depend:
 
 clean:
 	rm -rf ${PROG} ${OBJS}
+
+-include .depend
