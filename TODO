@@ -5,4 +5,4 @@ commands
 
 1. Profile to find bottlenecks
 2. Test straight draw() vs. make_cluster & draw()
-
+default the logid/nodeid goto combo to selnode
