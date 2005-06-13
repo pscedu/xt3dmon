@@ -34,41 +34,13 @@ tween(float start, float *cur, float stop)
 		return (1);
 	}
 	return (0);
-
-#if 0
-	if (stop - *cur) {
-//printf("[%.3f] ", stop - *cur);
-//printf("[frac: %.3f] ", (*cur - start) / (stop - start));
-//		*cur += (stop - start) * TWEEN_AMT;
-//printf("[%.3f, o %.3f ", *cur, (stop - start) *
-// expf(-powf((*cur - start) * 3.0f / (stop - start), 2.0f) / 2.0f) / (2.0f * PI));
-		float x = (*cur - start) * 6.0f / (stop - start) - 3.0f;
-		*cur = start + (stop - start) * expf(-powf(x, 2.0f) / 2.0f) / (2.0f * PI);
-//printf("%.3f] ", *cur);
-		if (fabs(stop - *cur) < TWEEN_THRES)
-			*cur = stop;
-		return (1);
-	}
-	return (0);
-#endif
 }
 
 void
 draw(void)
 {
-#if 0
-	/* record user commands */
-	if(build_flyby)
-		write_flyby();
-
-	if (active_flyby) {
-		read_flyby();
-//		make_cluster();
-	}
-#endif
 	update_flyby();
 
-//printf("."); fflush(stdout);
 	if (st.st_opts & OP_TWEEN)
 		if (tween(ox, &st.st_x, tx) |
 		    tween(oy, &st.st_y, ty) |
@@ -76,36 +48,11 @@ draw(void)
 		    tween(olx, &st.st_lx, tlx) |
 		    tween(oly, &st.st_ly, tly) |
 		    tween(olz, &st.st_lz, tlz))
-{			adjcam();
-//printf("#");
-}
+			adjcam();
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (st.st_opts & OP_GROUND) {
-#if 0
-		float sx = -13.0;
-		float w = 256;
-		float d = 256;
-		float sz = -128.0;
-		float f = 20.0;
-//		float t = 128;
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, 5);
-		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-		glBegin(GL_QUADS);
-		glVertex3f(sx+w, 0.0f, sz);
-		glTexCoord3f(0.0, 0.0, 1.0);
-		glVertex3f(sx, 0.0f, sz);
-		glTexCoord3f(0.0, f, 1.0);
-		glVertex3f(sx, 0.0f, sz+d);
-		glTexCoord3f(f, f, 1.0);
-		glVertex3f(sx+w, 0.0f, sz+d);
-		glTexCoord3f(f, 0.0, 1.0);
-		glEnd();
-		glDisable(GL_TEXTURE_2D);
-#endif
-
 		/* Ground */
 		glColor3f(0.4f, 0.4f, 0.4f);
 		glBegin(GL_QUADS);
