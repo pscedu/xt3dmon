@@ -74,45 +74,13 @@
 #define JST_INFO	8
 #define NJST		9
 
-#define OP_TEX		(1<<0)
-#define OP_BLEND	(1<<1)
-#define OP_WIRES	(1<<2)
-#define OP_GROUND	(1<<3)
-#define OP_TWEEN	(1<<4)
-#define OP_CAPTURE	(1<<5)
-#define OP_DISPLAY	(1<<6)
-
-#define SM_JOBS		0
-#define SM_FAIL		1
-#define SM_TEMP		2
-
-#define VM_PHYSICAL	0
-#define VM_LOGICAL	1
-
-#define PANEL_FPS	(1<<0)
-#define PANEL_NINFO	(1<<1)
-#define PANEL_CMD	(1<<2)
-#define PANEL_LEGEND	(1<<3)
-#define PANEL_FLYBY	(1<<4)
-#define PANEL_GOTO	(1<<5)
-#define NPANELS		6
-
-#define RO_TEX		(1<<0)
-#define RO_PHYS		(1<<1)
-#define RO_RELOAD	(1<<2)
-#define RO_COMPILE	(1<<3)
-#define RO_TEXTURE	(1<<4)
-
-#define RO_ALL		(RO_TEX | RO_PHYS | RO_RELOAD | RO_COMPILE)
-
 #define PI		(3.14159265358979323)
 
 #define NLOGIDS		(sizeof(logids) / sizeof(logids[0]))
 
-#define SQUARE(x)	((x) * (x))
+#define NID_MAX		(NROWS * NCABS * NCAGES * NMODS * NNODES)
 
-#define TM_STRAIGHT	1
-#define TM_RADIUS	2
+#define SQUARE(x)	((x) * (x))
 
 #define WFRAMEWIDTH	(0.001f)
 
@@ -189,6 +157,32 @@ struct state {
 	int		 st_ro;
 };
 
+#define TM_STRAIGHT	1
+#define TM_RADIUS	2
+
+#define RO_TEX		(1<<0)
+#define RO_PHYS		(1<<1)
+#define RO_RELOAD	(1<<2)
+#define RO_COMPILE	(1<<3)
+#define RO_TEXTURE	(1<<4)
+
+#define RO_ALL		(RO_TEX | RO_PHYS | RO_RELOAD | RO_COMPILE)
+
+#define OP_TEX		(1<<0)
+#define OP_BLEND	(1<<1)
+#define OP_WIRES	(1<<2)
+#define OP_GROUND	(1<<3)
+#define OP_TWEEN	(1<<4)
+#define OP_CAPTURE	(1<<5)
+#define OP_DISPLAY	(1<<6)
+
+#define SM_JOBS		0
+#define SM_FAIL		1
+#define SM_TEMP		2
+
+#define VM_PHYSICAL	0
+#define VM_LOGICAL	1
+
 struct job_state {
 	char		*js_name;
 	struct fill	 js_fill;
@@ -197,31 +191,43 @@ struct job_state {
 struct uinput {
 	struct buf 	  uinp_buf;
 	void		(*uinp_callback)(void);
+	int		  uinp_panel;
+	int		  uinp_opts;
 };
 
+#define UINPO_LINGER	(1<<0)
+
 struct pwidget {
-	char			*pw_str;
-	struct fill		*pw_fillp;
-	SLIST_ENTRY(pwidget)	 pw_next;
+	char			 *pw_str;
+	struct fill		 *pw_fillp;
+	SLIST_ENTRY(pwidget)	  pw_next;
 };
+
+struct panel {
+	int			  p_id;
+	char			 *p_str;
+	size_t			  p_strlen;
+	int			  p_u;
+	int			  p_v;
+	int			  p_w;
+	int			  p_h;
+	int			  p_opts;
+	struct fill		  p_fill;
+	void			(*p_refresh)(struct panel *);
+	TAILQ_ENTRY(panel)	  p_link;
+	SLIST_HEAD(, pwidget)	  p_widgets;
+};
+
+#define PANEL_FPS	(1<<0)
+#define PANEL_NINFO	(1<<1)
+#define PANEL_CMD	(1<<2)
+#define PANEL_LEGEND	(1<<3)
+#define PANEL_FLYBY	(1<<4)
+#define PANEL_GOTO	(1<<5)
+#define NPANELS		6
 
 #define POPT_REMOVE	(1<<0)
 #define POPT_COMPILE	(1<<1)
-
-struct panel {
-	int			 p_id;
-	char			*p_str;
-	size_t			 p_strlen;
-	int			 p_u;
-	int			 p_v;
-	int			 p_w;
-	int			 p_h;
-	int			 p_opts;
-	struct fill		 p_fill;
-	void			(*p_refresh)(struct panel *);
-	TAILQ_ENTRY(panel)	 p_link;
-	SLIST_HEAD(, pwidget)	 p_widgets;
-};
 
 TAILQ_HEAD(panels, panel);
 
@@ -250,8 +256,10 @@ void			 rebuild(int);
 
 /* panel.c */
 void			 draw_panels(void);
-void			 adjpanels(void);
 void			 panel_toggle(int);
+void			 uinpcb_cmd(void);
+void			 uinpcb_goto(void);
+void			 uinpcb_goto2(void);
 
 /* parse.c */
 void			 parse_jobmap(void);
@@ -304,3 +312,4 @@ extern int		 total_failures;	/* total shared among all nodes */
 extern struct fail_state **fail_states;
 extern size_t		 maxfails;		/* largest # of failures */
 extern struct uinput	 uinp;
+extern int		 goto_logid;
