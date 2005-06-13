@@ -14,6 +14,7 @@
 # include <GL/freeglut.h>
 #endif
 
+#include <ctype.h>
 #include <err.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -34,17 +35,20 @@ void panel_refresh_ninfo(struct panel *);
 void panel_refresh_cmd(struct panel *);
 void panel_refresh_legend(struct panel *);
 void panel_refresh_flyby(struct panel *);
+void panel_refresh_goto(struct panel *);
 
 void (*refreshf[])(struct panel *) = {
 	panel_refresh_fps,
 	panel_refresh_ninfo,
 	panel_refresh_cmd,
 	panel_refresh_legend,
-	panel_refresh_flyby
+	panel_refresh_flyby,
+	panel_refresh_goto
 };
 
-struct panels panels;
-int panel_offset;
+struct panels	 panels;
+int		 panel_offset;
+int		 goto_logid;
 
 int
 baseconv(int n)
@@ -302,11 +306,13 @@ panel_refresh_ninfo(struct panel *p)
 		case JST_USED:
 			panel_set_content(p,
 			    "Node ID: %d\n"
+			    "Login node ID: %d\n"
 			    "Owner: %d\n"
 			    "Job name: [%s]\n"
 			    "Duration: %d\n"
 			    "CPUs: %d",
 			    st.st_selnode->n_nid,
+			    st.st_selnode->n_logid,
 			    st.st_selnode->n_job->j_owner,
 			    st.st_selnode->n_job->j_name,
 			    st.st_selnode->n_job->j_dur,
@@ -314,8 +320,10 @@ panel_refresh_ninfo(struct panel *p)
 			break;
 		default:
 			panel_set_content(p,
-			    "Node ID: %d",
-			    st.st_selnode->n_nid);
+			    "Node ID: %d\n"
+			    "Login node ID: %d",
+			    st.st_selnode->n_nid,
+			    st.st_selnode->n_logid);
 			break;
 		}
 	} else {
@@ -332,6 +340,19 @@ panel_refresh_flyby(struct panel *p)
 		panel_set_content(p, "Recording flyby");
 	else
 		panel_set_content(p, "Flyby mode disabled");
+}
+
+void
+panel_refresh_goto(struct panel *p)
+{
+	if (goto_logid == -1)
+		panel_set_content(p, "Login Node ID: %s",
+		    buf_get(&uinp.uinp_buf));
+	else
+		panel_set_content(p, "Login Node ID: %d\n"
+		    "Node ID: %s",
+		    goto_logid,
+		    buf_get(&uinp.uinp_buf));
 }
 
 void
@@ -360,7 +381,6 @@ panel_toggle(int panel)
 		if (p->p_id == panel) {
 			/* Found; toggle existence. */
 			p->p_opts ^= POPT_REMOVE;
-printf("queueing\n");
 			return;
 		}
 	}
@@ -380,4 +400,58 @@ printf("queueing\n");
 	p->p_fill.f_a = 1.0f;
 	SLIST_INIT(&p->p_widgets);
 	TAILQ_INSERT_TAIL(&panels, p, p_link);
+}
+
+void
+uinpcb_cmd(void)
+{
+	/* Send command to node. */
+}
+
+void
+uinpcb_goto(void)
+{
+	size_t j;
+	long l;
+
+	l = strtol(buf_get(&uinp.uinp_buf), NULL, 0);
+	if (!isdigit(*buf_get(&uinp.uinp_buf)) || l < 0 || l > NID_MAX)
+		return;
+	goto_logid = (int)l;
+
+	for (j = 0; j < NLOGIDS; j++)
+		if (logids[j] == goto_logid) {
+			glutKeyboardFunc(keyh_uinput);
+			uinp.uinp_callback = uinpcb_goto2;
+			uinp.uinp_panel = PANEL_GOTO;
+			return;
+		}
+printf("not found\n");
+	panel_toggle(PANEL_GOTO);
+}
+
+void
+uinpcb_goto2(void)
+{
+	struct node *n;
+	int nid;
+	long l;
+
+	l = strtol(buf_get(&uinp.uinp_buf), NULL, 0);
+	if (l <= 0 || l > NID_MAX)
+		return;
+	nid = (int)l;
+	n = invmap[goto_logid][nid];
+
+	if (n == NULL)
+		return;
+	if (st.st_opts & OP_TWEEN) {
+		tx = n->n_pos.np_x;  
+		ty = n->n_pos.np_y;
+		tz = n->n_pos.np_z;
+	} else {
+		st.st_x = n->n_pos.np_x;
+		st.st_y = n->n_pos.np_y;
+		st.st_z = n->n_pos.np_z;
+	}
 }
