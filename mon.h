@@ -71,8 +71,7 @@
 #define JST_UNACC	5
 #define JST_BAD		6
 #define JST_CHECK	7
-#define JST_INFO	8
-#define NJST		9
+#define NJST		8
 
 #define PI		(3.14159265358979323)
 
@@ -111,6 +110,12 @@ struct fail {
 	struct fill	 f_fill;
 };
 
+struct vec {
+	float		 v_x;
+	float		 v_y;
+	float		 v_z;
+};
+
 struct node {
 	int		 n_nid;
 	int		 n_logid;
@@ -118,8 +123,8 @@ struct node {
 	struct temp	*n_temp;
 	struct fail	*n_fail;
 	int		 n_state;
-	int		 n_savst;
 	struct fill	*n_fillp;
+	struct fill	*n_ofillp;
 	struct {
 		float	 np_x;
 		float	 np_y;
@@ -127,10 +132,6 @@ struct node {
 	}		 n_pos;
 };
 
-struct ninfo {
-	int 		ni_nid;
-	int		ni_nlid;
-};
 struct state {
 	float		 st_x;
 	float		 st_y;
@@ -144,17 +145,18 @@ struct state {
 	GLint		 st_alpha_fmt;
 	int		 st_mode;
 	int		 st_vmode;
-
-	union {
-
-		struct node	*st_selnode;
-		struct ninfo	st_ninfo;
-	};
-
-	int		 st_panels;
-	int		 st_tween_mode;
-	int		 st_nframes;
 	int		 st_ro;
+};
+
+struct flyby {
+	struct state	*fb_state;
+	struct {
+		int	 fbni_nlid;
+		int 	 fbni_nid;
+	}		 fb_ninfo;
+	int		 fb_panels;
+#define fb_nlid	fb_ninfo.fbni_nlid
+#define fb_nid	fb_ninfo.fbni_nid
 };
 
 #define TM_STRAIGHT	1
@@ -276,6 +278,7 @@ void 			 end_flyby(void);
 void			 read_flyby(void);
 void			 write_flyby(void);
 void			 update_flyby(void);
+void			 flip_panels(int);
 
 extern int		 logids[2];
 extern struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
@@ -313,3 +316,5 @@ extern struct fail_state **fail_states;
 extern size_t		 maxfails;		/* largest # of failures */
 extern struct uinput	 uinp;
 extern int		 goto_logid;
+extern struct node	*selnode;
+extern struct flyby	 fb;
