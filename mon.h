@@ -159,6 +159,10 @@ struct node {
 	}		 n_pos;
 };
 
+struct ninfo {
+	int 		ni_nid;
+	int		ni_nlid;
+};
 struct state {
 	float		 st_x;
 	float		 st_y;
@@ -172,7 +176,12 @@ struct state {
 	GLint		 st_alpha_fmt;
 	int		 st_mode;
 	int		 st_vmode;
-	struct node	*st_selnode;
+
+	union {
+
+		struct node	*st_selnode;
+		struct ninfo	st_ninfo;
+	};
 
 	int		 st_panels;
 	int		 st_tween_mode;
@@ -258,6 +267,7 @@ void 			 begin_flyby(char);
 void 			 end_flyby(void);
 void			 read_flyby(void);
 void			 write_flyby(void);
+void			 update_flyby(void);
 
 extern int		 logids[2];
 extern struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
