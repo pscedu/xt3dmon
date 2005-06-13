@@ -28,16 +28,25 @@ spkeyh_flyby(__unused int key, __unused int u, __unused int v)
 void
 keyh_uinput(unsigned char key, __unused int u, __unused int v)
 {
+	int opts;
+
 	switch (key) {
 	case 13: /* enter */
+		glutKeyboardFunc(keyh_default);
+		opts = uinp.uinp_opts;
 		uinp.uinp_callback();
-		/* FALLTHROUGH */
+		buf_reset(&uinp.uinp_buf);
+		buf_append(&uinp.uinp_buf, '\0');
+		if ((opts & UINPO_LINGER) == 0)
+			panel_toggle(uinp.uinp_panel);
+		break;
 	case 27: /* escape */
 		buf_reset(&uinp.uinp_buf);
 		buf_append(&uinp.uinp_buf, '\0');
 		glutKeyboardFunc(keyh_default);
+		panel_toggle(uinp.uinp_panel);
 		break;
-	case 8:
+	case 8: /* backspace */
 		if (strlen(buf_get(&uinp.uinp_buf)) > 0) {
 			buf_chop(&uinp.uinp_buf);
 			buf_chop(&uinp.uinp_buf);
@@ -66,10 +75,17 @@ keyh_panel(unsigned char key, __unused int u, __unused int v)
 	case 'c':
 		panel_toggle(PANEL_CMD);
 		glutKeyboardFunc(keyh_uinput);
+		uinp.uinp_callback = uinpcb_cmd;
+		uinp.uinp_panel = PANEL_CMD;
+		uinp.uinp_opts = UINPO_LINGER;
 		break;
 	case 'g':
 		panel_toggle(PANEL_GOTO);
 		glutKeyboardFunc(keyh_uinput);
+		uinp.uinp_callback = uinpcb_goto;
+		uinp.uinp_panel = PANEL_GOTO;
+		uinp.uinp_opts = UINPO_LINGER;
+		goto_logid = -1;
 		break;
 	case 'n':
 		panel_toggle(PANEL_NINFO);
