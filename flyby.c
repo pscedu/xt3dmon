@@ -75,10 +75,19 @@ void begin_flyby(char m)
 /* Write current data for flyby */
 void write_flyby()
 {
+	int tnid = -1, tnlid;
+
 	/* Save the node id instead of ptr */
 	if(st.st_selnode != NULL) {
-		st.st_ninfo.ni_nid = st.st_selnode->n_nid;
-		st.st_ninfo.ni_nlid = st.st_selnode->n_logid;
+
+		/* Save node and items we need */
+		tnid = st.st_selnode->n_nid;
+		tnlid = st.st_selnode->n_logid;
+
+		/* Switch and set ninfo (union) */
+		st.st_ninfo.ni_nid = tnid;
+		st.st_ninfo.ni_nlid = tnlid;
+
 	} else {
 		st.st_ninfo.ni_nid = -1;
 //		st.st_ninfo.ni_nlid = -1;
@@ -86,6 +95,13 @@ void write_flyby()
 
 	if(!fwrite(&st, sizeof(struct state), 1, flyby_fp))
 		err(1, "flyby data write err");
+	
+	/* Set node back */
+	if(tnid != -1)
+		st.st_selnode = invmap[tnlid][tnid];
+	else
+		st.st_selnode = NULL;
+
 }
 
 /* Read a set of flyby data */
@@ -107,8 +123,20 @@ void read_flyby()
 		adjcam();
 
 	/* Restore selected node */
-	if(st.st_ninfo.ni_nid != -1)
-		st.st_selnode = invmap[st.st_ninfo.ni_nlid][st.st_ninfo.ni_nid];
+	if(st.st_ninfo.ni_nid != -1) {
+
+		int tnid, tnlid;
+		tnid = st.st_ninfo.ni_nid;
+		tnlid = st.st_ninfo.ni_nlid;
+		st.st_selnode = invmap[tnlid][tnid];
+
+		/* Force recompile */
+		st.st_ro |= RO_COMPILE;
+printf(" Restore Selected Node: COMPILE\n");
+	} else {
+		st.st_selnode = NULL;
+printf(" No node selected\n");
+	}
 
 	restore_state(1);
 }
