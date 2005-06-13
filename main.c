@@ -62,11 +62,7 @@ struct state st = {
 	GL_RGBA,					/* alpha blend format */
 	SM_JOBS,					/* which data to show */
 	VM_PHYSICAL,					/* viewing mode */
-	NULL,						/* selected node */
-	0,						/* panels (unused) */
-	0,						/* tween mode (unused) */
-	0,						/* nframes (unused) */
-	0						/* rebuild flags (unused) */
+	0						/* rebuild flags */
 };
 
 struct job_state jstates[] = {
@@ -77,90 +73,11 @@ struct job_state jstates[] = {
 	{ "I/O",		{ 1.00f, 1.00f, 0.00f, 1.00f, 0 } },	/* Yellow */
 	{ "Unaccounted",	{ 0.00f, 0.00f, 1.00f, 1.00f, 0 } },	/* Blue */
 	{ "Bad",		{ 1.00f, 0.75f, 0.75f, 1.00f, 0 } },	/* Pink */
-	{ "Checking",		{ 0.00f, 1.00f, 0.00f, 1.00f, 0 } },	/* Green */
-	{ "Info",		{ 0.20f, 0.40f, 0.60f, 1.00f, 0 } }	/* Dark blue */
+	{ "Checking",		{ 0.00f, 1.00f, 0.00f, 1.00f, 0 } }	/* Green */
 };
 
-#if 0
-void
-calc_flyby(void)
-{
-	static const struct state *curst = NULL;
-	static struct state lastst;
-	float frac;
-
-	if (curst == NULL) {
-printf("start\n");
-		curst = flybypath;
-		lastst = st;
-		lastst.st_nframes = 1;
-	} else if (++lastst.st_nframes > curst->st_nframes) {
-printf("next state\n");
-		if ((++curst)->st_nframes == 0) {
-printf("done\n");
-			active_flyby = 0;
-			curst = NULL;
-			return;
-		}
-		lastst.st_nframes = 1;
-	}
-	if (lastst.st_nframes == 1) {
-		st.st_opts = curst->st_opts;
-		st.st_panels = curst->st_panels;
-		st.st_alpha_fmt = curst->st_alpha_fmt;
-		st.st_alpha_job = curst->st_alpha_job;
-		st.st_alpha_oth = curst->st_alpha_oth;
-		if (st.st_opts & OP_TWEEN) {
-			tx = curst->st_x;
-			ty = curst->st_y;
-			tz = curst->st_z;
-			tlx = curst->st_lx;
-			tly = curst->st_ly;
-			tlz = curst->st_lz;
-			/* tween_amt = 1 / (float)curst->st_nframes; */
-		}
-	}
-	if (st.st_opts & OP_TWEEN)
-		return;
-if(0)
-printf("(%.3f,%.3f,%.3f)->(%.3f,%.3f,%.3f)->(%.3f,%.3f,%.3f) ",
-  lastst.st_x, lastst.st_y, lastst.st_z,
-  st.st_x, st.st_y, st.st_z,
-  curst->st_x, curst->st_y, curst->st_z);
-
-//	frac = (lastst.st_nframes / (float)curst->st_nframes);
-	frac = curst->st_nframes;
-//printf("xadj: %.2f\n", (curst->st_x - lastst.st_x) / frac);
-
-if (0)
-printf("(%.3f,%.3f,%.3f):(%.3f,%.3f,%.3f) ",
-  st.st_x, st.st_y, st.st_z,
-  st.st_lx, st.st_ly, st.st_lz);
-
-//printf("."); fflush(stdout);
-	st.st_x += (curst->st_x - lastst.st_x) / frac;
-	st.st_y += (curst->st_y - lastst.st_y) / frac;
-	st.st_z += (curst->st_z - lastst.st_z) / frac;
-	st.st_lx += (curst->st_lx - lastst.st_lx) / frac;
-	st.st_ly += (curst->st_ly - lastst.st_ly) / frac;
-	st.st_lz += (curst->st_lz - lastst.st_lz) / frac;
-if (0)
-printf("(%.3f,%.3f,%.3f):(%.3f,%.3f,%.3f)\n",
-  st.st_x, st.st_y, st.st_z,
-  st.st_lx, st.st_ly, st.st_lz);
-
-if(0)
-printf("+(%.3f,%.3f,%.3f) l(%.3f,%.3f,%.3f)\n",
-       (curst->st_x - lastst.st_x) / frac,
-       (curst->st_y - lastst.st_y) / frac,
-       (curst->st_z - lastst.st_z) / frac,
-        (curst->st_lx - lastst.st_lx) / frac,
-        (curst->st_ly - lastst.st_ly) / frac,
-        (curst->st_lz - lastst.st_lz) / frac);
-
-	adjcam();
-}
-#endif
+struct fill selnodefill = { 0.20f, 0.40f, 0.60f, 1.00f, 0 };		/* Dark blue */
+struct node *selnode;
 
 void
 adjcam(void)
@@ -188,6 +105,7 @@ reshape(int w, int h)
 	adjcam();
 }
 
+/* rename to refresh_state */
 void restore_state(int flyby)
 {
 	/* Restore Tweening state */
@@ -206,6 +124,7 @@ void restore_state(int flyby)
 #if 0
 	if (selnode != NULL) {
 		selnode->n_state = selnode->n_savst;
+		/* selnode->n_fillp = selnode->n_ofillp; */
 		selnode = NULL;
 	}
 #endif
@@ -214,20 +133,23 @@ void restore_state(int flyby)
 
 	if (flyby){
 		st.st_ro = 0;
+		flip_panels(fb.fb_panels);
+		fb.fb_panels = 0;
 	}
 }
 
 void
 select_node(struct node *n)
 {
-	if (st.st_selnode == n)
+	if (selnode == n)
 		return;
-	if (st.st_selnode != NULL)
-		st.st_selnode->n_state = st.st_selnode->n_savst;
-	st.st_selnode = n;
-	if (n->n_state != JST_INFO)
-		n->n_savst = n->n_state;
-	n->n_state = JST_INFO;
+	if (selnode != NULL)
+		selnode->n_fillp = selnode->n_ofillp;
+	selnode = n;
+	if (n->n_fillp != &selnodefill) {
+		n->n_ofillp = n->n_fillp;
+		n->n_fillp = &selnodefill;
+	}
 	rebuild(RO_COMPILE);
 }
 
@@ -578,11 +500,11 @@ rebuild(int opts)
 		switch (st.st_mode) {
 		case SM_JOBS:
 			parse_jobmap();
-			if (st.st_selnode != NULL) {
-				if (st.st_selnode->n_state != JST_INFO)
-					st.st_selnode->n_savst =
-					    st.st_selnode->n_state;
-				st.st_selnode->n_state = JST_INFO;
+			if (selnode != NULL) {
+				if (selnode->n_fillp != &selnodefill) {
+					selnode->n_ofillp = selnode->n_fillp;
+					selnode->n_fillp = &selnodefill;
+				}
 			}
 			break;
 		case SM_FAIL:
