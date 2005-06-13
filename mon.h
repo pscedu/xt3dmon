@@ -28,7 +28,7 @@
 #define _PATH_TEMPMAP	"data/temps"
 #define _PATH_BADMAP	"/usr/users/torque/bad_nids_list_login%d"
 #define _PATH_CHECKMAP	"/usr/users/torque/check_nids_list_login%d"
-
+#define _PATH_FLYBY	"data/flyby.data"
 #define _PATH_TEX	"data/texture%d.png"
 
 #define NROWS		2
