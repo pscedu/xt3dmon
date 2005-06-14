@@ -9,3 +9,4 @@ $Id$
 6. only perform node calculations on vmode swapping.  it's not like
    nodes move around during recompilations, so there is a lot of
    wasted math, especially if make_cluster() is being called frequently.
+7. check invmap looks after nid gaps
