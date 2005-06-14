@@ -204,7 +204,6 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 	case 't':
 		st.st_opts ^= OP_TEX;
 		st.st_ro |= RO_COMPILE;
-		st.st_ro |= RO_TEXTURE;
 		break;
 	case 'v':
 		glutKeyboardFunc(keyh_vmode);
