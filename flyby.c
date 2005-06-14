@@ -31,26 +31,19 @@ write_flyby(void)
 
 	/* Save the node ID. */
 	if (selnode != NULL) {
-		tnid = selnode->n_nid;
-		tnlid = selnode->n_logid;
-
-		/* Switch and set nid. */
-		fb.fb_nid = tnid;
-		fb.fb_nlid = tnlid;
-	} else {
+		fb.fb_nid = selnode->n_nid;
+		fb.fb_nlid = selnode->n_logid;
+printf("selected - %d %d\n", fb.fb_nid, fb.fb_nlid);
+	} 
+	else {
 		fb.fb_nid = -1;
-//		fb.fb_nlid = -1;
+		fb.fb_nlid = -1;
 	}
 
-	if (fwrite(&st, sizeof(struct state), 1, flyby_fp) != 1)
-		err(1, "fwrite");
-	
-	/* Set node back */
-	if (tnid == -1)
-		selnode = NULL;
-	else
-		selnode = invmap[logids[tnlid]][tnid];
-
+	if (!fwrite(&st, sizeof(struct state), 1, flyby_fp))
+		err(1, "fwrite st");
+	if (!fwrite(&fb, sizeof(struct flyby), 1, flyby_fp))
+		err(1, "fwrite fb");
 }
 
 /* Read a set of flyby data. */
@@ -65,13 +58,30 @@ read_flyby(void)
 
 	if(!fread(&st, sizeof(struct state), 1, flyby_fp)) {
 
-		/* end of flyby */
+		/* End of flyby */
 		if(feof(flyby_fp) != 0) {
 			active_flyby = 0;
+			end_flyby();
 			glutKeyboardFunc(keyh_default);
 			glutSpecialFunc(spkeyh_default);
+			adjcam();
+			return;
 		} else
-			err(1, "fread");
+			err(1, "fread st");
+	}
+
+	if(!fread(&fb, sizeof(struct flyby), 1, flyby_fp)) {
+
+		/* XXX: this is sloppy... same as above */
+		if(feof(flyby_fp) != 0) {
+			active_flyby = 0;
+			end_flyby();
+			glutKeyboardFunc(keyh_default);
+			glutSpecialFunc(spkeyh_default);
+			adjcam();
+			return;
+		} else
+			err(1, "fread fb");
 	}
 
 	if ((st.st_ro & OP_TWEEN) == 0)
@@ -79,19 +89,22 @@ read_flyby(void)
 
 	/* Restore selected node */
 	if (fb.fb_nid != -1) {
-		int tnid, tnlid;
+printf("restore selected node: %d %d\n", fb.fb_nid, fb.fb_nlid);
 
 		/* Force recompile if needed */
-		if(tnid != fb.fb_nid &&
-		   tnlid != fb.fb_nlid)
-			st.st_ro |= RO_COMPILE;
+		if(tnid != fb.fb_nid ||
+		   tnlid != fb.fb_nlid) {
+			st.st_ro |= RO_SELNODE;
+printf("SELNODE - COMPILE\n");
+		}
 
-		tnid = fb.fb_nid;
-		tnlid = fb.fb_nlid;
-		selnode = invmap[tnlid][tnid];
-	} else {
+//		tnid = fb.fb_nid;
+//		tnlid = fb.fb_nlid;
+//		selnode = invmap[logids[tnlid]][tnid];
+		selnode = invmap[logids[fb.fb_nlid]][fb.fb_nid];
+
+	} else
 		selnode = NULL;
-	}
 
 	restore_state(1);
 }
@@ -110,6 +123,7 @@ update_flyby(void)
 {
 	/* Record user commands. */
 	if (build_flyby) {
+printf("Writing flyby\n");
 		write_flyby();
 		st.st_ro = 0;
 	}
