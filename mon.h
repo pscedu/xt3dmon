@@ -130,6 +130,21 @@ struct node {
 		float	 np_y;
 		float	 np_z;
 	}		 n_pos;
+	union {
+		CIRCLEQ_HEAD(, node) nu_xhead;
+		CIRCLEQ_ENTRY(node) nu_xlink;
+	}		 n_uwiredx;
+	union {
+		CIRCLEQ_HEAD(, node) nu_yhead;
+		CIRCLEQ_ENTRY(node) nu_ylink;
+	}		 n_uwiredy;
+	union {
+		CIRCLEQ_HEAD(, node) nu_zhead;
+		CIRCLEQ_ENTRY(node) nu_zlink;
+	}		 n_uwiredz;
+#define n_xlink n_uwiredx.nu_xlink
+#define n_ylink n_uwiredy.nu_ylink
+#define n_zlink n_uwiredz.nu_zlink
 };
 
 struct state {
