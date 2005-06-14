@@ -32,7 +32,7 @@ write_flyby(void)
 	/* Save the node ID. */
 	if (selnode != NULL) {
 		fb.fb_nid = selnode->n_nid;
-		fb.fb_nlid = selnode->n_logid;
+		fb.fb_nlid = selnode->n_logidx;
 printf("selected - %d %d\n", fb.fb_nid, fb.fb_nlid);
 	} 
 	else {
@@ -89,7 +89,7 @@ read_flyby(void)
 
 	/* Restore selected node */
 	if (fb.fb_nid != -1) {
-printf("restore selected node: %d %d\n", fb.fb_nid, fb.fb_nlid);
+printf("restored: %d %d\n", fb.fb_nid, fb.fb_nlid);
 
 		/* Force recompile if needed */
 		if(tnid != fb.fb_nid ||
@@ -98,11 +98,7 @@ printf("restore selected node: %d %d\n", fb.fb_nid, fb.fb_nlid);
 printf("SELNODE - COMPILE\n");
 		}
 
-//		tnid = fb.fb_nid;
-//		tnlid = fb.fb_nlid;
-//		selnode = invmap[logids[tnlid]][tnid];
-		selnode = invmap[logids[fb.fb_nlid]][fb.fb_nid];
-
+		select_node(invmap[fb.fb_nlid][fb.fb_nid]);
 	} else
 		selnode = NULL;
 
