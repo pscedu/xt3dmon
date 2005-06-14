@@ -103,11 +103,13 @@ struct job {
 struct temp {
 	int		 t_cel;
 	struct fill	 t_fill;
+	char		*t_name;
 };
 
 struct fail {
 	int		 f_fails;
 	struct fill	 f_fill;
+	char		*f_name;
 };
 
 struct vec {
@@ -238,6 +240,7 @@ struct panel {
 	TAILQ_ENTRY(panel)	  p_link;
 	SLIST_HEAD(, pwidget)	  p_widgets;
 	int			  p_nwidgets;
+	size_t			  p_maxwlen;
 };
 
 #define PANEL_FPS	(1<<0)
