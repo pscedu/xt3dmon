@@ -142,6 +142,10 @@ struct node {
 		CIRCLEQ_HEAD(, node) nu_zhead;
 		CIRCLEQ_ENTRY(node) nu_zlink;
 	}		 n_uwiredz;
+#define n_xhead n_uwiredx.nu_xhead
+#define n_yhead n_uwiredy.nu_yhead
+#define n_zhead n_uwiredz.nu_zhead
+
 #define n_xlink n_uwiredx.nu_xlink
 #define n_ylink n_uwiredy.nu_ylink
 #define n_zlink n_uwiredz.nu_zlink
