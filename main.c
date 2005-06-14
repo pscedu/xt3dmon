@@ -504,6 +504,10 @@ rebuild(int opts)
 			parse_tempmap();
 			break;
 		}
+	if(opts & RO_SELNODE) {
+		select_node(selnode);
+		return;
+	}
 	if (opts & RO_COMPILE)
 		make_cluster();
 }
