@@ -33,7 +33,6 @@ write_flyby(void)
 	if (selnode != NULL) {
 		fb.fb_nid = selnode->n_nid;
 		fb.fb_nlid = selnode->n_logidx;
-printf("selected - %d %d\n", fb.fb_nid, fb.fb_nlid);
 	} 
 	else {
 		fb.fb_nid = -1;
@@ -89,13 +88,11 @@ read_flyby(void)
 
 	/* Restore selected node */
 	if (fb.fb_nid != -1) {
-printf("restored: %d %d\n", fb.fb_nid, fb.fb_nlid);
 
 		/* Force recompile if needed */
 		if(tnid != fb.fb_nid ||
 		   tnlid != fb.fb_nlid) {
 			st.st_ro |= RO_SELNODE;
-printf("SELNODE - COMPILE\n");
 		}
 
 		select_node(invmap[fb.fb_nlid][fb.fb_nid]);
@@ -119,7 +116,6 @@ update_flyby(void)
 {
 	/* Record user commands. */
 	if (build_flyby) {
-printf("Writing flyby\n");
 		write_flyby();
 		st.st_ro = 0;
 	}
