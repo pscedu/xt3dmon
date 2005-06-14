@@ -29,6 +29,7 @@
 
 #define FOVY		(45.0f)
 #define ASPECT		(win_width / (double)win_height)
+#define CLIPFAR		1000
 
 #define STARTX		(-30.0f)
 #define STARTY		(10.0f)
@@ -361,6 +362,19 @@ idle(void)
 void
 make_cluster(void)
 {
+	switch (st.st_vmode) {
+	case VM_PHYSICAL:
+		make_cluster_physical();
+		break;
+	case VM_LOGICAL:
+		make_cluster_logical();
+		break;
+	}
+}
+
+__inline void
+make_cluster_physical(void)
+{
 	float x = 0.0f, y = 0.0f, z = 0.0f;
 	int r, cb, cg, m, n;
 	struct node *node;
@@ -395,6 +409,44 @@ make_cluster(void)
 		x -= (CABWIDTH + CABSPACE) * NCABS;
 	}
 	glEndList();
+}
+
+/*
+ * Draw the cluster repeatedly till we reach the clipping plane.
+ * Since we can see CLIPFAR away, we must construct a 3D space
+ * CLIPFAR x CLIPFAR x CLIPFAR large and draw the cluster multiple
+ * times inside.
+ */
+__inline void
+make_cluster_logical(void)
+{
+	struct vec v;
+
+	for (v.v_x = st.st_x - CLIPFAR; v.v_x < st.st_x + CLIPFAR; )
+		for (v.v_y = st.st_y - CLIPFAR; v.v_y < st.st_y + CLIPFAR; )
+			for (v.v_z = st.st_z - CLIPFAR; v.v_z < st.st_z + CLIPFAR; )
+				make_one_logical_cluster(&v);
+}
+
+__inline void
+make_one_logical_cluster(struct vec *v)
+{
+	struct node *nx, *ny, *nz;
+
+	CIRCLEQ_FOREACH(ny, &rootnode->n_ylink, n_ylink) {
+		CIRCLEQ_FOREACH(nx, &ny->n_xlink, n_ylink) {
+			CIRCLEQ_FOREACH(nz, &nx->n_zlink, n_zlink) {
+				node->n_pos.np_x = v->v_x;
+				node->n_pos.np_y = v->v_y;
+				node->n_pos.np_z = v->v_z;
+				draw_node(node, NODEWIDTH, NODEHEIGHT, NODEDEPTH);
+
+				v->v_z += NODEDEPTH + NODESPACE;
+			}
+			v->v_x += NODEWIDTH + NODESPACE;
+		}
+		v->v_y += NODEHEIGHT + NODESPACE;
+	}
 }
 
 void
