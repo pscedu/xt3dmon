@@ -179,6 +179,8 @@ fp->f_a = 1.00f;
 		uoff += p->p_w / 2 * (npw % 2 ? 1 : -1);
 		if (npw % 2 == 0)
 			voff -= PWIDGET_HEIGHT + PWIDGET_PADDING;
+		if (voff - PWIDGET_HEIGHT < p->p_v - p->p_h)
+			break;
 
 		/* Draw widget background. */
 		glBegin(GL_POLYGON);
@@ -202,7 +204,9 @@ fp->f_a = 1.00f;
 		glColor4f(p->p_fill.f_r, p->p_fill.f_g, p->p_fill.f_b, p->p_fill.f_a);
 		glRasterPos2d(uoff + PWIDGET_LENGTH + PWIDGET_PADDING,
 		    voff - PWIDGET_HEIGHT + 3);
-		for (s = pw->pw_str; *s != '\0'; s++)
+		for (s = pw->pw_str; *s != '\0' &&
+		    (s - pw->pw_str) * LETTER_WIDTH + PWIDGET_LENGTH +
+		    PWIDGET_PADDING * 4 < p->p_w / 2; s++)
 			glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
 
 		/*
