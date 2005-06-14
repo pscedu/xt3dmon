@@ -71,7 +71,7 @@ struct job_state jstates[] = {
 	{ "Disabled (PBS)",	{ 1.00f, 0.00f, 0.00f, 1.00f, 0 } },	/* Red */
 	{ "Disabled (HW)",	{ 0.66f, 0.66f, 0.66f, 1.00f, 0 } },	/* Gray */
 	{ NULL,			{ 0.00f, 0.00f, 0.00f, 1.00f, 0 } },	/* (dynamic) */
-	{ "I/O",		{ 1.00f, 1.00f, 0.00f, 1.00f, 0 } },	/* Yellow */
+	{ "Service",		{ 1.00f, 1.00f, 0.00f, 1.00f, 0 } },	/* Yellow */
 	{ "Unaccounted",	{ 0.00f, 0.00f, 1.00f, 1.00f, 0 } },	/* Blue */
 	{ "Bad",		{ 1.00f, 0.75f, 0.75f, 1.00f, 0 } },	/* Pink */
 	{ "Checking",		{ 0.00f, 1.00f, 0.00f, 1.00f, 0 } }	/* Green */
