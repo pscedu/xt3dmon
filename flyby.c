@@ -11,7 +11,7 @@ struct flyby fb;
 void
 begin_flyby(char m)
 {
-	if(flyby_fp != NULL)
+	if (flyby_fp != NULL)
 		return;
 
 	if (m == 'r') {
@@ -27,21 +27,15 @@ begin_flyby(char m)
 void
 write_flyby(void)
 {
-	int tnid = -1, tnlid;
-
 	/* Save the node ID. */
-	if (selnode != NULL) {
+	if (selnode != NULL)
 		fb.fb_nid = selnode->n_nid;
-		fb.fb_nlid = selnode->n_logidx;
-	} 
-	else {
+	else
 		fb.fb_nid = -1;
-		fb.fb_nlid = -1;
-	}
 
-	if (!fwrite(&st, sizeof(struct state), 1, flyby_fp))
+	if (fwrite(&st, sizeof(struct state), 1, flyby_fp) != 1)
 		err(1, "fwrite st");
-	if (!fwrite(&fb, sizeof(struct flyby), 1, flyby_fp))
+	if (fwrite(&fb, sizeof(struct flyby), 1, flyby_fp) != 1)
 		err(1, "fwrite fb");
 }
 
@@ -49,56 +43,40 @@ write_flyby(void)
 void
 read_flyby(void)
 {
-	int tnid, tnlid;
+	struct node *n;
+	int tnid;
 
-	/* Save selected node */
+	/* Save selected node. */
 	tnid = fb.fb_nid;
-	tnlid = fb.fb_nlid;
 
-	if(!fread(&st, sizeof(struct state), 1, flyby_fp)) {
-
-		/* End of flyby */
-		if(feof(flyby_fp) != 0) {
+	if (fread(&st, sizeof(struct state), 1, flyby_fp) != 1 ||
+	    fread(&fb, sizeof(struct flyby), 1, flyby_fp) != 1) {
+		if (ferror(flyby_fp))
+			err(1, "fread");
+		/* End of flyby. */
+		if (feof(flyby_fp)) {
 			active_flyby = 0;
 			end_flyby();
 			glutKeyboardFunc(keyh_default);
 			glutSpecialFunc(spkeyh_default);
 			adjcam();
 			return;
-		} else
-			err(1, "fread st");
-	}
-
-	if(!fread(&fb, sizeof(struct flyby), 1, flyby_fp)) {
-
-		/* XXX: this is sloppy... same as above */
-		if(feof(flyby_fp) != 0) {
-			active_flyby = 0;
-			end_flyby();
-			glutKeyboardFunc(keyh_default);
-			glutSpecialFunc(spkeyh_default);
-			adjcam();
-			return;
-		} else
-			err(1, "fread fb");
+		} 
 	}
 
 	if ((st.st_ro & OP_TWEEN) == 0)
 		adjcam();
 
-	/* Restore selected node */
+	/* Restore selected node. */
 	if (fb.fb_nid != -1) {
-
-		/* Force recompile if needed */
-		if(tnid != fb.fb_nid ||
-		   tnlid != fb.fb_nlid) {
+		/* Force recompile if needed. */
+		if (tnid != fb.fb_nid)
 			st.st_ro |= RO_SELNODE;
-		}
-
-		select_node(invmap[fb.fb_nlid][fb.fb_nid]);
+		n = node_for_nid(fb.fb_nid);
+		if (n != NULL)
+			select_node(n);
 	} else
 		selnode = NULL;
-
 	restore_state(1);
 }
 
