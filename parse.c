@@ -23,21 +23,29 @@
 
 typedef int (*cmpf_t)(void *a, void *b);
 
-void			 getcol(int, size_t, struct fill *);
-void			*getobj(void *arg, void ***data, size_t *cursiz,
+void		 parse_badmap(void);
+void		 parse_checkmap(void);
+void		 getcol(int, size_t, struct fill *);
+void		*getobj(void *arg, void ***data, size_t *cursiz,
     size_t *maxsiz, cmpf_t eq, int inc, size_t);
 
-int			 logids[] = { 0, 8 };
+size_t		 njobs, maxjobs;
+size_t		 nfails, maxfails;
+size_t		 ntemps, maxtemps;
 
-size_t			 njobs, maxjobs;
-size_t			 nfails, maxfails;
-size_t			 ntemps, maxtemps;
+struct fail	**fails;
+struct job	**jobs;
+struct temp	**temps;
 
-struct fail		**fails;
-struct job		**jobs;
-struct temp		**temps;
+int		 total_failures;
 
-int			 total_failures;
+struct fail fail_notfound = {
+	0, { 0.33f, 0.66f, 0.99f, 1.00f, 0 }, "0"
+};
+
+struct temp temp_notfound = {
+	0, { 0.00f, 0.00f, 0.00f, 1.00f, 0 }, "?"
+};
 
 int job_eq(void *elem, void *arg)
 {
@@ -99,20 +107,19 @@ getcol(int n, size_t total, struct fill *fillp)
 
 /*
  * Example line:
- *	c0-1c0s1 3 7 c
+ *	33     c0-0c1s0s1      0,5,0
  *
  * Broken up:
- *	cb r cg  m	n nid  state
- *	c0-1 c0 s1	3 7    c
+ *	nid	cb r cb  m  n	x y z
+ *	33	c0-0 c1 s0 s1	0,5,0
  */
 void
 parse_physmap(void)
 {
-	char fn[MAXPATHLEN], buf[BUFSIZ], *p, *s;
-	int lineno, r, cb, cg, m, n, nid;
+	int lineno, r, cb, cg, m, n, nid, x, y, z;
+	char buf[BUFSIZ], *p, *s;
 	struct node *node;
 	FILE *fp;
-	size_t j;
 	long l;
 
 	/* Explicitly initialize all nodes. */
@@ -126,135 +133,178 @@ parse_physmap(void)
 						node->n_fillp = &jstates[JST_UNACC].js_fill;
 					}
 
-	for (j = 0; j < NLOGIDS; j++) {
-		snprintf(fn, sizeof(fn), _PATH_PHYSMAP, logids[j]);
-		if ((fp = fopen(fn, "r")) == NULL) {
-			warn("%s", fn);
-			continue;
-		}
-		lineno = 0;
-		while (fgets(buf, sizeof(buf), fp) != NULL) {
-			lineno++;
-			p = buf;
-			while (isspace(*p))
-				p++;
-			if (*p == '#')
-				continue;
-			if (*p++ != 'c')
-				goto bad;
-			if (!isdigit(*p))
-				goto bad;
-
-			/* cb */
-			s = p;
-			while (isdigit(*++s))
-				;
-			if (*s != '-')
-				goto bad;
-			*s = '\0';
-			if ((l = strtoul(p, NULL, 10)) < 0 || l >= NCABS)
-				goto bad;
-			cb = (int)l;
-
-			/* r */
-			p = s + 1;
-			s = p;
-			while (isdigit(*++s))
-				;
-			if (*s != 'c')
-				goto bad;
-			*s = '\0';
-			if ((l = strtoul(p, NULL, 10)) < 0 || l >= NROWS)
-				goto bad;
-			r = (int)l;
-
-			/* cg */
-			p = s + 1;
-			s = p;
-			while (isdigit(*++s))
-				;
-			if (*s != 's')
-				goto bad;
-			*s = '\0';
-			if ((l = strtoul(p, NULL, 10)) < 0 || l >= NCAGES)
-				goto bad;
-			cg = (int)l;
-
-			/* m */
-			p = s + 1;
-			s = p;
-			while (isdigit(*++s))
-				;
-			if (!isspace(*s))
-				goto bad;
-			*s = '\0';
-			if ((l = strtoul(p, NULL, 10)) < 0 || l >= NMODS)
-				goto bad;
-			m = (int)l;
-
-			/* n */
-			while (isspace(*++s))
-				;
-			if (!isdigit(*s))
-				goto bad;
-			p = s;
-			while (isdigit(*++s))
-				;
-			if (!isspace(*s))
-				goto bad;
-			*s = '\0';
-			if ((l = strtoul(p, NULL, 10)) < 0 || l >= NNODES)
-				goto bad;
-			n = (int)l;
-
-			/* nid */
-			while (isspace(*++s))
-				;
-			if (!isdigit(*s))
-				goto bad;
-			p = s;
-			while (isdigit(*++s))
-				;
-			if (!isspace(*s))
-				goto bad;
-			*s = '\0';
-			if ((l = strtoul(p, NULL, 10)) < 0 || l >= NID_MAX)
-				goto bad;
-			nid = (int)l;
-
-			node = &nodes[r][cb][cg][m][n];
-			node->n_nid = nid;
-			node->n_logidx = j;
-			invmap[j][nid] = node;
-
-			/* state */
-			while (isspace(*++s))
-				;
-			if (!isalpha(*s))
-				goto bad;
-			switch (*s) {
-			case 'c': /* compute */
-				node->n_state = JST_FREE;	/* Good enough. */
-				break;
-			case 'n': /* disabled */
-				node->n_state = JST_DISABLED;
-				break;
-			case 'i': /* I/O */
-				node->n_state = JST_IO;
-				break;
-			default:
-				goto bad;
-			}
-			node->n_fillp = &jstates[node->n_state].js_fill;
-			continue;
-bad:
-			warnx("%s:%d: malformed line [%s] [%s]", fn, lineno, buf, p);
-		}
-		if (ferror(fp))
-			warn("%s", fn);
-		fclose(fp);
-		errno = 0;
+	if ((fp = fopen(_PATH_PHYSMAP, "r")) == NULL) {
+		warn("%s", _PATH_PHYSMAP);
+		return;
 	}
+	lineno = 0;
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
+		lineno++;
+		p = buf;
+		while (isspace(*p))
+			p++;
+		if (*p == '#')
+			continue;
+
+		/* nid */
+		if (!isdigit(*p))
+			goto bad;
+		s = p;
+		while (isdigit(*++s))
+			;
+		if (!isspace(*s))
+			goto bad;
+		*s++ = '\0';
+		if ((l = strtoul(p, NULL, 10)) < 0 || l >= NID_MAX)
+			goto bad;
+		nid = (int)l;
+
+		/* cb */
+		p = s;
+		while (isspace(*p))
+			p++;
+		if (*p++ != 'c')
+			goto bad;
+		if (!isdigit(*p))
+			goto bad;
+		s = p;
+		while (isdigit(*++s))
+			;
+		if (*s != '-')
+			goto bad;
+		*s = '\0';
+		if ((l = strtoul(p, NULL, 10)) < 0 || l >= NCABS)
+			goto bad;
+		cb = (int)l;
+
+		/* r */
+		p = s + 1;
+		s = p;
+		while (isdigit(*++s))
+			;
+		if (*s != 'c')
+			goto bad;
+		*s = '\0';
+		if ((l = strtoul(p, NULL, 10)) < 0 || l >= NROWS)
+			goto bad;
+		r = (int)l;
+
+		/* cg */
+		p = s + 1;
+		s = p;
+		while (isdigit(*++s))
+			;
+		if (*s != 's')
+			goto bad;
+		*s++ = '\0';
+		if ((l = strtoul(p, NULL, 10)) < 0 || l >= NCAGES)
+			goto bad;
+		cg = (int)l;
+
+		/* m */
+		p = s;
+		while (isdigit(*++s))
+			;
+		if (*s != 's')
+			goto bad;
+		*s++ = '\0';
+		if ((l = strtoul(p, NULL, 10)) < 0 || l >= NMODS)
+			goto bad;
+		m = (int)l;
+
+		/* n */
+		p = s;
+		while (isdigit(*++s))
+			;
+		if (!isspace(*s))
+			goto bad;
+		*s++ = '\0';
+		if ((l = strtoul(p, NULL, 10)) < 0 || l >= NNODES)
+			goto bad;
+		n = (int)l;
+
+		/* x */
+		while (isspace(*s))
+			s++;
+		if (!isdigit(*s))
+			goto bad;
+		p = s;
+		while (isdigit(*++s))
+			;
+		if (*s != ',')
+			goto bad;
+		*s++ = '\0';
+		if ((l = strtol(p, NULL, 10)) < 0 || l >= INT_MAX)
+			goto bad;
+		x = (int)l;
+
+		/* y */
+		while (isspace(*s))
+			s++;
+		if (!isdigit(*s))
+			goto bad;
+		p = s;
+		while (isdigit(*++s))
+			;
+		if (*s != ',')
+			goto bad;
+		*s++ = '\0';
+		if ((l = strtol(p, NULL, 10)) < 0 || l >= INT_MAX)
+			goto bad;
+		y = (int)l;
+
+		/* z */
+		while (isspace(*s))
+			s++;
+		if (!isdigit(*s))
+			goto bad;
+		p = s;
+		while (isdigit(*++s))
+			;
+		if (!isspace(*s))
+			goto bad;
+		*s++ = '\0';
+		if ((l = strtol(p, NULL, 10)) < 0 || l >= INT_MAX)
+			goto bad;
+		z = (int)l;
+
+		/* done */
+
+		node = &nodes[r][cb][cg][m][n];
+		node->n_nid = nid;
+		invmap[nid] = node;
+		node->n_logv.v_x = x;
+		node->n_logv.v_y = y;
+		node->n_logv.v_z = z;
+
+		/* state */
+		while (isspace(*s))
+			s++;
+		if (!isalpha(*s))
+			goto bad;
+		switch (*s) {
+		case 'c': /* compute */
+			node->n_state = JST_FREE;	/* Good enough. */
+			break;
+		case 'n': /* disabled */
+			node->n_state = JST_DISABLED;
+			break;
+		case 'i': /* I/O */
+			node->n_state = JST_IO;
+			break;
+		default:
+			goto bad;
+		}
+		node->n_fillp = &jstates[node->n_state].js_fill;
+		continue;
+bad:
+		warnx("%s:%d: malformed line [%s] [%s]",
+		    _PATH_PHYSMAP, lineno, buf, p);
+	}
+	if (ferror(fp))
+		warn("%s", _PATH_PHYSMAP);
+	fclose(fp);
+	errno = 0;
 }
 
 /*
@@ -272,8 +322,8 @@ bad:
 void
 parse_jobmap(void)
 {
-	int jobid, nid, lineno, enabled, bad, checking;
-	char fn[MAXPATHLEN], buf[BUFSIZ], *p, *s;
+	int jobid, nid, lineno, enabled;
+	char buf[BUFSIZ], *p, *s;
 	struct node *node;
 	struct job *job;
 	FILE *fp;
@@ -282,221 +332,227 @@ parse_jobmap(void)
 
 	/* XXXXXX - reset fillp on all nodes. */
 
-//	for (j = 0; j < njobs; j++)
-//		free(jobs[j]);
 	njobs = 0;
-	for (j = 0; j < NLOGIDS; j++) {
-		snprintf(fn, sizeof(fn), _PATH_JOBMAP, logids[j]);
-		if ((fp = fopen(fn, "r")) == NULL) {
-			warn("%s", fn);
+	if ((fp = fopen(_PATH_JOBMAP, "r")) == NULL) {
+		warn("%s", _PATH_JOBMAP);
+		return;
+	}
+	lineno = 0;
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
+		lineno++;
+		p = buf;
+		while (isspace(*p))
+			p++;
+		if (*p == '#')
 			continue;
-		}
-		lineno = 0;
-		while (fgets(buf, sizeof(buf), fp) != NULL) {
-			lineno++;
-			p = buf;
-			while (isspace(*p))
-				p++;
-			if (*p == '#')
-				continue;
-			if (!isdigit(*p))
-				goto bad;
+		if (!isdigit(*p))
+			goto bad;
 
-			/* nid */
-			s = p;
-			while (isdigit(*++s))
-				;
-			if (!isspace(*s))
-				goto bad;
-			*s = '\0';
-			if ((l = strtoul(p, NULL, 10)) < 0 || l > NID_MAX)
-				goto bad;
-			nid = (int)l;
+		/* nid */
+		s = p;
+		while (isdigit(*++s))
+			;
+		if (!isspace(*s))
+			goto bad;
+		*s = '\0';
+		if ((l = strtoul(p, NULL, 10)) < 0 || l > NID_MAX)
+			goto bad;
+		nid = (int)l;
 
-			/* enabled */
-			p = s + 1;
-			s = p;
-			if (!isdigit(*s))
-				goto bad;
-			while (isdigit(*++s))
-				;
-			if (!isspace(*s))
-				goto bad;
-			*s = '\0';
-			if ((l = strtoul(p, NULL, 10)) < 0 || l > INT_MAX)
-				goto bad;
-			enabled = (int)l;
+		/* enabled */
+		p = s + 1;
+		s = p;
+		if (!isdigit(*s))
+			goto bad;
+		while (isdigit(*++s))
+			;
+		if (!isspace(*s))
+			goto bad;
+		*s = '\0';
+		if ((l = strtoul(p, NULL, 10)) < 0 || l > INT_MAX)
+			goto bad;
+		enabled = (int)l;
 
-			/* job id */
-			p = s + 1;
-			s = p;
-			if (!isdigit(*s))
-				goto bad;
-			while (isdigit(*++s))
-				;
-			if (!isspace(*s))
-				goto bad;
-			*s = '\0';
-			if ((l = strtoul(p, NULL, 10)) < 0 || l > INT_MAX)
-				goto bad;
-			jobid = (int)l;
+		/* job id */
+		p = s + 1;
+		s = p;
+		if (!isdigit(*s))
+			goto bad;
+		while (isdigit(*++s))
+			;
+		if (!isspace(*s))
+			goto bad;
+		*s = '\0';
+		if ((l = strtoul(p, NULL, 10)) < 0 || l > INT_MAX)
+			goto bad;
+		jobid = (int)l;
 
-			node = invmap[j][nid];
-			if (node == NULL && enabled) {
+		if ((node = node_for_nid(nid)) == NULL) {
+			if (enabled)
 				warnx("inconsistency: node %d should be "
 				    "disabled in jobmap", nid);
-				goto pass;
-			}
+			goto pass;
+		}
 
-			if (enabled == 0)
-				node->n_state = JST_DOWN;
-			else if (jobid == 0)
-				node->n_state = JST_FREE;
-			else {
-				node->n_state = JST_USED;
-				job = getobj(&jobid, (void ***)&jobs,
-				    &njobs, &maxjobs, job_eq, JINCR,
-				    sizeof(*job));
-				job->j_id = jobid;
-				job->j_name = "testjob";
-				// free(j->j_name);
-				node->n_job = job;
-				node->n_fillp = &job->j_fill;
-			}
+		if (enabled == 0)
+			node->n_state = JST_DOWN;
+		else if (jobid == 0)
+			node->n_state = JST_FREE;
+		else {
+			node->n_state = JST_USED;
+			job = getobj(&jobid, (void ***)&jobs,
+			    &njobs, &maxjobs, job_eq, JINCR,
+			    sizeof(*job));
+			job->j_id = jobid;
+			job->j_name = "testjob";
+			// free(j->j_name);
+			node->n_job = job;
+			node->n_fillp = &job->j_fill;
+		}
 
-			if (node->n_state != JST_USED)
-				node->n_fillp = &jstates[node->n_state].js_fill;
-			continue;
+		if (node->n_state != JST_USED)
+			node->n_fillp = &jstates[node->n_state].js_fill;
+		continue;
 bad:
-			warn("%s:%d: malformed line", fn, lineno);
+		warn("%s:%d: malformed line", _PATH_JOBMAP, lineno);
 pass:
-			; //node->n_fillp = ;
-		}
-		if (ferror(fp))
-			warn("%s", fn);
-		fclose(fp);
-		errno = 0;
-
-		snprintf(fn, sizeof(fn), _PATH_BADMAP, logids[j]);
-		if ((fp = fopen(fn, "r")) == NULL)
-			/* This is OK. */
-			errno = 0;
-		else {
-			lineno = 0;
-			while (fgets(buf, sizeof(buf), fp) != NULL) {
-				lineno++;
-				p = buf;
-				while (isspace(*p))
-					p++;
-				if (*p == '#')
-					continue;
-				if (!isdigit(*p))
-					goto badbad;
-
-				/* nid */
-				s = p;
-				while (isdigit(*++s))
-					;
-				if (!isspace(*s))
-					goto badbad;
-				*s = '\0';
-				if ((l = strtoul(p, NULL, 10)) < 0 || l > NID_MAX)
-					goto badbad;
-				nid = (int)l;
-
-				/* disabled */
-				p = s + 1;
-				s = p;
-				if (!isdigit(*s))
-					goto badbad;
-				while (isdigit(*++s))
-					;
-				if (!isspace(*s))
-					goto badbad;
-				*s = '\0';
-				if ((l = strtoul(p, NULL, 10)) < 0 || l > INT_MAX)
-					goto badbad;
-				bad = (int)l;
-
-				if (bad) {
-					/* XXX:  check validity. */
-					invmap[j][nid]->n_state = JST_BAD;
-					invmap[j][nid]->n_fillp = &jstates[JST_BAD].js_fill;
-				}
-				continue;
-badbad:
-				warnx("%s:%d: malformed line", fn, lineno);
-				}
-			if (ferror(fp))
-				warn("%s", fn);
-			fclose(fp);
-			errno = 0;
-		}
-
-		snprintf(fn, sizeof(fn), _PATH_CHECKMAP, logids[j]);
-		if ((fp = fopen(fn, "r")) == NULL)
-			/* This is OK. */
-			errno = 0;
-		else {
-			lineno = 0;
-			while (fgets(buf, sizeof(buf), fp) != NULL) {
-				lineno++;
-				p = buf;
-				while (isspace(*p))
-					p++;
-				if (*p == '#')
-					continue;
-				if (!isdigit(*p))
-					goto badcheck;
-
-				/* nid */
-				s = p;
-				while (isdigit(*++s))
-					;
-				if (!isspace(*s))
-					goto badcheck;
-				*s = '\0';
-				if ((l = strtoul(p, NULL, 10)) < 0 || l > NID_MAX)
-					goto badcheck;
-				nid = (int)l;
-
-				/* disabled */
-				p = s + 1;
-				s = p;
-				if (!isdigit(*s))
-					goto badcheck;
-				while (isdigit(*++s))
-					;
-				if (!isspace(*s))
-					goto badcheck;
-				*s = '\0';
-				if ((l = strtoul(p, NULL, 10)) < 0 || l > INT_MAX)
-					goto badcheck;
-				checking = (int)l;
-
-				if (checking) {
-					/* XXX:  check validity. */
-					invmap[j][nid]->n_state = JST_CHECK;
-					invmap[j][nid]->n_fillp = &jstates[JST_BAD].js_fill;
-				}
-				continue;
-badcheck:
-				warnx("%s:%d: malformed line", fn, lineno);
-			}
-			if (ferror(fp))
-				warn("%s", fn);
-			fclose(fp);
-			fclose(fp);
-			errno = 0;
-		}
+		; //node->n_fillp = ;
 	}
+	if (ferror(fp))
+		warn("%s", _PATH_JOBMAP);
+	fclose(fp);
+
+	parse_badmap();
+	parse_checkmap();
+
+	errno = 0;
 	for (j = 0; j < njobs; j++)
 		getcol(j, njobs, &jobs[j]->j_fill);
 }
 
-struct fail fail_notfound = {
-	0, { 0.33f, 0.66f, 0.99f, 1.00f, 0 }, "0"
-};
+void
+parse_badmap(void)
+{
+	char *s, *p, buf[BUFSIZ];
+	int lineno, bad, nid;
+	struct node *n;
+	FILE *fp;
+	long l;
+
+	if ((fp = fopen(_PATH_BADMAP, "r")) == NULL)
+		return;						/* Failure is OK. */
+	lineno = 0;
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
+		lineno++;
+		p = buf;
+		while (isspace(*p))
+			p++;
+		if (*p == '#')
+			continue;
+		if (!isdigit(*p))
+			goto bad;
+
+		/* nid */
+		s = p;
+		while (isdigit(*++s))
+			;
+		if (!isspace(*s))
+			goto bad;
+		*s = '\0';
+		if ((l = strtoul(p, NULL, 10)) < 0 || l > NID_MAX)
+			goto bad;
+		nid = (int)l;
+
+		/* disabled */
+		p = s + 1;
+		s = p;
+		if (!isdigit(*s))
+			goto bad;
+		while (isdigit(*++s))
+			;
+		if (!isspace(*s))
+			goto bad;
+		*s = '\0';
+		if ((l = strtoul(p, NULL, 10)) < 0 || l > INT_MAX)
+			goto bad;
+		bad = (int)l;
+
+		if (bad) {
+			if ((n = node_for_nid(nid)) == NULL)
+				goto bad;
+			n->n_state = JST_BAD;
+			n->n_fillp = &jstates[JST_BAD].js_fill;
+		}
+		continue;
+bad:
+		warnx("%s:%d: malformed line", _PATH_BADMAP, lineno);
+	}
+	if (ferror(fp))
+		warn("%s", _PATH_BADMAP);
+	fclose(fp);
+}
+
+void
+parse_checkmap(void)
+{
+	char *s, *p, buf[BUFSIZ];
+	int lineno, checking, nid;
+	struct node *n;
+	FILE *fp;
+	long l;
+
+	if ((fp = fopen(_PATH_CHECKMAP, "r")) == NULL)
+		return;						/* Failure is OK. */
+	lineno = 0;
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
+		lineno++;
+		p = buf;
+		while (isspace(*p))
+			p++;
+		if (*p == '#')
+			continue;
+		if (!isdigit(*p))
+			goto bad;
+
+		/* nid */
+		s = p;
+		while (isdigit(*++s))
+			;
+		if (!isspace(*s))
+			goto bad;
+		*s = '\0';
+		if ((l = strtoul(p, NULL, 10)) < 0 || l > NID_MAX)
+			goto bad;
+		nid = (int)l;
+
+		/* disabled */
+		p = s + 1;
+		s = p;
+		if (!isdigit(*s))
+			goto bad;
+		while (isdigit(*++s))
+			;
+		if (!isspace(*s))
+			goto bad;
+		*s = '\0';
+		if ((l = strtoul(p, NULL, 10)) < 0 || l > INT_MAX)
+			goto bad;
+		checking = (int)l;
+
+		if (checking) {
+			if ((n = node_for_nid(nid)) == NULL)
+				goto bad;
+			n->n_state = JST_CHECK;
+			n->n_fillp = &jstates[JST_BAD].js_fill;
+		}
+		continue;
+bad:
+		warnx("%s:%d: malformed line", _PATH_CHECKMAP, lineno);
+	}
+	if (ferror(fp))
+		warn("%s", _PATH_CHECKMAP);
+	fclose(fp);
+}
 
 /*
  * Parse failure data entries.
@@ -567,13 +623,8 @@ parse_failmap(void)
 			if (nofails > MAXFAILS)
 				nofails = MAXFAILS;
 
-			node = invmap[0][nid];
-			if (node == NULL)
-				node = invmap[1][nid/2]; /* XXXXX */
-			if (node == NULL) {
-//				warnx("invmap[%d] is NULL", nid);
-				continue;
-			}
+			if ((node = node_for_nid(nid)) == NULL)
+				goto bad;
 			fail = getobj(&nofails, (void ***)&fails, &nfails,
 			    &maxfails, fail_eq, FINCR, sizeof(struct fail));
 			fail->f_fails = nofails;
@@ -589,9 +640,8 @@ parse_failmap(void)
 				newmax = nofails;
 			continue;
 bad:
-	;
-//			warnx("%s:%d: malformed line: %s [s: %s, p: %s, l:%ld]",
-//			    _PATH_FAILMAP, lineno, buf, s, p, l);
+			warnx("%s:%d: malformed line: %s [s: %s, p: %s, l:%ld]",
+			    _PATH_FAILMAP, lineno, buf, s, p, l);
 		}
 		if (ferror(fp))
 			warn("%s", _PATH_FAILMAP);
@@ -601,10 +651,6 @@ bad:
 	for (j = 0; j < maxfails; j++)
 		getcol(j, maxfails, &fails[j]->f_fill);
 }
-
-struct temp temp_notfound = {
-	0, { 0.00f, 0.00f, 0.00f, 1.00f, 0 }, "?"
-};
 
 /*
  * Temperature data.
