@@ -102,3 +102,25 @@
 	    (elem) != TAILQ_END(tqh);					\
 	    (elem) = TAILQ_NEXT((elem), memb))
 #endif
+
+#ifndef CIRCLEQ_FIRST
+#define CIRCLEQ_FIRST(cqh)						\
+	((cqh)->cqh_first)
+#endif
+
+#ifndef CIRCLEQ_END
+#define CIRCLEQ_END(cqh)						\
+	((cqh)->cqh_last)
+#endif
+
+#ifndef CIRCLEQ_NEXT
+#define CIRCLEQ_NEXT(elem, memb)					\
+	(((elem)->memb).cqe_next)
+#endif
+
+#ifndef CIRCLEQ_FOREACH
+#define CIRCLEQ_FOREACH(elem, cqh, memb)				\
+	for ((elem) = CIRCLEQ_FIRST(cqh);				\
+	    (elem) != CIRCLEQ_END(cqh);					\
+	    (elem) = CIRCLEQ_NEXT((elem), memb))
+#endif
