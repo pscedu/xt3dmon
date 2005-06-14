@@ -15,19 +15,12 @@
 #include "buf.h"
 #include "queue.h"
 
-/*
-#define _PATH_JOBMAP	"/usr/users/torque/nids_list_login%d"
-#define _PATH_BADMAP	"/usr/users/torque/bad_nids_list_login%d"
-#define _PATH_CHECKMAP	"/usr/users/torque/check_nids_list_login%d"
-#define _PATH_PHYSMAP	"/opt/tmp-harness/default/ssconfig/sys%d/nodelist"
-*/
-
-#define _PATH_JOBMAP	"data/nids_list_login%d"
-#define _PATH_PHYSMAP	"data/nodelist%d"
+#define _PATH_JOBMAP	"data/nids_list_phantom"
+#define _PATH_PHYSMAP	"data/rtrtrace"
 #define _PATH_FAILMAP	"data/fail"
 #define _PATH_TEMPMAP	"data/temps"
-#define _PATH_BADMAP	"/usr/users/torque/bad_nids_list_login%d"
-#define _PATH_CHECKMAP	"/usr/users/torque/check_nids_list_login%d"
+#define _PATH_BADMAP	"/usr/users/torque/bad_nids_list_phantom"
+#define _PATH_CHECKMAP	"/usr/users/torque/to_check_nids_list_phantom"
 #define _PATH_FLYBY	"data/flyby.data"
 #define _PATH_TEX	"data/texture%d.png"
 
@@ -75,9 +68,7 @@
 
 #define PI		(3.14159265358979323)
 
-#define NLOGIDS		(sizeof(logids) / sizeof(logids[0]))
-
-#define NID_MAX		(NROWS * NCABS * NCAGES * NMODS * NNODES)
+#define NID_MAX		3000
 
 #define SQUARE(x)	((x) * (x))
 
@@ -120,37 +111,14 @@ struct vec {
 
 struct node {
 	int		 n_nid;
-	int		 n_logidx;
 	struct job	*n_job;
 	struct temp	*n_temp;
 	struct fail	*n_fail;
 	int		 n_state;
 	struct fill	*n_fillp;
 	struct fill	*n_ofillp;
-	struct {
-		float	 np_x;
-		float	 np_y;
-		float	 np_z;
-	}		 n_pos;
-	union {
-		CIRCLEQ_HEAD(, node) nu_xhead;
-		CIRCLEQ_ENTRY(node) nu_xlink;
-	}		 n_uwiredx;
-	union {
-		CIRCLEQ_HEAD(, node) nu_yhead;
-		CIRCLEQ_ENTRY(node) nu_ylink;
-	}		 n_uwiredy;
-	union {
-		CIRCLEQ_HEAD(, node) nu_zhead;
-		CIRCLEQ_ENTRY(node) nu_zlink;
-	}		 n_uwiredz;
-#define n_xhead n_uwiredx.nu_xhead
-#define n_yhead n_uwiredy.nu_yhead
-#define n_zhead n_uwiredz.nu_zhead
-
-#define n_xlink n_uwiredx.nu_xlink
-#define n_ylink n_uwiredy.nu_ylink
-#define n_zlink n_uwiredz.nu_zlink
+	struct vec	 n_logv;
+	struct vec	 n_physv;
 };
 
 struct state {
@@ -170,13 +138,10 @@ struct state {
 };
 
 struct flyby {
-	struct {
-		int	 fbni_nlid;
-		int 	 fbni_nid;
-	}		 fb_ninfo;
+	int 		 fb_nid;
 	int		 fb_panels;
-#define fb_nlid	fb_ninfo.fbni_nlid
-#define fb_nid	fb_ninfo.fbni_nid
+	int		 fb_omask;
+	int		 fb_pmask;
 };
 
 #define TM_STRAIGHT	1
@@ -276,18 +241,18 @@ void			 spkeyh_default(int, int, int);
 void			 load_texture(void *, GLint, int);
 void 			*load_png(char *);
 
-/* mon.c */
+/* main.c */
+struct node		*node_for_nid(int);
 void			 adjcam(void);
-void			 calc_flyby(void);
 void			 restore_state(int);
 void			 rebuild(int);
+void			 select_node(struct node *);
 
 /* panel.c */
 void			 draw_panels(void);
 void			 panel_toggle(int);
 void			 uinpcb_cmd(void);
 void			 uinpcb_goto(void);
-void			 uinpcb_goto2(void);
 
 /* parse.c */
 void			 parse_jobmap(void);
@@ -306,9 +271,8 @@ void			 write_flyby(void);
 void			 update_flyby(void);
 void			 flip_panels(int);
 
-extern int		 logids[2];
 extern struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
-extern struct node	*invmap[NLOGIDS][NROWS * NCABS * NCAGES * NMODS * NNODES];
+extern struct node	*invmap[];
 
 extern size_t		 njobs;
 extern struct job	**jobs;
@@ -330,7 +294,6 @@ extern struct panels	 panels;
 extern struct node	*selnode;
 
 extern struct uinput	 uinp;
-extern int		 goto_logidx;
 extern int		 spkey;
 
 extern float		 tx, tlx, ox, olx;
