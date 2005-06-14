@@ -318,6 +318,9 @@ extern struct fail	**fails;
 extern size_t		 ntemps;
 extern struct temp	**temps;
 
+extern struct fail	 fail_notfound;
+extern struct temp	 temp_notfound;
+
 extern int		 total_failures;	/* total shared among all nodes */
 
 extern GLint		 cluster_dl;
