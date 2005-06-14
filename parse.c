@@ -1,5 +1,9 @@
 /* $Id$ */
 
+#ifdef __GNUC__
+#define _GNU_SOURCE	/* asprintf */
+#endif
+
 #include <sys/param.h>
 
 #include <ctype.h>
@@ -271,9 +275,12 @@ parse_jobmap(void)
 	int jobid, nid, lineno, enabled, bad, checking;
 	char fn[MAXPATHLEN], buf[BUFSIZ], *p, *s;
 	struct node *node;
+	struct job *job;
 	FILE *fp;
 	size_t j;
 	long l;
+
+	/* XXXXXX - reset fillp on all nodes. */
 
 //	for (j = 0; j < njobs; j++)
 //		free(jobs[j]);
@@ -338,7 +345,7 @@ parse_jobmap(void)
 			if (node == NULL && enabled) {
 				warnx("inconsistency: node %d should be "
 				    "disabled in jobmap", nid);
-				continue;
+				goto pass;
 			}
 
 			if (enabled == 0)
@@ -347,19 +354,23 @@ parse_jobmap(void)
 				node->n_state = JST_FREE;
 			else {
 				node->n_state = JST_USED;
-				node->n_job = getobj(&jobid, (void ***)&jobs,
+				job = getobj(&jobid, (void ***)&jobs,
 				    &njobs, &maxjobs, job_eq, JINCR,
-				    sizeof(struct job));
-				node->n_job->j_id = jobid;
+				    sizeof(*job));
+				job->j_id = jobid;
+				job->j_name = "testjob";
+				// free(j->j_name);
+				node->n_job = job;
+				node->n_fillp = &job->j_fill;
 			}
 
-			if (node->n_state == JST_USED)
-				node->n_fillp = &node->n_job->j_fill;
-			else
+			if (node->n_state != JST_USED)
 				node->n_fillp = &jstates[node->n_state].js_fill;
 			continue;
 bad:
 			warn("%s:%d: malformed line", fn, lineno);
+pass:
+			; //node->n_fillp = ;
 		}
 		if (ferror(fp))
 			warn("%s", fn);
@@ -484,7 +495,7 @@ badcheck:
 }
 
 struct fail fail_notfound = {
-	0, { 0.33f, 0.66f, 0.99f, 1.00f, 0 }
+	0, { 0.33f, 0.66f, 0.99f, 1.00f, 0 }, "0"
 };
 
 /*
@@ -504,6 +515,7 @@ parse_failmap(void)
 	size_t j, newmax, nofails;
 	char *p, *s, buf[BUFSIZ];
 	struct node *node;
+	struct fail *fail;
 	FILE *fp;
 	long l;
 
@@ -516,8 +528,9 @@ parse_failmap(void)
 			for (cg = 0; cg < NCAGES; cg++)
 				for (m = 0; m < NMODS; m++)
 					for (n = 0; n < NNODES; n++) {
-						nodes[r][cb][cg][m][n].n_fail = &fail_notfound;
-						nodes[r][cb][cg][m][n].n_fillp = &fail_notfound.f_fill;
+						node = &nodes[r][cb][cg][m][n];
+						node->n_fail = &fail_notfound;
+						node->n_fillp = &fail_notfound.f_fill;
 					}
 
 	total_failures = newmax = 0;
@@ -561,11 +574,16 @@ parse_failmap(void)
 //				warnx("invmap[%d] is NULL", nid);
 				continue;
 			}
-			node->n_fail = getobj(&nofails,
-			    (void ***)&fails, &nfails, &maxfails, fail_eq,
-			    FINCR, sizeof(struct fail));
-			node->n_fail->f_fails = nofails;
-			node->n_fillp = &node->n_fail->f_fill;
+			fail = getobj(&nofails, (void ***)&fails, &nfails,
+			    &maxfails, fail_eq, FINCR, sizeof(struct fail));
+			fail->f_fails = nofails;
+			free(fail->f_name); /* XXX - rename to f_label */
+			if (asprintf(&fail->f_name, "%d", nofails) == -1)
+				err(1, "asprintf");
+			node->n_fillp = &fail->f_fill;
+			node->n_fail = fail;
+
+			/* Compute failure statistics. */
 			total_failures += nofails;
 			if (nofails > newmax)
 				newmax = nofails;
@@ -580,10 +598,13 @@ bad:
 		fclose(fp);
 		errno = 0;
 	}
-
 	for (j = 0; j < maxfails; j++)
 		getcol(j, maxfails, &fails[j]->f_fill);
 }
+
+struct temp temp_notfound = {
+	0, { 0.00f, 0.00f, 0.00f, 1.00f, 0 }, "?"
+};
 
 /*
  * Temperature data.
@@ -598,6 +619,8 @@ parse_tempmap(void)
 	int t, lineno, i, r, cb, cg, m, n;
 	char buf[BUFSIZ], *p, *s;
 	struct node *node;
+	struct temp *temp;
+	size_t j;
 	FILE *fp;
 	long l;
 
@@ -609,8 +632,11 @@ parse_tempmap(void)
 		for (cb = 0; cb < NCABS; cb++)
 			for (cg = 0; cg < NCAGES; cg++)
 				for (m = 0; m < NMODS; m++)
-					for (n = 0; n < NNODES; n++)
-						nodes[r][cb][cg][m][n].n_temp = NULL;
+					for (n = 0; n < NNODES; n++) {
+						node = &nodes[r][cb][cg][m][n];
+						node->n_temp = &temp_notfound;
+						node->n_fillp = &temp_notfound.t_fill;
+					}
 
 	if ((fp = fopen(_PATH_TEMPMAP, "r")) == NULL)
 		warn("%s", _PATH_TEMPMAP);
@@ -620,9 +646,10 @@ parse_tempmap(void)
 			lineno++;
 			p = buf;
 
+
 			while (isspace(*p))
 				p++;
-			if (*p == '#')
+			if (*p == '#' || *p == '\n' || *p == '\0')
 				continue;
 			if (*p++ != 'c')
 				goto bad;
@@ -676,7 +703,7 @@ parse_tempmap(void)
 			if (!isspace(*s))
 				goto bad;
 			*s++ = '\0';
-			if ((l = strtol(p, NULL, 10)) < 0 || l >= NCAGES)
+			if ((l = strtol(p, NULL, 10)) < 0 || l >= NMODS)
 				goto bad;
 			m = (int)l;
 
@@ -699,17 +726,25 @@ parse_tempmap(void)
 				t = (int)l;
 
 				node = &nodes[r][cb][cg][m][i];
-				node->n_fail = getobj(&t, (void ***)&temps,
+				temp = getobj(&t, (void ***)&temps,
 				    &ntemps, &maxtemps, temp_eq, TINCR,
 				    sizeof(struct temp));
+				temp->t_cel = t;
+				free(temp->t_name);
+				if (asprintf(&temp->t_name, "%dC", t) == -1)
+					err(1, "asprintf");
+				node->n_fillp = &temp->t_fill;
+				node->n_temp = temp;
 			}
 			continue;
 bad:
-			warn("%s:%d: malformed line", _PATH_TEMPMAP, lineno);
+			warnx("%s:%d: malformed line; %s", _PATH_TEMPMAP, lineno, p);
 		}
 		if (ferror(fp))
 			warn("%s", _PATH_TEMPMAP);
 		fclose(fp);
 		errno = 0;
 	}
+	for (j = 0; j < maxtemps; j++)
+		getcol(j, maxtemps, &temps[j]->t_fill);
 }
