@@ -30,9 +30,9 @@
 #define LETTER_WIDTH	8
 #define PANEL_PADDING	3
 #define PANEL_BWIDTH	(2.0f)
-#define PWIDGET_LENGTH	10
-#define PWIDGET_HEIGHT	7
-#define PWLABEL_LENGTH	30
+#define PWIDGET_LENGTH	15
+#define PWIDGET_HEIGHT	LETTER_HEIGHT
+#define PWLABEL_LENGTH	(win_width / 4 / 2 - PWIDGET_PADDING)
 #define PWIDGET_PADDING	3
 
 void panel_refresh_fps(struct panel *);
@@ -72,33 +72,11 @@ panel_free(struct panel *p)
 	struct pwidget *pw, *nextp;
 
 	TAILQ_REMOVE(&panels, p, p_link);
-	switch (st.st_mode) {
-	case SM_JOBS:
-		for (pw = SLIST_FIRST(&p->p_widgets);
-		    pw != SLIST_END(&p->p_widgets);
-		    pw = nextp) {
-			nextp = SLIST_NEXT(pw, pw_next);
-			free(pw);
-		}
-		break;
-	case SM_FAIL:
-		for (pw = SLIST_FIRST(&p->p_widgets);
-		    pw != SLIST_END(&p->p_widgets);
-		    pw = nextp) {
-			nextp = SLIST_NEXT(pw, pw_next);
-			free(pw->pw_str);
-			free(pw);
-		}
-		break;
-	case SM_TEMP:
-		for (pw = SLIST_FIRST(&p->p_widgets);
-		    pw != SLIST_END(&p->p_widgets);
-		    pw = nextp) {
-			nextp = SLIST_NEXT(pw, pw_next);
-			free(pw->pw_str);
-			free(pw);
-		}
-		break;
+	for (pw = SLIST_FIRST(&p->p_widgets);
+	    pw != SLIST_END(&p->p_widgets);
+	    pw = nextp) {
+		nextp = SLIST_NEXT(pw, pw_next);
+		free(pw);
 	}
 	free(p->p_str);
 	free(p);
@@ -135,9 +113,12 @@ draw_panel(struct panel *p)
 		w = w * LETTER_WIDTH + 2 * toff;
 		h = lineno * LETTER_HEIGHT + 2 * toff;
 		if (p->p_nwidgets) {
-			w = MAX(w, 2 * PWLABEL_LENGTH);
-			h += p->p_nwidgets * PWIDGET_HEIGHT +
-			    (p->p_nwidgets - 1) * PWIDGET_PADDING;
+			w = MAX(w, 2 * (LETTER_WIDTH * (int)p->p_maxwlen +
+			    PWIDGET_LENGTH + 2 * PWIDGET_PADDING) + PWIDGET_PADDING);
+			w = MIN(w, 2 * PWLABEL_LENGTH);
+			/* p_nwidgets + 1 for truncation */
+			h += ((p->p_nwidgets + 1) / 2) * PWIDGET_HEIGHT +
+			    ((p->p_nwidgets + 1) / 2 - 1) * PWIDGET_PADDING;
 		}
 		u = win_width - w;
 		v = win_height - panel_offset;
@@ -188,12 +169,16 @@ draw_panel(struct panel *p)
 	}
 
 	npw = 0;
+	uoff += p->p_w / 2;
+	voff += PWIDGET_HEIGHT; /* first loop cuts into this */
 	SLIST_FOREACH(pw, &p->p_widgets, pw_next) {
 		struct fill *fp = pw->pw_fillp;
 
-		uoff += p->p_w / 2 * (npw / 2 ? 1 : -1);
-		if (npw % 2)
-			voff -= PWIDGET_HEIGHT;
+fp->f_a = 1.00f;
+
+		uoff += p->p_w / 2 * (npw % 2 ? 1 : -1);
+		if (npw % 2 == 0)
+			voff -= PWIDGET_HEIGHT + PWIDGET_PADDING;
 
 		/* Draw widget background. */
 		glBegin(GL_POLYGON);
@@ -214,10 +199,18 @@ draw_panel(struct panel *p)
 		glVertex2d(uoff,			voff - PWIDGET_HEIGHT);
 		glEnd();
 
-		glRasterPos2d(uoff, voff);
+		glColor4f(p->p_fill.f_r, p->p_fill.f_g, p->p_fill.f_b, p->p_fill.f_a);
+		glRasterPos2d(uoff + PWIDGET_LENGTH + PWIDGET_PADDING,
+		    voff - PWIDGET_HEIGHT + 3);
 		for (s = pw->pw_str; *s != '\0'; s++)
 			glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
-		npw++;
+
+		/*
+		 * We may have to break early because of the way
+		 * persistent memory allocations are performed.
+		 */
+		if (++npw >= p->p_nwidgets)
+			break;
 	}
 
 	/* Draw background. */
@@ -293,10 +286,11 @@ panel_get_pwidget(struct panel *p, struct pwidget *pw, struct pwidget **nextp)
 		if ((pw = malloc(sizeof(*pw))) == NULL)
 			err(1, "malloc");
 		SLIST_INSERT_HEAD(&p->p_widgets, pw, pw_next);
+//		memset(pw, 0, sizeof(pw));
 		*nextp = NULL;
 	} else
 		*nextp = SLIST_NEXT(pw, pw_next);
-//	memset(pw, 0, sizeof(pw));
+	p->p_nwidgets++;
 	return (pw);
 }
 
@@ -307,35 +301,52 @@ panel_refresh_legend(struct panel *p)
 	size_t j;
 
 	p->p_nwidgets = 0;
+	p->p_maxwlen = 0;
 	pw = SLIST_FIRST(&p->p_widgets);
 	switch (st.st_mode) {
 	case SM_JOBS:
 		panel_set_content(p, "Jobs: %d", njobs);
+		for (j = 0; j < NJST; j++, pw = nextp) {
+			if (j == JST_USED)
+				continue;
+			pw = panel_get_pwidget(p, pw, &nextp);
+			pw->pw_fillp = &jstates[j].js_fill;
+			pw->pw_str = jstates[j].js_name;
+			p->p_maxwlen = MAX(p->p_maxwlen, strlen(pw->pw_str));
+		}
 		for (j = 0; j < njobs; j++, pw = nextp) {
 			pw = panel_get_pwidget(p, pw, &nextp);
 			pw->pw_fillp = &jobs[j]->j_fill;
 			pw->pw_str = jobs[j]->j_name;
-			p->p_nwidgets++;
+			p->p_maxwlen = MAX(p->p_maxwlen, strlen(pw->pw_str));
 		}
 		break;
 	case SM_FAIL:
 		panel_set_content(p, "Failures: %d", total_failures);
+		pw = panel_get_pwidget(p, pw, &nextp);
+		pw->pw_fillp = &fail_notfound.f_fill;
+		pw->pw_str = fail_notfound.f_name;
+		p->p_maxwlen = MAX(p->p_maxwlen, strlen(pw->pw_str));
+		pw = nextp;
 		for (j = 0; j < nfails; j++, pw = nextp) {
 			pw = panel_get_pwidget(p, pw, &nextp);
 			pw->pw_fillp = &fails[j]->f_fill;
-			if (asprintf(&pw->pw_str, "%d",
-			    fails[j]->f_fails) == -1)
-				err(1, "asprintf");
+			pw->pw_str = fails[j]->f_name;
+			p->p_maxwlen = MAX(p->p_maxwlen, strlen(pw->pw_str));
 		}
 		break;
 	case SM_TEMP:
 		panel_set_content(p, "Temperature");
+		pw = panel_get_pwidget(p, pw, &nextp);
+		pw->pw_fillp = &temp_notfound.t_fill;
+		pw->pw_str = temp_notfound.t_name;
+		p->p_maxwlen = MAX(p->p_maxwlen, strlen(pw->pw_str));
+		pw = nextp;
 		for (j = 0; j < ntemps; j++, pw = nextp) {
 			pw = panel_get_pwidget(p, pw, &nextp);
 			pw->pw_fillp = &temps[j]->t_fill;
-			if (asprintf(&pw->pw_str, "%d%cC",
-			    temps[j]->t_cel, 0xb0) == -1)
-				err(1, "asprintf");
+			pw->pw_str = temps[j]->t_name;
+			p->p_maxwlen = MAX(p->p_maxwlen, strlen(pw->pw_str));
 		}
 		break;
 	}
@@ -466,7 +477,7 @@ uinpcb_goto(void)
 
 	l = strtol(buf_get(&uinp.uinp_buf), NULL, 0);
 	if (!isdigit(*buf_get(&uinp.uinp_buf)) || l < 0 || l > NID_MAX)
-		return;
+		goto done;
 	goto_logid = (int)l;
 
 	for (j = 0; j < NLOGIDS; j++)
@@ -476,6 +487,7 @@ uinpcb_goto(void)
 			uinp.uinp_panel = PANEL_GOTO;
 			return;
 		}
+done:
 	panel_toggle(PANEL_GOTO);
 }
 
