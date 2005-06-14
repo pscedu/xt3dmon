@@ -53,7 +53,6 @@ void (*refreshf[])(struct panel *) = {
 
 struct panels	 panels;
 int		 panel_offset;
-int		 goto_logidx;
 
 int
 baseconv(int n)
@@ -370,13 +369,11 @@ panel_refresh_ninfo(struct panel *p)
 		case JST_USED:
 			panel_set_content(p,
 			    "Node ID: %d\n"
-			    "Login node ID: %d\n"
 			    "Owner: %d\n"
 			    "Job name: [%s]\n"
 			    "Duration: %d\n"
 			    "CPUs: %d",
 			    selnode->n_nid,
-			    logids[selnode->n_logidx],
 			    selnode->n_job->j_owner,
 			    selnode->n_job->j_name,
 			    selnode->n_job->j_dur,
@@ -384,12 +381,25 @@ panel_refresh_ninfo(struct panel *p)
 			break;
 		default:
 			panel_set_content(p,
-			    "Node ID: %d\n"
-			    "Login node ID: %d",
-			    selnode->n_nid,
-			    logids[selnode->n_logidx]);
+			    "Node ID: %d",
+			    selnode->n_nid);
 			break;
 		}
+		break;
+	case SM_FAIL:
+		panel_set_content(p,
+		    "Node ID: %d\n"
+		    "# Failures: %s",
+		    selnode->n_nid,
+		    selnode->n_fail->f_name);
+		break;
+	case SM_TEMP:
+		panel_set_content(p,
+		    "Node ID: %d\n"
+		    "Temperature: %s",
+		    selnode->n_nid,
+		    selnode->n_temp->t_name);
+		break;
 	}
 }
 
@@ -407,14 +417,7 @@ panel_refresh_flyby(struct panel *p)
 void
 panel_refresh_goto(struct panel *p)
 {
-	if (goto_logidx == -1)
-		panel_set_content(p, "Login Node ID: %s",
-		    buf_get(&uinp.uinp_buf));
-	else
-		panel_set_content(p, "Login Node ID: %d\n"
-		    "Node ID: %s",
-		    logids[goto_logidx],
-		    buf_get(&uinp.uinp_buf));
+	panel_set_content(p, "Node ID: %s", buf_get(&uinp.uinp_buf));
 }
 
 void
@@ -476,49 +479,26 @@ uinpcb_cmd(void)
 void
 uinpcb_goto(void)
 {
-	int logid;
-	size_t j;
-	long l;
-
-	l = strtol(buf_get(&uinp.uinp_buf), NULL, 0);
-	if (!isdigit(*buf_get(&uinp.uinp_buf)) || l < 0 || l > NID_MAX)
-		goto done;
-	logid = (int)l;
-
-	for (j = 0; j < NLOGIDS; j++)
-		if (logids[j] == logid) {
-			goto_logidx = j;
-			glutKeyboardFunc(keyh_uinput);
-			uinp.uinp_callback = uinpcb_goto2;
-			uinp.uinp_panel = PANEL_GOTO;
-			return;
-		}
-done:
-	panel_toggle(PANEL_GOTO);
-}
-
-void
-uinpcb_goto2(void)
-{
 	struct node *n;
+	char *s;
 	int nid;
 	long l;
 
-	l = strtol(buf_get(&uinp.uinp_buf), NULL, 0);
-	if (l <= 0 || l > NID_MAX)
+	s = buf_get(&uinp.uinp_buf);
+	l = strtol(s, NULL, 0);
+	if (l <= 0 || l > NID_MAX || !isdigit(*s))
 		return;
 	nid = (int)l;
-	n = invmap[goto_logidx][nid];
 
-	if (n == NULL)
+	if ((n = node_for_nid(nid)) == NULL)
 		return;
 	if (st.st_opts & OP_TWEEN) {
-		tx = n->n_pos.np_x;
-		ty = n->n_pos.np_y;
-		tz = n->n_pos.np_z;
+		tx = n->n_physv.v_x;
+		ty = n->n_physv.v_y;
+		tz = n->n_physv.v_z;
 	} else {
-		st.st_x = n->n_pos.np_x;
-		st.st_y = n->n_pos.np_y;
-		st.st_z = n->n_pos.np_z;
+		st.st_x = n->n_physv.v_x;
+		st.st_y = n->n_physv.v_y;
+		st.st_z = n->n_physv.v_z;
 	}
 }
