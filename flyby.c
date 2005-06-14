@@ -60,8 +60,8 @@ read_flyby(void)
 	int tnid, tnlid;
 
 	/* Save selected node */
-	tnid = st.st_ninfo.ni_nid;
-	tnlid = st.st_ninfo.ni_nlid;
+	tnid = fb.fb_nid;
+	tnlid = fb.fb_nlid;
 
 	if(!fread(&st, sizeof(struct state), 1, flyby_fp)) {
 
