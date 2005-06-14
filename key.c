@@ -84,8 +84,7 @@ keyh_panel(unsigned char key, __unused int u, __unused int v)
 		glutKeyboardFunc(keyh_uinput);
 		uinp.uinp_callback = uinpcb_goto;
 		uinp.uinp_panel = PANEL_GOTO;
-		uinp.uinp_opts = UINPO_LINGER;
-		goto_logidx = -1;
+		uinp.uinp_opts = 0;
 		break;
 	case 'n':
 		panel_toggle(PANEL_NINFO);
