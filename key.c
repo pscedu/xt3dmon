@@ -156,7 +156,7 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		}
 		break;
 	case 'C':
-		system("rm flyby.data");
+		system("rm data/flyby.data");
 		break;
 	case 'D':
 		st.st_opts ^= OP_DISPLAY;
