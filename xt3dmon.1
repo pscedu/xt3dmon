@@ -9,13 +9,17 @@
 .Nm mon
 .Sh DESCRIPTION
 .Nm
-is a 3D program that graphically displays the activity of the XT3
+is a 3D program that graphically displays the various attributes of the
+of the Cray
+.Tn XT3
 Redstorm cluster.
 At regular intervals, the data files are re-read and the display is
-updated to reality.
+updated to reflect what is happening in reality.
 .Pp
-Cluster nodes may be in any of the following states, differentiated by
-color or texture:
+There are three data modes available, which help visualize the state
+of the machine.
+In job mode, cluster nodes may be in any of the following states,
+differentiated by color and/or texture:
 .Pp
 .Bl -tag -width "Disabled (PBS)" -offset indent -compact
 .It Free
@@ -34,9 +38,11 @@ The node is not accounted for in the physical map.
 The node has failed required probe tests.
 .It Checking
 The node is current being probe tested.
-.It Selected
-The node has been selected for extended information viewing.
 .El
+.Pp
+The failure and temperature modes work similarly.
+The legend panel may be activated to display all possible node states
+in each mode.
 .Pp
 The following key bindings are available:
 .Bl -tag -width Ds -offset indent
@@ -45,7 +51,7 @@ Pan along the x/z plane.
 .It pageup, pagedown
 Pan along the y-axis (up and down).
 .It left click
-Select a node for extended information.
+Click a node for extended information.
 .Pp
 While holding left click, scroll the mouse to rotate the cluster view.
 .Pp
@@ -69,6 +75,12 @@ Activate/deactivate flyby overview.
 Toggle the recording and dumping of the live state.
 .It Ic g
 Toggle display of the ground and axes.
+.It Ic mf
+Switch to failure data mode.
+.It Ic mt
+Switch to temperature data mode.
+.It Ic mj
+Switch to job data mode (default).
 .It Ic P
 Print the current
 .Em ( x , y , z )
@@ -77,20 +89,26 @@ position and look unit vector.
 Toggle all panels.
 .It Ic pc
 Toggle the command panel.
+.It Ic pg
+Toggle the goto-node panel.
 .It Ic pF
-Toggle the failure overview panel.
+Toggle the flyby overview panel.
 .It Ic pf
 Toggle the frames-per-second panel.
-.It Ic pj
-Toggle the job overview panel.
+.It Ic pl
+Toggle the legend panel.
 .It Ic pn
 Toggle the extended node information panel.
 .It Ic q
 Quit.
-.It Ic t
-Toggle texture mapping.
 .It Ic T
 Toggle texture load format (required for blending).
+.It Ic t
+Toggle texture mapping.
+.It Ic vl
+Switch to the logical viewing mode.
+.It Ic vp
+Switch to the physical viewing mode (default).
 .It Ic w
 Toggle wireframe.
 .It Ic + , _
