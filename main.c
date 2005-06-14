@@ -40,7 +40,7 @@
 #define STARTLZ		(-0.12f)
 
 struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
-struct node		*invmap[NLOGIDS][NROWS * NCABS * NCAGES * NMODS * NNODES];
+struct node		*invmap[NID_MAX];
 int			 win_width = 800;
 int			 win_height = 600;
 int			 active_flyby = 0;
@@ -104,6 +104,14 @@ reshape(int w, int h)
 	glMatrixMode(GL_MODELVIEW);
 
 	adjcam();
+}
+
+struct node *
+node_for_nid(int nid)
+{
+	if (nid > NID_MAX || nid < 0)
+		return (NULL);
+	return (invmap[nid]);
 }
 
 void
@@ -194,9 +202,9 @@ collide(struct node *n,
    float sx, float sy, float sz,
    float ex, float ey, float ez)
 {
-	float x = n->n_pos.np_x;
-	float y = n->n_pos.np_y;
-	float z = n->n_pos.np_z;
+	float x = n->n_physv.v_x;
+	float y = n->n_physv.v_y;
+	float z = n->n_physv.v_z;
 	float lo_x, hi_x;
 	float lo_y, hi_y, y_sxbox, y_exbox;
 	float lo_z, hi_z, z_sxbox, z_exbox;
@@ -304,10 +312,11 @@ mouse(__unused int button, __unused int state, int u, int v)
 {
 	if (active_flyby)
 		return;
-	if (button == GLUT_LEFT_BUTTON &&
-	    state == GLUT_DOWN && selnode != NULL)
-		panel_toggle(PANEL_NINFO);
 	spkey = glutGetModifiers();
+	if (spkey == 0 && selnode != NULL &&
+	    button == GLUT_LEFT_BUTTON &&
+	    state == GLUT_DOWN)
+		panel_toggle(PANEL_NINFO);
 	lastu = u;
 	lastv = v;
 }
@@ -379,11 +388,11 @@ make_cluster_physical(void)
 				for (m = 0; m < NMODS; m++, x += MODWIDTH + MODSPACE) {
 					for (n = 0; n < NNODES; n++) {
 						node = &nodes[r][cb][cg][m][n];
-						node->n_pos.np_x = x + NODESPACE;
-						node->n_pos.np_y = y +
+						node->n_physv.v_x = x + NODESPACE;
+						node->n_physv.v_y = y +
 						    (2.0f * NODESPACE + NODEHEIGHT) *
 						    (n % (NNODES/2)) + NODESPACE,
-						node->n_pos.np_z = z +
+						node->n_physv.v_z = z +
 						    (2.0f * NODESPACE + NODEDEPTH) *
 						    (n / (NNODES/2)) +
 						    (NODESPACE * (1 + n % (NNODES/2))),
@@ -404,23 +413,7 @@ make_cluster_physical(void)
 __inline void
 make_one_logical_cluster(struct vec *v)
 {
-	struct node *nx, *ny, *n;
-struct node *rootnode;
-
-	CIRCLEQ_FOREACH(ny, &rootnode->n_yhead, n_ylink) {
-		CIRCLEQ_FOREACH(nx, &ny->n_xhead, n_ylink) {
-			CIRCLEQ_FOREACH(n, &nx->n_zhead, n_zlink) {
-				n->n_pos.np_x = v->v_x;
-				n->n_pos.np_y = v->v_y;
-				n->n_pos.np_z = v->v_z;
-				draw_node(n, NODEWIDTH, NODEHEIGHT, NODEDEPTH);
-
-				v->v_z += NODEDEPTH + NODESPACE;
-			}
-			v->v_x += NODEWIDTH + NODESPACE;
-		}
-		v->v_y += NODEHEIGHT + NODESPACE;
-	}
+	
 }
 
 /*
