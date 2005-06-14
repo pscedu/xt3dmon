@@ -140,9 +140,9 @@ draw(void)
 __inline void
 draw_filled_node(struct node *n, float w, float h, float d)
 {
-	float x = n->n_pos.np_x;
-	float y = n->n_pos.np_y;
-	float z = n->n_pos.np_z;
+	float x = n->n_physv.v_x;
+	float y = n->n_physv.v_y;
+	float z = n->n_physv.v_z;
 	float r, g, b, a;
 
 	r = n->n_fillp->f_r;
@@ -197,9 +197,9 @@ draw_filled_node(struct node *n, float w, float h, float d)
 __inline void
 draw_wireframe_node(struct node *n, float w, float h, float d)
 {
-	float x = n->n_pos.np_x;
-	float y = n->n_pos.np_y;
-	float z = n->n_pos.np_z;
+	float x = n->n_physv.v_x;
+	float y = n->n_physv.v_y;
+	float z = n->n_physv.v_z;
 
 	/* Wireframe outline */
 	x -= WFRAMEWIDTH;
@@ -210,9 +210,9 @@ draw_wireframe_node(struct node *n, float w, float h, float d)
 	d += 2.0f * WFRAMEWIDTH;
 
 	/*
-	** XXX - readd antialiasing
-	**     - fix linewidth changes when turning on blend mode
-	*/
+	 * XXX - readd antialiasing
+	 *     - fix linewidth changes when turning on blend mode
+	 */
 
 	glLineWidth(1.0);
 	glColor3f(0.0f, 0.0f, 0.0f);
@@ -246,9 +246,9 @@ draw_wireframe_node(struct node *n, float w, float h, float d)
 __inline void
 draw_textured_node(struct node *n, float w, float h, float d)
 {
-	float x = n->n_pos.np_x;
-	float y = n->n_pos.np_y;
-	float z = n->n_pos.np_z;
+	float x = n->n_physv.v_x;
+	float y = n->n_physv.v_y;
+	float z = n->n_physv.v_z;
 	float uw, uh, ud;
 	float color[4];
 	GLenum param;
