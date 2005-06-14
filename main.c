@@ -116,11 +116,11 @@ restore_state(int flyby)
 		oz = tz = st.st_z;  olz = tlz = st.st_lz;
 	}
 
-	/* 
+	/*
 	** Below: States that require make_cluster
 	** ---------------------------------------
 	*/
-	
+
 	/* Restore Selected Node */
 #if 0
 	if (selnode != NULL) {
@@ -129,7 +129,7 @@ restore_state(int flyby)
 		selnode = NULL;
 	}
 #endif
- 	if (st.st_ro)
+	if (st.st_ro)
 		rebuild(st.st_ro);
 
 	if (flyby){
@@ -456,7 +456,7 @@ load_textures(void)
 	char path[NAME_MAX];
 	void *data;
 	int i;
-	
+
 	/* Read in texture IDs */
 	for (i = 0; i < NJST; i++) {
 		snprintf(path, sizeof(path), _PATH_TEX, i);

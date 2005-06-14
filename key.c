@@ -21,7 +21,7 @@ keyh_flyby(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-spkeyh_flyby(__unused int key, __unused int u, __unused int v) 
+spkeyh_flyby(__unused int key, __unused int u, __unused int v)
 {
 }
 
@@ -236,7 +236,7 @@ void
 spkeyh_default(int key, __unused int u, __unused int v)
 {
 	int dir;
-	
+
 	dir = 0; /* gcc */
 	switch (key) {
 	case GLUT_KEY_LEFT:
