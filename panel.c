@@ -53,7 +53,7 @@ void (*refreshf[])(struct panel *) = {
 
 struct panels	 panels;
 int		 panel_offset;
-int		 goto_logid;
+int		 goto_logidx;
 
 int
 baseconv(int n)
@@ -376,7 +376,7 @@ panel_refresh_ninfo(struct panel *p)
 			    "Duration: %d\n"
 			    "CPUs: %d",
 			    selnode->n_nid,
-			    selnode->n_logid,
+			    logids[selnode->n_logidx],
 			    selnode->n_job->j_owner,
 			    selnode->n_job->j_name,
 			    selnode->n_job->j_dur,
@@ -387,7 +387,7 @@ panel_refresh_ninfo(struct panel *p)
 			    "Node ID: %d\n"
 			    "Login node ID: %d",
 			    selnode->n_nid,
-			    selnode->n_logid);
+			    logids[selnode->n_logidx]);
 			break;
 		}
 	}
@@ -407,13 +407,13 @@ panel_refresh_flyby(struct panel *p)
 void
 panel_refresh_goto(struct panel *p)
 {
-	if (goto_logid == -1)
+	if (goto_logidx == -1)
 		panel_set_content(p, "Login Node ID: %s",
 		    buf_get(&uinp.uinp_buf));
 	else
 		panel_set_content(p, "Login Node ID: %d\n"
 		    "Node ID: %s",
-		    goto_logid,
+		    logids[goto_logidx],
 		    buf_get(&uinp.uinp_buf));
 }
 
@@ -476,16 +476,18 @@ uinpcb_cmd(void)
 void
 uinpcb_goto(void)
 {
+	int logid;
 	size_t j;
 	long l;
 
 	l = strtol(buf_get(&uinp.uinp_buf), NULL, 0);
 	if (!isdigit(*buf_get(&uinp.uinp_buf)) || l < 0 || l > NID_MAX)
 		goto done;
-	goto_logid = (int)l;
+	logid = (int)l;
 
 	for (j = 0; j < NLOGIDS; j++)
-		if (logids[j] == goto_logid) {
+		if (logids[j] == logid) {
+			goto_logidx = j;
 			glutKeyboardFunc(keyh_uinput);
 			uinp.uinp_callback = uinpcb_goto2;
 			uinp.uinp_panel = PANEL_GOTO;
@@ -506,7 +508,7 @@ uinpcb_goto2(void)
 	if (l <= 0 || l > NID_MAX)
 		return;
 	nid = (int)l;
-	n = invmap[goto_logid][nid];
+	n = invmap[goto_logidx][nid];
 
 	if (n == NULL)
 		return;

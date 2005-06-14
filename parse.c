@@ -224,7 +224,7 @@ parse_physmap(void)
 
 			node = &nodes[r][cb][cg][m][n];
 			node->n_nid = nid;
-			node->n_logid = logids[j];
+			node->n_logidx = j;
 			invmap[j][nid] = node;
 
 			/* state */

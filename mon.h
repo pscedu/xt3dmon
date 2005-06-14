@@ -120,7 +120,7 @@ struct vec {
 
 struct node {
 	int		 n_nid;
-	int		 n_logid;
+	int		 n_logidx;
 	struct job	*n_job;
 	struct temp	*n_temp;
 	struct fail	*n_fail;
@@ -330,7 +330,7 @@ extern struct panels	 panels;
 extern struct node	*selnode;
 
 extern struct uinput	 uinp;
-extern int		 goto_logid;
+extern int		 goto_logidx;
 extern int		 spkey;
 
 extern float		 tx, tlx, ox, olx;
