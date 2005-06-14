@@ -170,7 +170,6 @@ struct state {
 };
 
 struct flyby {
-	struct state	*fb_state;
 	struct {
 		int	 fbni_nlid;
 		int 	 fbni_nid;
@@ -187,7 +186,7 @@ struct flyby {
 #define RO_PHYS		(1<<1)
 #define RO_RELOAD	(1<<2)
 #define RO_COMPILE	(1<<3)
-#define RO_TEXTURE	(1<<4)
+#define RO_SELNODE	(1<<4)
 
 #define RO_ALL		(RO_TEX | RO_PHYS | RO_RELOAD | RO_COMPILE)
 
