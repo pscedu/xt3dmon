@@ -49,7 +49,7 @@ write_flyby(void)
 	if (tnid == -1)
 		selnode = NULL;
 	else
-		selnode = invmap[tnlid][tnid];
+		selnode = invmap[logids[tnlid]][tnid];
 
 }
 
@@ -57,9 +57,16 @@ write_flyby(void)
 void
 read_flyby(void)
 {
-	if (fread(&st, sizeof(struct state), 1, flyby_fp) != 1) {
-		/* End of flyby. */
-		if (feof(flyby_fp)) {
+	int tnid, tnlid;
+
+	/* Save selected node */
+	tnid = st.st_ninfo.ni_nid;
+	tnlid = st.st_ninfo.ni_nlid;
+
+	if(!fread(&st, sizeof(struct state), 1, flyby_fp)) {
+
+		/* end of flyby */
+		if(feof(flyby_fp) != 0) {
 			active_flyby = 0;
 			glutKeyboardFunc(keyh_default);
 			glutSpecialFunc(spkeyh_default);
@@ -70,19 +77,20 @@ read_flyby(void)
 	if ((st.st_ro & OP_TWEEN) == 0)
 		adjcam();
 
-	/* Restore selected node. */
+	/* Restore selected node */
 	if (fb.fb_nid != -1) {
 		int tnid, tnlid;
+
+		/* Force recompile if needed */
+		if(tnid != fb.fb_nid &&
+		   tnlid != fb.fb_nlid)
+			st.st_ro |= RO_COMPILE;
+
 		tnid = fb.fb_nid;
 		tnlid = fb.fb_nlid;
 		selnode = invmap[tnlid][tnid];
-
-		/* Force recompile. */
-		st.st_ro |= RO_COMPILE;
-printf(" Restore Selected Node: COMPILE\n");
 	} else {
 		selnode = NULL;
-printf(" No node selected\n");
 	}
 
 	restore_state(1);
