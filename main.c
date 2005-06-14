@@ -304,6 +304,9 @@ mouse(__unused int button, __unused int state, int u, int v)
 {
 	if (active_flyby)
 		return;
+	if (button == GLUT_LEFT_BUTTON &&
+	    state == GLUT_DOWN && selnode != NULL)
+		panel_toggle(PANEL_NINFO);
 	spkey = glutGetModifiers();
 	lastu = u;
 	lastv = v;
