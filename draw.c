@@ -99,7 +99,7 @@ draw(void)
 	glCallList(cluster_dl);
 
 	glClearColor(0.0, 0.0, 0.0, 1.0);
-	if (st.st_opts & OP_CAPTURE)
+	if (st.st_opts & OP_CAPTURE || gDebugCapture)
 		capture_fb();
 	if (st.st_opts & OP_DISPLAY)
 		glutSwapBuffers();
