@@ -185,6 +185,7 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 'd':
 		st.st_opts ^= OP_CAPTURE;
+		gDebugCapture = !gDebugCapture;
 		break;
 	case 'e':
 		st.st_opts ^= OP_TWEEN;
@@ -195,6 +196,9 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 'g':
 		st.st_opts ^= OP_GROUND;
+		break;
+	case 'G': /* Ludicrous Speed */
+		st.st_opts ^= OP_GOVERN;
 		break;
 	case 'm':
 		glutKeyboardFunc(keyh_mode);
