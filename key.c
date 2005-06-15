@@ -35,7 +35,7 @@ keyh_flyby(unsigned char key, __unused int u, __unused int v)
 		active_flyby = !active_flyby;
 		break;
 	}
-	if (!active_flyby && !build_flyby) {
+	if (!active_flyby) {
 		glutKeyboardFunc(keyh_default);
 		glutSpecialFunc(spkeyh_default);
 	}
@@ -199,7 +199,6 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 'f':
 		glutKeyboardFunc(keyh_flyby);
-		glutSpecialFunc(spkeyh_null);
 		break;
 	case 'g':
 		st.st_opts ^= OP_GROUND;
