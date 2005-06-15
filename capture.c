@@ -18,8 +18,8 @@
 # include <GL/freeglut.h>
 #endif
 
-#define NUM_FRAMES 100
-#define MAX_FRAMES 10000
+#define NUM_FRAMES 200
+#define MAX_FRAMES 25000
 static unsigned char *fb[NUM_FRAMES];
 
 /* Convert data to png */
@@ -52,7 +52,10 @@ data2png(char *file, unsigned char *buf, long w, long h)
 
 	/* We want I/O without zlib compression (highest quality & fast). */
 	png_init_io(png, fp);
-	png_set_compression_level(png, Z_NO_COMPRESSION);
+//	png_set_compression_level(png, Z_NO_COMPRESSION);
+	png_set_compression_level(png, 4);
+	png_set_compression_mem_level(png, 8);
+//	png_set_compression_strategy(png, Z_DEFAULT_STRATEGY);
 
 	/* Set the header/info. */
 	png_set_IHDR(png, info, w, h, 8, PNG_COLOR_TYPE_RGB_ALPHA,
