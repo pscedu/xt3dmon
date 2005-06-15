@@ -16,6 +16,7 @@
 
 #include <ctype.h>
 #include <err.h>
+#include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,6 +42,7 @@ void panel_refresh_cmd(struct panel *);
 void panel_refresh_legend(struct panel *);
 void panel_refresh_flyby(struct panel *);
 void panel_refresh_goto(struct panel *);
+void panel_refresh_pos(struct panel *);
 
 void (*refreshf[])(struct panel *) = {
 	panel_refresh_fps,
@@ -48,7 +50,8 @@ void (*refreshf[])(struct panel *) = {
 	panel_refresh_cmd,
 	panel_refresh_legend,
 	panel_refresh_flyby,
-	panel_refresh_goto
+	panel_refresh_goto,
+	panel_refresh_pos
 };
 
 struct panels	 panels;
@@ -84,9 +87,8 @@ panel_free(struct panel *p)
 void
 draw_panel(struct panel *p)
 {
-	int lineno, curlen, toff, uoff, voff, npw;
+	int lineno, curlen, toff, uoff, voff, npw, tweenadj, u, v, w, h;
 	struct pwidget *pw;
-	int u, v, w, h;
 	char *s;
 
 	toff = PANEL_PADDING + PANEL_BWIDTH;
@@ -95,7 +97,7 @@ draw_panel(struct panel *p)
 		w = 0;
 		h = 0;
 		u = win_width;
-		v = win_height;
+		v = win_height - panel_offset;
 	} else {
 		lineno = 1;
 		curlen = w = 0;
@@ -123,14 +125,23 @@ draw_panel(struct panel *p)
 		v = win_height - panel_offset;
 	}
 
+	tweenadj = MAX(abs(p->p_u - u), abs(p->p_v - v));
+	tweenadj = MAX(tweenadj, abs(p->p_w - w));
+	tweenadj = MAX(tweenadj, abs(p->p_h - h));
+	if (tweenadj) {
+		tweenadj = sqrt(tweenadj);
+		if (!tweenadj)
+			tweenadj = 1;
+	}
+
 	if (p->p_u != u)
-		p->p_u += p->p_u - u < 0 ? 1 : -1;
+		p->p_u -= (p->p_u - u) / tweenadj;
 	if (p->p_v != v)
-		p->p_v += p->p_v - v < 0 ? 1 : -1;
+		p->p_v -= (p->p_v - v) / tweenadj;
 	if (p->p_w != w)
-		p->p_w += p->p_w - w < 0 ? 1 : -1;
+		p->p_w -= (p->p_w - w) / tweenadj;
 	if (p->p_h != h)
-		p->p_h += p->p_h - h < 0 ? 1 : -1;
+		p->p_h -= (p->p_h - h) / tweenadj;
 
 	if ((p->p_opts & POPT_REMOVE) && p->p_u >= win_width) {
 		panel_free(p);
@@ -421,6 +432,14 @@ panel_refresh_goto(struct panel *p)
 }
 
 void
+panel_refresh_pos(struct panel *p)
+{
+	panel_set_content(p, "Position (%.2f,%.2f,%.2f)\n"
+	    "Look (%.2f,%.2f,%.2f)", st.st_x, st.st_y, st.st_z,
+	    st.st_lx, st.st_ly, st.st_lz);
+}
+
+void
 draw_panels(void)
 {
 	struct panel *p, *np;
@@ -493,12 +512,12 @@ uinpcb_goto(void)
 	if ((n = node_for_nid(nid)) == NULL)
 		return;
 	if (st.st_opts & OP_TWEEN) {
-		tx = n->n_physv.v_x;
-		ty = n->n_physv.v_y;
-		tz = n->n_physv.v_z;
+		tx = n->n_v->v_x;
+		ty = n->n_v->v_y;
+		tz = n->n_v->v_z;
 	} else {
-		st.st_x = n->n_physv.v_x;
-		st.st_y = n->n_physv.v_y;
-		st.st_z = n->n_physv.v_z;
+		st.st_x = n->n_v->v_x;
+		st.st_y = n->n_v->v_y;
+		st.st_z = n->n_v->v_z;
 	}
 }
