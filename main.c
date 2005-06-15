@@ -25,11 +25,10 @@
 #include "mon.h"
 #include "buf.h"
 
-#define SLEEP_INTV	5
+#define SLEEP_INTV	500
 
 #define FOVY		(45.0f)
 #define ASPECT		(win_width / (double)win_height)
-#define CLIPFAR		1000
 
 #define STARTX		(-30.0f)
 #define STARTY		(10.0f)
@@ -46,6 +45,9 @@ int			 win_height = 600;
 int			 active_flyby = 0;
 int			 build_flyby = 0;
 
+int			 logical_width;
+int			 logical_height;
+int			 logical_depth;
 float			 tx = STARTX, tlx = STARTLX, ox = STARTX, olx = STARTLX;
 float			 ty = STARTY, tly = STARTLY, oy = STARTY, oly = STARTLY;
 float			 tz = STARTZ, tlz = STARTLZ, oz = STARTZ, olz = STARTLZ;
@@ -54,6 +56,13 @@ GLint			 cluster_dl;
 struct timeval		 lastsync;
 long			 fps;
 int			 gDebugCapture = 0;
+
+struct vmode {
+	int	vm_clip;
+} vmodes[] = {
+	{ 1000 },
+	{ 100 }
+};
 
 struct state st = {
 	STARTX, STARTY, STARTZ,				/* (x,y,z) */
@@ -95,15 +104,10 @@ adjcam(void)
 void
 reshape(int w, int h)
 {
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-
 	win_width = w;
 	win_height = h;
-	glViewport(0, 0, w, h);
-	gluPerspective(FOVY, ASPECT, 1, 1000);
-	glMatrixMode(GL_MODELVIEW);
 
+	rebuild(RO_PERSPECTIVE);
 	adjcam();
 }
 
@@ -203,9 +207,9 @@ collide(struct node *n,
    float sx, float sy, float sz,
    float ex, float ey, float ez)
 {
-	float x = n->n_physv.v_x;
-	float y = n->n_physv.v_y;
-	float z = n->n_physv.v_z;
+	float x = n->n_v->v_x;
+	float y = n->n_v->v_y;
+	float z = n->n_v->v_z;
 	float lo_x, hi_x;
 	float lo_y, hi_y, y_sxbox, y_exbox;
 	float lo_z, hi_z, z_sxbox, z_exbox;
@@ -363,6 +367,7 @@ idle(void)
 	static long fcnt = 0;
 
 	/* Maintain MAX_FPS unless OP_FULL_SPEED is set */
+	/* XXX: syscall in main loop has to go. */
 	gettimeofday(&time, NULL);
 	if(abs(time.tv_usec - ptime.tv_usec) >= FPS(MAX_FPS) || 
 	   st.st_opts & OP_GOVERN) {
@@ -405,7 +410,6 @@ make_cluster_physical(void)
 						    (2.0f * NODESPACE + NODEDEPTH) *
 						    (n / (NNODES/2)) +
 						    (NODESPACE * (1 + n % (NNODES/2))),
-
 						node->n_v = &node->n_physv;
 						draw_node(node, NODEWIDTH,
 						    NODEHEIGHT, NODEDEPTH);
@@ -423,24 +427,58 @@ make_cluster_physical(void)
 __inline void
 make_one_logical_cluster(struct vec *v)
 {
-	
+	int r, cb, cg, m, n;
+	struct node *node;
+
+for (r = 0; r < NROWS; r++)
+ for (cb = 0; cb < NCABS; cb++)
+  for (cg = 0; cg < NCAGES; cg++)
+   for (m = 0; m < NMODS; m++)
+    for (n = 0; n < NNODES; n++) {
+     node = &nodes[r][cb][cg][m][n];
+     node->n_v = &node->n_logv;
+     node->n_v->v_x += v->v_x;
+     node->n_v->v_y += v->v_y;
+     node->n_v->v_z += v->v_z;
+     draw_node(node, NODEWIDTH, NODEHEIGHT, NODEDEPTH);
+     node->n_v->v_x -= v->v_x;
+     node->n_v->v_y -= v->v_y;
+     node->n_v->v_z -= v->v_z;
+    }
 }
 
 /*
  * Draw the cluster repeatedly till we reach the clipping plane.
- * Since we can see CLIPFAR away, we must construct a 3D space
- * CLIPFAR x CLIPFAR x CLIPFAR large and draw the cluster multiple
+ * Since we can see vm_clip away, we must construct a 3D space
+ * vm_clip^3 large and draw the cluster multiple
  * times inside.
  */
 __inline void
 make_cluster_logical(void)
 {
+	int clip, xpos, ypos, zpos;
 	struct vec v;
 
-	for (v.v_x = st.st_x - CLIPFAR; v.v_x < st.st_x + CLIPFAR; )
-		for (v.v_y = st.st_y - CLIPFAR; v.v_y < st.st_y + CLIPFAR; )
-			for (v.v_z = st.st_z - CLIPFAR; v.v_z < st.st_z + CLIPFAR; )
+	clip = vmodes[VM_LOGICAL].vm_clip;
+	xpos = st.st_x - clip;
+	ypos = st.st_y - clip;
+	zpos = st.st_z - clip;
+
+printf("(%d,%d,%d)\n", xpos, ypos, zpos);
+
+	xpos = SIGN(xpos) * round(abs(xpos) / (double)logical_width) * logical_width;
+	ypos = SIGN(ypos) * round(abs(ypos) / (double)logical_height) * logical_height;
+	zpos = SIGN(zpos) * round(abs(zpos) / (double)logical_depth) * logical_depth;
+
+	if (cluster_dl)
+		glDeleteLists(cluster_dl, 1);
+	cluster_dl = glGenLists(1);
+	glNewList(cluster_dl, GL_COMPILE);
+	for (v.v_x = xpos; v.v_x < st.st_x + clip; v.v_x += logical_width)
+		for (v.v_y = ypos; v.v_y < st.st_y + clip; v.v_y += logical_height)
+			for (v.v_z = zpos; v.v_z < st.st_z + clip; v.v_z += logical_depth)
 				make_one_logical_cluster(&v);
+	glEndList();
 }
 
 void
@@ -463,7 +501,7 @@ load_textures(void)
 	void *data;
 	int i;
 
-	/* Read in texture IDs */
+	/* Read in texture IDs. */
 	for (i = 0; i < NJST; i++) {
 		snprintf(path, sizeof(path), _PATH_TEX, i);
 		data = load_png(path);
@@ -477,7 +515,7 @@ del_textures(void)
 {
 	int i;
 
-	/* Delete textures from vid memory */
+	/* Delete textures from memory. */
 	for (i = 0; i < NJST; i++)
 		if (jstates[i].js_fill.f_texid)
 			glDeleteTextures(1, &jstates[i].js_fill.f_texid);
@@ -492,16 +530,10 @@ rebuild(int opts)
 	}
 	if (opts & RO_PHYS)
 		parse_physmap();
-	if (opts & RO_RELOAD)
+	if (opts & RO_RELOAD) {
 		switch (st.st_mode) {
 		case SM_JOBS:
 			parse_jobmap();
-			if (selnode != NULL) {
-				if (selnode->n_fillp != &selnodefill) {
-					selnode->n_ofillp = selnode->n_fillp;
-					selnode->n_fillp = &selnodefill;
-				}
-			}
 			break;
 		case SM_FAIL:
 			parse_failmap();
@@ -510,9 +542,25 @@ rebuild(int opts)
 			parse_tempmap();
 			break;
 		}
-	if(opts & RO_SELNODE) {
+		if (selnode != NULL) {
+			if (selnode->n_fillp != &selnodefill) {
+				selnode->n_ofillp = selnode->n_fillp;
+				selnode->n_fillp = &selnodefill;
+			}
+		}
+	}
+	/* XXX: this is wrong. */
+	if (opts & RO_SELNODE) {
 		select_node(selnode);
 		return;
+	}
+	if (opts & RO_PERSPECTIVE) {
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glViewport(0, 0, win_width, win_height);
+		gluPerspective(FOVY, ASPECT, 1, vmodes[st.st_vmode].vm_clip);
+		glMatrixMode(GL_MODELVIEW);
+		adjcam();
 	}
 	if (opts & RO_COMPILE)
 		make_cluster();
