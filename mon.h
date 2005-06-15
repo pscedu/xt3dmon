@@ -56,6 +56,9 @@
 #define YCENTER		((CAGEHEIGHT * NCAGES + CAGESPACE * (NCAGES - 1)) / 2)
 #define ZCENTER		((ROWDEPTH * NROWS + ROWSPACE * (NROWS - 1)) / 2)
 
+#define LOGICAL_NODE_SPACING_FACTOR 10
+#define PHYSICAL_NODE_SPACING_GAP (2.0f)
+
 #define JST_FREE	0
 #define JST_DOWN	1
 #define JST_DISABLED	2
@@ -66,11 +69,11 @@
 #define JST_CHECK	7
 #define NJST		8
 
-#define PI		(3.14159265358979323)
-
 #define NID_MAX		3000
 
 #define SQUARE(x)	((x) * (x))
+#define SIGN(x)		((x) == 0 ? 1 : abs(x)/(x))
+#define PI		(3.14159265358979323)
 
 #define WFRAMEWIDTH	(0.001f)
 
@@ -153,6 +156,7 @@ struct flyby {
 #define RO_RELOAD	(1<<2)
 #define RO_COMPILE	(1<<3)
 #define RO_SELNODE	(1<<4)
+#define RO_PERSPECTIVE	(1<<5)
 
 #define RO_ALL		(RO_TEX | RO_PHYS | RO_RELOAD | RO_COMPILE)
 
@@ -298,6 +302,10 @@ extern struct node	*selnode;
 
 extern struct uinput	 uinp;
 extern int		 spkey;
+
+extern int		 logical_width;
+extern int		 logical_height;
+extern int		 logical_depth;
 
 extern float		 tx, tlx, ox, olx;
 extern float		 ty, tly, oy, oly;
