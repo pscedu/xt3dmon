@@ -145,6 +145,8 @@ keyh_mode(unsigned char key, __unused int u, __unused int v)
 		st.st_mode = SM_TEMP;
 		st.st_ro |= RO_COMPILE | RO_RELOAD;
 		break;
+	default:
+		return;
 	}
 	restore_state(0);
 }
@@ -156,12 +158,14 @@ keyh_vmode(unsigned char key, __unused int u, __unused int v)
 	switch (key) {
 	case 'l':
 		st.st_vmode = VM_LOGICAL;
-		st.st_ro |= RO_COMPILE;
+		st.st_ro |= RO_COMPILE | RO_PERSPECTIVE;
 		break;
 	case 'p':
 		st.st_vmode = VM_PHYSICAL;
-		st.st_ro |= RO_COMPILE;
+		st.st_ro |= RO_COMPILE | RO_PERSPECTIVE;
 		break;
+	default:
+		return;
 	}
 	restore_state(0);
 }
@@ -172,6 +176,9 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 	switch (key) {
 	case 'b':
 		st.st_opts ^= OP_BLEND;
+		st.st_ro |= RO_COMPILE;
+		break;
+	case 'C':
 		st.st_ro |= RO_COMPILE;
 		break;
 	case 'c':
@@ -202,6 +209,16 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 'm':
 		glutKeyboardFunc(keyh_mode);
+		break;
+	case 'o':
+		if (st.st_opts & OP_TWEEN) {
+			tx = ty = tz = 0;
+//			tlx = tly = tlz = 0;
+		} else {
+			st.st_x = st.st_y = st.st_z = 0;
+//			st.st_lx = st.st_ly = st.st_lz = 0;
+			adjcam();
+		}
 		break;
 	case 'p':
 		glutKeyboardFunc(keyh_panel);
@@ -240,6 +257,8 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		st.st_alpha_oth -= (st.st_alpha_oth + TRANS_INC < 0.0 ? 0.0 : TRANS_INC);
 		st.st_ro |= RO_COMPILE;
 		break;
+	default:
+		return;
 	}
 	restore_state(0);
 }
