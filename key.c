@@ -12,16 +12,33 @@ struct uinput uinp;
 void
 keyh_flyby(unsigned char key, __unused int u, __unused int v)
 {
-	if (key == 'F') {
+	switch (key) {
+	case 'c':
+		system("rm data/flyby.data");
+		break;
+	case 'q':
+		if (build_flyby)
+			end_flyby();
+		else if (!active_flyby)
+			begin_flyby('w');
+		build_flyby = !build_flyby;
+		break;
+	case 'p':
+		if (active_flyby)
+			end_flyby();
+		else if (!build_flyby)
+			begin_flyby('r');
+		active_flyby = !active_flyby;
+		break;
+	}
+	if (!active_flyby && !build_flyby) {
 		glutKeyboardFunc(keyh_default);
 		glutSpecialFunc(spkeyh_default);
-		active_flyby = 0;
-		end_flyby();
 	}
 }
 
 void
-spkeyh_flyby(__unused int key, __unused int u, __unused int v)
+spkeyh_null(__unused int key, __unused int u, __unused int v)
 {
 }
 
@@ -79,6 +96,12 @@ keyh_panel(unsigned char key, __unused int u, __unused int v)
 		uinp.uinp_panel = PANEL_CMD;
 		uinp.uinp_opts = UINPO_LINGER;
 		break;
+	case 'F':
+		panel_toggle(PANEL_FLYBY);
+		break;
+	case 'f':
+		panel_toggle(PANEL_FPS);
+		break;
 	case 'g':
 		panel_toggle(PANEL_GOTO);
 		glutKeyboardFunc(keyh_uinput);
@@ -86,18 +109,17 @@ keyh_panel(unsigned char key, __unused int u, __unused int v)
 		uinp.uinp_panel = PANEL_GOTO;
 		uinp.uinp_opts = 0;
 		break;
-	case 'n':
-		panel_toggle(PANEL_NINFO);
-		break;
 	case 'l':
 		panel_toggle(PANEL_LEGEND);
 		break;
-	case 'f':
-		panel_toggle(PANEL_FPS);
+	case 'n':
+		panel_toggle(PANEL_NINFO);
 		break;
-	case 'F':
-		panel_toggle(PANEL_FLYBY);
+	case 'p':
+		panel_toggle(PANEL_POS);
 		break;
+	default:
+		return;
 	}
 	restore_state(0);
 }
@@ -154,9 +176,6 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 			selnode = NULL;
 		}
 		break;
-	case 'C':
-		system("rm data/flyby.data");
-		break;
 	case 'D':
 		st.st_opts ^= OP_DISPLAY;
 		break;
@@ -167,17 +186,8 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		st.st_opts ^= OP_TWEEN;
 		break;
 	case 'f':
-		build_flyby = !build_flyby;
-		if(build_flyby)
-			begin_flyby('w');
-		else if(!build_flyby && !active_flyby)
-			end_flyby();
-		break;
-	case 'F':
-		active_flyby = 1;
-		begin_flyby('r');
 		glutKeyboardFunc(keyh_flyby);
-		glutSpecialFunc(spkeyh_flyby);
+		glutSpecialFunc(spkeyh_null);
 		break;
 	case 'g':
 		st.st_opts ^= OP_GROUND;
@@ -187,11 +197,6 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 'p':
 		glutKeyboardFunc(keyh_panel);
-		break;
-	case 'P':
-		printf("pos[%.2f,%.2f,%.2f] look[%.2f,%.2f,%.2f]\n",
-		    st.st_x, st.st_y, st.st_z,
-		    st.st_lx, st.st_ly, st.st_lz);
 		break;
 	case 'q':
 		exit(0);
