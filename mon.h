@@ -163,6 +163,7 @@ struct flyby {
 #define OP_TWEEN	(1<<4)
 #define OP_CAPTURE	(1<<5)
 #define OP_DISPLAY	(1<<6)
+#define OP_GOVERN	(1<<7)
 
 #define SM_JOBS		0
 #define SM_FAIL		1
@@ -311,3 +312,5 @@ extern int		 win_height;
 extern struct job_state	 jstates[];
 extern struct fail_state fstates[];
 extern struct temp_state tstates[];
+
+extern int gDebugCapture;
