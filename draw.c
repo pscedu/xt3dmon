@@ -50,7 +50,7 @@ draw(void)
 		    tween(olz, &st.st_lz, tlz))
 			adjcam();
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
 	if (st.st_opts & OP_GROUND) {
 		/* Ground */
@@ -209,11 +209,10 @@ draw_wireframe_node(struct node *n, float w, float h, float d)
 	h += 2.0f * WFRAMEWIDTH;
 	d += 2.0f * WFRAMEWIDTH;
 
-	/*
-	 * XXX - readd antialiasing
-	 *     - fix linewidth changes when turning on blend mode
-	 */
-
+	glEnable(GL_LINE_SMOOTH);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
 	glLineWidth(1.0);
 	glColor3f(0.0f, 0.0f, 0.0f);
 	glBegin(GL_LINE_STRIP);
@@ -241,6 +240,9 @@ draw_wireframe_node(struct node *n, float w, float h, float d)
 	/* Front */
 	glVertex3f(x+w, y+h, z+d);	/* 15 */
 	glEnd();
+
+	glDisable(GL_LINE_SMOOTH);
+	glDisable(GL_BLEND);
 }
 
 __inline void
