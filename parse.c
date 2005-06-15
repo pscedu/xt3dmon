@@ -122,6 +122,10 @@ parse_physmap(void)
 	FILE *fp;
 	long l;
 
+	logical_width = 0;
+	logical_height = 0;
+	logical_depth = 0;
+
 	/* Explicitly initialize all nodes. */
 	for (r = 0; r < NROWS; r++)
 		for (cb = 0; cb < NCABS; cb++)
@@ -273,9 +277,16 @@ parse_physmap(void)
 		node = &nodes[r][cb][cg][m][n];
 		node->n_nid = nid;
 		invmap[nid] = node;
-		node->n_logv.v_x = x;
-		node->n_logv.v_y = y;
-		node->n_logv.v_z = z;
+		node->n_logv.v_x = x * LOGICAL_NODE_SPACING_FACTOR;
+		node->n_logv.v_y = y * LOGICAL_NODE_SPACING_FACTOR;
+		node->n_logv.v_z = z * LOGICAL_NODE_SPACING_FACTOR;
+
+		if (node->n_logv.v_x > logical_width)
+			logical_width = node->n_logv.v_x;
+		if (node->n_logv.v_y > logical_height)
+			logical_height = node->n_logv.v_y;
+		if (node->n_logv.v_z > logical_depth)
+			logical_depth = node->n_logv.v_z;
 
 		/* state */
 		while (isspace(*s))
