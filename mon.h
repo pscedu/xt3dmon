@@ -1,7 +1,7 @@
 /* $Id$ */
 
 #include <sys/queue.h>
-#include <sys/types.h>
+
 #include <stdio.h>
 
 #ifdef __APPLE_CC__
@@ -119,6 +119,7 @@ struct node {
 	struct fill	*n_ofillp;
 	struct vec	 n_logv;
 	struct vec	 n_physv;
+	struct vec	*n_v;
 };
 
 struct state {
@@ -213,7 +214,8 @@ struct panel {
 #define PANEL_LEGEND	(1<<3)
 #define PANEL_FLYBY	(1<<4)
 #define PANEL_GOTO	(1<<5)
-#define NPANELS		6
+#define PANEL_POS	(1<<6)
+#define NPANELS		7
 
 #define POPT_REMOVE	(1<<0)
 #define POPT_COMPILE	(1<<1)
