@@ -53,6 +53,7 @@ int			 spkey, lastu, lastv;
 GLint			 cluster_dl;
 struct timeval		 lastsync;
 long			 fps;
+int			 gDebugCapture = 0;
 
 struct state st = {
 	STARTX, STARTY, STARTZ,				/* (x,y,z) */
@@ -347,28 +348,36 @@ passive_m(int u, int v)
 
 #define MAXCNT 100
 
+/* Convert FPS -> Microseconds */
+#define FPS(X) (1000000/X)
+
+/* FPS Governor */
+#define MAX_FPS 20
+
 void
 idle(void)
 {
-	static int cnt = 0;
-	static int tcnt = 0;
+	struct timeval time = {0,0};
+	static struct timeval ftime = {0,0};
+	static struct timeval ptime = {0,0};
+	static long fcnt = 0;
 
-	tcnt++;
-	if (cnt++ >= MAXCNT) {
-		struct timeval tv;
+	/* Maintain MAX_FPS unless OP_FULL_SPEED is set */
+	gettimeofday(&time, NULL);
+	if(abs(time.tv_usec - ptime.tv_usec) >= FPS(MAX_FPS) || 
+	   st.st_opts & OP_GOVERN) {
 
-		if (gettimeofday(&tv, NULL) == -1)
-			err(1, "gettimeofday");
-		if (tv.tv_sec - lastsync.tv_sec)
-			fps = tcnt / (tv.tv_sec - lastsync.tv_sec);
-		if (lastsync.tv_sec + SLEEP_INTV < tv.tv_sec) {
-			tcnt = 0;
-			lastsync.tv_sec = tv.tv_sec;
-			rebuild(RO_RELOAD | RO_COMPILE);
+		ptime = time;
+
+		if(time.tv_sec - ftime.tv_sec >= 1) {
+			gettimeofday(&ftime, NULL);
+			fps = fcnt;
+			fcnt = 0;
 		}
-		cnt = 0;
+
+		draw();
+		fcnt++;
 	}
-	draw();
 }
 
 __inline void
@@ -397,6 +406,7 @@ make_cluster_physical(void)
 						    (n / (NNODES/2)) +
 						    (NODESPACE * (1 + n % (NNODES/2))),
 
+						node->n_v = &node->n_physv;
 						draw_node(node, NODEWIDTH,
 						    NODEHEIGHT, NODEDEPTH);
 					}
