@@ -1,5 +1,8 @@
 /* $Id$ */
 
+#include <errno.h>
+#include <unistd.h>
+
 #include "buf.h"
 #include "cam.h"
 #include "cdefs.h"
@@ -14,7 +17,8 @@ keyh_flyby(unsigned char key, __unused int u, __unused int v)
 {
 	switch (key) {
 	case 'c':
-		system("rm data/flyby.data");
+		unlink(_PATH_FLYBY);
+		errno = 0;
 		break;
 	case 'q':
 		if (build_flyby)
