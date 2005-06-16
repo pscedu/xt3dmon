@@ -224,12 +224,10 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		glutKeyboardFunc(keyh_mode);
 		break;
 	case 'o':
-		if (st.st_opts & OP_TWEEN) {
+		if (st.st_opts & OP_TWEEN)
 			tx = ty = tz = 0;
-//			tlx = tly = tlz = 0;
-		} else {
+		else {
 			st.st_x = st.st_y = st.st_z = 0;
-//			st.st_lx = st.st_ly = st.st_lz = 0;
 			adjcam();
 		}
 		break;

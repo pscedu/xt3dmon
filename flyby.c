@@ -47,7 +47,7 @@ read_flyby(void)
 	int tnid, oldopts;
 
 	oldopts = st.st_opts;
-printf("read\n");
+
 	/* Save selected node. */
 	tnid = fb.fb_nid;
 
@@ -57,7 +57,6 @@ printf("read\n");
 			err(1, "fread");
 		/* End of flyby. */
 		if (feof(flyby_fp)) {
-printf("done\n");
 			active_flyby = 0;
 			end_flyby();
 			glutKeyboardFunc(keyh_default);
@@ -82,7 +81,6 @@ printf("done\n");
 			select_node(n);
 	} else
 		selnode = NULL;
-printf("refresh\n");
 	refresh_state(1, oldopts);
 }
 
@@ -98,7 +96,6 @@ end_flyby(void)
 void
 update_flyby(void)
 {
-printf("update()\n");
 	/* Record user commands. */
 	if (build_flyby) {
 		write_flyby();
