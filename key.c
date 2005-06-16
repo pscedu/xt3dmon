@@ -18,6 +18,15 @@ spkeyh_null(__unused int key, __unused int u, __unused int v)
 }
 
 void
+spkeyh_actflyby(__unused int key, __unused int u, __unused int v)
+{
+	glutKeyboardFunc(keyh_default);
+	glutSpecialFunc(spkeyh_default);
+	glutMotionFunc(m_activeh_default);
+	glutPassiveMotionFunc(m_passiveh_default);
+}
+
+void
 keyh_actflyby(__unused unsigned char key, __unused int u, __unused int v)
 {
 	glutKeyboardFunc(keyh_default);
@@ -50,7 +59,7 @@ keyh_flyby(unsigned char key, __unused int u, __unused int v)
 			glutMotionFunc(m_activeh_null);
 			glutPassiveMotionFunc(m_passiveh_null);
 			glutKeyboardFunc(keyh_actflyby);
-			glutSpecialFunc(spkeyh_null);
+			glutSpecialFunc(spkeyh_actflyby);
 		}
 		active_flyby = !active_flyby;
 		break;
@@ -136,12 +145,14 @@ keyh_panel(unsigned char key, __unused int u, __unused int v)
 	default:
 		return;
 	}
-	refresh_state(0, st.st_opts);
+//	refresh_state(st.st_opts);
 }
 
 void
 keyh_mode(unsigned char key, __unused int u, __unused int v)
 {
+	int oldopts = st.st_opts;
+
 	glutKeyboardFunc(keyh_default);
 	switch (key) {
 	case 'j':
@@ -159,12 +170,14 @@ keyh_mode(unsigned char key, __unused int u, __unused int v)
 	default:
 		return;
 	}
-	refresh_state(0, st.st_opts);
+	refresh_state(oldopts);
 }
 
 void
 keyh_vmode(unsigned char key, __unused int u, __unused int v)
 {
+	int oldopts = st.st_opts;
+
 	glutKeyboardFunc(keyh_default);
 	switch (key) {
 	case 'l':
@@ -178,15 +191,14 @@ keyh_vmode(unsigned char key, __unused int u, __unused int v)
 	default:
 		return;
 	}
-	refresh_state(0, st.st_opts);
+	refresh_state(oldopts);
 }
 
 void
 keyh_default(unsigned char key, __unused int u, __unused int v)
 {
-	int oldopts;
+	int oldopts = st.st_opts;
 
-	oldopts = st.st_opts;
 	switch (key) {
 	case 'b':
 		st.st_opts ^= OP_BLEND;
@@ -271,7 +283,7 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 	default:
 		return;
 	}
-	refresh_state(0, oldopts);
+	refresh_state(oldopts);
 }
 
 void
