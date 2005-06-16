@@ -56,8 +56,8 @@ float			 tz = STARTZ, tlz = STARTLZ, oz = STARTZ, olz = STARTLZ;
 int			 spkey, lastu, lastv;
 GLint			 cluster_dl;
 struct timeval		 lastsync;
-long			 fps;
-int			 gDebugCapture = 0;
+long			 fps = 100;
+int			 gDebugCapture;
 
 struct vmode {
 	int	vm_clip;
@@ -359,11 +359,48 @@ passive_m(int u, int v)
 
 #define MAXCNT 100
 
-/* Convert FPS -> microseconds. */
+/* Convert FPS to microseconds. */
 #define FPS_TO_USEC(X) (1000000/X)
 
 /* FPS governor. */
 #define GOVERN_FPS 20
+
+#if 0
+struct timeval fpstv;
+
+void
+idle(void)
+{
+	struct timeval curtv, difftv;
+	static struct timeval govtv;
+	static long fcnt;
+	unsigned long govdiff;
+
+	gettimeofday(&curtv, NULL);
+	if (fpstv.tv_sec + 1 < curtv.tv_sec) {
+		timersub(&curtv, &fpstv, &difftv);
+		fpstv = curtv;
+//printf("setting fps = %ld/(%ld+%ld/1e9f)\n",
+//    fcnt, difftv.tv_sec, difftv.tv_usec);
+		fps = fcnt / (difftv.tv_sec + difftv.tv_usec / 1e9f);
+		fcnt = 0;
+	}
+	if (lastsync.tv_sec + SLEEP_INTV < curtv.tv_sec) {
+printf("syncing data files\n");
+		lastsync = curtv;
+		rebuild(RO_RELOAD | RO_COMPILE);
+		/* Update time after long detour. */
+		gettimeofday(&curtv, NULL);
+	}
+	timersub(&curtv, &govtv, &difftv);
+	govdiff = difftv.tv_sec * 1e9 + difftv.tv_usec;
+	if (govdiff >= FPS_TO_USEC(GOVERN_FPS)) {
+		fcnt++;
+		govtv = curtv;
+		draw();
+	}
+}
+#endif
 
 void
 idle_govern(void)
