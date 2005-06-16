@@ -168,6 +168,9 @@ struct flyby {
 #define OP_CAPTURE	(1<<5)
 #define OP_DISPLAY	(1<<6)
 #define OP_GOVERN	(1<<7)
+#define OP_POLYOFFSET	(1<<8)
+
+#define OP_DEBUG	(1<<8)
 
 #define SM_JOBS		0
 #define SM_FAIL		1
