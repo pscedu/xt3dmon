@@ -116,7 +116,7 @@ node_for_nid(int nid)
  * Serial entry point to special-case code for handling states changes.
  */
 void
-refresh_state(int flyby, int oldopts)
+refresh_state(int oldopts)
 {
 	int diff = st.st_opts ^ oldopts;
 
@@ -132,12 +132,6 @@ refresh_state(int flyby, int oldopts)
 
 	if (st.st_ro)
 		rebuild(st.st_ro);
-
-	if (flyby) {
-		st.st_ro = 0;
-		flip_panels(fb.fb_panels);
-		fb.fb_panels = 0;
-	}
 }
 
 void
