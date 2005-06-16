@@ -25,7 +25,9 @@
 #include "mon.h"
 #include "buf.h"
 
-#define SLEEP_INTV	500
+extern double round(double); /* don't ask */
+
+#define SLEEP_INTV	5
 
 #define FOVY		(45.0f)
 #define ASPECT		(win_width / (double)win_height)
@@ -123,10 +125,15 @@ void
 restore_state(int flyby)
 {
 	/* Restore tweening state */
+	/* XXX: this is wrong, it only needs to be done with OP_TWEEN changes. */
 	if (!(st.st_opts & OP_TWEEN)) {
 		ox = tx = st.st_x;  olx = tlx = st.st_lx;
 		oy = ty = st.st_y;  oly = tly = st.st_ly;
 		oz = tz = st.st_z;  olz = tlz = st.st_lz;
+	}
+
+	if (st.st_opts & OP_GOVERN) {
+		/* set idle_govern */
 	}
 
 	/*
@@ -352,37 +359,64 @@ passive_m(int u, int v)
 
 #define MAXCNT 100
 
-/* Convert FPS -> Microseconds */
-#define FPS(X) (1000000/X)
+/* Convert FPS -> microseconds. */
+#define FPS_TO_USEC(X) (1000000/X)
 
-/* FPS Governor */
-#define MAX_FPS 20
+/* FPS governor. */
+#define GOVERN_FPS 20
 
 void
-idle(void)
+idle_govern(void)
 {
-	struct timeval time = {0,0};
+	struct timeval time, diff;
 	static struct timeval ftime = {0,0};
 	static struct timeval ptime = {0,0};
 	static long fcnt = 0;
 
-	/* Maintain MAX_FPS unless OP_FULL_SPEED is set */
-	/* XXX: syscall in main loop has to go. */
 	gettimeofday(&time, NULL);
-	if(abs(time.tv_usec - ptime.tv_usec) >= FPS(MAX_FPS) || 
-	   st.st_opts & OP_GOVERN) {
-
-		ptime = time;
-
-		if(time.tv_sec - ftime.tv_sec >= 1) {
-			gettimeofday(&ftime, NULL);
+	timersub(&time, &ptime, &diff);
+	if (diff.tv_sec * 1e9 + diff.tv_usec >= FPS_TO_USEC(GOVERN_FPS)) {
+		timersub(&time, &ftime, &diff);
+		if (diff.tv_sec >= 1) {
+			ftime = time;
 			fps = fcnt;
 			fcnt = 0;
 		}
-
+		timersub(&time, &lastsync, &diff);
+		if (diff.tv_sec >= SLEEP_INTV) {
+			lastsync = time;
+			rebuild(RO_RELOAD | RO_COMPILE);
+			/* A lot of time may have elasped. */
+//			gettimeofday(&time, NULL);
+		}
+		ptime = time;
 		draw();
 		fcnt++;
 	}
+}
+
+void
+idle(void)
+{
+	static int tcnt, cnt;
+
+	tcnt++;
+	if (++cnt >= fps * SLEEP_INTV) {
+		struct timeval tv, diff;
+
+		if (gettimeofday(&tv, NULL) == -1)
+			err(1, "gettimeofday");
+		timersub(&tv, &lastsync, &diff);
+		if (diff.tv_sec)
+			fps = tcnt / (diff.tv_sec + diff.tv_usec / 1e9f);
+		if (diff.tv_sec > SLEEP_INTV) {
+			tcnt = 0;
+			lastsync = tv;
+			rebuild(RO_RELOAD | RO_COMPILE);
+		}
+		cnt = 0;
+	}
+	draw();
 }
 
 __inline void
