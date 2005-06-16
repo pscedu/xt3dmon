@@ -44,8 +44,10 @@ void
 read_flyby(void)
 {
 	struct node *n;
-	int tnid;
+	int tnid, oldopts;
 
+	oldopts = st.st_opts;
+printf("read\n");
 	/* Save selected node. */
 	tnid = fb.fb_nid;
 
@@ -55,13 +57,16 @@ read_flyby(void)
 			err(1, "fread");
 		/* End of flyby. */
 		if (feof(flyby_fp)) {
+printf("done\n");
 			active_flyby = 0;
 			end_flyby();
 			glutKeyboardFunc(keyh_default);
 			glutSpecialFunc(spkeyh_default);
+			glutMotionFunc(m_activeh_default);
+			glutPassiveMotionFunc(m_passiveh_default);
 			adjcam();
 			return;
-		} 
+		}
 	}
 
 	if ((st.st_ro & OP_TWEEN) == 0)
@@ -77,7 +82,8 @@ read_flyby(void)
 			select_node(n);
 	} else
 		selnode = NULL;
-	restore_state(1);
+printf("refresh\n");
+	refresh_state(1, oldopts);
 }
 
 void
@@ -92,6 +98,7 @@ end_flyby(void)
 void
 update_flyby(void)
 {
+printf("update()\n");
 	/* Record user commands. */
 	if (build_flyby) {
 		write_flyby();
@@ -114,7 +121,7 @@ flip_panels(int panels)
 	panels = fb.fb_panels;
 	while ((b = ffs(panels))) {
 		panel_toggle(b);
-		panels &= ~b;
+		panels &= ~(1 << (b - 1));
 	}
 }
 
