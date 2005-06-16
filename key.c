@@ -13,41 +13,48 @@
 struct uinput uinp;
 
 void
+spkeyh_null(__unused int key, __unused int u, __unused int v)
+{
+}
+
+void
+keyh_actflyby(__unused unsigned char key, __unused int u, __unused int v)
+{
+	glutKeyboardFunc(keyh_default);
+	glutSpecialFunc(spkeyh_default);
+	glutMotionFunc(m_activeh_default);
+	glutPassiveMotionFunc(m_passiveh_default);
+}
+
+void
 keyh_flyby(unsigned char key, __unused int u, __unused int v)
 {
+	glutKeyboardFunc(keyh_default);
 	switch (key) {
 	case 'c':
 		unlink(_PATH_FLYBY);
 		errno = 0;
 		break;
 	case 'q':
-		if (build_flyby) {
+		if (build_flyby)
 			end_flyby();
-			build_flyby = !build_flyby;
-		} else if (!active_flyby) {
+		else if (!active_flyby)
 			begin_flyby('w');
-			build_flyby = !build_flyby;
-		}
+		build_flyby = !build_flyby;
 		break;
 	case 'p':
-		if (active_flyby) {
+		if (active_flyby)
 			end_flyby();
-			active_flyby = !active_flyby;
-		} else if (!build_flyby) {
+		else if (!build_flyby) {
 			begin_flyby('r');
-			active_flyby = !active_flyby;
+			glutMotionFunc(m_activeh_null);
+			glutPassiveMotionFunc(m_passiveh_null);
+			glutKeyboardFunc(keyh_actflyby);
+			glutSpecialFunc(spkeyh_null);
 		}
+		active_flyby = !active_flyby;
 		break;
 	}
-	if (!active_flyby) {
-		glutKeyboardFunc(keyh_default);
-		glutSpecialFunc(spkeyh_default);
-	}
-}
-
-void
-spkeyh_null(__unused int key, __unused int u, __unused int v)
-{
 }
 
 void
@@ -129,7 +136,7 @@ keyh_panel(unsigned char key, __unused int u, __unused int v)
 	default:
 		return;
 	}
-	restore_state(0);
+	refresh_state(0, st.st_opts);
 }
 
 void
@@ -152,7 +159,7 @@ keyh_mode(unsigned char key, __unused int u, __unused int v)
 	default:
 		return;
 	}
-	restore_state(0);
+	refresh_state(0, st.st_opts);
 }
 
 void
@@ -171,12 +178,15 @@ keyh_vmode(unsigned char key, __unused int u, __unused int v)
 	default:
 		return;
 	}
-	restore_state(0);
+	refresh_state(0, st.st_opts);
 }
 
 void
 keyh_default(unsigned char key, __unused int u, __unused int v)
 {
+	int oldopts;
+
+	oldopts = st.st_opts;
 	switch (key) {
 	case 'b':
 		st.st_opts ^= OP_BLEND;
@@ -263,7 +273,7 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 	default:
 		return;
 	}
-	restore_state(0);
+	refresh_state(0, oldopts);
 }
 
 void
