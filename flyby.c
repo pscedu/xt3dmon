@@ -81,7 +81,9 @@ read_flyby(void)
 			select_node(n);
 	} else
 		selnode = NULL;
-	refresh_state(1, oldopts);
+	if (fb.fb_panels)
+		flip_panels(fb.fb_panels);
+	refresh_state(oldopts);
 }
 
 void
@@ -97,14 +99,15 @@ void
 update_flyby(void)
 {
 	/* Record user commands. */
-	if (build_flyby) {
+	if (build_flyby)
 		write_flyby();
-		st.st_ro = 0;
-	}
-
 	/* Replay. */
-	if (active_flyby)
+	else if (active_flyby)
 		read_flyby();
+	if (build_flyby || active_flyby) {
+		st.st_ro = 0;
+		fb.fb_panels = 0;
+	}
 }
 
 /*
@@ -117,31 +120,7 @@ flip_panels(int panels)
 
 	panels = fb.fb_panels;
 	while ((b = ffs(panels))) {
-		panel_toggle(b);
+		panel_toggle(1 << (b - 1));
 		panels &= ~(1 << (b - 1));
 	}
-}
-
-/*
- * Set panel state from the current state to the first state in the
- * flyby.
- */
-void
-init_panels(int new)
-{
-	struct panel *p;
-	int cur;
-
-	cur = 0;
-	TAILQ_FOREACH(p, &panels, p_link)
-		cur |= p->p_id;
-	flip_panels(cur ^ new);
-}
-
-/*
- * Restore original panel state at end of flyby.
- */
-void
-restore_panels(int old, int new)
-{
 }
