@@ -21,7 +21,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "cdefs.h"
 #include "mon.h"
 #include "buf.h"
 
@@ -40,6 +39,9 @@ extern double round(double); /* don't ask */
 #define STARTLY		(0.0f)
 #define STARTLZ		(-0.12f)
 
+#define FPS_TO_USEC(X) (1000000/X)	/* Convert FPS to microseconds. */
+#define GOVERN_FPS 20			/* FPS governor. */
+
 struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 struct node		*invmap[NID_MAX];
 int			 win_width = 800;
@@ -53,7 +55,6 @@ int			 logical_depth;
 float			 tx = STARTX, tlx = STARTLX, ox = STARTX, olx = STARTLX;
 float			 ty = STARTY, tly = STARTLY, oy = STARTY, oly = STARTLY;
 float			 tz = STARTZ, tlz = STARTLZ, oz = STARTZ, olz = STARTLZ;
-int			 spkey, lastu, lastv;
 GLint			 cluster_dl;
 struct timeval		 lastsync;
 long			 fps = 100;
@@ -121,38 +122,28 @@ node_for_nid(int nid)
 	return (invmap[nid]);
 }
 
+/*
+ * Serial entry point to special-case code for handling states changes.
+ */
 void
-restore_state(int flyby)
+refresh_state(int flyby, int oldopts)
 {
+	int diff = st.st_opts ^ oldopts;
+
 	/* Restore tweening state */
-	/* XXX: this is wrong, it only needs to be done with OP_TWEEN changes. */
-	if (!(st.st_opts & OP_TWEEN)) {
+	if (diff & OP_TWEEN) {
 		ox = tx = st.st_x;  olx = tlx = st.st_lx;
 		oy = ty = st.st_y;  oly = tly = st.st_ly;
 		oz = tz = st.st_z;  olz = tlz = st.st_lz;
 	}
 
-	if (st.st_opts & OP_GOVERN) {
-		/* set idle_govern */
-	}
+	if (diff & OP_GOVERN)
+		glutIdleFunc(st.st_opts & OP_GOVERN ? idle_govern : idle);
 
-	/*
-	** Below: States that require make_cluster
-	** ---------------------------------------
-	*/
-
-	/* Restore Selected Node */
-#if 0
-	if (selnode != NULL) {
-		selnode->n_state = selnode->n_savst;
-		/* selnode->n_fillp = selnode->n_ofillp; */
-		selnode = NULL;
-	}
-#endif
 	if (st.st_ro)
 		rebuild(st.st_ro);
 
-	if (flyby){
+	if (flyby) {
 		st.st_ro = 0;
 		flip_panels(fb.fb_panels);
 		fb.fb_panels = 0;
@@ -320,89 +311,6 @@ detect_node(int u, int v)
 }
 
 void
-mouse(__unused int button, __unused int state, int u, int v)
-{
-	if (active_flyby)
-		return;
-	spkey = glutGetModifiers();
-	if (spkey == 0 && selnode != NULL &&
-	    button == GLUT_LEFT_BUTTON &&
-	    state == GLUT_DOWN)
-		panel_toggle(PANEL_NINFO);
-	lastu = u;
-	lastv = v;
-}
-
-void
-active_m(int u, int v)
-{
-	int du = u - lastu, dv = v - lastv;
-
-	if (active_flyby)
-		return;
-
-	if (abs(du) + abs(dv) <= 1)
-		return;
-	lastu = u;
-	lastv = v;
-	rotate_cam(du, dv);
-}
-
-void
-passive_m(int u, int v)
-{
-	lastu = u;
-	lastv = v;
-
-	detect_node(u, v);
-}
-
-#define MAXCNT 100
-
-/* Convert FPS to microseconds. */
-#define FPS_TO_USEC(X) (1000000/X)
-
-/* FPS governor. */
-#define GOVERN_FPS 20
-
-#if 0
-struct timeval fpstv;
-
-void
-idle(void)
-{
-	struct timeval curtv, difftv;
-	static struct timeval govtv;
-	static long fcnt;
-	unsigned long govdiff;
-
-	gettimeofday(&curtv, NULL);
-	if (fpstv.tv_sec + 1 < curtv.tv_sec) {
-		timersub(&curtv, &fpstv, &difftv);
-		fpstv = curtv;
-//printf("setting fps = %ld/(%ld+%ld/1e9f)\n",
-//    fcnt, difftv.tv_sec, difftv.tv_usec);
-		fps = fcnt / (difftv.tv_sec + difftv.tv_usec / 1e9f);
-		fcnt = 0;
-	}
-	if (lastsync.tv_sec + SLEEP_INTV < curtv.tv_sec) {
-printf("syncing data files\n");
-		lastsync = curtv;
-		rebuild(RO_RELOAD | RO_COMPILE);
-		/* Update time after long detour. */
-		gettimeofday(&curtv, NULL);
-	}
-	timersub(&curtv, &govtv, &difftv);
-	govdiff = difftv.tv_sec * 1e9 + difftv.tv_usec;
-	if (govdiff >= FPS_TO_USEC(GOVERN_FPS)) {
-		fcnt++;
-		govtv = curtv;
-		draw();
-	}
-}
-#endif
-
-void
 idle_govern(void)
 {
 	struct timeval time, diff;
@@ -436,9 +344,9 @@ void
 idle(void)
 {
 	static int tcnt, cnt;
-
+printf("hi\n");
 	tcnt++;
-	if (++cnt >= fps * SLEEP_INTV) {
+	if (++cnt >= fps) {
 		struct timeval tv, diff;
 
 		if (gettimeofday(&tv, NULL) == -1)
@@ -661,9 +569,9 @@ main(int argc, char *argv[])
 	glutSpecialFunc(spkeyh_default);
 	glutDisplayFunc(draw);
 	glutIdleFunc(idle);
-	glutMouseFunc(mouse);
-	glutMotionFunc(active_m);
-	glutPassiveMotionFunc(passive_m);
+	glutMouseFunc(mouseh);
+	glutMotionFunc(m_activeh_default);
+	glutPassiveMotionFunc(m_passiveh_default);
 	glutMainLoop();
 	exit(0);
 }
