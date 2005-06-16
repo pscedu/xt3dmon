@@ -219,6 +219,10 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 'G': /* Ludicrous Speed */
 		st.st_opts ^= OP_GOVERN;
+		if(st.st_opts & OP_GOVERN)
+			glutIdleFunc(idle_govern);
+		else
+			glutIdleFunc(idle);
 		break;
 	case 'm':
 		glutKeyboardFunc(keyh_mode);
