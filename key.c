@@ -21,18 +21,22 @@ keyh_flyby(unsigned char key, __unused int u, __unused int v)
 		errno = 0;
 		break;
 	case 'q':
-		if (build_flyby)
+		if (build_flyby) {
 			end_flyby();
-		else if (!active_flyby)
+			build_flyby = !build_flyby;
+		} else if (!active_flyby) {
 			begin_flyby('w');
-		build_flyby = !build_flyby;
+			build_flyby = !build_flyby;
+		}
 		break;
 	case 'p':
-		if (active_flyby)
+		if (active_flyby) {
 			end_flyby();
-		else if (!build_flyby)
+			active_flyby = !active_flyby;
+		} else if (!build_flyby) {
 			begin_flyby('r');
-		active_flyby = !active_flyby;
+			active_flyby = !active_flyby;
+		}
 		break;
 	}
 	if (!active_flyby) {
