@@ -16,18 +16,19 @@
 #include "cdefs.h"
 #include "mon.h"
 
-#define TWEEN_MAX	(2.0f)
+#define TWEEN_MAX_POS	(2.0f)
+#define TWEEN_MAX_LOOK	(0.01f)
 #define TWEEN_THRES	(0.001f)
 #define TWEEN_AMT	(0.05f)
 
 __inline int
-tween(__unused float start, float *cur, float stop)
+tween(__unused float start, float *cur, float stop, float max)
 {
 	float amt;
 
 	if (stop != *cur) {
 		amt = (stop - *cur) * TWEEN_AMT;
-		amt = MIN(amt, TWEEN_MAX);
+		amt = MIN(amt, max);
 		*cur += amt;
 		if (fabs(stop - *cur) < TWEEN_THRES)
 			*cur = stop;
@@ -42,12 +43,12 @@ draw(void)
 	update_flyby();
 
 	if (st.st_opts & OP_TWEEN)
-		if (tween(ox, &st.st_x, tx) |
-		    tween(oy, &st.st_y, ty) |
-		    tween(oz, &st.st_z, tz) |
-		    tween(olx, &st.st_lx, tlx) |
-		    tween(oly, &st.st_ly, tly) |
-		    tween(olz, &st.st_lz, tlz))
+		if (tween(ox, &st.st_x, tx, TWEEN_MAX_POS) |
+		    tween(oy, &st.st_y, ty, TWEEN_MAX_POS) |
+		    tween(oz, &st.st_z, tz, TWEEN_MAX_POS) |
+		    tween(olx, &st.st_lx, tlx, TWEEN_MAX_LOOK) |
+		    tween(oly, &st.st_ly, tly, TWEEN_MAX_LOOK) |
+		    tween(olz, &st.st_lz, tlz, TWEEN_MAX_LOOK))
 			adjcam();
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
