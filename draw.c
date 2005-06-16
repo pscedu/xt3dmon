@@ -210,10 +210,12 @@ draw_wireframe_node(struct node *n, float w, float h, float d)
 	h += 2.0f * WFRAMEWIDTH;
 	d += 2.0f * WFRAMEWIDTH;
 
+	/* Antialiasing */
 	glEnable(GL_LINE_SMOOTH);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
+
 	glLineWidth(1.0);
 	glColor3f(0.0f, 0.0f, 0.0f);
 	glBegin(GL_LINE_STRIP);
@@ -287,6 +289,15 @@ draw_textured_node(struct node *n, float w, float h, float d)
 
 	if (st.st_opts & OP_BLEND)
 		glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, color);
+	
+	/* Polygon Offset */
+	if(st.st_opts & OP_POLYOFFSET) {
+		glEnable(GL_LIGHTING);
+		glEnable(GL_LIGHT0);
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		glPolygonOffset(1.0, 3.0);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
 
 	/* Back  */
 	glBegin(GL_POLYGON);
@@ -360,9 +371,16 @@ draw_textured_node(struct node *n, float w, float h, float d)
 	glTexCoord2f(ud, 0.0);
 	glEnd();
 
-	/* DEBUG */
 	if (st.st_opts & OP_BLEND)
 		glDisable(GL_BLEND);
+
+	/* Disable Polygon Offset */
+	if(st.st_opts & OP_POLYOFFSET) {
+		glDisable(GL_LIGHTING);
+		glDisable(GL_LIGHT0);
+		glDisable(GL_POLYGON_OFFSET_FILL);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
 
 	glDisable(GL_TEXTURE_2D);
 }
