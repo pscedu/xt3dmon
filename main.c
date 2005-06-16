@@ -1,7 +1,6 @@
 /* $Id$ */
 
 #include <sys/param.h>
-#include <sys/queue.h>
 #include <sys/time.h>
 
 #ifdef __APPLE_CC__
@@ -11,15 +10,6 @@
 # include <GL/gl.h>
 # include <GL/freeglut.h>
 #endif
-
-#include <ctype.h>
-#include <err.h>
-#include <errno.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
 
 #include "mon.h"
 #include "buf.h"
@@ -344,7 +334,7 @@ void
 idle(void)
 {
 	static int tcnt, cnt;
-printf("hi\n");
+
 	tcnt++;
 	if (++cnt >= fps) {
 		struct timeval tv, diff;
@@ -409,21 +399,21 @@ make_one_logical_cluster(struct vec *v)
 	int r, cb, cg, m, n;
 	struct node *node;
 
-for (r = 0; r < NROWS; r++)
- for (cb = 0; cb < NCABS; cb++)
-  for (cg = 0; cg < NCAGES; cg++)
-   for (m = 0; m < NMODS; m++)
-    for (n = 0; n < NNODES; n++) {
-     node = &nodes[r][cb][cg][m][n];
-     node->n_v = &node->n_logv;
-     node->n_v->v_x += v->v_x;
-     node->n_v->v_y += v->v_y;
-     node->n_v->v_z += v->v_z;
-     draw_node(node, NODEWIDTH, NODEHEIGHT, NODEDEPTH);
-     node->n_v->v_x -= v->v_x;
-     node->n_v->v_y -= v->v_y;
-     node->n_v->v_z -= v->v_z;
-    }
+	for (r = 0; r < NROWS; r++)
+		for (cb = 0; cb < NCABS; cb++)
+			for (cg = 0; cg < NCAGES; cg++)
+				for (m = 0; m < NMODS; m++)
+					for (n = 0; n < NNODES; n++) {
+						node = &nodes[r][cb][cg][m][n];
+						node->n_v = &node->n_logv;
+						node->n_v->v_x += v->v_x;
+						node->n_v->v_y += v->v_y;
+						node->n_v->v_z += v->v_z;
+						draw_node(node, NODEWIDTH, NODEHEIGHT, NODEDEPTH);
+						node->n_v->v_x -= v->v_x;
+						node->n_v->v_y -= v->v_y;
+						node->n_v->v_z -= v->v_z;
+					}
 }
 
 /*
@@ -442,8 +432,6 @@ make_cluster_logical(void)
 	xpos = st.st_x - clip;
 	ypos = st.st_y - clip;
 	zpos = st.st_z - clip;
-
-printf("(%d,%d,%d)\n", xpos, ypos, zpos);
 
 	xpos = SIGN(xpos) * round(abs(xpos) / (double)logical_width) * logical_width;
 	ypos = SIGN(ypos) * round(abs(ypos) / (double)logical_height) * logical_height;
