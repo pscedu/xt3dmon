@@ -251,9 +251,19 @@ void 			*load_png(char *);
 /* main.c */
 struct node		*node_for_nid(int);
 void			 adjcam(void);
-void			 restore_state(int);
+void			 refresh_state(int, int);
 void			 rebuild(int);
 void			 select_node(struct node *);
+void			 idle_govern(void);
+void			 idle(void);
+void			 detect_node(int, int);
+
+/* mouse.c */
+void			 m_activeh_default(int, int);
+void			 m_activeh_null(int, int);
+void			 m_passiveh_default(int, int);
+void			 m_passiveh_null(int, int);
+void			 mouseh(int, int, int, int);
 
 /* panel.c */
 void			 draw_panels(void);
