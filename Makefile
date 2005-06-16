@@ -2,7 +2,7 @@
 
 PROG = mon
 SRCS = buf.c cam.c capture.c draw.c flyby.c key.c load_png.c main.c \
-    panel.c parse.c
+    mouse.c panel.c parse.c
 LIBS = -lGL -lglut -lGLU -lpng
 CFLAGS += -Wall -W -g
 
