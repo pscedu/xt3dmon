@@ -1,5 +1,13 @@
 /* $Id$ */
 
+#ifdef __APPLE_CC__
+# include <OpenGL/gl.h>
+# include <GLUT/glut.h>
+#else
+# include <GL/gl.h>
+# include <GL/freeglut.h>
+#endif
+
 #include "cdefs.h"
 #include "mon.h"
 
