@@ -251,7 +251,7 @@ void 			*load_png(char *);
 /* main.c */
 struct node		*node_for_nid(int);
 void			 adjcam(void);
-void			 refresh_state(int, int);
+void			 refresh_state(int);
 void			 rebuild(int);
 void			 select_node(struct node *);
 void			 idle_govern(void);
