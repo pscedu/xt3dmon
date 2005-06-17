@@ -1,10 +1,10 @@
 # $Id$
 
 PROG = mon
-SRCS = buf.c cam.c capture.c draw.c flyby.c key.c load_png.c main.c \
-    mouse.c panel.c parse.c
-LIBS = -lGL -lglut -lGLU -lpng
-CFLAGS += -Wall -W -g
+SRCS = buf.c cam.c capture.c db.c draw.c flyby.c key.c load_png.c \
+    main.c mouse.c panel.c parse.c
+LIBS = -lGL -lglut -lGLU -lpng `mysql_config --libs`
+CFLAGS += -Wall -W -g `mysql_config --cflags | sed "s/'//g"`
 
 OBJS = ${SRCS:.c=.o}
 
@@ -16,7 +16,7 @@ ${PROG}: ${OBJS}
 	${CC} ${LIBS} ${OBJS} -o $@
 
 .c.o:
-	${CC} ${CFLAGS} ${CFLAGS} -c $<
+	${CC} ${CFLAGS} -c $<
 
 depend:
 	mkdep ${SRCS}
