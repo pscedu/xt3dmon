@@ -20,6 +20,7 @@ spkeyh_null(__unused int key, __unused int u, __unused int v)
 void
 spkeyh_actflyby(__unused int key, __unused int u, __unused int v)
 {
+	end_flyby();
 	glutKeyboardFunc(keyh_default);
 	glutSpecialFunc(spkeyh_default);
 	glutMotionFunc(m_activeh_default);
@@ -29,6 +30,7 @@ spkeyh_actflyby(__unused int key, __unused int u, __unused int v)
 void
 keyh_actflyby(__unused unsigned char key, __unused int u, __unused int v)
 {
+	end_flyby();
 	glutKeyboardFunc(keyh_default);
 	glutSpecialFunc(spkeyh_default);
 	glutMotionFunc(m_activeh_default);
@@ -49,7 +51,6 @@ keyh_flyby(unsigned char key, __unused int u, __unused int v)
 			end_flyby();
 		else if (!active_flyby)
 			begin_flyby('w');
-		build_flyby = !build_flyby;
 		break;
 	case 'p':
 		if (active_flyby)
@@ -61,7 +62,10 @@ keyh_flyby(unsigned char key, __unused int u, __unused int v)
 			glutKeyboardFunc(keyh_actflyby);
 			glutSpecialFunc(spkeyh_actflyby);
 		}
-		active_flyby = !active_flyby;
+		break;
+	case 'l':
+		st.st_opts ^= OP_LOOPFLYBY;
+		refresh_state(st.st_opts ^ OP_LOOPFLYBY);
 		break;
 	}
 }
@@ -111,14 +115,11 @@ keyh_panel(unsigned char key, __unused int u, __unused int v)
 	switch (key) {
 	case 'a':
 		for (j = 0; j < NPANELS; j++)
-			panel_toggle(1 << j);
+			if ((pinfo[j].pi_opts & PF_UINP) == 0)
+				panel_toggle(1 << j);
 		break;
 	case 'c':
 		panel_toggle(PANEL_CMD);
-		glutKeyboardFunc(keyh_uinput);
-		uinp.uinp_callback = uinpcb_cmd;
-		uinp.uinp_panel = PANEL_CMD;
-		uinp.uinp_opts = UINPO_LINGER;
 		break;
 	case 'F':
 		panel_toggle(PANEL_FLYBY);
@@ -128,10 +129,6 @@ keyh_panel(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 'g':
 		panel_toggle(PANEL_GOTO);
-		glutKeyboardFunc(keyh_uinput);
-		uinp.uinp_callback = uinpcb_goto;
-		uinp.uinp_panel = PANEL_GOTO;
-		uinp.uinp_opts = 0;
 		break;
 	case 'l':
 		panel_toggle(PANEL_LEGEND);
@@ -145,7 +142,6 @@ keyh_panel(unsigned char key, __unused int u, __unused int v)
 	default:
 		return;
 	}
-//	refresh_state(st.st_opts);
 }
 
 void
@@ -288,6 +284,14 @@ printf("OP_DEBUG: %d\n", st.st_opts & OP_DEBUG);
 		break;
 	case '1':
 		st.st_opts ^= OP_POLYOFFSET;
+		st.st_ro |= RO_COMPILE;
+		break;
+	case '[':
+		st.st_lognspace++;
+		st.st_ro |= RO_COMPILE;
+		break;
+	case ']':
+		st.st_lognspace--;
 		st.st_ro |= RO_COMPILE;
 		break;
 	default:
