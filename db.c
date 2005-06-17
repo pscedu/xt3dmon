@@ -27,8 +27,6 @@ db_connect(struct dbh *dbh)
 	if (mysql_real_connect(&dbh->dbh_mysql, DBH_HOST,
 	    DBH_USER, DBH_PASS, DBH_DB, DBH_PORT, DBH_SOCK, 0) == NULL)
 		err(1, "%s", mysql_error(&dbh->dbh_mysql));
-	if (mysql_select_db(&dbh->dbh_mysql, DBH_DB))
-		err(1, "%s", mysql_error(&dbh->dbh_mysql));
 }
 
 void
