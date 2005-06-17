@@ -45,7 +45,7 @@ int			 logical_depth;
 float			 tx = STARTX, tlx = STARTLX, ox = STARTX, olx = STARTLX;
 float			 ty = STARTY, tly = STARTLY, oy = STARTY, oly = STARTLY;
 float			 tz = STARTZ, tlz = STARTLZ, oz = STARTZ, olz = STARTLZ;
-GLint			 cluster_dl;
+GLint			 cluster_dl, ground_dl;
 struct timeval		 lastsync;
 long			 fps = 100;
 int			 gDebugCapture;
@@ -85,24 +85,13 @@ struct fill selnodefill = { 0.20f, 0.40f, 0.60f, 1.00f, 0 };		/* Dark blue */
 struct node *selnode;
 
 void
-adjcam(void)
-{
-	glLoadIdentity();
-	gluLookAt(st.st_x, st.st_y, st.st_z,
-	    st.st_x + st.st_lx,
-	    st.st_y + st.st_ly,
-	    st.st_z + st.st_lz,
-	    0.0f, 1.0f, 0.0f);
-}
-
-void
 reshape(int w, int h)
 {
 	win_width = w;
 	win_height = h;
 
 	rebuild(RO_PERSPECTIVE);
-	adjcam();
+	cam_update();
 }
 
 struct node *
@@ -121,16 +110,17 @@ refresh_state(int oldopts)
 {
 	int diff = st.st_opts ^ oldopts;
 
-	/* Restore tweening state */
+	/* Restore tweening state. */
 	if (diff & OP_TWEEN) {
 		ox = tx = st.st_x;  olx = tlx = st.st_lx;
 		oy = ty = st.st_y;  oly = tly = st.st_ly;
 		oz = tz = st.st_z;  olz = tlz = st.st_lz;
 	}
-
+	if (diff & OP_FREELOOK)
+		glutMotionFunc(st.st_opts & OP_FREELOOK ?
+		    m_activeh_free : m_activeh_default);
 	if (diff & OP_GOVERN)
 		glutIdleFunc(st.st_opts & OP_GOVERN ? idle_govern : idle);
-
 	if (st.st_ro)
 		rebuild(st.st_ro);
 }
@@ -537,8 +527,10 @@ rebuild(int opts)
 		glViewport(0, 0, win_width, win_height);
 		gluPerspective(FOVY, ASPECT, 1, vmodes[st.st_vmode].vm_clip);
 		glMatrixMode(GL_MODELVIEW);
-		adjcam();
+		cam_update();
 	}
+	if (opts & RO_INIT)
+		make_ground();
 	if (opts & RO_COMPILE)
 		make_cluster();
 }
@@ -559,7 +551,7 @@ main(int argc, char *argv[])
 	TAILQ_INIT(&panels);
 	buf_init(&uinp.uinp_buf);
 	buf_append(&uinp.uinp_buf, '\0');
-	rebuild(RO_ALL);
+	rebuild(RO_INIT);
 
 	/* glutExposeFunc(reshape); */
 	glutReshapeFunc(reshape);
