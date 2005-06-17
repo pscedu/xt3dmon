@@ -54,7 +54,7 @@ struct vmode {
 	int	vm_clip;
 } vmodes[] = {
 	{ 1000 },
-	{ 100 }
+	{ 1000 }
 };
 
 struct state st = {
@@ -65,7 +65,8 @@ struct state st = {
 	1.0f,						/* other alpha */
 	GL_RGBA,					/* alpha blend format */
 	SM_JOBS,					/* which data to show */
-	VM_PHYSICAL,					/* viewing mode */
+	VM_LOGICAL,					/* viewing mode */
+	2,						/* logical node spacing */
 	0						/* rebuild flags */
 };
 
@@ -366,6 +367,7 @@ make_cluster_physical(void)
 					for (n = 0; n < NNODES; n++) {
 						node = &nodes[r][cb][cg][m][n];
 						node->n_physv.v_x = x + NODESPACE;
+						/* XXX: use a constant for the rhombus shift. */
 						node->n_physv.v_y = y +
 						    (2.0f * NODESPACE + NODEHEIGHT) *
 						    (n % (NNODES/2)) + NODESPACE,
@@ -392,6 +394,7 @@ make_one_logical_cluster(struct vec *v)
 {
 	int r, cb, cg, m, n;
 	struct node *node;
+	struct vec nv, *oldv;
 
 	for (r = 0; r < NROWS; r++)
 		for (cb = 0; cb < NCABS; cb++)
@@ -399,14 +402,20 @@ make_one_logical_cluster(struct vec *v)
 				for (m = 0; m < NMODS; m++)
 					for (n = 0; n < NNODES; n++) {
 						node = &nodes[r][cb][cg][m][n];
-						node->n_v = &node->n_logv;
-						node->n_v->v_x += v->v_x;
-						node->n_v->v_y += v->v_y;
-						node->n_v->v_z += v->v_z;
+
+						nv.v_x = node->n_logv.v_x * st.st_lognspace + v->v_x;
+						nv.v_y = node->n_logv.v_y * st.st_lognspace + v->v_y;
+						nv.v_z = node->n_logv.v_z * st.st_lognspace + v->v_z;
+						node->n_v = &nv;
+
+//						node->n_v = &node->n_logv;
+//						node->n_v->v_x += v->v_x;
+//						node->n_v->v_y += v->v_y;
+//						node->n_v->v_z += v->v_z;
 						draw_node(node, NODEWIDTH, NODEHEIGHT, NODEDEPTH);
-						node->n_v->v_x -= v->v_x;
-						node->n_v->v_y -= v->v_y;
-						node->n_v->v_z -= v->v_z;
+//						node->n_v->v_x -= v->v_x;
+//						node->n_v->v_y -= v->v_y;
+//						node->n_v->v_z -= v->v_z;
 					}
 }
 
@@ -435,10 +444,17 @@ make_cluster_logical(void)
 		glDeleteLists(cluster_dl, 1);
 	cluster_dl = glGenLists(1);
 	glNewList(cluster_dl, GL_COMPILE);
+
+v.v_x = v.v_y = v.v_z = 0;
+make_one_logical_cluster(&v);
+goto done;
 	for (v.v_x = xpos; v.v_x < st.st_x + clip; v.v_x += logical_width)
 		for (v.v_y = ypos; v.v_y < st.st_y + clip; v.v_y += logical_height)
-			for (v.v_z = zpos; v.v_z < st.st_z + clip; v.v_z += logical_depth)
+			for (v.v_z = zpos; v.v_z < st.st_z + clip; v.v_z += logical_depth) {
 				make_one_logical_cluster(&v);
+				goto done;
+			}
+done:
 	glEndList();
 }
 
