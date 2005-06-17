@@ -16,13 +16,25 @@ int	 spkey, lastu, lastv;
 void
 mouseh(__unused int button, __unused int state, int u, int v)
 {
+	struct node *oldsn;
+
 	if (active_flyby)
 		return;
 	spkey = glutGetModifiers();
-	if (spkey == 0 && selnode != NULL &&
+	if (spkey == 0 &&
 	    button == GLUT_LEFT_BUTTON &&
-	    state == GLUT_DOWN)
-		panel_toggle(PANEL_NINFO);
+	    state == GLUT_DOWN) {
+	    	oldsn = selnode;
+		if (selnode) {
+			selnode->n_fillp = selnode->n_ofillp;
+			selnode = NULL;
+		}
+		detect_node(u, v);
+		if ((oldsn == NULL) ^ (selnode == NULL)) {
+			panel_toggle(PANEL_NINFO);
+			rebuild(RO_COMPILE);
+		}
+	}
 	lastu = u;
 	lastv = v;
 }
@@ -45,7 +57,7 @@ m_passiveh_default(int u, int v)
 	lastu = u;
 	lastv = v;
 
-	detect_node(u, v);
+//	detect_node(u, v);
 }
 
 void
