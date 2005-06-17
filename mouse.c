@@ -48,7 +48,30 @@ m_activeh_default(int u, int v)
 		return;
 	lastu = u;
 	lastv = v;
-	rotate_cam(du, dv);
+
+	tween_pushpop(TWF_PUSH | TWF_LOOK | TWF_POS);
+	if (du != 0 && spkey & GLUT_ACTIVE_CTRL)
+		cam_revolve(du);
+	if (dv != 0 && spkey & GLUT_ACTIVE_SHIFT)
+		cam_rotatev(dv);
+	tween_pushpop(TWF_POP | TWF_LOOK | TWF_POS);
+}
+
+void
+m_activeh_free(int u, int v)
+{
+	int du = u - lastu, dv = v - lastv;
+
+	if (abs(du) + abs(dv) <= 1)
+		return;
+	lastu = u;
+	lastv = v;
+	tween_pushpop(TWF_PUSH | TWF_LOOK);
+	if (du != 0)
+		cam_rotateu(du);
+	if (dv != 0)
+		cam_rotatev(dv);
+	tween_pushpop(TWF_POP | TWF_LOOK);
 }
 
 void
