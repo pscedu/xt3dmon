@@ -63,47 +63,12 @@ printf("."); fflush(stdout);
 		    tween(olx, &st.st_lx, tlx, TWEEN_MAX_LOOK) |
 		    tween(oly, &st.st_ly, tly, TWEEN_MAX_LOOK) |
 		    tween(olz, &st.st_lz, tlz, TWEEN_MAX_LOOK))
-			adjcam();
+			cam_update();
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	if (st.st_opts & OP_GROUND) {
-		glBegin(GL_QUADS);
-
-		/* Ground */
-		glColor3f(0.4f, 0.4f, 0.4f);
-		glVertex3f( -5.0f, 0.0f, -5.0f);
-		glVertex3f( -5.0f, 0.0f, 22.0f);
-		glVertex3f(230.0f, 0.0f, 22.0f);
-		glVertex3f(230.0f, 0.0f, -5.0f);
-
-		/* x-axis */
-		glColor3f(1.0f, 1.0f, 1.0f);
-		glVertex2f(-200.0f, -0.1f);
-		glVertex2f(-200.0f,  0.1f);
-		glVertex2f( 200.0f,  0.1f);
-		glVertex2f( 200.0f, -0.1f);
-
-		/* y-axis */
-		glColor3f(0.6f, 0.6f, 1.0f);
-		glVertex2f(-0.1f, -200.0f);
-		glVertex2f(-0.1f,  200.0f);
-		glVertex2f( 0.1f,  200.0f);
-		glVertex2f( 0.1f, -200.0f);
-
-		/* z-axis */
-		glColor3f(1.0f, 0.9f, 0.0f);
-		glVertex3f(-0.1f, -0.1f, -200.0f);
-		glVertex3f(-0.1f,  0.1f, -200.0f);
-		glVertex3f(-0.1f,  0.1f,  200.0f);
-		glVertex3f(-0.1f, -0.1f,  200.0f);
-		glVertex3f( 0.1f, -0.1f, -200.0f);
-		glVertex3f( 0.1f,  0.1f, -200.0f);
-		glVertex3f( 0.1f,  0.1f,  200.0f);
-		glVertex3f( 0.1f, -0.1f,  200.0f);
-
-		glEnd();
-	}
+	if (st.st_opts & OP_GROUND)
+		glCallList(ground_dl);
 
 	glCallList(cluster_dl);
 	draw_panels();
@@ -361,7 +326,7 @@ draw_textured_node(struct node *n, float w, float h, float d)
 
 	if (st.st_opts & OP_BLEND)
 		glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, color);
-	
+
 	/* Polygon Offset */
 	if(st.st_opts & OP_POLYOFFSET) {
 		glEnable(GL_LIGHTING);
@@ -403,7 +368,7 @@ draw_textured_node(struct node *n, float w, float h, float d)
 		glEnable(GL_LIGHT0);
 		glEnable(GL_NORMALIZE);
 	}
-#endif 
+#endif
 
 	glBegin(GL_QUADS);
 
@@ -486,7 +451,7 @@ draw_textured_node(struct node *n, float w, float h, float d)
 		glDisable(GL_LIGHT0);
 		glDisable(GL_NORMALIZE);
 	}
-#endif 
+#endif
 
 	glDisable(GL_TEXTURE_2D);
 }
@@ -560,3 +525,47 @@ draw_node_triangles()
 	glEnd();
 }
 #endif
+
+void
+make_ground(void)
+{
+	ground_dl = glGenLists(1);
+	glNewList(ground_dl, GL_COMPILE);
+
+	glBegin(GL_QUADS);
+
+	/* Ground */
+	glColor3f(0.4f, 0.4f, 0.4f);
+	glVertex3f( -5.0f, 0.0f, -5.0f);
+	glVertex3f( -5.0f, 0.0f, 22.0f);
+	glVertex3f(230.0f, 0.0f, 22.0f);
+	glVertex3f(230.0f, 0.0f, -5.0f);
+
+	/* x-axis */
+	glColor3f(1.0f, 1.0f, 1.0f);
+	glVertex2f(-200.0f, -0.1f);
+	glVertex2f(-200.0f,  0.1f);
+	glVertex2f( 200.0f,  0.1f);
+	glVertex2f( 200.0f, -0.1f);
+
+	/* y-axis */
+	glColor3f(0.6f, 0.6f, 1.0f);
+	glVertex2f(-0.1f, -200.0f);
+	glVertex2f(-0.1f,  200.0f);
+	glVertex2f( 0.1f,  200.0f);
+	glVertex2f( 0.1f, -200.0f);
+
+	/* z-axis */
+	glColor3f(1.0f, 0.9f, 0.0f);
+	glVertex3f(-0.1f, -0.1f, -200.0f);
+	glVertex3f(-0.1f,  0.1f, -200.0f);
+	glVertex3f(-0.1f,  0.1f,  200.0f);
+	glVertex3f(-0.1f, -0.1f,  200.0f);
+	glVertex3f( 0.1f, -0.1f, -200.0f);
+	glVertex3f( 0.1f,  0.1f, -200.0f);
+	glVertex3f( 0.1f,  0.1f,  200.0f);
+	glVertex3f( 0.1f, -0.1f,  200.0f);
+
+	glEnd();
+	glEndList();
+}
