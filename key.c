@@ -4,7 +4,6 @@
 #include <unistd.h>
 
 #include "buf.h"
-#include "cam.h"
 #include "cdefs.h"
 #include "mon.h"
 
@@ -228,6 +227,9 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 	case 'G': /* Ludicrous Speed */
 		st.st_opts ^= OP_GOVERN;
 		break;
+	case 'L':
+		st.st_opts ^= OP_FREELOOK;
+		break;
 	case 'm':
 		glutKeyboardFunc(keyh_mode);
 		break;
@@ -236,7 +238,7 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 			tx = ty = tz = 0;
 		else {
 			st.st_x = st.st_y = st.st_z = 0;
-			adjcam();
+			cam_update();
 		}
 		break;
 	case 'p':
@@ -330,5 +332,7 @@ spkeyh_default(int key, __unused int u, __unused int v)
 	default:
 		return;
 	}
-	move_cam(dir);
+	tween_pushpop(TWF_PUSH | TWF_POS);
+	cam_move(dir);
+	tween_pushpop(TWF_POP | TWF_POS);
 }
