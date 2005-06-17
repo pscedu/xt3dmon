@@ -3,7 +3,6 @@
 #include <math.h>
 
 #include "mon.h"
-#include "cam.h"
 
 /*
  *    z
@@ -17,26 +16,14 @@
  * y
  */
 void
-move_cam(int dir)
+cam_move(int dir)
 {
-	float sx, sy, sz;
 	float r, adj;
 
 	r = sqrt(SQUARE(st.st_x - XCENTER) + SQUARE(st.st_z - ZCENTER));
 	adj = pow(2, r / (ROWWIDTH / 2.0f));
 	if (adj > 50.0f)
 		adj = 50.0f;
-
-	sx = sy = sz = 0.0f; /* gcc */
-	if (st.st_opts & OP_TWEEN) {
-		ox = st.st_x;  olx = st.st_lx;
-		oy = st.st_y;  oly = st.st_ly;
-		oz = st.st_z;  olz = st.st_lz;
-
-		sx = st.st_x;  st.st_x = tx;
-		sy = st.st_y;  st.st_y = ty;
-		sz = st.st_z;  st.st_z = tz;
-	}
 
 	switch (dir) {
 	case CAMDIR_LEFT:
@@ -68,77 +55,112 @@ move_cam(int dir)
 		st.st_z -= st.st_lz * st.st_ly * 0.3f * SCALE * adj;
 		break;
 	}
-
-	if (st.st_opts & OP_TWEEN) {
-		tx = st.st_x;  st.st_x = sx;
-		ty = st.st_y;  st.st_y = sy;
-		tz = st.st_z;  st.st_z = sz;
-	} else
-		adjcam();
 }
 
 void
-rotate_cam(int du, int dv)
+cam_revolve(int d)
 {
-	float sx, sy, sz, slx, sly, slz;
-	float adj, t, r, mag;
+	float t, r, mag;
 
-	sx = sy = sz = 0.0f; /* gcc */
-	slx = sly = slz = 0.0f; /* gcc */
-	if (st.st_opts & OP_TWEEN) {
-		ox = st.st_x;  olx = st.st_lx;
-		oy = st.st_y;  oly = st.st_ly;
-		oz = st.st_z;  olz = st.st_lz;
+	r = sqrt(SQUARE(st.st_x - XCENTER) +
+	    SQUARE(st.st_z - ZCENTER));
+	t = acosf((st.st_x - XCENTER) / r);
+	if (st.st_z < ZCENTER)
+		t = 2.0f * PI - t;
+	t += .01f * (float)d;
+	if (t < 0)
+		t += PI * 2.0f;
 
-		sx = st.st_x;  st.st_x = tx;
-		sy = st.st_y;  st.st_y = ty;
-		sz = st.st_z;  st.st_z = tz;
+	/*
+	 * Maintain the magnitude of lx*lx + lz*lz.
+	 */
+	mag = sqrt(SQUARE(st.st_lx) + SQUARE(st.st_lz));
+	st.st_x = r * cos(t) + XCENTER;
+	st.st_z = r * sin(t) + ZCENTER;
+	st.st_lx = (XCENTER - st.st_x) / r * mag;
+	st.st_lz = (ZCENTER - st.st_z) / r * mag;
+}
 
-		slx = st.st_lx;  st.st_lx = tlx;
-		sly = st.st_ly;  st.st_ly = tly;
-		slz = st.st_lz;  st.st_lz = tlz;
+void
+cam_rotateu(int d)
+{
+	float t, mag;
+
+printf("rot(%d)\n", d);
+	mag = sqrt(SQUARE(st.st_lx) + SQUARE(st.st_lz));
+	t = acosf(st.st_lx / mag);
+	if (st.st_lz < 0)
+		t = 2.0f * PI - t;
+	t += 0.01f * (float)d;
+	if (t < 0)
+		t += PI * 2.0f;
+	st.st_lx = cos(t) * mag;
+	st.st_lz = sin(t) * mag;
+
+printf("mag: %.4f\n",
+		sqrt(SQUARE(st.st_lx) + SQUARE(st.st_ly) +
+		    SQUARE(st.st_lz)));
+}
+
+void
+cam_rotatev(int d)
+{
+	float adj, t, mag;
+
+	adj = d * -0.005f;
+	t = asinf(st.st_ly); /* XXX:  wrong. */
+	if (fabs(t + adj) < PI / 2.0f) {
+		st.st_ly = sin(t + adj);
+		mag = sqrt(SQUARE(st.st_lx) + SQUARE(st.st_ly) +
+		    SQUARE(st.st_lz));
+		st.st_lx /= mag;
+		st.st_ly /= mag;
+		st.st_lz /= mag;
 	}
+}
 
-	if (du != 0 && spkey & GLUT_ACTIVE_CTRL) {
-		r = sqrt(SQUARE(st.st_x - XCENTER) +
-		    SQUARE(st.st_z - ZCENTER));
-		t = acosf((st.st_x - XCENTER) / r);
-		if (st.st_z < ZCENTER)
-			t = 2.0f * PI - t;
-		t += .01f * (float)du;
-		if (t < 0)
-			t += PI * 2.0f;
+void
+cam_update(void)
+{
+	glLoadIdentity();
+	gluLookAt(st.st_x, st.st_y, st.st_z,
+	    st.st_x + st.st_lx,
+	    st.st_y + st.st_ly,
+	    st.st_z + st.st_lz,
+	    0.0f, 1.0f, 0.0f);
+}
 
-		/*
-		 * Maintain the magnitude of lx*lx + lz*lz.
-		 */
-		mag = sqrt(SQUARE(st.st_lx) + SQUARE(st.st_lz));
-		st.st_x = r * cos(t) + XCENTER;
-		st.st_z = r * sin(t) + ZCENTER;
-		st.st_lx = (XCENTER - st.st_x) / r * mag;
-		st.st_lz = (ZCENTER - st.st_z) / r * mag;
-	}
-	if (dv != 0 && spkey & GLUT_ACTIVE_SHIFT) {
-		adj = (dv < 0) ? 0.005f : -0.005f;
-		t = asinf(st.st_ly);
-		if (fabs(t + adj) < PI / 2.0f) {
-			st.st_ly = sin(t + adj);
-			mag = sqrt(SQUARE(st.st_lx) + SQUARE(st.st_ly) +
-			    SQUARE(st.st_lz));
-			st.st_lx /= mag;
-			st.st_ly /= mag;
-			st.st_lz /= mag;
+void
+tween_pushpop(int opts)
+{
+	static float sx, sy, sz, slx, sly, slz;
+
+	if (opts & TWF_PUSH) {
+		if (st.st_opts & OP_TWEEN) {
+			if (opts & TWF_POS) {
+				ox = st.st_x;  sx = st.st_x;  st.st_x = tx;
+				oy = st.st_y;  sy = st.st_y;  st.st_y = ty;
+				oz = st.st_z;  sz = st.st_z;  st.st_z = tz;
+			}
+			if (opts & TWF_LOOK) {
+				olx = st.st_lx;  slx = st.st_lx;  st.st_lx = tlx;
+				oly = st.st_ly;  sly = st.st_ly;  st.st_ly = tly;
+				olz = st.st_lz;  slz = st.st_lz;  st.st_lz = tlz;
+			}
 		}
+	} else {
+		if (st.st_opts & OP_TWEEN) {
+			if (opts & TWF_POS) {
+				tx = st.st_x;  st.st_x = sx;
+				ty = st.st_y;  st.st_y = sy;
+				tz = st.st_z;  st.st_z = sz;
+			}
+			if (opts & TWF_LOOK) {
+				tlx = st.st_lx;  st.st_lx = slx;
+				tly = st.st_ly;  st.st_ly = sly;
+				tlz = st.st_lz;  st.st_lz = slz;
+			}
+		} else
+			cam_update();
 	}
-
-	if (st.st_opts & OP_TWEEN) {
-		tx = st.st_x;  st.st_x = sx;
-		ty = st.st_y;  st.st_y = sy;
-		tz = st.st_z;  st.st_z = sz;
-
-		tlx = st.st_lx;  st.st_lx = slx;
-		tly = st.st_ly;  st.st_ly = sly;
-		tlz = st.st_lz;  st.st_lz = slz;
-	} else
-		adjcam();
 }
