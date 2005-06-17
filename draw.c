@@ -37,10 +37,24 @@ tween(__unused float start, float *cur, float stop, float max)
 	return (0);
 }
 
+struct vec logv;
+
 void
 draw(void)
 {
 	update_flyby();
+
+#if 0
+	if (fabs(logv.v_x - st.st_x) > logical_width / 2 ||
+	    fabs(logv.v_y - st.st_y) > logical_height / 2 ||
+	    fabs(logv.v_z - st.st_z) > logical_depth / 2) {
+printf("."); fflush(stdout);
+	    	logv.v_x = st.st_x;
+	    	logv.v_y = st.st_y;
+	    	logv.v_z = st.st_z;
+		rebuild(RO_COMPILE);
+	}
+#endif
 
 	if (st.st_opts & OP_TWEEN)
 		if (tween(ox, &st.st_x, tx, TWEEN_MAX_POS) |
@@ -51,7 +65,7 @@ draw(void)
 		    tween(olz, &st.st_lz, tlz, TWEEN_MAX_LOOK))
 			adjcam();
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (st.st_opts & OP_GROUND) {
 		/* Ground */
@@ -152,7 +166,7 @@ draw_filled_node(struct node *n, float w, float h, float d)
 //	a = n->n_fillp->f_a;
 
 	/* Set alpha depending on usage */
-	if(n->n_state == JST_USED)
+	if (n->n_state == JST_USED)
 		a = st.st_alpha_job;
 	else
 		a = st.st_alpha_oth;
