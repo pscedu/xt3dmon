@@ -262,9 +262,11 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		break;
 	/* DEBUG */
 	case 'z':
+//		st.st_opts ^= OP_GROUND;
+//		st.st_opts ^= OP_TEX;
+//		st.st_opts ^= OP_BLEND;
 		st.st_opts ^= OP_DEBUG;
 		st.st_ro |= RO_COMPILE;
-printf("OP_DEBUG: %d\n", st.st_opts & OP_DEBUG);
 		break;
 	case '+':
 		st.st_alpha_job += (st.st_alpha_job + TRANS_INC > 1.0 ? 0.0 : TRANS_INC);
