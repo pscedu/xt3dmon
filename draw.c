@@ -68,36 +68,31 @@ printf("."); fflush(stdout);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (st.st_opts & OP_GROUND) {
+		glBegin(GL_QUADS);
+
 		/* Ground */
 		glColor3f(0.4f, 0.4f, 0.4f);
-		glBegin(GL_QUADS);
 		glVertex3f( -5.0f, 0.0f, -5.0f);
 		glVertex3f( -5.0f, 0.0f, 22.0f);
 		glVertex3f(230.0f, 0.0f, 22.0f);
 		glVertex3f(230.0f, 0.0f, -5.0f);
-		glEnd();
 
 		/* x-axis */
 		glColor3f(1.0f, 1.0f, 1.0f);
-		glBegin(GL_QUADS);
 		glVertex2f(-200.0f, -0.1f);
 		glVertex2f(-200.0f,  0.1f);
 		glVertex2f( 200.0f,  0.1f);
 		glVertex2f( 200.0f, -0.1f);
-		glEnd();
 
 		/* y-axis */
 		glColor3f(0.6f, 0.6f, 1.0f);
-		glBegin(GL_QUADS);
 		glVertex2f(-0.1f, -200.0f);
 		glVertex2f(-0.1f,  200.0f);
 		glVertex2f( 0.1f,  200.0f);
 		glVertex2f( 0.1f, -200.0f);
-		glEnd();
 
 		/* z-axis */
 		glColor3f(1.0f, 0.9f, 0.0f);
-		glBegin(GL_QUADS);
 		glVertex3f(-0.1f, -0.1f, -200.0f);
 		glVertex3f(-0.1f,  0.1f, -200.0f);
 		glVertex3f(-0.1f,  0.1f,  200.0f);
@@ -106,6 +101,7 @@ printf("."); fflush(stdout);
 		glVertex3f( 0.1f,  0.1f, -200.0f);
 		glVertex3f( 0.1f,  0.1f,  200.0f);
 		glVertex3f( 0.1f, -0.1f,  200.0f);
+
 		glEnd();
 	}
 
