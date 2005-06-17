@@ -86,7 +86,6 @@ cam_rotateu(int d)
 {
 	float t, mag;
 
-printf("rot(%d)\n", d);
 	mag = sqrt(SQUARE(st.st_lx) + SQUARE(st.st_lz));
 	t = acosf(st.st_lx / mag);
 	if (st.st_lz < 0)
@@ -96,10 +95,6 @@ printf("rot(%d)\n", d);
 		t += PI * 2.0f;
 	st.st_lx = cos(t) * mag;
 	st.st_lz = sin(t) * mag;
-
-printf("mag: %.4f\n",
-		sqrt(SQUARE(st.st_lx) + SQUARE(st.st_ly) +
-		    SQUARE(st.st_lz)));
 }
 
 void
