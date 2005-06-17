@@ -56,9 +56,6 @@
 #define YCENTER		((CAGEHEIGHT * NCAGES + CAGESPACE * (NCAGES - 1)) / 2)
 #define ZCENTER		((ROWDEPTH * NROWS + ROWSPACE * (NROWS - 1)) / 2)
 
-#define LOGICAL_NODE_SPACING_FACTOR 10
-#define PHYSICAL_NODE_SPACING_GAP (2.0f)
-
 #define JST_FREE	0
 #define JST_DOWN	1
 #define JST_DISABLED	2
@@ -138,6 +135,7 @@ struct state {
 	GLint		 st_alpha_fmt;
 	int		 st_mode;
 	int		 st_vmode;
+	int		 st_lognspace;
 	int		 st_ro;
 };
 
@@ -169,8 +167,8 @@ struct flyby {
 #define OP_DISPLAY	(1<<6)
 #define OP_GOVERN	(1<<7)
 #define OP_POLYOFFSET	(1<<8)
-
-#define OP_DEBUG	(1<<8)
+#define OP_LOOPFLYBY	(1<<9)
+#define OP_DEBUG	(1<<10)
 
 #define SM_JOBS		0
 #define SM_FAIL		1
@@ -208,8 +206,8 @@ struct panel {
 	int			  p_w;
 	int			  p_h;
 	int			  p_opts;
-	struct fill		  p_fill;
 	void			(*p_refresh)(struct panel *);
+	struct fill		  p_fill;
 	TAILQ_ENTRY(panel)	  p_link;
 	SLIST_HEAD(, pwidget)	  p_widgets;
 	int			  p_nwidgets;
@@ -225,10 +223,19 @@ struct panel {
 #define PANEL_POS	(1<<6)
 #define NPANELS		7
 
-#define POPT_REMOVE	(1<<0)
-#define POPT_COMPILE	(1<<1)
+#define POPT_REMOVE	(1<<0)			/* being removed */
 
 TAILQ_HEAD(panels, panel);
+
+struct pinfo {
+	void		(*pi_refresh)(struct panel *);
+	int		  pi_opts;
+	int		  pi_uinpopts;
+	void		(*pi_uinpcb)(void);
+};
+
+#define PF_UINP		(1<<0)
+#define PF_COMPILE	(1<<1)
 
 /* cam.c */
 void			 move_cam(int);
@@ -312,6 +319,7 @@ extern struct flyby	 fb;
 extern long		 fps;
 extern struct panels	 panels;
 extern struct node	*selnode;
+extern struct pinfo	 pinfo[];
 
 extern struct uinput	 uinp;
 extern int		 spkey;
