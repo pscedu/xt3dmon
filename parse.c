@@ -277,9 +277,9 @@ parse_physmap(void)
 		node = &nodes[r][cb][cg][m][n];
 		node->n_nid = nid;
 		invmap[nid] = node;
-		node->n_logv.v_x = x * LOGICAL_NODE_SPACING_FACTOR;
-		node->n_logv.v_y = y * LOGICAL_NODE_SPACING_FACTOR;
-		node->n_logv.v_z = z * LOGICAL_NODE_SPACING_FACTOR;
+		node->n_logv.v_x = x * st.st_lognspace;
+		node->n_logv.v_y = y * st.st_lognspace;
+		node->n_logv.v_z = z * st.st_lognspace;
 
 		if (node->n_logv.v_x > logical_width)
 			logical_width = node->n_logv.v_x;
