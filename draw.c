@@ -109,9 +109,8 @@ printf("."); fflush(stdout);
 		glEnd();
 	}
 
-	draw_panels();
-
 	glCallList(cluster_dl);
+	draw_panels();
 
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	if (st.st_opts & OP_CAPTURE || gDebugCapture)
