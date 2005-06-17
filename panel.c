@@ -184,8 +184,6 @@ draw_panel(struct panel *p)
 	SLIST_FOREACH(pw, &p->p_widgets, pw_next) {
 		struct fill *fp = pw->pw_fillp;
 
-fp->f_a = 1.00f;
-
 		uoff += p->p_w / 2 * (npw % 2 ? 1 : -1);
 		if (npw % 2 == 0)
 			voff -= PWIDGET_HEIGHT + PWIDGET_PADDING;
@@ -194,7 +192,7 @@ fp->f_a = 1.00f;
 
 		/* Draw widget background. */
 		glBegin(GL_POLYGON);
-		glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
+		glColor4f(fp->f_r, fp->f_g, fp->f_b, 1.0f /* XXX */);
 		glVertex2d(uoff + 1,			voff);
 		glVertex2d(uoff + PWIDGET_LENGTH,	voff);
 		glVertex2d(uoff + PWIDGET_LENGTH,	voff - PWIDGET_HEIGHT + 1);
@@ -232,7 +230,7 @@ fp->f_a = 1.00f;
 
 	/* Draw background. */
 	glBegin(GL_POLYGON);
-	glColor4f(0.4, 0.6, 0.8, 0.6);
+	glColor4f(0.4, 0.6, 0.8, 0.8);
 	glVertex2d(p->p_u,		p->p_v);
 	glVertex2d(p->p_u + p->p_w,	p->p_v);
 	glVertex2d(p->p_u + p->p_w,	p->p_v - p->p_h);
