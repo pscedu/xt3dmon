@@ -9,6 +9,8 @@
 static FILE *flyby_fp;
 struct flyby fb;
 
+void init_panels(void);
+
 /* Open the flyby data file appropriately. */
 void
 begin_flyby(char m)
@@ -23,6 +25,8 @@ begin_flyby(char m)
 			err(1, "%s", _PATH_FLYBY);
 		}
 		active_flyby = 1;
+//		rebuild(RO_COMPILE); /* XXX: is this needed? */
+		init_panels();
 	} else if (m == 'w') {
 		if ((flyby_fp = fopen(_PATH_FLYBY, "ab")) == NULL)
 			err(1, "%s", _PATH_FLYBY);
@@ -110,13 +114,15 @@ end_flyby(void)
 void
 update_flyby(void)
 {
+	int clear = build_flyby || active_flyby;
+
 	/* Record user commands. */
 	if (build_flyby)
 		write_flyby();
 	/* Replay. */
 	else if (active_flyby)
 		read_flyby();
-	if (build_flyby || active_flyby) {
+	if (clear) {
 		st.st_ro = 0;
 		fb.fb_panels = 0;
 	}
@@ -135,4 +141,20 @@ flip_panels(int panels)
 		panel_toggle(1 << (b - 1));
 		panels &= ~(1 << (b - 1));
 	}
+}
+
+/*
+ * Set panel state from the current state to the first state in the
+ * flyby.
+ */
+void
+init_panels(void)
+{
+	struct panel *p;
+	int cur;
+
+	cur = 0;
+	TAILQ_FOREACH(p, &panels, p_link)
+		cur |= p->p_id;
+	flip_panels(cur ^ fb.fb_panels);
 }
