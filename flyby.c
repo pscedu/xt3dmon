@@ -1,8 +1,10 @@
 /* $Id$ */
 
+#include <err.h>
+#include <errno.h>
+#include <stdio.h>
+
 #include "mon.h"
-#include<stdio.h>
-#include<err.h>
 
 static FILE *flyby_fp;
 struct flyby fb;
@@ -15,11 +17,16 @@ begin_flyby(char m)
 		return;
 
 	if (m == 'r') {
-		if ((flyby_fp = fopen(_PATH_FLYBY, "rb")) == NULL)
+		if ((flyby_fp = fopen(_PATH_FLYBY, "rb")) == NULL) {
+			if (errno == ENOENT)
+				return;
 			err(1, "%s", _PATH_FLYBY);
+		}
+		active_flyby = 1;
 	} else if (m == 'w') {
 		if ((flyby_fp = fopen(_PATH_FLYBY, "ab")) == NULL)
 			err(1, "%s", _PATH_FLYBY);
+		build_flyby = 1;
 	}
 }
 
@@ -50,13 +57,17 @@ read_flyby(void)
 
 	/* Save selected node. */
 	tnid = fb.fb_nid;
-
+again:
 	if (fread(&st, sizeof(struct state), 1, flyby_fp) != 1 ||
 	    fread(&fb, sizeof(struct flyby), 1, flyby_fp) != 1) {
 		if (ferror(flyby_fp))
 			err(1, "fread");
 		/* End of flyby. */
 		if (feof(flyby_fp)) {
+			if (st.st_opts & OP_LOOPFLYBY) {
+				rewind(flyby_fp);
+				goto again;
+			}
 			active_flyby = 0;
 			end_flyby();
 			glutKeyboardFunc(keyh_default);
@@ -93,6 +104,7 @@ end_flyby(void)
 		fclose(flyby_fp);
 		flyby_fp = NULL;
 	}
+	active_flyby = build_flyby = 0;
 }
 
 void
