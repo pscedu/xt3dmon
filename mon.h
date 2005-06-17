@@ -155,8 +155,8 @@ struct flyby {
 #define RO_COMPILE	(1<<3)
 #define RO_SELNODE	(1<<4)
 #define RO_PERSPECTIVE	(1<<5)
-
-#define RO_ALL		(RO_TEX | RO_PHYS | RO_RELOAD | RO_COMPILE)
+#define RO_GROUND	(1<<6)
+#define RO_INIT		(RO_TEX | RO_PHYS | RO_RELOAD | RO_COMPILE | RO_GROUND)
 
 #define OP_TEX		(1<<0)
 #define OP_BLEND	(1<<1)
@@ -169,6 +169,7 @@ struct flyby {
 #define OP_POLYOFFSET	(1<<8)
 #define OP_LOOPFLYBY	(1<<9)
 #define OP_DEBUG	(1<<10)
+#define OP_FREELOOK	(1<<11)
 
 #define SM_JOBS		0
 #define SM_FAIL		1
@@ -237,13 +238,30 @@ struct pinfo {
 #define PF_UINP		(1<<0)
 #define PF_COMPILE	(1<<1)
 
+#define CAMDIR_LEFT	0
+#define CAMDIR_RIGHT	1
+#define CAMDIR_UP	2
+#define CAMDIR_DOWN	3
+#define CAMDIR_FORWARD	4
+#define CAMDIR_BACK	5
+
+#define TWF_PUSH	(1<<0)
+#define TWF_POP		(1<<1)
+#define TWF_LOOK	(1<<2)
+#define TWF_POS		(1<<3)
+
 /* cam.c */
-void			 move_cam(int);
-void			 rotate_cam(int, int);
+void			 cam_move(int);
+void			 cam_revolve(int);
+void			 cam_rotateu(int);
+void			 cam_rotatev(int);
+void			 cam_update(void);
+void			 tween_pushpop(int);
 
 /* draw.c */
 void			 draw(void);
 void			 draw_node(struct node *, float, float, float);
+void			 make_ground(void);
 
 /* key.c */
 void			 keyh_flyby(unsigned char, int, int);
@@ -260,7 +278,6 @@ void 			*load_png(char *);
 
 /* main.c */
 struct node		*node_for_nid(int);
-void			 adjcam(void);
 void			 refresh_state(int);
 void			 rebuild(int);
 void			 select_node(struct node *);
@@ -271,6 +288,7 @@ void			 detect_node(int, int);
 /* mouse.c */
 void			 m_activeh_default(int, int);
 void			 m_activeh_null(int, int);
+void			 m_activeh_free(int, int);
 void			 m_passiveh_default(int, int);
 void			 m_passiveh_null(int, int);
 void			 mouseh(int, int, int, int);
@@ -313,7 +331,7 @@ extern struct temp	 temp_notfound;
 
 extern int		 total_failures;	/* total shared among all nodes */
 
-extern GLint		 cluster_dl;
+extern GLint		 cluster_dl, ground_dl;
 extern struct state	 st;
 extern struct flyby	 fb;
 extern long		 fps;
