@@ -78,13 +78,14 @@ again:
 			glutSpecialFunc(spkeyh_default);
 			glutMotionFunc(m_activeh_default);
 			glutPassiveMotionFunc(m_passiveh_default);
-			adjcam();
+			cam_update();
 			return;
 		}
 	}
 
+	/* XXX:  is this right? */
 	if ((st.st_ro & OP_TWEEN) == 0)
-		adjcam();
+		cam_update();
 
 	/* Restore selected node. */
 	if (fb.fb_nid != -1) {
