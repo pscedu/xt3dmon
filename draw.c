@@ -501,3 +501,62 @@ draw_node(struct node *n, float w, float h, float d)
 	if (st.st_opts & OP_WIRES)
 		draw_wireframe_node(n, w, h, d);
 }
+
+#if 0
+draw_node_triangles()
+{
+	glColor4f(r, g, b, a);
+
+	glBegin(GL_TRIANGLES);
+
+	/* Back  */
+	glVertex3f(x, y, z);
+	glVertex3f(x, y+h, z);
+	glVertex3f(x+w, y+h, z);
+	glVertex3f(x, y, z);
+	glVertex3f(x+w, y+h, z);
+	glVertex3f(x+w, y, z);
+
+	/* Front */
+	glVertex3f(x, y, z+d);
+	glVertex3f(x, y+h, z+d);
+	glVertex3f(x+w, y+h, z+d);
+	glVertex3f(x, y, z+d);
+	glVertex3f(x+w, y+h, z+d);
+	glVertex3f(x+w, y, z+d);
+
+	/* Right */
+	glVertex3f(x+w, y, z);
+	glVertex3f(x+w, y, z+d);
+	glVertex3f(x+w, y+h, z+d);
+	glVertex3f(x+w, y, z);
+	glVertex3f(x+w, y+h, z+d);
+	glVertex3f(x+w, y+h, z);
+
+	/* Left */
+	glVertex3f(x, y, z);
+	glVertex3f(x, y, z+d);
+	glVertex3f(x, y+h, z+d);
+	glVertex3f(x, y, z);
+	glVertex3f(x, y+h, z+d);
+	glVertex3f(x, y+h, z);
+
+	/* Top */
+	glVertex3f(x, y+h, z);
+	glVertex3f(x, y+h, z+d);
+	glVertex3f(x+w, y+h, z+d);
+	glVertex3f(x, y+h, z);
+	glVertex3f(x+w, y+h, z+d);
+	glVertex3f(x+w, y+h, z);
+
+	/* Bottom */
+	glVertex3f(x, y, z);
+	glVertex3f(x, y, z+d);
+	glVertex3f(x+w, y, z+d);
+	glVertex3f(x, y, z);
+	glVertex3f(x+w, y, z+d);
+	glVertex3f(x+w, y, z);
+
+	glEnd();
+}
+#endif
