@@ -227,14 +227,19 @@ fp->f_a = 1.00f;
 			break;
 	}
 
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	/* Draw background. */
 	glBegin(GL_POLYGON);
-	glColor4f(0.20, 0.40, 0.5, 1.0);
+	glColor4f(0.20, 0.40, 0.5, 0.6);
 	glVertex2d(p->p_u,		p->p_v);
 	glVertex2d(p->p_u + p->p_w,	p->p_v);
 	glVertex2d(p->p_u + p->p_w,	p->p_v - p->p_h);
 	glVertex2d(p->p_u,		p->p_v - p->p_h);
 	glEnd();
+
+	glDisable(GL_BLEND);
 
 	/* Draw border. */
 	glLineWidth(PANEL_BWIDTH);
