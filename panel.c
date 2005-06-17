@@ -44,14 +44,14 @@ void panel_refresh_flyby(struct panel *);
 void panel_refresh_goto(struct panel *);
 void panel_refresh_pos(struct panel *);
 
-void (*refreshf[])(struct panel *) = {
-	panel_refresh_fps,
-	panel_refresh_ninfo,
-	panel_refresh_cmd,
-	panel_refresh_legend,
-	panel_refresh_flyby,
-	panel_refresh_goto,
-	panel_refresh_pos
+struct pinfo pinfo[] = {
+	{ panel_refresh_fps,	0,	 0,		 NULL },
+	{ panel_refresh_ninfo,	0,	 0,		 NULL },
+	{ panel_refresh_cmd,	PF_UINP, UINPO_LINGER,	 uinpcb_cmd },
+	{ panel_refresh_legend,	0,	 0,		 NULL },
+	{ panel_refresh_flyby,	0,	 0,		 NULL },
+	{ panel_refresh_goto,	PF_UINP, 0,		 uinpcb_goto },
+	{ panel_refresh_pos,	0,	 0,		 NULL }
 };
 
 struct panels	 panels;
@@ -392,8 +392,10 @@ panel_refresh_ninfo(struct panel *p)
 			break;
 		default:
 			panel_set_content(p,
-			    "Node ID: %d",
-			    selnode->n_nid);
+			    "Node ID: %d\n"
+			    "Type: %s",
+			    selnode->n_nid,
+			    jstates[selnode->n_state].js_name);
 			break;
 		}
 		break;
@@ -459,6 +461,7 @@ draw_panels(void)
 void
 panel_toggle(int panel)
 {
+	struct pinfo *pi;
 	struct panel *p;
 
 	TAILQ_FOREACH(p, &panels, p_link) {
@@ -473,9 +476,12 @@ panel_toggle(int panel)
 	if ((p = malloc(sizeof(*p))) == NULL)
 		err(1, "malloc");
 	memset(p, 0, sizeof(*p));
+
+	pi = &pinfo[baseconv(panel) - 1];
+
 	p->p_str = NULL;
 	p->p_strlen = 0;
-	p->p_refresh = refreshf[baseconv(panel) - 1];
+	p->p_refresh = pi->pi_refresh;
 	p->p_id = panel;
 	p->p_u = win_width;
 	p->p_v = win_height - panel_offset - 1;
@@ -486,6 +492,13 @@ panel_toggle(int panel)
 	fb.fb_panels |= panel;
 	SLIST_INIT(&p->p_widgets);
 	p->p_nwidgets = 0;
+
+	if (pi->pi_opts & PF_UINP) {
+		glutKeyboardFunc(keyh_uinput);
+		uinp.uinp_panel = panel;
+		uinp.uinp_opts = pi->pi_uinpopts;
+		uinp.uinp_callback = pi->pi_uinpcb;
+	}
 	TAILQ_INSERT_TAIL(&panels, p, p_link);
 }
 
