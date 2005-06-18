@@ -1,5 +1,15 @@
 /* $Id$ */
 
+/*
+ * General notes for the panel-handling code.
+ *
+ *	(*) Panels are redrawn when the p_dirty flag is set in their
+ *	    structure.  This means only that GL needs to re-render
+ *	    the panel.  Panels must determine on their on, in their
+ *	    refresh function, when their information itself is
+ *	    "dirty."
+ */
+
 #ifdef __GNUC__
 #define _GNU_SOURCE /* asprintf, disgusting */
 #endif
@@ -56,6 +66,7 @@ struct pinfo pinfo[] = {
 
 struct panels	 panels;
 int		 panel_offset;
+int		 mode_data_clean = 0;
 
 int
 baseconv(int n)
@@ -87,9 +98,15 @@ panel_free(struct panel *p)
 void
 draw_panel(struct panel *p)
 {
-	int lineno, curlen, toff, uoff, voff, npw, tweenadj, u, v, w, h;
+	int compile, npw, tweenadj, u, v, w, h;
+	int lineno, curlen, toff, uoff, voff;
 	struct pwidget *pw;
 	char *s;
+
+	if (!p->p_dirty && p->p_dl) {
+		glCallList(p->p_dl);
+		return;
+	}
 
 	toff = PANEL_PADDING + PANEL_BWIDTH;
 
@@ -132,7 +149,13 @@ draw_panel(struct panel *p)
 		tweenadj = sqrt(tweenadj);
 		if (!tweenadj)
 			tweenadj = 1;
-	}
+		/*
+		 * The panel is being animated, so don't time
+		 * recompiling it.
+		 */
+		compile = 0;
+	} else
+		compile = 1;
 
 	if (p->p_u != u)
 		p->p_u -= (p->p_u - u) / tweenadj;
@@ -146,6 +169,13 @@ draw_panel(struct panel *p)
 	if ((p->p_opts & POPT_REMOVE) && p->p_u >= win_width) {
 		panel_free(p);
 		return;
+	}
+
+	if (compile) {
+		if (p->p_dl)
+			glDeleteLists(p->p_dl, 1);
+		p->p_dl = glGenLists(1);
+		glNewList(p->p_dl, GL_COMPILE);
 	}
 
 	/* Save state and set things up for 2D. */
@@ -256,6 +286,9 @@ draw_panel(struct panel *p)
 
 	glPopAttrib();
 
+	if (compile)
+		glEndList();
+
 	panel_offset += p->p_h + 3; /* spacing */
 }
 
@@ -265,6 +298,7 @@ panel_set_content(struct panel *p, char *fmt, ...)
 	va_list ap;
 	size_t len;
 
+	p->p_dirty = 1;
 	for (;;) {
 		va_start(ap, fmt);
 		len = vsnprintf(p->p_str, p->p_strlen,
@@ -283,12 +317,25 @@ panel_set_content(struct panel *p, char *fmt, ...)
 void
 panel_refresh_fps(struct panel *p)
 {
+	static long ofps;
+
+	if (ofps == fps)
+		return;
+	ofps = fps;
 	panel_set_content(p, "FPS: %d", fps);
 }
 
 void
 panel_refresh_cmd(struct panel *p)
 {
+	static struct node *oldnode;
+
+	if (!uinp.uinp_dirty && oldnode == selnode &&
+	    (selnode == NULL || (mode_data_clean & PANEL_LEGEND) == 0))
+		return;
+	uinp.uinp_dirty = 0;
+	mode_data_clean |= PANEL_LEGEND;
+
 	if (selnode == NULL)
 		panel_set_content(p, "Please select a node\nto send a command to.");
 	else
@@ -316,6 +363,10 @@ panel_refresh_legend(struct panel *p)
 {
 	struct pwidget *pw, *nextp;
 	size_t j;
+
+	if (mode_data_clean & PANEL_LEGEND)
+		return;
+	mode_data_clean |= PANEL_LEGEND;
 
 	p->p_nwidgets = 0;
 	p->p_maxwlen = 0;
@@ -372,6 +423,10 @@ panel_refresh_legend(struct panel *p)
 void
 panel_refresh_ninfo(struct panel *p)
 {
+	if (mode_data_clean & MDL_NINFO)
+		return;
+	mode_data_clean |= MDL_NINFO;
+
 	if (selnode == NULL) {
 		panel_set_content(p, "Select a node");
 		return;
@@ -462,19 +517,28 @@ draw_panels(void)
 }
 
 void
+panel_remove(struct panel *p)
+{
+	struct panel *t;
+
+	p->p_opts ^= POPT_REMOVE;
+	fb.fb_panels |= panel;
+
+	for (t = p; t != TAILQ_END(&panels); t = TAILQ_NEXT(t, p_link))
+		t->p_dirty = 1;
+}
+
+void
 panel_toggle(int panel)
 {
 	struct pinfo *pi;
 	struct panel *p;
 
-	TAILQ_FOREACH(p, &panels, p_link) {
+	TAILQ_FOREACH(p, &panels, p_link)
 		if (p->p_id == panel) {
-			/* Found; toggle existence. */
-			p->p_opts ^= POPT_REMOVE;
-			fb.fb_panels |= panel;
+			panel_remove(p);
 			return;
 		}
-	}
 	/* Not found; add. */
 	if ((p = malloc(sizeof(*p))) == NULL)
 		err(1, "malloc");
@@ -483,7 +547,6 @@ panel_toggle(int panel)
 	pi = &pinfo[baseconv(panel) - 1];
 
 	p->p_str = NULL;
-	p->p_strlen = 0;
 	p->p_refresh = pi->pi_refresh;
 	p->p_id = panel;
 	p->p_u = win_width;
@@ -494,11 +557,10 @@ panel_toggle(int panel)
 	p->p_fill.f_a = 1.0f;
 	fb.fb_panels |= panel;
 	SLIST_INIT(&p->p_widgets);
-	p->p_nwidgets = 0;
 
 	if (pi->pi_opts & PF_UINP) {
 		glutKeyboardFunc(keyh_uinput);
-		uinp.uinp_panel = panel;
+		uinp.uinp_panel = p;
 		uinp.uinp_opts = pi->pi_uinpopts;
 		uinp.uinp_callback = pi->pi_uinpcb;
 	}
