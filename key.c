@@ -73,7 +73,8 @@ void
 keyh_uinput(unsigned char key, __unused int u, __unused int v)
 {
 	int opts;
-
+	
+	uinp.uinp_dirty = 1;
 	switch (key) {
 	case 13: /* enter */
 		glutKeyboardFunc(keyh_default);
