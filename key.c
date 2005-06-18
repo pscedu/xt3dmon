@@ -82,13 +82,13 @@ keyh_uinput(unsigned char key, __unused int u, __unused int v)
 		buf_reset(&uinp.uinp_buf);
 		buf_append(&uinp.uinp_buf, '\0');
 		if ((opts & UINPO_LINGER) == 0)
-			panel_toggle(uinp.uinp_panel);
+			panel_remove(uinp.uinp_panel);
 		break;
 	case 27: /* escape */
 		buf_reset(&uinp.uinp_buf);
 		buf_append(&uinp.uinp_buf, '\0');
 		glutKeyboardFunc(keyh_default);
-		panel_toggle(uinp.uinp_panel);
+		panel_remove(uinp.uinp_panel);
 		break;
 	case 8: /* backspace */
 		if (strlen(buf_get(&uinp.uinp_buf)) > 0) {
