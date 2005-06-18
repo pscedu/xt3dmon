@@ -186,7 +186,7 @@ struct job_state {
 struct uinput {
 	struct buf 	  uinp_buf;
 	void		(*uinp_callback)(void);
-	int		  uinp_panel;
+	struct panel	 *uinp_panel;
 	int		  uinp_opts;
 };
 
@@ -200,6 +200,7 @@ struct pwidget {
 
 struct panel {
 	int			  p_id;
+	int			  p_dl;
 	char			 *p_str;
 	size_t			  p_strlen;
 	int			  p_u;
@@ -236,7 +237,6 @@ struct pinfo {
 };
 
 #define PF_UINP		(1<<0)
-#define PF_COMPILE	(1<<1)
 
 #define CAMDIR_LEFT	0
 #define CAMDIR_RIGHT	1
@@ -338,6 +338,7 @@ extern long		 fps;
 extern struct panels	 panels;
 extern struct node	*selnode;
 extern struct pinfo	 pinfo[];
+extern int		 mode_data_clean;
 
 extern struct uinput	 uinp;
 extern int		 spkey;
