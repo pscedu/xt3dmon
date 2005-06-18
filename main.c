@@ -87,11 +87,16 @@ struct node *selnode;
 void
 reshape(int w, int h)
 {
+	struct panel *p;
+
 	win_width = w;
 	win_height = h;
 
 	rebuild(RO_PERSPECTIVE);
 	cam_update();
+
+	TAILQ_FOREACH(p, &panels, p_link)
+		p->p_dirty = 1;
 }
 
 struct node *
@@ -498,6 +503,7 @@ rebuild(int opts)
 	if (opts & RO_PHYS)
 		parse_physmap();
 	if (opts & RO_RELOAD) {
+		mode_data_clean = 0;
 		switch (st.st_mode) {
 		case SM_JOBS:
 			parse_jobmap();
