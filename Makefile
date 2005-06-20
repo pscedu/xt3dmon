@@ -19,7 +19,7 @@ ${PROG}: ${OBJS}
 	${CC} ${CFLAGS} -c $<
 
 depend:
-	mkdep ${SRCS}
+	mkdep ${CFLAGS} ${SRCS}
 
 clean:
 	rm -rf ${PROG} ${OBJS}
