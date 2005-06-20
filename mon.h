@@ -177,6 +177,7 @@ struct flyby {
 
 #define VM_PHYSICAL	0
 #define VM_LOGICAL	1
+#define VM_LOGICALONE	2
 
 struct job_state {
 	char		*js_name;

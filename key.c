@@ -176,6 +176,10 @@ keyh_vmode(unsigned char key, __unused int u, __unused int v)
 
 	glutKeyboardFunc(keyh_default);
 	switch (key) {
+	case 'o':
+		st.st_vmode = VM_LOGICALONE;
+		st.st_ro |= RO_COMPILE | RO_PERSPECTIVE;
+		break;
 	case 'l':
 		st.st_vmode = VM_LOGICAL;
 		st.st_ro |= RO_COMPILE | RO_PERSPECTIVE;
