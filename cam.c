@@ -61,11 +61,24 @@ void
 cam_revolve(int d)
 {
 	float t, r, mag;
+	struct vec v;
 
-	r = sqrt(SQUARE(st.st_x - XCENTER) +
-	    SQUARE(st.st_z - ZCENTER));
-	t = acosf((st.st_x - XCENTER) / r);
-	if (st.st_z < ZCENTER)
+	switch (st.st_vmode) {
+	case VM_PHYSICAL:
+		v.v_x = XCENTER;
+		v.v_y = YCENTER;
+		v.v_z = ZCENTER;
+		break;
+	case VM_LOGICAL:
+		v.v_x = st.st_x + st.st_lx * 300;
+		v.v_y = st.st_y + st.st_ly * 300;
+		v.v_z = st.st_z + st.st_lz * 300;
+		break;
+	}
+
+	r = sqrt(SQUARE(st.st_x - v.v_x) + SQUARE(st.st_z - v.v_z));
+	t = acosf((st.st_x - v.v_x) / r);
+	if (st.st_z < v.v_z)
 		t = 2.0f * PI - t;
 	t += .01f * (float)d;
 	if (t < 0)
@@ -75,10 +88,10 @@ cam_revolve(int d)
 	 * Maintain the magnitude of lx*lx + lz*lz.
 	 */
 	mag = sqrt(SQUARE(st.st_lx) + SQUARE(st.st_lz));
-	st.st_x = r * cos(t) + XCENTER;
-	st.st_z = r * sin(t) + ZCENTER;
-	st.st_lx = (XCENTER - st.st_x) / r * mag;
-	st.st_lz = (ZCENTER - st.st_z) / r * mag;
+	st.st_x = r * cos(t) + v.v_x;
+	st.st_z = r * sin(t) + v.v_z;
+	st.st_lx = (v.v_x - st.st_x) / r * mag;
+	st.st_lz = (v.v_z - st.st_z) / r * mag;
 }
 
 void
