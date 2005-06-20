@@ -191,6 +191,7 @@ struct uinput {
 };
 
 #define UINPO_LINGER	(1<<0)
+#define UINPO_DIRTY	(1<<1)
 
 struct pwidget {
 	char			 *pw_str;
@@ -226,6 +227,7 @@ struct panel {
 #define NPANELS		7
 
 #define POPT_REMOVE	(1<<0)			/* being removed */
+#define POPT_DIRTY	(1<<1)			/* panel needs redrawn */
 
 TAILQ_HEAD(panels, panel);
 
@@ -296,6 +298,7 @@ void			 mouseh(int, int, int, int);
 /* panel.c */
 void			 draw_panels(void);
 void			 panel_toggle(int);
+void			 panel_remove(struct panel *);
 void			 uinpcb_cmd(void);
 void			 uinpcb_goto(void);
 
