@@ -281,12 +281,12 @@ parse_physmap(void)
 		node->n_logv.v_y = y;
 		node->n_logv.v_z = z;
 
-		if (node->n_logv.v_x > logical_width)
-			logical_width = node->n_logv.v_x;
-		if (node->n_logv.v_y > logical_height)
-			logical_height = node->n_logv.v_y;
-		if (node->n_logv.v_z > logical_depth)
-			logical_depth = node->n_logv.v_z;
+		if (x > logical_width)
+			logical_width = x;
+		if (y > logical_height)
+			logical_height = y;
+		if (z > logical_depth)
+			logical_depth = z;
 
 		/* state */
 		while (isspace(*s))
