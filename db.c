@@ -6,11 +6,11 @@
 #include <mysql.h>
 
 #define DBH_HOST	"localhost"
-#define DBH_USER	""
-#define DBH_PASS	""
-#define DBH_PORT	3307
+#define DBH_USER	"basic"
+#define DBH_PASS	"basic"
+#define DBH_PORT	3306
 #define DBH_SOCK	NULL
-#define DBH_DB		"xtnodes"
+#define DBH_DB		"XTAdmin"
 
 struct dbh {
 	union {

@@ -25,6 +25,6 @@ clean:
 	rm -rf ${PROG} ${OBJS}
 
 conn:
-	ssh -NfL 3306:localhost:3306 phantom.psc.edu
+	ssh -NfL 3306:sdb:3306 phantom.psc.edu
 
 -include .depend
