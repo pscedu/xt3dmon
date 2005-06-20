@@ -3,7 +3,7 @@
 /*
  * General notes for the panel-handling code.
  *
- *	(*) Panels are redrawn when the p_dirty flag is set in their
+ *	(*) Panels are redrawn when the POPT_DIRTY flag is set in their
  *	    structure.  This means only that GL needs to re-render
  *	    the panel.  Panels must determine on their on, in their
  *	    refresh function, when their information itself is
@@ -84,6 +84,8 @@ panel_free(struct panel *p)
 {
 	struct pwidget *pw, *nextp;
 
+	if (p->p_dl)
+		glDeleteLists(p->p_dl, 1);
 	TAILQ_REMOVE(&panels, p, p_link);
 	for (pw = SLIST_FIRST(&p->p_widgets);
 	    pw != SLIST_END(&p->p_widgets);
@@ -103,9 +105,9 @@ draw_panel(struct panel *p)
 	struct pwidget *pw;
 	char *s;
 
-	if (!p->p_dirty && p->p_dl) {
+	if ((p->p_opts & POPT_DIRTY) == 0 && p->p_dl) {
 		glCallList(p->p_dl);
-		return;
+		goto done;
 	}
 
 	toff = PANEL_PADDING + PANEL_BWIDTH;
@@ -286,19 +288,23 @@ draw_panel(struct panel *p)
 
 	glPopAttrib();
 
-	if (compile)
+	if (compile) {
 		glEndList();
-
+		p->p_opts &= ~POPT_DIRTY;
+		glCallList(p->p_dl);
+	}
+done:
 	panel_offset += p->p_h + 3; /* spacing */
 }
 
 void
 panel_set_content(struct panel *p, char *fmt, ...)
 {
+	struct panel *t;
 	va_list ap;
 	size_t len;
 
-	p->p_dirty = 1;
+	p->p_opts |= POPT_DIRTY;
 	for (;;) {
 		va_start(ap, fmt);
 		len = vsnprintf(p->p_str, p->p_strlen,
@@ -312,35 +318,15 @@ panel_set_content(struct panel *p, char *fmt, ...)
 		} else
 			break;
 	}
+	/* All panels below us must be refreshed now, too. */
+	for (t = p; t != TAILQ_END(&panels); t = TAILQ_NEXT(t, p_link))
+		t->p_opts |= POPT_DIRTY;
 }
 
-void
-panel_refresh_fps(struct panel *p)
+int
+panel_ready(struct panel *p)
 {
-	static long ofps;
-
-	if (ofps == fps)
-		return;
-	ofps = fps;
-	panel_set_content(p, "FPS: %d", fps);
-}
-
-void
-panel_refresh_cmd(struct panel *p)
-{
-	static struct node *oldnode;
-
-	if (!uinp.uinp_dirty && oldnode == selnode &&
-	    (selnode == NULL || (mode_data_clean & PANEL_LEGEND) == 0))
-		return;
-	uinp.uinp_dirty = 0;
-	mode_data_clean |= PANEL_LEGEND;
-
-	if (selnode == NULL)
-		panel_set_content(p, "Please select a node\nto send a command to.");
-	else
-		panel_set_content(p, "Sending command to host\n\n> %s",
-		    buf_get(&uinp.uinp_buf));
+	return ((p->p_opts & POPT_DIRTY) == 0 && p->p_str != NULL);
 }
 
 struct pwidget *
@@ -359,12 +345,43 @@ panel_get_pwidget(struct panel *p, struct pwidget *pw, struct pwidget **nextp)
 }
 
 void
+panel_refresh_fps(struct panel *p)
+{
+	static long ofps = -1;
+
+	if (ofps == fps && panel_ready(p))
+		return;
+	ofps = fps;
+	panel_set_content(p, "FPS: %d", fps);
+}
+
+void
+panel_refresh_cmd(struct panel *p)
+{
+	static struct node *oldnode;
+
+	if ((uinp.uinp_opts & UINPO_DIRTY) == 0 && oldnode == selnode &&
+	    (selnode == NULL || (mode_data_clean & PANEL_LEGEND) == 0) &&
+	    panel_ready(p))
+		return;
+	uinp.uinp_opts &= ~UINPO_DIRTY;
+	mode_data_clean |= PANEL_LEGEND;
+	oldnode = selnode;
+
+	if (selnode == NULL)
+		panel_set_content(p, "Please select a node\nto send a command to.");
+	else
+		panel_set_content(p, "Sending command to host\n\n> %s",
+		    buf_get(&uinp.uinp_buf));
+}
+
+void
 panel_refresh_legend(struct panel *p)
 {
 	struct pwidget *pw, *nextp;
 	size_t j;
 
-	if (mode_data_clean & PANEL_LEGEND)
+	if ((mode_data_clean & PANEL_LEGEND) && panel_ready(p))
 		return;
 	mode_data_clean |= PANEL_LEGEND;
 
@@ -423,9 +440,13 @@ panel_refresh_legend(struct panel *p)
 void
 panel_refresh_ninfo(struct panel *p)
 {
-	if (mode_data_clean & MDL_NINFO)
+	static struct node *oldnode;
+
+	if (oldnode == selnode && (selnode == NULL ||
+	    (mode_data_clean & PANEL_NINFO)) && panel_ready(p))
 		return;
-	mode_data_clean |= MDL_NINFO;
+	oldnode = selnode;
+	mode_data_clean |= PANEL_NINFO;
 
 	if (selnode == NULL) {
 		panel_set_content(p, "Select a node");
@@ -477,6 +498,15 @@ panel_refresh_ninfo(struct panel *p)
 void
 panel_refresh_flyby(struct panel *p)
 {
+	static int fstate = -1;
+	int newstate;
+
+	newstate = (active_flyby << 1) | build_flyby;
+
+	if (newstate == fstate && panel_ready(p))
+		return;
+	fstate = newstate;
+
 	if (active_flyby)
 		panel_set_content(p, "Playing flyby");
 	else if (build_flyby)
@@ -488,12 +518,31 @@ panel_refresh_flyby(struct panel *p)
 void
 panel_refresh_goto(struct panel *p)
 {
+	if ((uinp.uinp_opts & UINPO_DIRTY) == 0 && panel_ready(p))
+		return;
+	uinp.uinp_opts &= ~UINPO_DIRTY;
+
 	panel_set_content(p, "Node ID: %s", buf_get(&uinp.uinp_buf));
 }
 
 void
 panel_refresh_pos(struct panel *p)
 {
+	static struct vec v, lv;
+
+	if (v.v_x == st.st_x && lv.v_x == st.st_lx &&
+	    v.v_y == st.st_y && lv.v_y == st.st_ly &&
+	    v.v_z == st.st_z && lv.v_z == st.st_lz &&
+	    panel_ready(p))
+		return;
+	v.v_x = st.st_x;
+	v.v_y = st.st_y;
+	v.v_z = st.st_z;
+
+	lv.v_x = st.st_lx;
+	lv.v_y = st.st_ly;
+	lv.v_z = st.st_lz;
+
 	panel_set_content(p, "Position (%.2f,%.2f,%.2f)\n"
 	    "Look (%.2f,%.2f,%.2f)", st.st_x, st.st_y, st.st_z,
 	    st.st_lx, st.st_ly, st.st_lz);
@@ -522,10 +571,10 @@ panel_remove(struct panel *p)
 	struct panel *t;
 
 	p->p_opts ^= POPT_REMOVE;
-	fb.fb_panels |= panel;
+	fb.fb_panels |= p->p_id;
 
 	for (t = p; t != TAILQ_END(&panels); t = TAILQ_NEXT(t, p_link))
-		t->p_dirty = 1;
+		t->p_opts |= POPT_DIRTY;
 }
 
 void
