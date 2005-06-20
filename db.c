@@ -1,9 +1,16 @@
 /* $Id$ */
 
+#ifdef __GNUC__
+#define _GNU_SOURCE	/* asprintf */
+#endif
+
 #include <err.h>
+#include <limits.h>
 #include <stdio.h>
 
 #include <mysql.h>
+
+#include "mon.h"
 
 #define DBH_HOST	"localhost"
 #define DBH_USER	"basic"
@@ -21,6 +28,12 @@ struct dbh {
 
 struct dbh dbh;
 
+const char *
+dbh_error(struct dbh *dbh)
+{
+	return (mysql_error(&dbh->dbh_mysql));
+}
+
 void
 dbh_connect(struct dbh *dbh)
 {
@@ -33,12 +46,6 @@ void
 dbh_disconnect(struct dbh *dbh)
 {
 	mysql_close(&dbh->dbh_mysql);
-}
-
-const char *
-dbh_error(struct dbh *dbh)
-{
-	return (mysql_error(&dbh->dbh_mysql));
 }
 
 struct db_map_ent {
@@ -76,14 +83,16 @@ db_map_set(struct db_map_ent *map, const char *dbval, int *field)
 void
 refresh_physmap(struct dbh *dbh)
 {
-	int len, r, cb, cg, m, n;
+	int x, y, z, nid, len, r, cb, cg, m, n;
 	struct node *node;
-	MYSQL_RES res;
+	MYSQL_RES *res;
 	MYSQL_ROW row;
+	char *sql;
+	long l;
 
 	for (r = 0; r < NROWS; r++)
-		for (cb = 0; c < NCABS; cb++)
-			for (cg = 0; c < NCAGES; cg++)
+		for (cb = 0; cb < NCABS; cb++)
+			for (cg = 0; cg < NCAGES; cg++)
 				for (m = 0; r < NMODS; m++)
 					for (n = 0; r < NNODES; n++) {
 						node = &nodes[r][cb][cg][m][n];
@@ -93,27 +102,27 @@ refresh_physmap(struct dbh *dbh)
 
 	if ((len = asprintf(&sql,
 	    "SELECT					"
-#define F_nid 0
+#define F_nid		0
 	    "	processor_id,				"
-#define F_n
+#define F_n		1
 	    "	cpu,					"
-#define F_m
+#define F_m		2
 	    "	slot,					"
-#define F_cg
+#define F_cg		3
 	    "	cage,					"
-#define F_cb
+#define F_cb		4
 	    "	cab_position,				"
-#define F_r
+#define F_r		5
 	    "	cab_row,				"
-#define F_status
+#define F_status	6
 	    "	processor_status,			"
-#define F_x
+#define F_x		7
 	    "	x_coord,				"
-#define F_y
+#define F_y		8
 	    "	y_coord,				"
-#define F_z
+#define F_z		9
 	    "	z_coord,				"
-#define F_type
+#define F_type		10
 	    "	processor_type				")) == -1)
 		err(1, "asprintf");
 
@@ -124,20 +133,56 @@ refresh_physmap(struct dbh *dbh)
 	res = mysql_store_result(&dbh->dbh_mysql);
 	if (!res)
 		err(1, "%s", dbh_error(dbh));
-	while (row = mysql_fetch_row(res)) {
-		node = &nodes[row[F_r]][row[F_cb]][row[F_cg]][row[F_m]][row[F_n]];
-		node->n_nid = row[F_nid];
-		invmap[row[F_nid]] = node;
-		node->n_logv.v_x = row[F_x];
-		node->n_logv.v_y = row[F_y];
-		node->n_logv.v_z = row[F_z];
+	while ((row = mysql_fetch_row(res))) {
+		if ((l = strtol(row[F_r], NULL, 10)) < -1 || l > NROWS)
+			errx(1, "bad row from database");
+		r = (int)l;
 
-		if (row[F_x] > logical_width)
-			logical_width = row[F_x];
-		if (row[F_y] > logical_height)
-			logical_height = row[F_y];
-		if (row[F_z] > logical_depth)
-			logical_depth = row[F_z];
+		if ((l = strtol(row[F_cb], NULL, 10)) < -1 || l > NCABS)
+			errx(1, "bad cab from database");
+		cb = (int)l;
+
+		if ((l = strtol(row[F_cg], NULL, 10)) < -1 || l > NCAGES)
+			errx(1, "bad cage from database");
+		cg = (int)l;
+
+		if ((l = strtol(row[F_m], NULL, 10)) < -1 || l > NMODS)
+			errx(1, "bad mod from database");
+		m = (int)l;
+
+		if ((l = strtol(row[F_n], NULL, 10)) < -1 || l > NNODES)
+			errx(1, "bad node from database");
+		n = (int)l;
+
+		if ((l = strtol(row[F_nid], NULL, 10)) < -1 || l > NID_MAX)
+			errx(1, "bad nid from database");
+		nid = (int)l;
+
+		if ((l = strtol(row[F_x], NULL, 10)) < -1 || l > INT_MAX)
+			errx(1, "bad x from database");
+		x = (int)l;
+
+		if ((l = strtol(row[F_y], NULL, 10)) < -1 || l > INT_MAX)
+			errx(1, "bad y from database");
+		y = (int)l;
+
+		if ((l = strtol(row[F_z], NULL, 10)) < -1 || l > INT_MAX)
+			errx(1, "bad z from database");
+		z = (int)l;
+
+		node = &nodes[r][cb][cg][m][n];
+		node->n_nid = nid;
+		invmap[nid] = node;
+		node->n_logv.v_x = x;
+		node->n_logv.v_y = y;
+		node->n_logv.v_z = z;
+
+		if (x > logical_width)
+			logical_width = x;
+		if (y > logical_height)
+			logical_height = y;
+		if (z > logical_depth)
+			logical_depth = z;
 
 		db_map_set(db_status_map, row[F_status], &node->n_state);
 		db_map_set(db_type_map, row[F_type], &node->n_state);
