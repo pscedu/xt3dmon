@@ -96,7 +96,7 @@ reshape(int w, int h)
 	cam_update();
 
 	TAILQ_FOREACH(p, &panels, p_link)
-		p->p_dirty = 1;
+		p->p_opts |= POPT_DIRTY;
 }
 
 struct node *
