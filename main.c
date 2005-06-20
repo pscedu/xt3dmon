@@ -54,6 +54,7 @@ struct vmode {
 	int	vm_clip;
 } vmodes[] = {
 	{ 1000 },
+	{ 200 },
 	{ 1000 }
 };
 
@@ -355,6 +356,7 @@ make_cluster_physical(void)
 		glDeleteLists(cluster_dl, 1);
 	cluster_dl = glGenLists(1);
 	glNewList(cluster_dl, GL_COMPILE);
+
 	for (r = 0; r < NROWS; r++, z += ROWDEPTH + ROWSPACE) {
 		for (cb = 0; cb < NCABS; cb++, x += CABWIDTH + CABSPACE) {
 			for (cg = 0; cg < NCAGES; cg++, y += CAGEHEIGHT + CAGESPACE) {
@@ -389,7 +391,7 @@ make_one_logical_cluster(struct vec *v)
 {
 	int r, cb, cg, m, n;
 	struct node *node;
-	struct vec nv, *oldv;
+	struct vec nv;
 
 	for (r = 0; r < NROWS; r++)
 		for (cb = 0; cb < NCABS; cb++)
@@ -403,14 +405,7 @@ make_one_logical_cluster(struct vec *v)
 						nv.v_z = node->n_logv.v_z * st.st_lognspace + v->v_z;
 						node->n_v = &nv;
 
-//						node->n_v = &node->n_logv;
-//						node->n_v->v_x += v->v_x;
-//						node->n_v->v_y += v->v_y;
-//						node->n_v->v_z += v->v_z;
 						draw_node(node, NODEWIDTH, NODEHEIGHT, NODEDEPTH);
-//						node->n_v->v_x -= v->v_x;
-//						node->n_v->v_y -= v->v_y;
-//						node->n_v->v_z -= v->v_z;
 					}
 }
 
@@ -426,6 +421,11 @@ make_cluster_logical(void)
 	int clip, xpos, ypos, zpos;
 	struct vec v;
 
+	if (cluster_dl)
+		glDeleteLists(cluster_dl, 1);
+	cluster_dl = glGenLists(1);
+	glNewList(cluster_dl, GL_COMPILE);
+
 	clip = vmodes[VM_LOGICAL].vm_clip;
 	xpos = st.st_x - clip;
 	ypos = st.st_y - clip;
@@ -435,21 +435,26 @@ make_cluster_logical(void)
 	ypos = SIGN(ypos) * round(abs(ypos) / (double)logical_height) * logical_height;
 	zpos = SIGN(zpos) * round(abs(zpos) / (double)logical_depth) * logical_depth;
 
+	for (v.v_x = xpos; v.v_x < st.st_x + clip; v.v_x += logical_width)
+		for (v.v_y = ypos; v.v_y < st.st_y + clip; v.v_y += logical_height)
+			for (v.v_z = zpos; v.v_z < st.st_z + clip; v.v_z += logical_depth)
+				make_one_logical_cluster(&v);
+	glEndList();
+}
+
+__inline void
+make_cluster_logicalone(void)
+{
+	struct vec v;
+
 	if (cluster_dl)
 		glDeleteLists(cluster_dl, 1);
 	cluster_dl = glGenLists(1);
 	glNewList(cluster_dl, GL_COMPILE);
 
-v.v_x = v.v_y = v.v_z = 0;
-make_one_logical_cluster(&v);
-goto done;
-	for (v.v_x = xpos; v.v_x < st.st_x + clip; v.v_x += logical_width)
-		for (v.v_y = ypos; v.v_y < st.st_y + clip; v.v_y += logical_height)
-			for (v.v_z = zpos; v.v_z < st.st_z + clip; v.v_z += logical_depth) {
-				make_one_logical_cluster(&v);
-				goto done;
-			}
-done:
+	v.v_x = v.v_y = v.v_z = 0;
+	make_one_logical_cluster(&v);
+
 	glEndList();
 }
 
@@ -462,6 +467,9 @@ make_cluster(void)
 		break;
 	case VM_LOGICAL:
 		make_cluster_logical();
+		break;
+	case VM_LOGICALONE:
+		make_cluster_logicalone();
 		break;
 	}
 }
