@@ -18,7 +18,7 @@ mouseh(__unused int button, __unused int state, int u, int v)
 {
 	struct node *oldsn;
 
-	if (active_flyby)
+	if (active_flyby) /* XXX */
 		return;
 	spkey = glutGetModifiers();
 	if (spkey == 0 &&
@@ -30,10 +30,12 @@ mouseh(__unused int button, __unused int state, int u, int v)
 			selnode = NULL;
 		}
 		detect_node(u, v);
-		if ((oldsn == NULL) ^ (selnode == NULL)) {
-			panel_toggle(PANEL_NINFO);
+		if (selnode == NULL)
+			panel_hide(PANEL_NINFO);
+		else
+			panel_show(PANEL_NINFO);
+		if (oldsn != selnode)
 			rebuild(RO_COMPILE);
-		}
 	}
 	lastu = u;
 	lastv = v;
@@ -66,10 +68,11 @@ m_activeh_free(int u, int v)
 		return;
 	lastu = u;
 	lastv = v;
+
 	tween_pushpop(TWF_PUSH | TWF_LOOK);
-	if (du != 0)
+	if (du != 0 && spkey == GLUT_ACTIVE_CTRL)
 		cam_rotateu(du);
-	if (dv != 0)
+	if (dv != 0 && spkey == GLUT_ACTIVE_CTRL)
 		cam_rotatev(dv);
 	tween_pushpop(TWF_POP | TWF_LOOK);
 }
