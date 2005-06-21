@@ -19,13 +19,6 @@
 #define DBH_SOCK	NULL
 #define DBH_DB		"XTAdmin"
 
-struct dbh {
-	union {
-		MYSQL dbhu_mysql;
-	} dbh_u;
-#define dbh_mysql dbh_u.dbhu_mysql
-};
-
 struct dbh dbh;
 
 const char *
@@ -53,7 +46,7 @@ struct db_map_ent {
 	int		 dme_code;
 	int		 dme_doset;
 } db_status_map[] = {
-	{ "up",		JST_FREE,	0 }, /* XXX */
+	{ "up",		JST_FREE,	0 },
 	{ "down",	JST_DOWN,	1 },
 	{ "unavail",	JST_DISABLED,	1 },
 	{ "route",	JST_UNACC,	0 },
@@ -72,9 +65,9 @@ db_map_set(struct db_map_ent *map, const char *dbval, int *field)
 	struct db_map_ent *dme;
 
 	for (dme = map; dme->dme_name != NULL; dme++)
-		if (strcmp(dme->dme_name, dbval) == 0 &&
-		    dme->dme_doset) {
-			*field = dme->dme_code;
+		if (strcmp(dme->dme_name, dbval) == 0) {
+			if (dme->dme_doset)
+				*field = dme->dme_code;
 			return;
 		}
 	warnx("%s: database value not found in map", dbval);
@@ -90,18 +83,20 @@ refresh_physmap(struct dbh *dbh)
 	char *sql;
 	long l;
 
+	logical_width = logical_height = logical_depth = 0;
+
 	for (r = 0; r < NROWS; r++)
 		for (cb = 0; cb < NCABS; cb++)
 			for (cg = 0; cg < NCAGES; cg++)
-				for (m = 0; r < NMODS; m++)
-					for (n = 0; r < NNODES; n++) {
+				for (m = 0; m < NMODS; m++)
+					for (n = 0; n < NNODES; n++) {
 						node = &nodes[r][cb][cg][m][n];
 						node->n_state = JST_UNACC;
 						node->n_fillp = &jstates[JST_UNACC].js_fill;
 					}
 
 	if ((len = asprintf(&sql,
-	    "SELECT					"
+	    " SELECT					"
 #define F_nid		0
 	    "	processor_id,				"
 #define F_n		1
@@ -123,7 +118,9 @@ refresh_physmap(struct dbh *dbh)
 #define F_z		9
 	    "	z_coord,				"
 #define F_type		10
-	    "	processor_type				")) == -1)
+	    "	processor_type				"
+	    " FROM					"
+	    "	processor				")) == -1)
 		err(1, "asprintf");
 
 	if (mysql_real_query(&dbh->dbh_mysql, sql, len))
