@@ -530,11 +530,21 @@ panel_refresh_pos(struct panel *p)
 {
 	static struct vec v, lv;
 
+#if 0
+		if (st.st_opts & OP_TWEEN &&
+		    st.st_x == tx && st.st_lx == tlx &&
+		    st.st_y == ty && st.st_ly == tly &&
+		    st.st_z == tz && st.st_lz == tlz)
+			/* don't compile */;
+		else
+#endif
+
 	if (v.v_x == st.st_x && lv.v_x == st.st_lx &&
 	    v.v_y == st.st_y && lv.v_y == st.st_ly &&
 	    v.v_z == st.st_z && lv.v_z == st.st_lz &&
 	    panel_ready(p))
 		return;
+
 	v.v_x = st.st_x;
 	v.v_y = st.st_y;
 	v.v_z = st.st_z;
@@ -566,10 +576,39 @@ draw_panels(void)
 }
 
 void
+panel_show(int id)
+{
+	struct panel *p;
+
+	TAILQ_FOREACH(p, &panels, p_link)
+		if (p->p_id == id) {
+			if (p->p_opts & POPT_REMOVE) {
+				p->p_opts &= ~POPT_REMOVE;
+				fb.fb_panels ^= id; /* XXX */
+			}
+			return;
+		}
+	panel_toggle(id);
+}
+
+void
+panel_hide(int id)
+{
+	struct panel *p;
+
+	TAILQ_FOREACH(p, &panels, p_link)
+		if (p->p_id == id) {
+			panel_remove(p);
+			return;
+		}
+}
+
+void
 panel_remove(struct panel *p)
 {
 	struct panel *t;
 
+	/* XXX inspect POPT_REMOVE first? */
 	p->p_opts ^= POPT_REMOVE;
 	fb.fb_panels |= p->p_id;
 
