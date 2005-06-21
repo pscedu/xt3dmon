@@ -73,7 +73,7 @@ void
 keyh_uinput(unsigned char key, __unused int u, __unused int v)
 {
 	int opts;
-	
+
 	uinp.uinp_opts |= UINPO_DIRTY;
 	switch (key) {
 	case 13: /* enter */
@@ -252,10 +252,16 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 	case 'q':
 		exit(0);
 		/* NOTREACHED */
-	case 'T':
-		st.st_alpha_fmt = (st.st_alpha_fmt == GL_RGBA ? GL_INTENSITY : GL_RGBA);
+	case 'T': {
+		int j, newfmt;
+
+		newfmt = (jstates[0].js_fill.f_alpha_fmt == GL_RGBA ?
+		    GL_INTENSITY : GL_RGBA);
+		for (j = 0; j < NJST; j++)
+			jstates[j].js_fill.f_alpha_fmt = newfmt;
 		st.st_ro |= RO_TEX | RO_COMPILE;
 		break;
+	    }
 	case 't':
 		st.st_opts ^= OP_TEX;
 		st.st_ro |= RO_COMPILE;
@@ -276,31 +282,55 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		st.st_ro |= RO_COMPILE;
 		break;
 	case '+':
-		st.st_alpha_job += (st.st_alpha_job + TRANS_INC > 1.0 ? 0.0 : TRANS_INC);
+	case '_': {
+		float incr, *field;
+		size_t j;
+
+		incr = TRANS_INC;
+		if (key == '_')
+			incr *= -1;
+
+		for (j = 0; j < njobs; j++) {
+			field = &jobs[j]->j_fill.f_a;
+			*field += incr;
+			if (*field > 1.0f)
+				*field = 1.0f;
+			else if (*field < 0.0f)
+				*field = 0.0f;
+		}
 		st.st_ro |= RO_COMPILE;
 		break;
-	case '_':
-		st.st_alpha_job -= (st.st_alpha_job + TRANS_INC < 0.0 ? 0.0 : TRANS_INC);
-		st.st_ro |= RO_COMPILE;
-		break;
+	    }
 	case '=':
-		st.st_alpha_oth += (st.st_alpha_oth + TRANS_INC > 1.0 ? 0.0 : TRANS_INC);
+	case '-': {
+		float incr, *field;
+		size_t j;
+
+		incr = TRANS_INC;
+		if (key == '-')
+			incr *= -1;
+
+		for (j = 0; j < NJST; j++) {
+			field = &jstates[j].js_fill.f_a;
+			*field += incr;
+			if (*field > 1.0f)
+				*field = 1.0f;
+			else if (*field < 0.0f)
+				*field = 0.0f;
+		}
 		st.st_ro |= RO_COMPILE;
 		break;
-	case '-':
-		st.st_alpha_oth -= (st.st_alpha_oth + TRANS_INC < 0.0 ? 0.0 : TRANS_INC);
-		st.st_ro |= RO_COMPILE;
-		break;
+	    }
 	case '1':
 		st.st_opts ^= OP_POLYOFFSET;
 		st.st_ro |= RO_COMPILE;
 		break;
 	case '[':
-		st.st_lognspace++;
+		st.st_lognspace--;
 		st.st_ro |= RO_COMPILE;
 		break;
 	case ']':
-		st.st_lognspace--;
+		st.st_lognspace++;
 		st.st_ro |= RO_COMPILE;
 		break;
 	default:
