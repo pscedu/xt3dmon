@@ -80,10 +80,10 @@
 #define WFRAMEWIDTH	(0.001f)
 
 struct vmode {
-	int	vm_clip;
-	float	vm_nwidth;
-	float	vm_nheight;
-	float	vm_ndepth;
+	int		vm_clip;
+	float		vm_nwidth;
+	float		vm_nheight;
+	float		vm_ndepth;
 };
 
 struct fill {
@@ -92,6 +92,7 @@ struct fill {
 	float		 f_b;
 	float		 f_a;
 	GLint		 f_texid;
+	GLint		 f_alpha_fmt;
 };
 
 struct job {
@@ -135,20 +136,20 @@ struct node {
 };
 
 struct state {
-	float		 st_x;
-	float		 st_y;
-	float		 st_z;
-	float		 st_lx;
-	float		 st_ly;
-	float		 st_lz;
+	struct vec	 st_v;
+	struct vec	 st_lv;
 	int		 st_opts;
-	float		 st_alpha_job;
-	float		 st_alpha_oth;
-	GLint		 st_alpha_fmt;
 	int		 st_mode;
 	int		 st_vmode;
 	int		 st_lognspace;
 	int		 st_ro;
+#define st_x st_v.v_x
+#define st_y st_v.v_y
+#define st_z st_v.v_z
+
+#define st_lx st_lv.v_x
+#define st_ly st_lv.v_y
+#define st_lz st_lv.v_z
 };
 
 struct flyby {
