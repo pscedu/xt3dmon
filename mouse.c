@@ -83,7 +83,7 @@ m_passiveh_default(int u, int v)
 	lastu = u;
 	lastv = v;
 
-	detect_node(u, v);
+//	detect_node(u, v);
 }
 
 void

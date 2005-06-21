@@ -178,16 +178,19 @@ select_node(struct node *n)
  * +------------------------------------- z
  */
 __inline int
-collide(struct vec *box, struct vec *dim,
-    struct vec *raystart, struct vec *rayend)
+collide(struct node *n,
+   float sx, float sy, float sz,
+   float ex, float ey, float ez)
 {
+	float x = n->n_v->v_x;
+	float y = n->n_v->v_y;
+	float z = n->n_v->v_z;
 	float lo_x, hi_x;
 	float lo_y, hi_y, y_sxbox, y_exbox;
 	float lo_z, hi_z, z_sxbox, z_exbox;
-	float x = box->v_x, y = box->v_y, z = box->v_z;
-	float w = dim->v_w, h = dim->v_h, d = dim->v_d;
-	float sx = raystart->v_x, sy = raystart->v_y, sz = raystart->v_z;
-	float ex = rayend->v_x, ey = rayend->v_y, ez = rayend->v_z;
+	float w = vmodes[st.st_vmode].vm_nwidth;
+	float h = vmodes[st.st_vmode].vm_nheight;
+	float d = vmodes[st.st_vmode].vm_ndepth;
 
 	if (ex < sx) {
 		lo_x = ex;
@@ -225,20 +228,24 @@ collide(struct vec *box, struct vec *dim,
 
 	if (hi_z < z || lo_z > z+d)
 		return (0);
+	select_node(n);
 	return (1);
 }
 
 /* Node detection */
 void
-detect_node(int screenu, int screenv)
+detect_node(int u, int v)
 {
-	GLdouble mvm[16], pvm[16], sx, sy, sz, ex, ey, ez;
-	GLint x, y, z;
 	GLint vp[4];
+	GLdouble mvm[16];
+	GLdouble pvm[16];
+	GLint x, y, z;
+	GLdouble sx, sy, sz;
+	GLdouble ex, ey, ez;
 
-	struct vec v, dim, raystart, rayend;
-	int r, cb, cg, m, c, n;
-	float adj;
+	int r, cb, cg, m, n;
+	int pr, pcb, pcg, pm;
+	int n0, n1, pn;
 
 	/* Grab world info */
 	glGetIntegerv(GL_VIEWPORT, vp);
@@ -246,8 +253,8 @@ detect_node(int screenu, int screenv)
 	glGetDoublev(GL_PROJECTION_MATRIX, pvm);
 
 	/* Fix y coordinate */
-	y = vp[3] - screenv - 1;
-	x = screenu;
+	y = vp[3] - v - 1;
+	x = u;
 
 	/* Transform 2d to 3d coordinates according to z */
 	z = 0.0;
@@ -258,94 +265,34 @@ detect_node(int screenu, int screenv)
 	if (gluUnProject(x, y, z, mvm, pvm, vp, &ex, &ey, &ez) == GL_FALSE)
 		return;
 
-	raystart.v_x = sx;
-	raystart.v_y = sy;
-	raystart.v_z = sz;
-
-	rayend.v_x = ex;
-	rayend.v_y = ey;
-	rayend.v_z = ez;
-
-
 #if 0
-						n0 = st.st_lz > 0.0f ? n : NNODES - n - 1;
-						n1 = st.st_ly > 0.0f ? n : NNODES - n - 1;
-						pn = 2 * (n0 / (NNODES / 2)) +
-						    n1 % (NNODES / 2);
-
-						pr  = st.st_lz > 0.0f ? r  : NROWS  - r  - 1;
-						pcb = st.st_lx > 0.0f ? cb : NCABS  - cb - 1;
-						pcg = st.st_ly > 0.0f ? cg : NCAGES - cg - 1;
-						pm  = st.st_lx > 0.0f ? m  : NMODS  - m  - 1;
-#endif
-
 	switch (st.st_vmode) {
 	case VM_PHYSICAL:
-		/* Scan cluster. */
-		v.v_x = v.v_y = v.v_z = NODESPACE; /* XXX */
-		dim.v_w = ROWWIDTH;
-		dim.v_h = CAGEHEIGHT * NCAGES + CAGESPACE * (NCAGES - 1);
-		dim.v_d = ROWDEPTH * NROWS + ROWSPACE * (NROWS - 1);
-		if (!collide(&v, &dim, &raystart, &rayend))
-			return;
+		r = ez / (ROWDEPTH + ROWSPACE);
+		ez = fmod(ez, ROWDEPTH + ROWSPACE);
 
-		/* Scan rows. */
-		dim.v_d = ROWDEPTH;
-		adj = ROWDEPTH + ROWSPACE;
-		if (st.st_lz < 0.0f) {
-			adj *= -1;
-			v.v_z = ROWDEPTH + adj;
-		}
-		for (r = 0; r < NROWS; r++, v.v_z += adj) {
-			if (collide(&v, &dim, &raystart, &rayend))
-				break;
-		}
-		if (r == NROWS)
-			return;
-		if (st.st_lz < 0.0f)
-			r = NROWS - r - 1;
+		cb = ex / (CABWIDTH + CABSPACE);
+		ex = fmod(ex, CABWIDTH + CABSPACE);
 
-		/* Scan cabinets. */
-		dim.v_w = CABWIDTH;
-		for (cb = 0; cb < NCABS; cb++, v.v_x += CABWIDTH + CABSPACE)
-			if (collide(&v, &dim, &raystart, &rayend))
-				break;
-		if (cb == NCABS)
-			return;
+		cg = ey / (CAGEHEIGHT + CAGESPACE);
+		ey = fmod(ey, CAGEHEIGHT + CAGESPACE);
 
-		/* Scan cages. */
-		dim.v_h = CAGEHEIGHT;
-		for (cg = 0; cg < NCAGES; cg++, v.v_y += CAGEHEIGHT + CAGESPACE)
-			if (collide(&v, &dim, &raystart, &rayend))
-				break;
-		if (cg == NCAGES)
-			return;
+		m = ex / (MODWIDTH + MODSPACE);
+		ex = fmod(ex, MODWIDTH + MODSPACE);
 
-		/* Scan modules. */
-		dim.v_w = MODWIDTH;
-		for (m = 0; m < NMODS; m++, v.v_w += MODWIDTH + MODSPACE)
-			if (collide(&v, &dim, &raystart, &rayend))
-				break;
-		if (m == NMODS)
-			return;
+		c = ez / (NODEDEPTH + NODESPACE);
+		n = ey / (NODEHEIGHT + NODESPACE);
 
-		/* Scan nodes. */
-		dim.v_y = NODEHEIGHT;
-		dim.v_z = NODEDEPTH;
-		for (c = 0; c < NNODES / 2; c++, v.v_z += NODEDEPTH + NODESPACE) {
-			for (n = 0; n < NNODES / 2; n++, v.v_y += NODEHEIGHT + NODESPACE)
-				if (collide(&v, &dim, &raystart, &rayend))
-					goto foundnode;
-			v.v_y -= (NODEHEIGHT + NODESPACE) * (NNODES / 2);
-		}
-		return;
-foundnode:
 		n += 2 * c;
-
-printf("node %d\n", n);
-		select_node(&nodes[r][cb][cg][m][n]);
+		break;
 	}
-#if 0
+
+	node = &nodes[r][cb][cg][m][n];
+
+	if (collide(node, sx, sy, sz, ex, ey, ez))
+		select_node(node);
+#endif
+
 	/* Check for collision */
 	for (r = 0; r < NROWS; r++) {
 		for (cb = 0; cb < NCABS; cb++) {
@@ -370,7 +317,6 @@ printf("node %d\n", n);
 			}
 		}
 	}
-#endif
 }
 
 void
