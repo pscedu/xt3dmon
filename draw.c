@@ -124,13 +124,7 @@ draw_filled_node(struct node *n)
 	r = n->n_fillp->f_r;
 	g = n->n_fillp->f_g;
 	b = n->n_fillp->f_b;
-//	a = n->n_fillp->f_a;
-
-	/* Set alpha depending on usage */
-	if (n->n_state == JST_USED)
-		a = st.st_alpha_job;
-	else
-		a = st.st_alpha_oth;
+	a = n->n_fillp->f_a;
 
 	if (st.st_opts & OP_BLEND) {
 		glEnable(GL_BLEND);
@@ -321,13 +315,7 @@ draw_textured_node(struct node *n)
 	color[0] = n->n_fillp->f_r;
 	color[1] = n->n_fillp->f_g;
 	color[2] = n->n_fillp->f_b;
-//	color[3] = n->n_fillp->f_a;
-
-	/* Set alpha depending on usage */
-	if(n->n_state == JST_USED)
-		color[3] = st.st_alpha_job;
-	else
-		color[3] = st.st_alpha_oth;
+	color[3] = n->n_fillp->f_a;
 
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, param);
 
@@ -484,6 +472,8 @@ draw_node(struct node *n)
 void
 make_ground(void)
 {
+	if (ground_dl)
+		glDeleteLists(ground_dl, 1);
 	ground_dl = glGenLists(1);
 	glNewList(ground_dl, GL_COMPILE);
 
