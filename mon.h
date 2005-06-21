@@ -4,6 +4,8 @@
 
 #include <stdio.h>
 
+#include <mysql.h>
+
 #ifdef __APPLE_CC__
 # include <OpenGL/gl.h>
 # include <GLUT/glut.h>
@@ -30,31 +32,34 @@
 #define NMODS		8
 #define NNODES		4
 
-#define SCALE		(1.0f)
+#define ROWSPACE	(10.0f)
+#define CABSPACE	(10.0f)
+#define CAGESPACE	(2.0f)
+#define MODSPACE	(2.0f)
+#define NODESPACE	(0.2f)
 
-#define ROWSPACE	((10.0f) * SCALE)
-#define CABSPACE	((5.0f) * SCALE)
-#define CAGESPACE	((1.0f) * SCALE)
-#define MODSPACE	((1.0f) * SCALE)
+#define NODEWIDTH	(vmodes[st.st_vmode].vm_nwidth)
+#define NODEHEIGHT	(vmodes[st.st_vmode].vm_nheight)
+#define NODEDEPTH	(vmodes[st.st_vmode].vm_ndepth)
 
-#define MODWIDTH	((1.0f) * SCALE)
-#define MODHEIGHT	((2.0f) * SCALE)
-#define MODDEPTH	((2.0f) * SCALE)
-
-#define NODESPACE	((0.2f) * SCALE)
-#define NODEWIDTH	(MODWIDTH - 2.0f * NODESPACE)
-#define NODEHEIGHT	(MODHEIGHT - 4.0f * NODESPACE)
-#define NODEDEPTH	(MODHEIGHT - 4.0f * NODESPACE)
-
-#define CAGEHEIGHT	(MODHEIGHT * 2.0f)
-#define CABWIDTH	((MODWIDTH + MODSPACE) * NMODS)
-#define ROWDEPTH	(MODDEPTH * 2.0f)
+#define MODWIDTH	NODEWIDTH
+#define CAGEHEIGHT	(NODEHEIGHT * (NNODES / 2) + \
+			    (NODESPACE * (NNODES / 2 - 1)))
+#define CABWIDTH	(MODWIDTH * NMODS + MODSPACE * (NMODS - 1))
+#define ROWDEPTH	(NODEDEPTH * (NNODES / 2) + \
+			    (NODESPACE * (NNODES / 2 - 1)))
 
 #define ROWWIDTH	(CABWIDTH * NCABS + CABSPACE * (NCABS - 1))
 
-#define XCENTER		(ROWWIDTH / 2)
-#define YCENTER		((CAGEHEIGHT * NCAGES + CAGESPACE * (NCAGES - 1)) / 2)
-#define ZCENTER		((ROWDEPTH * NROWS + ROWSPACE * (NROWS - 1)) / 2)
+#define XCENTER		(NODESPACE + ROWWIDTH / 2)
+#define YCENTER		(NODESPACE + (CAGEHEIGHT * NCAGES + \
+			    CAGESPACE * (NCAGES - 1)) / 2)
+#define ZCENTER		(NODESPACE + (ROWDEPTH * NROWS + \
+			    ROWSPACE * (NROWS - 1)) / 2)
+
+#define LOGWIDTH	(logical_width * st.st_lognspace)
+#define LOGHEIGHT	(logical_height * st.st_lognspace)
+#define LOGDEPTH	(logical_depth * st.st_lognspace)
 
 #define JST_FREE	0
 #define JST_DOWN	1
@@ -73,6 +78,13 @@
 #define PI		(3.14159265358979323)
 
 #define WFRAMEWIDTH	(0.001f)
+
+struct vmode {
+	int	vm_clip;
+	float	vm_nwidth;
+	float	vm_nheight;
+	float	vm_ndepth;
+};
 
 struct fill {
 	float		 f_r;
@@ -146,9 +158,6 @@ struct flyby {
 	int		 fb_pmask;
 };
 
-#define TM_STRAIGHT	1
-#define TM_RADIUS	2
-
 #define RO_TEX		(1<<0)
 #define RO_PHYS		(1<<1)
 #define RO_RELOAD	(1<<2)
@@ -170,6 +179,7 @@ struct flyby {
 #define OP_LOOPFLYBY	(1<<9)
 #define OP_DEBUG	(1<<10)
 #define OP_FREELOOK	(1<<11)
+#define OP_NLABELS	(1<<12)
 
 #define SM_JOBS		0
 #define SM_FAIL		1
@@ -253,6 +263,17 @@ struct pinfo {
 #define TWF_LOOK	(1<<2)
 #define TWF_POS		(1<<3)
 
+struct dbh {
+	union {
+		MYSQL dbhu_mysql;
+	} dbh_u;
+#define dbh_mysql dbh_u.dbhu_mysql
+};
+
+/* db */
+void			 dbh_connect(struct dbh *);
+void			 refresh_physmap(struct dbh *);
+
 /* cam.c */
 void			 cam_move(int);
 void			 cam_revolve(int);
@@ -263,7 +284,7 @@ void			 tween_pushpop(int);
 
 /* draw.c */
 void			 draw(void);
-void			 draw_node(struct node *, float, float, float);
+void			 draw_node(struct node *);
 void			 make_ground(void);
 
 /* key.c */
@@ -300,6 +321,8 @@ void			 mouseh(int, int, int, int);
 void			 draw_panels(void);
 void			 panel_toggle(int);
 void			 panel_remove(struct panel *);
+void			 panel_show(int);
+void			 panel_hide(int);
 void			 uinpcb_cmd(void);
 void			 uinpcb_goto(void);
 
@@ -342,7 +365,10 @@ extern long		 fps;
 extern struct panels	 panels;
 extern struct node	*selnode;
 extern struct pinfo	 pinfo[];
+extern struct vmode	 vmodes[];
 extern int		 mode_data_clean;
+
+extern struct dbh	 dbh;
 
 extern struct uinput	 uinp;
 extern int		 spkey;
