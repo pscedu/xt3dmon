@@ -59,30 +59,27 @@ struct vmode vmodes[] = {
 };
 
 struct state st = {
-	STARTX, STARTY, STARTZ,				/* (x,y,z) */
-	STARTLX, STARTLY, STARTLZ,			/* (lx,ly,lz) */
+	{ STARTX, STARTY, STARTZ },			/* (x,y,z) */
+	{ STARTLX, STARTLY, STARTLZ },			/* (lx,ly,lz) */
 	OP_WIRES | OP_TWEEN | OP_GROUND | OP_DISPLAY,	/* options */
-	1.0f,						/* job alpha */
-	1.0f,						/* other alpha */
-	GL_RGBA,					/* alpha blend format */
 	SM_JOBS,					/* which data to show */
 	VM_PHYSICAL,					/* viewing mode */
 	4,						/* logical node spacing */
-	0						/* rebuild flags */
+	0						/* rebuild flags (unused) */
 };
 
 struct job_state jstates[] = {
-	{ "Free",		{ 1.00f, 1.00f, 1.00f, 1.00f, 0 } },	/* White */
-	{ "Disabled (PBS)",	{ 1.00f, 0.00f, 0.00f, 1.00f, 0 } },	/* Red */
-	{ "Disabled (HW)",	{ 0.66f, 0.66f, 0.66f, 1.00f, 0 } },	/* Gray */
-	{ NULL,			{ 0.00f, 0.00f, 0.00f, 1.00f, 0 } },	/* (dynamic) */
-	{ "Service",		{ 1.00f, 1.00f, 0.00f, 1.00f, 0 } },	/* Yellow */
-	{ "Unaccounted",	{ 0.00f, 0.00f, 1.00f, 1.00f, 0 } },	/* Blue */
-	{ "Bad",		{ 1.00f, 0.75f, 0.75f, 1.00f, 0 } },	/* Pink */
-	{ "Checking",		{ 0.00f, 1.00f, 0.00f, 1.00f, 0 } }	/* Green */
+	{ "Free",		{ 1.00f, 1.00f, 1.00f, 1.00f, 0, 0 } },	/* White */
+	{ "Disabled (PBS)",	{ 1.00f, 0.00f, 0.00f, 1.00f, 0, 0 } },	/* Red */
+	{ "Disabled (HW)",	{ 0.66f, 0.66f, 0.66f, 1.00f, 0, 0 } },	/* Gray */
+	{ NULL,			{ 0.00f, 0.00f, 0.00f, 1.00f, 0, 0 } },	/* (dynamic) */
+	{ "Service",		{ 1.00f, 1.00f, 0.00f, 1.00f, 0, 0 } },	/* Yellow */
+	{ "Unaccounted",	{ 0.00f, 0.00f, 1.00f, 1.00f, 0, 0 } },	/* Blue */
+	{ "Bad",		{ 1.00f, 0.75f, 0.75f, 1.00f, 0, 0 } },	/* Pink */
+	{ "Checking",		{ 0.00f, 1.00f, 0.00f, 1.00f, 0, 0 } }	/* Green */
 };
 
-struct fill selnodefill = { 0.20f, 0.40f, 0.60f, 1.00f, 0 };		/* Dark blue */
+struct fill selnodefill = { 0.20f, 0.40f, 0.60f, 1.00f, 0, 0 };		/* Dark blue */
 struct node *selnode;
 
 void
@@ -524,7 +521,7 @@ load_textures(void)
 	for (i = 0; i < NJST; i++) {
 		snprintf(path, sizeof(path), _PATH_TEX, i);
 		data = load_png(path);
-		load_texture(data, st.st_alpha_fmt, i + 1);
+		load_texture(data, jstates[i].js_fill.f_alpha_fmt, i + 1);
 		jstates[i].js_fill.f_texid = i + 1;
 	}
 }
