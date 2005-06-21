@@ -40,11 +40,11 @@ struct temp	**temps;
 int		 total_failures;
 
 struct fail fail_notfound = {
-	0, { 0.33f, 0.66f, 0.99f, 1.00f, 0 }, "0"
+	0, { 0.33f, 0.66f, 0.99f, 1.00f, 0, 0 }, "0"
 };
 
 struct temp temp_notfound = {
-	0, { 0.00f, 0.00f, 0.00f, 1.00f, 0 }, "?"
+	0, { 0.00f, 0.00f, 0.00f, 1.00f, 0, 0 }, "?"
 };
 
 int job_eq(void *elem, void *arg)
