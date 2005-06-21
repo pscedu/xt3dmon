@@ -44,17 +44,15 @@ draw(void)
 {
 	update_flyby();
 
-#if 0
-	if (fabs(logv.v_x - st.st_x) > logical_width / 2 ||
-	    fabs(logv.v_y - st.st_y) > logical_height / 2 ||
-	    fabs(logv.v_z - st.st_z) > logical_depth / 2) {
-printf("."); fflush(stdout);
-	    	logv.v_x = st.st_x;
-	    	logv.v_y = st.st_y;
-	    	logv.v_z = st.st_z;
-		rebuild(RO_COMPILE);
-	}
-#endif
+	if (st.st_vmode == VM_LOGICAL)
+		if (fabs(logv.v_x - st.st_x) > LOGWIDTH / 2 ||
+		    fabs(logv.v_y - st.st_y) > LOGHEIGHT / 2 ||
+		    fabs(logv.v_z - st.st_z) > LOGDEPTH / 2) {
+		    	logv.v_x = st.st_x;
+		    	logv.v_y = st.st_y;
+		    	logv.v_z = st.st_z;
+			rebuild(RO_COMPILE);
+		}
 
 	if (st.st_opts & OP_TWEEN)
 		if (tween(ox, &st.st_x, tx, TWEEN_MAX_POS) |
@@ -113,11 +111,14 @@ printf("."); fflush(stdout);
  */
 
 __inline void
-draw_filled_node(struct node *n, float w, float h, float d)
+draw_filled_node(struct node *n)
 {
 	float x = n->n_v->v_x;
 	float y = n->n_v->v_y;
 	float z = n->n_v->v_z;
+	float w = NODEWIDTH;
+	float h = NODEHEIGHT;
+	float d = NODEDEPTH;
 	float r, g, b, a;
 
 	r = n->n_fillp->f_r;
@@ -232,11 +233,14 @@ draw_filled_node(struct node *n, float w, float h, float d)
 }
 
 __inline void
-draw_wireframe_node(struct node *n, float w, float h, float d)
+draw_wireframe_node(struct node *n)
 {
 	float x = n->n_v->v_x;
 	float y = n->n_v->v_y;
 	float z = n->n_v->v_z;
+	float w = NODEWIDTH;
+	float h = NODEHEIGHT;
+	float d = NODEDEPTH;
 
 	/* Wireframe outline */
 	x -= WFRAMEWIDTH;
@@ -286,11 +290,14 @@ draw_wireframe_node(struct node *n, float w, float h, float d)
 }
 
 __inline void
-draw_textured_node(struct node *n, float w, float h, float d)
+draw_textured_node(struct node *n)
 {
 	float x = n->n_v->v_x;
 	float y = n->n_v->v_y;
 	float z = n->n_v->v_z;
+	float w = NODEWIDTH;
+	float h = NODEHEIGHT;
+	float d = NODEDEPTH;
 	float uw, uh, ud;
 	float color[4];
 	GLenum param;
@@ -457,74 +464,22 @@ draw_textured_node(struct node *n, float w, float h, float d)
 }
 
 __inline void
-draw_node(struct node *n, float w, float h, float d)
+draw_node_label(struct node *n)
+{
+}
+
+__inline void
+draw_node(struct node *n)
 {
 	if (st.st_opts & OP_TEX)
-		draw_textured_node(n, w, h, d);
+		draw_textured_node(n);
 	else
-		draw_filled_node(n, w, h, d);
+		draw_filled_node(n);
 	if (st.st_opts & OP_WIRES)
-		draw_wireframe_node(n, w, h, d);
+		draw_wireframe_node(n);
+	if (st.st_opts & OP_NLABELS)
+		draw_node_label(n);
 }
-
-#if 0
-draw_node_triangles()
-{
-	glColor4f(r, g, b, a);
-
-	glBegin(GL_TRIANGLES);
-
-	/* Back  */
-	glVertex3f(x, y, z);
-	glVertex3f(x, y+h, z);
-	glVertex3f(x+w, y+h, z);
-	glVertex3f(x, y, z);
-	glVertex3f(x+w, y+h, z);
-	glVertex3f(x+w, y, z);
-
-	/* Front */
-	glVertex3f(x, y, z+d);
-	glVertex3f(x, y+h, z+d);
-	glVertex3f(x+w, y+h, z+d);
-	glVertex3f(x, y, z+d);
-	glVertex3f(x+w, y+h, z+d);
-	glVertex3f(x+w, y, z+d);
-
-	/* Right */
-	glVertex3f(x+w, y, z);
-	glVertex3f(x+w, y, z+d);
-	glVertex3f(x+w, y+h, z+d);
-	glVertex3f(x+w, y, z);
-	glVertex3f(x+w, y+h, z+d);
-	glVertex3f(x+w, y+h, z);
-
-	/* Left */
-	glVertex3f(x, y, z);
-	glVertex3f(x, y, z+d);
-	glVertex3f(x, y+h, z+d);
-	glVertex3f(x, y, z);
-	glVertex3f(x, y+h, z+d);
-	glVertex3f(x, y+h, z);
-
-	/* Top */
-	glVertex3f(x, y+h, z);
-	glVertex3f(x, y+h, z+d);
-	glVertex3f(x+w, y+h, z+d);
-	glVertex3f(x, y+h, z);
-	glVertex3f(x+w, y+h, z+d);
-	glVertex3f(x+w, y+h, z);
-
-	/* Bottom */
-	glVertex3f(x, y, z);
-	glVertex3f(x, y, z+d);
-	glVertex3f(x+w, y, z+d);
-	glVertex3f(x, y, z);
-	glVertex3f(x+w, y, z+d);
-	glVertex3f(x+w, y, z);
-
-	glEnd();
-}
-#endif
 
 void
 make_ground(void)
@@ -537,9 +492,9 @@ make_ground(void)
 	/* Ground */
 	glColor3f(0.4f, 0.4f, 0.4f);
 	glVertex3f( -5.0f, 0.0f, -5.0f);
-	glVertex3f( -5.0f, 0.0f, 22.0f);
-	glVertex3f(230.0f, 0.0f, 22.0f);
-	glVertex3f(230.0f, 0.0f, -5.0f);
+	glVertex3f( -5.0f, 0.0f, 20.0f);
+	glVertex3f(310.0f, 0.0f, 20.0f);
+	glVertex3f(310.0f, 0.0f, -5.0f);
 
 	/* x-axis */
 	glColor3f(1.0f, 1.0f, 1.0f);
