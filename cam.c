@@ -27,32 +27,32 @@ cam_move(int dir)
 
 	switch (dir) {
 	case CAMDIR_LEFT:
-		st.st_x += st.st_lz * 0.3f * SCALE * adj;
-		st.st_z -= st.st_lx * 0.3f * SCALE * adj;
+		st.st_x += st.st_lz * 0.3f * adj;
+		st.st_z -= st.st_lx * 0.3f * adj;
 		break;
 	case CAMDIR_RIGHT:
-		st.st_x -= st.st_lz * 0.3f * SCALE * adj;
-		st.st_z += st.st_lx * 0.3f * SCALE * adj;
+		st.st_x -= st.st_lz * 0.3f * adj;
+		st.st_z += st.st_lx * 0.3f * adj;
 		break;
 	case CAMDIR_FORWARD:
-		st.st_x += st.st_lx * 0.3f * SCALE * adj;
-		st.st_y += st.st_ly * 0.3f * SCALE * adj;
-		st.st_z += st.st_lz * 0.3f * SCALE * adj;
+		st.st_x += st.st_lx * 0.3f * adj;
+		st.st_y += st.st_ly * 0.3f * adj;
+		st.st_z += st.st_lz * 0.3f * adj;
 		break;
 	case CAMDIR_BACK:
-		st.st_x -= st.st_lx * 0.3f * SCALE * adj;
-		st.st_y -= st.st_ly * 0.3f * SCALE * adj;
-		st.st_z -= st.st_lz * 0.3f * SCALE * adj;
+		st.st_x -= st.st_lx * 0.3f * adj;
+		st.st_y -= st.st_ly * 0.3f * adj;
+		st.st_z -= st.st_lz * 0.3f * adj;
 		break;
 	case CAMDIR_UP:
-		st.st_x += st.st_lx * st.st_ly * 0.3f * SCALE * adj;
-		st.st_y += 0.3f * SCALE;
-		st.st_z += st.st_lz * st.st_ly * 0.3f * SCALE * adj;
+		st.st_x += st.st_lx * st.st_ly * 0.3f * adj;
+		st.st_y += 0.3f;
+		st.st_z += st.st_lz * st.st_ly * 0.3f * adj;
 		break;
 	case CAMDIR_DOWN:
-		st.st_x -= st.st_lx * st.st_ly * 0.3f * SCALE * adj;
-		st.st_y -= 0.3f * SCALE;
-		st.st_z -= st.st_lz * st.st_ly * 0.3f * SCALE * adj;
+		st.st_x -= st.st_lx * st.st_ly * 0.3f * adj;
+		st.st_y -= 0.3f;
+		st.st_z -= st.st_lz * st.st_ly * 0.3f * adj;
 		break;
 	}
 }
