@@ -4,7 +4,7 @@ PROG = mon
 SRCS = buf.c cam.c capture.c db.c draw.c flyby.c key.c load_png.c \
     main.c mouse.c panel.c parse.c
 LIBS = -lGL -lglut -lGLU -lpng `mysql_config --libs`
-CFLAGS += -Wall -W -g `mysql_config --cflags | sed "s/'//g"`
+CFLAGS += -Wall -W -g `mysql_config --cflags | sed "s/'//g"` -pg
 
 OBJS = ${SRCS:.c=.o}
 

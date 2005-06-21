@@ -120,6 +120,9 @@ struct vec {
 	float		 v_x;
 	float		 v_y;
 	float		 v_z;
+#define v_w v_x
+#define v_h v_y
+#define v_d v_z
 };
 
 struct node {
