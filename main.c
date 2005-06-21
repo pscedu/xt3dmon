@@ -11,6 +11,8 @@
 # include <GL/freeglut.h>
 #endif
 
+#include <math.h>
+
 #include "mon.h"
 #include "buf.h"
 
@@ -50,12 +52,10 @@ struct timeval		 lastsync;
 long			 fps = 100;
 int			 gDebugCapture;
 
-struct vmode {
-	int	vm_clip;
-} vmodes[] = {
-	{ 1000 },
-	{ 200 },
-	{ 1000 }
+struct vmode vmodes[] = {
+	{ 1000,	0.6f, 1.2f, 1.2f },
+	{ 30,	2.0f, 2.0f, 2.0f },
+	{ 1000,	2.0f, 2.0f, 2.0f }
 };
 
 struct state st = {
@@ -66,8 +66,8 @@ struct state st = {
 	1.0f,						/* other alpha */
 	GL_RGBA,					/* alpha blend format */
 	SM_JOBS,					/* which data to show */
-	VM_LOGICAL,					/* viewing mode */
-	2,						/* logical node spacing */
+	VM_PHYSICAL,					/* viewing mode */
+	4,						/* logical node spacing */
 	0						/* rebuild flags */
 };
 
@@ -182,7 +182,6 @@ select_node(struct node *n)
  */
 __inline int
 collide(struct node *n,
-   float w, float h, float d,
    float sx, float sy, float sz,
    float ex, float ey, float ez)
 {
@@ -192,6 +191,9 @@ collide(struct node *n,
 	float lo_x, hi_x;
 	float lo_y, hi_y, y_sxbox, y_exbox;
 	float lo_z, hi_z, z_sxbox, z_exbox;
+	float w = vmodes[st.st_vmode].vm_nwidth;
+	float h = vmodes[st.st_vmode].vm_nheight;
+	float d = vmodes[st.st_vmode].vm_ndepth;
 
 	if (ex < sx) {
 		lo_x = ex;
@@ -259,10 +261,40 @@ detect_node(int u, int v)
 
 	/* Transform 2d to 3d coordinates according to z */
 	z = 0.0;
-	gluUnProject(x, y, z, mvm, pvm, vp, &sx, &sy, &sz);
+	if (gluUnProject(x, y, z, mvm, pvm, vp, &sx, &sy, &sz) == GL_FALSE)
+		return;
 
 	z = 1.0;
-	gluUnProject(x, y, z, mvm, pvm, vp, &ex, &ey, &ez);
+	if (gluUnProject(x, y, z, mvm, pvm, vp, &ex, &ey, &ez) == GL_FALSE)
+		return;
+
+#if 0
+	switch (st.st_vmode) {
+	case VM_PHYSICAL:
+		r = ez / (ROWDEPTH + ROWSPACE);
+		ez = fmod(ez, ROWDEPTH + ROWSPACE);
+
+		cb = ex / (CABWIDTH + CABSPACE);
+		ex = fmod(ex, CABWIDTH + CABSPACE);
+
+		cg = ey / (CAGEHEIGHT + CAGESPACE);
+		ey = fmod(ey, CAGEHEIGHT + CAGESPACE);
+
+		m = ex / (MODWIDTH + MODSPACE);
+		ex = fmod(ex, MODWIDTH + MODSPACE);
+
+		c = ez / (NODEDEPTH + NODESPACE);
+		n = ey / (NODEHEIGHT + NODESPACE);
+
+		n += 2 * c;
+		break;
+	}
+
+	node = &nodes[r][cb][cg][m][n];
+
+	if (collide(node, sx, sy, sz, ex, ey, ez))
+		select_node(node);
+#endif
 
 	/* Check for collision */
 	for (r = 0; r < NROWS; r++) {
@@ -281,7 +313,6 @@ detect_node(int u, int v)
 						pm  = st.st_lx > 0.0f ? m  : NMODS  - m  - 1;
 
 						if (collide(&nodes[pr][pcb][pcg][pm][pn],
-						    NODEWIDTH, NODEHEIGHT, NODEDEPTH,
 						   sx, sy, sz, ex, ey, ez))
 							return;
 					}
@@ -348,33 +379,34 @@ idle(void)
 __inline void
 make_cluster_physical(void)
 {
-	float x = 0.0f, y = 0.0f, z = 0.0f;
 	int r, cb, cg, m, n;
 	struct node *node;
+	float x, y, z;
+
+	float rhombshift = 0.4f;
 
 	if (cluster_dl)
 		glDeleteLists(cluster_dl, 1);
 	cluster_dl = glGenLists(1);
 	glNewList(cluster_dl, GL_COMPILE);
 
+	x = y = z = NODESPACE;
 	for (r = 0; r < NROWS; r++, z += ROWDEPTH + ROWSPACE) {
 		for (cb = 0; cb < NCABS; cb++, x += CABWIDTH + CABSPACE) {
 			for (cg = 0; cg < NCAGES; cg++, y += CAGEHEIGHT + CAGESPACE) {
 				for (m = 0; m < NMODS; m++, x += MODWIDTH + MODSPACE) {
 					for (n = 0; n < NNODES; n++) {
 						node = &nodes[r][cb][cg][m][n];
-						node->n_physv.v_x = x + NODESPACE;
-						/* XXX: use a constant for the rhombus shift. */
+						node->n_physv.v_x = x;
 						node->n_physv.v_y = y +
 						    (2.0f * NODESPACE + NODEHEIGHT) *
-						    (n % (NNODES/2)) + NODESPACE,
+						    (n % (NNODES/2));
 						node->n_physv.v_z = z +
 						    (2.0f * NODESPACE + NODEDEPTH) *
 						    (n / (NNODES/2)) +
-						    (NODESPACE * (1 + n % (NNODES/2))),
+						    (rhombshift * (n % (NNODES/2))),
 						node->n_v = &node->n_physv;
-						draw_node(node, NODEWIDTH,
-						    NODEHEIGHT, NODEDEPTH);
+						draw_node(node);
 					}
 				}
 				x -= (MODWIDTH + MODSPACE) * NMODS;
@@ -405,7 +437,7 @@ make_one_logical_cluster(struct vec *v)
 						nv.v_z = node->n_logv.v_z * st.st_lognspace + v->v_z;
 						node->n_v = &nv;
 
-						draw_node(node, NODEWIDTH, NODEHEIGHT, NODEDEPTH);
+						draw_node(node);
 					}
 }
 
@@ -421,6 +453,8 @@ make_cluster_logical(void)
 	int clip, xpos, ypos, zpos;
 	struct vec v;
 
+static int n;
+printf("sp: %d\n", st.st_lognspace);
 	if (cluster_dl)
 		glDeleteLists(cluster_dl, 1);
 	cluster_dl = glGenLists(1);
@@ -431,14 +465,19 @@ make_cluster_logical(void)
 	ypos = st.st_y - clip;
 	zpos = st.st_z - clip;
 
-	xpos = SIGN(xpos) * round(abs(xpos) / (double)logical_width) * logical_width;
-	ypos = SIGN(ypos) * round(abs(ypos) / (double)logical_height) * logical_height;
-	zpos = SIGN(zpos) * round(abs(zpos) / (double)logical_depth) * logical_depth;
+	xpos = SIGN(xpos) * ceil(abs(xpos) / (double)LOGWIDTH) * LOGWIDTH;
+	ypos = SIGN(ypos) * ceil(abs(ypos) / (double)LOGHEIGHT) * LOGHEIGHT;
+	zpos = SIGN(zpos) * ceil(abs(zpos) / (double)LOGDEPTH) * LOGDEPTH;
 
-	for (v.v_x = xpos; v.v_x < st.st_x + clip; v.v_x += logical_width)
-		for (v.v_y = ypos; v.v_y < st.st_y + clip; v.v_y += logical_height)
-			for (v.v_z = zpos; v.v_z < st.st_z + clip; v.v_z += logical_depth)
+	for (v.v_x = xpos; v.v_x < st.st_x + clip; v.v_x += LOGWIDTH)
+		for (v.v_y = ypos; v.v_y < st.st_y + clip; v.v_y += LOGHEIGHT)
+			for (v.v_z = zpos; v.v_z < st.st_z + clip; v.v_z += LOGDEPTH)
+{printf(" %d", ++n);
 				make_one_logical_cluster(&v);
+}
+printf("\n");
+n=0;
+
 	glEndList();
 }
 
@@ -509,7 +548,7 @@ rebuild(int opts)
 		load_textures();
 	}
 	if (opts & RO_PHYS)
-		parse_physmap();
+		refresh_physmap(&dbh);
 	if (opts & RO_RELOAD) {
 		mode_data_clean = 0;
 		switch (st.st_mode) {
@@ -552,6 +591,8 @@ rebuild(int opts)
 int
 main(int argc, char *argv[])
 {
+	dbh_connect(&dbh);
+
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
 	glutInitWindowPosition(0, 0);
