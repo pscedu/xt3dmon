@@ -367,7 +367,7 @@ draw_textured_node(struct node *n)
 
 	glBegin(GL_QUADS);
 
-	/* Back  */
+	/* Back */
 	glVertex3f(x, y, z);
 	glTexCoord2f(0.0, 0.0);
 	glVertex3f(x, y+h, z);
@@ -467,6 +467,126 @@ draw_node(struct node *n)
 		draw_wireframe_node(n);
 	if (st.st_opts & OP_NLABELS)
 		draw_node_label(n);
+}
+
+__inline void
+draw_wireframe_mod(struct vec *v, struct vec *dim)
+{
+	float x = v->v_x;
+	float y = v->v_y;
+	float z = v->v_z;
+	float w = dim->v_w;
+	float h = dim->v_h;
+	float d = dim->v_d;
+
+	/* Wireframe outline */
+	x -= WFRAMEWIDTH + 0.01; /* XXX */
+	y -= WFRAMEWIDTH + 0.01; /* XXX */
+	z -= WFRAMEWIDTH + 0.01; /* XXX */
+	w += 2.0f * WFRAMEWIDTH + 0.02; /* XXX */
+	h += 2.0f * WFRAMEWIDTH + 0.02; /* XXX */
+	d += 2.0f * WFRAMEWIDTH + 0.02; /* XXX */
+
+	/* Antialiasing */
+	glEnable(GL_LINE_SMOOTH);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
+
+	glLineWidth(1.0);
+	glColor3f(0.0f, 0.0f, 0.0f);
+
+	glBegin(GL_LINE_STRIP);
+	/* Bottom */
+	glVertex3f(x, y, z);
+	glVertex3f(x, y, z+d);		/*  1 */
+	glVertex3f(x+w, y, z+d);	/*  2 */
+	glVertex3f(x+w, y, z);		/*  3 */
+	glVertex3f(x, y, z);		/*  4 */
+	/* Back */
+	glVertex3f(x, y+h, z);		/*  5 */
+	glVertex3f(x, y+h, z+d);	/*  6 */
+	glVertex3f(x, y, z+d);		/*  7 */
+	/* Right */
+	glVertex3f(x+w, y, z+d);	/*  8 */
+	glVertex3f(x+w, y+h, z+d);	/*  9 */
+	glVertex3f(x, y+h, z+d);	/* 10 */
+
+	glVertex3f(x, y+h, z);		/* 11 */
+
+	/* Left */
+	glVertex3f(x+w, y+h, z);	/* 12 */
+	glVertex3f(x+w, y, z);		/* 13 */
+	glVertex3f(x+w, y+h, z);	/* 14 */
+	/* Front */
+	glVertex3f(x+w, y+h, z+d);	/* 15 */
+	glEnd();
+
+	glDisable(GL_LINE_SMOOTH);
+	glDisable(GL_BLEND);
+}
+
+__inline void
+draw_mod(struct vec *v, struct vec *dim, struct fill *fillp)
+{
+	float x = v->v_x, y = v->v_y, z = v->v_z;
+	float w = dim->v_w, h = dim->v_h, d = dim->v_d;
+
+	x -= 0.01; /* XXX */
+	y -= 0.01; /* XXX */
+	z -= 0.01; /* XXX */
+	w += 0.02; /* XXX */
+	h += 0.02; /* XXX */
+	d += 0.02; /* XXX */
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
+
+	glColor4f(fillp->f_r, fillp->f_g, fillp->f_b, fillp->f_a);
+
+	glBegin(GL_QUADS);
+
+	/* Back */
+	glVertex3f(x, y, z);
+	glVertex3f(x, y+h, z);
+	glVertex3f(x+w, y+h, z);
+	glVertex3f(x+w, y, z);
+
+	/* Front */
+	glVertex3f(x, y, z+d);
+	glVertex3f(x, y+h, z+d);
+	glVertex3f(x+w, y+h, z+d);
+	glVertex3f(x+w, y, z+d);
+
+	/* Right */
+	glVertex3f(x+w, y, z);
+	glVertex3f(x+w, y, z+d);
+	glVertex3f(x+w, y+h, z+d);
+	glVertex3f(x+w, y+h, z);
+
+	/* Left */
+	glVertex3f(x, y, z);
+	glVertex3f(x, y, z+d);
+	glVertex3f(x, y+h, z+d);
+	glVertex3f(x, y+h, z);
+
+	/* Top */
+	glVertex3f(x, y+h, z);
+	glVertex3f(x, y+h, z+d);
+	glVertex3f(x+w, y+h, z+d);
+	glVertex3f(x+w, y+h, z);
+
+	/* Bottom */
+	glVertex3f(x, y, z);
+	glVertex3f(x, y, z+d);
+	glVertex3f(x+w, y, z+d);
+	glVertex3f(x+w, y, z);
+
+	glEnd();
+
+	glDisable(GL_BLEND);
+
+	draw_wireframe_mod(v, dim);
 }
 
 void
