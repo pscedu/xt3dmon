@@ -35,31 +35,37 @@
 #define ROWSPACE	(10.0f)
 #define CABSPACE	(10.0f)
 #define CAGESPACE	(2.0f)
-#define MODSPACE	(2.0f)
+#define MODSPACE	(0.8f)
 #define NODESPACE	(0.2f)
 
 #define NODEWIDTH	(vmodes[st.st_vmode].vm_nwidth)
 #define NODEHEIGHT	(vmodes[st.st_vmode].vm_nheight)
 #define NODEDEPTH	(vmodes[st.st_vmode].vm_ndepth)
+#define NODESHIFT	(0.6f)
 
-#define MODWIDTH	NODEWIDTH
+#define MODWIDTH	(NODEWIDTH / 4.0f)
+#define MODHEIGHT	(NODEHEIGHT * (NNODES / 2) + NODESPACE * (NNODES / 2 - 1))
+#define MODDEPTH	(NODEDEPTH * (NNODES / 2) + NODESPACE * (NNODES / 2 - 1) + NODESHIFT)
+
 #define CAGEHEIGHT	(NODEHEIGHT * (NNODES / 2) + \
 			    (NODESPACE * (NNODES / 2 - 1)))
 #define CABWIDTH	(MODWIDTH * NMODS + MODSPACE * (NMODS - 1))
+
+#define ROWWIDTH	(CABWIDTH * NCABS + CABSPACE * (NCABS - 1))
 #define ROWDEPTH	(NODEDEPTH * (NNODES / 2) + \
 			    (NODESPACE * (NNODES / 2 - 1)))
 
-#define ROWWIDTH	(CABWIDTH * NCABS + CABSPACE * (NCABS - 1))
-
 #define XCENTER		(NODESPACE + ROWWIDTH / 2)
 #define YCENTER		(NODESPACE + (CAGEHEIGHT * NCAGES + \
-			    CAGESPACE * (NCAGES - 1)) / 2)
+			    CAGESPACE * (NCAGES - 1)) / 2.0f)
 #define ZCENTER		(NODESPACE + (ROWDEPTH * NROWS + \
-			    ROWSPACE * (NROWS - 1)) / 2)
+			    ROWSPACE * (NROWS - 1)) / 2.0f)
 
 #define LOGWIDTH	(logical_width * st.st_lognspace)
 #define LOGHEIGHT	(logical_height * st.st_lognspace)
 #define LOGDEPTH	(logical_depth * st.st_lognspace)
+
+#define WFRAMEWIDTH	(0.001f)
 
 #define JST_FREE	0
 #define JST_DOWN	1
@@ -77,7 +83,12 @@
 #define SIGN(x)		((x) == 0 ? 1 : abs(x)/(x))
 #define PI		(3.14159265358979323)
 
-#define WFRAMEWIDTH	(0.001f)
+struct datasrc {
+	void (*ds_physmap)(void);
+};
+
+#define DS_FILE		0
+#define DS_DB		1
 
 struct vmode {
 	int		vm_clip;
@@ -120,6 +131,9 @@ struct vec {
 	float		 v_x;
 	float		 v_y;
 	float		 v_z;
+#define v_w v_x
+#define v_h v_y
+#define v_d v_z
 };
 
 struct node {
@@ -181,6 +195,7 @@ struct flyby {
 #define OP_DEBUG	(1<<10)
 #define OP_FREELOOK	(1<<11)
 #define OP_NLABELS	(1<<12)
+#define OP_SHOWMODS	(1<<13)
 
 #define SM_JOBS		0
 #define SM_FAIL		1
@@ -273,7 +288,7 @@ struct dbh {
 
 /* db */
 void			 dbh_connect(struct dbh *);
-void			 refresh_physmap(struct dbh *);
+void			 db_physmap(void);
 
 /* cam.c */
 void			 cam_move(int);
@@ -286,6 +301,7 @@ void			 tween_pushpop(int);
 /* draw.c */
 void			 draw(void);
 void			 draw_node(struct node *);
+void			 draw_mod(struct vec *, struct vec *, struct fill *);
 void			 make_ground(void);
 
 /* key.c */
