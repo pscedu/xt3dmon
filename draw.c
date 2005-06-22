@@ -454,6 +454,15 @@ draw_textured_node(struct node *n)
 __inline void
 draw_node_label(struct node *n)
 {
+	char *s, buf[BUFSIZ];
+
+	glColor3f(1.0f, 1.0f, 0.0f);
+	glRasterPos3f(n->n_v->v_x, n->n_v->v_y, n->n_v->v_z);
+
+	snprintf(buf, sizeof(buf), "NID: %d", n->n_nid);
+
+	for (s = buf; *s != '\0'; s++)
+		glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
 }
 
 __inline void
@@ -601,10 +610,20 @@ make_ground(void)
 
 	/* Ground */
 	glColor3f(0.4f, 0.4f, 0.4f);
-	glVertex3f( -5.0f, 0.0f, -5.0f);
-	glVertex3f( -5.0f, 0.0f, 20.0f);
-	glVertex3f(310.0f, 0.0f, 20.0f);
-	glVertex3f(310.0f, 0.0f, -5.0f);
+	switch (st.st_vmode) {
+	case VM_LOGICALONE:
+		glVertex3f( -5.0f, -0.1f, -5.0f);
+		glVertex3f( -5.0f, -0.1f, LOGDEPTH + 5.0f);
+		glVertex3f(LOGWIDTH + 5.0f, -0.1f, LOGDEPTH + 5.0f);
+		glVertex3f(LOGWIDTH + 5.0f, -0.1f, -5.0f);
+		break;
+	case VM_PHYSICAL:
+		glVertex3f( -5.0f, -0.1f, -5.0f);
+		glVertex3f( -5.0f, -0.1f, 2*ROWDEPTH + ROWSPACE + 5.0f);
+		glVertex3f(ROWWIDTH + 5.0f, -0.1f, 2*ROWDEPTH + ROWSPACE + 5.0f);
+		glVertex3f(ROWWIDTH + 5.0f, -0.1f, -5.0f);
+		break;
+	}
 
 	/* x-axis */
 	glColor3f(1.0f, 1.0f, 1.0f);
