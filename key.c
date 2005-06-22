@@ -178,15 +178,15 @@ keyh_vmode(unsigned char key, __unused int u, __unused int v)
 	switch (key) {
 	case 'o':
 		st.st_vmode = VM_LOGICALONE;
-		st.st_ro |= RO_COMPILE | RO_PERSPECTIVE;
+		st.st_ro |= RO_COMPILE | RO_PERSPECTIVE | RO_GROUND;
 		break;
 	case 'l':
 		st.st_vmode = VM_LOGICAL;
-		st.st_ro |= RO_COMPILE | RO_PERSPECTIVE;
+		st.st_ro |= RO_COMPILE | RO_PERSPECTIVE | RO_GROUND;
 		break;
 	case 'p':
 		st.st_vmode = VM_PHYSICAL;
-		st.st_ro |= RO_COMPILE | RO_PERSPECTIVE;
+		st.st_ro |= RO_COMPILE | RO_PERSPECTIVE | RO_GROUND;
 		break;
 	default:
 		return;
@@ -231,6 +231,10 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 'G': /* Ludicrous Speed */
 		st.st_opts ^= OP_GOVERN;
+		break;
+	case 'l':
+		st.st_opts ^= OP_NLABELS;
+		st.st_ro |= RO_COMPILE;
 		break;
 	case 'L':
 		st.st_opts ^= OP_FREELOOK;
@@ -331,11 +335,11 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		break;
 	case '[':
 		st.st_lognspace--;
-		st.st_ro |= RO_COMPILE;
+		st.st_ro |= RO_COMPILE | RO_GROUND;
 		break;
 	case ']':
 		st.st_lognspace++;
-		st.st_ro |= RO_COMPILE;
+		st.st_ro |= RO_COMPILE | RO_GROUND;
 		break;
 	default:
 		return;
