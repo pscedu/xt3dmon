@@ -234,6 +234,120 @@ collide(struct vec *box, struct vec *dim,
 	return (1);
 }
 
+void
+phys_detect(struct vec *rs, struct vec *re)
+{
+	float adj, cbadj, cgadj, madj, sadjy, sadjz, nadj;
+	int r, cb, cg, m, s, n0, n;
+	struct vec v, d;
+
+	/* Scan cluster. */
+	v.v_x = v.v_y = v.v_z = NODESPACE; /* XXX */
+	d.v_w = ROWWIDTH;
+	d.v_h = CAGEHEIGHT * NCAGES + CAGESPACE * (NCAGES - 1);
+	d.v_d = ROWDEPTH * NROWS + ROWSPACE * (NROWS - 1);
+	if (!collide(&v, &d, rs, re))
+		return;
+
+	/* Scan rows. */
+	d.v_d = ROWDEPTH;
+	adj = ROWDEPTH + ROWSPACE;
+	if (st.st_lz < 0.0f) {
+		v.v_z += ROWDEPTH * NROWS + ROWSPACE * (NROWS - 1) - ROWDEPTH;
+		adj *= -1.0f;
+	}
+	for (r = 0; r < NROWS; r++, v.v_z += adj) {
+		if (collide(&v, &d, rs, re)) {
+			struct vec cb_v = v, cb_d = d;
+
+			/* Scan cabinets. */
+			cb_d.v_w = CABWIDTH;
+			cbadj = CABWIDTH + CABSPACE;
+			if (st.st_lx < 0.0f) {
+				cb_v.v_x += ROWWIDTH - CABWIDTH;
+				cbadj *= -1.0f;
+			}
+			for (cb = 0; cb < NCABS; cb++, cb_v.v_x += cbadj)
+				if (collide(&cb_v, &cb_d, rs, re)) {
+					struct vec cg_v = cb_v, cg_d = cb_d;
+
+					/* Scan cages. */
+					cg_d.v_h = CAGEHEIGHT;
+					cgadj = CAGEHEIGHT + CAGESPACE;
+					if (st.st_ly < 0.0f) {
+						cg_v.v_y += CAGEHEIGHT * NCAGES + CAGESPACE * (NCAGES - 1) - CAGEHEIGHT;
+						cgadj *= -1.0f;
+					}
+					for (cg = 0; cg < NCAGES; cg++, cg_v.v_y += cgadj)
+						if (collide(&cg_v, &cg_d, rs, re)) {
+							struct vec m_v = cg_v, m_d = cg_d;
+
+							/* Scan modules. */
+							m_d.v_w = MODWIDTH;
+							madj = MODWIDTH + MODSPACE;
+							if (st.st_lx < 0.0f) {
+								m_v.v_x += CABWIDTH - MODWIDTH;
+								madj *= -1.0f;
+							}
+							for (m = 0; m < NMODS; m++, m_v.v_w += madj)
+								if (collide(&m_v, &m_d, rs, re)) {
+									struct vec s_v = m_v, s_d = m_d;
+
+									/* Scan strips. */
+									s_d.v_h = NODEHEIGHT;
+									sadjy = NODEHEIGHT + NODESPACE;
+									sadjz = NODESHIFT;
+									if (st.st_ly < 0.0f) {
+										s_v.v_y += MODHEIGHT - NODEHEIGHT;
+										s_v.v_z += sadjz;
+										sadjy *= -1.0f;
+										sadjz *= -1.0f;
+									}
+									for (s = 0; s < NNODES / 2; s++, s_v.v_y += sadjy, s_v.v_z += sadjz)
+										if (collide(&s_v, &s_d, rs, re)) {
+											struct vec n_v = s_v, n_d = s_d;
+
+											/* Scan nodes. */
+											n_d.v_d = NODEDEPTH;
+											nadj = NODEDEPTH + NODESPACE;
+											if (st.st_lz < 0.0f) {
+												n_v.v_z += NODESPACE;
+												nadj *= -1.0f;
+											}
+											for (n0 = 0; n0 < NNODES / 2; n0++, n_v.v_z += nadj)
+												if (collide(&n_v, &n_d, rs, re)) {
+													if (st.st_lz < 0.0f)
+														r = NROWS - r - 1;
+													if (st.st_lx < 0.0f)
+														cb = NCABS - cb - 1;
+													if (st.st_ly < 0.0f)
+														cg = NCAGES - cg - 1;
+													if (st.st_lx < 0.0f)
+														m = NMODS - m - 1;
+													if (st.st_ly < 0.0f)
+														s = NNODES / 2 - s - 1;
+													if (st.st_lz < 0.0f)
+														n0 = NNODES / 2 - n0 - 1;
+
+													n = (s << 1) + (s ^ n0);
+{ struct node *cn = selnode;
+													select_node(&nodes[r][cb][cg][m][n]);
+if (cn != selnode) {
+  printf("s: %d, n0: %d, n: %d\r", s, n0, n);
+  fflush(stdout);
+ }
+}
+													return;
+												}
+										}
+								}
+						}
+				}
+		}
+	}
+}
+
+
 /* Node detection */
 void
 detect_node(int screenu, int screenv)
@@ -242,9 +356,7 @@ detect_node(int screenu, int screenv)
 	GLint x, y, z;
 	GLint vp[4];
 
-	struct vec v, dim, raystart, rayend;
-	int r, cb, cg, m, c, n;
-	float adj;
+	struct vec raystart, rayend;
 
 	/* Grab world info */
 	glGetIntegerv(GL_VIEWPORT, vp);
@@ -272,124 +384,11 @@ detect_node(int screenu, int screenv)
 	rayend.v_y = ey;
 	rayend.v_z = ez;
 
-
-#if 0
-						n0 = st.st_lz > 0.0f ? n : NNODES - n - 1;
-						n1 = st.st_ly > 0.0f ? n : NNODES - n - 1;
-						pn = 2 * (n0 / (NNODES / 2)) +
-						    n1 % (NNODES / 2);
-#endif
-
 	switch (st.st_vmode) {
 	case VM_PHYSICAL:
-		/* Scan cluster. */
-		v.v_x = v.v_y = v.v_z = NODESPACE; /* XXX */
-		dim.v_w = ROWWIDTH;
-		dim.v_h = CAGEHEIGHT * NCAGES + CAGESPACE * (NCAGES - 1);
-		dim.v_d = ROWDEPTH * NROWS + ROWSPACE * (NROWS - 1);
-		if (!collide(&v, &dim, &raystart, &rayend))
-			return;
-
-		/* Scan rows. */
-		dim.v_d = ROWDEPTH;
-		adj = ROWDEPTH + ROWSPACE;
-		if (st.st_lz < 0.0f) {
-			adj *= -1.0f;
-			v.v_z += ROWDEPTH * NROWS + ROWSPACE * (NROWS - 1) + adj;
-		}
-		for (r = 0; r < NROWS; r++, v.v_z += adj)
-			if (collide(&v, &dim, &raystart, &rayend))
-				break;
-		if (r == NROWS)
-			return;
-		if (st.st_lz < 0.0f)
-			r = NROWS - r - 1;
-
-		/* Scan cabinets. */
-		dim.v_w = CABWIDTH;
-		adj = CABWIDTH + CABSPACE;
-		if (st.st_lx < 0.0f) {
-			adj *= -1.0f;
-			v.v_x += ROWWIDTH + adj;
-		}
-		for (cb = 0; cb < NCABS; cb++, v.v_x += adj)
-			if (collide(&v, &dim, &raystart, &rayend))
-				break;
-		if (cb == NCABS)
-			return;
-		if (st.st_lx < 0.0f)
-			cb = NCABS - cb - 1;
-
-		/* Scan cages. */
-		dim.v_h = CAGEHEIGHT;
-		adj = CAGEHEIGHT + CAGESPACE;
-		if (st.st_ly < 0.0f) {
-			adj *= -1.0f;
-			v.v_y += CAGEHEIGHT * NCAGES + CAGESPACE * (NCAGES - 1) + adj;
-		}
-		for (cg = 0; cg < NCAGES; cg++, v.v_y += adj)
-			if (collide(&v, &dim, &raystart, &rayend))
-				break;
-		if (cg == NCAGES)
-			return;
-		if (st.st_ly < 0.0f)
-			cg = NCAGES - cg - 1;
-
-		/* Scan modules. */
-		dim.v_w = MODWIDTH;
-		adj = MODWIDTH + MODSPACE;
-		if (st.st_lx < 0.0f) {
-			adj *= -1.0f;
-			v.v_x += CABWIDTH + adj;
-		}
-		for (m = 0; m < NMODS; m++, v.v_w += adj)
-			if (collide(&v, &dim, &raystart, &rayend))
-				break;
-		if (m == NMODS)
-			return;
-		if (st.st_lx < 0.0f)
-			m = NMODS - m - 1;
-printf("mw: %.4f, nw: %.4f\n", MODWIDTH, NODEWIDTH);
-		/* Scan nodes. */
-		dim.v_h = NODEHEIGHT;
-		dim.v_d = NODEDEPTH;
-		for (c = 0; c < NNODES / 2; c++, v.v_z += NODEDEPTH + NODESPACE) {
-			for (n = 0; n < NNODES / 2; n++, v.v_y += NODEHEIGHT + NODESPACE)
-				if (collide(&v, &dim, &raystart, &rayend))
-					goto foundnode;
-			v.v_y -= (NODEHEIGHT + NODESPACE) * (NNODES / 2);
-		}
-		return;
-foundnode:
-		n += 2 * c;
-		select_node(&nodes[r][cb][cg][m][n]);
+		phys_detect(&raystart, &rayend);
+		break;
 	}
-#if 0
-	/* Check for collision */
-	for (r = 0; r < NROWS; r++) {
-		for (cb = 0; cb < NCABS; cb++) {
-			for (cg = 0; cg < NCAGES; cg++) {
-				for (m = 0; m < NMODS; m++) {
-					for (n = 0; n < NNODES; n++) {
-						n0 = st.st_lz > 0.0f ? n : NNODES - n - 1;
-						n1 = st.st_ly > 0.0f ? n : NNODES - n - 1;
-						pn = 2 * (n0 / (NNODES / 2)) +
-						    n1 % (NNODES / 2);
-
-						pr  = st.st_lz > 0.0f ? r  : NROWS  - r  - 1;
-						pcb = st.st_lx > 0.0f ? cb : NCABS  - cb - 1;
-						pcg = st.st_ly > 0.0f ? cg : NCAGES - cg - 1;
-						pm  = st.st_lx > 0.0f ? m  : NMODS  - m  - 1;
-
-						if (collide(&nodes[pr][pcb][pcg][pm][pn],
-						   sx, sy, sz, ex, ey, ez))
-							return;
-					}
-				}
-			}
-		}
-	}
-#endif
 }
 
 void
@@ -449,7 +448,7 @@ idle(void)
 __inline void
 make_cluster_physical(void)
 {
-	int r, cb, cg, m, c, n, n0;
+	int r, cb, cg, m, s, n0, n;
 	struct node *node;
 	struct vec mdim;
 	struct fill mf;
@@ -481,12 +480,12 @@ make_cluster_physical(void)
 						node->n_v = &node->n_physv;
 						node->n_physv = v;
 
-						c = (n & 1) ^ ((n & 2) >> 1);
-						n0 = n / (NNODES / 2);
+						s = n / (NNODES / 2);
+						n0 = (n & 1) ^ ((n & 2) >> 1);
 
-						node->n_physv.v_y += n0 * (NODESPACE + NODEHEIGHT);
-						node->n_physv.v_z += c * (NODESPACE + NODEDEPTH) +
-						    n0 * NODESHIFT;
+						node->n_physv.v_y += s * (NODESPACE + NODEHEIGHT);
+						node->n_physv.v_z += n0 * (NODESPACE + NODEDEPTH) +
+						    s * NODESHIFT;
 						draw_node(node);
 					}
 				}
@@ -663,7 +662,7 @@ rebuild(int opts)
 		glMatrixMode(GL_MODELVIEW);
 		cam_update();
 	}
-	if (opts & RO_INIT)
+	if (opts & RO_GROUND && st.st_opts & OP_GROUND)
 		make_ground();
 	if (opts & RO_COMPILE)
 		make_cluster();
