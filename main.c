@@ -36,6 +36,7 @@ extern double round(double); /* don't ask */
 
 struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 struct node		*invmap[NID_MAX];
+int			 datasrc = DS_FILE;
 int			 win_width = 800;
 int			 win_height = 600;
 int			 active_flyby = 0;
@@ -52,8 +53,13 @@ struct timeval		 lastsync;
 long			 fps = 100;
 int			 gDebugCapture;
 
+struct datasrc datasrcsw[] = {
+	{ parse_physmap },
+	{ db_physmap }
+};
+
 struct vmode vmodes[] = {
-	{ 1000,	0.6f, 1.2f, 1.2f },
+	{ 1000,	0.2f, 1.2f, 1.2f },
 	{ 30,	2.0f, 2.0f, 2.0f },
 	{ 1000,	2.0f, 2.0f, 2.0f }
 };
@@ -177,20 +183,17 @@ select_node(struct node *n)
  * |/    (x,y,z)         (x,y,z+d)
  * +------------------------------------- z
  */
-__inline int
-collide(struct node *n,
-   float sx, float sy, float sz,
-   float ex, float ey, float ez)
+int
+collide(struct vec *box, struct vec *dim,
+    struct vec *raystart, struct vec *rayend)
 {
-	float x = n->n_v->v_x;
-	float y = n->n_v->v_y;
-	float z = n->n_v->v_z;
 	float lo_x, hi_x;
 	float lo_y, hi_y, y_sxbox, y_exbox;
 	float lo_z, hi_z, z_sxbox, z_exbox;
-	float w = vmodes[st.st_vmode].vm_nwidth;
-	float h = vmodes[st.st_vmode].vm_nheight;
-	float d = vmodes[st.st_vmode].vm_ndepth;
+	float x = box->v_x, y = box->v_y, z = box->v_z;
+	float w = dim->v_w, h = dim->v_h, d = dim->v_d;
+	float sx = raystart->v_x, sy = raystart->v_y, sz = raystart->v_z;
+	float ex = rayend->v_x, ey = rayend->v_y, ez = rayend->v_z;
 
 	if (ex < sx) {
 		lo_x = ex;
@@ -228,24 +231,20 @@ collide(struct node *n,
 
 	if (hi_z < z || lo_z > z+d)
 		return (0);
-	select_node(n);
 	return (1);
 }
 
 /* Node detection */
 void
-detect_node(int u, int v)
+detect_node(int screenu, int screenv)
 {
-	GLint vp[4];
-	GLdouble mvm[16];
-	GLdouble pvm[16];
+	GLdouble mvm[16], pvm[16], sx, sy, sz, ex, ey, ez;
 	GLint x, y, z;
-	GLdouble sx, sy, sz;
-	GLdouble ex, ey, ez;
+	GLint vp[4];
 
-	int r, cb, cg, m, n;
-	int pr, pcb, pcg, pm;
-	int n0, n1, pn;
+	struct vec v, dim, raystart, rayend;
+	int r, cb, cg, m, c, n;
+	float adj;
 
 	/* Grab world info */
 	glGetIntegerv(GL_VIEWPORT, vp);
@@ -253,8 +252,8 @@ detect_node(int u, int v)
 	glGetDoublev(GL_PROJECTION_MATRIX, pvm);
 
 	/* Fix y coordinate */
-	y = vp[3] - v - 1;
-	x = u;
+	y = vp[3] - screenv - 1;
+	x = screenu;
 
 	/* Transform 2d to 3d coordinates according to z */
 	z = 0.0;
@@ -265,34 +264,107 @@ detect_node(int u, int v)
 	if (gluUnProject(x, y, z, mvm, pvm, vp, &ex, &ey, &ez) == GL_FALSE)
 		return;
 
+	raystart.v_x = sx;
+	raystart.v_y = sy;
+	raystart.v_z = sz;
+
+	rayend.v_x = ex;
+	rayend.v_y = ey;
+	rayend.v_z = ez;
+
+
 #if 0
-	switch (st.st_vmode) {
-	case VM_PHYSICAL:
-		r = ez / (ROWDEPTH + ROWSPACE);
-		ez = fmod(ez, ROWDEPTH + ROWSPACE);
-
-		cb = ex / (CABWIDTH + CABSPACE);
-		ex = fmod(ex, CABWIDTH + CABSPACE);
-
-		cg = ey / (CAGEHEIGHT + CAGESPACE);
-		ey = fmod(ey, CAGEHEIGHT + CAGESPACE);
-
-		m = ex / (MODWIDTH + MODSPACE);
-		ex = fmod(ex, MODWIDTH + MODSPACE);
-
-		c = ez / (NODEDEPTH + NODESPACE);
-		n = ey / (NODEHEIGHT + NODESPACE);
-
-		n += 2 * c;
-		break;
-	}
-
-	node = &nodes[r][cb][cg][m][n];
-
-	if (collide(node, sx, sy, sz, ex, ey, ez))
-		select_node(node);
+						n0 = st.st_lz > 0.0f ? n : NNODES - n - 1;
+						n1 = st.st_ly > 0.0f ? n : NNODES - n - 1;
+						pn = 2 * (n0 / (NNODES / 2)) +
+						    n1 % (NNODES / 2);
 #endif
 
+	switch (st.st_vmode) {
+	case VM_PHYSICAL:
+		/* Scan cluster. */
+		v.v_x = v.v_y = v.v_z = NODESPACE; /* XXX */
+		dim.v_w = ROWWIDTH;
+		dim.v_h = CAGEHEIGHT * NCAGES + CAGESPACE * (NCAGES - 1);
+		dim.v_d = ROWDEPTH * NROWS + ROWSPACE * (NROWS - 1);
+		if (!collide(&v, &dim, &raystart, &rayend))
+			return;
+
+		/* Scan rows. */
+		dim.v_d = ROWDEPTH;
+		adj = ROWDEPTH + ROWSPACE;
+		if (st.st_lz < 0.0f) {
+			adj *= -1.0f;
+			v.v_z += ROWDEPTH * NROWS + ROWSPACE * (NROWS - 1) + adj;
+		}
+		for (r = 0; r < NROWS; r++, v.v_z += adj)
+			if (collide(&v, &dim, &raystart, &rayend))
+				break;
+		if (r == NROWS)
+			return;
+		if (st.st_lz < 0.0f)
+			r = NROWS - r - 1;
+
+		/* Scan cabinets. */
+		dim.v_w = CABWIDTH;
+		adj = CABWIDTH + CABSPACE;
+		if (st.st_lx < 0.0f) {
+			adj *= -1.0f;
+			v.v_x += ROWWIDTH + adj;
+		}
+		for (cb = 0; cb < NCABS; cb++, v.v_x += adj)
+			if (collide(&v, &dim, &raystart, &rayend))
+				break;
+		if (cb == NCABS)
+			return;
+		if (st.st_lx < 0.0f)
+			cb = NCABS - cb - 1;
+
+		/* Scan cages. */
+		dim.v_h = CAGEHEIGHT;
+		adj = CAGEHEIGHT + CAGESPACE;
+		if (st.st_ly < 0.0f) {
+			adj *= -1.0f;
+			v.v_y += CAGEHEIGHT * NCAGES + CAGESPACE * (NCAGES - 1) + adj;
+		}
+		for (cg = 0; cg < NCAGES; cg++, v.v_y += adj)
+			if (collide(&v, &dim, &raystart, &rayend))
+				break;
+		if (cg == NCAGES)
+			return;
+		if (st.st_ly < 0.0f)
+			cg = NCAGES - cg - 1;
+
+		/* Scan modules. */
+		dim.v_w = MODWIDTH;
+		adj = MODWIDTH + MODSPACE;
+		if (st.st_lx < 0.0f) {
+			adj *= -1.0f;
+			v.v_x += CABWIDTH + adj;
+		}
+		for (m = 0; m < NMODS; m++, v.v_w += adj)
+			if (collide(&v, &dim, &raystart, &rayend))
+				break;
+		if (m == NMODS)
+			return;
+		if (st.st_lx < 0.0f)
+			m = NMODS - m - 1;
+printf("mw: %.4f, nw: %.4f\n", MODWIDTH, NODEWIDTH);
+		/* Scan nodes. */
+		dim.v_h = NODEHEIGHT;
+		dim.v_d = NODEDEPTH;
+		for (c = 0; c < NNODES / 2; c++, v.v_z += NODEDEPTH + NODESPACE) {
+			for (n = 0; n < NNODES / 2; n++, v.v_y += NODEHEIGHT + NODESPACE)
+				if (collide(&v, &dim, &raystart, &rayend))
+					goto foundnode;
+			v.v_y -= (NODEHEIGHT + NODESPACE) * (NNODES / 2);
+		}
+		return;
+foundnode:
+		n += 2 * c;
+		select_node(&nodes[r][cb][cg][m][n]);
+	}
+#if 0
 	/* Check for collision */
 	for (r = 0; r < NROWS; r++) {
 		for (cb = 0; cb < NCABS; cb++) {
@@ -317,6 +389,7 @@ detect_node(int u, int v)
 			}
 		}
 	}
+#endif
 }
 
 void
@@ -376,41 +449,52 @@ idle(void)
 __inline void
 make_cluster_physical(void)
 {
-	int r, cb, cg, m, n;
+	int r, cb, cg, m, c, n, n0;
 	struct node *node;
-	float x, y, z;
-
-	float rhombshift = 0.4f;
+	struct vec mdim;
+	struct fill mf;
+	struct vec v;
 
 	if (cluster_dl)
 		glDeleteLists(cluster_dl, 1);
 	cluster_dl = glGenLists(1);
 	glNewList(cluster_dl, GL_COMPILE);
 
-	x = y = z = NODESPACE;
-	for (r = 0; r < NROWS; r++, z += ROWDEPTH + ROWSPACE) {
-		for (cb = 0; cb < NCABS; cb++, x += CABWIDTH + CABSPACE) {
-			for (cg = 0; cg < NCAGES; cg++, y += CAGEHEIGHT + CAGESPACE) {
-				for (m = 0; m < NMODS; m++, x += MODWIDTH + MODSPACE) {
+	mdim.v_w = MODWIDTH;
+	mdim.v_h = MODHEIGHT;
+	mdim.v_d = MODDEPTH;
+
+	mf.f_r = 1.00;
+	mf.f_g = 1.00;
+	mf.f_b = 1.00;
+	mf.f_a = 0.30;
+
+	v.v_x = v.v_y = v.v_z = NODESPACE;
+	for (r = 0; r < NROWS; r++, v.v_z += ROWDEPTH + ROWSPACE) {
+		for (cb = 0; cb < NCABS; cb++, v.v_x += CABWIDTH + CABSPACE) {
+			for (cg = 0; cg < NCAGES; cg++, v.v_y += CAGEHEIGHT + CAGESPACE) {
+				for (m = 0; m < NMODS; m++, v.v_x += MODWIDTH + MODSPACE) {
+					if (st.st_opts & OP_SHOWMODS)
+						draw_mod(&v, &mdim, &mf);
 					for (n = 0; n < NNODES; n++) {
 						node = &nodes[r][cb][cg][m][n];
-						node->n_physv.v_x = x;
-						node->n_physv.v_y = y +
-						    (2.0f * NODESPACE + NODEHEIGHT) *
-						    (n % (NNODES/2));
-						node->n_physv.v_z = z +
-						    (2.0f * NODESPACE + NODEDEPTH) *
-						    (n / (NNODES/2)) +
-						    (rhombshift * (n % (NNODES/2))),
 						node->n_v = &node->n_physv;
+						node->n_physv = v;
+
+						c = (n & 1) ^ ((n & 2) >> 1);
+						n0 = n / (NNODES / 2);
+
+						node->n_physv.v_y += n0 * (NODESPACE + NODEHEIGHT);
+						node->n_physv.v_z += c * (NODESPACE + NODEDEPTH) +
+						    n0 * NODESHIFT;
 						draw_node(node);
 					}
 				}
-				x -= (MODWIDTH + MODSPACE) * NMODS;
+				v.v_x -= (MODWIDTH + MODSPACE) * NMODS;
 			}
-			y -= (CAGEHEIGHT + CAGESPACE) * NCAGES;
+			v.v_y -= (CAGEHEIGHT + CAGESPACE) * NCAGES;
 		}
-		x -= (CABWIDTH + CABSPACE) * NCABS;
+		v.v_x -= (CABWIDTH + CABSPACE) * NCABS;
 	}
 	glEndList();
 }
@@ -545,7 +629,7 @@ rebuild(int opts)
 		load_textures();
 	}
 	if (opts & RO_PHYS)
-		refresh_physmap(&dbh);
+		datasrcsw[datasrc].ds_physmap();
 	if (opts & RO_RELOAD) {
 		mode_data_clean = 0;
 		switch (st.st_mode) {
@@ -588,8 +672,17 @@ rebuild(int opts)
 int
 main(int argc, char *argv[])
 {
-	dbh_connect(&dbh);
+	int c;
 
+	while ((c = getopt(argc, argv, "l")) != -1)
+		switch (c) {
+		case 'l':
+			datasrc = DS_DB;
+			dbh_connect(&dbh);
+			break;
+		}
+
+	/* op_reset = 1; */
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
 	glutInitWindowPosition(0, 0);
