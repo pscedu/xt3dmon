@@ -235,6 +235,10 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 	case 'L':
 		st.st_opts ^= OP_FREELOOK;
 		break;
+	case 'M':
+		st.st_opts ^= OP_SHOWMODS;
+		st.st_ro |= RO_COMPILE;
+		break;
 	case 'm':
 		glutKeyboardFunc(keyh_mode);
 		break;
