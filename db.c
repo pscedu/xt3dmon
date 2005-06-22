@@ -74,7 +74,7 @@ db_map_set(struct db_map_ent *map, const char *dbval, int *field)
 }
 
 void
-refresh_physmap(struct dbh *dbh)
+db_physmap(void)
 {
 	int x, y, z, nid, len, r, cb, cg, m, n;
 	struct node *node;
@@ -123,13 +123,13 @@ refresh_physmap(struct dbh *dbh)
 	    "	processor				")) == -1)
 		err(1, "asprintf");
 
-	if (mysql_real_query(&dbh->dbh_mysql, sql, len))
-		err(1, "%s", dbh_error(dbh));
+	if (mysql_real_query(&dbh.dbh_mysql, sql, len))
+		err(1, "%s", dbh_error(&dbh));
 	free(sql);
 
-	res = mysql_store_result(&dbh->dbh_mysql);
+	res = mysql_store_result(&dbh.dbh_mysql);
 	if (!res)
-		err(1, "%s", dbh_error(dbh));
+		err(1, "%s", dbh_error(&dbh));
 	while ((row = mysql_fetch_row(res))) {
 		if ((l = strtol(row[F_r], NULL, 10)) < -1 || l > NROWS)
 			errx(1, "bad row from database");
