@@ -71,6 +71,27 @@ draw(void)
 	glCallList(cluster_dl);
 	draw_panels();
 
+#if 0
+	// DEBUG LINES
+	if(st.st_opts & OP_DEBUG)
+	{
+		glColor3f(0.5, 0.5, 0.5);
+		glLineWidth(2.0);
+		glBegin(GL_LINES);
+		glVertex3f(gLines[0].x, gLines[0].y, gLines[0].z);
+		glVertex3f(gLines[1].x, gLines[1].y, gLines[1].z);
+		glVertex3f(gLines[2].x, gLines[2].y, gLines[2].z);
+		glVertex3f(gLines[3].x, gLines[3].y, gLines[3].z);
+		glEnd();
+
+		glPointSize(5.0);
+		glBegin(GL_POINTS);
+		glVertex3f(gPoints[0].x, gPoints[0].y, gPoints[0].z);
+		glVertex3f(gPoints[1].x, gPoints[1].y, gPoints[1].z);
+		glEnd();
+	}
+#endif
+
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	if (st.st_opts & OP_CAPTURE || gDebugCapture)
 		capture_fb();

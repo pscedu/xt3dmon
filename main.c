@@ -32,7 +32,7 @@ extern double round(double); /* don't ask */
 #define STARTLZ		(-0.12f)
 
 #define FPS_TO_USEC(X) (1000000/X)	/* Convert FPS to microseconds. */
-#define GOVERN_FPS 20			/* FPS governor. */
+#define GOVERN_FPS 15			/* FPS governor. */
 
 struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 struct node		*invmap[NID_MAX];
@@ -390,6 +390,210 @@ detect_node(int screenu, int screenv)
 		break;
 	}
 }
+
+
+/* Detect Node - Triangle Method */
+#if 0
+// DEBUG
+Point3d gLines[10*2];
+Point3d gPoints[10];
+
+/* Node detection */
+void
+detect_node(int u, int v)
+{
+	GLint vp[4];
+	GLdouble mvm[16];
+	GLdouble pvm[16];
+	GLint x, y, z;
+
+	int r, cb, cg, m, n;
+	int pr, pcb, pcg, pm;
+	int n0, n1, pn;
+
+	Point3d pt1, pt2, pt3, isec;
+	Point3d sv, ev;
+	Vector v1, v2, nv;
+	double t;
+	static int blah = 0;
+
+	/* Grab world info */
+	glGetIntegerv(GL_VIEWPORT, vp);
+	glGetDoublev(GL_MODELVIEW_MATRIX, mvm);
+	glGetDoublev(GL_PROJECTION_MATRIX, pvm);
+
+	/* Fix y coordinate */
+	y = vp[3] - v - 1;
+	x = u;
+
+	/* Transform 2d to 3d coordinates according to z */
+	z = 0.0;
+	gluUnProject(x, y, z, mvm, pvm, vp, &sv.x, &sv.y, &sv.z);
+
+	z = 1.0;
+	gluUnProject(x, y, z, mvm, pvm, vp, &ev.x, &ev.y, &ev.z);
+
+printf("sv.x: %lf sv.y: %lf sv.z: %lf\n", sv.x, sv.y, sv.z);
+printf("ev.x: %lf ev.y: %lf ev.z: %lf\n", ev.x, ev.y, ev.z);
+
+	// DEBUG
+	if(blah > 10)
+		blah = 0;
+	gLines[blah].x = sv.x;
+	gLines[blah].y = sv.y;
+	gLines[blah++].z = sv.z;
+	gLines[blah].x = ev.x;
+	gLines[blah].y = ev.y;
+	gLines[blah++].z = ev.z;
+
+
+//====================================================================
+
+	/* Use Plane Intersection to narrow selection of nodes */
+	
+	/*
+	** Calculate the four xy planes of the cages
+	**                PLANE 2              PLANE 4
+	**		    /|                   /|
+	**		   / |                  / |
+	**   PLANE1       /  |   PLANE 3       /  |
+	**     ^         /   |      ^         /   |
+	**     ^	/    |      ^        /    |
+	**     ^        |    |      ^        |    |
+	**              |    |               |    |
+	**     +--------|----+      +--------|----+
+	**    /		|   /|     /         |   /|
+	**   /		|  / |    /          |  / |
+	**  /		| /  |   /           | /  |
+	** +------------@/   |  +------------+/   |
+	** |		|    |  |            |    |
+	** |		|    @  |            |    +
+	** |   CAB 0 	|   /|  |    CAB 1   |   /|
+	** |		|  / |  |            |  / |
+	** |		| /  |  |	     | /  |
+	** +------------@/   |	+------------+/   |
+	**		|    |               |    |
+	**		|   /                |   /
+	**		|  /                 |  /
+	**		| /                  | /
+	**		|/                   |/
+	**
+	** '@' - Example point used to build plane
+	*/
+
+// XXX - This needs to loop and build all four
+
+	/* Obtain 3 non colinear points (PLANE 1) */
+	pt1.x = nodes[0][0][0][0][0].n_v->v_x;
+	pt1.y = nodes[0][0][0][0][0].n_v->v_y;
+	pt1.z = nodes[0][0][0][0][0].n_v->v_z;
+printf("pt1.x: %lf pt1.y: %lf pt1.z: %lf\n", pt1.x, pt1.y, pt1.z);
+
+	pt2.x = nodes[0][NCABS-1][NCAGES-1][NMODS-1][3].n_v->v_x,
+	pt2.y = nodes[0][NCABS-1][NCAGES-1][NMODS-1][3].n_v->v_y,
+	pt2.z = nodes[0][NCABS-1][NCAGES-1][NMODS-1][3].n_v->v_z,
+printf("pt2.x: %lf pt2.y: %lf pt2.z: %lf\n", pt2.x, pt2.y, pt2.z);
+
+	pt3.x = nodes[0][0][0][0][1].n_v->v_x;
+	pt3.y = nodes[0][0][0][0][1].n_v->v_y;
+	pt3.z = nodes[0][0][0][0][1].n_v->v_z;
+printf("pt3.x: %lf pt3.y: %lf pt3.z: %lf\n", pt3.x, pt3.y, pt3.z);
+	
+	// XXX - Need 2 vectors here, then one normal vector!!
+
+	/* Create vector from 2 pts*/
+//	CreateVector(&pt1, &pt2, &vc);
+
+	/*
+	** Create two vectors from the points, then take
+	** their cross product to get a normal vector.
+	** This will be used to calcute the plane
+	*/
+	VECTOR(pt1, pt2, v1);
+	VECTOR(pt1, pt3, v2);
+
+	CROSS(v1, v2, nv);
+
+	/*
+	** Find intersection of plane and the projected vector
+	** (from glUnProject() above).
+	**
+	** Some ugly Calc3 work below... just to make sure i haven't
+	** forgot something ;)
+	**
+	** Line from glUnProject() in Parametric:
+	** x = x1 + x2t;
+	** y = y1 + y2t;
+	** z = z1 + z2t;
+	** 
+	** Plane equation:
+	** a(x - x0) + b(y - y0) + c(z - z0) = 0;
+	**
+	** Set equal to plane (for intersection):
+	** 1. a(x1 + x2t - x0) + b(y1 + y2t - y0) + c(z1 + z2t - z0) = 0;
+	** 2. ax1 + ax2t - ax0 + by1 + by2t - by0 + cz1 + cz2t - cz0 = 0;
+	** 3. (all terms without t are known)
+ 	**	ax2t + by2t + cz2t = a(x0 - x1) + b(y0 - y1) + c(z0 - z1);
+	** 4. (separate t)
+	**	t(ax2 + by2 +cz2) = a(x0 - x1) + b(y0 - y1) + c(z0 - z1);
+	** 5. (solve for t)
+	**	t = (a(x0 - x1) + b(y0 - y1) + c(z0 - z1)) / (ax2 + by2 +cz2);
+	*/
+
+	/*
+	** Use v {a,b,c,} and pt3 {x0, y0, z0} for plane
+	** sv {x1, y1, z1} and ev {x2, y2, z2} for parametric eq
+	** to solve for t.
+	*/
+	t = (nv.a*(pt3.x-sv.x) + nv.b*(pt3.y-sv.y) + nv.c*(pt3.z-sv.z)) /
+		(nv.a*ev.x + nv.b*ev.y + nv.c*ev.z); 
+printf("%lf(%lf - %lf) + %lf(%lf - %lf) + %lf(%lf - %lf) = t(ax2+by2+cz2)\n",
+	nv.a, pt3.x, sv.x, nv.b, pt3.y, sv.y, nv.c, pt3.z, sv.z);
+	
+	/* Now substitute back into the parametric eq. to get the point */
+	isec.x = sv.x + ev.x*t;
+	isec.y = sv.y + ev.y*t;
+	isec.z = sv.z + ev.z*t;
+
+	// DEBUG
+	printf("blah-2: %d\n", blah-2);
+	gPoints[blah-2] = isec;
+	
+printf("isec.x: %lf isec.y: %lf isec.z: %lf\n", isec.x, isec.y, isec.z);
+printf("[units] isec.x: %d isec.y: %d isec.z: %d\n", (int)(isec.x / NODEWIDTH),
+	(int)(isec.y / NODEHEIGHT), (int)(isec.z / NODEDEPTH));
+
+
+//====================================================================
+
+
+	/* Check for collision */
+	for (r = 0; r < NROWS; r++) {
+		for (cb = 0; cb < NCABS; cb++) {
+			for (cg = 0; cg < NCAGES; cg++) {
+				for (m = 0; m < NMODS; m++) {
+					for (n = 0; n < NNODES; n++) {
+						n0 = st.st_lz > 0.0f ? n : NNODES - n - 1;
+						n1 = st.st_ly > 0.0f ? n : NNODES - n - 1;
+						pn = 2 * (n0 / (NNODES / 2)) +
+						    n1 % (NNODES / 2);
+
+						pr  = st.st_lz > 0.0f ? r  : NROWS  - r  - 1;
+						pcb = st.st_lx > 0.0f ? cb : NCABS  - cb - 1;
+						pcg = st.st_ly > 0.0f ? cg : NCAGES - cg - 1;
+						pm  = st.st_lx > 0.0f ? m  : NMODS  - m  - 1;
+
+						if (collide(&nodes[pr][pcb][pcg][pm][pn],
+						    NODEWIDTH, NODEHEIGHT, NODEDEPTH,
+						   sv.x, sv.y, sv.z, ev.x, ev.y, ev.z))
+							return;
+					}
+				}
+			}
+		}
+	}
+}
+#endif
 
 void
 idle_govern(void)
