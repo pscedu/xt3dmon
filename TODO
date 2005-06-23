@@ -12,3 +12,11 @@ $Id$
 7. check invmap looks after nid gaps
 8. add a fatal() function that is a wrapper over err() that breaks from
   the DB
+9. goto new job
+10. random flyby/cycle focus jobs
+11. grey out non-select nodes
+12. use colors from xt3 temperature png
+13. wired pipes
+14. draw frame around end of wired repeats
+15. don't display service node partners
+16. screenshot for poster
