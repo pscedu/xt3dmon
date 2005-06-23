@@ -153,15 +153,15 @@ keyh_mode(unsigned char key, __unused int u, __unused int v)
 	switch (key) {
 	case 'j':
 		st.st_mode = SM_JOBS;
-		st.st_ro |= RO_COMPILE | RO_RELOAD;
+		st.st_rf |= RF_CLUSTER | RF_DATASRC;
 		break;
 	case 'f':
 		st.st_mode = SM_FAIL;
-		st.st_ro |= RO_COMPILE | RO_RELOAD;
+		st.st_rf |= RF_CLUSTER | RF_DATASRC;
 		break;
 	case 't':
 		st.st_mode = SM_TEMP;
-		st.st_ro |= RO_COMPILE | RO_RELOAD;
+		st.st_rf |= RF_CLUSTER | RF_DATASRC;
 		break;
 	default:
 		return;
@@ -178,15 +178,15 @@ keyh_vmode(unsigned char key, __unused int u, __unused int v)
 	switch (key) {
 	case 'o':
 		st.st_vmode = VM_WIREDONE;
-		st.st_ro |= RO_COMPILE | RO_PERSPECTIVE | RO_GROUND;
+		st.st_rf |= RF_CLUSTER | RF_PERSPECTIVE | RF_GROUND;
 		break;
 	case 'w':
 		st.st_vmode = VM_WIRED;
-		st.st_ro |= RO_COMPILE | RO_PERSPECTIVE | RO_GROUND;
+		st.st_rf |= RF_CLUSTER | RF_PERSPECTIVE | RF_GROUND;
 		break;
 	case 'p':
 		st.st_vmode = VM_PHYSICAL;
-		st.st_ro |= RO_COMPILE | RO_PERSPECTIVE | RO_GROUND;
+		st.st_rf |= RF_CLUSTER | RF_PERSPECTIVE | RF_GROUND;
 		break;
 	default:
 		return;
@@ -202,10 +202,10 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 	switch (key) {
 	case 'b':
 		st.st_opts ^= OP_BLEND;
-		st.st_ro |= RO_COMPILE;
+		st.st_rf |= RF_CLUSTER;
 		break;
 	case 'C':
-		st.st_ro |= RO_COMPILE;
+		st.st_rf |= RF_CLUSTER;
 		break;
 	case 'c':
 		if (selnode != NULL) {
@@ -234,14 +234,14 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 'l':
 		st.st_opts ^= OP_NLABELS;
-		st.st_ro |= RO_COMPILE;
+		st.st_rf |= RF_CLUSTER;
 		break;
 	case 'L':
 		st.st_opts ^= OP_FREELOOK;
 		break;
 	case 'M':
 		st.st_opts ^= OP_SHOWMODS;
-		st.st_ro |= RO_COMPILE;
+		st.st_rf |= RF_CLUSTER;
 		break;
 	case 'm':
 		glutKeyboardFunc(keyh_mode);
@@ -267,19 +267,19 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		    GL_INTENSITY : GL_RGBA);
 		for (j = 0; j < NJST; j++)
 			jstates[j].js_fill.f_alpha_fmt = newfmt;
-		st.st_ro |= RO_TEX | RO_COMPILE;
+		st.st_rf |= RF_TEX | RF_CLUSTER;
 		break;
 	    }
 	case 't':
 		st.st_opts ^= OP_TEX;
-		st.st_ro |= RO_COMPILE;
+		st.st_rf |= RF_CLUSTER;
 		break;
 	case 'v':
 		glutKeyboardFunc(keyh_vmode);
 		break;
 	case 'w':
 		st.st_opts ^= OP_WIREFRAME;
-		st.st_ro |= RO_COMPILE;
+		st.st_rf |= RF_CLUSTER;
 		break;
 	/* DEBUG */
 	case 'z':
@@ -287,7 +287,7 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 //		st.st_opts ^= OP_TEX;
 //		st.st_opts ^= OP_BLEND;
 		st.st_opts ^= OP_DEBUG;
-		st.st_ro |= RO_COMPILE;
+		st.st_rf |= RF_CLUSTER;
 		break;
 	case '+':
 	case '_': {
@@ -306,7 +306,7 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 			else if (*field < 0.0f)
 				*field = 0.0f;
 		}
-		st.st_ro |= RO_COMPILE;
+		st.st_rf |= RF_CLUSTER;
 		break;
 	    }
 	case '=':
@@ -326,20 +326,20 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 			else if (*field < 0.0f)
 				*field = 0.0f;
 		}
-		st.st_ro |= RO_COMPILE;
+		st.st_rf |= RF_CLUSTER;
 		break;
 	    }
 	case '1':
 		st.st_opts ^= OP_POLYOFFSET;
-		st.st_ro |= RO_COMPILE;
+		st.st_rf |= RF_CLUSTER;
 		break;
 	case '[':
 		st.st_winsp--;
-		st.st_ro |= RO_COMPILE | RO_GROUND | RO_PERSPECTIVE;
+		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE;
 		break;
 	case ']':
 		st.st_winsp++;
-		st.st_ro |= RO_COMPILE | RO_GROUND | RO_PERSPECTIVE;
+		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE;
 		break;
 	default:
 		return;

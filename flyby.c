@@ -25,7 +25,7 @@ begin_flyby(char m)
 			err(1, "%s", _PATH_FLYBY);
 		}
 		active_flyby = 1;
-//		rebuild(RO_COMPILE); /* XXX: is this needed? */
+//		rebuild(RF_COMPILE); /* XXX: is this needed? */
 		init_panels();
 	} else if (m == 'w') {
 		if ((flyby_fp = fopen(_PATH_FLYBY, "ab")) == NULL)
@@ -84,14 +84,14 @@ again:
 	}
 
 	/* XXX:  is this right? */
-	if ((st.st_ro & OP_TWEEN) == 0)
+	if ((st.st_rf & OP_TWEEN) == 0)
 		cam_update();
 
 	/* Restore selected node. */
 	if (fb.fb_nid != -1) {
 		/* Force recompile if needed. */
 		if (tnid != fb.fb_nid)
-			st.st_ro |= RO_SELNODE;
+			st.st_rf |= RF_SELNODE;
 		n = node_for_nid(fb.fb_nid);
 		if (n != NULL)
 			select_node(n);
@@ -124,7 +124,7 @@ update_flyby(void)
 	else if (active_flyby)
 		read_flyby();
 	if (clear) {
-		st.st_ro = 0;
+		st.st_rf = 0;
 		fb.fb_panels = 0;
 	}
 }
