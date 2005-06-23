@@ -155,7 +155,7 @@ struct state {
 	int		 st_mode;
 	int		 st_vmode;
 	int		 st_winsp;
-	int		 st_ro;
+	int		 st_rf;
 #define st_x st_v.v_x
 #define st_y st_v.v_y
 #define st_z st_v.v_z
@@ -172,14 +172,14 @@ struct flyby {
 	int		 fb_pmask;
 };
 
-#define RO_TEX		(1<<0)
-#define RO_PHYS		(1<<1)
-#define RO_RELOAD	(1<<2)
-#define RO_COMPILE	(1<<3)
-#define RO_SELNODE	(1<<4)
-#define RO_PERSPECTIVE	(1<<5)
-#define RO_GROUND	(1<<6)
-#define RO_INIT		(RO_TEX | RO_PHYS | RO_RELOAD | RO_COMPILE | RO_GROUND)
+#define RF_TEX		(1<<0)
+#define RF_PHYSMAP	(1<<1)
+#define RF_DATASRC	(1<<2)
+#define RF_CLUSTER	(1<<3)
+#define RF_SELNODE	(1<<4)
+#define RF_PERSPECTIVE	(1<<5)
+#define RF_GROUND	(1<<6)
+#define RF_INIT		(RF_TEX | RF_PHYSMAP | RF_DATASRC | RF_CLUSTER | RF_GROUND)
 
 #define OP_TEX		(1<<0)
 #define OP_BLEND	(1<<1)
