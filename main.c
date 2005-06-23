@@ -18,7 +18,7 @@
 
 extern double round(double); /* don't ask */
 
-#define SLEEP_INTV	5
+#define SLEEP_INTV	500
 
 #define FOVY		(45.0f)
 #define ASPECT		(win_width / (double)win_height)
@@ -42,9 +42,9 @@ int			 win_height = 600;
 int			 active_flyby = 0;
 int			 build_flyby = 0;
 
-int			 logical_width;
-int			 logical_height;
-int			 logical_depth;
+int			 wired_width;
+int			 wired_height;
+int			 wired_depth;
 float			 tx = STARTX, tlx = STARTLX, ox = STARTX, olx = STARTLX;
 float			 ty = STARTY, tly = STARTLY, oy = STARTY, oly = STARTLY;
 float			 tz = STARTZ, tlz = STARTLZ, oz = STARTZ, olz = STARTLZ;
@@ -59,19 +59,19 @@ struct datasrc datasrcsw[] = {
 };
 
 struct vmode vmodes[] = {
-	{ 1000,	0.2f, 1.2f, 1.2f },
-	{ 30,	2.0f, 2.0f, 2.0f },
-	{ 1000,	2.0f, 2.0f, 2.0f }
+	{ 1000,	{ 0.2f, 1.2f, 1.2f } },
+	{ 5,	{ 0.5f, 0.5f, 0.5f } },
+	{ 1000,	{ 2.0f, 2.0f, 2.0f } }
 };
 
 struct state st = {
-	{ STARTX, STARTY, STARTZ },			/* (x,y,z) */
-	{ STARTLX, STARTLY, STARTLZ },			/* (lx,ly,lz) */
-	OP_WIRES | OP_TWEEN | OP_GROUND | OP_DISPLAY,	/* options */
-	SM_JOBS,					/* which data to show */
-	VM_PHYSICAL,					/* viewing mode */
-	4,						/* logical node spacing */
-	0						/* rebuild flags (unused) */
+	{ STARTX, STARTY, STARTZ },				/* (x,y,z) */
+	{ STARTLX, STARTLY, STARTLZ },				/* (lx,ly,lz) */
+	OP_WIREFRAME | OP_TWEEN | OP_GROUND | OP_DISPLAY,	/* options */
+	SM_JOBS,						/* which data to show */
+	VM_WIRED,						/* viewing mode */
+	4,							/* wired node spacing */
+	0							/* rebuild flags (unused) */
 };
 
 struct job_state jstates[] = {
@@ -96,7 +96,7 @@ reshape(int w, int h)
 	win_width = w;
 	win_height = h;
 
-	rebuild(RO_PERSPECTIVE);
+	rebuild(RF_PERSPECTIVE);
 	cam_update();
 
 	TAILQ_FOREACH(p, &panels, p_link)
@@ -130,8 +130,9 @@ refresh_state(int oldopts)
 		    m_activeh_free : m_activeh_default);
 	if (diff & OP_GOVERN)
 		glutIdleFunc(st.st_opts & OP_GOVERN ? idle_govern : idle);
-	if (st.st_ro)
-		rebuild(st.st_ro);
+	if (st.st_rf)
+		rebuild(st.st_rf);
+		/* st.st_rf = 0; */
 }
 
 void
@@ -146,7 +147,7 @@ select_node(struct node *n)
 		n->n_ofillp = n->n_fillp;
 		n->n_fillp = &selnodefill;
 	}
-	rebuild(RO_COMPILE);
+	rebuild(RF_CLUSTER);
 }
 
 /*
@@ -391,210 +392,6 @@ detect_node(int screenu, int screenv)
 	}
 }
 
-
-/* Detect Node - Triangle Method */
-#if 0
-// DEBUG
-Point3d gLines[10*2];
-Point3d gPoints[10];
-
-/* Node detection */
-void
-detect_node(int u, int v)
-{
-	GLint vp[4];
-	GLdouble mvm[16];
-	GLdouble pvm[16];
-	GLint x, y, z;
-
-	int r, cb, cg, m, n;
-	int pr, pcb, pcg, pm;
-	int n0, n1, pn;
-
-	Point3d pt1, pt2, pt3, isec;
-	Point3d sv, ev;
-	Vector v1, v2, nv;
-	double t;
-	static int blah = 0;
-
-	/* Grab world info */
-	glGetIntegerv(GL_VIEWPORT, vp);
-	glGetDoublev(GL_MODELVIEW_MATRIX, mvm);
-	glGetDoublev(GL_PROJECTION_MATRIX, pvm);
-
-	/* Fix y coordinate */
-	y = vp[3] - v - 1;
-	x = u;
-
-	/* Transform 2d to 3d coordinates according to z */
-	z = 0.0;
-	gluUnProject(x, y, z, mvm, pvm, vp, &sv.x, &sv.y, &sv.z);
-
-	z = 1.0;
-	gluUnProject(x, y, z, mvm, pvm, vp, &ev.x, &ev.y, &ev.z);
-
-printf("sv.x: %lf sv.y: %lf sv.z: %lf\n", sv.x, sv.y, sv.z);
-printf("ev.x: %lf ev.y: %lf ev.z: %lf\n", ev.x, ev.y, ev.z);
-
-	// DEBUG
-	if(blah > 10)
-		blah = 0;
-	gLines[blah].x = sv.x;
-	gLines[blah].y = sv.y;
-	gLines[blah++].z = sv.z;
-	gLines[blah].x = ev.x;
-	gLines[blah].y = ev.y;
-	gLines[blah++].z = ev.z;
-
-
-//====================================================================
-
-	/* Use Plane Intersection to narrow selection of nodes */
-	
-	/*
-	** Calculate the four xy planes of the cages
-	**                PLANE 2              PLANE 4
-	**		    /|                   /|
-	**		   / |                  / |
-	**   PLANE1       /  |   PLANE 3       /  |
-	**     ^         /   |      ^         /   |
-	**     ^	/    |      ^        /    |
-	**     ^        |    |      ^        |    |
-	**              |    |               |    |
-	**     +--------|----+      +--------|----+
-	**    /		|   /|     /         |   /|
-	**   /		|  / |    /          |  / |
-	**  /		| /  |   /           | /  |
-	** +------------@/   |  +------------+/   |
-	** |		|    |  |            |    |
-	** |		|    @  |            |    +
-	** |   CAB 0 	|   /|  |    CAB 1   |   /|
-	** |		|  / |  |            |  / |
-	** |		| /  |  |	     | /  |
-	** +------------@/   |	+------------+/   |
-	**		|    |               |    |
-	**		|   /                |   /
-	**		|  /                 |  /
-	**		| /                  | /
-	**		|/                   |/
-	**
-	** '@' - Example point used to build plane
-	*/
-
-// XXX - This needs to loop and build all four
-
-	/* Obtain 3 non colinear points (PLANE 1) */
-	pt1.x = nodes[0][0][0][0][0].n_v->v_x;
-	pt1.y = nodes[0][0][0][0][0].n_v->v_y;
-	pt1.z = nodes[0][0][0][0][0].n_v->v_z;
-printf("pt1.x: %lf pt1.y: %lf pt1.z: %lf\n", pt1.x, pt1.y, pt1.z);
-
-	pt2.x = nodes[0][NCABS-1][NCAGES-1][NMODS-1][3].n_v->v_x,
-	pt2.y = nodes[0][NCABS-1][NCAGES-1][NMODS-1][3].n_v->v_y,
-	pt2.z = nodes[0][NCABS-1][NCAGES-1][NMODS-1][3].n_v->v_z,
-printf("pt2.x: %lf pt2.y: %lf pt2.z: %lf\n", pt2.x, pt2.y, pt2.z);
-
-	pt3.x = nodes[0][0][0][0][1].n_v->v_x;
-	pt3.y = nodes[0][0][0][0][1].n_v->v_y;
-	pt3.z = nodes[0][0][0][0][1].n_v->v_z;
-printf("pt3.x: %lf pt3.y: %lf pt3.z: %lf\n", pt3.x, pt3.y, pt3.z);
-	
-	// XXX - Need 2 vectors here, then one normal vector!!
-
-	/* Create vector from 2 pts*/
-//	CreateVector(&pt1, &pt2, &vc);
-
-	/*
-	** Create two vectors from the points, then take
-	** their cross product to get a normal vector.
-	** This will be used to calcute the plane
-	*/
-	VECTOR(pt1, pt2, v1);
-	VECTOR(pt1, pt3, v2);
-
-	CROSS(v1, v2, nv);
-
-	/*
-	** Find intersection of plane and the projected vector
-	** (from glUnProject() above).
-	**
-	** Some ugly Calc3 work below... just to make sure i haven't
-	** forgot something ;)
-	**
-	** Line from glUnProject() in Parametric:
-	** x = x1 + x2t;
-	** y = y1 + y2t;
-	** z = z1 + z2t;
-	** 
-	** Plane equation:
-	** a(x - x0) + b(y - y0) + c(z - z0) = 0;
-	**
-	** Set equal to plane (for intersection):
-	** 1. a(x1 + x2t - x0) + b(y1 + y2t - y0) + c(z1 + z2t - z0) = 0;
-	** 2. ax1 + ax2t - ax0 + by1 + by2t - by0 + cz1 + cz2t - cz0 = 0;
-	** 3. (all terms without t are known)
- 	**	ax2t + by2t + cz2t = a(x0 - x1) + b(y0 - y1) + c(z0 - z1);
-	** 4. (separate t)
-	**	t(ax2 + by2 +cz2) = a(x0 - x1) + b(y0 - y1) + c(z0 - z1);
-	** 5. (solve for t)
-	**	t = (a(x0 - x1) + b(y0 - y1) + c(z0 - z1)) / (ax2 + by2 +cz2);
-	*/
-
-	/*
-	** Use v {a,b,c,} and pt3 {x0, y0, z0} for plane
-	** sv {x1, y1, z1} and ev {x2, y2, z2} for parametric eq
-	** to solve for t.
-	*/
-	t = (nv.a*(pt3.x-sv.x) + nv.b*(pt3.y-sv.y) + nv.c*(pt3.z-sv.z)) /
-		(nv.a*ev.x + nv.b*ev.y + nv.c*ev.z); 
-printf("%lf(%lf - %lf) + %lf(%lf - %lf) + %lf(%lf - %lf) = t(ax2+by2+cz2)\n",
-	nv.a, pt3.x, sv.x, nv.b, pt3.y, sv.y, nv.c, pt3.z, sv.z);
-	
-	/* Now substitute back into the parametric eq. to get the point */
-	isec.x = sv.x + ev.x*t;
-	isec.y = sv.y + ev.y*t;
-	isec.z = sv.z + ev.z*t;
-
-	// DEBUG
-	printf("blah-2: %d\n", blah-2);
-	gPoints[blah-2] = isec;
-	
-printf("isec.x: %lf isec.y: %lf isec.z: %lf\n", isec.x, isec.y, isec.z);
-printf("[units] isec.x: %d isec.y: %d isec.z: %d\n", (int)(isec.x / NODEWIDTH),
-	(int)(isec.y / NODEHEIGHT), (int)(isec.z / NODEDEPTH));
-
-
-//====================================================================
-
-
-	/* Check for collision */
-	for (r = 0; r < NROWS; r++) {
-		for (cb = 0; cb < NCABS; cb++) {
-			for (cg = 0; cg < NCAGES; cg++) {
-				for (m = 0; m < NMODS; m++) {
-					for (n = 0; n < NNODES; n++) {
-						n0 = st.st_lz > 0.0f ? n : NNODES - n - 1;
-						n1 = st.st_ly > 0.0f ? n : NNODES - n - 1;
-						pn = 2 * (n0 / (NNODES / 2)) +
-						    n1 % (NNODES / 2);
-
-						pr  = st.st_lz > 0.0f ? r  : NROWS  - r  - 1;
-						pcb = st.st_lx > 0.0f ? cb : NCABS  - cb - 1;
-						pcg = st.st_ly > 0.0f ? cg : NCAGES - cg - 1;
-						pm  = st.st_lx > 0.0f ? m  : NMODS  - m  - 1;
-
-						if (collide(&nodes[pr][pcb][pcg][pm][pn],
-						    NODEWIDTH, NODEHEIGHT, NODEDEPTH,
-						   sv.x, sv.y, sv.z, ev.x, ev.y, ev.z))
-							return;
-					}
-				}
-			}
-		}
-	}
-}
-#endif
-
 void
 idle_govern(void)
 {
@@ -615,7 +412,7 @@ idle_govern(void)
 		timersub(&time, &lastsync, &diff);
 		if (diff.tv_sec >= SLEEP_INTV) {
 			lastsync = time;
-			rebuild(RO_RELOAD | RO_COMPILE);
+			rebuild(RF_DATASRC | RF_CLUSTER);
 			/* A lot of time may have elasped. */
 //			gettimeofday(&time, NULL);
 		}
@@ -642,159 +439,11 @@ idle(void)
 		if (diff.tv_sec > SLEEP_INTV) {
 			tcnt = 0;
 			lastsync = tv;
-			rebuild(RO_RELOAD | RO_COMPILE);
+			rebuild(RF_DATASRC | RF_CLUSTER);
 		}
 		cnt = 0;
 	}
 	draw();
-}
-
-__inline void
-make_cluster_physical(void)
-{
-	int r, cb, cg, m, s, n0, n;
-	struct node *node;
-	struct vec mdim;
-	struct fill mf;
-	struct vec v;
-
-	if (cluster_dl)
-		glDeleteLists(cluster_dl, 1);
-	cluster_dl = glGenLists(1);
-	glNewList(cluster_dl, GL_COMPILE);
-
-	mdim.v_w = MODWIDTH;
-	mdim.v_h = MODHEIGHT;
-	mdim.v_d = MODDEPTH;
-
-	mf.f_r = 1.00;
-	mf.f_g = 1.00;
-	mf.f_b = 1.00;
-	mf.f_a = 0.30;
-
-	v.v_x = v.v_y = v.v_z = NODESPACE;
-	for (r = 0; r < NROWS; r++, v.v_z += ROWDEPTH + ROWSPACE) {
-		for (cb = 0; cb < NCABS; cb++, v.v_x += CABWIDTH + CABSPACE) {
-			for (cg = 0; cg < NCAGES; cg++, v.v_y += CAGEHEIGHT + CAGESPACE) {
-				for (m = 0; m < NMODS; m++, v.v_x += MODWIDTH + MODSPACE) {
-					if (st.st_opts & OP_SHOWMODS)
-						draw_mod(&v, &mdim, &mf);
-					for (n = 0; n < NNODES; n++) {
-						node = &nodes[r][cb][cg][m][n];
-						node->n_v = &node->n_physv;
-						node->n_physv = v;
-
-						s = n / (NNODES / 2);
-						n0 = (n & 1) ^ ((n & 2) >> 1);
-
-						node->n_physv.v_y += s * (NODESPACE + NODEHEIGHT);
-						node->n_physv.v_z += n0 * (NODESPACE + NODEDEPTH) +
-						    s * NODESHIFT;
-						draw_node(node);
-					}
-				}
-				v.v_x -= (MODWIDTH + MODSPACE) * NMODS;
-			}
-			v.v_y -= (CAGEHEIGHT + CAGESPACE) * NCAGES;
-		}
-		v.v_x -= (CABWIDTH + CABSPACE) * NCABS;
-	}
-	glEndList();
-}
-
-__inline void
-make_one_logical_cluster(struct vec *v)
-{
-	int r, cb, cg, m, n;
-	struct node *node;
-	struct vec nv;
-
-	for (r = 0; r < NROWS; r++)
-		for (cb = 0; cb < NCABS; cb++)
-			for (cg = 0; cg < NCAGES; cg++)
-				for (m = 0; m < NMODS; m++)
-					for (n = 0; n < NNODES; n++) {
-						node = &nodes[r][cb][cg][m][n];
-
-						nv.v_x = node->n_logv.v_x * st.st_lognspace + v->v_x;
-						nv.v_y = node->n_logv.v_y * st.st_lognspace + v->v_y;
-						nv.v_z = node->n_logv.v_z * st.st_lognspace + v->v_z;
-						node->n_v = &nv;
-
-						draw_node(node);
-					}
-}
-
-/*
- * Draw the cluster repeatedly till we reach the clipping plane.
- * Since we can see vm_clip away, we must construct a 3D space
- * vm_clip^3 large and draw the cluster multiple
- * times inside.
- */
-__inline void
-make_cluster_logical(void)
-{
-	int clip, xpos, ypos, zpos;
-	struct vec v;
-
-static int n;
-printf("sp: %d\n", st.st_lognspace);
-	if (cluster_dl)
-		glDeleteLists(cluster_dl, 1);
-	cluster_dl = glGenLists(1);
-	glNewList(cluster_dl, GL_COMPILE);
-
-	clip = vmodes[VM_LOGICAL].vm_clip;
-	xpos = st.st_x - clip;
-	ypos = st.st_y - clip;
-	zpos = st.st_z - clip;
-
-	xpos = SIGN(xpos) * ceil(abs(xpos) / (double)LOGWIDTH) * LOGWIDTH;
-	ypos = SIGN(ypos) * ceil(abs(ypos) / (double)LOGHEIGHT) * LOGHEIGHT;
-	zpos = SIGN(zpos) * ceil(abs(zpos) / (double)LOGDEPTH) * LOGDEPTH;
-
-	for (v.v_x = xpos; v.v_x < st.st_x + clip; v.v_x += LOGWIDTH)
-		for (v.v_y = ypos; v.v_y < st.st_y + clip; v.v_y += LOGHEIGHT)
-			for (v.v_z = zpos; v.v_z < st.st_z + clip; v.v_z += LOGDEPTH)
-{printf(" %d", ++n);
-				make_one_logical_cluster(&v);
-}
-printf("\n");
-n=0;
-
-	glEndList();
-}
-
-__inline void
-make_cluster_logicalone(void)
-{
-	struct vec v;
-
-	if (cluster_dl)
-		glDeleteLists(cluster_dl, 1);
-	cluster_dl = glGenLists(1);
-	glNewList(cluster_dl, GL_COMPILE);
-
-	v.v_x = v.v_y = v.v_z = 0;
-	make_one_logical_cluster(&v);
-
-	glEndList();
-}
-
-void
-make_cluster(void)
-{
-	switch (st.st_vmode) {
-	case VM_PHYSICAL:
-		make_cluster_physical();
-		break;
-	case VM_LOGICAL:
-		make_cluster_logical();
-		break;
-	case VM_LOGICALONE:
-		make_cluster_logicalone();
-		break;
-	}
 }
 
 void
@@ -827,13 +476,13 @@ del_textures(void)
 void
 rebuild(int opts)
 {
-	if (opts & RO_TEX) {
+	if (opts & RF_TEX) {
 		del_textures();
 		load_textures();
 	}
-	if (opts & RO_PHYS)
+	if (opts & RF_PHYSMAP)
 		datasrcsw[datasrc].ds_physmap();
-	if (opts & RO_RELOAD) {
+	if (opts & RF_DATASRC) {
 		mode_data_clean = 0;
 		switch (st.st_mode) {
 		case SM_JOBS:
@@ -854,21 +503,19 @@ rebuild(int opts)
 		}
 	}
 	/* XXX: this is wrong. */
-	if (opts & RO_SELNODE) {
+	if (opts & RF_SELNODE)
 		select_node(selnode);
-		return;
-	}
-	if (opts & RO_PERSPECTIVE) {
+	if (opts & RF_PERSPECTIVE) {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glViewport(0, 0, win_width, win_height);
-		gluPerspective(FOVY, ASPECT, 1, vmodes[st.st_vmode].vm_clip);
+		gluPerspective(FOVY, ASPECT, 1, WI_CLIP);
 		glMatrixMode(GL_MODELVIEW);
 		cam_update();
 	}
-	if (opts & RO_GROUND && st.st_opts & OP_GROUND)
+	if (opts & RF_GROUND && st.st_opts & OP_GROUND)
 		make_ground();
-	if (opts & RO_COMPILE)
+	if (opts & RF_CLUSTER)
 		make_cluster();
 }
 
@@ -899,7 +546,7 @@ main(int argc, char *argv[])
 	TAILQ_INIT(&panels);
 	buf_init(&uinp.uinp_buf);
 	buf_append(&uinp.uinp_buf, '\0');
-	rebuild(RO_INIT);
+	rebuild(RF_INIT);
 
 	/* glutExposeFunc(reshape); */
 	glutReshapeFunc(reshape);
