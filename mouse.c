@@ -35,7 +35,7 @@ mouseh(__unused int button, __unused int state, int u, int v)
 		else
 			panel_show(PANEL_NINFO);
 		if (oldsn != selnode)
-			rebuild(RO_COMPILE);
+			rebuild(RF_CLUSTER);
 	}
 	lastu = u;
 	lastv = v;
@@ -83,7 +83,7 @@ m_passiveh_default(int u, int v)
 	lastu = u;
 	lastv = v;
 
-//	detect_node(u, v);
+	detect_node(u, v);
 }
 
 void
