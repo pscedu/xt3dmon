@@ -33,14 +33,14 @@
 #define NNODES		4
 
 #define ROWSPACE	(10.0f)
-#define CABSPACE	(10.0f)
+#define CABSPACE	(5.0f)
 #define CAGESPACE	(2.0f)
 #define MODSPACE	(0.8f)
 #define NODESPACE	(0.2f)
 
-#define NODEWIDTH	(vmodes[st.st_vmode].vm_nwidth)
-#define NODEHEIGHT	(vmodes[st.st_vmode].vm_nheight)
-#define NODEDEPTH	(vmodes[st.st_vmode].vm_ndepth)
+#define NODEWIDTH	(vmodes[st.st_vmode].vm_ndim.v_w)
+#define NODEHEIGHT	(vmodes[st.st_vmode].vm_ndim.v_h)
+#define NODEDEPTH	(vmodes[st.st_vmode].vm_ndim.v_d)
 #define NODESHIFT	(0.6f)
 
 #define MODWIDTH	(NODEWIDTH / 4.0f)
@@ -61,9 +61,10 @@
 #define ZCENTER		(NODESPACE + (ROWDEPTH * NROWS + \
 			    ROWSPACE * (NROWS - 1)) / 2.0f)
 
-#define LOGWIDTH	(logical_width * st.st_lognspace)
-#define LOGHEIGHT	(logical_height * st.st_lognspace)
-#define LOGDEPTH	(logical_depth * st.st_lognspace)
+#define WI_WIDTH	(wired_width * st.st_winsp)
+#define WI_HEIGHT	(wired_height * st.st_winsp)
+#define WI_DEPTH	(wired_depth * st.st_winsp)
+#define WI_CLIP		(st.st_winsp * vmodes[st.st_vmode].vm_clip)
 
 #define WFRAMEWIDTH	(0.001f)
 
@@ -83,6 +84,15 @@
 #define SIGN(x)		((x) == 0 ? 1 : abs(x)/(x))
 #define PI		(3.14159265358979323)
 
+struct vec {
+	float		 v_x;
+	float		 v_y;
+	float		 v_z;
+#define v_w v_x
+#define v_h v_y
+#define v_d v_z
+};
+
 struct datasrc {
 	void (*ds_physmap)(void);
 };
@@ -92,9 +102,7 @@ struct datasrc {
 
 struct vmode {
 	int		vm_clip;
-	float		vm_nwidth;
-	float		vm_nheight;
-	float		vm_ndepth;
+	struct vec	vm_ndim;
 };
 
 struct fill {
@@ -127,15 +135,6 @@ struct fail {
 	char		*f_name;
 };
 
-struct vec {
-	float		 v_x;
-	float		 v_y;
-	float		 v_z;
-#define v_w v_x
-#define v_h v_y
-#define v_d v_z
-};
-
 struct node {
 	int		 n_nid;
 	struct job	*n_job;
@@ -144,7 +143,7 @@ struct node {
 	int		 n_state;
 	struct fill	*n_fillp;
 	struct fill	*n_ofillp;
-	struct vec	 n_logv;
+	struct vec	 n_wiv;
 	struct vec	 n_physv;
 	struct vec	*n_v;
 };
@@ -155,7 +154,7 @@ struct state {
 	int		 st_opts;
 	int		 st_mode;
 	int		 st_vmode;
-	int		 st_lognspace;
+	int		 st_winsp;
 	int		 st_ro;
 #define st_x st_v.v_x
 #define st_y st_v.v_y
@@ -184,7 +183,7 @@ struct flyby {
 
 #define OP_TEX		(1<<0)
 #define OP_BLEND	(1<<1)
-#define OP_WIRES	(1<<2)
+#define OP_WIREFRAME	(1<<2)
 #define OP_GROUND	(1<<3)
 #define OP_TWEEN	(1<<4)
 #define OP_CAPTURE	(1<<5)
@@ -196,14 +195,16 @@ struct flyby {
 #define OP_FREELOOK	(1<<11)
 #define OP_NLABELS	(1<<12)
 #define OP_SHOWMODS	(1<<13)
+#define OP_WIVMFRAME	(1<<14)
+#define OP_PIPES	(1<<15)
 
 #define SM_JOBS		0
 #define SM_FAIL		1
 #define SM_TEMP		2
 
 #define VM_PHYSICAL	0
-#define VM_LOGICAL	1
-#define VM_LOGICALONE	2
+#define VM_WIRED	1
+#define VM_WIREDONE	2
 
 struct job_state {
 	char		*js_name;
@@ -331,9 +332,8 @@ void			 tween_pushpop(int);
 
 /* draw.c */
 void			 draw(void);
-void			 draw_node(struct node *);
-void			 draw_mod(struct vec *, struct vec *, struct fill *);
 void			 make_ground(void);
+void			 make_cluster(void);
 
 /* key.c */
 void			 keyh_flyby(unsigned char, int, int);
@@ -415,15 +415,16 @@ extern struct node	*selnode;
 extern struct pinfo	 pinfo[];
 extern struct vmode	 vmodes[];
 extern int		 mode_data_clean;
+extern struct vec	 wivstart, wivdim;
 
 extern struct dbh	 dbh;
 
 extern struct uinput	 uinp;
 extern int		 spkey;
 
-extern int		 logical_width;
-extern int		 logical_height;
-extern int		 logical_depth;
+extern int		 wired_width;			/* XXX: convert to vec */
+extern int		 wired_height;
+extern int		 wired_depth;
 
 extern float		 tx, tlx, ox, olx;
 extern float		 ty, tly, oy, oly;
