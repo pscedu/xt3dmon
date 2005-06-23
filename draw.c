@@ -21,6 +21,11 @@
 #define TWEEN_THRES	(0.001f)
 #define TWEEN_AMT	(0.05f)
 
+struct vec wivstart, wivdim;
+
+struct fill fill_black = { 0.0f, 0.0f, 0.0f, 1.0f, 0, 0 };
+struct fill fill_grey  = { 0.2f, 0.2f, 0.2f, 1.0f, 0, 0 };
+
 __inline int
 tween(__unused float start, float *cur, float stop, float max)
 {
@@ -37,22 +42,31 @@ tween(__unused float start, float *cur, float stop, float max)
 	return (0);
 }
 
-struct vec logv;
-
 void
 draw(void)
 {
 	update_flyby();
 
-	if (st.st_vmode == VM_LOGICAL)
-		if (fabs(logv.v_x - st.st_x) > LOGWIDTH / 2 ||
-		    fabs(logv.v_y - st.st_y) > LOGHEIGHT / 2 ||
-		    fabs(logv.v_z - st.st_z) > LOGDEPTH / 2) {
-		    	logv.v_x = st.st_x;
-		    	logv.v_y = st.st_y;
-		    	logv.v_z = st.st_z;
-			rebuild(RO_COMPILE);
-		}
+	if (st.st_vmode == VM_WIRED) {
+#if 0
+		struct vec lov, hiv;
+		int clip;
+
+		lov.v_x = st.st_x - WI_CLIP;
+		lov.v_y = st.st_y - WI_CLIP;
+		lov.v_z = st.st_z - WI_CLIP;
+		hiv.v_x = st.st_x + WI_CLIP; /* XXX:  + 1 (truncation) */
+		hiv.v_y = st.st_y + WI_CLIP;
+		hiv.v_z = st.st_z + WI_CLIP;
+		if (lov.v_x < wivstart.v_x ||
+		    lov.v_y < wivstart.v_y ||
+		    lov.v_z < vstart.v_z ||
+		    hiv.v_x > wivstart.v_x + wivdim.v_x ||
+		    hiv.v_y > wivstart.v_y + wivdim.v_y ||
+		    hiv.v_z > wivstart.v_z + wivdim.v_z)
+			rebuild(RF_COMPILE);
+#endif
+	}
 
 	if (st.st_opts & OP_TWEEN)
 		if (tween(ox, &st.st_x, tx, TWEEN_MAX_POS) |
@@ -100,104 +114,110 @@ draw(void)
 }
 
 /*
- * y
- * |        (x,y+height,z+depth) (x+width,y+height,z+depth)
- * |                      +-------------+
- * |                (11) /      10     /|
- * |                    / |           / |
- * |                   /     top  15 /  |
- * |                6 /   |         /   |
- * |                 /      12     /    |
- * | (x,y+height,z) +-------------+ (x+width,y+height,z)
- * |                |             |     |
- * |                |     |       |     | front
- * |                |      (right)|     |
- * |                |   7 |       |     | 9
- * |                |             |(14) |
- * |         (back) |     |       |     |
- * |                |    left     | 13  |
- * |              5 |     |       |     |
- * |                |         2   |     |
- * |                |     + - - - | - - + (x+width,y,z+depth)
- * |  (x,y,z+depth) |    /   (8)  |    /
- * |                | 1 /         |   /
- * |     z          |  / (bottom) |  / 3
- * |    /           | /           | /
- * |   /            |/     4      |/
- * |  /             +-------------+
- * | /           (x,y,z)    (x+width,y,z)
- * |/
- * +--------------------------------------------------- x
- * (0,0,0)
+ *	y			12
+ *     / \	    +-----------------------+ (x+w,y+h,z+d)
+ *	|	   /			   /|
+ *	|      10 / |		       11 / |
+ *	|	 /  	    9		 /  |
+ *	|	+-----------------------+   |
+ *	|	|   			|   | 7
+ *	|	|   | 8			|   |
+ *	|	|   			|   |
+ *	|	| 5 |			| 6 |
+ *	|	|   		4	|   |
+ *	|	|   + - - - - - - - - - | - + (x+w,y,z+d)
+ *	|	|  /			|  /
+ *	|	| / 2			| / 3
+ *	|	|/			|/
+ *	|	+-----------------------+
+ *	|    (x,y,z)	   1	     (x,y,z+d)
+ *	|
+ *	+----------------------------------------------->z
+ *     /
+ *    /
+ *  |_
+ *  x
  */
-
-__inline void
-draw_filled_node(struct node *n)
+void
+draw_box_outline(const struct vec *v, const struct vec *dim, const struct fill *fillp)
 {
-	float x = n->n_v->v_x;
-	float y = n->n_v->v_y;
-	float z = n->n_v->v_z;
-	float w = NODEWIDTH;
-	float h = NODEHEIGHT;
-	float d = NODEDEPTH;
-	float r, g, b, a;
+	float x = v->v_x, y = v->v_y, z = v->v_z;
+	float w = dim->v_w, h = dim->v_h, d = dim->v_d;
 
-	r = n->n_fillp->f_r;
-	g = n->n_fillp->f_g;
-	b = n->n_fillp->f_b;
-	a = n->n_fillp->f_a;
+	/* Wireframe outline */
+	x -= WFRAMEWIDTH;
+	y -= WFRAMEWIDTH;
+	z -= WFRAMEWIDTH;
+	w += 2.0f * WFRAMEWIDTH;
+	h += 2.0f * WFRAMEWIDTH;
+	d += 2.0f * WFRAMEWIDTH;
 
-	if (st.st_opts & OP_BLEND) {
-		glEnable(GL_BLEND);
-		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
-	} else
-		a = 1.0;
+	/* Antialiasing */
+	glEnable(GL_LINE_SMOOTH);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
 
-#if 0
-	if(st.st_opts & OP_DEBUG) {
-//		GLfloat mat_specular[] =	{0.3, 0.8, 0.8, 0.45};
-		GLfloat mat_specular[] =	{1.0, 1.0, 1.0, 1.0};
+	glLineWidth(1.0);
 
-		/* 0 - 128 */
-		GLfloat mat_shininess[] =	{100.0};
-//		GLfloat white_light[] =		{1.0, 1.0, 1.0, 1.0};
-//		GLfloat spec_light[] =		{1.0, 1.0, 1.0, 1.0};
-		GLfloat white_light[] =		{r, g, b, 1.0};
-		GLfloat spec_light[] =		{r, g, b, 1.0};
-		GLfloat lmodel_ambient[] = 	{0.1, 0.1, 0.1, 0.0};
+	glColor4f(fillp->f_r, fillp->f_g, fillp->f_b, fillp->f_a);
 
-		/* (x,y,z,w) if w != 0 positional instead of directional */
-		GLfloat light_pos[] =		{110.74, 9.40, 0.61, 1.0};
-		GLfloat spot_dir[] = 		{0.26, 0.0, 0.96};
+	glBegin(GL_LINES);
 
-		/* Follow Pos */
-//		GLfloat light_pos[] =		{st.st_x, st.st_y, st.st_z, 1.0};
-//		GLfloat spot_dir[] = 		{st.st_lx, st.st_ly, st.st_lz};
+	/* Back */
+	glVertex3f(x, y, z);			/* 1 */
+	glVertex3f(x, y, z+d);
 
-		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
-		glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, mat_shininess);
-		glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
-		glLightfv(GL_LIGHT0, GL_DIFFUSE, white_light);
-		glLightfv(GL_LIGHT0, GL_SPECULAR, spec_light);
-		glLightModelfv(GL_LIGHT_MODEL_AMBIENT, lmodel_ambient);
-//		glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+	glVertex3f(x, y, z);			/* 2 */
+	glVertex3f(x+w, y, z);
 
-		glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 15.0);
-		glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, spot_dir);
-		glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 8.0);
+	glVertex3f(x, y, z+d);			/* 3 */
+	glVertex3f(x+w, y, z+d);
 
-		glEnable(GL_NORMALIZE);
-		glEnable(GL_LIGHTING);
-		glEnable(GL_LIGHT0);
-	}
-#endif
+	glVertex3f(x+w, y, z);			/* 4 */
+	glVertex3f(x+w, y, z+d);
 
-	glColor4f(r, g, b, a);
+	glVertex3f(x, y, z);			/* 5 */
+	glVertex3f(x, y+h, z);
+
+	glVertex3f(x, y, z+d);			/* 6 */
+	glVertex3f(x, y+h, z+d);
+
+	glVertex3f(x+w, y, z+d);		/* 7 */
+	glVertex3f(x+w, y+h, z+d);
+
+	glVertex3f(x+w, y, z);			/* 8 */
+	glVertex3f(x+w, y+h, z);
+
+	glVertex3f(x, y+h, z);			/* 9 */
+	glVertex3f(x, y+h, z+d);
+
+	glVertex3f(x, y+h, z);			/* 10 */
+	glVertex3f(x+w, y+h, z);
+
+	glVertex3f(x, y+h, z+d);		/* 11 */
+	glVertex3f(x+w, y+h, z+d);
+
+	glVertex3f(x+w, y+h, z);		/* 12 */
+	glVertex3f(x+w, y+h, z+d);
+
+	glEnd();
+
+	glDisable(GL_LINE_SMOOTH);
+	glDisable(GL_BLEND);
+}
+
+void
+draw_box_filled(const struct vec *v, const struct vec *dim, const struct fill *fillp)
+{
+	float x = v->v_x, y = v->v_y, z = v->v_z;
+	float w = dim->v_w, h = dim->v_h, d = dim->v_d;
+
+	glColor4f(fillp->f_r, fillp->f_g, fillp->f_b, fillp->f_a);
 
 	glBegin(GL_QUADS);
 
-	/* Back  */
+	/* Back */
 	glVertex3f(x, y, z);
 	glVertex3f(x, y+h, z);
 	glVertex3f(x+w, y+h, z);
@@ -234,78 +254,10 @@ draw_filled_node(struct node *n)
 	glVertex3f(x+w, y, z);
 
 	glEnd();
-
-#if 0
-	if (st.st_opts & OP_BLEND)
-		glDisable(GL_BLEND);
-
-	if(st.st_opts & OP_DEBUG) {
-		glDisable(GL_LIGHTING);
-		glDisable(GL_LIGHT0);
-	}
-#endif
-
 }
 
 __inline void
-draw_wireframe_node(struct node *n)
-{
-	float x = n->n_v->v_x;
-	float y = n->n_v->v_y;
-	float z = n->n_v->v_z;
-	float w = NODEWIDTH;
-	float h = NODEHEIGHT;
-	float d = NODEDEPTH;
-
-	/* Wireframe outline */
-	x -= WFRAMEWIDTH;
-	y -= WFRAMEWIDTH;
-	z -= WFRAMEWIDTH;
-	w += 2.0f * WFRAMEWIDTH;
-	h += 2.0f * WFRAMEWIDTH;
-	d += 2.0f * WFRAMEWIDTH;
-
-	/* Antialiasing */
-	glEnable(GL_LINE_SMOOTH);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
-
-	glLineWidth(1.0);
-	glColor3f(0.0f, 0.0f, 0.0f);
-
-	glBegin(GL_LINE_STRIP);
-	/* Bottom */
-	glVertex3f(x, y, z);
-	glVertex3f(x, y, z+d);		/*  1 */
-	glVertex3f(x+w, y, z+d);	/*  2 */
-	glVertex3f(x+w, y, z);		/*  3 */
-	glVertex3f(x, y, z);		/*  4 */
-	/* Back */
-	glVertex3f(x, y+h, z);		/*  5 */
-	glVertex3f(x, y+h, z+d);	/*  6 */
-	glVertex3f(x, y, z+d);		/*  7 */
-	/* Right */
-	glVertex3f(x+w, y, z+d);	/*  8 */
-	glVertex3f(x+w, y+h, z+d);	/*  9 */
-	glVertex3f(x, y+h, z+d);	/* 10 */
-
-	glVertex3f(x, y+h, z);		/* 11 */
-
-	/* Left */
-	glVertex3f(x+w, y+h, z);	/* 12 */
-	glVertex3f(x+w, y, z);		/* 13 */
-	glVertex3f(x+w, y+h, z);	/* 14 */
-	/* Front */
-	glVertex3f(x+w, y+h, z+d);	/* 15 */
-	glEnd();
-
-	glDisable(GL_LINE_SMOOTH);
-	glDisable(GL_BLEND);
-}
-
-__inline void
-draw_textured_node(struct node *n)
+draw_node_tex(struct node *n)
 {
 	float x = n->n_v->v_x;
 	float y = n->n_v->v_y;
@@ -351,40 +303,6 @@ draw_textured_node(struct node *n)
 		glPolygonOffset(1.0, 3.0);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
-
-#if 0
-	if(st.st_opts & OP_DEBUG) {
-		GLfloat mat_specular[] =	{0.3, 0.8, 0.8, 0.45};
-//		GLfloat mat_specular[] =	{1.0, 1.0, 1.0, 1.0};
-
-		/* 0 - 128 */
-		GLfloat mat_shininess[] =	{10.0};
-		GLfloat white_light[] =		{1.0, 1.0, 1.0, 1.0};
-		GLfloat spec_light[] =		{1.0, 1.0, 1.0, 1.0};
-		GLfloat lmodel_ambient[] = 	{0.6, 0.6, 0.6, 1.0};
-
-		/* (x,y,z,w) if w != 0 positional instead of directional */
-		GLfloat light_pos[] =		{1.0, 1.0, 1.0, 0.0};
-		GLfloat spot_dir[] = 		{-1.0, -1.0, 0.0};
-
-		glClearColor(0.0,0.0,0.0,0.0);
-		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
-		glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, mat_shininess);
-		glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
-		glLightfv(GL_LIGHT0, GL_DIFFUSE, white_light);
-		glLightfv(GL_LIGHT0, GL_SPECULAR, spec_light);
-		glLightModelfv(GL_LIGHT_MODEL_AMBIENT, lmodel_ambient);
-//		glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
-
-		glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 45.0);
-		glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, spot_dir);
-		glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 2.0);
-
-		glEnable(GL_LIGHTING);
-		glEnable(GL_LIGHT0);
-		glEnable(GL_NORMALIZE);
-	}
-#endif
 
 	glBegin(GL_QUADS);
 
@@ -461,14 +379,6 @@ draw_textured_node(struct node *n)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 
-#if 0
-	if(st.st_opts & OP_DEBUG) {
-		glDisable(GL_LIGHTING);
-		glDisable(GL_LIGHT0);
-		glDisable(GL_NORMALIZE);
-	}
-#endif
-
 	glDisable(GL_TEXTURE_2D);
 }
 
@@ -490,133 +400,34 @@ __inline void
 draw_node(struct node *n)
 {
 	if (st.st_opts & OP_TEX)
-		draw_textured_node(n);
-	else
-		draw_filled_node(n);
-	if (st.st_opts & OP_WIRES)
-		draw_wireframe_node(n);
+		draw_node_tex(n);
+	else {
+		if (st.st_opts & OP_BLEND) {
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
+		}
+		draw_box_filled(n->n_v, &vmodes[st.st_vmode].vm_ndim,
+		    n->n_fillp);
+		if (st.st_opts & OP_BLEND)
+			glDisable(GL_BLEND);
+	}
+	if (st.st_opts & OP_WIREFRAME)
+		draw_box_outline(n->n_v, &vmodes[st.st_vmode].vm_ndim,
+		    &fill_black);
 	if (st.st_opts & OP_NLABELS)
 		draw_node_label(n);
 }
 
 __inline void
-draw_wireframe_mod(struct vec *v, struct vec *dim)
-{
-	float x = v->v_x;
-	float y = v->v_y;
-	float z = v->v_z;
-	float w = dim->v_w;
-	float h = dim->v_h;
-	float d = dim->v_d;
-
-	/* Wireframe outline */
-	x -= WFRAMEWIDTH + 0.01; /* XXX */
-	y -= WFRAMEWIDTH + 0.01; /* XXX */
-	z -= WFRAMEWIDTH + 0.01; /* XXX */
-	w += 2.0f * WFRAMEWIDTH + 0.02; /* XXX */
-	h += 2.0f * WFRAMEWIDTH + 0.02; /* XXX */
-	d += 2.0f * WFRAMEWIDTH + 0.02; /* XXX */
-
-	/* Antialiasing */
-	glEnable(GL_LINE_SMOOTH);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
-
-	glLineWidth(1.0);
-	glColor3f(0.0f, 0.0f, 0.0f);
-
-	glBegin(GL_LINE_STRIP);
-	/* Bottom */
-	glVertex3f(x, y, z);
-	glVertex3f(x, y, z+d);		/*  1 */
-	glVertex3f(x+w, y, z+d);	/*  2 */
-	glVertex3f(x+w, y, z);		/*  3 */
-	glVertex3f(x, y, z);		/*  4 */
-	/* Back */
-	glVertex3f(x, y+h, z);		/*  5 */
-	glVertex3f(x, y+h, z+d);	/*  6 */
-	glVertex3f(x, y, z+d);		/*  7 */
-	/* Right */
-	glVertex3f(x+w, y, z+d);	/*  8 */
-	glVertex3f(x+w, y+h, z+d);	/*  9 */
-	glVertex3f(x, y+h, z+d);	/* 10 */
-
-	glVertex3f(x, y+h, z);		/* 11 */
-
-	/* Left */
-	glVertex3f(x+w, y+h, z);	/* 12 */
-	glVertex3f(x+w, y, z);		/* 13 */
-	glVertex3f(x+w, y+h, z);	/* 14 */
-	/* Front */
-	glVertex3f(x+w, y+h, z+d);	/* 15 */
-	glEnd();
-
-	glDisable(GL_LINE_SMOOTH);
-	glDisable(GL_BLEND);
-}
-
-__inline void
 draw_mod(struct vec *v, struct vec *dim, struct fill *fillp)
 {
-	float x = v->v_x, y = v->v_y, z = v->v_z;
-	float w = dim->v_w, h = dim->v_h, d = dim->v_d;
-
-	x -= 0.01; /* XXX */
-	y -= 0.01; /* XXX */
-	z -= 0.01; /* XXX */
-	w += 0.02; /* XXX */
-	h += 0.02; /* XXX */
-	d += 0.02; /* XXX */
-
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
-
-	glColor4f(fillp->f_r, fillp->f_g, fillp->f_b, fillp->f_a);
-
-	glBegin(GL_QUADS);
-
-	/* Back */
-	glVertex3f(x, y, z);
-	glVertex3f(x, y+h, z);
-	glVertex3f(x+w, y+h, z);
-	glVertex3f(x+w, y, z);
-
-	/* Front */
-	glVertex3f(x, y, z+d);
-	glVertex3f(x, y+h, z+d);
-	glVertex3f(x+w, y+h, z+d);
-	glVertex3f(x+w, y, z+d);
-
-	/* Right */
-	glVertex3f(x+w, y, z);
-	glVertex3f(x+w, y, z+d);
-	glVertex3f(x+w, y+h, z+d);
-	glVertex3f(x+w, y+h, z);
-
-	/* Left */
-	glVertex3f(x, y, z);
-	glVertex3f(x, y, z+d);
-	glVertex3f(x, y+h, z+d);
-	glVertex3f(x, y+h, z);
-
-	/* Top */
-	glVertex3f(x, y+h, z);
-	glVertex3f(x, y+h, z+d);
-	glVertex3f(x+w, y+h, z+d);
-	glVertex3f(x+w, y+h, z);
-
-	/* Bottom */
-	glVertex3f(x, y, z);
-	glVertex3f(x, y, z+d);
-	glVertex3f(x+w, y, z+d);
-	glVertex3f(x+w, y, z);
-
-	glEnd();
-
+	draw_box_filled(v, dim, fillp);
 	glDisable(GL_BLEND);
 
-	draw_wireframe_mod(v, dim);
+	if (st.st_opts & OP_WIREFRAME)
+		draw_box_outline(v, dim, &fill_black);
 }
 
 void
@@ -632,11 +443,11 @@ make_ground(void)
 	/* Ground */
 	glColor3f(0.4f, 0.4f, 0.4f);
 	switch (st.st_vmode) {
-	case VM_LOGICALONE:
+	case VM_WIREDONE:
 		glVertex3f( -5.0f, -0.1f, -5.0f);
-		glVertex3f( -5.0f, -0.1f, LOGDEPTH + 5.0f);
-		glVertex3f(LOGWIDTH + 5.0f, -0.1f, LOGDEPTH + 5.0f);
-		glVertex3f(LOGWIDTH + 5.0f, -0.1f, -5.0f);
+		glVertex3f( -5.0f, -0.1f, WI_DEPTH + 5.0f);
+		glVertex3f(WI_WIDTH + 5.0f, -0.1f, WI_DEPTH + 5.0f);
+		glVertex3f(WI_WIDTH + 5.0f, -0.1f, -5.0f);
 		break;
 	case VM_PHYSICAL:
 		glVertex3f( -5.0f, -0.1f, -5.0f);
@@ -672,5 +483,157 @@ make_ground(void)
 	glVertex3f( 0.1f, -0.1f,  200.0f);
 
 	glEnd();
+	glEndList();
+}
+
+__inline void
+draw_cluster_physical(void)
+{
+	int r, cb, cg, m, s, n0, n;
+	struct node *node;
+	struct vec mdim;
+	struct fill mf;
+	struct vec v;
+
+	mdim.v_w = MODWIDTH;
+	mdim.v_h = MODHEIGHT;
+	mdim.v_d = MODDEPTH;
+
+	mf.f_r = 1.00;
+	mf.f_g = 1.00;
+	mf.f_b = 1.00;
+	mf.f_a = 0.30;
+
+	v.v_x = v.v_y = v.v_z = NODESPACE;
+	for (r = 0; r < NROWS; r++, v.v_z += ROWDEPTH + ROWSPACE) {
+		for (cb = 0; cb < NCABS; cb++, v.v_x += CABWIDTH + CABSPACE) {
+			for (cg = 0; cg < NCAGES; cg++, v.v_y += CAGEHEIGHT + CAGESPACE) {
+				for (m = 0; m < NMODS; m++, v.v_x += MODWIDTH + MODSPACE) {
+					for (n = 0; n < NNODES; n++) {
+						node = &nodes[r][cb][cg][m][n];
+						node->n_v = &node->n_physv;
+						node->n_physv = v;
+
+						s = n / (NNODES / 2);
+						n0 = (n & 1) ^ ((n & 2) >> 1);
+
+						node->n_physv.v_y += s * (NODESPACE + NODEHEIGHT);
+						node->n_physv.v_z += n0 * (NODESPACE + NODEDEPTH) +
+						    s * NODESHIFT;
+						draw_node(node);
+					}
+					if (st.st_opts & OP_SHOWMODS)
+						draw_mod(&v, &mdim, &mf);
+				}
+				v.v_x -= (MODWIDTH + MODSPACE) * NMODS;
+			}
+			v.v_y -= (CAGEHEIGHT + CAGESPACE) * NCAGES;
+		}
+		v.v_x -= (CABWIDTH + CABSPACE) * NCABS;
+	}
+	glEndList();
+}
+
+__inline void
+draw_cluster_wired(struct vec *v)
+{
+	int r, cb, cg, m, n;
+	struct node *node;
+	struct vec nv;
+
+	for (r = 0; r < NROWS; r++)
+		for (cb = 0; cb < NCABS; cb++)
+			for (cg = 0; cg < NCAGES; cg++)
+				for (m = 0; m < NMODS; m++)
+					for (n = 0; n < NNODES; n++) {
+						node = &nodes[r][cb][cg][m][n];
+
+						nv.v_x = node->n_wiv.v_x * st.st_winsp + v->v_x;
+						nv.v_y = node->n_wiv.v_y * st.st_winsp + v->v_y;
+						nv.v_z = node->n_wiv.v_z * st.st_winsp + v->v_z;
+						node->n_v = &nv;
+
+						draw_node(node);
+					}
+}
+
+/*
+ * Draw the cluster repeatedly till we reach the clipping plane.
+ * Since we can see WI_CLIP away, we must construct a 3D space
+ * WI_CLIP^3 large and draw the cluster multiple times inside.
+ */
+__inline void
+draw_clusters_wired(void)
+{
+	int adj, x, y, z;
+	struct vec v, dim;
+
+	x = st.st_x - WI_CLIP;
+	y = st.st_y - WI_CLIP;
+	z = st.st_z - WI_CLIP;
+
+	/* Snap to grid */
+	adj = x % WI_WIDTH;
+	if (adj < 0)
+		adj += WI_WIDTH;
+	x -= adj;
+
+	adj = y % WI_HEIGHT;
+	if (adj < 0)
+		adj += WI_HEIGHT;
+	y -= adj;
+
+	adj = z % WI_DEPTH;
+	if (adj < 0)
+		adj += WI_DEPTH;
+	z -= adj;
+
+	wivstart = v;
+
+	dim.v_w = WI_WIDTH;
+	dim.v_h = WI_HEIGHT;
+	dim.v_d = WI_DEPTH;
+
+	if (cluster_dl)
+		glDeleteLists(cluster_dl, 1);
+	cluster_dl = glGenLists(1);
+	glNewList(cluster_dl, GL_COMPILE);
+	for (v.v_x = x; v.v_x < st.st_x + WI_CLIP; v.v_x += WI_WIDTH)
+		for (v.v_y = y; v.v_y < st.st_y + WI_CLIP; v.v_y += WI_HEIGHT)
+			for (v.v_z = z; v.v_z < st.st_z + WI_CLIP; v.v_z += WI_DEPTH) {
+				draw_cluster_wired(&v);
+				if (st.st_opts & OP_WIVMFRAME)
+					draw_box_filled(&v, &dim, &fill_grey);
+			}
+	glEndList();
+
+	wivdim.v_w = v.v_x - wivstart.v_x;
+	wivdim.v_h = v.v_y - wivstart.v_y;
+	wivdim.v_d = v.v_z - wivstart.v_z;
+}
+
+void
+make_cluster(void)
+{
+	if (cluster_dl)
+		glDeleteLists(cluster_dl, 1);
+	cluster_dl = glGenLists(1);
+	glNewList(cluster_dl, GL_COMPILE);
+
+	switch (st.st_vmode) {
+	case VM_PHYSICAL:
+		draw_cluster_physical();
+		break;
+	case VM_WIRED:
+		draw_clusters_wired();
+		break;
+	case VM_WIREDONE: {
+		struct vec v = { 0.0f, 0.0f, 0.0f };
+
+		draw_cluster_wired(&v);
+		break;
+	    }
+	}
+
 	glEndList();
 }
