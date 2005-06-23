@@ -83,7 +83,7 @@ db_physmap(void)
 	char *sql;
 	long l;
 
-	logical_width = logical_height = logical_depth = 0;
+	wired_width = wired_height = wired_depth = 0;
 
 	for (r = 0; r < NROWS; r++)
 		for (cb = 0; cb < NCABS; cb++)
@@ -170,16 +170,16 @@ db_physmap(void)
 		node = &nodes[r][cb][cg][m][n];
 		node->n_nid = nid;
 		invmap[nid] = node;
-		node->n_logv.v_x = x;
-		node->n_logv.v_y = y;
-		node->n_logv.v_z = z;
+		node->n_wiv.v_x = x;
+		node->n_wiv.v_y = y;
+		node->n_wiv.v_z = z;
 
-		if (x > logical_width)
-			logical_width = x;
-		if (y > logical_height)
-			logical_height = y;
-		if (z > logical_depth)
-			logical_depth = z;
+		if (x > wired_width)
+			wired_width = x;
+		if (y > wired_height)
+			wired_height = y;
+		if (z > wired_depth)
+			wired_depth = z;
 
 		db_map_set(db_status_map, row[F_status], &node->n_state);
 		db_map_set(db_type_map, row[F_type], &node->n_state);

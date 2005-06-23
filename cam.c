@@ -69,8 +69,8 @@ cam_revolve(int d)
 		v.v_y = YCENTER;
 		v.v_z = ZCENTER;
 		break;
-	case VM_LOGICAL:
-	case VM_LOGICALONE:
+	case VM_WIRED:
+	case VM_WIREDONE:
 		v.v_x = st.st_x + st.st_lx * 300;
 		v.v_y = st.st_y + st.st_ly * 300;
 		v.v_z = st.st_z + st.st_lz * 300;
