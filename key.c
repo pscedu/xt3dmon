@@ -177,11 +177,11 @@ keyh_vmode(unsigned char key, __unused int u, __unused int v)
 	glutKeyboardFunc(keyh_default);
 	switch (key) {
 	case 'o':
-		st.st_vmode = VM_LOGICALONE;
+		st.st_vmode = VM_WIREDONE;
 		st.st_ro |= RO_COMPILE | RO_PERSPECTIVE | RO_GROUND;
 		break;
-	case 'l':
-		st.st_vmode = VM_LOGICAL;
+	case 'w':
+		st.st_vmode = VM_WIRED;
 		st.st_ro |= RO_COMPILE | RO_PERSPECTIVE | RO_GROUND;
 		break;
 	case 'p':
@@ -278,7 +278,7 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		glutKeyboardFunc(keyh_vmode);
 		break;
 	case 'w':
-		st.st_opts ^= OP_WIRES;
+		st.st_opts ^= OP_WIREFRAME;
 		st.st_ro |= RO_COMPILE;
 		break;
 	/* DEBUG */
@@ -334,12 +334,12 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		st.st_ro |= RO_COMPILE;
 		break;
 	case '[':
-		st.st_lognspace--;
-		st.st_ro |= RO_COMPILE | RO_GROUND;
+		st.st_winsp--;
+		st.st_ro |= RO_COMPILE | RO_GROUND | RO_PERSPECTIVE;
 		break;
 	case ']':
-		st.st_lognspace++;
-		st.st_ro |= RO_COMPILE | RO_GROUND;
+		st.st_winsp++;
+		st.st_ro |= RO_COMPILE | RO_GROUND | RO_PERSPECTIVE;
 		break;
 	default:
 		return;
