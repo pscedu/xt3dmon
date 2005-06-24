@@ -93,6 +93,7 @@ db_physmap(void)
 						node = &nodes[r][cb][cg][m][n];
 						node->n_state = JST_UNACC;
 						node->n_fillp = &jstates[JST_UNACC].js_fill;
+						node->n_hide = 1;
 					}
 
 	if ((len = asprintf(&sql,
@@ -185,6 +186,7 @@ db_physmap(void)
 		db_map_set(db_type_map, row[F_type], &node->n_state);
 
 		node->n_fillp = &jstates[node->n_state].js_fill;
+		node->n_hide = 0;
 	}
 	mysql_free_result(res);
 }

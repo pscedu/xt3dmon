@@ -133,6 +133,7 @@ parse_physmap(void)
 						node = &nodes[r][cb][cg][m][n];
 						node->n_state = JST_UNACC;
 						node->n_fillp = &jstates[JST_UNACC].js_fill;
+						node->n_hide = 1;
 					}
 
 	if ((fp = fopen(_PATH_PHYSMAP, "r")) == NULL) {
@@ -305,6 +306,7 @@ parse_physmap(void)
 			goto bad;
 		}
 		node->n_fillp = &jstates[node->n_state].js_fill;
+		node->n_hide = 0;
 		continue;
 bad:
 		warnx("%s:%d: malformed line [%s] [%s]",
