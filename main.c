@@ -20,9 +20,6 @@ extern double round(double); /* don't ask */
 
 #define SLEEP_INTV	500
 
-#define FOVY		(45.0f)
-#define ASPECT		(win_width / (double)win_height)
-
 #define STARTX		(-30.0f)
 #define STARTY		(10.0f)
 #define STARTZ		(25.0f)
@@ -50,7 +47,7 @@ float			 ty = STARTY, tly = STARTLY, oy = STARTY, oly = STARTLY;
 float			 tz = STARTZ, tlz = STARTLZ, oz = STARTZ, olz = STARTLZ;
 GLint			 cluster_dl, ground_dl;
 struct timeval		 lastsync;
-long			 fps = 100;
+long			 fps = 50;
 int			 gDebugCapture;
 
 struct datasrc datasrcsw[] = {
@@ -143,253 +140,16 @@ select_node(struct node *n)
 	if (selnode != NULL)
 		selnode->n_fillp = selnode->n_ofillp;
 	selnode = n;
-	if (n->n_fillp != &selnodefill) {
-		n->n_ofillp = n->n_fillp;
-		n->n_fillp = &selnodefill;
+	if (n == NULL)
+		panel_hide(PANEL_NINFO);
+	else {
+		if (n->n_fillp != &selnodefill) {
+			n->n_ofillp = n->n_fillp;
+			n->n_fillp = &selnodefill;
+		}
+		panel_show(PANEL_NINFO);
 	}
 	rebuild(RF_CLUSTER);
-}
-
-/*
- * y
- * |        (x+w,y+h,z)    (x+w,y+h,z+d)
- * |            -----------------
- * |           /               /
- * |          /               /
- * |         -----------------
- * |    (x,y+h,z)       (x,y+h,z+d)
- * |
- * |             +--------------+
- * |     /|      |              |     /|
- * |    / |      |              |    / |
- * |   /  |      |              |   /  |
- * |  /   |      |              |  /   |
- * | |    |  +--------------+   | |    |
- * | |    |  |      / \     |   | |    |
- * | |    |  |       |      |   | |    |
- * | |    |  |     lt_y     |   | |    |
- * | |    |  |       |      |   | |    |
- * | |    |  |       |      |---+ |    |
- * | |   /   |<--- lt_z --->|     |   /
- * | |  /    |       |      |     |  /
- * | | /     |       |      |     | /
- * | |/      |      \ /     |     |/
- * |         +--------------+
- * |      x
- * |     /  (x+w,y,z)       (x+w,y,z+d)
- * |    /       -----------------
- * |   /       /               /
- * |  /       /               /
- * | /       -----------------
- * |/    (x,y,z)         (x,y,z+d)
- * +------------------------------------- z
- */
-int
-collide(struct vec *box, struct vec *dim,
-    struct vec *raystart, struct vec *rayend)
-{
-	float lo_x, hi_x;
-	float lo_y, hi_y, y_sxbox, y_exbox;
-	float lo_z, hi_z, z_sxbox, z_exbox;
-	float x = box->v_x, y = box->v_y, z = box->v_z;
-	float w = dim->v_w, h = dim->v_h, d = dim->v_d;
-	float sx = raystart->v_x, sy = raystart->v_y, sz = raystart->v_z;
-	float ex = rayend->v_x, ey = rayend->v_y, ez = rayend->v_z;
-
-	if (ex < sx) {
-		lo_x = ex;
-		hi_x = sx;
-	} else {
-		lo_x = sx;
-		hi_x = ex;
-	}
-
-	if (hi_x < x || lo_x > x+w)
-		return (0);
-	y_sxbox = sy + ((ey - sy) / (ex - sx)) * (x - sx);
-	y_exbox = sy + ((ey - sy) / (ex - sx)) * (x+h - sx);
-
-	if (y_exbox < y_sxbox) {
-		lo_y = y_exbox;
-		hi_y = y_sxbox;
-	} else {
-		lo_y = y_sxbox;
-		hi_y = y_exbox;
-	}
-
-	if (hi_y < y || lo_y > y+h)
-		return (0);
-	z_sxbox = sz + ((ez - sz) / (ex - sx)) * (x - sx);
-	z_exbox = sz + ((ez - sz) / (ex - sx)) * (x+w - sx);
-
-	if (z_exbox < z_sxbox) {
-		lo_z = z_exbox;
-		hi_z = z_sxbox;
-	} else {
-		lo_z = z_sxbox;
-		hi_z = z_exbox;
-	}
-
-	if (hi_z < z || lo_z > z+d)
-		return (0);
-	return (1);
-}
-
-void
-phys_detect(struct vec *rs, struct vec *re)
-{
-	float adj, cbadj, cgadj, madj, sadjy, sadjz, nadj;
-	int r, cb, cg, m, s, n0, n;
-	struct vec v, d;
-
-	/* Scan cluster. */
-	v.v_x = v.v_y = v.v_z = NODESPACE; /* XXX */
-	d.v_w = ROWWIDTH;
-	d.v_h = CAGEHEIGHT * NCAGES + CAGESPACE * (NCAGES - 1);
-	d.v_d = ROWDEPTH * NROWS + ROWSPACE * (NROWS - 1);
-	if (!collide(&v, &d, rs, re))
-		return;
-
-	/* Scan rows. */
-	d.v_d = ROWDEPTH;
-	adj = ROWDEPTH + ROWSPACE;
-	if (st.st_lz < 0.0f) {
-		v.v_z += ROWDEPTH * NROWS + ROWSPACE * (NROWS - 1) - ROWDEPTH;
-		adj *= -1.0f;
-	}
-	for (r = 0; r < NROWS; r++, v.v_z += adj) {
-		if (collide(&v, &d, rs, re)) {
-			struct vec cb_v = v, cb_d = d;
-
-			/* Scan cabinets. */
-			cb_d.v_w = CABWIDTH;
-			cbadj = CABWIDTH + CABSPACE;
-			if (st.st_lx < 0.0f) {
-				cb_v.v_x += ROWWIDTH - CABWIDTH;
-				cbadj *= -1.0f;
-			}
-			for (cb = 0; cb < NCABS; cb++, cb_v.v_x += cbadj)
-				if (collide(&cb_v, &cb_d, rs, re)) {
-					struct vec cg_v = cb_v, cg_d = cb_d;
-
-					/* Scan cages. */
-					cg_d.v_h = CAGEHEIGHT;
-					cgadj = CAGEHEIGHT + CAGESPACE;
-					if (st.st_ly < 0.0f) {
-						cg_v.v_y += CAGEHEIGHT * NCAGES + CAGESPACE * (NCAGES - 1) - CAGEHEIGHT;
-						cgadj *= -1.0f;
-					}
-					for (cg = 0; cg < NCAGES; cg++, cg_v.v_y += cgadj)
-						if (collide(&cg_v, &cg_d, rs, re)) {
-							struct vec m_v = cg_v, m_d = cg_d;
-
-							/* Scan modules. */
-							m_d.v_w = MODWIDTH;
-							madj = MODWIDTH + MODSPACE;
-							if (st.st_lx < 0.0f) {
-								m_v.v_x += CABWIDTH - MODWIDTH;
-								madj *= -1.0f;
-							}
-							for (m = 0; m < NMODS; m++, m_v.v_w += madj)
-								if (collide(&m_v, &m_d, rs, re)) {
-									struct vec s_v = m_v, s_d = m_d;
-
-									/* Scan strips. */
-									s_d.v_h = NODEHEIGHT;
-									sadjy = NODEHEIGHT + NODESPACE;
-									sadjz = NODESHIFT;
-									if (st.st_ly < 0.0f) {
-										s_v.v_y += MODHEIGHT - NODEHEIGHT;
-										s_v.v_z += sadjz;
-										sadjy *= -1.0f;
-										sadjz *= -1.0f;
-									}
-									for (s = 0; s < NNODES / 2; s++, s_v.v_y += sadjy, s_v.v_z += sadjz)
-										if (collide(&s_v, &s_d, rs, re)) {
-											struct vec n_v = s_v, n_d = s_d;
-
-											/* Scan nodes. */
-											n_d.v_d = NODEDEPTH;
-											nadj = NODEDEPTH + NODESPACE;
-											if (st.st_lz < 0.0f) {
-												n_v.v_z += NODESPACE;
-												nadj *= -1.0f;
-											}
-											for (n0 = 0; n0 < NNODES / 2; n0++, n_v.v_z += nadj)
-												if (collide(&n_v, &n_d, rs, re)) {
-													if (st.st_lz < 0.0f)
-														r = NROWS - r - 1;
-													if (st.st_lx < 0.0f)
-														cb = NCABS - cb - 1;
-													if (st.st_ly < 0.0f)
-														cg = NCAGES - cg - 1;
-													if (st.st_lx < 0.0f)
-														m = NMODS - m - 1;
-													if (st.st_ly < 0.0f)
-														s = NNODES / 2 - s - 1;
-													if (st.st_lz < 0.0f)
-														n0 = NNODES / 2 - n0 - 1;
-
-													n = (s << 1) + (s ^ n0);
-{ struct node *cn = selnode;
-													select_node(&nodes[r][cb][cg][m][n]);
-if (cn != selnode) {
-  printf("s: %d, n0: %d, n: %d\r", s, n0, n);
-  fflush(stdout);
- }
-}
-													return;
-												}
-										}
-								}
-						}
-				}
-		}
-	}
-}
-
-
-/* Node detection */
-void
-detect_node(int screenu, int screenv)
-{
-	GLdouble mvm[16], pvm[16], sx, sy, sz, ex, ey, ez;
-	GLint x, y, z;
-	GLint vp[4];
-
-	struct vec raystart, rayend;
-
-	/* Grab world info */
-	glGetIntegerv(GL_VIEWPORT, vp);
-	glGetDoublev(GL_MODELVIEW_MATRIX, mvm);
-	glGetDoublev(GL_PROJECTION_MATRIX, pvm);
-
-	/* Fix y coordinate */
-	y = vp[3] - screenv - 1;
-	x = screenu;
-
-	/* Transform 2d to 3d coordinates according to z */
-	z = 0.0;
-	if (gluUnProject(x, y, z, mvm, pvm, vp, &sx, &sy, &sz) == GL_FALSE)
-		return;
-
-	z = 1.0;
-	if (gluUnProject(x, y, z, mvm, pvm, vp, &ex, &ey, &ez) == GL_FALSE)
-		return;
-
-	raystart.v_x = sx;
-	raystart.v_y = sy;
-	raystart.v_z = sz;
-
-	rayend.v_x = ex;
-	rayend.v_y = ey;
-	rayend.v_z = ez;
-
-	switch (st.st_vmode) {
-	case VM_PHYSICAL:
-		phys_detect(&raystart, &rayend);
-		break;
-	}
 }
 
 void
@@ -524,6 +284,8 @@ main(int argc, char *argv[])
 {
 	int c;
 
+	glutInit(&argc, argv);
+
 	while ((c = getopt(argc, argv, "l")) != -1)
 		switch (c) {
 		case 'l':
@@ -533,7 +295,6 @@ main(int argc, char *argv[])
 		}
 
 	/* op_reset = 1; */
-	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
 	glutInitWindowPosition(0, 0);
 	glutInitWindowSize(win_width, win_height);
