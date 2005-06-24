@@ -195,23 +195,19 @@ keyh_vmode(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-keyh_default(unsigned char key, __unused int u, __unused int v)
+keyh_option(unsigned char key, __unused int u, __unused int v)
 {
 	int oldopts = st.st_opts;
 
+	glutKeyboardFunc(keyh_default);
 	switch (key) {
+	case '1':
+		st.st_opts ^= OP_POLYOFFSET;
+		st.st_rf |= RF_CLUSTER;
+		break;
 	case 'b':
 		st.st_opts ^= OP_BLEND;
 		st.st_rf |= RF_CLUSTER;
-		break;
-	case 'C':
-		st.st_rf |= RF_CLUSTER;
-		break;
-	case 'c':
-		if (selnode != NULL) {
-			selnode->n_fillp = selnode->n_ofillp;
-			selnode = NULL;
-		}
 		break;
 	case 'D':
 		st.st_opts ^= OP_DISPLAY;
@@ -224,7 +220,8 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		st.st_opts ^= OP_TWEEN;
 		break;
 	case 'f':
-		glutKeyboardFunc(keyh_flyby);
+		st.st_opts ^= OP_WIVMFRAME;
+		st.st_rf ^= RF_CLUSTER;
 		break;
 	case 'g':
 		st.st_opts ^= OP_GROUND;
@@ -232,27 +229,60 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 	case 'G': /* Ludicrous Speed */
 		st.st_opts ^= OP_GOVERN;
 		break;
+	case 'L':
+		st.st_opts ^= OP_FREELOOK;
+		break;
 	case 'l':
 		st.st_opts ^= OP_NLABELS;
 		st.st_rf |= RF_CLUSTER;
-		break;
-	case 'L':
-		st.st_opts ^= OP_FREELOOK;
 		break;
 	case 'M':
 		st.st_opts ^= OP_SHOWMODS;
 		st.st_rf |= RF_CLUSTER;
 		break;
+	case 't':
+		st.st_opts ^= OP_TEX;
+		st.st_rf |= RF_CLUSTER;
+		break;
+	case 'w':
+		st.st_opts ^= OP_WIREFRAME;
+		st.st_rf |= RF_CLUSTER;
+		break;
+	}
+	refresh_state(oldopts);
+}
+
+void
+keyh_default(unsigned char key, __unused int u, __unused int v)
+{
+	int oldopts = st.st_opts;
+
+	switch (key) {
+	case 'C':
+		st.st_rf |= RF_CLUSTER;
+		break;
+	case 'c':
+		if (selnode != NULL) {
+			selnode->n_fillp = selnode->n_ofillp;
+			selnode = NULL;
+		}
+		break;
+	case 'f':
+		glutKeyboardFunc(keyh_flyby);
+		break;
 	case 'm':
 		glutKeyboardFunc(keyh_mode);
 		break;
-	case 'o':
+	case 'O':
 		if (st.st_opts & OP_TWEEN)
 			tx = ty = tz = 0;
 		else {
 			st.st_x = st.st_y = st.st_z = 0;
 			cam_update();
 		}
+		break;
+	case 'o':
+		glutKeyboardFunc(keyh_option);
 		break;
 	case 'p':
 		glutKeyboardFunc(keyh_panel);
@@ -270,16 +300,8 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		st.st_rf |= RF_TEX | RF_CLUSTER;
 		break;
 	    }
-	case 't':
-		st.st_opts ^= OP_TEX;
-		st.st_rf |= RF_CLUSTER;
-		break;
 	case 'v':
 		glutKeyboardFunc(keyh_vmode);
-		break;
-	case 'w':
-		st.st_opts ^= OP_WIREFRAME;
-		st.st_rf |= RF_CLUSTER;
 		break;
 	/* DEBUG */
 	case 'z':
@@ -329,10 +351,6 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		st.st_rf |= RF_CLUSTER;
 		break;
 	    }
-	case '1':
-		st.st_opts ^= OP_POLYOFFSET;
-		st.st_rf |= RF_CLUSTER;
-		break;
 	case '[':
 		st.st_winsp--;
 		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE;
