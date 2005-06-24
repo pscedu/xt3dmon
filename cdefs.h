@@ -13,3 +13,7 @@
 #ifndef MAX
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #endif
+
+#if defined(__FLT_MAX__) && !defined(FLT_MAX)
+#define FLT_MAX __FLT_MAX__
+#endif
