@@ -71,9 +71,9 @@ cam_revolve(int d)
 		break;
 	case VM_WIRED:
 	case VM_WIREDONE:
-		v.v_x = st.st_x + st.st_lx * 300;
-		v.v_y = st.st_y + st.st_ly * 300;
-		v.v_z = st.st_z + st.st_lz * 300;
+		v.v_x = st.st_x + st.st_lx * 100;
+		v.v_y = st.st_y + st.st_ly * 100;
+		v.v_z = st.st_z + st.st_lz * 100;
 		break;
 	}
 
