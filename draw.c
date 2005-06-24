@@ -25,6 +25,7 @@ struct vec wivstart, wivdim;
 
 struct fill fill_black = { 0.0f, 0.0f, 0.0f, 1.0f, 0, 0 };
 struct fill fill_grey  = { 0.2f, 0.2f, 0.2f, 1.0f, 0, 0 };
+struct fill fill_light_blue  = { 0.2f, 0.4f, 0.6f, 1.0f, 0, 0 };
 
 __inline int
 tween(__unused float start, float *cur, float stop, float max)
@@ -45,7 +46,11 @@ tween(__unused float start, float *cur, float stop, float max)
 void
 draw(void)
 {
-	update_flyby();
+	if (active_flyby || build_flyby)
+		update_flyby();
+
+	if (render_mode == RM_SELECT)
+		sel_record_begin();
 
 	if (st.st_vmode == VM_WIRED) {
 #if 0
@@ -109,7 +114,9 @@ draw(void)
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	if (st.st_opts & OP_CAPTURE || gDebugCapture)
 		capture_fb();
-	if (st.st_opts & OP_DISPLAY)
+	if (render_mode == RM_SELECT)
+		sel_record_end();
+	else if (st.st_opts & OP_DISPLAY)
 		glutSwapBuffers();
 }
 
@@ -139,10 +146,12 @@ draw(void)
  *  x
  */
 void
-draw_box_outline(const struct vec *v, const struct vec *dim, const struct fill *fillp)
+draw_box_outline(const struct vec *dim, const struct fill *fillp)
 {
-	float x = v->v_x, y = v->v_y, z = v->v_z;
 	float w = dim->v_w, h = dim->v_h, d = dim->v_d;
+	float x, y, z;
+
+	x = y = z = 0.0f;
 
 	/* Wireframe outline */
 	x -= WFRAMEWIDTH;
@@ -159,9 +168,7 @@ draw_box_outline(const struct vec *v, const struct vec *dim, const struct fill *
 	glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
 
 	glLineWidth(1.0);
-
 	glColor4f(fillp->f_r, fillp->f_g, fillp->f_b, fillp->f_a);
-
 	glBegin(GL_LINES);
 
 	/* Back */
@@ -202,19 +209,18 @@ draw_box_outline(const struct vec *v, const struct vec *dim, const struct fill *
 	glVertex3f(x+w, y+h, z+d);
 
 	glEnd();
-
 	glDisable(GL_LINE_SMOOTH);
 	glDisable(GL_BLEND);
 }
 
 void
-draw_box_filled(const struct vec *v, const struct vec *dim, const struct fill *fillp)
+draw_box_filled(const struct vec *dim, const struct fill *fillp)
 {
-	float x = v->v_x, y = v->v_y, z = v->v_z;
 	float w = dim->v_w, h = dim->v_h, d = dim->v_d;
+	float x, y, z;
 
+	x = y = z = 0.0f;
 	glColor4f(fillp->f_r, fillp->f_g, fillp->f_b, fillp->f_a);
-
 	glBegin(GL_QUADS);
 
 	/* Back */
@@ -399,6 +405,12 @@ draw_node_label(struct node *n)
 __inline void
 draw_node(struct node *n)
 {
+	if (n->n_hide)
+		return;
+
+	glPushMatrix();
+	glPushName(n->n_nid);
+	glTranslatef(n->n_v->v_x, n->n_v->v_y, n->n_v->v_z);
 	if (st.st_opts & OP_TEX)
 		draw_node_tex(n);
 	else {
@@ -406,28 +418,34 @@ draw_node(struct node *n)
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
 		}
-		draw_box_filled(n->n_v, &vmodes[st.st_vmode].vm_ndim,
+		draw_box_filled(&vmodes[st.st_vmode].vm_ndim,
 		    n->n_fillp);
 		if (st.st_opts & OP_BLEND)
 			glDisable(GL_BLEND);
 	}
 	if (st.st_opts & OP_WIREFRAME)
-		draw_box_outline(n->n_v, &vmodes[st.st_vmode].vm_ndim,
+		draw_box_outline(&vmodes[st.st_vmode].vm_ndim,
 		    &fill_black);
 	if (st.st_opts & OP_NLABELS)
 		draw_node_label(n);
+	glPopName();
+	glPopMatrix();
 }
 
 __inline void
 draw_mod(struct vec *v, struct vec *dim, struct fill *fillp)
 {
+	glPushMatrix();
+	glTranslatef(v->v_x, v->v_y, v->v_z);
+
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
-	draw_box_filled(v, dim, fillp);
+	draw_box_filled(dim, fillp);
 	glDisable(GL_BLEND);
 
 	if (st.st_opts & OP_WIREFRAME)
-		draw_box_outline(v, dim, &fill_black);
+		draw_box_outline(dim, &fill_black);
+	glPopMatrix();
 }
 
 void
@@ -456,32 +474,19 @@ make_ground(void)
 		glVertex3f(ROWWIDTH + 5.0f, -0.1f, -5.0f);
 		break;
 	}
+	glEnd();
 
-	/* x-axis */
+	glLineWidth(5.0);
+	glBegin(GL_LINES);
 	glColor3f(1.0f, 1.0f, 1.0f);
-	glVertex2f(-200.0f, -0.1f);
-	glVertex2f(-200.0f,  0.1f);
-	glVertex2f( 200.0f,  0.1f);
-	glVertex2f( 200.0f, -0.1f);
-
-	/* y-axis */
+	glVertex3f(-500.0f, 0.0f, 0.0f);		/* x-axis */
+	glVertex3f(500.0f, 0.0f, 0.0f);
 	glColor3f(0.6f, 0.6f, 1.0f);
-	glVertex2f(-0.1f, -200.0f);
-	glVertex2f(-0.1f,  200.0f);
-	glVertex2f( 0.1f,  200.0f);
-	glVertex2f( 0.1f, -200.0f);
-
-	/* z-axis */
+	glVertex3f(0.0f, -500.0f, 0.0f);		/* y-axis */
+	glVertex3f(0.0f, 500.0f, 0.0f);
 	glColor3f(1.0f, 0.9f, 0.0f);
-	glVertex3f(-0.1f, -0.1f, -200.0f);
-	glVertex3f(-0.1f,  0.1f, -200.0f);
-	glVertex3f(-0.1f,  0.1f,  200.0f);
-	glVertex3f(-0.1f, -0.1f,  200.0f);
-	glVertex3f( 0.1f, -0.1f, -200.0f);
-	glVertex3f( 0.1f,  0.1f, -200.0f);
-	glVertex3f( 0.1f,  0.1f,  200.0f);
-	glVertex3f( 0.1f, -0.1f,  200.0f);
-
+	glVertex3f(0.0f, 0.0f, -500.0f);		/* z-axis */
+	glVertex3f(0.0f, 0.0f, 500.0f);
 	glEnd();
 	glEndList();
 }
@@ -539,7 +544,7 @@ draw_cluster_wired(struct vec *v)
 {
 	int r, cb, cg, m, n;
 	struct node *node;
-	struct vec nv;
+	struct vec *nv;
 
 	for (r = 0; r < NROWS; r++)
 		for (cb = 0; cb < NCABS; cb++)
@@ -547,14 +552,39 @@ draw_cluster_wired(struct vec *v)
 				for (m = 0; m < NMODS; m++)
 					for (n = 0; n < NNODES; n++) {
 						node = &nodes[r][cb][cg][m][n];
-
-						nv.v_x = node->n_wiv.v_x * st.st_winsp + v->v_x;
-						nv.v_y = node->n_wiv.v_y * st.st_winsp + v->v_y;
-						nv.v_z = node->n_wiv.v_z * st.st_winsp + v->v_z;
-						node->n_v = &nv;
-
+						nv = &node->n_swiv;
+						nv->v_x = node->n_wiv.v_x * st.st_winsp + v->v_x;
+						nv->v_y = node->n_wiv.v_y * st.st_winsp + v->v_y;
+						nv->v_z = node->n_wiv.v_z * st.st_winsp + v->v_z;
+						node->n_v = nv;
 						draw_node(node);
 					}
+}
+
+__inline void
+draw_wired_frame(struct vec *vp, struct vec *dimp, struct fill *fillp)
+{
+	struct fill fill = *fillp;
+	struct vec v, dim;
+
+	v = *vp;
+	v.v_x -= st.st_winsp / 2;
+	v.v_y -= st.st_winsp / 2;
+	v.v_z -= st.st_winsp / 2;
+
+	dim = *dimp;
+	dim.v_w += st.st_winsp;
+	dim.v_h += st.st_winsp;
+	dim.v_d += st.st_winsp;
+
+	glPushMatrix();
+	glTranslatef(v.v_x, v.v_y, v.v_z);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
+	fill.f_a = 0.2;
+	draw_box_filled(&dim, &fill);
+	glDisable(GL_BLEND);
+	glPopMatrix();
 }
 
 /*
@@ -565,7 +595,7 @@ draw_cluster_wired(struct vec *v)
 __inline void
 draw_clusters_wired(void)
 {
-	int adj, x, y, z;
+	int xnum, znum, col, adj, x, y, z;
 	struct vec v, dim;
 
 	x = st.st_x - WI_CLIP;
@@ -598,15 +628,32 @@ draw_clusters_wired(void)
 		glDeleteLists(cluster_dl, 1);
 	cluster_dl = glGenLists(1);
 	glNewList(cluster_dl, GL_COMPILE);
-	for (v.v_x = x; v.v_x < st.st_x + WI_CLIP; v.v_x += WI_WIDTH)
-		for (v.v_y = y; v.v_y < st.st_y + WI_CLIP; v.v_y += WI_HEIGHT)
-			for (v.v_z = z; v.v_z < st.st_z + WI_CLIP; v.v_z += WI_DEPTH) {
-				draw_cluster_wired(&v);
-				if (st.st_opts & OP_WIVMFRAME)
-					draw_box_filled(&v, &dim, &fill_grey);
-			}
-	glEndList();
 
+	xnum = (st.st_x + WI_CLIP - x + WI_WIDTH - 1) / WI_WIDTH;
+	znum = (st.st_z + WI_CLIP - z + WI_DEPTH - 1) / WI_DEPTH;
+
+printf("x: %d, z: %d\n", xnum, znum);
+
+	col = 0;
+	for (v.v_y = y; v.v_y < st.st_y + WI_CLIP; v.v_y += WI_HEIGHT) {
+		for (v.v_z = z; v.v_z < st.st_z + WI_CLIP; v.v_z += WI_DEPTH) {
+			for (v.v_x = x; v.v_x < st.st_x + WI_CLIP; v.v_x += WI_WIDTH) {
+		//		draw_cluster_wired(&v);
+				if (st.st_opts & OP_WIVMFRAME)
+					draw_wired_frame(&v, &dim,
+					    col ? &fill_grey : &fill_light_blue);
+				col = !col;
+			}
+			if (xnum % 2 == 0)
+				col = !col;
+		}
+		if (xnum % 2 == 0)
+			col = !col;
+		if ((((xnum % 2) ^ (znum % 2))))
+			col = !col;
+	}
+
+	glEndList();
 	wivdim.v_w = v.v_x - wivstart.v_x;
 	wivdim.v_h = v.v_y - wivstart.v_y;
 	wivdim.v_d = v.v_z - wivstart.v_z;
