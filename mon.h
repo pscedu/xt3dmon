@@ -84,6 +84,12 @@
 #define SIGN(x)		((x) == 0 ? 1 : abs(x)/(x))
 #define PI		(3.14159265358979323)
 
+#define RM_SELECT	0
+#define RM_RENDER	1
+
+#define FOVY		(45.0f)
+#define ASPECT		(win_width / (double)win_height)
+
 struct vec {
 	float		 v_x;
 	float		 v_y;
@@ -143,7 +149,9 @@ struct node {
 	int		 n_state;
 	struct fill	*n_fillp;
 	struct fill	*n_ofillp;
+	int		 n_hide;
 	struct vec	 n_wiv;
+	struct vec	 n_swiv;
 	struct vec	 n_physv;
 	struct vec	*n_v;
 };
@@ -407,6 +415,7 @@ extern struct temp	 temp_notfound;
 extern int		 total_failures;	/* total shared among all nodes */
 
 extern GLint		 cluster_dl, ground_dl;
+extern int		 render_mode;
 extern struct state	 st;
 extern struct flyby	 fb;
 extern long		 fps;
