@@ -115,18 +115,14 @@ end_flyby(void)
 void
 update_flyby(void)
 {
-	int clear = build_flyby || active_flyby;
-
 	/* Record user commands. */
 	if (build_flyby)
 		write_flyby();
 	/* Replay. */
 	else if (active_flyby)
 		read_flyby();
-	if (clear) {
-		st.st_rf = 0;
-		fb.fb_panels = 0;
-	}
+	st.st_rf = 0;
+	fb.fb_panels = 0;
 }
 
 /*
