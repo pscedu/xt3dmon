@@ -366,10 +366,9 @@ void			 parse_tempmap(void);
 
 /* capture.c */
 void			 capture_fb(int);
-void			 screenshot(char *file);
-void 			 begin_capture(int mode);
+void 			 begin_capture(int);
 void			 end_capture(void);
-void			 screenshot(char *);
+void			 screenshot(char *, int);
 
 /* flyby.c */
 void 			 begin_flyby(char);
