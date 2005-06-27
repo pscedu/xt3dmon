@@ -265,9 +265,7 @@ draw_box_filled(const struct vec *dim, const struct fill *fillp)
 __inline void
 draw_node_tex(struct node *n)
 {
-	float x = n->n_v->v_x;
-	float y = n->n_v->v_y;
-	float z = n->n_v->v_z;
+	float x = 0.0f, y = 0.0f, z = 0.0f;
 	float w = NODEWIDTH;
 	float h = NODEHEIGHT;
 	float d = NODEDEPTH;
