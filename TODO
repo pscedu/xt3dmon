@@ -17,6 +17,4 @@ $Id$
 11. grey out non-select nodes
 12. use colors from xt3 temperature png
 13. wired pipes
-14. draw frame around end of wired repeats
-15. don't display service node partners
 16. screenshot for poster
