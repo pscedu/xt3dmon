@@ -721,7 +721,7 @@ printf("x: %d, z: %d\n", xnum, znum);
 	for (v.v_y = y; v.v_y < st.st_y + WI_CLIP; v.v_y += WI_HEIGHT) {
 		for (v.v_z = z; v.v_z < st.st_z + WI_CLIP; v.v_z += WI_DEPTH) {
 			for (v.v_x = x; v.v_x < st.st_x + WI_CLIP; v.v_x += WI_WIDTH) {
-		//		draw_cluster_wired(&v);
+				draw_cluster_wired(&v);
 				if (st.st_opts & OP_WIVMFRAME)
 					draw_wired_frame(&v, &dim,
 					    col ? &fill_grey : &fill_light_blue);
