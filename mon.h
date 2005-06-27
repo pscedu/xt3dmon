@@ -289,37 +289,6 @@ struct pinfo {
 #define TWF_LOOK	(1<<2)
 #define TWF_POS		(1<<3)
 
-#if 0
-#define VECTOR(P1, P2, V)		\
-{					\
-	V.a = P1.x - P2.x;		\
-	V.b = P1.y - P2.y;		\
-	V.c = P1.z - P2.z;		\
-}
-
-#define CROSS(V1, V2, V)		\
-{					\
-	V.a = V1.b*V2.c - V1.c*V2.b;	\
-	V.b = V1.c*V2.a - V1.a*V2.c;	\
-	V.c = V1.a*V2.b - V1.b*V2.a;	\
-}
-
-typedef struct
-{
-	double x;
-	double y;
-	double z;
-
-}Point3d;
-
-typedef struct
-{
-	double a;
-	double b;
-	double c;
-}Vector;
-#endif
-
 struct dbh {
 	union {
 		MYSQL dbhu_mysql;
@@ -391,7 +360,7 @@ void			 parse_tempmap(void);
 
 /* capture.c */
 void			 capture_fb(void);
-void			 screenshot(char *file);
+void			 screenshot(char *);
 
 /* flyby.c */
 void 			 begin_flyby(char);
@@ -451,10 +420,4 @@ extern struct job_state	 jstates[];
 extern struct fail_state fstates[];
 extern struct temp_state tstates[];
 
-// DEBUG
 extern int gDebugCapture;
-
-#if 0
-extern Point3d gLines[];
-extern Point3d gPoints[];
-#endif
