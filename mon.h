@@ -385,7 +385,7 @@ extern struct temp	 temp_notfound;
 
 extern int		 total_failures;	/* total shared among all nodes */
 
-extern GLint		 cluster_dl, ground_dl;
+extern GLint		 cluster_dl, ground_dl, select_dl;
 extern int		 render_mode;
 extern struct state	 st;
 extern struct flyby	 fb;
