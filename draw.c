@@ -86,8 +86,9 @@ draw(void)
 
 	if (st.st_opts & OP_GROUND)
 		glCallList(ground_dl);
-
 	glCallList(cluster_dl);
+	if (select_dl)
+		glCallList(select_dl);
 	draw_panels();
 
 #if 0
@@ -400,15 +401,36 @@ draw_node_label(struct node *n)
 		glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
 }
 
+#define SELNODE_GAP (0.01f)
+
 __inline void
 draw_node(struct node *n)
 {
+	struct vec v, *vp, dim, *dimp;
+
 	if (n->n_hide)
 		return;
 
+	if (selnode == n) {
+		v = *n->n_v;
+		v.v_x -= SELNODE_GAP;
+		v.v_y -= SELNODE_GAP;
+		v.v_z -= SELNODE_GAP;
+		vp = &v;
+
+		dim = vmodes[st.st_vmode].vm_ndim;
+		vmodes[st.st_vmode].vm_ndim.v_w += SELNODE_GAP * 2;
+		vmodes[st.st_vmode].vm_ndim.v_h += SELNODE_GAP * 2;
+		vmodes[st.st_vmode].vm_ndim.v_d += SELNODE_GAP * 2;
+		dimp = &dim;
+	} else {
+		vp = n->n_v;
+		dimp = &vmodes[st.st_vmode].vm_ndim;
+	}
+
 	glPushMatrix();
 	glPushName(n->n_nid);
-	glTranslatef(n->n_v->v_x, n->n_v->v_y, n->n_v->v_z);
+	glTranslatef(vp->v_x, vp->v_y, vp->v_z);
 	if (st.st_opts & OP_TEX)
 		draw_node_tex(n);
 	else {
@@ -416,14 +438,12 @@ draw_node(struct node *n)
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
 		}
-		draw_box_filled(&vmodes[st.st_vmode].vm_ndim,
-		    n->n_fillp);
+		draw_box_filled(dimp, n->n_fillp);
 		if (st.st_opts & OP_BLEND)
 			glDisable(GL_BLEND);
 	}
 	if (st.st_opts & OP_WIREFRAME)
-		draw_box_outline(&vmodes[st.st_vmode].vm_ndim,
-		    &fill_black);
+		draw_box_outline(dimp, &fill_black);
 	if (st.st_opts & OP_NLABELS)
 		draw_node_label(n);
 	glPopName();
