@@ -296,7 +296,7 @@ struct dbh {
 #define dbh_mysql dbh_u.dbhu_mysql
 };
 
-/* db */
+/* db.c */
 void			 dbh_connect(struct dbh *);
 void			 db_physmap(void);
 
@@ -310,6 +310,7 @@ void			 tween_pushpop(int);
 
 /* draw.c */
 void			 draw(void);
+void			 draw_node(struct node *);
 void			 make_ground(void);
 void			 make_cluster(void);
 
@@ -342,6 +343,8 @@ void			 m_activeh_free(int, int);
 void			 m_passiveh_default(int, int);
 void			 m_passiveh_null(int, int);
 void			 mouseh(int, int, int, int);
+void			 sel_record_begin(void);
+void			 sel_record_end(void);
 
 /* panel.c */
 void			 draw_panels(void);
