@@ -141,7 +141,7 @@ keyh_panel(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 's':
 		panel_toggle(PANEL_SS);
-		return;
+		break;
 	}
 }
 
@@ -249,6 +249,8 @@ keyh_option(unsigned char key, __unused int u, __unused int v)
 		st.st_opts ^= OP_WIREFRAME;
 		st.st_rf |= RF_CLUSTER;
 		break;
+	default:
+		return;
 	}
 	refresh_state(oldopts);
 }
