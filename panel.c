@@ -65,7 +65,7 @@ struct pinfo pinfo[] = {
 	{ panel_refresh_flyby,	0,	 0,		 NULL },
 	{ panel_refresh_goto,	PF_UINP, 0,		 uinpcb_goto },
 	{ panel_refresh_pos,	0,	 0,		 NULL },
-	{ panel_refresh_ss,    PF_UINP, UINPO_LINGER,    uinpcb_ss }
+	{ panel_refresh_ss,    PF_UINP,  0,   		 uinpcb_ss }
 };
 
 struct panels	 panels;
@@ -565,6 +565,10 @@ panel_refresh_pos(struct panel *p)
 void
 panel_refresh_ss(struct panel *p)
 {
+	if ((uinp.uinp_opts & UINPO_DIRTY) == 0 && panel_ready(p))
+		return;
+	uinp.uinp_opts &= ~UINPO_DIRTY;
+
 	panel_set_content(p, "Screenshot filename: %s",
 		    buf_get(&uinp.uinp_buf));
 }
@@ -677,7 +681,6 @@ uinpcb_ss(void)
 {
 	/* Take Screenshot  & Disable Panel */
 	screenshot(buf_get(&uinp.uinp_buf));
-	panel_toggle(PANEL_SS);
 }
 
 
