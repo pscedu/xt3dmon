@@ -114,7 +114,7 @@ draw(void)
 
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	if (st.st_opts & OP_CAPTURE || gDebugCapture)
-		capture_fb();
+		capture_fb(capture_mode);
 	if (render_mode == RM_SELECT)
 		sel_record_end();
 	else if (st.st_opts & OP_DISPLAY)

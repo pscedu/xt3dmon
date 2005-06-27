@@ -90,6 +90,9 @@
 #define FOVY		(45.0f)
 #define ASPECT		(win_width / (double)win_height)
 
+#define PNG_FRAMES	4
+#define PPM_FRAMES	3
+
 struct vec {
 	float		 v_x;
 	float		 v_y;
@@ -362,7 +365,10 @@ void			 parse_failmap(void);
 void			 parse_tempmap(void);
 
 /* capture.c */
-void			 capture_fb(void);
+void			 capture_fb(int);
+void			 screenshot(char *file);
+void 			 begin_capture(int mode);
+void			 end_capture(void);
 void			 screenshot(char *);
 
 /* flyby.c */
@@ -415,6 +421,7 @@ extern float		 tz, tlz, oz, olz;
 
 extern int		 active_flyby;
 extern int		 build_flyby;
+extern int		 capture_mode;
 
 extern int		 win_width;
 extern int		 win_height;

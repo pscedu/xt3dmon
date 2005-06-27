@@ -38,6 +38,7 @@ int			 win_width = 800;
 int			 win_height = 600;
 int			 active_flyby = 0;
 int			 build_flyby = 0;
+int			 capture_mode = PNG_FRAMES;
 
 int			 wired_width;
 int			 wired_height;

@@ -216,6 +216,10 @@ keyh_option(unsigned char key, __unused int u, __unused int v)
 	case 'd':
 		st.st_opts ^= OP_CAPTURE;
 		gDebugCapture = !gDebugCapture;
+		if(gDebugCapture)
+			begin_capture(capture_mode);
+		else
+			end_capture();
 		break;
 	case 'e':
 		st.st_opts ^= OP_TWEEN;
