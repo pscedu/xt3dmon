@@ -401,6 +401,33 @@ draw_node_label(struct node *n)
 		glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
 }
 
+/*
+ * Special case of pipe-drawing code: draw pipes around selected node
+ * only.
+ */
+__inline void
+draw_node_pipes(struct vec *dim)
+{
+	float w = dim->v_w, h = dim->v_h, d = dim->v_d;
+
+	glLineWidth(1.0);
+
+	glBegin(GL_LINES);
+	glColor3f(1.0f, 0.0f, 0.0f); 			/* x */
+	glVertex3f(-st.st_winsp, h/2, d/2);
+	glVertex3f(w + st.st_winsp, h/2, d/2);
+
+	glColor3f(0.0f, 1.0f, 0.0f);			/* y */
+	glVertex3f(w/2, -st.st_winsp, d/2);
+	glVertex3f(w/2, h + st.st_winsp, d/2);
+
+	glColor3f(0.0f, 0.0f, 1.0f);			/* z */
+	glVertex3f(w/2, h/2, -st.st_winsp);
+	glVertex3f(w/2, h/2, d + st.st_winsp);
+
+	glEnd();
+}
+
 #define SELNODE_GAP (0.01f)
 
 __inline void
@@ -423,9 +450,18 @@ draw_node(struct node *n)
 		vmodes[st.st_vmode].vm_ndim.v_h += SELNODE_GAP * 2;
 		vmodes[st.st_vmode].vm_ndim.v_d += SELNODE_GAP * 2;
 		dimp = &dim;
+
+		if (st.st_opts & OP_SELPIPES &&
+		    (st.st_opts & OP_PIPES) == 0)
+			draw_node_pipes(dimp);
 	} else {
 		vp = n->n_v;
 		dimp = &vmodes[st.st_vmode].vm_ndim;
+		if (st.st_opts & OP_DIMNONSEL) {
+			v = *n->n_v;
+			//v.v_a *= 0.5;
+			vp = &v;
+		}
 	}
 
 	glPushMatrix();
@@ -557,12 +593,47 @@ draw_cluster_physical(void)
 }
 
 __inline void
+draw_cluster_pipes(struct vec *v)
+{
+	int x, y, z;
+
+	glPushMatrix();
+	glTranslatef(v->v_x, v->v_y, v->v_z);
+	glLineWidth(1.0);
+	glBegin(GL_LINES);
+	glColor3f(1.0f, 0.0f, 0.0f);
+	for (x = 0; x < wired_width; x++)			/* z */
+		for (y = 0; y < wired_height; y++) {
+			glVertex3f(x, y, 0.0f);
+			glVertex3f(x, y, wired_depth);
+		}
+
+	glColor3f(0.0f, 1.0f, 0.0f);
+	for (z = 0; z < wired_depth; z++)			/* y */
+		for (x = 0; x < wired_width; x++) {
+			glVertex3f(x, 0.0f, z);
+			glVertex3f(x, wired_height, z);
+		}
+
+	glColor3f(0.0f, 0.0f, 1.0f);
+	for (y = 0; y < wired_height; z++)			/* x */
+		for (z = 0; z < wired_depth; z++) {
+			glVertex3f(0.0f, y, z);
+			glVertex3f(wired_width, y, z);
+		}
+	glEnd();
+	glPopMatrix();
+}
+
+__inline void
 draw_cluster_wired(struct vec *v)
 {
 	int r, cb, cg, m, n;
 	struct node *node;
 	struct vec *nv;
 
+	if (st.st_opts ^ OP_PIPES)
+		draw_cluster_pipes(v);
 	for (r = 0; r < NROWS; r++)
 		for (cb = 0; cb < NCABS; cb++)
 			for (cg = 0; cg < NCAGES; cg++)
