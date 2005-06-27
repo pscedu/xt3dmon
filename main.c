@@ -45,7 +45,7 @@ int			 wired_depth;
 float			 tx = STARTX, tlx = STARTLX, ox = STARTX, olx = STARTLX;
 float			 ty = STARTY, tly = STARTLY, oy = STARTY, oly = STARTLY;
 float			 tz = STARTZ, tlz = STARTLZ, oz = STARTZ, olz = STARTLZ;
-GLint			 cluster_dl, ground_dl;
+GLint			 cluster_dl, ground_dl, select_dl;
 struct timeval		 lastsync;
 long			 fps = 50;
 int			 gDebugCapture;
@@ -149,7 +149,13 @@ select_node(struct node *n)
 		}
 		panel_show(PANEL_NINFO);
 	}
-	rebuild(RF_CLUSTER);
+
+	if (select_dl)
+		glDeleteLists(select_dl, 1);
+	select_dl = glGenLists(1);
+	glNewList(select_dl, GL_COMPILE);
+	draw_node(selnode);
+	glEndList();
 }
 
 void
