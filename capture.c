@@ -1,14 +1,13 @@
 /* $Id$ */
 
 #include <sys/param.h>
-
 #include <err.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
-
 #include <png.h>
+#include "mon.h"
 
 #ifdef __APPLE_CC__
 # include <OpenGL/gl.h>
@@ -20,7 +19,7 @@
 
 #define NUM_FRAMES 200
 #define MAX_FRAMES 25000
-static unsigned char *fb[NUM_FRAMES];
+static char *fbuf[NUM_FRAMES];
 
 /* Convert data to png */
 void
@@ -155,7 +154,6 @@ fb_mem_png(int x, int y, int w, int h)
 	char file[PATH_MAX];
 	static int i = 0;
 	static int j = 1;
-	long size;
 	int k;
 
 	/*
@@ -166,20 +164,13 @@ fb_mem_png(int x, int y, int w, int h)
 		for (k = 0; k < NUM_FRAMES; k++) {
 			snprintf(file, sizeof(file), "ppm/%0*d.png",
 			    (int)ceilf(log10f(MAX_FRAMES)), j++);
-			data2png(file, fb[k], w, h);
-			free(fb[k]);
+			data2png(file, fbuf[k], w, h);
 		}
 		i = 0;
 	}
 
-	/* num pixels * 3 bytes per pixel (RGB). */
-	size = w * h * 4;
-
-	if ((fb[i] = malloc(size * sizeof(unsigned char))) == NULL)
-		err(1, "malloc");
-
 	/* Read data from the framebuffer. */
-	glReadPixels(x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, fb[i]);
+	glReadPixels(x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, fbuf[i]);
 	i++;
 }
 
@@ -211,10 +202,8 @@ fb_mem_ppm(int x, int y, int w, int h)
 
 			/* Currently uses PPM format */
 			fprintf(fp, "P6 %d %d %d\n", w, h, 255);
-			fwrite(fb[k], size, 1, fp);
+			fwrite(fbuf[k], size, 1, fp);
 			fclose(fp);
-
-			free(fb[k]);
 
 			// DEBUG (definately remove later!)
 			memset(cmd, '\0', sizeof(cmd));
@@ -228,26 +217,54 @@ fb_mem_ppm(int x, int y, int w, int h)
 		i = 0;
 	}
 
-	if ((fb[i]= malloc(size * sizeof(unsigned char))) == NULL)
-		err(1, "malloc");
-
 	/* Read data from the framebuffer */
-	glReadPixels(x, y, w, h, GL_RGB, GL_UNSIGNED_BYTE, fb[i]);
+	glReadPixels(x, y, w, h, GL_RGB, GL_UNSIGNED_BYTE, fbuf[i]);
 
 	i++;
 }
 
+void
+begin_capture(int mode)
+{
+	int i;
+	GLint vp[4];
+	long size = 0;
+
+	glMatrixMode(GL_PROJECTION);
+	glGetIntegerv(GL_VIEWPORT, vp);
+	glMatrixMode(GL_MODELVIEW);
+
+	/* RGB(A?) */
+	size = vp[2] * vp[3] * mode;
+
+	for(i = 0; i < NUM_FRAMES; i++)
+		if ((fbuf[i] = malloc(size * sizeof(char))) == NULL)
+			err(1, "malloc");
+}
+
+void
+end_capture(void)
+{
+	int i;
+
+	for(i = 0; i < NUM_FRAMES; i++)
+		free(fbuf[i]);
+}
+
+
 /* Start capturing frames from the framebuffer */
 void
-capture_fb(void)
+capture_fb(int mode)
 {
 	GLint vp[4];
 
 	glMatrixMode(GL_PROJECTION);
 	glGetIntegerv(GL_VIEWPORT, vp);
 
-//	fb_mem_png(vp[0], vp[1], vp[2], vp[3]);
-	fb_mem_ppm(vp[0], vp[1], vp[2], vp[3]);
+	if(mode == PNG_FRAMES)
+		fb_mem_png(vp[0], vp[1], vp[2], vp[3]);
+	else
+		fb_mem_ppm(vp[0], vp[1], vp[2], vp[3]);
 
 	glMatrixMode(GL_MODELVIEW);
 }
