@@ -89,7 +89,7 @@ data2png(char *file, unsigned char *buf, long w, long h)
 
 /* Take a screenshot from the current framebuffer (PNG). */
 void
-fb_png(char *file, int x, int y, int w, int h)
+ss_png(char *file, int x, int y, int w, int h)
 {
 	unsigned char *buf;
 	long size;
@@ -110,7 +110,7 @@ fb_png(char *file, int x, int y, int w, int h)
 
 /* Take a screenshot from the current framebuffer (PPM). */
 void
-fb_ppm(char *file, int x, int y, int w, int h)
+ss_ppm(char *file, int x, int y, int w, int h)
 {
 	unsigned char *buf;
 	long size;
@@ -237,24 +237,31 @@ fb_mem_ppm(int x, int y, int w, int h)
 	i++;
 }
 
-/* Dump the entire framebuffer */
+/* Start capturing frames from the framebuffer */
 void
 capture_fb(void)
 {
-//	char file[PATH_MAX];
 	GLint vp[4];
-//	static long f = 0;
-
-//	memset(file, 0, sizeof(file));
-//	snprintf(file, sizeof(file), "ppm/%ld.png", f++);
 
 	glMatrixMode(GL_PROJECTION);
 	glGetIntegerv(GL_VIEWPORT, vp);
 
-//	fb_png(file, vp[0], vp[1], vp[2], vp[3]);
-//	fb_ppm(file, vp[0], vp[1], vp[2], vp[3]);
 //	fb_mem_png(vp[0], vp[1], vp[2], vp[3]);
 	fb_mem_ppm(vp[0], vp[1], vp[2], vp[3]);
+
+	glMatrixMode(GL_MODELVIEW);
+}
+
+/* Take a screenshot in png format */ 
+void
+screenshot(char *file)
+{
+	GLint vp[4];
+
+	glMatrixMode(GL_PROJECTION);
+	glGetIntegerv(GL_VIEWPORT, vp);
+
+	ss_png(file, vp[0], vp[1], vp[2], vp[3]);
 
 	glMatrixMode(GL_MODELVIEW);
 }
