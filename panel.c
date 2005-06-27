@@ -53,6 +53,9 @@ void panel_refresh_legend(struct panel *);
 void panel_refresh_flyby(struct panel *);
 void panel_refresh_goto(struct panel *);
 void panel_refresh_pos(struct panel *);
+void panel_refresh_ss(struct panel *p);
+
+void uinpcb_ss(void);
 
 struct pinfo pinfo[] = {
 	{ panel_refresh_fps,	0,	 0,		 NULL },
@@ -61,7 +64,8 @@ struct pinfo pinfo[] = {
 	{ panel_refresh_legend,	0,	 0,		 NULL },
 	{ panel_refresh_flyby,	0,	 0,		 NULL },
 	{ panel_refresh_goto,	PF_UINP, 0,		 uinpcb_goto },
-	{ panel_refresh_pos,	0,	 0,		 NULL }
+	{ panel_refresh_pos,	0,	 0,		 NULL },
+	{ panel_refresh_ss,    PF_UINP, UINPO_LINGER,    uinpcb_ss }
 };
 
 struct panels	 panels;
@@ -559,6 +563,13 @@ panel_refresh_pos(struct panel *p)
 }
 
 void
+panel_refresh_ss(struct panel *p)
+{
+	panel_set_content(p, "Screenshot filename: %s",
+		    buf_get(&uinp.uinp_buf));
+}
+
+void
 draw_panels(void)
 {
 	struct panel *p, *np;
@@ -660,6 +671,15 @@ uinpcb_cmd(void)
 {
 	/* Send command to node. */
 }
+
+void
+uinpcb_ss(void)
+{
+	/* Take Screenshot  & Disable Panel */
+	screenshot(buf_get(&uinp.uinp_buf));
+	panel_toggle(PANEL_SS);
+}
+
 
 void
 uinpcb_goto(void)
