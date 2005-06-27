@@ -680,7 +680,7 @@ void
 uinpcb_ss(void)
 {
 	/* Take Screenshot  & Disable Panel */
-	screenshot(buf_get(&uinp.uinp_buf));
+	screenshot(buf_get(&uinp.uinp_buf), capture_mode);
 }
 
 
