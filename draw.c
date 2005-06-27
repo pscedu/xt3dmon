@@ -554,7 +554,6 @@ draw_cluster_physical(void)
 		}
 		v.v_x -= (CABWIDTH + CABSPACE) * NCABS;
 	}
-	glEndList();
 }
 
 __inline void
@@ -642,11 +641,6 @@ draw_clusters_wired(void)
 	dim.v_h = WI_HEIGHT;
 	dim.v_d = WI_DEPTH;
 
-	if (cluster_dl)
-		glDeleteLists(cluster_dl, 1);
-	cluster_dl = glGenLists(1);
-	glNewList(cluster_dl, GL_COMPILE);
-
 	xnum = (st.st_x + WI_CLIP - x + WI_WIDTH - 1) / WI_WIDTH;
 	znum = (st.st_z + WI_CLIP - z + WI_DEPTH - 1) / WI_DEPTH;
 
@@ -671,7 +665,6 @@ printf("x: %d, z: %d\n", xnum, znum);
 			col = !col;
 	}
 
-	glEndList();
 	wivdim.v_w = v.v_x - wivstart.v_x;
 	wivdim.v_h = v.v_y - wivstart.v_y;
 	wivdim.v_d = v.v_z - wivstart.v_z;
