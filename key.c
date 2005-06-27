@@ -139,7 +139,8 @@ keyh_panel(unsigned char key, __unused int u, __unused int v)
 	case 'p':
 		panel_toggle(PANEL_POS);
 		break;
-	default:
+	case 's':
+		panel_toggle(PANEL_SS);
 		return;
 	}
 }

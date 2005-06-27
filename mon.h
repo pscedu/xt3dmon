@@ -260,7 +260,8 @@ struct panel {
 #define PANEL_FLYBY	(1<<4)
 #define PANEL_GOTO	(1<<5)
 #define PANEL_POS	(1<<6)
-#define NPANELS		7
+#define PANEL_SS	(1<<7)
+#define NPANELS		8
 
 #define POPT_REMOVE	(1<<0)			/* being removed */
 #define POPT_DIRTY	(1<<1)			/* panel needs redrawn */
@@ -390,6 +391,7 @@ void			 parse_tempmap(void);
 
 /* capture.c */
 void			 capture_fb(void);
+void			 screenshot(char *file);
 
 /* flyby.c */
 void 			 begin_flyby(char);
