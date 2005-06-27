@@ -19,7 +19,7 @@
 
 #define NUM_FRAMES 200
 #define MAX_FRAMES 25000
-static char *fbuf[NUM_FRAMES];
+static unsigned char *fbuf[NUM_FRAMES];
 
 /* Convert data to png */
 void
@@ -238,7 +238,7 @@ begin_capture(int mode)
 	size = vp[2] * vp[3] * mode;
 
 	for(i = 0; i < NUM_FRAMES; i++)
-		if ((fbuf[i] = malloc(size * sizeof(char))) == NULL)
+		if ((fbuf[i] = malloc(size * sizeof(unsigned char))) == NULL)
 			err(1, "malloc");
 }
 
@@ -271,14 +271,17 @@ capture_fb(int mode)
 
 /* Take a screenshot in png format */ 
 void
-screenshot(char *file)
+screenshot(char *file, int mode)
 {
 	GLint vp[4];
 
 	glMatrixMode(GL_PROJECTION);
 	glGetIntegerv(GL_VIEWPORT, vp);
 
-	ss_png(file, vp[0], vp[1], vp[2], vp[3]);
+	if(mode == PNG_FRAMES)
+		ss_png(file, vp[0], vp[1], vp[2], vp[3]);
+	else
+		ss_ppm(file, vp[0], vp[1], vp[2], vp[3]);
 
 	glMatrixMode(GL_MODELVIEW);
 }
