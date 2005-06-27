@@ -1,15 +1,13 @@
 $Id$
 
 1. Profile to find bottlenecks
-2. Test straight draw() vs. make_cluster & draw()
-3. default the logid/nodeid goto combo to selnode
+3. default the logid goto user input buffer to selnode
 4. struct flyby - then write out multiple structs for flyby
 5. in capture.c, malloc is expensive, try to allocate all frames at once
    and reuse slots.
 6. only perform node calculations on vmode swapping.  it's not like
    nodes move around during recompilations, so there is a lot of
    wasted math, especially if make_cluster() is being called frequently.
-7. check invmap looks after nid gaps
 8. add a fatal() function that is a wrapper over err() that breaks from
   the DB
 9. goto new job
