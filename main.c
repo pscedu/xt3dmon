@@ -73,14 +73,14 @@ struct state st = {
 };
 
 struct job_state jstates[] = {
-	{ "Free",		{ 1.00f, 1.00f, 1.00f, 1.00f, 0, 0 } },	/* White */
-	{ "Disabled (PBS)",	{ 1.00f, 0.00f, 0.00f, 1.00f, 0, 0 } },	/* Red */
-	{ "Disabled (HW)",	{ 0.66f, 0.66f, 0.66f, 1.00f, 0, 0 } },	/* Gray */
-	{ NULL,			{ 0.00f, 0.00f, 0.00f, 1.00f, 0, 0 } },	/* (dynamic) */
-	{ "Service",		{ 1.00f, 1.00f, 0.00f, 1.00f, 0, 0 } },	/* Yellow */
-	{ "Unaccounted",	{ 0.00f, 0.00f, 1.00f, 1.00f, 0, 0 } },	/* Blue */
-	{ "Bad",		{ 1.00f, 0.75f, 0.75f, 1.00f, 0, 0 } },	/* Pink */
-	{ "Checking",		{ 0.00f, 1.00f, 0.00f, 1.00f, 0, 0 } }	/* Green */
+	{ "Free",		{ 1.00f, 1.00f, 1.00f, 1.00f, 0, GL_INTENSITY} },	/* White */
+	{ "Disabled (PBS)",	{ 1.00f, 0.00f, 0.00f, 1.00f, 0, GL_INTENSITY} },	/* Red */
+	{ "Disabled (HW)",	{ 0.66f, 0.66f, 0.66f, 1.00f, 0, GL_INTENSITY} },	/* Gray */
+	{ NULL,			{ 0.00f, 0.00f, 0.00f, 1.00f, 0, GL_INTENSITY} },	/* (dynamic) */
+	{ "Service",		{ 1.00f, 1.00f, 0.00f, 1.00f, 0, GL_INTENSITY} },	/* Yellow */
+	{ "Unaccounted",	{ 0.00f, 0.00f, 1.00f, 1.00f, 0, GL_INTENSITY} },	/* Blue */
+	{ "Bad",		{ 1.00f, 0.75f, 0.75f, 1.00f, 0, GL_INTENSITY} },	/* Pink */
+	{ "Checking",		{ 0.00f, 1.00f, 0.00f, 1.00f, 0, GL_INTENSITY} }	/* Green */
 };
 
 struct fill selnodefill = { 0.20f, 0.40f, 0.60f, 1.00f, 0, 0 };		/* Dark blue */
