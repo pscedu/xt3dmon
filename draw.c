@@ -616,7 +616,7 @@ draw_cluster_pipes(struct vec *v)
 		}
 
 	glColor3f(0.0f, 0.0f, 1.0f);
-	for (y = 0; y < wired_height; z++)			/* x */
+	for (y = 0; y < wired_height; y++)			/* x */
 		for (z = 0; z < wired_depth; z++) {
 			glVertex3f(0.0f, y, z);
 			glVertex3f(wired_width, y, z);
