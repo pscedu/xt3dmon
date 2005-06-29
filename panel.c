@@ -65,7 +65,7 @@ struct pinfo pinfo[] = {
 	{ panel_refresh_flyby,	0,	 0,		 NULL },
 	{ panel_refresh_goto,	PF_UINP, 0,		 uinpcb_goto },
 	{ panel_refresh_pos,	0,	 0,		 NULL },
-	{ panel_refresh_ss,    PF_UINP,  0,   		 uinpcb_ss }
+	{ panel_refresh_ss,	PF_UINP, 0,		uinpcb_ss }
 };
 
 struct panels	 panels;
@@ -679,10 +679,9 @@ uinpcb_cmd(void)
 void
 uinpcb_ss(void)
 {
-	/* Take Screenshot  & Disable Panel */
+	/* Take screenshot. */
 	screenshot(buf_get(&uinp.uinp_buf), capture_mode);
 }
-
 
 void
 uinpcb_goto(void)
