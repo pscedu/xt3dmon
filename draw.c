@@ -453,7 +453,7 @@ draw_node(struct node *n)
 	glTranslatef(vp->v_x, vp->v_y, vp->v_z);
 
 	if (st.st_opts & OP_TEX)
-		draw_node_tex(n, dimp, fp);
+		draw_box_tex(n, dimp, fp);
 	else {
 		if (st.st_opts & OP_BLEND) {
 			glEnable(GL_BLEND);
