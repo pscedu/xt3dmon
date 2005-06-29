@@ -284,9 +284,9 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 	case 'c':
 		if (selnode != NULL) {
 			selnode->n_fillp = selnode->n_ofillp;
+			select_node(NULL);
 			selnode = NULL;
 		}
-//st.st_rf |= RF_CLUSTER;
 		break;
 	case 'f':
 		glutKeyboardFunc(keyh_flyby);
