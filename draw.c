@@ -434,10 +434,11 @@ __inline void
 draw_node(struct node *n)
 {
 	struct vec v, *vp, dim, *dimp;
+	struct fill fp, *ofp;
 
 	if (n->n_hide)
 		return;
-
+	
 	if (selnode == n) {
 		v = *n->n_v;
 		v.v_x -= SELNODE_GAP;
@@ -446,9 +447,9 @@ draw_node(struct node *n)
 		vp = &v;
 
 		dim = vmodes[st.st_vmode].vm_ndim;
-		vmodes[st.st_vmode].vm_ndim.v_w += SELNODE_GAP * 2;
-		vmodes[st.st_vmode].vm_ndim.v_h += SELNODE_GAP * 2;
-		vmodes[st.st_vmode].vm_ndim.v_d += SELNODE_GAP * 2;
+		dim.v_w += SELNODE_GAP * 2;
+		dim.v_h += SELNODE_GAP * 2;
+		dim.v_d += SELNODE_GAP * 2;
 		dimp = &dim;
 
 		if (st.st_opts & OP_SELPIPES &&
@@ -457,10 +458,17 @@ draw_node(struct node *n)
 	} else {
 		vp = n->n_v;
 		dimp = &vmodes[st.st_vmode].vm_ndim;
-		if (st.st_opts & OP_DIMNONSEL) {
+
+		if (st.st_opts & OP_DIMNONSEL && selnode != NULL) {
 			v = *n->n_v;
 			//v.v_a *= 0.5;
 			vp = &v;
+
+			/* Save and modify alpha */
+			ofp = n->n_fillp;
+			fp = *n->n_fillp;
+			fp.f_a = 0.2;
+			n->n_fillp = &fp;
 		}
 	}
 
@@ -482,6 +490,12 @@ draw_node(struct node *n)
 		draw_box_outline(dimp, &fill_black);
 	if (st.st_opts & OP_NLABELS)
 		draw_node_label(n);
+	
+	if(selnode != n && selnode != NULL) {
+		/* Restore fillp */
+		n->n_fillp = ofp;
+	}
+
 	glPopName();
 	glPopMatrix();
 }
@@ -632,7 +646,7 @@ draw_cluster_wired(struct vec *v)
 	struct node *node;
 	struct vec *nv;
 
-	if (st.st_opts ^ OP_PIPES)
+	if (st.st_opts & OP_PIPES)
 		draw_cluster_pipes(v);
 	for (r = 0; r < NROWS; r++)
 		for (cb = 0; cb < NCABS; cb++)
