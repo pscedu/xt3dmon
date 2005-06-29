@@ -264,12 +264,12 @@ draw_box_filled(const struct vec *dim, const struct fill *fillp)
 }
 
 __inline void
-draw_node_tex(struct node *n, struct fill *fillp)
+draw_node_tex(struct node *n, struct vec *v, struct fill *fillp)
 {
 	float x = 0.0f, y = 0.0f, z = 0.0f;
-	float w = NODEWIDTH;
-	float h = NODEHEIGHT;
-	float d = NODEDEPTH;
+	float w = v->v_w;
+	float h = v->v_h;
+	float d = v->v_d;
 	float uw, uh, ud;
 	float color[4];
 	GLenum param;
@@ -463,12 +463,11 @@ draw_node(struct node *n)
 
 		if (st.st_opts & OP_DIMNONSEL && selnode != NULL) {
 			v = *n->n_v;
-			//v.v_a *= 0.5;
 			vp = &v;
 
 			/* Modify alpha */
 			fill = *fp;
-			fill.f_a = 0.2;
+			fill.f_a = DIMMED_ALPHA;
 			fp = &fill;
 		}
 	}
@@ -476,8 +475,9 @@ draw_node(struct node *n)
 	glPushMatrix();
 	glPushName(n->n_nid);
 	glTranslatef(vp->v_x, vp->v_y, vp->v_z);
+
 	if (st.st_opts & OP_TEX)
-		draw_node_tex(n, fp);
+		draw_node_tex(n, dimp, fp);
 	else {
 		if (st.st_opts & OP_BLEND) {
 			glEnable(GL_BLEND);
