@@ -160,7 +160,7 @@ select_node(struct node *n)
 	}
 	select_dl = glGenLists(1);
 	glNewList(select_dl, GL_COMPILE);
-	draw_node(dnode);
+	draw_node(selnode);
 	glEndList();
 
 	rebuild(st.st_rf); /* XXX:  has to go, very wrong. */
