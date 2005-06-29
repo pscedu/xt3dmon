@@ -672,8 +672,8 @@ bad:
 		fclose(fp);
 		errno = 0;
 	}
-	for (j = 0; j < maxfails; j++)
-		getcol(j, maxfails, &fails[j]->f_fill);
+	for (j = 0; j < nfails; j++)
+		getcol(j, nfails, &fails[j]->f_fill);
 }
 
 /*
@@ -816,6 +816,6 @@ bad:
 		errno = 0;
 	}
 	qsort(temps, ntemps, sizeof(*temps), temp_cmp);
-	for (j = 0; j < maxtemps; j++)
-		getcol(j, maxtemps, &temps[j]->t_fill);
+	for (j = 0; j < ntemps; j++)
+		getcol(j, ntemps, &temps[j]->t_fill);
 }
