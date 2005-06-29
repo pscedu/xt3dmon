@@ -251,7 +251,7 @@ keyh_option(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 'P':
 		st.st_opts ^= OP_SELPIPES;
-		st.st_rf |= RF_CLUSTER;
+		st.st_rf |= RF_CLUSTER;		/* XXX:  wrong. */
 		break;
 	case 't':
 		st.st_opts ^= OP_TEX;
