@@ -59,6 +59,12 @@ temp_eq(void *elem, void *arg)
 	return (((struct temp *)elem)->t_cel == *(int *)arg);
 }
 
+int
+fail_eq(void *elem, void *arg)
+{
+	return (((struct fail *)elem)->f_fails == *(int *)arg);
+}
+
 #define CMP(a, b) ((a) < (b) ? -1 : ((a) == (b) ? 0 : 1))
 
 int
@@ -68,9 +74,9 @@ temp_cmp(const void *a, const void *b)
 }
 
 int
-fail_eq(void *elem, void *arg)
+fail_cmp(const void *a, const void *b)
 {
-	return (((struct fail *)elem)->f_fails == *(int *)arg);
+	return (CMP(((struct fail *)a)->f_fails, ((struct fail *)b)->f_fails));
 }
 
 void *
@@ -672,6 +678,7 @@ bad:
 		fclose(fp);
 		errno = 0;
 	}
+	qsort(fails, nfails, sizeof(*fails), fail_cmp);
 	for (j = 0; j < nfails; j++)
 		getcol(j, nfails, &fails[j]->f_fill);
 }
