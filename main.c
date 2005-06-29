@@ -157,6 +157,7 @@ select_node(struct node *n)
 	glNewList(select_dl, GL_COMPILE);
 	draw_node(selnode);
 	glEndList();
+	rebuild(st.st_rf);
 }
 
 void
