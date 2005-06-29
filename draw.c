@@ -264,7 +264,7 @@ draw_box_filled(const struct vec *dim, const struct fill *fillp)
 }
 
 __inline void
-draw_node_tex(struct node *n)
+draw_node_tex(struct node *n, struct fill *fillp)
 {
 	float x = 0.0f, y = 0.0f, z = 0.0f;
 	float w = NODEWIDTH;
@@ -290,10 +290,10 @@ draw_node_tex(struct node *n)
 
 	glBindTexture(GL_TEXTURE_2D, jstates[n->n_state].js_fill.f_texid);
 
-	color[0] = n->n_fillp->f_r;
-	color[1] = n->n_fillp->f_g;
-	color[2] = n->n_fillp->f_b;
-	color[3] = n->n_fillp->f_a;
+	color[0] = fillp->f_r;
+	color[1] = fillp->f_g;
+	color[2] = fillp->f_b;
+	color[3] = fillp->f_a;
 
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, param);
 
@@ -434,11 +434,13 @@ __inline void
 draw_node(struct node *n)
 {
 	struct vec v, *vp, dim, *dimp;
-	struct fill fp, *ofp;
+	struct fill fill, *fp;
 
 	if (n->n_hide)
 		return;
 	
+	fp = n->n_fillp;
+
 	if (selnode == n) {
 		v = *n->n_v;
 		v.v_x -= SELNODE_GAP;
@@ -464,11 +466,10 @@ draw_node(struct node *n)
 			//v.v_a *= 0.5;
 			vp = &v;
 
-			/* Save and modify alpha */
-			ofp = n->n_fillp;
-			fp = *n->n_fillp;
-			fp.f_a = 0.2;
-			n->n_fillp = &fp;
+			/* Modify alpha */
+			fill = *fp;
+			fill.f_a = 0.2;
+			fp = &fill;
 		}
 	}
 
@@ -476,13 +477,13 @@ draw_node(struct node *n)
 	glPushName(n->n_nid);
 	glTranslatef(vp->v_x, vp->v_y, vp->v_z);
 	if (st.st_opts & OP_TEX)
-		draw_node_tex(n);
+		draw_node_tex(n, fp);
 	else {
 		if (st.st_opts & OP_BLEND) {
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
 		}
-		draw_box_filled(dimp, n->n_fillp);
+		draw_box_filled(dimp, fp);
 		if (st.st_opts & OP_BLEND)
 			glDisable(GL_BLEND);
 	}
@@ -491,11 +492,6 @@ draw_node(struct node *n)
 	if (st.st_opts & OP_NLABELS)
 		draw_node_label(n);
 	
-	if(selnode != n && selnode != NULL) {
-		/* Restore fillp */
-		n->n_fillp = ofp;
-	}
-
 	glPopName();
 	glPopMatrix();
 }
