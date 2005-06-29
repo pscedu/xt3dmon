@@ -260,6 +260,7 @@ keyh_option(unsigned char key, __unused int u, __unused int v)
 	case 's':
 		st.st_opts ^= OP_DIMNONSEL;
 		st.st_rf |= RF_CLUSTER;
+printf("dim non sel: %d\n", st.st_opts & OP_DIMNONSEL);
 		break;
 	case 'w':
 		st.st_opts ^= OP_WIREFRAME;
@@ -285,6 +286,7 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 			selnode->n_fillp = selnode->n_ofillp;
 			selnode = NULL;
 		}
+//st.st_rf |= RF_CLUSTER;
 		break;
 	case 'f':
 		glutKeyboardFunc(keyh_flyby);
