@@ -47,17 +47,28 @@ struct temp temp_notfound = {
 	0, { 0.00f, 0.00f, 0.00f, 1.00f, 0, 0 }, "?"
 };
 
-int job_eq(void *elem, void *arg)
+int
+job_eq(void *elem, void *arg)
 {
 	return (((struct job *)elem)->j_id == *(int *)arg);
 }
 
-int temp_eq(void *elem, void *arg)
+int
+temp_eq(void *elem, void *arg)
 {
 	return (((struct temp *)elem)->t_cel == *(int *)arg);
 }
 
-int fail_eq(void *elem, void *arg)
+#define CMP(a, b) ((a) < (b) ? -1 : ((a) == (b) ? 0 : 1))
+
+int
+temp_cmp(const void *a, const void *b)
+{
+	return (CMP(((struct temp *)a)->t_cel, ((struct temp *)b)->t_cel));
+}
+
+int
+fail_eq(void *elem, void *arg)
 {
 	return (((struct fail *)elem)->f_fails == *(int *)arg);
 }
@@ -802,6 +813,7 @@ bad:
 		fclose(fp);
 		errno = 0;
 	}
+	qsort(temps, ntemps, sizeof(*temps), temp_cmp);
 	for (j = 0; j < maxtemps; j++)
 		getcol(j, maxtemps, &temps[j]->t_fill);
 }
