@@ -427,6 +427,8 @@ parse_jobmap(void)
 			    sizeof(*job));
 			job->j_id = jobid;
 			job->j_name = "testjob";
+			/* XXX: only slightly sloppy. */
+			job->j_fill.f_texid = jstates[ST_USED].js_fill.f_texid;
 			// free(j->j_name);
 			node->n_job = job;
 			node->n_fillp = &job->j_fill;
