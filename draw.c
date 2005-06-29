@@ -91,27 +91,6 @@ draw(void)
 		glCallList(select_dl);
 	draw_panels();
 
-#if 0
-	// DEBUG LINES
-	if(st.st_opts & OP_DEBUG)
-	{
-		glColor3f(0.5, 0.5, 0.5);
-		glLineWidth(2.0);
-		glBegin(GL_LINES);
-		glVertex3f(gLines[0].x, gLines[0].y, gLines[0].z);
-		glVertex3f(gLines[1].x, gLines[1].y, gLines[1].z);
-		glVertex3f(gLines[2].x, gLines[2].y, gLines[2].z);
-		glVertex3f(gLines[3].x, gLines[3].y, gLines[3].z);
-		glEnd();
-
-		glPointSize(5.0);
-		glBegin(GL_POINTS);
-		glVertex3f(gPoints[0].x, gPoints[0].y, gPoints[0].z);
-		glVertex3f(gPoints[1].x, gPoints[1].y, gPoints[1].z);
-		glEnd();
-	}
-#endif
-
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	if (st.st_opts & OP_CAPTURE || gDebugCapture)
 		capture_fb(capture_mode);
@@ -264,12 +243,12 @@ draw_box_filled(const struct vec *dim, const struct fill *fillp)
 }
 
 __inline void
-draw_node_tex(struct node *n, struct vec *v, struct fill *fillp)
+draw_box_tex(struct vec *dim, struct fill *fillp)
 {
 	float x = 0.0f, y = 0.0f, z = 0.0f;
-	float w = v->v_w;
-	float h = v->v_h;
-	float d = v->v_d;
+	float w = dim->v_w;
+	float h = dim->v_h;
+	float d = dim->v_d;
 	float uw, uh, ud;
 	float color[4];
 	GLenum param;
@@ -288,8 +267,8 @@ draw_node_tex(struct node *n, struct vec *v, struct fill *fillp)
 	} else
 		param = GL_REPLACE;
 
-	glBindTexture(GL_TEXTURE_2D, jstates[n->n_state].js_fill.f_texid);
-
+	glBindTexture(GL_TEXTURE_2D, fillp->f_texid);
+	
 	color[0] = fillp->f_r;
 	color[1] = fillp->f_g;
 	color[2] = fillp->f_b;
@@ -395,7 +374,7 @@ draw_node_label(struct node *n)
 	glColor3f(1.0f, 1.0f, 0.0f);
 	glRasterPos3f(n->n_v->v_x, n->n_v->v_y, n->n_v->v_z);
 
-	snprintf(buf, sizeof(buf), "NID: %d", n->n_nid);
+	snprintf(buf, sizeof(buf), "%d", n->n_nid);
 
 	for (s = buf; *s != '\0'; s++)
 		glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
@@ -462,10 +441,7 @@ draw_node(struct node *n)
 		dimp = &vmodes[st.st_vmode].vm_ndim;
 
 		if (st.st_opts & OP_DIMNONSEL && selnode != NULL) {
-			v = *n->n_v;
-			vp = &v;
-
-			/* Modify alpha */
+			/* Modify alpha for other nodes. */
 			fill = *fp;
 			fill.f_a = DIMMED_ALPHA;
 			fp = &fill;
@@ -615,21 +591,21 @@ draw_cluster_pipes(struct vec *v)
 	for (x = 0; x < wired_width; x++)			/* z */
 		for (y = 0; y < wired_height; y++) {
 			glVertex3f(x, y, 0.0f);
-			glVertex3f(x, y, wired_depth);
+			glVertex3f(x, y, WI_DEPTH);
 		}
 
 	glColor3f(0.0f, 1.0f, 0.0f);
 	for (z = 0; z < wired_depth; z++)			/* y */
 		for (x = 0; x < wired_width; x++) {
 			glVertex3f(x, 0.0f, z);
-			glVertex3f(x, wired_height, z);
+			glVertex3f(x, WI_HEIGHT, z);
 		}
 
 	glColor3f(0.0f, 0.0f, 1.0f);
 	for (y = 0; y < wired_height; y++)			/* x */
 		for (z = 0; z < wired_depth; z++) {
 			glVertex3f(0.0f, y, z);
-			glVertex3f(wired_width, y, z);
+			glVertex3f(WI_WIDTH, y, z);
 		}
 	glEnd();
 	glPopMatrix();
