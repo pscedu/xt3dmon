@@ -136,33 +136,34 @@ refresh_state(int oldopts)
 void
 select_node(struct node *n)
 {
-	struct node *dnode;
-
 	if (selnode == n)
 		return;
 	if (selnode != NULL)
 		selnode->n_fillp = selnode->n_ofillp;
 
-	if (n == NULL) {
+	if (n == NULL)
 		panel_hide(PANEL_NINFO);
-		dnode = selnode;
-	} else {
+	else {
 		if (n->n_fillp != &selnodefill) {
 			n->n_ofillp = n->n_fillp;
 			n->n_fillp = &selnodefill;
 		}
 		panel_show(PANEL_NINFO);
-		dnode = n;
 	}
 	selnode = n;
 
 	if (select_dl)
 		glDeleteLists(select_dl, 1);
+	if (n == NULL) {
+		select_dl = 0;
+		return;
+	}
 	select_dl = glGenLists(1);
 	glNewList(select_dl, GL_COMPILE);
 	draw_node(dnode);
 	glEndList();
-	rebuild(st.st_rf);
+
+	rebuild(st.st_rf); /* XXX:  has to go, very wrong. */
 }
 
 void
