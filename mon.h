@@ -90,6 +90,8 @@
 #define FOVY		(45.0f)
 #define ASPECT		(win_width / (double)win_height)
 
+#define DIMMED_ALPHA	0.2
+
 #define PNG_FRAMES	4
 #define PPM_FRAMES	3
 
