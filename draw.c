@@ -389,33 +389,38 @@ draw_node_pipes(struct vec *dim)
 {
 	float w = dim->v_w, h = dim->v_h, d = dim->v_d;
 
+	/* Antialiasing */
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glEnable(GL_LINE_SMOOTH);
+	glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
+
+	glLineWidth(8.0);
+	glBegin(GL_LINES);
+	glColor3f(1.0f, 0.0f, 0.0f); 			/* x */
+	glVertex3f(w-st.st_winsp, h/2, d/2);
+	glVertex3f(st.st_winsp, h/2, d/2);
+
+	glColor3f(0.0f, 1.0f, 0.0f);			/* y */
+	glVertex3f(w/2, h - st.st_winsp, d/2);
+	glVertex3f(w/2, st.st_winsp, d/2);
+
+	glColor3f(0.0f, 0.0f, 1.0f);			/* z */
+	glVertex3f(w/2, h/2, d - st.st_winsp);
+	glVertex3f(w/2, h/2, st.st_winsp);
+	glEnd();
+
+	glEnable(GL_POINT_SMOOTH);
+	glHint(GL_POINT_SMOOTH_HINT, GL_DONT_CARE);
+
 	glColor3f(0.0, 0.0, 0.0);
-	glPointSize(6.0);
+	glPointSize(20.0);
 	glBegin(GL_POINTS);
 	glVertex3f(w/2.0, h/2.0, d/2.0);
 	glEnd();
 
-	/* Antialiasing */
-	glEnable(GL_LINE_SMOOTH);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
-
-	glLineWidth(2.0);
-	glBegin(GL_LINES);
-	glColor3f(1.0f, 0.0f, 0.0f); 			/* x */
-	glVertex3f(-st.st_winsp, h/2, d/2);
-	glVertex3f(w + st.st_winsp, h/2, d/2);
-
-	glColor3f(0.0f, 1.0f, 0.0f);			/* y */
-	glVertex3f(w/2, -st.st_winsp, d/2);
-	glVertex3f(w/2, h + st.st_winsp, d/2);
-
-	glColor3f(0.0f, 0.0f, 1.0f);			/* z */
-	glVertex3f(w/2, h/2, -st.st_winsp);
-	glVertex3f(w/2, h/2, d + st.st_winsp);
-	glEnd();
-
+	glDisable(GL_POINT_SMOOTH);
 	glDisable(GL_LINE_SMOOTH);
 	glDisable(GL_BLEND);
 }
