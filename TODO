@@ -12,3 +12,7 @@ $Id$
 12. use colors from xt3 temperature png
 13. node id on texture or directly on node surface
     (ie. sides or front/back)
+14. 'T' key binding must die. textures should be reloaded if
+	they are turned on and blending changes. When blending
+	is off, textures should have been loaded using GL_RGBA.
+	When blending is on they are loaded with GL_INTENSITY.
