@@ -10,3 +10,5 @@ $Id$
 9. goto new job
 10. random flyby/cycle focus jobs
 12. use colors from xt3 temperature png
+13. node id on texture or directly on node surface
+    (ie. sides or front/back)
