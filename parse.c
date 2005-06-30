@@ -120,6 +120,7 @@ getcol(int n, size_t total, struct fill *fillp)
 	fillp->f_r = cos(div);
 	fillp->f_g = sin(div) * sin(div);
 	fillp->f_b = fabs(tan(div + PI * 3/4));
+	fillp->f_a = 1.0;
 }
 
 /*
