@@ -70,13 +70,13 @@ fail_eq(void *elem, void *arg)
 int
 temp_cmp(const void *a, const void *b)
 {
-	return (CMP(((struct temp *)a)->t_cel, ((struct temp *)b)->t_cel));
+	return (CMP((*(struct temp **)a)->t_cel, (*(struct temp **)b)->t_cel));
 }
 
 int
 fail_cmp(const void *a, const void *b)
 {
-	return (CMP(((struct fail *)a)->f_fails, ((struct fail *)b)->f_fails));
+	return (CMP((*(struct fail **)a)->f_fails, (*(struct fail **)b)->f_fails));
 }
 
 void *
