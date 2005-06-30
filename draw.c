@@ -389,8 +389,19 @@ draw_node_pipes(struct vec *dim)
 {
 	float w = dim->v_w, h = dim->v_h, d = dim->v_d;
 
-	glLineWidth(1.0);
+	glColor3f(0.0, 0.0, 0.0);
+	glPointSize(6.0);
+	glBegin(GL_POINTS);
+	glVertex3f(w/2.0, h/2.0, d/2.0);
+	glEnd();
 
+	/* Antialiasing */
+	glEnable(GL_LINE_SMOOTH);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
+
+	glLineWidth(2.0);
 	glBegin(GL_LINES);
 	glColor3f(1.0f, 0.0f, 0.0f); 			/* x */
 	glVertex3f(-st.st_winsp, h/2, d/2);
@@ -403,8 +414,10 @@ draw_node_pipes(struct vec *dim)
 	glColor3f(0.0f, 0.0f, 1.0f);			/* z */
 	glVertex3f(w/2, h/2, -st.st_winsp);
 	glVertex3f(w/2, h/2, d + st.st_winsp);
-
 	glEnd();
+
+	glDisable(GL_LINE_SMOOTH);
+	glDisable(GL_BLEND);
 }
 
 #define SELNODE_GAP (0.01f)
@@ -434,8 +447,13 @@ draw_node(struct node *n)
 		dimp = &dim;
 
 		if (st.st_opts & OP_SELPIPES &&
-		    (st.st_opts & OP_PIPES) == 0)
+		    (st.st_opts & OP_PIPES) == 0) {
+
+			glPushMatrix();
+			glTranslatef(vp->v_x, vp->v_y, vp->v_z);
 			draw_node_pipes(dimp);
+			glPopMatrix();
+		}
 	} else {
 		vp = n->n_v;
 		dimp = &vmodes[st.st_vmode].vm_ndim;
