@@ -248,6 +248,30 @@ del_textures(void)
 }
 
 void
+restore_textures(void)
+{
+	/* Reload the textures if needed */
+	if(st.st_opts & OP_TEX) {
+		int fmt = jstates[0].js_fill.f_alpha_fmt;
+		if((st.st_opts & OP_BLEND && fmt != GL_INTENSITY) ||
+		   (!(st.st_opts & OP_BLEND) && fmt != GL_RGBA))
+			update_textures();
+	}
+}
+
+void
+update_textures(void)
+{
+	int j, newfmt;
+
+	newfmt = (jstates[0].js_fill.f_alpha_fmt == GL_RGBA ?
+	    GL_INTENSITY : GL_RGBA);
+	for (j = 0; j < NJST; j++)
+		jstates[j].js_fill.f_alpha_fmt = newfmt;
+	st.st_rf |= RF_TEX | RF_CLUSTER;
+}
+
+void
 rebuild(int opts)
 {
 	if (opts & RF_TEX) {
