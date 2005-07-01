@@ -115,12 +115,49 @@ getcol(int n, size_t total, struct fill *fillp)
 	if (total == 1)
 		div = 0.0;
 	else
-		div = ((double)n) / ((double)(total - 1));
+		div = n / (double)(total - 1);
 
 	fillp->f_r = cos(div);
 	fillp->f_g = sin(div) * sin(div);
 	fillp->f_b = fabs(tan(div + PI * 3/4));
 	fillp->f_a = 1.0;
+}
+
+void
+getcol_temp(int n, struct fill *fillp)
+{
+	static struct fill map[] = {
+		{ 0.0f, 0.0f, 0.4f, 1.0f, 0, 0 },
+		{ 0.8f, 0.0f, 0.4f, 1.0f, 0, 0 },
+		{ 0.6f, 0.0f, 0.6f, 1.0f, 0, 0 },
+		{ 0.4f, 0.0f, 0.8f, 1.0f, 0, 0 },
+		{ 0.2f, 0.2f, 1.0f, 1.0f, 0, 0 },
+		{ 0.0f, 0.0f, 1.0f, 1.0f, 0, 0 },
+		{ 0.0f, 0.6f, 0.6f, 1.0f, 0, 0 },
+		{ 0.0f, 0.8f, 0.0f, 1.0f, 0, 0 },
+		{ 0.4f, 1.0f, 0.0f, 1.0f, 0, 0 },
+		{ 1.0f, 1.0f, 0.0f, 1.0f, 0, 0 },
+		{ 1.0f, 0.8f, 0.2f, 1.0f, 0, 0 },
+		{ 1.0f, 0.6f, 0.0f, 1.0f, 0, 0 },
+		{ 1.0f, 0.2f, 0.2f, 1.0f, 0, 0 },
+		{ 1.0f, 0.0f, 0.0f, 1.0f, 0, 0 }
+	};
+
+	int cel = temps[n]->t_cel;
+	int idx;
+
+#define TEMP_MIN 18
+#define TEMP_MAX 80
+#define TEMP_NTEMPS (sizeof(map) / sizeof(map[0]))
+
+	if (cel < TEMP_MIN)
+		cel = TEMP_MIN;
+	else if (cel > TEMP_MAX)
+		cel = TEMP_MAX;
+
+	idx = (cel - TEMP_MIN) / ((TEMP_MAX - TEMP_MIN) / TEMP_NTEMPS);
+
+	*fillp = map[idx];
 }
 
 /*
@@ -825,5 +862,5 @@ bad:
 	}
 	qsort(temps, ntemps, sizeof(*temps), temp_cmp);
 	for (j = 0; j < ntemps; j++)
-		getcol(j, ntemps, &temps[j]->t_fill);
+		getcol_temp(j, &temps[j]->t_fill);
 }
