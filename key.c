@@ -202,10 +202,6 @@ keyh_option(unsigned char key, __unused int u, __unused int v)
 
 	glutKeyboardFunc(keyh_default);
 	switch (key) {
-	case '1':
-		st.st_opts ^= OP_POLYOFFSET;
-		st.st_rf |= RF_CLUSTER;
-		break;
 	case 'b':
 		st.st_opts ^= OP_BLEND;
 		st.st_rf |= RF_CLUSTER;
