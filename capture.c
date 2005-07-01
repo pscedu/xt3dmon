@@ -269,7 +269,7 @@ capture_fb(int mode)
 	glMatrixMode(GL_MODELVIEW);
 }
 
-/* Take a screenshot in png format */ 
+/* Take a screenshot in png format */
 void
 screenshot(char *file, int mode)
 {
