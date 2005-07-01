@@ -570,7 +570,7 @@ panel_refresh_ss(struct panel *p)
 	uinp.uinp_opts &= ~UINPO_DIRTY;
 
 	panel_set_content(p, "Screenshot filename: %s",
-		    buf_get(&uinp.uinp_buf));
+	    buf_get(&uinp.uinp_buf));
 }
 
 void
@@ -680,7 +680,8 @@ void
 uinpcb_ss(void)
 {
 	/* Take screenshot. */
-	screenshot(buf_get(&uinp.uinp_buf), capture_mode);
+	if (*buf_get(&uinp.uinp_buf) != '\0')
+		screenshot(buf_get(&uinp.uinp_buf), capture_mode);
 }
 
 void
