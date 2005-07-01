@@ -280,13 +280,11 @@ draw_box_tex(struct vec *dim, struct fill *fillp)
 		glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, color);
 
 	/* Polygon Offset */
-	if(st.st_opts & OP_POLYOFFSET) {
-		glEnable(GL_LIGHTING);
-		glEnable(GL_LIGHT0);
-		glEnable(GL_POLYGON_OFFSET_FILL);
-		glPolygonOffset(1.0, 3.0);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	}
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	glEnable(GL_POLYGON_OFFSET_FILL);
+	glPolygonOffset(1.0, 3.0);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	glBegin(GL_QUADS);
 
@@ -356,12 +354,10 @@ draw_box_tex(struct vec *dim, struct fill *fillp)
 		glDisable(GL_BLEND);
 
 	/* Disable Polygon Offset */
-	if(st.st_opts & OP_POLYOFFSET) {
-		glDisable(GL_LIGHTING);
-		glDisable(GL_LIGHT0);
-		glDisable(GL_POLYGON_OFFSET_FILL);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	}
+	glDisable(GL_LIGHTING);
+	glDisable(GL_LIGHT0);
+	glDisable(GL_POLYGON_OFFSET_FILL);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	glDisable(GL_TEXTURE_2D);
 }
