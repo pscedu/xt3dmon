@@ -8,13 +8,14 @@
 # include <GL/freeglut.h>
 #endif
 
+#include <limits.h>
 #include <math.h>
 
 #include "cdefs.h"
 #include "mon.h"
 
 int	 spkey, lastu, lastv;
-GLuint	 selbuf[100];
+GLuint	 selbuf[1000];
 int	 render_mode = RM_RENDER;
 
 void
@@ -73,7 +74,6 @@ m_passiveh_default(int u, int v)
 	lastu = u;
 	lastv = v;
 
-//	detect_node(u, v);
 //	render_mode = RM_SELECT;
 }
 
@@ -96,7 +96,7 @@ sel_record_begin(void)
 {
 	GLint viewport[4];
 
-	glSelectBuffer(sizeof(selbuf)/sizeof(selbuf[0]), selbuf);
+	glSelectBuffer(sizeof(selbuf) / sizeof(selbuf[0]), selbuf);
 	glGetIntegerv(GL_VIEWPORT, viewport);
 	glRenderMode(GL_SELECT);
 	glInitNames();
@@ -108,46 +108,44 @@ sel_record_begin(void)
 	glMatrixMode(GL_MODELVIEW);
 }
 
+#define SBI_LEN		0
+#define SBI_UDST	1
+#define SBI_VDST	2
+#define SBI_NAMEOFF	3
+
 void
 sel_record_process(GLint nrecs)
 {
-	struct node *newsn, *n;
-	float diff, mindiff;
-	GLuint *p, len, j;
-	struct vec v;
-	int i;
+	GLuint minu, minv, *p, nid;
+	struct node *n;
+	int i, found;
 
-	newsn = NULL;
-	mindiff = FLT_MAX;
+	nid = 0; /* gcc */
+	found = 0;
+	minu = minv = UINT_MAX;
 	/* XXX:  sanity-check nrecs? */
-	for (i = 0, p = (GLuint *)selbuf; i < nrecs; i++) {
+	for (i = 0, p = (GLuint *)selbuf; i < nrecs; i++, p += 3 + p[SBI_LEN]) {
 		/*
-		 * The record consists of the following:
+		 * Each record consists of the following:
 		 *	- the number of names in this stack frame,
 		 *	- the minimum and maximum depths of all
 		 *	  vertices hit since the previous event, and
 		 *	- stack contents, bottom first
 		 */
-		len = *p;
-
-		/* Skip min/max depths. */
-		p += 3;
-		for (j = 0; j < len; j++, p++) {
-			/* Find closest node. */
-			if ((n = node_for_nid(*p)) == NULL)
-				continue;
-			v.v_w = st.st_x - n->n_v->v_x;
-			v.v_h = st.st_y - n->n_v->v_y;
-			v.v_d = st.st_z - n->n_v->v_z;
-			diff = fabs(v.v_w) + fabs(v.v_h) + fabs(v.v_d);
-			if (diff < mindiff) {
-				newsn = n;
-				mindiff = diff;
+		if (p[SBI_LEN] != 1)
+			continue;
+		if (p[SBI_UDST] <= minu) {
+			minu = p[SBI_UDST];
+			if (p[SBI_VDST] < minv) {
+				minv = p[SBI_VDST];
+				found = 1;
+				nid = p[SBI_NAMEOFF];
 			}
 		}
+
 	}
-	if (newsn != NULL)
-		select_node(newsn);
+	if (found && (n = node_for_nid(nid)) != NULL)
+		select_node(n);
 }
 
 void
