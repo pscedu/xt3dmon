@@ -297,6 +297,8 @@ struct pinfo {
 #define TWF_LOOK	(1<<2)
 #define TWF_POS		(1<<3)
 
+#define NDF_DONTPUSH	(1<<0)
+
 struct dbh {
 	union {
 		MYSQL dbhu_mysql;
@@ -318,7 +320,8 @@ void			 tween_pushpop(int);
 
 /* draw.c */
 void			 draw(void);
-void			 draw_node(struct node *);
+void			 draw_node(struct node *, int);
+void			 draw_node_pipes(struct vec *);
 void			 make_ground(void);
 void			 make_cluster(void);
 
