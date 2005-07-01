@@ -208,6 +208,7 @@ keyh_option(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 'b':
 		st.st_opts ^= OP_BLEND;
+		restore_textures();
 		st.st_rf |= RF_CLUSTER;
 		break;
 	case 'D':
@@ -255,12 +256,12 @@ keyh_option(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 't':
 		st.st_opts ^= OP_TEX;
+		restore_textures();
 		st.st_rf |= RF_CLUSTER;
 		break;
 	case 's':
 		st.st_opts ^= OP_DIMNONSEL;
 		st.st_rf |= RF_CLUSTER;
-printf("dim non sel: %d\n", st.st_opts & OP_DIMNONSEL);
 		break;
 	case 'w':
 		st.st_opts ^= OP_WIREFRAME;
@@ -311,16 +312,6 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 	case 'q':
 		exit(0);
 		/* NOTREACHED */
-	case 'T': {
-		int j, newfmt;
-
-		newfmt = (jstates[0].js_fill.f_alpha_fmt == GL_RGBA ?
-		    GL_INTENSITY : GL_RGBA);
-		for (j = 0; j < NJST; j++)
-			jstates[j].js_fill.f_alpha_fmt = newfmt;
-		st.st_rf |= RF_TEX | RF_CLUSTER;
-		break;
-	    }
 	case 'v':
 		glutKeyboardFunc(keyh_vmode);
 		break;
