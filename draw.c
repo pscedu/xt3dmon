@@ -440,14 +440,12 @@ draw_node(struct node *n, int flags)
 		glTranslatef(vp->v_x, vp->v_y, vp->v_z);
 	}
 
-	if (n == selnode) {
-	} else {
-		if (st.st_opts & OP_DIMNONSEL && selnode != NULL) {
-			/* Modify alpha for other nodes. */
-			fill = *fp;
-			fill.f_a = DIMMED_ALPHA;
-			fp = &fill;
-		}
+	if (n != selnode && selnode != NULL &&
+	    st.st_opts & OP_DIMNONSEL) {
+		/* Modify alpha for other nodes. */
+		fill = *fp;
+		fill.f_a = DIMMED_ALPHA;
+		fp = &fill;
 	}
 	if (st.st_opts & OP_TEX)
 		draw_box_tex(dimp, fp);
