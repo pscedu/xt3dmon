@@ -115,7 +115,7 @@ ss_ppm(char *file, int x, int y, int w, int h)
 	long size;
 	FILE *fp;
 
-	if ((fp = fopen(file,"wb")) == NULL)
+	if ((fp = fopen(file, "wb")) == NULL)
 		err(1, "%s", file);
 
 	/* Size = num pixels * 3 bytes per pixel (RGB) */
@@ -247,7 +247,7 @@ end_capture(void)
 {
 	int i;
 
-	for(i = 0; i < NUM_FRAMES; i++)
+	for (i = 0; i < NUM_FRAMES; i++)
 		free(fbuf[i]);
 }
 
@@ -261,7 +261,7 @@ capture_fb(int mode)
 	glMatrixMode(GL_PROJECTION);
 	glGetIntegerv(GL_VIEWPORT, vp);
 
-	if(mode == PNG_FRAMES)
+	if (mode == PNG_FRAMES)
 		fb_mem_png(vp[0], vp[1], vp[2], vp[3]);
 	else
 		fb_mem_ppm(vp[0], vp[1], vp[2], vp[3]);
@@ -278,7 +278,7 @@ screenshot(char *file, int mode)
 	glMatrixMode(GL_PROJECTION);
 	glGetIntegerv(GL_VIEWPORT, vp);
 
-	if(mode == PNG_FRAMES)
+	if (mode == PNG_FRAMES)
 		ss_png(file, vp[0], vp[1], vp[2], vp[3]);
 	else
 		ss_ppm(file, vp[0], vp[1], vp[2], vp[3]);
