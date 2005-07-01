@@ -92,6 +92,8 @@
 
 #define DIMMED_ALPHA	0.2
 
+#define TILE_TEXTURE	1
+
 #define PNG_FRAMES	4
 #define PPM_FRAMES	3
 
