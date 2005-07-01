@@ -395,7 +395,7 @@ draw_node_pipes(struct vec *dim)
 	glLineWidth(8.0);
 	glBegin(GL_LINES);
 	glColor3f(1.0f, 0.0f, 0.0f); 			/* x */
-	glVertex3f(w-st.st_winsp, h/2, d/2);
+	glVertex3f(w - st.st_winsp, h/2, d/2);
 	glVertex3f(st.st_winsp, h/2, d/2);
 
 	glColor3f(0.0f, 1.0f, 0.0f);			/* y */
@@ -422,7 +422,7 @@ draw_node_pipes(struct vec *dim)
 }
 
 __inline void
-draw_node(struct node *n)
+draw_node(struct node *n, int flags)
 {
 	struct vec *vp, *dimp;
 	struct fill fill, *fp;
@@ -434,14 +434,13 @@ draw_node(struct node *n)
 	vp = n->n_v;
 	dimp = &vmodes[st.st_vmode].vm_ndim;
 
-	glPushMatrix();
-	glPushName(n->n_nid);
-	glTranslatef(vp->v_x, vp->v_y, vp->v_z);
+	if ((flags & NDF_DONTPUSH) == 0) {
+		glPushMatrix();
+		glPushName(n->n_nid);
+		glTranslatef(vp->v_x, vp->v_y, vp->v_z);
+	}
 
 	if (n == selnode) {
-		if (st.st_opts & OP_SELPIPES &&
-		    (st.st_opts & OP_PIPES) == 0)
-			draw_node_pipes(dimp);
 	} else {
 		if (st.st_opts & OP_DIMNONSEL && selnode != NULL) {
 			/* Modify alpha for other nodes. */
@@ -465,8 +464,11 @@ draw_node(struct node *n)
 		draw_box_outline(dimp, &fill_black);
 	if (st.st_opts & OP_NLABELS)
 		draw_node_label(n);
-	glPopName();
-	glPopMatrix();
+
+	if ((flags & NDF_DONTPUSH) == 0) {
+		glPopName();
+		glPopMatrix();
+	}
 }
 
 __inline void
@@ -562,7 +564,7 @@ draw_cluster_physical(void)
 						node->n_physv.v_y += s * (NODESPACE + NODEHEIGHT);
 						node->n_physv.v_z += n0 * (NODESPACE + NODEDEPTH) +
 						    s * NODESHIFT;
-						draw_node(node);
+						draw_node(node, 0);
 					}
 					if (st.st_opts & OP_SHOWMODS)
 						draw_mod(&v, &mdim, &mf);
@@ -646,7 +648,7 @@ draw_cluster_wired(struct vec *v)
 						nv->v_y = node->n_wiv.v_y * st.st_winsp + v->v_y;
 						nv->v_z = node->n_wiv.v_z * st.st_winsp + v->v_z;
 						node->n_v = nv;
-						draw_node(node);
+						draw_node(node, 0);
 					}
 }
 
