@@ -16,8 +16,6 @@
 #include "mon.h"
 #include "buf.h"
 
-extern double round(double); /* don't ask */
-
 #define SLEEP_INTV	500
 
 #define STARTX		(-30.0f)
@@ -28,8 +26,10 @@ extern double round(double); /* don't ask */
 #define STARTLY		(0.0f)
 #define STARTLZ		(-0.12f)
 
-#define FPS_TO_USEC(X) (1000000/X)	/* Convert FPS to microseconds. */
-#define GOVERN_FPS 15			/* FPS governor. */
+#define FPS_TO_USEC(X)	(1000000/X)	/* Convert FPS to microseconds. */
+#define GOVERN_FPS	15		/* FPS governor. */
+
+#define SELNODE_GAP	(0.1f)
 
 struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 struct node		*invmap[NID_MAX];
@@ -155,12 +155,10 @@ select_node(struct node *n)
 	select_dl = glGenLists(1);
 	glNewList(select_dl, GL_COMPILE);
 
-	if (n->n_fillp != &selnodefill) {
+	if (n->n_fillp != &selnodefill) {	/* XXX:  is this test needed? */
 		n->n_ofillp = n->n_fillp;
 		n->n_fillp = &selnodefill;
 	}
-
-#define SELNODE_GAP (0.1f)
 
 	n->n_v->v_x -= SELNODE_GAP;
 	n->n_v->v_y -= SELNODE_GAP;
@@ -170,17 +168,26 @@ select_node(struct node *n)
 	vmodes[st.st_vmode].vm_ndim.v_h += SELNODE_GAP * 2;
 	vmodes[st.st_vmode].vm_ndim.v_d += SELNODE_GAP * 2;
 
-	draw_node(n);
+	glPushMatrix();
+	glPushName(n->n_nid);
+	glTranslatef(n->n_v->v_x, n->n_v->v_y, n->n_v->v_z);
+	if (st.st_opts & OP_SELPIPES && (st.st_opts & OP_PIPES) == 0)
+		draw_node_pipes(&vmodes[st.st_vmode].vm_ndim);
+
+	draw_node(n, NDF_DONTPUSH);
 
 	n->n_fillp = n->n_ofillp;
-
-	n->n_v->v_x += SELNODE_GAP;
-	n->n_v->v_y += SELNODE_GAP;
-	n->n_v->v_z += SELNODE_GAP;
 
 	vmodes[st.st_vmode].vm_ndim.v_w -= SELNODE_GAP * 2;
 	vmodes[st.st_vmode].vm_ndim.v_h -= SELNODE_GAP * 2;
 	vmodes[st.st_vmode].vm_ndim.v_d -= SELNODE_GAP * 2;
+
+	glPopName();
+	glPopMatrix();
+
+	n->n_v->v_x += SELNODE_GAP;
+	n->n_v->v_y += SELNODE_GAP;
+	n->n_v->v_z += SELNODE_GAP;
 
 	glEndList();
 }
