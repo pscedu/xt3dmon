@@ -179,15 +179,15 @@ keyh_vmode(unsigned char key, __unused int u, __unused int v)
 	switch (key) {
 	case 'o':
 		st.st_vmode = VM_WIREDONE;
-		st.st_rf |= RF_CLUSTER | RF_PERSPECTIVE | RF_GROUND;
+		st.st_rf |= RF_CLUSTER | RF_PERSPECTIVE | RF_GROUND | RF_SELNODE;
 		break;
 	case 'w':
 		st.st_vmode = VM_WIRED;
-		st.st_rf |= RF_CLUSTER | RF_PERSPECTIVE | RF_GROUND;
+		st.st_rf |= RF_CLUSTER | RF_PERSPECTIVE | RF_GROUND | RF_SELNODE;
 		break;
 	case 'p':
 		st.st_vmode = VM_PHYSICAL;
-		st.st_rf |= RF_CLUSTER | RF_PERSPECTIVE | RF_GROUND;
+		st.st_rf |= RF_CLUSTER | RF_PERSPECTIVE | RF_GROUND | RF_SELNODE;
 		break;
 	default:
 		return;
@@ -208,7 +208,6 @@ keyh_option(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 'b':
 		st.st_opts ^= OP_BLEND;
-		restore_textures();
 		st.st_rf |= RF_CLUSTER;
 		break;
 	case 'D':
@@ -256,7 +255,6 @@ keyh_option(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 't':
 		st.st_opts ^= OP_TEX;
-		restore_textures();
 		st.st_rf |= RF_CLUSTER;
 		break;
 	case 's':
@@ -283,11 +281,7 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		st.st_rf |= RF_CLUSTER;
 		break;
 	case 'c':
-		if (selnode != NULL) {
-			selnode->n_fillp = selnode->n_ofillp;
-			select_node(NULL);
-			selnode = NULL;
-		}
+		select_node(NULL);
 		break;
 	case 'f':
 		glutKeyboardFunc(keyh_flyby);
@@ -365,11 +359,11 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 	    }
 	case '[':
 		st.st_winsp--;
-		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE;
+		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE | RF_SELNODE;
 		break;
 	case ']':
 		st.st_winsp++;
-		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE;
+		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE | RF_SELNODE;
 		break;
 	default:
 		return;
