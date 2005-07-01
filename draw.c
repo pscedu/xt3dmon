@@ -425,8 +425,6 @@ draw_node_pipes(struct vec *dim)
 	glDisable(GL_BLEND);
 }
 
-#define SELNODE_GAP (0.01f)
-
 __inline void
 draw_node(struct node *n)
 {
@@ -437,23 +435,18 @@ draw_node(struct node *n)
 		return;
 
 	fp = n->n_fillp;
+	vp = n->n_v;
+	dimp = &vmodes[st.st_vmode].vm_ndim;
 
-	if (selnode == n) {
-		v = *n->n_v;
-		v.v_x -= SELNODE_GAP;
-		v.v_y -= SELNODE_GAP;
-		v.v_z -= SELNODE_GAP;
-		vp = &v;
+	glPushMatrix();
+	glPushName(n->n_nid);
+	glTranslatef(vp->v_x, vp->v_y, vp->v_z);
 
-		dim = vmodes[st.st_vmode].vm_ndim;
-		dim.v_w += SELNODE_GAP * 2;
-		dim.v_h += SELNODE_GAP * 2;
-		dim.v_d += SELNODE_GAP * 2;
-		dimp = &dim;
+	if (n == selnode) {
+		if (st.st_opts & OP_SELPIPES &&
+		    (st.st_opts & OP_PIPES) == 0)
+			draw_node_pipes(dimp);
 	} else {
-		vp = n->n_v;
-		dimp = &vmodes[st.st_vmode].vm_ndim;
-
 		if (st.st_opts & OP_DIMNONSEL && selnode != NULL) {
 			/* Modify alpha for other nodes. */
 			fill = *fp;
@@ -461,11 +454,6 @@ draw_node(struct node *n)
 			fp = &fill;
 		}
 	}
-
-	glPushMatrix();
-	glPushName(n->n_nid);
-	glTranslatef(vp->v_x, vp->v_y, vp->v_z);
-
 	if (st.st_opts & OP_TEX)
 		draw_box_tex(dimp, fp);
 	else {
@@ -481,9 +469,6 @@ draw_node(struct node *n)
 		draw_box_outline(dimp, &fill_black);
 	if (st.st_opts & OP_NLABELS)
 		draw_node_label(n);
-	if (n == selnode && st.st_opts & OP_SELPIPES &&
-	    (st.st_opts & OP_PIPES) == 0)
-		draw_node_pipes(dimp);
 	glPopName();
 	glPopMatrix();
 }
@@ -597,32 +582,50 @@ draw_cluster_physical(void)
 __inline void
 draw_cluster_pipes(struct vec *v)
 {
-	int x, y, z;
+	float x, y, z, sp;
+	float sx, sy, sz;
+	struct vec *dimp;
+
+	dimp = &vmodes[st.st_vmode].vm_ndim;
+	sp = st.st_winsp;
+	sx = dimp->v_w / 2;
+	sy = dimp->v_h / 2;
+	sz = dimp->v_d / 2;
 
 	glPushMatrix();
 	glTranslatef(v->v_x, v->v_y, v->v_z);
-	glLineWidth(1.0);
+
+	/* Antialiasing */
+	glEnable(GL_BLEND);
+	glEnable(GL_LINE_SMOOTH);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
+
+	glLineWidth(8.0);
+
 	glBegin(GL_LINES);
-	glColor3f(1.0f, 0.0f, 0.0f);
-	for (x = 0; x < wired_width; x++)			/* z */
-		for (y = 0; y < wired_height; y++) {
+	glColor3f(0.0f, 0.0f, 1.0f);
+	for (x = sx; x <= WI_WIDTH + sp; x += sp)			/* z */
+		for (y = sy; y <= WI_HEIGHT + sp; y += sp) {
 			glVertex3f(x, y, 0.0f);
 			glVertex3f(x, y, WI_DEPTH);
 		}
 
 	glColor3f(0.0f, 1.0f, 0.0f);
-	for (z = 0; z < wired_depth; z++)			/* y */
-		for (x = 0; x < wired_width; x++) {
+	for (z = sz; z <= WI_DEPTH + sp; z += sp)			/* y */
+		for (x = sx; x <= WI_WIDTH + sp; x += sp) {
 			glVertex3f(x, 0.0f, z);
 			glVertex3f(x, WI_HEIGHT, z);
 		}
 
-	glColor3f(0.0f, 0.0f, 1.0f);
-	for (y = 0; y < wired_height; y++)			/* x */
-		for (z = 0; z < wired_depth; z++) {
+	glColor3f(1.0f, 0.0f, 0.0f);
+	for (y = sy; y <= WI_HEIGHT + sp; y += sp)
+		for (z = sz; z <= WI_DEPTH + sp; z += sp) {		/* x */
 			glVertex3f(0.0f, y, z);
 			glVertex3f(WI_WIDTH, y, z);
 		}
+	glDisable(GL_LINE_SMOOTH);
+	glDisable(GL_BLEND);
 	glEnd();
 	glPopMatrix();
 }
