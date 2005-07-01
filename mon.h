@@ -202,7 +202,6 @@ struct flyby {
 #define OP_CAPTURE	(1<<5)
 #define OP_DISPLAY	(1<<6)
 #define OP_GOVERN	(1<<7)
-#define OP_POLYOFFSET	(1<<8)
 #define OP_LOOPFLYBY	(1<<9)
 #define OP_DEBUG	(1<<10)
 #define OP_FREELOOK	(1<<11)
