@@ -428,7 +428,7 @@ draw_node_pipes(struct vec *dim)
 __inline void
 draw_node(struct node *n)
 {
-	struct vec v, *vp, dim, *dimp;
+	struct vec *vp, *dimp;
 	struct fill fill, *fp;
 
 	if (n->n_hide)
