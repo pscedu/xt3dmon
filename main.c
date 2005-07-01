@@ -142,7 +142,7 @@ select_node(struct node *n)
 	if (selnode == n)
 		return;
 	selnode = n;
-printf("select_node()\n");
+
 	if (select_dl)
 		glDeleteLists(select_dl, 1);
 	if (n == NULL) {
@@ -170,9 +170,7 @@ printf("select_node()\n");
 	vmodes[st.st_vmode].vm_ndim.v_h += SELNODE_GAP * 2;
 	vmodes[st.st_vmode].vm_ndim.v_d += SELNODE_GAP * 2;
 
-printf("select_node(2)\n");
 	draw_node(n);
-printf("select_node(3)\n");
 
 	n->n_fillp = n->n_ofillp;
 
@@ -185,7 +183,6 @@ printf("select_node(3)\n");
 	vmodes[st.st_vmode].vm_ndim.v_d -= SELNODE_GAP * 2;
 
 	glEndList();
-printf("select_node(4)\n");
 }
 
 void
@@ -326,10 +323,8 @@ rebuild(int opts)
 	}
 	if (opts & RF_GROUND && st.st_opts & OP_GROUND)
 		make_ground();
-	if (opts & RF_CLUSTER) {
-printf("rebuild\n");
+	if (opts & RF_CLUSTER)
 		make_cluster();
-}
 	if (opts & RF_SELNODE) {
 		struct node *n;
 
