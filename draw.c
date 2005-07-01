@@ -268,7 +268,7 @@ draw_box_tex(struct vec *dim, struct fill *fillp)
 		param = GL_REPLACE;
 
 	glBindTexture(GL_TEXTURE_2D, fillp->f_texid);
-	
+
 	color[0] = fillp->f_r;
 	color[1] = fillp->f_g;
 	color[2] = fillp->f_b;
@@ -435,7 +435,7 @@ draw_node(struct node *n)
 
 	if (n->n_hide)
 		return;
-	
+
 	fp = n->n_fillp;
 
 	if (selnode == n) {
@@ -450,15 +450,6 @@ draw_node(struct node *n)
 		dim.v_h += SELNODE_GAP * 2;
 		dim.v_d += SELNODE_GAP * 2;
 		dimp = &dim;
-
-		if (st.st_opts & OP_SELPIPES &&
-		    (st.st_opts & OP_PIPES) == 0) {
-
-			glPushMatrix();
-			glTranslatef(vp->v_x, vp->v_y, vp->v_z);
-			draw_node_pipes(dimp);
-			glPopMatrix();
-		}
 	} else {
 		vp = n->n_v;
 		dimp = &vmodes[st.st_vmode].vm_ndim;
@@ -490,7 +481,9 @@ draw_node(struct node *n)
 		draw_box_outline(dimp, &fill_black);
 	if (st.st_opts & OP_NLABELS)
 		draw_node_label(n);
-	
+	if (n == selnode && st.st_opts & OP_SELPIPES &&
+	    (st.st_opts & OP_PIPES) == 0)
+		draw_node_pipes(dimp);
 	glPopName();
 	glPopMatrix();
 }
