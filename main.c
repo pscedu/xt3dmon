@@ -123,14 +123,17 @@ refresh_state(int oldopts)
 		oy = ty = st.st_y;  oly = tly = st.st_ly;
 		oz = tz = st.st_z;  olz = tlz = st.st_lz;
 	}
+	if (diff & (OP_BLEND | OP_TEX))
+		restore_textures();
 	if (diff & OP_FREELOOK)
 		glutMotionFunc(st.st_opts & OP_FREELOOK ?
 		    m_activeh_free : m_activeh_default);
 	if (diff & OP_GOVERN)
 		glutIdleFunc(st.st_opts & OP_GOVERN ? idle_govern : idle);
-	if (st.st_rf)
+	if (st.st_rf) {
 		rebuild(st.st_rf);
-		/* st.st_rf = 0; */
+		st.st_rf = 0;
+	}
 }
 
 void
@@ -138,32 +141,51 @@ select_node(struct node *n)
 {
 	if (selnode == n)
 		return;
-	if (selnode != NULL)
-		selnode->n_fillp = selnode->n_ofillp;
-
-	if (n == NULL)
-		panel_hide(PANEL_NINFO);
-	else {
-		if (n->n_fillp != &selnodefill) {
-			n->n_ofillp = n->n_fillp;
-			n->n_fillp = &selnodefill;
-		}
-		panel_show(PANEL_NINFO);
-	}
 	selnode = n;
-
+printf("select_node()\n");
 	if (select_dl)
 		glDeleteLists(select_dl, 1);
 	if (n == NULL) {
 		select_dl = 0;
+		panel_hide(PANEL_NINFO);
 		return;
 	}
+	panel_show(PANEL_NINFO);
+
 	select_dl = glGenLists(1);
 	glNewList(select_dl, GL_COMPILE);
-	draw_node(selnode);
-	glEndList();
 
-	rebuild(st.st_rf); /* XXX:  has to go, very wrong. */
+	if (n->n_fillp != &selnodefill) {
+		n->n_ofillp = n->n_fillp;
+		n->n_fillp = &selnodefill;
+	}
+
+#define SELNODE_GAP (0.1f)
+
+	n->n_v->v_x -= SELNODE_GAP;
+	n->n_v->v_y -= SELNODE_GAP;
+	n->n_v->v_z -= SELNODE_GAP;
+
+	vmodes[st.st_vmode].vm_ndim.v_w += SELNODE_GAP * 2;
+	vmodes[st.st_vmode].vm_ndim.v_h += SELNODE_GAP * 2;
+	vmodes[st.st_vmode].vm_ndim.v_d += SELNODE_GAP * 2;
+
+printf("select_node(2)\n");
+	draw_node(n);
+printf("select_node(3)\n");
+
+	n->n_fillp = n->n_ofillp;
+
+	n->n_v->v_x += SELNODE_GAP;
+	n->n_v->v_y += SELNODE_GAP;
+	n->n_v->v_z += SELNODE_GAP;
+
+	vmodes[st.st_vmode].vm_ndim.v_w -= SELNODE_GAP * 2;
+	vmodes[st.st_vmode].vm_ndim.v_h -= SELNODE_GAP * 2;
+	vmodes[st.st_vmode].vm_ndim.v_d -= SELNODE_GAP * 2;
+
+	glEndList();
+printf("select_node(4)\n");
 }
 
 void
@@ -293,16 +315,7 @@ rebuild(int opts)
 			parse_tempmap();
 			break;
 		}
-		if (selnode != NULL) {
-			if (selnode->n_fillp != &selnodefill) {
-				selnode->n_ofillp = selnode->n_fillp;
-				selnode->n_fillp = &selnodefill;
-			}
-		}
 	}
-	/* XXX: this is wrong. */
-	if (opts & RF_SELNODE)
-		select_node(selnode);
 	if (opts & RF_PERSPECTIVE) {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -313,8 +326,21 @@ rebuild(int opts)
 	}
 	if (opts & RF_GROUND && st.st_opts & OP_GROUND)
 		make_ground();
-	if (opts & RF_CLUSTER)
+	if (opts & RF_CLUSTER) {
+printf("rebuild\n");
 		make_cluster();
+}
+	if (opts & RF_SELNODE) {
+		struct node *n;
+
+		/*
+		 * Hack around optimization of not rebuilding
+		 * the selected node when it is already selected.
+		 */
+		n = selnode;
+		selnode = NULL;
+		select_node(n);
+	}
 }
 
 int
