@@ -253,10 +253,10 @@ draw_box_tex(struct vec *dim, struct fill *fillp)
 	float color[4];
 	GLenum param;
 
-	/* Convert to texture units */
-	uw = 1.0;
-	ud = 2.0;
-	uh = 2.0;
+	/* Number of times to tile image */
+	uw = 0.5 * TILE_TEXTURE;
+	ud = 1.0 * TILE_TEXTURE;
+	uh = 1.0 * TILE_TEXTURE;
 
 	glEnable(GL_TEXTURE_2D);
 
