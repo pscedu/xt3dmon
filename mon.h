@@ -341,7 +341,6 @@ void			 rebuild(int);
 void			 select_node(struct node *);
 void			 idle_govern(void);
 void			 idle(void);
-void			 detect_node(int, int);
 void			 update_textures(void);
 void			 restore_textures(void);
 
