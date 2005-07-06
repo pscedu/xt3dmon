@@ -431,10 +431,10 @@ panel_refresh_legend(struct panel *p)
 		pw->pw_str = temp_notfound.t_name;
 		p->p_maxwlen = MAX(p->p_maxwlen, strlen(pw->pw_str));
 		pw = nextp;
-		for (j = 0; j < ntemps; j++, pw = nextp) {
+		for (j = 0; j < TEMP_NTEMPS; j++, pw = nextp) {
 			pw = panel_get_pwidget(p, pw, &nextp);
-			pw->pw_fillp = &temps[j]->t_fill;
-			pw->pw_str = temps[j]->t_name;
+			pw->pw_fillp = &temp_map[j].m_fill;
+			pw->pw_str = temp_map[j].m_name;
 			p->p_maxwlen = MAX(p->p_maxwlen, strlen(pw->pw_str));
 		}
 		break;
