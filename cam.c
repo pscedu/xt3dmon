@@ -68,6 +68,15 @@ void
 cam_goto(struct vec *v)
 {
 
+	if (st.st_opts & OP_TWEEN) {
+		tx = v->v_x;
+		ty = v->v_y;
+		tz = v->v_z;
+	} else {
+		st.st_x = v->v_x;
+		st.st_y = v->v_y;
+		st.st_z = v->v_z;
+	}
 }
 
 void
@@ -131,7 +140,8 @@ cam_rotatev(int d)
 
 	adj = d * -0.005f;
 	t = asinf(st.st_ly); /* XXX:  wrong. */
-	if (fabs(t + adj) < PI / 2.0f) {
+	if (t + adj < PI / 2.0f &&
+	    t + adj > -PI / 2.0f) {
 		st.st_ly = sin(t + adj);
 		mag = sqrt(SQUARE(st.st_lx) + SQUARE(st.st_ly) +
 		    SQUARE(st.st_lz));
@@ -157,32 +167,33 @@ tween_pushpop(int opts)
 {
 	static float sx, sy, sz, slx, sly, slz;
 
+	if ((st.st_opts & OP_TWEEN) == 0) {
+		if (opts & TWF_POP)
+			cam_update();
+		return;
+	}
+
 	if (opts & TWF_PUSH) {
-		if (st.st_opts & OP_TWEEN) {
-			if (opts & TWF_POS) {
-				ox = st.st_x;  sx = st.st_x;  st.st_x = tx;
-				oy = st.st_y;  sy = st.st_y;  st.st_y = ty;
-				oz = st.st_z;  sz = st.st_z;  st.st_z = tz;
-			}
-			if (opts & TWF_LOOK) {
-				olx = st.st_lx;  slx = st.st_lx;  st.st_lx = tlx;
-				oly = st.st_ly;  sly = st.st_ly;  st.st_ly = tly;
-				olz = st.st_lz;  slz = st.st_lz;  st.st_lz = tlz;
-			}
+		if (opts & TWF_POS) {
+			ox = st.st_x;  sx = st.st_x;  st.st_x = tx;
+			oy = st.st_y;  sy = st.st_y;  st.st_y = ty;
+			oz = st.st_z;  sz = st.st_z;  st.st_z = tz;
+		}
+		if (opts & TWF_LOOK) {
+			olx = st.st_lx;  slx = st.st_lx;  st.st_lx = tlx;
+			oly = st.st_ly;  sly = st.st_ly;  st.st_ly = tly;
+			olz = st.st_lz;  slz = st.st_lz;  st.st_lz = tlz;
 		}
 	} else {
-		if (st.st_opts & OP_TWEEN) {
-			if (opts & TWF_POS) {
-				tx = st.st_x;  st.st_x = sx;
-				ty = st.st_y;  st.st_y = sy;
-				tz = st.st_z;  st.st_z = sz;
-			}
-			if (opts & TWF_LOOK) {
-				tlx = st.st_lx;  st.st_lx = slx;
-				tly = st.st_ly;  st.st_ly = sly;
-				tlz = st.st_lz;  st.st_lz = slz;
-			}
-		} else
-			cam_update();
+		if (opts & TWF_POS) {
+			tx = st.st_x;  st.st_x = sx;
+			ty = st.st_y;  st.st_y = sy;
+			tz = st.st_z;  st.st_z = sz;
+		}
+		if (opts & TWF_LOOK) {
+			tlx = st.st_lx;  st.st_lx = slx;
+			tly = st.st_ly;  st.st_ly = sly;
+			tlz = st.st_lz;  st.st_lz = slz;
+		}
 	}
 }
