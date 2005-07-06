@@ -244,6 +244,7 @@ draw_box_filled(const struct vec *dim, const struct fill *fillp)
 	glEnd();
 }
 
+
 __inline void
 draw_box_tex(struct vec *dim, struct fill *fillp)
 {
@@ -364,18 +365,81 @@ draw_box_tex(struct vec *dim, struct fill *fillp)
 	glDisable(GL_TEXTURE_2D);
 }
 
+
+/* Width/Heigh of entire char map */
+#define FONT_TEX_W 256.0
+#define FONT_TEX_H 16.0
+
+/* Single line of chars in fontmap, offset for pow(2) texture size */
+//#define FONT_OFFSET_H (FONT_TEX_H - FONT_HEIGHT)
+
+/* How many units of texture coordinates a character displaces */
+#define FONT_TEXCOORD_S (1/(FONT_TEX_W/FONT_WIDTH))
+#define FONT_TEXCOORD_T (1/(FONT_TEX_H/FONT_HEIGHT))
+
+/* How many pixels a character displaces on a 128x128 tile */
+#define FONT_DISPLACE_W ((FONT_WIDTH * NODEDEPTH) / 128.0)
+#define FONT_DISPLACE_H ((FONT_HEIGHT* NODEHEIGHT) / 128.0)
+
+/* Render a char from the font texture */
+void draw_char(int ch, float x, float y, float z)
+{
+	if(ch < 0)
+		return;
+
+	glTexCoord2f(FONT_TEXCOORD_S*ch, 0.0);
+	glVertex3f(x, y, z);
+
+	glTexCoord2f(FONT_TEXCOORD_S*ch, FONT_TEXCOORD_T);
+	glVertex3f(x, y+FONT_DISPLACE_H, z);
+
+	glTexCoord2f(FONT_TEXCOORD_S*(ch+1), FONT_TEXCOORD_T);
+	glVertex3f(x, y+FONT_DISPLACE_H, z+FONT_DISPLACE_W);
+
+	glTexCoord2f(FONT_TEXCOORD_S*(ch+1), 0.0);
+	glVertex3f(x, y, z+FONT_DISPLACE_W);
+}
+
 __inline void
 draw_node_label(struct node *n)
 {
-	char *s, buf[BUFSIZ];
+	float list[8];
+	int nid;
+	int i, j;
 
-	glColor3f(1.0f, 1.0f, 0.0f);
-	glRasterPos3f(n->n_v->v_x, n->n_v->v_y, n->n_v->v_z);
+	/* texture position for 'NODE' */
+	list[0] = 0;
+	list[1] = 1;
+	list[2] = 2;
+	list[3] = 3;
+	i = 4;
 
-	snprintf(buf, sizeof(buf), "%d", n->n_nid);
+	/*
+	** Parse the node id for use with
+	** NODE0123456789 (so 4 letter gap before 0)
+	*/
+	nid = n->n_nid;
+	while(nid >= 0 && i < 8) {
+		list[i++] = 4 + nid % 10;
+		nid /= 10;
+	}
 
-	for (s = buf; *s != '\0'; s++)
-		glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
+	while(i < 8)
+		list[i++] = -1;
+	
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	glBindTexture(GL_TEXTURE_2D, font_id);
+	glBegin(GL_QUADS);
+
+	for(i = 0, j = 0; i < 8; i++, j++) {
+		if(j == 4)
+			j++;
+		draw_char(list[i], 0.0, 0.0, FONT_DISPLACE_W*(float)(j));
+	}
+
+	glEnd();
+	glDisable(GL_TEXTURE_2D);
 }
 
 /*
