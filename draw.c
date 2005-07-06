@@ -13,8 +13,8 @@
 #include <math.h>
 #include <stdio.h>
 
-#include "cdefs.h"
 #include "mon.h"
+#include "cdefs.h"
 
 #define TWEEN_MAX_POS	(2.0f)
 #define TWEEN_MAX_LOOK	(0.04f)
@@ -36,7 +36,8 @@ tween(__unused float start, float *cur, float stop, float max)
 		amt = (stop - *cur) * TWEEN_AMT;
 		amt = MIN(amt, max);
 		*cur += amt;
-		if (fabs(stop - *cur) < TWEEN_THRES)
+		if (stop - *cur < TWEEN_THRES &&
+		    stop - *cur > -TWEEN_THRES)
 			*cur = stop;
 		return (1);
 	}
@@ -89,7 +90,8 @@ draw(void)
 	glCallList(cluster_dl);
 	if (select_dl)
 		glCallList(select_dl);
-	draw_panels();
+	if (TAILQ_EMPTY(&panels))
+		draw_panels();
 
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	if (st.st_opts & OP_CAPTURE || gDebugCapture)
