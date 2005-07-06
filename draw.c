@@ -25,7 +25,7 @@ struct vec wivstart, wivdim;
 
 struct fill fill_black = { 0.0f, 0.0f, 0.0f, 1.0f, 0, 0 };
 struct fill fill_grey  = { 0.2f, 0.2f, 0.2f, 1.0f, 0, 0 };
-struct fill fill_light_blue  = { 0.2f, 0.4f, 0.6f, 1.0f, 0, 0 };
+struct fill fill_light_blue = { 0.2f, 0.4f, 0.6f, 1.0f, 0, 0 };
 
 __inline int
 tween(__unused float start, float *cur, float stop, float max)
