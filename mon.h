@@ -25,6 +25,7 @@
 #define _PATH_CHECKMAP	"/usr/users/torque/to_check_nids_list_phantom"
 #define _PATH_FLYBY	"data/flyby.data"
 #define _PATH_TEX	"data/texture%d.png"
+#define _PATH_FONT	"data/font.png"
 
 #define NROWS		2
 #define NCABS		11
@@ -97,6 +98,9 @@
 #define DIMMED_ALPHA	0.2
 
 #define TILE_TEXTURE	1
+
+#define FONT_WIDTH	12.0
+#define FONT_HEIGHT	12.0
 
 #define PNG_FRAMES	4
 #define PPM_FRAMES	3
@@ -454,6 +458,8 @@ extern int		 capture_mode;
 
 extern int		 win_width;
 extern int		 win_height;
+
+extern int		 font_id;
 
 extern struct job_state	 jstates[];
 extern struct fail_state fstates[];
