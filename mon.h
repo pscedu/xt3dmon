@@ -333,6 +333,7 @@ void			 cam_revolve(int);
 void			 cam_rotateu(int);
 void			 cam_rotatev(int);
 void			 cam_update(void);
+void			 cam_goto(struct vec *);
 void			 tween_pushpop(int);
 
 /* draw.c */
