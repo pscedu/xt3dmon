@@ -327,7 +327,7 @@ panel_set_content(struct panel *p, char *fmt, ...)
 		t->p_opts |= POPT_DIRTY;
 }
 
-int
+__inline int
 panel_ready(struct panel *p)
 {
 	return ((p->p_opts & POPT_DIRTY) == 0 && p->p_str != NULL);
@@ -700,13 +700,5 @@ uinpcb_goto(void)
 
 	if ((n = node_for_nid(nid)) == NULL)
 		return;
-	if (st.st_opts & OP_TWEEN) {
-		tx = n->n_v->v_x;
-		ty = n->n_v->v_y;
-		tz = n->n_v->v_z;
-	} else {
-		st.st_x = n->n_v->v_x;
-		st.st_y = n->n_v->v_y;
-		st.st_z = n->n_v->v_z;
-	}
+	cam_goto(n->n_v);
 }
