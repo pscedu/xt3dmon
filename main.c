@@ -39,7 +39,7 @@ int			 win_height = 600;
 int			 active_flyby = 0;
 int			 build_flyby = 0;
 int			 capture_mode = PNG_FRAMES;
-
+int			 font_id;
 int			 wired_width;
 int			 wired_height;
 int			 wired_depth;
@@ -260,6 +260,11 @@ load_textures(void)
 		load_texture(data, jstates[i].js_fill.f_alpha_fmt, i + 1);
 		jstates[i].js_fill.f_texid = i + 1;
 	}
+
+	/* Load the font texture */
+	font_id = i + 1;
+	data = load_png(_PATH_FONT);
+	load_texture(data, GL_RGBA, font_id);
 }
 
 void
