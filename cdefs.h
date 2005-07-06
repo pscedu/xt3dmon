@@ -17,3 +17,8 @@
 #if defined(__FLT_MAX__) && !defined(FLT_MAX)
 #define FLT_MAX __FLT_MAX__
 #endif
+
+#if 0
+#undef __inline
+#define __inline
+#endif
