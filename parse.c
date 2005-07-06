@@ -40,11 +40,28 @@ struct temp	**temps;
 int		 total_failures;
 
 struct fail fail_notfound = {
-	0, { 0.33f, 0.66f, 0.99f, 1.00f, 0, 0 }, "0"
+	{ 0, 0 }, 0, { 0.33f, 0.66f, 0.99f, 1.00f, 0, 0 }, "0"
 };
 
 struct temp temp_notfound = {
-	0, { 0.00f, 0.00f, 0.00f, 1.00f, 0, 0 }, "?"
+	{ 0, 0 }, 0, { 0.00f, 0.00f, 0.00f, 1.00f, 0, 0 }, "?"
+};
+
+struct temp_range temp_map[] = {
+	{ { 0.0f, 0.0f, 0.4f, 1.0f, 0, 0 }, "18-20C" },
+	{ { 0.8f, 0.0f, 0.4f, 1.0f, 0, 0 }, "21-23C" },
+	{ { 0.6f, 0.0f, 0.6f, 1.0f, 0, 0 }, "24-26C" },
+	{ { 0.4f, 0.0f, 0.8f, 1.0f, 0, 0 }, "27-29C" },
+	{ { 0.2f, 0.2f, 1.0f, 1.0f, 0, 0 }, "30-32C" },
+	{ { 0.0f, 0.0f, 1.0f, 1.0f, 0, 0 }, "33-35C" },
+	{ { 0.0f, 0.6f, 0.6f, 1.0f, 0, 0 }, "36-38C" },
+	{ { 0.0f, 0.8f, 0.0f, 1.0f, 0, 0 }, "39-41C" },
+	{ { 0.4f, 1.0f, 0.0f, 1.0f, 0, 0 }, "42-44C" },
+	{ { 1.0f, 1.0f, 0.0f, 1.0f, 0, 0 }, "45-47C" },
+	{ { 1.0f, 0.8f, 0.2f, 1.0f, 0, 0 }, "48-50C" },
+	{ { 1.0f, 0.6f, 0.0f, 1.0f, 0, 0 }, "51-53C" },
+	{ { 1.0f, 0.0f, 0.0f, 1.0f, 0, 0 }, "54-56C" },
+	{ { 1.0f, 0.6f, 0.6f, 1.0f, 0, 0 }, "57-59C" }
 };
 
 int
@@ -79,17 +96,70 @@ fail_cmp(const void *a, const void *b)
 	return (CMP((*(struct fail **)a)->f_fails, (*(struct fail **)b)->f_fails));
 }
 
+void
+obj_batch_start(void ***data, size_t cursiz)
+{
+	struct objhdr *ohp;
+	void **jj;
+	size_t n;
+
+	if (*data == NULL)
+		return;
+	for (n = 0, jj = *data; n < cursiz; jj++, n++) {
+		ohp = (struct objhdr *)*jj;
+		ohp->oh_tref = 0;
+	}
+}
+
+void
+obj_batch_end(void ***data, size_t *cursiz)
+{
+	struct objhdr *ohp, *swapohp;
+	size_t n, lookpos;
+	void *t, **jj;
+
+	if (*data == NULL)
+		return;
+	lookpos = 0;
+	for (n = 0, jj = *data; n < *cursiz; jj++, n++) {
+		ohp = (struct objhdr *)*jj;
+		if (ohp->oh_tref)
+			ohp->oh_ref = 1;
+		else {
+			if (lookpos <= n)
+				lookpos = n + 1;
+			/* Scan forward to swap. */
+			for (; lookpos < *cursiz; lookpos++) {
+				swapohp = (*data)[lookpos];
+				if (swapohp->oh_tref) {
+					t = (*data)[n];
+					(*data)[n] = (*data)[lookpos];
+					(*data)[lookpos++] = t;
+					break;
+				}
+			}
+			if (lookpos == *cursiz) {
+				*cursiz = n;
+				return;
+			}
+		}
+	}
+}
+
 void *
 getobj(void *arg, void ***data, size_t *cursiz, size_t *maxsiz,
     cmpf_t eq, int inc, size_t objlen)
 {
-	void **jj, *j = NULL;
 	size_t n, newmax;
+	void **jj, *j = NULL;
+	struct objhdr *ohp;
 
 	if (*data != NULL)
-		for (n = 0, jj = *data; n < *cursiz; jj++, n++)
-			if (eq(*jj, arg))
-				return (*jj);
+		for (n = 0, jj = *data; n < *cursiz; jj++, n++) {
+			ohp = (struct objhdr *)*jj;
+			if (eq(ohp, arg))
+				goto found;
+		}
 	/* Not found; add. */
 	if (*cursiz + 1 >= *maxsiz) {
 		newmax = *maxsiz + inc;
@@ -104,7 +174,10 @@ getobj(void *arg, void ***data, size_t *cursiz, size_t *maxsiz,
 		}
 		*maxsiz = newmax;
 	}
-	return ((*data)[(*cursiz)++]);
+	ohp = (*data)[(*cursiz)++];
+found:
+	ohp->oh_tref = 1;
+	return (ohp);
 }
 
 void
@@ -126,29 +199,8 @@ getcol(int n, size_t total, struct fill *fillp)
 void
 getcol_temp(int n, struct fill *fillp)
 {
-	static struct fill map[] = {
-		{ 0.0f, 0.0f, 0.4f, 1.0f, 0, 0 },
-		{ 0.8f, 0.0f, 0.4f, 1.0f, 0, 0 },
-		{ 0.6f, 0.0f, 0.6f, 1.0f, 0, 0 },
-		{ 0.4f, 0.0f, 0.8f, 1.0f, 0, 0 },
-		{ 0.2f, 0.2f, 1.0f, 1.0f, 0, 0 },
-		{ 0.0f, 0.0f, 1.0f, 1.0f, 0, 0 },
-		{ 0.0f, 0.6f, 0.6f, 1.0f, 0, 0 },
-		{ 0.0f, 0.8f, 0.0f, 1.0f, 0, 0 },
-		{ 0.4f, 1.0f, 0.0f, 1.0f, 0, 0 },
-		{ 1.0f, 1.0f, 0.0f, 1.0f, 0, 0 },
-		{ 1.0f, 0.8f, 0.2f, 1.0f, 0, 0 },
-		{ 1.0f, 0.6f, 0.0f, 1.0f, 0, 0 },
-		{ 1.0f, 0.2f, 0.2f, 1.0f, 0, 0 },
-		{ 1.0f, 0.0f, 0.0f, 1.0f, 0, 0 }
-	};
-
 	int cel = temps[n]->t_cel;
 	int idx;
-
-#define TEMP_MIN 18
-#define TEMP_MAX 80
-#define TEMP_NTEMPS (sizeof(map) / sizeof(map[0]))
 
 	if (cel < TEMP_MIN)
 		cel = TEMP_MIN;
@@ -157,7 +209,7 @@ getcol_temp(int n, struct fill *fillp)
 
 	idx = (cel - TEMP_MIN) / ((TEMP_MAX - TEMP_MIN) / TEMP_NTEMPS);
 
-	*fillp = map[idx];
+	*fillp = temp_map[idx].m_fill;
 }
 
 /*
