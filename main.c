@@ -310,19 +310,19 @@ rebuild(int opts)
 		mode_data_clean = 0;
 		switch (st.st_mode) {
 		case SM_JOBS:
-			obj_batch_start(&jobs, njobs);
+			obj_batch_start((void ***)&jobs, njobs);
 			parse_jobmap();
-			obj_batch_end(&jobs, &njobs);
+			obj_batch_end((void ***)&jobs, &njobs);
 			break;
 		case SM_FAIL:
-			obj_batch_start(&fails, nfails);
+			obj_batch_start((void ***)&fails, nfails);
 			parse_failmap();
-			obj_batch_end(&fails, &nfails);
+			obj_batch_end((void ***)&fails, &nfails);
 			break;
 		case SM_TEMP:
-			obj_batch_start(&temps, ntemps);
+			obj_batch_start((void ***)&temps, ntemps);
 			parse_tempmap();
-			obj_batch_end(&temps, &ntemps);
+			obj_batch_end((void ***)&temps, &ntemps);
 			break;
 		}
 	}
