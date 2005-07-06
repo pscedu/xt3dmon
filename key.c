@@ -307,11 +307,13 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		break;
 	/* DEBUG */
 	case 'z':
-//		st.st_opts ^= OP_GROUND;
-//		st.st_opts ^= OP_TEX;
+		st.st_opts ^= OP_GROUND;
+		st.st_opts ^= OP_TEX;
+//		st.st_opts ^= OP_NLABELS;
 //		st.st_opts ^= OP_BLEND;
-		st.st_opts ^= OP_DEBUG;
-		st.st_rf |= RF_CLUSTER;
+//		st.st_opts ^= OP_DEBUG;
+		st.st_vmode = VM_PHYSICAL;
+		st.st_rf |= RF_CLUSTER | RF_PERSPECTIVE | RF_GROUND | RF_SELNODE;
 		break;
 	case '+':
 	case '_': {
