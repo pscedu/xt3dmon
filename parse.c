@@ -709,6 +709,7 @@ parse_failmap(void)
 						node->n_fillp = &fail_notfound.f_fill;
 					}
 
+	nfails = 0;
 	total_failures = newmax = 0;
 	if ((fp = fopen(_PATH_FAILMAP, "r")) == NULL)
 		warn("%s", _PATH_FAILMAP);
@@ -805,6 +806,7 @@ parse_tempmap(void)
 						node->n_fillp = &temp_notfound.t_fill;
 					}
 
+	ntemps = 0;
 	if ((fp = fopen(_PATH_TEMPMAP, "r")) == NULL)
 		warn("%s", _PATH_TEMPMAP);
 	else {
