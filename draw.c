@@ -17,7 +17,7 @@
 #include "mon.h"
 
 #define TWEEN_MAX_POS	(2.0f)
-#define TWEEN_MAX_LOOK	(0.01f)
+#define TWEEN_MAX_LOOK	(0.04f)
 #define TWEEN_THRES	(0.001f)
 #define TWEEN_AMT	(0.05f)
 
@@ -715,8 +715,6 @@ draw_clusters_wired(void)
 
 	xnum = (st.st_x + WI_CLIP - x + WI_WIDTH - 1) / WI_WIDTH;
 	znum = (st.st_z + WI_CLIP - z + WI_DEPTH - 1) / WI_DEPTH;
-
-printf("x: %d, z: %d\n", xnum, znum);
 
 	col = 0;
 	for (v.v_y = y; v.v_y < st.st_y + WI_CLIP; v.v_y += WI_HEIGHT) {
