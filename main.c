@@ -67,7 +67,7 @@ struct state st = {
 	{ STARTLX, STARTLY, STARTLZ },				/* (lx,ly,lz) */
 	OP_WIREFRAME | OP_TWEEN | OP_GROUND | OP_DISPLAY,	/* options */
 	SM_JOBS,						/* which data to show */
-	VM_WIRED,						/* viewing mode */
+	VM_PHYSICAL,						/* viewing mode */
 	4,							/* wired node spacing */
 	0							/* rebuild flags (unused) */
 };
