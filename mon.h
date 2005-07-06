@@ -78,6 +78,10 @@
 #define JST_CHECK	7
 #define NJST		8
 
+#define TEMP_MIN	18
+#define TEMP_MAX	80
+#define TEMP_NTEMPS	(sizeof(temp_map) / sizeof(temp_map[0]))
+
 #define NID_MAX		3000
 
 #define SQUARE(x)	((x) * (x))
@@ -127,7 +131,13 @@ struct fill {
 	GLint		 f_alpha_fmt;
 };
 
+struct objhdr {
+	int		 oh_ref;
+	int		 oh_tref;
+};
+
 struct job {
+	struct objhdr	 j_oh;
 	int		 j_id;
 	char		*j_owner;
 	char		*j_name;
@@ -137,12 +147,14 @@ struct job {
 };
 
 struct temp {
+	struct objhdr	 t_oh;
 	int		 t_cel;
 	struct fill	 t_fill;
 	char		*t_name;
 };
 
 struct fail {
+	struct objhdr	 f_oh;
 	int		 f_fails;
 	struct fill	 f_fill;
 	char		*f_name;
@@ -306,6 +318,11 @@ struct dbh {
 #define dbh_mysql dbh_u.dbhu_mysql
 };
 
+struct temp_range {
+	struct fill	 m_fill;
+	char		*m_name;
+};
+
 /* db.c */
 void			 dbh_connect(struct dbh *);
 void			 db_physmap(void);
@@ -372,6 +389,8 @@ void			 parse_jobmap(void);
 void			 parse_physmap(void);
 void			 parse_failmap(void);
 void			 parse_tempmap(void);
+void			 obj_batch_start(void ***, size_t);
+void			 obj_batch_end(void ***, size_t *);
 
 /* capture.c */
 void			 capture_fb(int);
@@ -413,6 +432,7 @@ extern struct pinfo	 pinfo[];
 extern struct vmode	 vmodes[];
 extern int		 mode_data_clean;
 extern struct vec	 wivstart, wivdim;
+extern struct temp_range temp_map[14]; /* XXX */
 
 extern struct dbh	 dbh;
 
