@@ -365,22 +365,6 @@ draw_box_tex(struct vec *dim, struct fill *fillp)
 	glDisable(GL_TEXTURE_2D);
 }
 
-
-/* Width/Heigh of entire char map */
-#define FONT_TEX_W 256.0
-#define FONT_TEX_H 16.0
-
-/* Single line of chars in fontmap, offset for pow(2) texture size */
-//#define FONT_OFFSET_H (FONT_TEX_H - FONT_HEIGHT)
-
-/* How many units of texture coordinates a character displaces */
-#define FONT_TEXCOORD_S (1/(FONT_TEX_W/FONT_WIDTH))
-#define FONT_TEXCOORD_T (1/(FONT_TEX_H/FONT_HEIGHT))
-
-/* How many pixels a character displaces on a 128x128 tile */
-#define FONT_DISPLACE_W ((FONT_WIDTH * NODEDEPTH) / 128.0)
-#define FONT_DISPLACE_H ((FONT_HEIGHT* NODEHEIGHT) / 128.0)
-
 /* Render a char from the font texture */
 void draw_char(int ch, float x, float y, float z)
 {
@@ -403,7 +387,7 @@ void draw_char(int ch, float x, float y, float z)
 __inline void
 draw_node_label(struct node *n)
 {
-	float list[8];
+	float list[MAX_CHARS];
 	int nid;
 	int i, j;
 
@@ -435,7 +419,8 @@ draw_node_label(struct node *n)
 	for(i = 0, j = 0; i < 8; i++, j++) {
 		if(j == 4)
 			j++;
-		draw_char(list[i], 0.0, 0.0, FONT_DISPLACE_W*(float)(j));
+		draw_char(list[i], 0.0, NODEDEPTH/2.0,
+			  FONT_Z_OFFSET+FONT_DISPLACE_W*(float)(j));
 	}
 
 	glEnd();
