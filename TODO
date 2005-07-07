@@ -12,3 +12,4 @@ $Id$
 13. node id on texture or directly on node surface
     (ie. sides or front/back)
 15. try #define __inline to see if it does anything
+16. stereo stuff
