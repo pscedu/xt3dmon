@@ -38,16 +38,25 @@ begin_flyby(char m)
 void
 write_flyby(void)
 {
+	int save;
+
 	/* Save the node ID. */
 	if (selnode != NULL)
 		fb.fb_nid = selnode->n_nid;
 	else
 		fb.fb_nid = -1;
 
+	save = st.st_opts;
+	st.st_opts &= ~FB_OMASK;
 	if (fwrite(&st, sizeof(struct state), 1, flyby_fp) != 1)
 		err(1, "fwrite st");
+	st.st_opts = save;
+
+	save = fb.fb_panels;
+	fb.fb_panels &= ~FB_PMASK;		/* XXX:  stupid. */
 	if (fwrite(&fb, sizeof(struct flyby), 1, flyby_fp) != 1)
 		err(1, "fwrite fb");
+//	fb.fb_panels = save;
 }
 
 /* Read a set of flyby data. */
@@ -97,8 +106,11 @@ again:
 			select_node(n);
 	} else
 		selnode = NULL;
+	/* This is safe from the panel mask. */
 	if (fb.fb_panels)
 		flip_panels(fb.fb_panels);
+	st.st_opts ^= ((st.st_opts ^ oldopts) & FB_OMASK);
+//	st.st_opts = (oldopts & FB_OMASK) | (st.st_opts & ~FB_OMASK);
 	refresh_state(oldopts);
 }
 
