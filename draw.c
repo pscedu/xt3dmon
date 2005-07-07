@@ -90,7 +90,7 @@ draw(void)
 	glCallList(cluster_dl);
 	if (select_dl)
 		glCallList(select_dl);
-	if (TAILQ_EMPTY(&panels))
+	if (!TAILQ_EMPTY(&panels))
 		draw_panels();
 
 	glClearColor(0.0, 0.0, 0.0, 1.0);
