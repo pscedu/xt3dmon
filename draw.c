@@ -403,9 +403,10 @@ draw_node_label(struct node *n)
 	** NODE0123456789 (so 4 letter gap before 0)
 	*/
 	nid = n->n_nid;
-	while(nid >= 0 && i < 8) {
-		list[i++] = 4 + nid % 10;
+	while(nid >= 0 && i < MAX_CHARS) {
+		list[MAX_CHARS-i+3] = 4 + nid % 10;
 		nid /= 10;
+		i++;
 	}
 
 	while(i < 8)
