@@ -213,9 +213,10 @@ struct state {
 struct flyby {
 	int 		 fb_nid;
 	int		 fb_panels;
-	int		 fb_omask;
-	int		 fb_pmask;
 };
+
+#define FB_OMASK	(OP_LOOPFLYBY | OP_CAPTURE | OP_FREELOOK | OP_DISPLAY)
+#define FB_PMASK	(PANEL_GOTO | PANEL_CMD | PANEL_FLYBY | PANEL_SS)
 
 #define RF_TEX		(1<<0)
 #define RF_PHYSMAP	(1<<1)
