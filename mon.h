@@ -98,9 +98,23 @@
 #define DIMMED_ALPHA	0.2
 
 #define TILE_TEXTURE	1
+#define TEXTURE_SIZE	128.0
 
 #define FONT_WIDTH	12.0
 #define FONT_HEIGHT	12.0
+#define FONT_TEX_W 	256.0
+#define FONT_TEX_H 	16.0
+
+/* How many units of texture coordinates a character displaces */
+#define FONT_TEXCOORD_S (1/(FONT_TEX_W/FONT_WIDTH))
+#define FONT_TEXCOORD_T (1/(FONT_TEX_H/FONT_HEIGHT))
+
+/* How many pixels a character displaces on a 128x128 tile */
+#define FONT_DISPLACE_W ((FONT_WIDTH * NODEDEPTH) / TEXTURE_SIZE)
+#define FONT_DISPLACE_H ((FONT_HEIGHT* NODEHEIGHT) / TEXTURE_SIZE)
+
+#define MAX_CHARS 	8
+#define FONT_Z_OFFSET ((NODEHEIGHT-((MAX_CHARS+1)*FONT_DISPLACE_W))/2)
 
 #define PNG_FRAMES	4
 #define PPM_FRAMES	3
