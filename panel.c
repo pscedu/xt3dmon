@@ -54,6 +54,7 @@ void panel_refresh_flyby(struct panel *);
 void panel_refresh_goto(struct panel *);
 void panel_refresh_pos(struct panel *);
 void panel_refresh_ss(struct panel *p);
+void panel_refresh_status(struct panel *p);
 
 void uinpcb_ss(void);
 
@@ -65,7 +66,8 @@ struct pinfo pinfo[] = {
 	{ panel_refresh_flyby,	0,	 0,		 NULL },
 	{ panel_refresh_goto,	PF_UINP, 0,		 uinpcb_goto },
 	{ panel_refresh_pos,	0,	 0,		 NULL },
-	{ panel_refresh_ss,	PF_UINP, 0,		uinpcb_ss }
+	{ panel_refresh_ss,	PF_UINP, 0,		 uinpcb_ss },
+	{ panel_refresh_status,	0,	 0,		 NULL }
 };
 
 struct panels	 panels;
@@ -308,6 +310,7 @@ panel_set_content(struct panel *p, char *fmt, ...)
 	va_list ap;
 	size_t len;
 
+	len = 0; /* gcc */
 	p->p_opts |= POPT_DIRTY;
 	for (;;) {
 		va_start(ap, fmt);
@@ -322,6 +325,8 @@ panel_set_content(struct panel *p, char *fmt, ...)
 		} else
 			break;
 	}
+	if (p->p_str[len - 1] == '\n')
+		p->p_str[len - 1] = '\0';
 	/* All panels below us must be refreshed now, too. */
 	for (t = p; t != TAILQ_END(&panels); t = TAILQ_NEXT(t, p_link))
 		t->p_opts |= POPT_DIRTY;
@@ -573,6 +578,47 @@ panel_refresh_ss(struct panel *p)
 	    buf_get(&uinp.uinp_buf));
 }
 
+int panel_status_dirty;
+char panel_status_content[BUFSIZ];
+
+void
+panel_status_setinfo(const char *fmt, ...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	vsnprintf(panel_status_content, sizeof(panel_status_content),
+	    fmt, ap);
+	va_end(ap);
+
+	panel_status_dirty = 1;
+}
+
+void
+panel_status_addinfo(const char *fmt, ...)
+{
+	va_list ap;
+	int len;
+
+	len = strlen(panel_status_content);
+
+	va_start(ap, fmt);
+	vsnprintf(panel_status_content + len,
+	    sizeof(panel_status_content) - len, fmt, ap);
+	va_end(ap);
+
+	panel_status_dirty = 1;
+}
+
+void
+panel_refresh_status(struct panel *p)
+{
+	if (panel_status_dirty == 0)
+		return;
+	panel_status_dirty = 0;
+	panel_set_content(p, "Status\n%s", panel_status_content);
+}
+
 void
 draw_panels(void)
 {
@@ -639,7 +685,7 @@ panel_toggle(int panel)
 
 	TAILQ_FOREACH(p, &panels, p_link)
 		if (p->p_id == panel) {
-			panel_remove(p);
+			panel_remove(p); /* XXX:  wrong. */
 			return;
 		}
 	/* Not found; add. */

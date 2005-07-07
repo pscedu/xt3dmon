@@ -142,6 +142,9 @@ keyh_panel(unsigned char key, __unused int u, __unused int v)
 	case 's':
 		panel_toggle(PANEL_SS);
 		break;
+	case 'S':
+		panel_toggle(PANEL_STATUS);
+		break;
 	}
 }
 
