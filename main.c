@@ -242,6 +242,7 @@ idle_govern(void)
 		if (diff.tv_sec >= SLEEP_INTV) {
 			lastsync = time;
 			rebuild(RF_DATASRC | RF_CLUSTER);
+			panel_status_setinfo("");
 			/* A lot of time may have elasped. */
 //			gettimeofday(&time, NULL);
 		}
@@ -263,14 +264,13 @@ idle(void)
 		if (gettimeofday(&tv, NULL) == -1)
 			err(1, "gettimeofday");
 		timersub(&tv, &lastsync, &diff);
-		if (diff.tv_sec) {
+		if (diff.tv_sec)
 			fps = tcnt / (diff.tv_sec + diff.tv_usec / 1e9f);
-			panel_status_setinfo("");
-		}
 		if (diff.tv_sec > SLEEP_INTV) {
 			tcnt = 0;
 			lastsync = tv;
 			rebuild(RF_DATASRC | RF_CLUSTER);
+			panel_status_setinfo("");
 		}
 		cnt = 0;
 	}
