@@ -18,7 +18,7 @@
 void
 cam_move(int dir)
 {
-	float r, adj;
+	float t, r, adj;
 
 	r = sqrt(SQUARE(st.st_x - XCENTER) + SQUARE(st.st_z - ZCENTER));
 	adj = pow(2, r / (ROWWIDTH / 2.0f));
@@ -45,14 +45,22 @@ cam_move(int dir)
 		st.st_z -= st.st_lz * 0.3f * adj;
 		break;
 	case CAMDIR_UP:
-		st.st_x += st.st_lx * st.st_ly * 0.3f * adj;
-		st.st_y += 0.3f;
-		st.st_z += st.st_lz * st.st_ly * 0.3f * adj;
+		if (st.st_ly < 0)
+			t = PI / 2.0f + st.st_ly;
+		else
+			t = PI / 2.0f - st.st_ly ;
+		st.st_x -= st.st_lx * st.st_ly * 0.3f * adj;
+		st.st_y += t * 0.3f;
+		st.st_z -= st.st_lz * st.st_ly * 0.3f * adj;
 		break;
 	case CAMDIR_DOWN:
-		st.st_x -= st.st_lx * st.st_ly * 0.3f * adj;
-		st.st_y -= 0.3f;
-		st.st_z -= st.st_lz * st.st_ly * 0.3f * adj;
+		if (st.st_ly < 0)
+			t = PI / 2.0f + st.st_ly;
+		else
+			t = PI / 2.0f - st.st_ly ;
+		st.st_x += st.st_lx * st.st_ly * 0.3f * adj;
+		st.st_y -= t * 0.3f;
+		st.st_z += st.st_lz * st.st_ly * 0.3f * adj;
 		break;
 	}
 }
