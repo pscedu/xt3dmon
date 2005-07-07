@@ -299,7 +299,8 @@ struct panel {
 #define PANEL_GOTO	(1<<5)
 #define PANEL_POS	(1<<6)
 #define PANEL_SS	(1<<7)
-#define NPANELS		8
+#define PANEL_STATUS	(1<<8)
+#define NPANELS		9
 
 #define POPT_REMOVE	(1<<0)			/* being removed */
 #define POPT_DIRTY	(1<<1)			/* panel needs redrawn */
@@ -400,6 +401,8 @@ void			 panel_toggle(int);
 void			 panel_remove(struct panel *);
 void			 panel_show(int);
 void			 panel_hide(int);
+void			 panel_status_addinfo(const char *, ...);
+void			 panel_status_setinfo(const char *, ...);
 void			 uinpcb_cmd(void);
 void			 uinpcb_goto(void);
 
@@ -442,6 +445,10 @@ extern int		 total_failures;	/* total shared among all nodes */
 
 extern GLint		 cluster_dl, ground_dl, select_dl;
 extern int		 render_mode;
+extern int		 font_id;
+extern struct uinput	 uinp;
+extern int		 spkey;
+
 extern struct state	 st;
 extern struct flyby	 fb;
 extern long		 fps;
@@ -449,14 +456,11 @@ extern struct panels	 panels;
 extern struct node	*selnode;
 extern struct pinfo	 pinfo[];
 extern struct vmode	 vmodes[];
+extern struct dbh	 dbh;
+
 extern int		 mode_data_clean;
 extern struct vec	 wivstart, wivdim;
 extern struct temp_range temp_map[14]; /* XXX */
-
-extern struct dbh	 dbh;
-
-extern struct uinput	 uinp;
-extern int		 spkey;
 
 extern int		 wired_width;			/* XXX: convert to vec */
 extern int		 wired_height;
@@ -472,8 +476,6 @@ extern int		 capture_mode;
 
 extern int		 win_width;
 extern int		 win_height;
-
-extern int		 font_id;
 
 extern struct job_state	 jstates[];
 extern struct fail_state fstates[];
