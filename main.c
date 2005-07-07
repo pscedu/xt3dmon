@@ -51,6 +51,26 @@ struct timeval		 lastsync;
 long			 fps = 50;
 int			 gDebugCapture;
 
+const char *opdesc[] = {
+	"Texture mode",
+	"Blending mode",
+	"Node wireframes",
+	"Ground and axes",
+	"Camera tweening",
+	"Capture mode",
+	"Display mode",
+	"Govern mode",
+	"Flyby loop mode",
+	"Debug mode",
+	"Free look mode",
+	"Node labels",
+	"Module mode",
+	"Wired cluster frames",
+	"Pipe mode",
+	"Selected node pipe mode",
+	"Non-select-node dimming"
+};
+
 struct datasrc datasrcsw[] = {
 	{ parse_physmap },
 	{ db_physmap }
@@ -116,6 +136,15 @@ void
 refresh_state(int oldopts)
 {
 	int diff = st.st_opts ^ oldopts;
+	int dup, i;
+
+	dup = diff;
+	while (dup) {
+		i = ffs(dup) - 1;
+		dup &= ~(1 << i);
+		panel_status_addinfo("%s %s", opdesc[i],
+		    (st.st_opts & (1 << i) ? "enabled\n" : "disabled\n"));
+	}
 
 	/* Restore tweening state. */
 	if (diff & OP_TWEEN) {
@@ -234,8 +263,10 @@ idle(void)
 		if (gettimeofday(&tv, NULL) == -1)
 			err(1, "gettimeofday");
 		timersub(&tv, &lastsync, &diff);
-		if (diff.tv_sec)
+		if (diff.tv_sec) {
 			fps = tcnt / (diff.tv_sec + diff.tv_usec / 1e9f);
+			panel_status_setinfo("");
+		}
 		if (diff.tv_sec > SLEEP_INTV) {
 			tcnt = 0;
 			lastsync = tv;
