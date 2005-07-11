@@ -643,10 +643,8 @@ panel_show(int id)
 
 	TAILQ_FOREACH(p, &panels, p_link)
 		if (p->p_id == id) {
-			if (p->p_opts & POPT_REMOVE) {
-				p->p_opts &= ~POPT_REMOVE;
-				fb.fb_panels ^= id; /* XXX */
-			}
+			if (p->p_opts & POPT_REMOVE)
+				panel_tremove(p);
 			return;
 		}
 	panel_toggle(id);
@@ -659,13 +657,14 @@ panel_hide(int id)
 
 	TAILQ_FOREACH(p, &panels, p_link)
 		if (p->p_id == id) {
-			panel_remove(p);
+			if ((p->p_opts & POPT_REMOVE) == 0)
+				panel_tremove(p);
 			return;
 		}
 }
 
 void
-panel_remove(struct panel *p)
+panel_tremove(struct panel *p)
 {
 	struct panel *t;
 
@@ -685,7 +684,7 @@ panel_toggle(int panel)
 
 	TAILQ_FOREACH(p, &panels, p_link)
 		if (p->p_id == panel) {
-			panel_remove(p); /* XXX:  wrong. */
+			panel_tremove(p);
 			return;
 		}
 	/* Not found; add. */
