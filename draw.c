@@ -418,6 +418,8 @@ draw_node_label(struct node *n)
 	glBegin(GL_QUADS);
 
 	for(i = 0, j = 0; i < 8; i++, j++) {
+
+		/* Place a space between 'NODE' and id */
 		if(j == 4)
 			j++;
 		draw_char(list[i], 0.0, NODEDEPTH/2.0,
@@ -426,6 +428,26 @@ draw_node_label(struct node *n)
 
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
+
+#if 0
+	/* Draw outlines */
+	glColor3f(0.0, 0.0, 0.0);
+	glLineWidth(1.0);
+	glBegin(GL_LINES);
+	glVertex3f(-0.01, NODEDEPTH/2.0, FONT_Z_OFFSET);
+	glVertex3f(-0.01, NODEDEPTH/2.0+FONT_DISPLACE_H, FONT_Z_OFFSET);
+
+	glVertex3f(-0.01, NODEDEPTH/2.0+FONT_DISPLACE_H, FONT_Z_OFFSET);
+	glVertex3f(-0.01, NODEDEPTH/2.0+FONT_DISPLACE_H, FONT_Z_OFFSET+FONT_DISPLACE_W*4);
+
+	glVertex3f(-0.01, NODEDEPTH/2.0+FONT_DISPLACE_H, FONT_Z_OFFSET+FONT_DISPLACE_W*4);
+	glVertex3f(-0.01, NODEDEPTH/2.0, FONT_Z_OFFSET+FONT_DISPLACE_W*4);
+
+	glVertex3f(-0.01, NODEDEPTH/2.0, FONT_Z_OFFSET+FONT_DISPLACE_W*4);
+	glVertex3f(-0.01, NODEDEPTH/2.0, FONT_Z_OFFSET);
+
+	glEnd();
+#endif
 }
 
 /*
