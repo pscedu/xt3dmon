@@ -26,7 +26,7 @@ typedef int (*cmpf_t)(void *a, void *b);
 void		 parse_badmap(void);
 void		 parse_checkmap(void);
 void		 getcol(int, size_t, struct fill *);
-void		*getobj(void *arg, void ***data, size_t *cursiz,
+void		*getobj(void *arg, void ***data, size_t oldsiz, size_t *newsiz,
     size_t *maxsiz, cmpf_t eq, int inc, size_t);
 
 size_t		 njobs, maxjobs;
@@ -147,7 +147,7 @@ obj_batch_end(void ***data, size_t *cursiz)
 }
 
 void *
-getobj(void *arg, void ***data, size_t *cursiz, size_t *maxsiz,
+getobj(void *arg, void ***data, size_t oldsiz, size_t *newsiz, size_t *maxsiz,
     cmpf_t eq, int inc, size_t objlen)
 {
 	size_t n, newmax;
@@ -155,13 +155,13 @@ getobj(void *arg, void ***data, size_t *cursiz, size_t *maxsiz,
 	struct objhdr *ohp;
 
 	if (*data != NULL)
-		for (n = 0, jj = *data; n < *cursiz; jj++, n++) {
+		for (n = 0, jj = *data; n < oldsiz; jj++, n++) {
 			ohp = (struct objhdr *)*jj;
 			if (eq(ohp, arg))
 				goto found;
 		}
 	/* Not found; add. */
-	if (*cursiz + 1 >= *maxsiz) {
+	if (*newsiz + 1 >= *maxsiz) {
 		newmax = *maxsiz + inc;
 		if ((*data = realloc(*data,
 		    newmax * sizeof(**data))) == NULL)
@@ -174,7 +174,7 @@ getobj(void *arg, void ***data, size_t *cursiz, size_t *maxsiz,
 		}
 		*maxsiz = newmax;
 	}
-	ohp = (*data)[(*cursiz)++];
+	ohp = (*data)[(*newsiz)++];
 found:
 	ohp->oh_tref = 1;
 	return (ohp);
@@ -442,20 +442,20 @@ parse_jobmap(void)
 {
 	int jobid, nid, lineno, enabled;
 	char buf[BUFSIZ], *p, *s;
+	size_t j, newnjobs;
 	struct node *node;
 	struct job *job;
 	FILE *fp;
-	size_t j;
 	long l;
 
 	/* XXXXXX - reset fillp on all nodes. */
 
-	njobs = 0;
 	if ((fp = fopen(_PATH_JOBMAP, "r")) == NULL) {
 		warn("%s", _PATH_JOBMAP);
 		return;
 	}
 	lineno = 0;
+	newnjobs = 0;
 	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		lineno++;
 		p = buf;
@@ -518,8 +518,8 @@ parse_jobmap(void)
 			node->n_state = JST_FREE;
 		else {
 			node->n_state = JST_USED;
-			job = getobj(&jobid, (void ***)&jobs,
-			    &njobs, &maxjobs, job_eq, JINCR,
+			job = getobj(&jobid, (void ***)&jobs, njobs,
+			    &newnjobs, &maxjobs, job_eq, JINCR,
 			    sizeof(*job));
 			job->j_id = jobid;
 			job->j_name = "testjob";
@@ -544,8 +544,9 @@ pass:
 
 	parse_badmap();
 	parse_checkmap();
-
 	errno = 0;
+
+	njobs = newnjobs;
 	for (j = 0; j < njobs; j++)
 		getcol(j, njobs, &jobs[j]->j_fill);
 }
@@ -687,13 +688,18 @@ bad:
 void
 parse_failmap(void)
 {
+	size_t j, newmax, nofails, newnfails;
 	int nid, lineno, r, cb, cg, m, n;
-	size_t j, newmax, nofails;
 	char *p, *s, buf[BUFSIZ];
 	struct node *node;
 	struct fail *fail;
 	FILE *fp;
 	long l;
+
+	if ((fp = fopen(_PATH_FAILMAP, "r")) == NULL) {
+		warn("%s", _PATH_FAILMAP);
+		return;
+	}
 
 	/*
 	 * Because entries with zero failures are not listed,
@@ -709,66 +715,64 @@ parse_failmap(void)
 						node->n_fillp = &fail_notfound.f_fill;
 					}
 
-	nfails = 0;
+	newnfails = 0;
 	total_failures = newmax = 0;
-	if ((fp = fopen(_PATH_FAILMAP, "r")) == NULL)
-		warn("%s", _PATH_FAILMAP);
-	else {
-		lineno = 0;
-		while (fgets(buf, sizeof(buf), fp) != NULL) {
-			lineno++;
-			p = buf;
-			while (isspace(*p))
-				p++;
-			for (s = p; isdigit(*s); s++)
-				;
-			if (s == p || !isspace(*s))
-				goto bad;
-			*s = '\0';
-			if ((l = strtol(p, NULL, 10)) < 0 || l >= INT_MAX)
-				goto bad;
-			nofails = (int)l;
+	lineno = 0;
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
+		lineno++;
+		p = buf;
+		while (isspace(*p))
+			p++;
+		for (s = p; isdigit(*s); s++)
+			;
+		if (s == p || !isspace(*s))
+			goto bad;
+		*s = '\0';
+		if ((l = strtol(p, NULL, 10)) < 0 || l >= INT_MAX)
+			goto bad;
+		nofails = (int)l;
 
-			p = s + 1;
-			while (isspace(*p))
-				p++;
-			for (s = p; isdigit(*s); s++)
-				;
-			if (s == p)
-				goto bad;
-			*s = '\0';
-			if ((l = strtol(p, NULL, 10)) < 0 || l >= NID_MAX)
-				goto bad;
-			nid = (int)l;
+		p = s + 1;
+		while (isspace(*p))
+			p++;
+		for (s = p; isdigit(*s); s++)
+			;
+		if (s == p)
+			goto bad;
+		*s = '\0';
+		if ((l = strtol(p, NULL, 10)) < 0 || l >= NID_MAX)
+			goto bad;
+		nid = (int)l;
 
-			if (nofails > MAXFAILS)
-				nofails = MAXFAILS;
+		if (nofails > MAXFAILS)
+			nofails = MAXFAILS;
 
-			if ((node = node_for_nid(nid)) == NULL)
-				goto bad;
-			fail = getobj(&nofails, (void ***)&fails, &nfails,
-			    &maxfails, fail_eq, FINCR, sizeof(struct fail));
-			fail->f_fails = nofails;
-			free(fail->f_name); /* XXX - rename to f_label */
-			if (asprintf(&fail->f_name, "%d", nofails) == -1)
-				err(1, "asprintf");
-			node->n_fillp = &fail->f_fill;
-			node->n_fail = fail;
+		if ((node = node_for_nid(nid)) == NULL)
+			goto bad;
+		fail = getobj(&nofails, (void ***)&fails, nfails,
+		    &newnfails, &maxfails, fail_eq, FINCR, sizeof(struct fail));
+		fail->f_fails = nofails;
+		free(fail->f_name); /* XXX - rename to f_label */
+		if (asprintf(&fail->f_name, "%d", nofails) == -1)
+			err(1, "asprintf");
+		node->n_fillp = &fail->f_fill;
+		node->n_fail = fail;
 
-			/* Compute failure statistics. */
-			total_failures += nofails;
-			if (nofails > newmax)
-				newmax = nofails;
-			continue;
+		/* Compute failure statistics. */
+		total_failures += nofails;
+		if (nofails > newmax)
+			newmax = nofails;
+		continue;
 bad:
-			warnx("%s:%d: malformed line: %s [s: %s, p: %s, l:%ld]",
-			    _PATH_FAILMAP, lineno, buf, s, p, l);
-		}
-		if (ferror(fp))
-			warn("%s", _PATH_FAILMAP);
-		fclose(fp);
-		errno = 0;
+		warnx("%s:%d: malformed line: %s [s: %s, p: %s, l:%ld]",
+		    _PATH_FAILMAP, lineno, buf, s, p, l);
 	}
+	if (ferror(fp))
+		warn("%s", _PATH_FAILMAP);
+	fclose(fp);
+	errno = 0;
+
+	nfails = newnfails;
 	qsort(fails, nfails, sizeof(*fails), fail_cmp);
 	for (j = 0; j < nfails; j++)
 		getcol(j, nfails, &fails[j]->f_fill);
@@ -788,7 +792,7 @@ parse_tempmap(void)
 	char buf[BUFSIZ], *p, *s;
 	struct node *node;
 	struct temp *temp;
-	size_t j;
+	size_t j, newntemps;
 	FILE *fp;
 	long l;
 
@@ -807,6 +811,7 @@ parse_tempmap(void)
 					}
 
 	ntemps = 0;
+	newntemps = 0;
 	if ((fp = fopen(_PATH_TEMPMAP, "r")) == NULL)
 		warn("%s", _PATH_TEMPMAP);
 	else {
@@ -896,7 +901,7 @@ parse_tempmap(void)
 
 				node = &nodes[r][cb][cg][m][i];
 				temp = getobj(&t, (void ***)&temps,
-				    &ntemps, &maxtemps, temp_eq, TINCR,
+				    ntemps, &newntemps, &maxtemps, temp_eq, TINCR,
 				    sizeof(struct temp));
 				temp->t_cel = t;
 				free(temp->t_name);
@@ -914,6 +919,7 @@ bad:
 		fclose(fp);
 		errno = 0;
 	}
+	ntemps = newntemps;
 	qsort(temps, ntemps, sizeof(*temps), temp_cmp);
 	for (j = 0; j < ntemps; j++)
 		getcol_temp(j, &temps[j]->t_fill);
