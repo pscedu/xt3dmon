@@ -399,7 +399,7 @@ void			 sel_record_end(void);
 /* panel.c */
 void			 draw_panels(void);
 void			 panel_toggle(int);
-void			 panel_remove(struct panel *);
+void			 panel_tremove(struct panel *);
 void			 panel_show(int);
 void			 panel_hide(int);
 void			 panel_status_addinfo(const char *, ...);
@@ -439,6 +439,8 @@ extern struct fail	**fails;
 extern size_t		 ntemps;
 extern struct temp	**temps;
 
+extern struct job_state	 jstates[];
+
 extern struct fail	 fail_notfound;
 extern struct temp	 temp_notfound;
 
@@ -477,9 +479,5 @@ extern int		 capture_mode;
 
 extern int		 win_width;
 extern int		 win_height;
-
-extern struct job_state	 jstates[];
-extern struct fail_state fstates[];
-extern struct temp_state tstates[];
 
 extern int gDebugCapture;
