@@ -9,7 +9,7 @@
 static FILE *flyby_fp;
 struct flyby fb;
 
-void init_panels(void);
+void init_panels(int);
 
 /* Open the flyby data file appropriately. */
 void
@@ -26,7 +26,7 @@ begin_flyby(char m)
 		}
 		active_flyby = 1;
 //		rebuild(RF_COMPILE); /* XXX: is this needed? */
-		init_panels();
+		init_panels(fb.fb_panels); /* XXX: is this right? */
 	} else if (m == 'w') {
 		if ((flyby_fp = fopen(_PATH_FLYBY, "ab")) == NULL)
 			err(1, "%s", _PATH_FLYBY);
@@ -122,6 +122,7 @@ end_flyby(void)
 		flyby_fp = NULL;
 	}
 	active_flyby = build_flyby = 0;
+	fb.fb_panels = 0;
 }
 
 void
@@ -137,18 +138,15 @@ update_flyby(void)
 	fb.fb_panels = 0;
 }
 
-/*
- * Detect which panels flipped between flyby states.
- */
 void
 flip_panels(int panels)
 {
 	int b;
 
-	panels = fb.fb_panels;
-	while ((b = ffs(panels))) {
-		panel_toggle(1 << (b - 1));
-		panels &= ~(1 << (b - 1));
+	while (panels) {
+		b = ffs(panels) - 1;
+		panels &= ~(1 << b);
+		panel_toggle(1 << b);
 	}
 }
 
@@ -157,7 +155,7 @@ flip_panels(int panels)
  * flyby.
  */
 void
-init_panels(void)
+init_panels(int start)
 {
 	struct panel *p;
 	int cur;
@@ -165,5 +163,5 @@ init_panels(void)
 	cur = 0;
 	TAILQ_FOREACH(p, &panels, p_link)
 		cur |= p->p_id;
-	flip_panels(cur ^ fb.fb_panels);
+	flip_panels((cur ^ start) & ~FB_PMASK);
 }
