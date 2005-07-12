@@ -147,6 +147,9 @@ struct fill {
 	float		 f_a;
 	GLint		 f_texid;
 	GLint		 f_alpha_fmt;
+#define f_h f_r
+#define f_s f_g
+#define f_v f_b
 };
 
 struct objhdr {
@@ -362,6 +365,7 @@ void			 draw_node(struct node *, int);
 void			 draw_node_pipes(struct vec *);
 void			 make_ground(void);
 void			 make_cluster(void);
+void 			 rgb_contrast(struct fill *c);
 
 /* key.c */
 void			 keyh_flyby(unsigned char, int, int);
@@ -373,7 +377,7 @@ void			 keyh_default(unsigned char, int, int);
 void			 spkeyh_default(int, int, int);
 
 /* load_png.c */
-void			 load_texture(void *, GLint, int);
+void			 load_texture(void *, GLint, GLenum, int);
 void 			*load_png(char *);
 
 /* main.c */
