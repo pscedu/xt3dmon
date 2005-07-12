@@ -387,6 +387,7 @@ void draw_char(int ch, float x, float y, float z)
 __inline void
 draw_node_label(struct node *n)
 {
+	struct fill c;
 	float list[MAX_CHARS];
 	int nid;
 	int i, j;
@@ -413,8 +414,35 @@ draw_node_label(struct node *n)
 		list[i++] = -1;
 	
 	glEnable(GL_TEXTURE_2D);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+	/* Get a distinct contrast color */
+	c = *n->n_fillp;
+	rgb_contrast(&c);
+	glColor4f(c.f_r, c.f_g, c.f_b, c.f_a);
+
+//glColor4f(0.2, 0.2, 0.9, n->n_fillp->f_a);
+//glClearColor(0.0, 0.0, 0.0, 0.0);
+//glAlphaFunc(GL_GEQUAL, 0.0625);
+//glEnable(GL_ALPHA_TEST);
+glEnable(GL_BLEND);
+//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//glEnable(GL_POLYGON_OFFSET_EXT);
+//glEnable(GL_POLYGON_OFFSET_FILL);
+//glPolygonOffset(0.0, -3.0);
+
+	// XXX - these breaks things...
+	//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+
+//	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+//	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);
+
+/* This is already done, when textures are loaded */
+//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glBindTexture(GL_TEXTURE_2D, font_id);
+
 	glBegin(GL_QUADS);
 
 	for(i = 0, j = 0; i < 8; i++, j++) {
@@ -422,12 +450,18 @@ draw_node_label(struct node *n)
 		/* Place a space between 'NODE' and id */
 		if(j == 4)
 			j++;
-		draw_char(list[i], 0.0, NODEDEPTH/2.0,
+		draw_char(list[i], -0.001, NODEDEPTH/2.0,
 			  FONT_Z_OFFSET+FONT_DISPLACE_W*(float)(j));
 	}
 
+//glDisable(GL_POLYGON_OFFSET_FILL);
+//glDisable(GL_POLYGON_OFFSET_EXT);
+glDisable(GL_BLEND);
+//glDisable(GL_ALPHA_TEST);
+
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
+
 
 #if 0
 	/* Draw outlines */
@@ -839,3 +873,112 @@ make_cluster(void)
 
 	glEndList();
 }
+
+/* 
+** The following two mathematical algorithms were created from
+** sudocode found in "Fundamentals of Interactive Comptuer Graphics"
+*/
+void RGB2HSV(struct fill *c)
+{
+	float r = c->f_r;
+	float g = c->f_g;
+	float b = c->f_b;
+	float max, min, ran;
+	float rc, gc, bc;
+
+	max = fmax(fmax(r,g), b);
+	min = fmin(fmin(r,g), b);
+	ran = max - min;
+
+	c->f_h = 0;
+	c->f_s = 0;
+
+	/* Value */
+	c->f_v = max;
+
+	/* Saturation */
+	if(max != 0)
+		c->f_s = ran / max;
+
+	/* Hue */
+	if(c->f_s != 0) {
+
+		/* Measure color distances */
+		rc = (max - r) / ran;
+		gc = (max - g) / ran;
+		bc = (max - b) / ran;
+		
+		/* Between Yellow and Magenta */
+		if(r == max)
+			c->f_h = bc - gc;
+		/* Between Cyan and Yellow */
+		else if(g == max)
+			c->f_h = 2 + rc - bc;
+		/* Between Magenta and Cyan */
+		else if(b == max)
+			c->f_h = 4 + gc - rc;
+
+		/* Convert to degrees */
+		c->f_h *= 60;
+
+		if(c->f_h < 0)
+			c->f_h += 360;
+	}
+}
+
+void HSV2RGB(struct fill *c)
+{
+	float s = c->f_s;
+	float h = c->f_h;
+	float v = c->f_v;
+	float f, p, q, t;
+	int i;
+
+	if(s == 0)
+		h = v;
+	else {
+		if(h == 360)
+			h = 0;
+		h /= 60;
+		
+		i = floorf(h);
+		f = h - i;
+		p = v * (1 - s);
+		q = v * (1 - (s * f));
+		t = v * (1 - (s * (1 - f)));
+
+		switch(i) {
+			case 0:	c->f_r = v; c->f_g = t; c->f_b = p; break;
+			case 1: c->f_r = q; c->f_g = v; c->f_b = p; break;
+			case 2: c->f_r = p; c->f_g = v; c->f_b = t; break;
+			case 3: c->f_r = p; c->f_g = q; c->f_b = v; break;
+			case 4:	c->f_r = t; c->f_g = p; c->f_b = v; break;
+			case 5: c->f_r = v; c->f_g = p; c->f_b = q; break;
+		}
+	}
+}
+
+/*
+** Create a contrasting color by panning
+** 180 degrees around the color circle
+*/
+void rgb_contrast(struct fill *c)
+{
+	RGB2HSV(c);
+
+	c->f_h -= 180;
+
+	if(c->f_h < 0)
+		c->f_h += 360; 
+	
+	HSV2RGB(c);
+}
+
+
+
+
+
+
+
+
+
