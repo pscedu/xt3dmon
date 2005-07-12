@@ -288,14 +288,47 @@ load_textures(void)
 	for (i = 0; i < NJST; i++) {
 		snprintf(path, sizeof(path), _PATH_TEX, i);
 		data = load_png(path);
-		load_texture(data, jstates[i].js_fill.f_alpha_fmt, i + 1);
+		load_texture(data, jstates[i].js_fill.f_alpha_fmt,
+				GL_RGBA, i + 1);
 		jstates[i].js_fill.f_texid = i + 1;
 	}
 
 	/* Load the font texture */
 	font_id = i + 1;
 	data = load_png(_PATH_FONT);
-	load_texture(data, GL_RGBA, font_id);
+
+	/* this one is pretty normal */
+//	load_texture(data, GL_INTENSITY, GL_RGBA, font_id);
+
+#if 0
+	load_texture(data, GL_INTENSITY, GL_LUMINANCE, font_id);
+	load_texture(data, GL_INTENSITY4, GL_LUMINANCE, font_id);
+	load_texture(data, GL_RGBA, GL_LUMINANCE, font_id);
+	load_texture(data, GL_LUMINANCE, GL_LUMINANCE, font_id);
+	load_texture(data, GL_LUMINANCE_ALPHA, GL_LUMINANCE, font_id);
+
+	load_texture(data, GL_INTENSITY, GL_LUMINANCE_ALPHA, font_id);
+	load_texture(data, GL_INTENSITY4, GL_LUMINANCE_ALPHA, font_id);
+	load_texture(data, GL_RGBA, GL_LUMINANCE_ALPHA, font_id);
+	load_texture(data, GL_LUMINANCE, GL_LUMINANCE_ALPHA, font_id);
+	load_texture(data, GL_LUMINANCE_ALPHA, GL_LUMINANCE_ALPHA, font_id);
+
+	// XXX - GL_INTENSITY for the fmt changes color... but it's just blocks of blue...
+	load_texture(data, GL_LUMINANCE, GL_INTENSITY, font_id);
+	load_texture(data, GL_LUMINANCE_ALPHA, GL_INTENSITY, font_id);
+	load_texture(data, GL_INTENSITY, GL_INTENSITY, font_id);
+	load_texture(data, GL_RGBA, GL_INTENSITY, font_id);
+	load_texture(data, GL_INTENSITY4, GL_INTENSITY, font_id);
+#endif
+
+	/* This puts background color over white in texture */
+	load_texture(data, GL_INTENSITY, GL_RGBA, font_id);
+
+//	load_texture(data, GL_RGBA, GL_RGBA, font_id);
+//	load_texture(data, GL_LUMINANCE, GL_RGBA, font_id);
+//	load_texture(data, GL_LUMINANCE_ALPHA, GL_RGBA, font_id);
+
+
 }
 
 void
