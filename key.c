@@ -258,6 +258,7 @@ keyh_option(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 's':
 		st.st_opts ^= OP_DIMNONSEL;
+		st.st_opts |= OP_BLEND;
 		st.st_rf |= RF_CLUSTER;
 		break;
 	case 'w':
