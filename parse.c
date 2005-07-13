@@ -546,7 +546,11 @@ pass:
 	parse_checkmap();
 	errno = 0;
 
-	njobs = newnjobs;
+	/* XXX XXX: for some reason newnjobs is zero the
+	second time and is screwing things up */
+	if(newnjobs != 0)
+		njobs = newnjobs;
+printf("parse_jobmap - njobs: %d\n", njobs);
 	for (j = 0; j < njobs; j++)
 		getcol(j, njobs, &jobs[j]->j_fill);
 }
