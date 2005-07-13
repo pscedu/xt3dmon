@@ -328,8 +328,8 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		if (key == '_')
 			incr *= -1;
 
-		for (j = 0; j < njobs; j++) {
-			field = &jobs[j]->j_fill.f_a;
+		for (j = 0; j < job_list.ol_cur; j++) {
+			field = &job_list.ol_jobs[j]->j_fill.f_a;
 			*field += incr;
 			if (*field > 1.0f)
 				*field = 1.0f;
