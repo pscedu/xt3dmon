@@ -26,8 +26,8 @@ typedef int (*cmpf_t)(void *a, void *b);
 void		 parse_badmap(void);
 void		 parse_checkmap(void);
 void		 getcol(int, size_t, struct fill *);
-void		*getobj(void *arg, void ***data, size_t oldsiz, size_t *newsiz,
-    size_t *maxsiz, cmpf_t eq, int inc, size_t);
+void		*getobj(void *, void ***, size_t, size_t *, size_t *,
+    cmpf_t, int, size_t);
 
 size_t		 njobs, maxjobs;
 size_t		 nfails, maxfails;
@@ -174,8 +174,10 @@ getobj(void *arg, void ***data, size_t oldsiz, size_t *newsiz, size_t *maxsiz,
 		}
 		*maxsiz = newmax;
 	}
-	ohp = (*data)[(*newsiz)++];
+	ohp = (*data)[*newsiz + 1];
 found:
+	if (!ohp->oh_tref)
+		++*newsiz;
 	ohp->oh_tref = 1;
 	return (ohp);
 }
@@ -546,10 +548,7 @@ pass:
 	parse_checkmap();
 	errno = 0;
 
-	/* XXX XXX: for some reason newnjobs is zero the
-	second time and is screwing things up */
-	if(newnjobs != 0)
-		njobs = newnjobs;
+	njobs = newnjobs;
 printf("parse_jobmap - njobs: %d\n", njobs);
 	for (j = 0; j < njobs; j++)
 		getcol(j, njobs, &jobs[j]->j_fill);
