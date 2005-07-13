@@ -10,7 +10,7 @@
  *	    "dirty."
  */
 
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(_GNU_SOURCE)
 #define _GNU_SOURCE /* asprintf, disgusting */
 #endif
 
@@ -399,7 +399,7 @@ panel_refresh_legend(struct panel *p)
 	pw = SLIST_FIRST(&p->p_widgets);
 	switch (st.st_mode) {
 	case SM_JOBS:
-		panel_set_content(p, "Jobs: %d", njobs);
+		panel_set_content(p, "Jobs: %d", job_list.ol_cur);
 		for (j = 0; j < NJST; j++, pw = nextp) {
 			if (j == JST_USED)
 				continue;
@@ -408,10 +408,10 @@ panel_refresh_legend(struct panel *p)
 			pw->pw_str = jstates[j].js_name;
 			p->p_maxwlen = MAX(p->p_maxwlen, strlen(pw->pw_str));
 		}
-		for (j = 0; j < njobs; j++, pw = nextp) {
+		for (j = 0; j < job_list.ol_cur; j++, pw = nextp) {
 			pw = panel_get_pwidget(p, pw, &nextp);
-			pw->pw_fillp = &jobs[j]->j_fill;
-			pw->pw_str = jobs[j]->j_name;
+			pw->pw_fillp = &job_list.ol_jobs[j]->j_fill;
+			pw->pw_str = job_list.ol_jobs[j]->j_name;
 			p->p_maxwlen = MAX(p->p_maxwlen, strlen(pw->pw_str));
 		}
 		break;
@@ -422,10 +422,10 @@ panel_refresh_legend(struct panel *p)
 		pw->pw_str = fail_notfound.f_name;
 		p->p_maxwlen = MAX(p->p_maxwlen, strlen(pw->pw_str));
 		pw = nextp;
-		for (j = 0; j < nfails; j++, pw = nextp) {
+		for (j = 0; j < fail_list.ol_cur; j++, pw = nextp) {
 			pw = panel_get_pwidget(p, pw, &nextp);
-			pw->pw_fillp = &fails[j]->f_fill;
-			pw->pw_str = fails[j]->f_name;
+			pw->pw_fillp = &fail_list.ol_fails[j]->f_fill;
+			pw->pw_str = fail_list.ol_fails[j]->f_name;
 			p->p_maxwlen = MAX(p->p_maxwlen, strlen(pw->pw_str));
 		}
 		break;
