@@ -282,14 +282,14 @@ load_textures(void)
 {
 	char path[NAME_MAX];
 	void *data;
-	int i;
+	unsigned int i;
 
 	/* Read in texture IDs. */
 	for (i = 0; i < NJST; i++) {
 		snprintf(path, sizeof(path), _PATH_TEX, i);
 		data = load_png(path);
 		load_texture(data, jstates[i].js_fill.f_alpha_fmt,
-				GL_RGBA, i + 1);
+		    GL_RGBA, i + 1);
 		jstates[i].js_fill.f_texid = i + 1;
 	}
 
@@ -349,19 +349,19 @@ rebuild(int opts)
 		mode_data_clean = 0;
 		switch (st.st_mode) {
 		case SM_JOBS:
-			obj_batch_start((void ***)&jobs, njobs);
+			obj_batch_start(&job_list);
 			parse_jobmap();
-			obj_batch_end((void ***)&jobs, &njobs);
+			obj_batch_end(&job_list);
 			break;
 		case SM_FAIL:
-			obj_batch_start((void ***)&fails, nfails);
+			obj_batch_start(&fail_list);
 			parse_failmap();
-			obj_batch_end((void ***)&fails, &nfails);
+			obj_batch_end(&fail_list);
 			break;
 		case SM_TEMP:
-			obj_batch_start((void ***)&temps, ntemps);
+			obj_batch_start(&temp_list);
 			parse_tempmap();
-			obj_batch_end((void ***)&temps, &ntemps);
+			obj_batch_end(&temp_list);
 			break;
 		}
 	}
