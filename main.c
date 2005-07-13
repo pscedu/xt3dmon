@@ -297,16 +297,8 @@ load_textures(void)
 	font_id = i + 1;
 	data = load_png(_PATH_FONT);
 
-	/* this one is pretty normal */
-//	load_texture(data, GL_INTENSITY, GL_RGBA, font_id);
-
 	/* This puts background color over white in texture */
 	load_texture(data, GL_INTENSITY, GL_RGBA, font_id);
-//	load_texture(data, GL_RGBA, GL_RGBA, font_id);
-//	load_texture(data, GL_LUMINANCE, GL_RGBA, font_id);
-//	load_texture(data, GL_LUMINANCE_ALPHA, GL_RGBA, font_id);
-
-
 }
 
 void
