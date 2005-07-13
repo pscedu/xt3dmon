@@ -145,7 +145,7 @@ struct fill {
 	float		 f_g;
 	float		 f_b;
 	float		 f_a;
-	GLint		 f_texid;
+	GLuint		 f_texid;
 	GLint		 f_alpha_fmt;
 #define f_h f_r
 #define f_s f_g
@@ -346,6 +346,27 @@ struct temp_range {
 	char		*m_name;
 };
 
+typedef int (*cmpf_t)(void *, void *);
+
+struct objlist {
+	union {
+		void		**olu_data;
+		struct job	**olu_jobs;
+		struct fail	**olu_fails;
+		struct temp	**olu_temps;
+	}		 ol_udata;
+	size_t		 ol_cur;
+	size_t		 ol_max;
+	size_t		 ol_alloc;
+	size_t		 ol_incr;
+	size_t		 ol_objlen;
+	cmpf_t		 ol_eq;
+#define ol_data  ol_udata.olu_data
+#define ol_jobs  ol_udata.olu_jobs
+#define ol_fails ol_udata.olu_fails
+#define ol_temps ol_udata.olu_temps
+};
+
 /* db.c */
 void			 dbh_connect(struct dbh *);
 void			 db_physmap(void);
@@ -377,7 +398,7 @@ void			 keyh_default(unsigned char, int, int);
 void			 spkeyh_default(int, int, int);
 
 /* load_png.c */
-void			 load_texture(void *, GLint, GLenum, int);
+void			 load_texture(void *, GLint, GLenum, GLuint);
 void 			*load_png(char *);
 
 /* main.c */
@@ -416,8 +437,8 @@ void			 parse_jobmap(void);
 void			 parse_physmap(void);
 void			 parse_failmap(void);
 void			 parse_tempmap(void);
-void			 obj_batch_start(void ***, size_t);
-void			 obj_batch_end(void ***, size_t *);
+void			 obj_batch_start(struct objlist *);
+void			 obj_batch_end(struct objlist *);
 
 /* capture.c */
 void			 capture_fb(int);
@@ -436,14 +457,9 @@ void			 flip_panels(int);
 extern struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 extern struct node	*invmap[];
 
-extern size_t		 njobs;
-extern struct job	**jobs;
-extern size_t		 nfails;
-extern struct fail	**fails;
-extern size_t		 ntemps;
-extern struct temp	**temps;
-
 extern struct job_state	 jstates[];
+
+extern struct objlist	 job_list, temp_list, fail_list;
 
 extern struct fail	 fail_notfound;
 extern struct temp	 temp_notfound;
