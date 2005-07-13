@@ -156,7 +156,7 @@ load_png(char *file)
 }
 
 void
-load_texture(void *data, GLint ifmt, GLenum fmt, int id)
+load_texture(void *data, GLint ifmt, GLenum fmt, GLuint id)
 {
 	glGenTextures(1, &id);
 	glBindTexture(GL_TEXTURE_2D, id);
