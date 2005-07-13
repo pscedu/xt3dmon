@@ -1,6 +1,6 @@
 /* $Id$ */
 
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(_GNU_SOURCE)
 #define _GNU_SOURCE	/* asprintf */
 #endif
 
@@ -21,21 +21,18 @@
 #define FINCR		10
 #define TINCR		10
 
-typedef int (*cmpf_t)(void *a, void *b);
-
 void		 parse_badmap(void);
 void		 parse_checkmap(void);
 void		 getcol(int, size_t, struct fill *);
-void		*getobj(void *, void ***, size_t, size_t *, size_t *,
-    cmpf_t, int, size_t);
+void		*getobj(void *, struct objlist *);
 
-size_t		 njobs, maxjobs;
-size_t		 nfails, maxfails;
-size_t		 ntemps, maxtemps;
+int		 job_eq(void *, void *);
+int		 fail_eq(void *, void *);
+int		 temp_eq(void *, void *);
 
-struct fail	**fails;
-struct job	**jobs;
-struct temp	**temps;
+struct objlist	 job_list  = { { NULL }, 0, 0, 0, JINCR, sizeof(struct job), job_eq };
+struct objlist	 temp_list = { { NULL }, 0, 0, 0, TINCR, sizeof(struct temp), fail_eq };
+struct objlist	 fail_list = { { NULL }, 0, 0, 0, FINCR, sizeof(struct fail), temp_eq };
 
 int		 total_failures;
 
@@ -97,31 +94,31 @@ fail_cmp(const void *a, const void *b)
 }
 
 void
-obj_batch_start(void ***data, size_t cursiz)
+obj_batch_start(struct objlist *ol)
 {
 	struct objhdr *ohp;
 	void **jj;
 	size_t n;
 
-	if (*data == NULL)
+	if (ol->ol_data == NULL)
 		return;
-	for (n = 0, jj = *data; n < cursiz; jj++, n++) {
+	for (n = 0, jj = ol->ol_data; n < ol->ol_cur; jj++, n++) {
 		ohp = (struct objhdr *)*jj;
 		ohp->oh_tref = 0;
 	}
 }
 
 void
-obj_batch_end(void ***data, size_t *cursiz)
+obj_batch_end(struct objlist *ol)
 {
 	struct objhdr *ohp, *swapohp;
 	size_t n, lookpos;
 	void *t, **jj;
 
-	if (*data == NULL)
+	if (ol->ol_data == NULL)
 		return;
 	lookpos = 0;
-	for (n = 0, jj = *data; n < *cursiz; jj++, n++) {
+	for (n = 0, jj = ol->ol_data; n < ol->ol_cur; jj++, n++) {
 		ohp = (struct objhdr *)*jj;
 		if (ohp->oh_tref)
 			ohp->oh_ref = 1;
@@ -129,55 +126,60 @@ obj_batch_end(void ***data, size_t *cursiz)
 			if (lookpos <= n)
 				lookpos = n + 1;
 			/* Scan forward to swap. */
-			for (; lookpos < *cursiz; lookpos++) {
-				swapohp = (*data)[lookpos];
+			for (; lookpos < ol->ol_cur; lookpos++) {
+				swapohp = ol->ol_data[lookpos];
 				if (swapohp->oh_tref) {
-					t = (*data)[n];
-					(*data)[n] = (*data)[lookpos];
-					(*data)[lookpos++] = t;
+					t = ol->ol_data[n];
+					ol->ol_data[n] = ol->ol_data[lookpos];
+					ol->ol_data[lookpos++] = t;
 					break;
 				}
 			}
-			if (lookpos == *cursiz) {
-				*cursiz = n;
+			if (lookpos == ol->ol_cur) {
+				ol->ol_cur = n;
 				return;
 			}
 		}
 	}
 }
 
+/*
+ * The "eq" routines must ensure that an object identifier can never be
+ * zero; otherwise, they will match empty objects after memset().
+ */
 void *
-getobj(void *arg, void ***data, size_t oldsiz, size_t *newsiz, size_t *maxsiz,
-    cmpf_t eq, int inc, size_t objlen)
+getobj(void *arg, struct objlist *ol)
 {
-	size_t n, newmax;
 	void **jj, *j = NULL;
 	struct objhdr *ohp;
+	size_t n, max;
 
-	if (*data != NULL)
-		for (n = 0, jj = *data; n < oldsiz; jj++, n++) {
+	if (ol->ol_data != NULL) {
+		max = MAX(ol->ol_max, ol->ol_cur);
+		for (n = 0, jj = ol->ol_data; n < max; jj++, n++) {
 			ohp = (struct objhdr *)*jj;
-			if (eq(ohp, arg))
+			if (ol->ol_eq(ohp, arg))
 				goto found;
 		}
-	/* Not found; add. */
-	if (*newsiz + 1 >= *maxsiz) {
-		newmax = *maxsiz + inc;
-		if ((*data = realloc(*data,
-		    newmax * sizeof(**data))) == NULL)
-			err(1, "realloc");
-		for (n = *maxsiz; n < newmax; n++) {
-			if ((j = malloc(objlen)) == NULL)
-				err(1, "malloc");
-			memset(j, 0, objlen);
-			(*data)[n] = j;
-		}
-		*maxsiz = newmax;
 	}
-	ohp = (*data)[*newsiz];
+	/* Not found; add. */
+	if (ol->ol_cur + 1 >= ol->ol_alloc) {
+		max = ol->ol_alloc + ol->ol_incr;
+		if ((ol->ol_data = realloc(ol->ol_data,
+		    max * sizeof(*ol->ol_data))) == NULL)
+			err(1, "realloc");
+		for (n = ol->ol_alloc; n < max; n++) {
+			if ((j = malloc(ol->ol_objlen)) == NULL)
+				err(1, "malloc");
+			memset(j, 0, ol->ol_objlen);
+			ol->ol_data[n] = j;
+		}
+		ol->ol_alloc = max;
+	}
+	ohp = ol->ol_data[ol->ol_cur];
 found:
 	if (!ohp->oh_tref)
-		++*newsiz;
+		ol->ol_cur++;
 	ohp->oh_tref = 1;
 	return (ohp);
 }
@@ -201,7 +203,7 @@ getcol(int n, size_t total, struct fill *fillp)
 void
 getcol_temp(int n, struct fill *fillp)
 {
-	int cel = temps[n]->t_cel;
+	int cel = temp_list.ol_temps[n]->t_cel;
 	int idx;
 
 	if (cel < TEMP_MIN)
@@ -444,9 +446,9 @@ parse_jobmap(void)
 {
 	int jobid, nid, lineno, enabled;
 	char buf[BUFSIZ], *p, *s;
-	size_t j, newnjobs;
 	struct node *node;
 	struct job *job;
+	size_t j;
 	FILE *fp;
 	long l;
 
@@ -457,7 +459,6 @@ parse_jobmap(void)
 		return;
 	}
 	lineno = 0;
-	newnjobs = 0;
 	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		lineno++;
 		p = buf;
@@ -520,9 +521,7 @@ parse_jobmap(void)
 			node->n_state = JST_FREE;
 		else {
 			node->n_state = JST_USED;
-			job = getobj(&jobid, (void ***)&jobs, njobs,
-			    &newnjobs, &maxjobs, job_eq, JINCR,
-			    sizeof(*job));
+			job = getobj(&jobid, &job_list);
 			job->j_id = jobid;
 			job->j_name = "testjob";
 			/* XXX: only slightly sloppy. */
@@ -548,10 +547,8 @@ pass:
 	parse_checkmap();
 	errno = 0;
 
-	njobs = newnjobs;
-printf("parse_jobmap - njobs: %d\n", njobs);
-	for (j = 0; j < njobs; j++)
-		getcol(j, njobs, &jobs[j]->j_fill);
+	for (j = 0; j < job_list.ol_cur; j++)
+		getcol(j, job_list.ol_cur, &job_list.ol_jobs[j]->j_fill);
 }
 
 void
@@ -691,8 +688,8 @@ bad:
 void
 parse_failmap(void)
 {
-	size_t j, newmax, nofails, newnfails;
 	int nid, lineno, r, cb, cg, m, n;
+	size_t j, newmax, nofails;
 	char *p, *s, buf[BUFSIZ];
 	struct node *node;
 	struct fail *fail;
@@ -718,7 +715,6 @@ parse_failmap(void)
 						node->n_fillp = &fail_notfound.f_fill;
 					}
 
-	newnfails = 0;
 	total_failures = newmax = 0;
 	lineno = 0;
 	while (fgets(buf, sizeof(buf), fp) != NULL) {
@@ -752,10 +748,9 @@ parse_failmap(void)
 
 		if ((node = node_for_nid(nid)) == NULL)
 			goto bad;
-		fail = getobj(&nofails, (void ***)&fails, nfails,
-		    &newnfails, &maxfails, fail_eq, FINCR, sizeof(struct fail));
+		fail = getobj(&nofails, &fail_list);
 		fail->f_fails = nofails;
-		free(fail->f_name); /* XXX - rename to f_label */
+		free(fail->f_name);		/* XXX - rename to f_label */
 		if (asprintf(&fail->f_name, "%d", nofails) == -1)
 			err(1, "asprintf");
 		node->n_fillp = &fail->f_fill;
@@ -775,10 +770,10 @@ bad:
 	fclose(fp);
 	errno = 0;
 
-	nfails = newnfails;
-	qsort(fails, nfails, sizeof(*fails), fail_cmp);
-	for (j = 0; j < nfails; j++)
-		getcol(j, nfails, &fails[j]->f_fill);
+	qsort(fail_list.ol_fails, fail_list.ol_cur, fail_list.ol_objlen,
+	    fail_cmp);
+	for (j = 0; j < fail_list.ol_cur; j++)
+		getcol(j, fail_list.ol_cur, &fail_list.ol_fails[j]->f_fill);
 }
 
 /*
@@ -795,7 +790,7 @@ parse_tempmap(void)
 	char buf[BUFSIZ], *p, *s;
 	struct node *node;
 	struct temp *temp;
-	size_t j, newntemps;
+	size_t j;
 	FILE *fp;
 	long l;
 
@@ -818,7 +813,6 @@ parse_tempmap(void)
 						node->n_fillp = &temp_notfound.t_fill;
 					}
 
-	newntemps = 0;
 	lineno = 0;
 	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		lineno++;
@@ -903,9 +897,7 @@ parse_tempmap(void)
 			t = (int)l;
 
 			node = &nodes[r][cb][cg][m][i];
-			temp = getobj(&t, (void ***)&temps,
-			    ntemps, &newntemps, &maxtemps, temp_eq, TINCR,
-			    sizeof(struct temp));
+			temp = getobj(&t, &temp_list);
 			temp->t_cel = t;
 			free(temp->t_name);	/* getobj() zeroes data. */
 			if (asprintf(&temp->t_name, "%dC", t) == -1)
@@ -922,8 +914,8 @@ bad:
 	fclose(fp);
 	errno = 0;
 
-	ntemps = newntemps;
-	qsort(temps, ntemps, sizeof(*temps), temp_cmp);
-	for (j = 0; j < ntemps; j++)
-		getcol_temp(j, &temps[j]->t_fill);
+	qsort(temp_list.ol_temps, temp_list.ol_cur, temp_list.ol_objlen,
+	    temp_cmp);
+	for (j = 0; j < temp_list.ol_cur; j++)
+		getcol_temp(j, &temp_list.ol_temps[j]->t_fill);
 }
