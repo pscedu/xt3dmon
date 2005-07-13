@@ -300,30 +300,8 @@ load_textures(void)
 	/* this one is pretty normal */
 //	load_texture(data, GL_INTENSITY, GL_RGBA, font_id);
 
-#if 0
-	load_texture(data, GL_INTENSITY, GL_LUMINANCE, font_id);
-	load_texture(data, GL_INTENSITY4, GL_LUMINANCE, font_id);
-	load_texture(data, GL_RGBA, GL_LUMINANCE, font_id);
-	load_texture(data, GL_LUMINANCE, GL_LUMINANCE, font_id);
-	load_texture(data, GL_LUMINANCE_ALPHA, GL_LUMINANCE, font_id);
-
-	load_texture(data, GL_INTENSITY, GL_LUMINANCE_ALPHA, font_id);
-	load_texture(data, GL_INTENSITY4, GL_LUMINANCE_ALPHA, font_id);
-	load_texture(data, GL_RGBA, GL_LUMINANCE_ALPHA, font_id);
-	load_texture(data, GL_LUMINANCE, GL_LUMINANCE_ALPHA, font_id);
-	load_texture(data, GL_LUMINANCE_ALPHA, GL_LUMINANCE_ALPHA, font_id);
-
-	// XXX - GL_INTENSITY for the fmt changes color... but it's just blocks of blue...
-	load_texture(data, GL_LUMINANCE, GL_INTENSITY, font_id);
-	load_texture(data, GL_LUMINANCE_ALPHA, GL_INTENSITY, font_id);
-	load_texture(data, GL_INTENSITY, GL_INTENSITY, font_id);
-	load_texture(data, GL_RGBA, GL_INTENSITY, font_id);
-	load_texture(data, GL_INTENSITY4, GL_INTENSITY, font_id);
-#endif
-
 	/* This puts background color over white in texture */
 	load_texture(data, GL_INTENSITY, GL_RGBA, font_id);
-
 //	load_texture(data, GL_RGBA, GL_RGBA, font_id);
 //	load_texture(data, GL_LUMINANCE, GL_RGBA, font_id);
 //	load_texture(data, GL_LUMINANCE_ALPHA, GL_RGBA, font_id);

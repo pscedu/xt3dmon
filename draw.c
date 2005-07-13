@@ -420,27 +420,10 @@ draw_node_label(struct node *n)
 	rgb_contrast(&c);
 	glColor4f(c.f_r, c.f_g, c.f_b, c.f_a);
 
-//glColor4f(0.2, 0.2, 0.9, n->n_fillp->f_a);
-//glClearColor(0.0, 0.0, 0.0, 0.0);
-//glAlphaFunc(GL_GEQUAL, 0.0625);
-//glEnable(GL_ALPHA_TEST);
-glEnable(GL_BLEND);
-//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//glEnable(GL_POLYGON_OFFSET_EXT);
-//glEnable(GL_POLYGON_OFFSET_FILL);
-//glPolygonOffset(0.0, -3.0);
-
-	// XXX - these breaks things...
-	//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
-
-//	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-//	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);
-
-/* This is already done, when textures are loaded */
-//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glBindTexture(GL_TEXTURE_2D, font_id);
 
 	glBegin(GL_QUADS);
@@ -454,36 +437,10 @@ glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			  FONT_Z_OFFSET+FONT_DISPLACE_W*(float)(j));
 	}
 
-//glDisable(GL_POLYGON_OFFSET_FILL);
-//glDisable(GL_POLYGON_OFFSET_EXT);
-glDisable(GL_BLEND);
-//glDisable(GL_ALPHA_TEST);
-
 	glEnd();
+	glDisable(GL_BLEND);
 	glDisable(GL_TEXTURE_2D);
-
-
-#if 0
-	/* Draw outlines */
-	glColor3f(0.0, 0.0, 0.0);
-	glLineWidth(1.0);
-	glBegin(GL_LINES);
-	glVertex3f(-0.01, NODEDEPTH/2.0, FONT_Z_OFFSET);
-	glVertex3f(-0.01, NODEDEPTH/2.0+FONT_DISPLACE_H, FONT_Z_OFFSET);
-
-	glVertex3f(-0.01, NODEDEPTH/2.0+FONT_DISPLACE_H, FONT_Z_OFFSET);
-	glVertex3f(-0.01, NODEDEPTH/2.0+FONT_DISPLACE_H, FONT_Z_OFFSET+FONT_DISPLACE_W*4);
-
-	glVertex3f(-0.01, NODEDEPTH/2.0+FONT_DISPLACE_H, FONT_Z_OFFSET+FONT_DISPLACE_W*4);
-	glVertex3f(-0.01, NODEDEPTH/2.0, FONT_Z_OFFSET+FONT_DISPLACE_W*4);
-
-	glVertex3f(-0.01, NODEDEPTH/2.0, FONT_Z_OFFSET+FONT_DISPLACE_W*4);
-	glVertex3f(-0.01, NODEDEPTH/2.0, FONT_Z_OFFSET);
-
-	glEnd();
-#endif
 }
-
 /*
  * Special case of pipe-drawing code: draw pipes around selected node
  * only.
