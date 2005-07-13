@@ -52,7 +52,7 @@ write_flyby(void)
 		err(1, "fwrite st");
 	st.st_opts = save;
 
-	save = fb.fb_panels;
+//	save = fb.fb_panels;
 	fb.fb_panels &= ~FB_PMASK;		/* XXX:  stupid. */
 	if (fwrite(&fb, sizeof(struct flyby), 1, flyby_fp) != 1)
 		err(1, "fwrite fb");
@@ -110,7 +110,6 @@ again:
 	if (fb.fb_panels)
 		flip_panels(fb.fb_panels);
 	st.st_opts ^= ((st.st_opts ^ oldopts) & FB_OMASK);
-//	st.st_opts = (oldopts & FB_OMASK) | (st.st_opts & ~FB_OMASK);
 	refresh_state(oldopts);
 }
 

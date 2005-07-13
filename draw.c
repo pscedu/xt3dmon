@@ -387,8 +387,8 @@ void draw_char(int ch, float x, float y, float z)
 __inline void
 draw_node_label(struct node *n)
 {
-	struct fill c;
 	float list[MAX_CHARS];
+	struct fill c;
 	int nid;
 	int i, j;
 
@@ -429,18 +429,18 @@ draw_node_label(struct node *n)
 	glBegin(GL_QUADS);
 
 	for(i = 0, j = 0; i < 8; i++, j++) {
-
 		/* Place a space between 'NODE' and id */
 		if(j == 4)
 			j++;
 		draw_char(list[i], -0.001, NODEDEPTH/2.0,
-			  FONT_Z_OFFSET+FONT_DISPLACE_W*(float)(j));
+		    FONT_Z_OFFSET+FONT_DISPLACE_W*(float)(j));
 	}
 
 	glEnd();
 	glDisable(GL_BLEND);
 	glDisable(GL_TEXTURE_2D);
 }
+
 /*
  * Special case of pipe-drawing code: draw pipes around selected node
  * only.
@@ -832,10 +832,11 @@ make_cluster(void)
 }
 
 /* 
-** The following two mathematical algorithms were created from
-** sudocode found in "Fundamentals of Interactive Comptuer Graphics"
-*/
-void RGB2HSV(struct fill *c)
+ * The following two mathematical algorithms were created from
+ * pseudocode found in "Fundamentals of Interactive Computer Graphics".
+ */
+void
+RGB2HSV(struct fill *c)
 {
 	float r = c->f_r;
 	float g = c->f_g;
@@ -883,7 +884,8 @@ void RGB2HSV(struct fill *c)
 	}
 }
 
-void HSV2RGB(struct fill *c)
+void
+HSV2RGB(struct fill *c)
 {
 	float s = c->f_s;
 	float h = c->f_h;
@@ -905,12 +907,12 @@ void HSV2RGB(struct fill *c)
 		t = v * (1 - (s * (1 - f)));
 
 		switch(i) {
-			case 0:	c->f_r = v; c->f_g = t; c->f_b = p; break;
-			case 1: c->f_r = q; c->f_g = v; c->f_b = p; break;
-			case 2: c->f_r = p; c->f_g = v; c->f_b = t; break;
-			case 3: c->f_r = p; c->f_g = q; c->f_b = v; break;
-			case 4:	c->f_r = t; c->f_g = p; c->f_b = v; break;
-			case 5: c->f_r = v; c->f_g = p; c->f_b = q; break;
+		case 0:	c->f_r = v; c->f_g = t; c->f_b = p; break;
+		case 1: c->f_r = q; c->f_g = v; c->f_b = p; break;
+		case 2: c->f_r = p; c->f_g = v; c->f_b = t; break;
+		case 3: c->f_r = p; c->f_g = q; c->f_b = v; break;
+		case 4:	c->f_r = t; c->f_g = p; c->f_b = v; break;
+		case 5: c->f_r = v; c->f_g = p; c->f_b = q; break;
 		}
 	}
 }
@@ -919,7 +921,8 @@ void HSV2RGB(struct fill *c)
 ** Create a contrasting color by panning
 ** 180 degrees around the color circle
 */
-void rgb_contrast(struct fill *c)
+void
+rgb_contrast(struct fill *c)
 {
 	RGB2HSV(c);
 
@@ -930,12 +933,3 @@ void rgb_contrast(struct fill *c)
 	
 	HSV2RGB(c);
 }
-
-
-
-
-
-
-
-
-
