@@ -800,6 +800,11 @@ parse_tempmap(void)
 	FILE *fp;
 	long l;
 
+	if ((fp = fopen(_PATH_TEMPMAP, "r")) == NULL) {
+		warn("%s", _PATH_TEMPMAP);
+		return;
+	}
+
 	/*
 	 * We're not guarenteed to have temperature information for
 	 * every node...
@@ -814,65 +819,78 @@ parse_tempmap(void)
 						node->n_fillp = &temp_notfound.t_fill;
 					}
 
-	ntemps = 0;
 	newntemps = 0;
-	if ((fp = fopen(_PATH_TEMPMAP, "r")) == NULL)
-		warn("%s", _PATH_TEMPMAP);
-	else {
-		lineno = 0;
-		while (fgets(buf, sizeof(buf), fp) != NULL) {
-			lineno++;
-			p = buf;
+	lineno = 0;
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
+		lineno++;
+		p = buf;
 
+		while (isspace(*p))
+			p++;
+		if (*p == '#' || *p == '\n' || *p == '\0')
+			continue;
+		if (*p++ != 'c')
+			goto bad;
+		if (*p++ != 'x')
+			goto bad;
 
-			while (isspace(*p))
-				p++;
-			if (*p == '#' || *p == '\n' || *p == '\0')
-				continue;
-			if (*p++ != 'c')
-				goto bad;
-			if (*p++ != 'x')
-				goto bad;
+		/* cab */
+		if (!isdigit(*p))
+			goto bad;
+		for (s = p + 1; isdigit(*s); s++)
+			;
+		if (*s != 'y')
+			goto bad;
+		*s++ = '\0';
+		if ((l = strtol(p, NULL, 10)) < 0 || l >= NCABS)
+			goto bad;
+		cb = (int)l;
 
-			/* cab */
-			if (!isdigit(*p))
-				goto bad;
-			for (s = p + 1; isdigit(*s); s++)
-				;
-			if (*s != 'y')
-				goto bad;
-			*s++ = '\0';
-			if ((l = strtol(p, NULL, 10)) < 0 || l >= NCABS)
-				goto bad;
-			cb = (int)l;
+		/* row */
+		p = s;
+		while (isdigit(*s))
+			s++;
+		if (p == s)
+			goto bad;
+		if (*s != 'c')
+			goto bad;
+		*s++ = '\0';
+		if ((l = strtol(p, NULL, 10)) < 0 || l >= NROWS)
+			goto bad;
+		r = (int)l;
 
-			/* row */
-			p = s;
-			while (isdigit(*s))
+		/* cage */
+		p = s;
+		while (isdigit(*s))
+			s++;
+		if (p == s)
+			goto bad;
+		if (*s != 's')
+			goto bad;
+		*s++ = '\0';
+		if ((l = strtol(p, NULL, 10)) < 0 || l >= NCAGES)
+			goto bad;
+		cg = (int)l;
+
+		/* mod */
+		p = s;
+		while (isdigit(*s))
+			s++;
+		if (p == s)
+			goto bad;
+		if (!isspace(*s))
+			goto bad;
+		*s++ = '\0';
+		if ((l = strtol(p, NULL, 10)) < 0 || l >= NMODS)
+			goto bad;
+		m = (int)l;
+
+		/* temperatures */
+		for (i = 0; i < NNODES; i++) {
+			while (isspace(*s))
 				s++;
-			if (p == s)
-				goto bad;
-			if (*s != 'c')
-				goto bad;
-			*s++ = '\0';
-			if ((l = strtol(p, NULL, 10)) < 0 || l >= NROWS)
-				goto bad;
-			r = (int)l;
-
-			/* cage */
-			p = s;
-			while (isdigit(*s))
-				s++;
-			if (p == s)
-				goto bad;
-			if (*s != 's')
-				goto bad;
-			*s++ = '\0';
-			if ((l = strtol(p, NULL, 10)) < 0 || l >= NCAGES)
-				goto bad;
-			cg = (int)l;
-
-			/* mod */
+			if (*s == '\0')
+				break;
 			p = s;
 			while (isdigit(*s))
 				s++;
@@ -881,48 +899,30 @@ parse_tempmap(void)
 			if (!isspace(*s))
 				goto bad;
 			*s++ = '\0';
-			if ((l = strtol(p, NULL, 10)) < 0 || l >= NMODS)
+			if ((l = strtol(p, NULL, 10)) < 0 || l >= INT_MAX)
 				goto bad;
-			m = (int)l;
+			t = (int)l;
 
-			/* temperatures */
-			for (i = 0; i < NNODES; i++) {
-				while (isspace(*s))
-					s++;
-				if (*s == '\0')
-					break;
-				p = s;
-				while (isdigit(*s))
-					s++;
-				if (p == s)
-					goto bad;
-				if (!isspace(*s))
-					goto bad;
-				*s++ = '\0';
-				if ((l = strtol(p, NULL, 10)) < 0 || l >= INT_MAX)
-					goto bad;
-				t = (int)l;
-
-				node = &nodes[r][cb][cg][m][i];
-				temp = getobj(&t, (void ***)&temps,
-				    ntemps, &newntemps, &maxtemps, temp_eq, TINCR,
-				    sizeof(struct temp));
-				temp->t_cel = t;
-				free(temp->t_name);
-				if (asprintf(&temp->t_name, "%dC", t) == -1)
-					err(1, "asprintf");
-				node->n_fillp = &temp->t_fill;
-				node->n_temp = temp;
-			}
-			continue;
-bad:
-			warnx("%s:%d: malformed line; %s", _PATH_TEMPMAP, lineno, p);
+			node = &nodes[r][cb][cg][m][i];
+			temp = getobj(&t, (void ***)&temps,
+			    ntemps, &newntemps, &maxtemps, temp_eq, TINCR,
+			    sizeof(struct temp));
+			temp->t_cel = t;
+			free(temp->t_name);	/* getobj() zeroes data. */
+			if (asprintf(&temp->t_name, "%dC", t) == -1)
+				err(1, "asprintf");
+			node->n_fillp = &temp->t_fill;
+			node->n_temp = temp;
 		}
-		if (ferror(fp))
-			warn("%s", _PATH_TEMPMAP);
-		fclose(fp);
-		errno = 0;
+		continue;
+bad:
+		warnx("%s:%d: malformed line; %s", _PATH_TEMPMAP, lineno, p);
 	}
+	if (ferror(fp))
+		warn("%s", _PATH_TEMPMAP);
+	fclose(fp);
+	errno = 0;
+
 	ntemps = newntemps;
 	qsort(temps, ntemps, sizeof(*temps), temp_cmp);
 	for (j = 0; j < ntemps; j++)
