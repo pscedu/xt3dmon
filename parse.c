@@ -174,7 +174,7 @@ getobj(void *arg, void ***data, size_t oldsiz, size_t *newsiz, size_t *maxsiz,
 		}
 		*maxsiz = newmax;
 	}
-	ohp = (*data)[*newsiz + 1];
+	ohp = (*data)[*newsiz];
 found:
 	if (!ohp->oh_tref)
 		++*newsiz;
