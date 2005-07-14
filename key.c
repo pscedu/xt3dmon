@@ -227,11 +227,11 @@ keyh_option(unsigned char key, __unused int u, __unused int v)
 		st.st_opts ^= OP_WIVMFRAME;
 		st.st_rf ^= RF_CLUSTER;
 		break;
-	case 'g':
-		st.st_opts ^= OP_GROUND;
-		break;
 	case 'G': /* Ludicrous Speed */
 		st.st_opts ^= OP_GOVERN;
+		break;
+	case 'g':
+		st.st_opts ^= OP_GROUND;
 		break;
 	case 'L':
 		st.st_opts ^= OP_FREELOOK;
@@ -244,17 +244,20 @@ keyh_option(unsigned char key, __unused int u, __unused int v)
 		st.st_opts ^= OP_SHOWMODS;
 		st.st_rf |= RF_CLUSTER;
 		break;
-	case 'p':
-		st.st_opts ^= OP_PIPES;
-		st.st_rf |= RF_CLUSTER;
-		break;
 	case 'P':
 		st.st_opts ^= OP_SELPIPES;
 		st.st_rf |= RF_CLUSTER;		/* XXX:  wrong. */
 		break;
+	case 'p':
+		st.st_opts ^= OP_PIPES;
+		st.st_rf |= RF_CLUSTER;
+		break;
 	case 't':
 		st.st_opts ^= OP_TEX;
 		st.st_rf |= RF_CLUSTER;
+		break;
+	case 'S':
+		st.st_opts ^= OP_STEREO;
 		break;
 	case 's':
 		st.st_opts ^= OP_DIMNONSEL;

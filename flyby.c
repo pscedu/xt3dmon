@@ -63,8 +63,20 @@ write_flyby(void)
 void
 read_flyby(void)
 {
-	struct node *n;
+	static int stereo_left;
 	int tnid, oldopts;
+	struct node *n;
+
+	if (st.st_opts & OP_STEREO) {
+		stereo_left = !stereo_left;
+		if (!stereo_left) {
+			cam_move(CAMDIR_RIGHT);
+			cam_move(CAMDIR_RIGHT);
+			cam_revolve(1);
+			cam_revolve(1);
+			return;
+		}
+	}
 
 	oldopts = st.st_opts;
 
@@ -90,6 +102,11 @@ again:
 			cam_update();
 			return;
 		}
+	}
+
+	if (st.st_opts & OP_STEREO && stereo_left) {
+		cam_move(CAMDIR_LEFT);
+		cam_revolve(-1);
 	}
 
 	/* XXX:  is this right? */
