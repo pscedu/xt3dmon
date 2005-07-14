@@ -356,6 +356,7 @@ struct objlist {
 		struct temp	**olu_temps;
 	}		 ol_udata;
 	size_t		 ol_cur;
+	size_t		 ol_tcur;
 	size_t		 ol_max;
 	size_t		 ol_alloc;
 	size_t		 ol_incr;

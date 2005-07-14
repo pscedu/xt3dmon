@@ -30,9 +30,9 @@ int		 job_eq(void *, void *);
 int		 fail_eq(void *, void *);
 int		 temp_eq(void *, void *);
 
-struct objlist	 job_list  = { { NULL }, 0, 0, 0, JINCR, sizeof(struct job), job_eq };
-struct objlist	 temp_list = { { NULL }, 0, 0, 0, TINCR, sizeof(struct temp), fail_eq };
-struct objlist	 fail_list = { { NULL }, 0, 0, 0, FINCR, sizeof(struct fail), temp_eq };
+struct objlist	 job_list  = { { NULL }, 0, 0, 0, 0, JINCR, sizeof(struct job), job_eq };
+struct objlist	 temp_list = { { NULL }, 0, 0, 0, 0, TINCR, sizeof(struct temp), fail_eq };
+struct objlist	 fail_list = { { NULL }, 0, 0, 0, 0, FINCR, sizeof(struct fail), temp_eq };
 
 int		 total_failures;
 
@@ -100,6 +100,7 @@ obj_batch_start(struct objlist *ol)
 	void **jj;
 	size_t n;
 
+	ol->ol_tcur = 0;
 	if (ol->ol_data == NULL)
 		return;
 	for (n = 0, jj = ol->ol_data; n < ol->ol_cur; jj++, n++) {
@@ -115,6 +116,9 @@ obj_batch_end(struct objlist *ol)
 	size_t n, lookpos;
 	void *t, **jj;
 
+	ol->ol_cur = ol->ol_tcur;
+	if (ol->ol_tcur > ol->ol_max)
+		ol->ol_max = ol->ol_tcur;
 	if (ol->ol_data == NULL)
 		return;
 	lookpos = 0;
@@ -155,7 +159,7 @@ getobj(void *arg, struct objlist *ol)
 	size_t n, max;
 
 	if (ol->ol_data != NULL) {
-		max = MAX(ol->ol_max, ol->ol_cur);
+		max = MAX(ol->ol_max, ol->ol_tcur);
 		for (n = 0, jj = ol->ol_data; n < max; jj++, n++) {
 			ohp = (struct objhdr *)*jj;
 			if (ol->ol_eq(ohp, arg))
@@ -163,7 +167,7 @@ getobj(void *arg, struct objlist *ol)
 		}
 	}
 	/* Not found; add. */
-	if (ol->ol_cur + 1 >= ol->ol_alloc) {
+	if (ol->ol_tcur + 1 >= ol->ol_alloc) {
 		max = ol->ol_alloc + ol->ol_incr;
 		if ((ol->ol_data = realloc(ol->ol_data,
 		    max * sizeof(*ol->ol_data))) == NULL)
@@ -176,10 +180,10 @@ getobj(void *arg, struct objlist *ol)
 		}
 		ol->ol_alloc = max;
 	}
-	ohp = ol->ol_data[ol->ol_cur];
+	ohp = ol->ol_data[ol->ol_tcur];
 found:
 	if (!ohp->oh_tref)
-		ol->ol_cur++;
+		ol->ol_tcur++;
 	ohp->oh_tref = 1;
 	return (ohp);
 }
@@ -547,8 +551,8 @@ pass:
 	parse_checkmap();
 	errno = 0;
 
-	for (j = 0; j < job_list.ol_cur; j++)
-		getcol(j, job_list.ol_cur, &job_list.ol_jobs[j]->j_fill);
+	for (j = 0; j < job_list.ol_tcur; j++)
+		getcol(j, job_list.ol_tcur, &job_list.ol_jobs[j]->j_fill);
 }
 
 void
@@ -770,10 +774,10 @@ bad:
 	fclose(fp);
 	errno = 0;
 
-	qsort(fail_list.ol_fails, fail_list.ol_cur, fail_list.ol_objlen,
+	qsort(fail_list.ol_fails, fail_list.ol_tcur, fail_list.ol_objlen,
 	    fail_cmp);
-	for (j = 0; j < fail_list.ol_cur; j++)
-		getcol(j, fail_list.ol_cur, &fail_list.ol_fails[j]->f_fill);
+	for (j = 0; j < fail_list.ol_tcur; j++)
+		getcol(j, fail_list.ol_tcur, &fail_list.ol_fails[j]->f_fill);
 }
 
 /*
@@ -914,8 +918,8 @@ bad:
 	fclose(fp);
 	errno = 0;
 
-	qsort(temp_list.ol_temps, temp_list.ol_cur, temp_list.ol_objlen,
+	qsort(temp_list.ol_temps, temp_list.ol_tcur, temp_list.ol_objlen,
 	    temp_cmp);
-	for (j = 0; j < temp_list.ol_cur; j++)
+	for (j = 0; j < temp_list.ol_tcur; j++)
 		getcol_temp(j, &temp_list.ol_temps[j]->t_fill);
 }
