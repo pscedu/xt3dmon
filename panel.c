@@ -540,7 +540,7 @@ panel_refresh_goto(struct panel *p)
 void
 panel_refresh_mem(struct panel *p)
 {
-	if (mode_data_clean & PANEL_MEM && panel_ready(p))
+	if ((mode_data_clean & PANEL_MEM) && panel_ready(p))
 		return;
 	mode_data_clean |= PANEL_MEM;
 	panel_set_content(p, "VSZ: %lu\nRSS: %ld\n", vmem, rmem);
@@ -625,7 +625,7 @@ panel_status_addinfo(const char *fmt, ...)
 void
 panel_refresh_status(struct panel *p)
 {
-	if (panel_status_dirty == 0)
+	if (panel_status_dirty == 0 && panel_ready(p))
 		return;
 	panel_status_dirty = 0;
 	panel_set_content(p, "Status\n%s", panel_status_content);
