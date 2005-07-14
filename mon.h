@@ -439,6 +439,7 @@ void			 parse_jobmap(void);
 void			 parse_physmap(void);
 void			 parse_failmap(void);
 void			 parse_tempmap(void);
+void			 parse_mem(void);
 void			 obj_batch_start(struct objlist *);
 void			 obj_batch_end(struct objlist *);
 

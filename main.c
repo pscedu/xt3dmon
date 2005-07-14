@@ -364,6 +364,7 @@ rebuild(int opts)
 			obj_batch_end(&temp_list);
 			break;
 		}
+		parse_mem();
 	}
 	if (opts & RF_PERSPECTIVE) {
 		glMatrixMode(GL_PROJECTION);

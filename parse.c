@@ -35,6 +35,8 @@ struct objlist	 temp_list = { { NULL }, 0, 0, 0, 0, TINCR, sizeof(struct temp), 
 struct objlist	 fail_list = { { NULL }, 0, 0, 0, 0, FINCR, sizeof(struct fail), temp_eq };
 
 int		 total_failures;
+unsigned long	 vmem;
+long		 rmem;
 
 struct fail fail_notfound = {
 	{ 0, 0 }, 0, { 0.33f, 0.66f, 0.99f, 1.00f, 0, 0 }, "0"
@@ -922,4 +924,20 @@ bad:
 	    temp_cmp);
 	for (j = 0; j < temp_list.ol_tcur; j++)
 		getcol_temp(j, &temp_list.ol_temps[j]->t_fill);
+}
+
+#define _PATH_STAT "/proc/self/stat"
+
+void
+parse_mem(void)
+{
+	FILE *fp;
+
+	if ((fp = fopen(_PATH_STAT, "r")) == NULL) {
+		warn("%s", _PATH_STAT);
+		return;
+	}
+	fscanf(fp, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u "
+	    "%*u %*u %*d %*d %*d %*d %*d %*d %*u %lu %ld", &vmem, &rmem);
+	fclose(fp);
 }
