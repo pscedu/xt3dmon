@@ -16,6 +16,9 @@
 #include "mon.h"
 #include "cdefs.h"
 
+extern double fmax(double, double);
+extern double fmin(double, double);
+
 #define TWEEN_MAX_POS	(2.0f)
 #define TWEEN_MAX_LOOK	(0.04f)
 #define TWEEN_THRES	(0.001f)
