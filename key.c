@@ -207,7 +207,7 @@ keyh_option(unsigned char key, __unused int u, __unused int v)
 	switch (key) {
 	case 'b':
 		st.st_opts ^= OP_BLEND;
-		st.st_rf |= RF_CLUSTER;
+		st.st_rf |= RF_CLUSTER | RF_SELNODE;
 		break;
 	case 'D':
 		st.st_opts ^= OP_DISPLAY;
@@ -254,15 +254,14 @@ keyh_option(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 't':
 		st.st_opts ^= OP_TEX;
-		st.st_rf |= RF_CLUSTER;
+		st.st_rf |= RF_CLUSTER | RF_SELNODE;
 		break;
 	case 'S':
 		st.st_opts ^= OP_STEREO;
 		break;
 	case 's':
 		st.st_opts ^= OP_DIMNONSEL;
-		st.st_opts |= OP_BLEND;
-		st.st_rf |= RF_CLUSTER;
+		st.st_rf |= RF_CLUSTER | RF_SELNODE;
 		break;
 	case 'w':
 		st.st_opts ^= OP_WIREFRAME;
@@ -339,7 +338,7 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 			else if (*field < 0.0f)
 				*field = 0.0f;
 		}
-		st.st_rf |= RF_CLUSTER;
+		st.st_rf |= RF_CLUSTER | RF_SELNODE;
 		break;
 	    }
 	case '=':
@@ -359,7 +358,7 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 			else if (*field < 0.0f)
 				*field = 0.0f;
 		}
-		st.st_rf |= RF_CLUSTER;
+		st.st_rf |= RF_CLUSTER | RF_SELNODE;
 		break;
 	    }
 	case '[':
