@@ -53,8 +53,9 @@ void panel_refresh_legend(struct panel *);
 void panel_refresh_flyby(struct panel *);
 void panel_refresh_goto(struct panel *);
 void panel_refresh_pos(struct panel *);
-void panel_refresh_ss(struct panel *p);
-void panel_refresh_status(struct panel *p);
+void panel_refresh_ss(struct panel *);
+void panel_refresh_status(struct panel *);
+void panel_refresh_mem(struct panel *);
 
 void uinpcb_ss(void);
 
@@ -67,7 +68,8 @@ struct pinfo pinfo[] = {
 	{ panel_refresh_goto,	PF_UINP, 0,		 uinpcb_goto },
 	{ panel_refresh_pos,	0,	 0,		 NULL },
 	{ panel_refresh_ss,	PF_UINP, 0,		 uinpcb_ss },
-	{ panel_refresh_status,	0,	 0,		 NULL }
+	{ panel_refresh_status,	0,	 0,		 NULL },
+	{ panel_refresh_mem,	0,	 0,		 NULL }
 };
 
 struct panels	 panels;
@@ -369,6 +371,7 @@ panel_refresh_cmd(struct panel *p)
 {
 	static struct node *oldnode;
 
+	/* XXX:  is the mode_data_clean check correct? */
 	if ((uinp.uinp_opts & UINPO_DIRTY) == 0 && oldnode == selnode &&
 	    (selnode == NULL || (mode_data_clean & PANEL_LEGEND) == 0) &&
 	    panel_ready(p))
@@ -532,6 +535,15 @@ panel_refresh_goto(struct panel *p)
 	uinp.uinp_opts &= ~UINPO_DIRTY;
 
 	panel_set_content(p, "Node ID: %s", buf_get(&uinp.uinp_buf));
+}
+
+void
+panel_refresh_mem(struct panel *p)
+{
+	if (mode_data_clean & PANEL_MEM && panel_ready(p))
+		return;
+	mode_data_clean |= PANEL_MEM;
+	panel_set_content(p, "VSZ: %lu\nRSS: %ld\n", vmem, rmem);
 }
 
 void

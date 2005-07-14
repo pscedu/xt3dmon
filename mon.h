@@ -304,7 +304,8 @@ struct panel {
 #define PANEL_POS	(1<<6)
 #define PANEL_SS	(1<<7)
 #define PANEL_STATUS	(1<<8)
-#define NPANELS		9
+#define PANEL_MEM	(1<<9)
+#define NPANELS		10
 
 #define POPT_REMOVE	(1<<0)			/* being removed */
 #define POPT_DIRTY	(1<<1)			/* panel needs redrawn */
@@ -500,5 +501,8 @@ extern int		 capture_mode;
 
 extern int		 win_width;
 extern int		 win_height;
+
+extern unsigned long	 vmem;
+extern long		 rmem;
 
 extern int gDebugCapture;
