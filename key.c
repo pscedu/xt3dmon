@@ -238,7 +238,7 @@ keyh_option(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 'l':
 		st.st_opts ^= OP_NLABELS;
-		st.st_rf |= RF_CLUSTER;
+		st.st_rf |= RF_CLUSTER | RF_SELNODE;
 		break;
 	case 'M':
 		st.st_opts ^= OP_SHOWMODS;
