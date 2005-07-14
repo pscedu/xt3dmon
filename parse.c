@@ -776,7 +776,7 @@ bad:
 	fclose(fp);
 	errno = 0;
 
-	qsort(fail_list.ol_fails, fail_list.ol_tcur, fail_list.ol_objlen,
+	qsort(fail_list.ol_fails, fail_list.ol_tcur, sizeof(struct fail *),
 	    fail_cmp);
 	for (j = 0; j < fail_list.ol_tcur; j++)
 		getcol(j, fail_list.ol_tcur, &fail_list.ol_fails[j]->f_fill);
@@ -920,7 +920,7 @@ bad:
 	fclose(fp);
 	errno = 0;
 
-	qsort(temp_list.ol_temps, temp_list.ol_tcur, temp_list.ol_objlen,
+	qsort(temp_list.ol_temps, temp_list.ol_tcur, sizeof(struct temp *),
 	    temp_cmp);
 	for (j = 0; j < temp_list.ol_tcur; j++)
 		getcol_temp(j, &temp_list.ol_temps[j]->t_fill);
