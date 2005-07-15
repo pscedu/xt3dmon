@@ -157,14 +157,21 @@ struct objhdr {
 	int		 oh_tref;
 };
 
+#define JFL_OWNER	32
+#define JFL_NAME	20
+#define JFL_QUEUE	10
+
 struct job {
 	struct objhdr	 j_oh;
 	int		 j_id;
-	char		*j_owner;
-	char		*j_name;
-	int		 j_dur;
-	int		 j_cpus;
 	struct fill	 j_fill;
+
+	char		 j_owner[JFL_OWNER];
+	char		 j_jname[JFL_NAME];
+	char		 j_queue[JFL_QUEUE];
+	int		 j_tmdur;	/* minutes */
+	int		 j_tmuse;	/* minutes */
+	int		 j_ncpus;
 };
 
 struct temp {
@@ -400,6 +407,9 @@ void			 keyh_mode(unsigned char, int, int);
 void			 keyh_vmode(unsigned char, int, int);
 void			 keyh_default(unsigned char, int, int);
 void			 spkeyh_default(int, int, int);
+
+/* job.c */
+struct job		*job_findbyid(int);
 
 /* load_png.c */
 void			 load_texture(void *, GLint, GLenum, GLuint);
