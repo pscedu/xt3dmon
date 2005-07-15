@@ -152,10 +152,8 @@ refresh_state(int oldopts)
 		oy = ty = st.st_y;  oly = tly = st.st_ly;
 		oz = tz = st.st_z;  olz = tlz = st.st_lz;
 	}
-	if (diff & (OP_BLEND | OP_TEX)) {
+	if (diff & (OP_BLEND | OP_DIMNONSEL | OP_TEX))
 		restore_textures();
-printf("%d %d\n", st.st_rf, st.st_rf & RF_CLUSTER);
-	}
 	if (diff & OP_FREELOOK)
 		glutMotionFunc(st.st_opts & OP_FREELOOK ?
 		    m_activeh_free : m_activeh_default);
@@ -317,10 +315,11 @@ void
 restore_textures(void)
 {
 	/* Reload the textures if needed */
-	if(st.st_opts & OP_TEX) {
+	if (st.st_opts & OP_TEX) {
 		int fmt = jstates[0].js_fill.f_alpha_fmt;
-		if((st.st_opts & OP_BLEND && fmt != GL_INTENSITY) ||
-		   (!(st.st_opts & OP_BLEND) && fmt != GL_RGBA))
+
+		if ((st.st_opts & (OP_BLEND | OP_DIMNONSEL) && fmt != GL_INTENSITY) ||
+		   ((st.st_opts & (OP_BLEND | OP_DIMNONSEL)) == 0 && fmt != GL_RGBA))
 			update_textures();
 	}
 }
