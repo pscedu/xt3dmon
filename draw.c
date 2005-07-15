@@ -515,7 +515,9 @@ draw_node(struct node *n, int flags)
 		fill.f_a = DIMMED_ALPHA;
 		fp = &fill;
 	}
-	if (st.st_opts & OP_TEX)
+	if (flags & NDF_NOOPTS)
+		draw_box_filled(dimp, fp);
+	else if (st.st_opts & OP_TEX)
 		draw_box_tex(dimp, fp);
 	else {
 		if (st.st_opts & OP_BLEND) {
