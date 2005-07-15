@@ -150,7 +150,6 @@ update_flyby(void)
 	/* Replay. */
 	else if (active_flyby)
 		read_flyby();
-	st.st_rf = 0;
 	fb.fb_panels = 0;
 }
 
