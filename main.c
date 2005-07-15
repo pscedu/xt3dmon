@@ -181,6 +181,9 @@ select_node(struct node *n)
 	}
 	panel_show(PANEL_NINFO);
 
+	if(st.st_opts & OP_DIMNONSEL)
+		rebuild(RF_CLUSTER);
+	
 	select_dl = glGenLists(1);
 	glNewList(select_dl, GL_COMPILE);
 
