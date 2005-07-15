@@ -271,7 +271,7 @@ draw_box_tex(struct vec *dim, struct fill *fillp)
 
 	glEnable(GL_TEXTURE_2D);
 
-	if (st.st_opts & OP_BLEND){
+	if (st.st_opts & (OP_BLEND | OP_DIMNONSEL)) {
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
 		param = GL_BLEND;
@@ -287,7 +287,7 @@ draw_box_tex(struct vec *dim, struct fill *fillp)
 
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, param);
 
-	if (st.st_opts & OP_BLEND)
+	if (st.st_opts & (OP_BLEND | OP_DIMNONSEL))
 		glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, color);
 
 	/* Polygon Offset */
@@ -361,7 +361,7 @@ draw_box_tex(struct vec *dim, struct fill *fillp)
 
 	glEnd();
 
-	if (st.st_opts & OP_BLEND)
+	if (st.st_opts & (OP_BLEND | OP_DIMNONSEL))
 		glDisable(GL_BLEND);
 
 	/* Disable Polygon Offset */
@@ -525,12 +525,12 @@ draw_node(struct node *n, int flags)
 	else if (st.st_opts & OP_TEX)
 		draw_box_tex(dimp, fp);
 	else {
-		if (st.st_opts & OP_BLEND) {
+		if (st.st_opts & (OP_BLEND| OP_DIMNONSEL)) {
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
 		}
 		draw_box_filled(dimp, fp);
-		if (st.st_opts & OP_BLEND)
+		if (st.st_opts & (OP_BLEND | OP_DIMNONSEL))
 			glDisable(GL_BLEND);
 	}
 	if (st.st_opts & OP_WIREFRAME)
