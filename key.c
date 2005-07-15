@@ -133,6 +133,9 @@ keyh_panel(unsigned char key, __unused int u, __unused int v)
 	case 'l':
 		panel_toggle(PANEL_LEGEND);
 		break;
+	case 'm':
+		panel_toggle(PANEL_MEM);
+		break;
 	case 'n':
 		panel_toggle(PANEL_NINFO);
 		break;
