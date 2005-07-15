@@ -68,21 +68,10 @@ While holding left click, scroll the mouse to revolve around the cluster
 view.
 .Pp
 While holding shift, scroll the mouse to peer along the y-axis.
-.It Ic b
-Toggle translucency (blending).
 .It Ic C
 Redraw the cluster.
 .It Ic c
 Clear the selected node.
-.It Ic D
-Toggle drawing to the screen.
-.It Ic d
-Toggle screen capture.
-Files are written to
-.Pa data/dump??.ppm .
-.It Ic e
-Toggle movement interpolation
-.Pq Dq tweening .
 .It Ic fc
 Empty the flyby data file.
 By default, enabling recording consecutively will append flyby states to
@@ -95,25 +84,52 @@ Press any key to break out of playback mode.
 .It Ic fq
 Toggle the recording and saving of the live state, for use in flyby
 playbacks.
-.It Ic g
-Toggle display of the ground and axes.
-.It Ic G
-Toggle the frame rate governor.
-.It Ic l
-Toggle the display of node labels.
-.It Ic l
-Toggle free look mode, when the look angle is freely controlled by
-the control button and the mouse, as opposed to revolution mode.
-.It Ic M
-Toggle the display of modules.
 .It Ic mf
 Switch to failure data mode.
-.It Ic mt
-Switch to temperature data mode.
 .It Ic mj
 Switch to job data mode (default).
-.It Ic o
+.It Ic mt
+Switch to temperature data mode.
+.It Ic O
 Return the camera to the origin (0,0,0).
+.It Ic ob
+Toggle translucency (blending).
+.It Ic oD
+Toggle drawing to the screen.
+.It Ic od
+Toggle screen capture.
+Files are written to
+.Pa data/dump??.ppm .
+.It Ic oe
+Toggle movement interpolation
+.Pq Dq tweening .
+.It Ic of
+Toggle the display of cluster frames in wired view.
+.It Ic oG
+Toggle the frame rate governor.
+.It Ic og
+Toggle display of the ground and axes.
+.It Ic oL
+Toggle free look mode, when the look angle is freely controlled by
+the control button and the mouse, as opposed to revolution mode.
+.It Ic ol
+Toggle the display of node labels.
+.It Ic oM
+Toggle the display of modules.
+.It Ic oP
+Toggle the display of pipes to the wired neighbors of the selected node.
+.It Ic op
+Toggle the display of pipes to the wired neighbors of all nodes.
+.It Ic oS
+Toggle stereo mode.
+Stereo mode is used during flyby playback to generate two images from
+different positions of the same scene for use on 3D projectors.
+.It Ic os
+Toggle the dimming of other nodes when a node is selected.
+.It Ic ot
+Toggle texture mapping.
+.It Ic ow
+Toggle wireframe.
 .It Ic pa
 Toggle all panels.
 .It Ic pc
@@ -126,24 +142,24 @@ Toggle the frames-per-second panel.
 Toggle the goto-node panel.
 .It Ic pl
 Toggle the legend panel.
+.It Ic pm
+Toggle the memory usage panel.
 .It Ic pn
 Toggle the extended node information panel.
 .It Ic pp
 Toggle the camera position panel.
+.It Ic pS
+Toggle the status panel.
+.It Ic ps
+Toggle the screenshot panel.
 .It Ic q
 Quit.
-.It Ic T
-Toggle texture load format (required for blending).
-.It Ic t
-Toggle texture mapping.
 .It Ic vo
 Switch to the wired viewing mode with only one cluster drawn.
 .It Ic vp
 Switch to the physical viewing mode (default).
 .It Ic vw
 Switch to the wired viewing mode with the cluster drawn continuously.
-.It Ic w
-Toggle wireframe.
 .It Ic \&[ , \&]
 Adjust the wired viewing mode node spacing factor.
 .It Ic + , _
