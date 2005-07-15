@@ -53,6 +53,11 @@ draw(void)
 	if (active_flyby || build_flyby)
 		update_flyby();
 
+	if (st.st_rf) {
+		rebuild(st.st_rf);
+		st.st_rf = 0;
+	}
+
 	if (render_mode == RM_SELECT)
 		sel_record_begin();
 
