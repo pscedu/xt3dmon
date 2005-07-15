@@ -203,7 +203,7 @@ select_node(struct node *n)
 	if (st.st_opts & OP_SELPIPES && (st.st_opts & OP_PIPES) == 0)
 		draw_node_pipes(&vmodes[st.st_vmode].vm_ndim);
 
-	draw_node(n, NDF_DONTPUSH);
+	draw_node(n, NDF_DONTPUSH | NDF_NOOPTS);
 
 	n->n_fillp = n->n_ofillp;
 
