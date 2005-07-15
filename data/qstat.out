@@ -1,0 +1,163 @@
+Job Id: 4805.phantom.psc.edu
+    Job_Name = jov128
+    Job_Owner = glatzmai@phantom.psc.edu
+    job_state = Q
+    queue = ClassA
+    server = phantom.psc.edu
+    Checkpoint = u
+    ctime = Fri Jul 15 01:55:34 2005
+    Error_Path = phantom.psc.edu:/lustre/glatz/jov128.e4805
+    exec_host = phantom/0
+    Hold_Types = n
+    Join_Path = eo
+    Keep_Files = n
+    Mail_Points = e
+    Mail_Users = glatz@es.ucsc.edu
+    mtime = Fri Jul 15 15:18:16 2005
+    Output_Path = phantom.psc.edu:/lustre/glatz/jov128.o4805
+    Priority = 0
+    qtime = Fri Jul 15 01:55:34 2005
+    Rerunable = True
+    Resource_List.nid_list = 2623..2655:2688..2771:2773..2783
+    Resource_List.size = 128
+    Resource_List.walltime = 06:00:00
+    session_id = 16685
+    comment = Queue ClassA not in started state.
+    etime = Fri Jul 15 01:55:34 2005
+
+Job Id: 4806.phantom.psc.edu
+    Job_Name = run_7.08ncp.pbs
+    Job_Owner = gottlieb@phantom.psc.edu
+    job_state = Q
+    queue = ClassA
+    server = phantom.psc.edu
+    Checkpoint = u
+    ctime = Fri Jul 15 03:39:42 2005
+    Error_Path = phantom.psc.edu:/usr/users/0/gottlieb/b708/run_7.08ncp.pbs.e48
+	06
+    Hold_Types = n
+    Join_Path = oe
+    Keep_Files = n
+    Mail_Points = a
+    mtime = Fri Jul 15 15:18:16 2005
+    Output_Path = phantom.psc.edu:/usr/users/0/gottlieb/b708/run_7.08ncp.pbs.o4
+	806
+    Priority = 0
+    qtime = Fri Jul 15 03:39:42 2005
+    Rerunable = True
+    Resource_List.size = 2048
+    Resource_List.walltime = 03:00:00
+    comment = Queue ClassA not in started state.
+    etime = Fri Jul 15 14:28:37 2005
+
+Job Id: 4811.phantom.psc.edu
+    Job_Name = pop.job
+    Job_Owner = levesque@phantom.psc.edu
+    job_state = Q
+    queue = ClassA
+    server = phantom.psc.edu
+    Checkpoint = u
+    ctime = Fri Jul 15 08:09:48 2005
+    Error_Path = phantom.psc.edu:/usr/users/2/levesque/pop/bench/pop.job.e4811
+    Hold_Types = n
+    Join_Path = eo
+    Keep_Files = n
+    Mail_Points = a
+    mtime = Fri Jul 15 15:18:16 2005
+    Output_Path = phantom.psc.edu:/usr/users/2/levesque/pop/bench/pop.job.o4811
+	
+    Priority = 0
+    qtime = Fri Jul 15 08:09:48 2005
+    Rerunable = True
+    Resource_List.size = 1728
+    Resource_List.walltime = 00:10:00
+    comment = Queue ClassA not in started state.
+    etime = Fri Jul 15 08:09:48 2005
+
+Job Id: 4864.phantom.psc.edu
+    Job_Name = run.cpmd
+    Job_Owner = stbrown@phantom.psc.edu
+    resources_used.cput = 00:00:00
+    resources_used.mem = 11156kb
+    resources_used.vmem = 29448kb
+    resources_used.walltime = 02:38:03
+    job_state = R
+    queue = ClassB
+    server = phantom.psc.edu
+    Checkpoint = u
+    ctime = Fri Jul 15 12:39:13 2005
+    Error_Path = phantom.psc.edu:/usr/users/4/stbrown/scratch/psc-bench/hbfg/me
+	m_testing/512/run.cpmd.e4864
+    exec_host = phantom/3
+    Hold_Types = n
+    Join_Path = eo
+    Keep_Files = n
+    Mail_Points = a
+    mtime = Fri Jul 15 12:39:13 2005
+    Output_Path = phantom.psc.edu:/usr/users/4/stbrown/scratch/psc-bench/hbfg/m
+	em_testing/512/run.cpmd.o4864
+    Priority = 0
+    qtime = Fri Jul 15 12:39:13 2005
+    Rerunable = True
+    Resource_List.nid_list = 717..735:768..863:896..991:1024..1119:1152..1247:1
+	280..1375:1412..1424
+    Resource_List.size = 512
+    Resource_List.walltime = 03:00:00
+    session_id = 18144
+    comment = Starting job at 07/15/05 12:39
+    etime = Fri Jul 15 12:39:13 2005
+
+Job Id: 4881.phantom.psc.edu
+    Job_Name = psc1734
+    Job_Owner = gomez@phantom.psc.edu
+    job_state = Q
+    queue = ClassB
+    server = phantom.psc.edu
+    Checkpoint = u
+    ctime = Fri Jul 15 14:09:36 2005
+    Error_Path = phantom.psc.edu:/usr/users/8/gomez/leo/1734/psc1734.e4881
+    Hold_Types = n
+    Join_Path = eo
+    Keep_Files = n
+    Mail_Points = a
+    mtime = Fri Jul 15 15:18:16 2005
+    Output_Path = phantom.psc.edu:/usr/users/8/gomez/leo/1734/psc1734.o4881
+    Priority = 0
+    qtime = Fri Jul 15 14:09:36 2005
+    Rerunable = True
+    Resource_List.size = 1734
+    Resource_List.walltime = 00:02:00
+    comment = Job scheduled to start by Fri Jul 15 15:39:00 EDT 2005
+    etime = Fri Jul 15 14:09:36 2005
+
+Job Id: 4884.phantom.psc.edu
+    Job_Name = pallas1.job
+    Job_Owner = raymond@phantom.psc.edu
+    resources_used.cput = 00:00:00
+    resources_used.mem = 9208kb
+    resources_used.vmem = 33460kb
+    resources_used.walltime = 00:44:44
+    job_state = R
+    queue = ClassB
+    server = phantom.psc.edu
+    Checkpoint = u
+    ctime = Fri Jul 15 14:32:32 2005
+    Error_Path = phantom.psc.edu:/usr/users/3/raymond/1.1.08/pallas1.job.e4884
+    exec_host = phantom/1
+    Hold_Types = n
+    Join_Path = oe
+    Keep_Files = n
+    Mail_Points = a
+    mtime = Fri Jul 15 14:32:32 2005
+    Output_Path = phantom.psc.edu:/usr/users/3/raymond/1.1.08/pallas1.job.o4884
+	
+    Priority = 0
+    qtime = Fri Jul 15 14:32:32 2005
+    Rerunable = True
+    Resource_List.nid_list = 2715..2718
+    Resource_List.size = 4
+    Resource_List.walltime = 01:00:00
+    session_id = 22869
+    comment = Starting job at 07/15/05 14:32
+    etime = Fri Jul 15 14:32:32 2005
+
