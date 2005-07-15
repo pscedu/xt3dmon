@@ -11,3 +11,4 @@ $Id$
 16. stereo stuff
 17. DIMNONSEL should be checked when rendering blending, instead
     of turning on BLEND when DIMNONSEL is toggled
+18. unify OP_BLEND for tex/fill modes
