@@ -414,7 +414,7 @@ panel_refresh_legend(struct panel *p)
 		for (j = 0; j < job_list.ol_cur; j++, pw = nextp) {
 			pw = panel_get_pwidget(p, pw, &nextp);
 			pw->pw_fillp = &job_list.ol_jobs[j]->j_fill;
-			pw->pw_str = job_list.ol_jobs[j]->j_name;
+			pw->pw_str = job_list.ol_jobs[j]->j_jname;
 			p->p_maxwlen = MAX(p->p_maxwlen, strlen(pw->pw_str));
 		}
 		break;
@@ -471,15 +471,19 @@ panel_refresh_ninfo(struct panel *p)
 		case JST_USED:
 			panel_set_content(p,
 			    "Node ID: %d\n"
-			    "Owner: %d\n"
-			    "Job name: [%s]\n"
-			    "Duration: %d\n"
-			    "CPUs: %d",
+			    "Job owner: %d\n"
+			    "Job name: %s\n"
+			    "Job queue: %s\n"
+			    "Job duration: %d\n"
+			    "Job time used: %d\n"
+			    "Job CPUs: %d",
 			    selnode->n_nid,
 			    selnode->n_job->j_owner,
-			    selnode->n_job->j_name,
-			    selnode->n_job->j_dur,
-			    selnode->n_job->j_cpus);
+			    selnode->n_job->j_jname,
+			    selnode->n_job->j_queue,
+			    selnode->n_job->j_tmdur,
+			    selnode->n_job->j_tmuse,
+			    selnode->n_job->j_ncpus);
 			break;
 		default:
 			panel_set_content(p,
