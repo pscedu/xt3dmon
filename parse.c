@@ -529,10 +529,8 @@ parse_jobmap(void)
 			node->n_state = JST_USED;
 			job = getobj(&jobid, &job_list);
 			job->j_id = jobid;
-			job->j_name = "testjob";
 			/* XXX: only slightly sloppy. */
 			job->j_fill.f_texid = jstates[JST_USED].js_fill.f_texid;
-			// free(j->j_name);
 			node->n_job = job;
 			node->n_fillp = &job->j_fill;
 		}
@@ -939,5 +937,127 @@ parse_mem(void)
 	}
 	fscanf(fp, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u "
 	    "%*u %*u %*d %*d %*d %*d %*d %*d %*u %lu %ld", &vmem, &rmem);
+	fclose(fp);
+}
+
+#define _PATH_QSTAT "data/qstat.out"
+
+/*
+ * Job Id: 4864.phantom.psc.edu
+ *   Job_Name = run.cpmd
+ *   Job_Owner = stbrown@phantom.psc.edu
+ *   resources_used.cput = 00:00:00
+ *   resources_used.mem = 11156kb
+ *   resources_used.vmem = 29448kb
+ *   resources_used.walltime = 02:38:03
+ *   job_state = R
+ */
+void
+parse_qstat(void)
+{
+	char state, *t, *s, *q, buf[BUFSIZ], *next;
+	struct job j_fake, *job;
+	int jobid;
+	FILE *fp;
+
+	if ((fp = fopen(_PATH_QSTAT, "r")) == NULL) {
+		warn("%s", _PATH_QSTAT);
+		return;
+	}
+	jobid = 0;
+	state = '\0';
+	for (;;) {
+		next = fgets(buf, sizeof(buf), fp);
+		if (next == NULL && ferror(fp)) {
+			warn("%s", _PATH_QSTAT);
+			break;
+		}
+
+		q = "Job Id: ";
+		if (next == NULL || (s = strstr(buf, q)) != NULL) {
+			/* Save last job info. */
+			if (state == 'R' &&
+			    (job = job_findbyid(jobid)) != NULL) {
+				job->j_ncpus = j_fake.j_ncpus;
+				job->j_tmdur = j_fake.j_tmdur;
+				job->j_tmuse = j_fake.j_tmuse;
+				memcpy(job->j_jname, j_fake.j_jname,
+				    sizeof(job->j_jname));
+				memcpy(job->j_owner, j_fake.j_owner,
+				    sizeof(job->j_owner));
+				memcpy(job->j_queue, j_fake.j_queue,
+				    sizeof(job->j_queue));
+			}
+
+			/* Setup next job. */
+			state = 0;
+			j_fake.j_jname[0] = '\0';
+			j_fake.j_owner[0] = '\0';
+			j_fake.j_queue[0] = '\0';
+			j_fake.j_tmdur = 0;
+			j_fake.j_tmuse = 0;
+			j_fake.j_ncpus = 0;
+
+			if (feof(fp))
+				break;
+			else {
+				s += strlen(q);
+			}
+		}
+
+		q = "Job_Name = ";
+		if ((s = strstr(buf, q)) != NULL) {
+			s += strlen(q);
+			strncpy(j_fake.j_jname, s,
+			    sizeof(j_fake.j_jname) - 1);
+			j_fake.j_jname[sizeof(j_fake.j_jname) - 1] = '\0';
+		}
+
+		q = "Job_Owner = ";
+		if ((s = strstr(buf, q)) != NULL) {
+			s += strlen(q);
+			strncpy(j_fake.j_owner, s,
+			    sizeof(j_fake.j_owner) - 1);
+			j_fake.j_owner[sizeof(j_fake.j_owner) - 1] = '\0';
+		}
+
+		q = "job_state = ";
+		if ((s = strstr(buf, q)) != NULL) {
+			s += strlen(q);
+			state = *s;
+		}
+
+		q = "Queue = ";
+		if ((s = strstr(buf, q)) != NULL) {
+			s += strlen(q);
+			strncpy(j_fake.j_queue, s,
+			    sizeof(j_fake.j_queue) - 1);
+			j_fake.j_queue[sizeof(j_fake.j_queue) - 1] = '\0';
+		}
+
+		q = "Resource_List.size = ";
+		if ((s = strstr(buf, q)) != NULL) {
+			s += strlen(q);
+			j_fake.j_ncpus = strtoul(s, NULL, 0);
+		}
+
+		q = "Resource_List.walltime = ";
+		if ((s = strstr(buf, q)) != NULL) {
+			s += strlen(q);
+			if ((t = strchr(s, ':')) != NULL)
+				*t++ = '\0';
+			j_fake.j_tmdur = 60 * strtoul(s, NULL, 0);
+			j_fake.j_tmdur += strtoul(t, NULL, 0);
+		}
+
+		q = "resources_used.walltime = ";
+		if ((s = strstr(buf, q)) != NULL) {
+			s += strlen(q);
+			if ((t = strchr(s, ':')) != NULL)
+				*t++ = '\0';
+			j_fake.j_tmuse = 60 * strtoul(s, NULL, 0);
+			j_fake.j_tmuse += strtoul(t, NULL, 0);
+		}
+	}
 	fclose(fp);
 }
