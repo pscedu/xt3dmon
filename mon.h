@@ -335,6 +335,7 @@ struct pinfo {
 #define TWF_POS		(1<<3)
 
 #define NDF_DONTPUSH	(1<<0)
+#define NDF_NOOPTS	(1<<1)
 
 struct dbh {
 	union {
