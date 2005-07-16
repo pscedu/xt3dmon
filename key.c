@@ -287,6 +287,7 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 'c':
 		select_node(NULL);
+		/* XXX: not needed, selnode is independent from cluster. */
 		st.st_rf |= RF_CLUSTER;
 		break;
 	case 'f':

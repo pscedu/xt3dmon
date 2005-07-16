@@ -177,6 +177,10 @@ select_node(struct node *n)
 	}
 	panel_show(PANEL_NINFO);
 
+	/*
+	 * XXX:  not needed: all nodes should be dimmed with DIMNONSEL,
+	 * then the selnode will be rendered regularly.
+	 */
 	if(st.st_opts & OP_DIMNONSEL)
 		rebuild(RF_CLUSTER);
 	
