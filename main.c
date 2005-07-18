@@ -244,10 +244,8 @@ idle_govern(void)
 		timersub(&time, &lastsync, &diff);
 		if (diff.tv_sec >= SLEEP_INTV) {
 			lastsync = time;
-			rebuild(RF_DATASRC | RF_CLUSTER);
+			st.st_rf |= RF_DATASRC | RF_CLUSTER;
 			panel_status_setinfo("");
-			/* A lot of time may have elasped. */
-//			gettimeofday(&time, NULL);
 		}
 		ptime = time;
 		draw();
@@ -272,7 +270,7 @@ idle(void)
 		if (diff.tv_sec > SLEEP_INTV) {
 			tcnt = 0;
 			lastsync = tv;
-			rebuild(RF_DATASRC | RF_CLUSTER);
+			st.st_rf |= RF_DATASRC | RF_CLUSTER;
 			panel_status_setinfo("");
 		}
 		cnt = 0;
@@ -428,7 +426,7 @@ main(int argc, char *argv[])
 	TAILQ_INIT(&panels);
 	buf_init(&uinp.uinp_buf);
 	buf_append(&uinp.uinp_buf, '\0');
-	rebuild(RF_INIT);
+	st.st_rf |= RF_INIT;
 
 	/* glutExposeFunc(reshape); */
 	glutReshapeFunc(reshape);
