@@ -88,7 +88,7 @@ struct state st = {
 	OP_WIREFRAME | OP_TWEEN | OP_GROUND | OP_DISPLAY,	/* options */
 	SM_JOBS,						/* which data to show */
 	VM_PHYSICAL,						/* viewing mode */
-	4,							/* wired node spacing */
+	4, 4, 4,						/* wired node spacing */
 	0							/* rebuild flags (unused) */
 };
 
@@ -371,10 +371,15 @@ rebuild(int opts)
 		parse_mem();
 	}
 	if (opts & RF_PERSPECTIVE) {
+		float clip;
+
+		clip = MIN(WI_CLIPX, WI_CLIPY);
+		clip = MIN(clip, WI_CLIPZ);
+
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glViewport(0, 0, win_width, win_height);
-		gluPerspective(FOVY, ASPECT, 1, WI_CLIP);
+		gluPerspective(FOVY, ASPECT, 1, clip);
 		glMatrixMode(GL_MODELVIEW);
 		cam_update();
 	}

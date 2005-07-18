@@ -62,10 +62,12 @@
 #define ZCENTER		(NODESPACE + (ROWDEPTH * NROWS + \
 			    ROWSPACE * (NROWS - 1)) / 2.0f)
 
-#define WI_WIDTH	(wired_width * st.st_winsp)
-#define WI_HEIGHT	(wired_height * st.st_winsp)
-#define WI_DEPTH	(wired_depth * st.st_winsp)
-#define WI_CLIP		(st.st_winsp * vmodes[st.st_vmode].vm_clip)
+#define WI_WIDTH	(wired_width * st.st_winspx)
+#define WI_HEIGHT	(wired_height * st.st_winspy)
+#define WI_DEPTH	(wired_depth * st.st_winspz)
+#define WI_CLIPX	(st.st_winspx * vmodes[st.st_vmode].vm_clip)
+#define WI_CLIPY	(st.st_winspy * vmodes[st.st_vmode].vm_clip)
+#define WI_CLIPZ	(st.st_winspz * vmodes[st.st_vmode].vm_clip)
 
 #define WFRAMEWIDTH	(0.001f)
 
@@ -209,7 +211,9 @@ struct state {
 	int		 st_opts;
 	int		 st_mode;
 	int		 st_vmode;
-	int		 st_winsp;
+	int		 st_winspx;
+	int		 st_winspy;
+	int		 st_winspz;
 	int		 st_rf;
 #define st_x st_v.v_x
 #define st_y st_v.v_y

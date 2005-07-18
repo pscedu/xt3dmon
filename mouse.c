@@ -95,6 +95,10 @@ void
 sel_record_begin(void)
 {
 	GLint viewport[4];
+	float clip;
+
+	clip = MIN(WI_CLIPX, WI_CLIPY);
+	clip = MIN(clip, WI_CLIPZ);
 
 	glSelectBuffer(sizeof(selbuf) / sizeof(selbuf[0]), selbuf);
 	glGetIntegerv(GL_VIEWPORT, viewport);
@@ -104,7 +108,7 @@ sel_record_begin(void)
 	glPushMatrix();
 	glLoadIdentity();
 	gluPickMatrix(lastu, win_height - lastv, 5, 5, viewport);
-	gluPerspective(FOVY, ASPECT, 0.1, WI_CLIP);
+	gluPerspective(FOVY, ASPECT, 0.1, clip);
 	glMatrixMode(GL_MODELVIEW);
 }
 

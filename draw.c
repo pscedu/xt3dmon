@@ -66,12 +66,12 @@ draw(void)
 		struct vec lov, hiv;
 		int clip;
 
-		lov.v_x = st.st_x - WI_CLIP;
-		lov.v_y = st.st_y - WI_CLIP;
-		lov.v_z = st.st_z - WI_CLIP;
-		hiv.v_x = st.st_x + WI_CLIP; /* XXX:  + 1 (truncation) */
-		hiv.v_y = st.st_y + WI_CLIP;
-		hiv.v_z = st.st_z + WI_CLIP;
+		lov.v_x = st.st_x - WI_CLIPX;
+		lov.v_y = st.st_y - WI_CLIPY;
+		lov.v_z = st.st_z - WI_CLIPZ;
+		hiv.v_x = st.st_x + WI_CLIPX; /* XXX:  + 1 (truncation) */
+		hiv.v_y = st.st_y + WI_CLIPY;
+		hiv.v_z = st.st_z + WI_CLIPZ;
 		if (lov.v_x < wivstart.v_x ||
 		    lov.v_y < wivstart.v_y ||
 		    lov.v_z < vstart.v_z ||
@@ -101,7 +101,7 @@ draw(void)
 	if (!TAILQ_EMPTY(&panels))
 		draw_panels();
 
-	glClearColor(0.0, 0.0, 0.0, 1.0);
+	glClearColor(0.0, 0.0, 0.2, 1.0);
 	if (st.st_opts & OP_CAPTURE || gDebugCapture)
 		capture_fb(capture_mode);
 	if (render_mode == RM_SELECT)
@@ -420,7 +420,7 @@ draw_node_label(struct node *n)
 
 	while(i < 8)
 		list[i++] = -1;
-	
+
 	glEnable(GL_TEXTURE_2D);
 
 	/* Get a distinct contrast color */
@@ -468,16 +468,16 @@ draw_node_pipes(struct vec *dim)
 	glLineWidth(8.0);
 	glBegin(GL_LINES);
 	glColor3f(1.0f, 0.0f, 0.0f); 			/* x */
-	glVertex3f(w - st.st_winsp, h/2, d/2);
-	glVertex3f(st.st_winsp, h/2, d/2);
+	glVertex3f(w - st.st_winspx, h/2, d/2);
+	glVertex3f(st.st_winspx, h/2, d/2);
 
 	glColor3f(0.0f, 1.0f, 0.0f);			/* y */
-	glVertex3f(w/2, h - st.st_winsp, d/2);
-	glVertex3f(w/2, st.st_winsp, d/2);
+	glVertex3f(w/2, h - st.st_winspy, d/2);
+	glVertex3f(w/2, st.st_winspy, d/2);
 
 	glColor3f(0.0f, 0.0f, 1.0f);			/* z */
-	glVertex3f(w/2, h/2, d - st.st_winsp);
-	glVertex3f(w/2, h/2, st.st_winsp);
+	glVertex3f(w/2, h/2, d - st.st_winspz);
+	glVertex3f(w/2, h/2, st.st_winspz);
 	glEnd();
 
 	glEnable(GL_POINT_SMOOTH);
@@ -653,12 +653,14 @@ draw_cluster_physical(void)
 __inline void
 draw_cluster_pipes(struct vec *v)
 {
-	float x, y, z, sp;
+	float x, y, z, spx, spy, spz;
 	float sx, sy, sz;
 	struct vec *dimp;
 
 	dimp = &vmodes[st.st_vmode].vm_ndim;
-	sp = st.st_winsp;
+	spx = st.st_winspx;
+	spy = st.st_winspy;
+	spz = st.st_winspz;
 	sx = dimp->v_w / 2;
 	sy = dimp->v_h / 2;
 	sz = dimp->v_d / 2;
@@ -676,22 +678,22 @@ draw_cluster_pipes(struct vec *v)
 
 	glBegin(GL_LINES);
 	glColor3f(0.0f, 0.0f, 1.0f);
-	for (x = sx; x <= WI_WIDTH + sp; x += sp)			/* z */
-		for (y = sy; y <= WI_HEIGHT + sp; y += sp) {
+	for (x = sx; x <= WI_WIDTH + spx; x += spx)			/* z */
+		for (y = sy; y <= WI_HEIGHT + spy; y += spy) {
 			glVertex3f(x, y, 0.0f);
 			glVertex3f(x, y, WI_DEPTH);
 		}
 
 	glColor3f(0.0f, 1.0f, 0.0f);
-	for (z = sz; z <= WI_DEPTH + sp; z += sp)			/* y */
-		for (x = sx; x <= WI_WIDTH + sp; x += sp) {
+	for (z = sz; z <= WI_DEPTH + spz; z += spz)			/* y */
+		for (x = sx; x <= WI_WIDTH + spx; x += spx) {
 			glVertex3f(x, 0.0f, z);
 			glVertex3f(x, WI_HEIGHT, z);
 		}
 
 	glColor3f(1.0f, 0.0f, 0.0f);
-	for (y = sy; y <= WI_HEIGHT + sp; y += sp)
-		for (z = sz; z <= WI_DEPTH + sp; z += sp) {		/* x */
+	for (y = sy; y <= WI_HEIGHT + spy; y += spy)
+		for (z = sz; z <= WI_DEPTH + spz; z += spz) {		/* x */
 			glVertex3f(0.0f, y, z);
 			glVertex3f(WI_WIDTH, y, z);
 		}
@@ -717,9 +719,9 @@ draw_cluster_wired(struct vec *v)
 					for (n = 0; n < NNODES; n++) {
 						node = &nodes[r][cb][cg][m][n];
 						nv = &node->n_swiv;
-						nv->v_x = node->n_wiv.v_x * st.st_winsp + v->v_x;
-						nv->v_y = node->n_wiv.v_y * st.st_winsp + v->v_y;
-						nv->v_z = node->n_wiv.v_z * st.st_winsp + v->v_z;
+						nv->v_x = node->n_wiv.v_x * st.st_winspx + v->v_x;
+						nv->v_y = node->n_wiv.v_y * st.st_winspy + v->v_y;
+						nv->v_z = node->n_wiv.v_z * st.st_winspz + v->v_z;
 						node->n_v = nv;
 						draw_node(node, 0);
 					}
@@ -732,14 +734,14 @@ draw_wired_frame(struct vec *vp, struct vec *dimp, struct fill *fillp)
 	struct vec v, dim;
 
 	v = *vp;
-	v.v_x -= st.st_winsp / 2;
-	v.v_y -= st.st_winsp / 2;
-	v.v_z -= st.st_winsp / 2;
+	v.v_x -= st.st_winspx / 2;
+	v.v_y -= st.st_winspy / 2;
+	v.v_z -= st.st_winspz / 2;
 
 	dim = *dimp;
-	dim.v_w += st.st_winsp;
-	dim.v_h += st.st_winsp;
-	dim.v_d += st.st_winsp;
+	dim.v_w += st.st_winspx;
+	dim.v_h += st.st_winspy;
+	dim.v_d += st.st_winspz;
 
 	glPushMatrix();
 	glTranslatef(v.v_x, v.v_y, v.v_z);
@@ -753,8 +755,8 @@ draw_wired_frame(struct vec *vp, struct vec *dimp, struct fill *fillp)
 
 /*
  * Draw the cluster repeatedly till we reach the clipping plane.
- * Since we can see WI_CLIP away, we must construct a 3D space
- * WI_CLIP^3 large and draw the cluster multiple times inside.
+ * Since we can see MIN(WI_CLIP*) away, we must construct a 3D space
+ * MIN(WI_CLIP*)^3 large and draw the cluster multiple times inside.
  */
 __inline void
 draw_clusters_wired(void)
@@ -762,9 +764,9 @@ draw_clusters_wired(void)
 	int xnum, znum, col, adj, x, y, z;
 	struct vec v, dim;
 
-	x = st.st_x - WI_CLIP;
-	y = st.st_y - WI_CLIP;
-	z = st.st_z - WI_CLIP;
+	x = st.st_x - WI_CLIPX;
+	y = st.st_y - WI_CLIPY;
+	z = st.st_z - WI_CLIPZ;
 
 	/* Snap to grid */
 	adj = x % WI_WIDTH;
@@ -788,13 +790,13 @@ draw_clusters_wired(void)
 	dim.v_h = WI_HEIGHT;
 	dim.v_d = WI_DEPTH;
 
-	xnum = (st.st_x + WI_CLIP - x + WI_WIDTH - 1) / WI_WIDTH;
-	znum = (st.st_z + WI_CLIP - z + WI_DEPTH - 1) / WI_DEPTH;
+	xnum = (st.st_x + WI_CLIPX - x + WI_WIDTH - 1) / WI_WIDTH;
+	znum = (st.st_z + WI_CLIPZ - z + WI_DEPTH - 1) / WI_DEPTH;
 
 	col = 0;
-	for (v.v_y = y; v.v_y < st.st_y + WI_CLIP; v.v_y += WI_HEIGHT) {
-		for (v.v_z = z; v.v_z < st.st_z + WI_CLIP; v.v_z += WI_DEPTH) {
-			for (v.v_x = x; v.v_x < st.st_x + WI_CLIP; v.v_x += WI_WIDTH) {
+	for (v.v_y = y; v.v_y < st.st_y + WI_CLIPY; v.v_y += WI_HEIGHT) {
+		for (v.v_z = z; v.v_z < st.st_z + WI_CLIPZ; v.v_z += WI_DEPTH) {
+			for (v.v_x = x; v.v_x < st.st_x + WI_CLIPX; v.v_x += WI_WIDTH) {
 				draw_cluster_wired(&v);
 				if (st.st_opts & OP_WIVMFRAME)
 					draw_wired_frame(&v, &dim,
@@ -841,7 +843,7 @@ make_cluster(void)
 	glEndList();
 }
 
-/* 
+/*
  * The following two mathematical algorithms were created from
  * pseudocode found in "Fundamentals of Interactive Computer Graphics".
  */
@@ -865,31 +867,31 @@ RGB2HSV(struct fill *c)
 	c->f_v = max;
 
 	/* Saturation */
-	if(max != 0)
+	if (max != 0)
 		c->f_s = ran / max;
 
 	/* Hue */
-	if(c->f_s != 0) {
+	if (c->f_s != 0) {
 
 		/* Measure color distances */
 		rc = (max - r) / ran;
 		gc = (max - g) / ran;
 		bc = (max - b) / ran;
-		
-		/* Between Yellow and Magenta */
-		if(r == max)
+
+		/* Between yellow and magenta */
+		if (r == max)
 			c->f_h = bc - gc;
-		/* Between Cyan and Yellow */
-		else if(g == max)
+		/* Between cyan and yellow */
+		else if (g == max)
 			c->f_h = 2 + rc - bc;
-		/* Between Magenta and Cyan */
-		else if(b == max)
+		/* Between magenta and cyan */
+		else if (b == max)
 			c->f_h = 4 + gc - rc;
 
 		/* Convert to degrees */
 		c->f_h *= 60;
 
-		if(c->f_h < 0)
+		if (c->f_h < 0)
 			c->f_h += 360;
 	}
 }
@@ -903,20 +905,20 @@ HSV2RGB(struct fill *c)
 	float f, p, q, t;
 	int i;
 
-	if(s == 0)
+	if (s == 0)
 		h = v;
 	else {
-		if(h == 360)
+		if (h == 360)
 			h = 0;
 		h /= 60;
-		
+
 		i = floorf(h);
 		f = h - i;
 		p = v * (1 - s);
 		q = v * (1 - (s * f));
 		t = v * (1 - (s * (1 - f)));
 
-		switch(i) {
+		switch (i) {
 		case 0:	c->f_r = v; c->f_g = t; c->f_b = p; break;
 		case 1: c->f_r = q; c->f_g = v; c->f_b = p; break;
 		case 2: c->f_r = p; c->f_g = v; c->f_b = t; break;
@@ -928,9 +930,9 @@ HSV2RGB(struct fill *c)
 }
 
 /*
-** Create a contrasting color by panning
-** 180 degrees around the color circle
-*/
+ * Create a contrasting color by panning
+ * 180 degrees around the color circle.
+ */
 void
 rgb_contrast(struct fill *c)
 {
@@ -938,8 +940,8 @@ rgb_contrast(struct fill *c)
 
 	c->f_h -= 180;
 
-	if(c->f_h < 0)
-		c->f_h += 360; 
-	
+	if (c->f_h < 0)
+		c->f_h += 360;
+
 	HSV2RGB(c);
 }

@@ -277,6 +277,68 @@ keyh_option(unsigned char key, __unused int u, __unused int v)
 }
 
 void
+keyh_decr(unsigned char key, __unused int u, __unused int v)
+{
+	int oldopts = st.st_opts;
+
+	glutKeyboardFunc(keyh_default);
+	switch (key) {
+	case 'x':
+		st.st_winspx--;
+		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE | RF_SELNODE;
+		break;
+	case 'y':
+		st.st_winspy--;
+		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE | RF_SELNODE;
+		break;
+	case 'z':
+		st.st_winspz--;
+		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE | RF_SELNODE;
+		break;
+	case '[':
+		st.st_winspx--;
+		st.st_winspy--;
+		st.st_winspz--;
+		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE | RF_SELNODE;
+		break;
+	default:
+		return;
+	}
+	refresh_state(oldopts);
+}
+
+void
+keyh_incr(unsigned char key, __unused int u, __unused int v)
+{
+	int oldopts = st.st_opts;
+
+	glutKeyboardFunc(keyh_default);
+	switch (key) {
+	case 'x':
+		st.st_winspx++;
+		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE | RF_SELNODE;
+		break;
+	case 'y':
+		st.st_winspy++;
+		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE | RF_SELNODE;
+		break;
+	case 'z':
+		st.st_winspz++;
+		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE | RF_SELNODE;
+		break;
+	case ']':
+		st.st_winspx++;
+		st.st_winspy++;
+		st.st_winspz++;
+		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE | RF_SELNODE;
+		break;
+	default:
+		return;
+	}
+	refresh_state(oldopts);
+}
+
+void
 keyh_default(unsigned char key, __unused int u, __unused int v)
 {
 	int oldopts = st.st_opts;
@@ -367,12 +429,10 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		break;
 	    }
 	case '[':
-		st.st_winsp--;
-		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE | RF_SELNODE;
+		glutKeyboardFunc(keyh_decr);
 		break;
 	case ']':
-		st.st_winsp++;
-		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE | RF_SELNODE;
+		glutKeyboardFunc(keyh_incr);
 		break;
 	default:
 		return;
