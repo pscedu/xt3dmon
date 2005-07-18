@@ -9,6 +9,5 @@ $Id$
     (ie. sides or front/back)
 15. try #define __inline to see if it does anything
 16. stereo stuff
-17. DIMNONSEL should be checked when rendering blending, instead
-    of turning on BLEND when DIMNONSEL is toggled
-18. unify OP_BLEND for tex/fill modes
+17. unify OP_BLEND for tex/fill modes
+18. kill DIMNONSEL
