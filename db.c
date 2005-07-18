@@ -189,6 +189,10 @@ db_physmap(void)
 		node->n_hide = 0;
 	}
 	mysql_free_result(res);
+
+	wired_width++;
+	wired_height++;
+	wired_depth++;
 }
 
 void

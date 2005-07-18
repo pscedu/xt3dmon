@@ -434,6 +434,10 @@ bad:
 		warn("%s", _PATH_PHYSMAP);
 	fclose(fp);
 	errno = 0;
+
+	wired_width++;
+	wired_height++;
+	wired_depth++;
 }
 
 /*
