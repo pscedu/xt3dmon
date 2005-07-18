@@ -30,21 +30,30 @@ struct fill fill_black = { 0.0f, 0.0f, 0.0f, 1.0f, 0, 0 };
 struct fill fill_grey  = { 0.2f, 0.2f, 0.2f, 1.0f, 0, 0 };
 struct fill fill_light_blue = { 0.2f, 0.4f, 0.6f, 1.0f, 0, 0 };
 
-__inline int
-tween(__unused float start, float *cur, float stop, float max)
+__inline void
+tween_probe(float *cur, float stop, float max, float *scale, float *want)
 {
-	float amt;
-
 	if (stop != *cur) {
-		amt = (stop - *cur) * TWEEN_AMT;
-		amt = MIN(amt, max);
-		*cur += amt;
+		*want = (stop - *cur) * TWEEN_AMT;
+		if (*want > max) {
+			*scale = max / *want;
+			if (*scale < 0.0f)
+				*scale *= -1.0f;
+		}
+	}
+}
+
+__inline void
+tween_recalc(float *cur, float stop, float scale, float want)
+{
+	if (want) {
+		if (scale < 0.001)
+			scale = 0.001;
+		*cur += want * scale;
 		if (stop - *cur < TWEEN_THRES &&
 		    stop - *cur > -TWEEN_THRES)
 			*cur = stop;
-		return (1);
 	}
-	return (0);
 }
 
 void
@@ -82,14 +91,39 @@ draw(void)
 #endif
 	}
 
-	if (st.st_opts & OP_TWEEN)
-		if (tween(ox, &st.st_x, tx, TWEEN_MAX_POS) |
-		    tween(oy, &st.st_y, ty, TWEEN_MAX_POS) |
-		    tween(oz, &st.st_z, tz, TWEEN_MAX_POS) |
-		    tween(olx, &st.st_lx, tlx, TWEEN_MAX_LOOK) |
-		    tween(oly, &st.st_ly, tly, TWEEN_MAX_LOOK) |
-		    tween(olz, &st.st_lz, tlz, TWEEN_MAX_LOOK))
+	if (st.st_opts & OP_TWEEN) {
+		/* XXX: benchmark to test static. */
+		static struct vec want;
+		static struct vec want_l;
+		static struct vec sc, sc_l;
+		float scale, scale_l;
+
+		memset(&want, 0, sizeof(want));
+		memset(&want_l, 0, sizeof(want_l));
+		sc.v_x = sc.v_y = sc.v_z = 1.0;
+		sc_l.v_x = sc_l.v_y = sc_l.v_z = 1.0;
+		
+		tween_probe(&st.st_x, tx, TWEEN_MAX_POS, &sc.v_x, &want.v_w);
+		tween_probe(&st.st_y, ty, TWEEN_MAX_POS, &sc.v_y, &want.v_h);
+		tween_probe(&st.st_z, tz, TWEEN_MAX_POS, &sc.v_z, &want.v_d);
+		tween_probe(&st.st_lx, tlx, TWEEN_MAX_LOOK, &sc_l.v_x, &want_l.v_w);
+		tween_probe(&st.st_ly, tly, TWEEN_MAX_LOOK, &sc_l.v_y, &want_l.v_h);
+		tween_probe(&st.st_lz, tlz, TWEEN_MAX_LOOK, &sc_l.v_z, &want_l.v_d);
+
+		scale = MIN3(sc.v_x, sc.v_y, sc.v_z);
+		scale_l = MIN3(sc_l.v_x, sc_l.v_y, sc_l.v_z);
+
+		tween_recalc(&st.st_x, tx, scale, want.v_w);
+		tween_recalc(&st.st_y, ty, scale, want.v_h);
+		tween_recalc(&st.st_z, tz, scale, want.v_d);
+		tween_recalc(&st.st_lx, tlx, scale_l, want_l.v_w);
+		tween_recalc(&st.st_ly, tly, scale_l, want_l.v_h);
+		tween_recalc(&st.st_lz, tlz, scale_l, want_l.v_d);
+
+		if (want.v_w || want.v_h || want.v_d ||
+		    want_l.v_w || want_l.v_h || want_l.v_d)
 			cam_update();
+	}
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -929,19 +963,23 @@ HSV2RGB(struct fill *c)
 	}
 }
 
-/*
- * Create a contrasting color by panning
- * 180 degrees around the color circle.
- */
+/* Create a contrasting color */
 void
 rgb_contrast(struct fill *c)
 {
 	RGB2HSV(c);
 
+	/* Rotate 180 degrees */
 	c->f_h -= 180;
 
-	if (c->f_h < 0)
-		c->f_h += 360;
+	if(c->f_h < 0)
+		c->f_h += 360; 
+	
+	/* Play with brightness */
+	c->f_s -= 0.3;
 
+	if(c->f_s < 0)
+		c->f_s += 1.0;
+	
 	HSV2RGB(c);
 }
