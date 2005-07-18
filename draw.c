@@ -62,6 +62,15 @@ draw(void)
 	if (active_flyby || build_flyby)
 		update_flyby();
 
+	if (st.st_vmode == VM_WIRED)
+		if (st.st_x + WI_CLIPX > wivstart.v_x + wivdim.v_w ||
+		    st.st_x - WI_CLIPX < wivstart.v_x ||
+		    st.st_y + WI_CLIPY > wivstart.v_y + wivdim.v_h ||
+		    st.st_y - WI_CLIPY < wivstart.v_y ||
+		    st.st_z + WI_CLIPZ > wivstart.v_z + wivdim.v_d ||
+		    st.st_z - WI_CLIPZ < wivstart.v_z)
+			st.st_rf |= RF_CLUSTER;
+
 	if (st.st_rf) {
 		rebuild(st.st_rf);
 		st.st_rf = 0;
@@ -69,27 +78,6 @@ draw(void)
 
 	if (render_mode == RM_SELECT)
 		sel_record_begin();
-
-	if (st.st_vmode == VM_WIRED) {
-#if 0
-		struct vec lov, hiv;
-		int clip;
-
-		lov.v_x = st.st_x - WI_CLIPX;
-		lov.v_y = st.st_y - WI_CLIPY;
-		lov.v_z = st.st_z - WI_CLIPZ;
-		hiv.v_x = st.st_x + WI_CLIPX; /* XXX:  + 1 (truncation) */
-		hiv.v_y = st.st_y + WI_CLIPY;
-		hiv.v_z = st.st_z + WI_CLIPZ;
-		if (lov.v_x < wivstart.v_x ||
-		    lov.v_y < wivstart.v_y ||
-		    lov.v_z < vstart.v_z ||
-		    hiv.v_x > wivstart.v_x + wivdim.v_x ||
-		    hiv.v_y > wivstart.v_y + wivdim.v_y ||
-		    hiv.v_z > wivstart.v_z + wivdim.v_z)
-			rebuild(RF_COMPILE);
-#endif
-	}
 
 	if (st.st_opts & OP_TWEEN) {
 		/* XXX: benchmark to test static. */
@@ -102,7 +90,7 @@ draw(void)
 		memset(&want_l, 0, sizeof(want_l));
 		sc.v_x = sc.v_y = sc.v_z = 1.0;
 		sc_l.v_x = sc_l.v_y = sc_l.v_z = 1.0;
-		
+
 		tween_probe(&st.st_x, tx, TWEEN_MAX_POS, &sc.v_x, &want.v_w);
 		tween_probe(&st.st_y, ty, TWEEN_MAX_POS, &sc.v_y, &want.v_h);
 		tween_probe(&st.st_z, tz, TWEEN_MAX_POS, &sc.v_z, &want.v_d);
@@ -608,10 +596,10 @@ make_ground(void)
 	glColor3f(0.4f, 0.4f, 0.4f);
 	switch (st.st_vmode) {
 	case VM_WIREDONE:
-		glVertex3f( -5.0f, -0.1f, -5.0f);
-		glVertex3f( -5.0f, -0.1f, WI_DEPTH + 5.0f);
-		glVertex3f(WI_WIDTH + 5.0f, -0.1f, WI_DEPTH + 5.0f);
-		glVertex3f(WI_WIDTH + 5.0f, -0.1f, -5.0f);
+		glVertex3f( -st.st_winspx / 2.0f, -0.1f, -st.st_winspz / 2.0f);
+		glVertex3f( -st.st_winspx / 2.0f, -0.1f, WI_DEPTH);
+		glVertex3f(WI_WIDTH, -0.1f, WI_DEPTH);
+		glVertex3f(WI_WIDTH, -0.1f, -st.st_winspz / 2.0f);
 		break;
 	case VM_PHYSICAL:
 		glVertex3f( -5.0f, -0.1f, -5.0f);
@@ -712,23 +700,23 @@ draw_cluster_pipes(struct vec *v)
 
 	glBegin(GL_LINES);
 	glColor3f(0.0f, 0.0f, 1.0f);
-	for (x = sx; x <= WI_WIDTH + spx; x += spx)			/* z */
-		for (y = sy; y <= WI_HEIGHT + spy; y += spy) {
-			glVertex3f(x, y, 0.0f);
+	for (x = sx; x < WI_WIDTH; x += spx)			/* z */
+		for (y = sy; y < WI_HEIGHT; y += spy) {
+			glVertex3f(x, y, -dimp->v_z / 2.0f);
 			glVertex3f(x, y, WI_DEPTH);
 		}
 
 	glColor3f(0.0f, 1.0f, 0.0f);
-	for (z = sz; z <= WI_DEPTH + spz; z += spz)			/* y */
-		for (x = sx; x <= WI_WIDTH + spx; x += spx) {
-			glVertex3f(x, 0.0f, z);
+	for (z = sz; z < WI_DEPTH; z += spz)			/* y */
+		for (x = sx; x < WI_WIDTH; x += spx) {
+			glVertex3f(x, -dimp->v_y / 2.0f, z);
 			glVertex3f(x, WI_HEIGHT, z);
 		}
 
 	glColor3f(1.0f, 0.0f, 0.0f);
-	for (y = sy; y <= WI_HEIGHT + spy; y += spy)
-		for (z = sz; z <= WI_DEPTH + spz; z += spz) {		/* x */
-			glVertex3f(0.0f, y, z);
+	for (y = sy; y < WI_HEIGHT; y += spy)
+		for (z = sz; z < WI_DEPTH; z += spz) {		/* x */
+			glVertex3f(-dimp->v_x / 2.0f, y, z);
 			glVertex3f(WI_WIDTH, y, z);
 		}
 	glDisable(GL_LINE_SMOOTH);
@@ -768,14 +756,14 @@ draw_wired_frame(struct vec *vp, struct vec *dimp, struct fill *fillp)
 	struct vec v, dim;
 
 	v = *vp;
-	v.v_x -= st.st_winspx / 2;
-	v.v_y -= st.st_winspy / 2;
-	v.v_z -= st.st_winspz / 2;
+	v.v_x -= st.st_winspx / 2.0f;
+	v.v_y -= st.st_winspy / 2.0f;
+	v.v_z -= st.st_winspz / 2.0f;
 
 	dim = *dimp;
-	dim.v_w += st.st_winspx;
-	dim.v_h += st.st_winspy;
-	dim.v_d += st.st_winspz;
+//	dim.v_w += st.st_winspx;
+//	dim.v_h += st.st_winspy;
+//	dim.v_d += st.st_winspz;
 
 	glPushMatrix();
 	glTranslatef(v.v_x, v.v_y, v.v_z);
@@ -818,7 +806,9 @@ draw_clusters_wired(void)
 		adj += WI_DEPTH;
 	z -= adj;
 
-	wivstart = v;
+	wivstart.v_x = x;
+	wivstart.v_y = y;
+	wivstart.v_z = z;
 
 	dim.v_w = WI_WIDTH;
 	dim.v_h = WI_HEIGHT;
@@ -973,13 +963,13 @@ rgb_contrast(struct fill *c)
 	c->f_h -= 180;
 
 	if(c->f_h < 0)
-		c->f_h += 360; 
-	
+		c->f_h += 360;
+
 	/* Play with brightness */
 	c->f_s -= 0.3;
 
 	if(c->f_s < 0)
 		c->f_s += 1.0;
-	
+
 	HSV2RGB(c);
 }
