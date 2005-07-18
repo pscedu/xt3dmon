@@ -10,8 +10,16 @@
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
+#ifndef MIN3
+#define MIN3(a, b, c) MIN(MIN((a), (b)), (c))
+#endif
+
 #ifndef MAX
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
+#endif
+
+#ifndef MAX3
+#define MAX3(a, b, c) MAX(MAX((a), (b)), (c))
 #endif
 
 #if defined(__FLT_MAX__) && !defined(FLT_MAX)
@@ -22,3 +30,5 @@
 #undef __inline
 #define __inline
 #endif
+
+#define signf(a) (a < 0.0f ? -1.0f : 1.0f)
