@@ -10,6 +10,7 @@
 #define TRANS_INC	0.10
 
 struct uinput uinp;
+struct vec stopv, stoplv;
 
 void
 spkeyh_null(__unused int key, __unused int u, __unused int v)
@@ -29,6 +30,23 @@ spkeyh_actflyby(__unused int key, __unused int u, __unused int v)
 void
 keyh_actflyby(__unused unsigned char key, __unused int u, __unused int v)
 {
+	if(key == ' ') {
+		st.st_opts ^= OP_STOP;
+		if (st.st_opts & OP_STOP) {
+			stopv.v_x = tx;  stoplv.v_x = tlx;
+			stopv.v_y = ty;  stoplv.v_y = tly;
+			stopv.v_z = tz;  stoplv.v_z = tlz;
+
+			tx = st.st_x;  tlx = st.st_lx;  
+			ty = st.st_y;  tly = st.st_ly;  
+			tz = st.st_z;  tlz = st.st_lz;  
+		} else {
+			tx = stopv.v_x;  tlx = stoplv.v_x;
+			ty = stopv.v_y;  tly = stoplv.v_y;
+			tz = stopv.v_z;  tlz = stoplv.v_z;
+		}
+		return;
+	}
 	end_flyby();
 	glutKeyboardFunc(keyh_default);
 	glutSpecialFunc(spkeyh_default);

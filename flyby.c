@@ -148,7 +148,7 @@ update_flyby(void)
 	if (build_flyby)
 		write_flyby();
 	/* Replay. */
-	else if (active_flyby)
+	else if (active_flyby && !(st.st_opts & OP_STOP))
 		read_flyby();
 	fb.fb_panels = 0;
 }

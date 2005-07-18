@@ -229,7 +229,7 @@ struct flyby {
 	int		 fb_panels;
 };
 
-#define FB_OMASK	(OP_LOOPFLYBY | OP_CAPTURE | OP_FREELOOK | OP_DISPLAY | OP_STEREO)
+#define FB_OMASK	(OP_LOOPFLYBY | OP_CAPTURE | OP_FREELOOK | OP_DISPLAY | OP_STEREO | OP_STOP)
 #define FB_PMASK	(PANEL_GOTO | PANEL_CMD | PANEL_FLYBY | PANEL_SS)
 
 #define RF_TEX		(1<<0)
@@ -259,6 +259,7 @@ struct flyby {
 #define OP_SELPIPES	(1<<15)
 #define OP_DIMNONSEL	(1<<16)
 #define OP_STEREO	(1<<17)
+#define OP_STOP		(1<<18)
 
 #define SM_JOBS		0
 #define SM_FAIL		1
