@@ -471,18 +471,23 @@ panel_refresh_ninfo(struct panel *p)
 		case JST_USED:
 			panel_set_content(p,
 			    "Node ID: %d\n"
-			    "Job owner: %d\n"
+			    "Job owner: %s\n"
 			    "Job name: %s\n"
 			    "Job queue: %s\n"
-			    "Job duration: %d\n"
-			    "Job time used: %d\n"
+			    "Job duration: %d:%02d\n"
+			    "Job time used: %d:%02d (%d%%)\n"
 			    "Job CPUs: %d",
 			    selnode->n_nid,
 			    selnode->n_job->j_owner,
 			    selnode->n_job->j_jname,
 			    selnode->n_job->j_queue,
-			    selnode->n_job->j_tmdur,
-			    selnode->n_job->j_tmuse,
+			    selnode->n_job->j_tmdur / 60,
+			    selnode->n_job->j_tmdur % 60,
+			    selnode->n_job->j_tmuse / 60,
+			    selnode->n_job->j_tmuse % 60,
+			    selnode->n_job->j_tmuse * 100 /
+			      (selnode->n_job->j_tmdur ?
+			       selnode->n_job->j_tmdur : 1),
 			    selnode->n_job->j_ncpus);
 			break;
 		default:
