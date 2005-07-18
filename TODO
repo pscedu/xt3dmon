@@ -9,3 +9,4 @@ $Id$
 16. stereo stuff
 17. unify OP_BLEND for tex/fill modes
 18. kill DIMNONSEL
+19. Flyby has bugs when switching modes
