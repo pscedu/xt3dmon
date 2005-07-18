@@ -5,8 +5,6 @@ $Id$
   the DB
 9. goto new job
 10. random flyby/cycle focus jobs
-13. node id on texture or directly on node surface
-    (ie. sides or front/back)
 15. try #define __inline to see if it does anything
 16. stereo stuff
 17. unify OP_BLEND for tex/fill modes
