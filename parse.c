@@ -23,6 +23,7 @@
 
 void		 parse_badmap(void);
 void		 parse_checkmap(void);
+void		 parse_qstat(void);
 void		 getcol(int, size_t, struct fill *);
 void		*getobj(void *, struct objlist *);
 
@@ -549,6 +550,7 @@ pass:
 
 	parse_badmap();
 	parse_checkmap();
+	parse_qstat();
 	errno = 0;
 
 	for (j = 0; j < job_list.ol_tcur; j++)
@@ -990,6 +992,7 @@ parse_qstat(void)
 			}
 
 			/* Setup next job. */
+			jobid = 0;
 			state = 0;
 			j_fake.j_jname[0] = '\0';
 			j_fake.j_owner[0] = '\0';
@@ -1002,8 +1005,12 @@ parse_qstat(void)
 				break;
 			else {
 				s += strlen(q);
+				jobid = strtoul(s, NULL, 0);
 			}
 		}
+		/* buf should always be valid here. */
+		if ((t = strchr(buf, '\n')) != NULL)
+			*t = '\0';
 
 		q = "Job_Name = ";
 		if ((s = strstr(buf, q)) != NULL) {
@@ -1027,7 +1034,7 @@ parse_qstat(void)
 			state = *s;
 		}
 
-		q = "Queue = ";
+		q = "queue = ";
 		if ((s = strstr(buf, q)) != NULL) {
 			s += strlen(q);
 			strncpy(j_fake.j_queue, s,
