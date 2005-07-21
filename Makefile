@@ -4,14 +4,12 @@ MKDEP = `type -t makedepend >/dev/null 2>&1 && echo makedepend -f.depend || echo
 
 PROG = mon
 SRCS = buf.c cam.c capture.c db.c draw.c flyby.c key.c job.c \
-    load_png.c main.c mouse.c panel.c parse.c
+    load_png.c main.c mouse.c panel.c parse.c tween.c uinp.c widget.c
 LIBS = -lGL -lglut -lGLU -lpng `mysql_config --libs` -pg
 INCLUDE += `mysql_config --include | sed "s/'//g"`
 CFLAGS += -Wall -W -g ${INCLUDE} `mysql_config --cflags | sed "s/'//g"` -pg
 
 OBJS = ${SRCS:.c=.o}
-
-MAKEOBJDIRPREFIX = obj
 
 all: ${PROG}
 
@@ -27,6 +25,9 @@ depend:
 
 clean:
 	rm -rf ${PROG} ${OBJS}
+
+obj:
+	mkdir obj
 
 conn:
 	ssh -NfL 3306:sdb:3306 phantom.psc.edu
