@@ -6,36 +6,46 @@
 
 #include "mon.h"
 
-static FILE *flyby_fp;
-struct flyby fb;
+int		 flyby_mode;
+static FILE	*flyby_fp;
+struct flyby	 fb;
 
-void init_panels(int);
+void		 init_panels(int);
 
 /* Open the flyby data file appropriately. */
 void
-begin_flyby(char m)
+flyby_begin(int mode)
 {
 	if (flyby_fp != NULL)
 		return;
 
-	if (m == 'r') {
+	switch (mode) {
+	case FBM_PLAY:
 		if ((flyby_fp = fopen(_PATH_FLYBY, "rb")) == NULL) {
 			if (errno == ENOENT)
 				return;
 			err(1, "%s", _PATH_FLYBY);
 		}
-		active_flyby = 1;
+		flyby_mode = FBM_PLAY;
 		rebuild(RF_INIT);
-	} else if (m == 'w') {
+
+		glutMotionFunc(m_activeh_null);
+		glutPassiveMotionFunc(m_passiveh_null);
+		glutKeyboardFunc(keyh_actflyby);
+		glutSpecialFunc(spkeyh_actflyby);
+		glutMouseFunc(mouseh_null);
+
+		break;
+	case FBM_REC:
 		if ((flyby_fp = fopen(_PATH_FLYBY, "ab")) == NULL)
 			err(1, "%s", _PATH_FLYBY);
-		build_flyby = 1;
+		flyby_mode = FBM_REC;
 	}
 }
 
 /* Write current data for flyby. */
 void
-write_flyby(void)
+flyby_write(void)
 {
 	int save;
 
@@ -51,16 +61,14 @@ write_flyby(void)
 		err(1, "fwrite st");
 	st.st_opts = save;
 
-//	save = fb.fb_panels;
 	fb.fb_panels &= ~FB_PMASK;		/* XXX:  stupid. */
 	if (fwrite(&fb, sizeof(struct flyby), 1, flyby_fp) != 1)
 		err(1, "fwrite fb");
-//	fb.fb_panels = save;
 }
 
 /* Read a set of flyby data. */
 void
-read_flyby(void)
+flyby_read(void)
 {
 	static int stereo_left;
 	int tnid, oldopts;
@@ -69,8 +77,8 @@ read_flyby(void)
 	if (st.st_opts & OP_STEREO) {
 		stereo_left = !stereo_left;
 		if (!stereo_left) {
-			cam_move(CAMDIR_RIGHT);
-			cam_move(CAMDIR_RIGHT);
+			cam_move(CAMDIR_RIGHT, 0.02);
+			cam_move(CAMDIR_RIGHT, 0.02);
 			cam_revolve(1);
 			cam_revolve(1);
 			return;
@@ -92,19 +100,14 @@ again:
 				rewind(flyby_fp);
 				goto again;
 			}
-			active_flyby = 0;
-			end_flyby();
-			glutKeyboardFunc(keyh_default);
-			glutSpecialFunc(spkeyh_default);
-			glutMotionFunc(m_activeh_default);
-			glutPassiveMotionFunc(m_passiveh_default);
-			cam_update();
+			flyby_mode = FBM_OFF;
+			flyby_end();
 			return;
 		}
 	}
 
 	if (st.st_opts & OP_STEREO && stereo_left) {
-		cam_move(CAMDIR_LEFT);
+		cam_move(CAMDIR_LEFT, 0.01);
 		cam_revolve(-1);
 	}
 
@@ -112,6 +115,7 @@ again:
 	if ((st.st_rf & OP_TWEEN) == 0)
 		cam_update();
 
+	/* XXX: this code is a mess. */
 	/* Restore selected node. */
 	if (fb.fb_nid != -1) {
 		/* Force recompile if needed. */
@@ -130,52 +134,41 @@ again:
 }
 
 void
-end_flyby(void)
+flyby_end(void)
 {
 	if (flyby_fp != NULL) {
 		fclose(flyby_fp);
 		flyby_fp = NULL;
 	}
-	active_flyby = build_flyby = 0;
 	fb.fb_panels = 0;
-}
 
-void
-update_flyby(void)
-{
-	/* Record user commands. */
-	if (build_flyby)
-		write_flyby();
-	/* Replay. */
-	else if (active_flyby && !(st.st_opts & OP_STOP))
-		read_flyby();
-	fb.fb_panels = 0;
-}
-
-void
-flip_panels(int panels)
-{
-	int b;
-
-	while (panels) {
-		b = ffs(panels) - 1;
-		panels &= ~(1 << b);
-		panel_toggle(1 << b);
+	switch (flyby_mode) {
+	case FBM_PLAY:
+		glutKeyboardFunc(keyh_default);
+		glutSpecialFunc(spkeyh_default);
+		glutMotionFunc(m_activeh_default);
+		glutPassiveMotionFunc(m_passiveh_default);
+		glutMouseFunc(mouseh_default);
+		cam_update();
+		/* rebuild(RF_INIT); */
+		break;
 	}
+
+	flyby_mode = FBM_OFF;
 }
 
-/*
- * Set panel state from the current state to the first state in the
- * flyby.
- */
-void
-init_panels(int start)
+__inline void
+flyby_update(void)
 {
-	struct panel *p;
-	int cur;
-
-	cur = 0;
-	TAILQ_FOREACH(p, &panels, p_link)
-		cur |= p->p_id;
-	flip_panels((cur ^ start) & ~FB_PMASK);
+	switch (flyby_mode) {
+	case FBM_PLAY:		/* Replay. */
+		/* XXX: move to draw()? */
+		if ((st.st_opts & OP_STOP) == 0)
+			flyby_read();
+		break;
+	case FBM_REC:		/* Record user commands. */
+		flyby_write();
+		break;
+	}
+	fb.fb_panels = 0;
 }
