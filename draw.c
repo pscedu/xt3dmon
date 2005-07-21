@@ -227,7 +227,7 @@ __inline void
 draw_node(struct node *n, int flags)
 {
 	struct vec *vp, *dimp;
-	struct fill fill, *fp;
+	struct fill *fp;
 
 	if (n->n_hide)
 		return;
