@@ -9,6 +9,5 @@ $Id$
 16. stereo stuff
 17. unify OP_BLEND for tex/fill modes
 19. Flyby has bugs when switching modes
-20. draw_node_pipes() should be called only in draw_node()
 21. don't recompile things - do it once and only call the
     display lists if they are enabled
