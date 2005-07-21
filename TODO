@@ -12,3 +12,4 @@ $Id$
 21. don't recompile things - do it once and only call the
     display lists if they are enabled
 22. rename vec to fvec (float).  i know.
+23. kill OP_FREELOOK.  map it to a key.
