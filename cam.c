@@ -2,6 +2,7 @@
 
 #include <math.h>
 
+#include "cdefs.h"
 #include "mon.h"
 
 /*
@@ -16,44 +17,30 @@
  * y
  */
 void
-cam_move(int dir)
+cam_move(int dir, float amt)
 {
-	float r, adj;
-
-	switch (st.st_vmode) {
-	case VM_PHYSICAL:
-		r = sqrt(SQUARE(st.st_x - XCENTER) + SQUARE(st.st_z - ZCENTER));
-		adj = pow(2, r / (ROWWIDTH / 2.0f));
-		if (adj > 50.0f)
-			adj = 50.0f;
-		break;
-	default:
-		adj = 1.0f;
-		break;
-	}
-
 	switch (dir) {
 	case CAMDIR_LEFT:
-		st.st_x += st.st_lz * 0.3f * adj;
-		st.st_z -= st.st_lx * 0.3f * adj;
+		st.st_x += st.st_lz * amt;
+		st.st_z -= st.st_lx * amt;
 		break;
 	case CAMDIR_RIGHT:
-		st.st_x -= st.st_lz * 0.3f * adj;
-		st.st_z += st.st_lx * 0.3f * adj;
+		st.st_x -= st.st_lz * amt;
+		st.st_z += st.st_lx * amt;
 		break;
 	case CAMDIR_FORWARD:
-		st.st_x += st.st_lx * 0.3f * adj;
-		st.st_y += st.st_ly * 0.3f * adj;
-		st.st_z += st.st_lz * 0.3f * adj;
+		st.st_x += st.st_lx * amt;
+		st.st_y += st.st_ly * amt;
+		st.st_z += st.st_lz * amt;
 		break;
 	case CAMDIR_BACK:
-		st.st_x -= st.st_lx * 0.3f * adj;
-		st.st_y -= st.st_ly * 0.3f * adj;
-		st.st_z -= st.st_lz * 0.3f * adj;
+		st.st_x -= st.st_lx * amt;
+		st.st_y -= st.st_ly * amt;
+		st.st_z -= st.st_lz * amt;
 		break;
 	case CAMDIR_UP:
 	case CAMDIR_DOWN: {
-		struct vec cross, a, b;
+		struct vec cross, a, b, t;
 		float mag;
 
 		a.v_x = st.st_lx;
@@ -74,13 +61,8 @@ cam_move(int dir)
 		b.v_y /= mag;
 		b.v_z /= mag;
 
-		if (dir == CAMDIR_DOWN) {
-			struct vec t;
-
-			t = b;
-			b = a;
-			a = t;
-		}
+		if (dir == CAMDIR_DOWN)
+			SWAP(a, b, t);
 
 		/* Follow the normal to the look vector. */
 		cross.v_x = a.v_y * b.v_z - b.v_y * a.v_z;
@@ -92,10 +74,10 @@ cam_move(int dir)
 		cross.v_x /= mag;
 		cross.v_y /= mag;
 		cross.v_z /= mag;
-		
-		st.st_x += cross.v_x * 0.3 * adj;
-		st.st_y += cross.v_y * 0.3 * adj;
-		st.st_z += cross.v_z * 0.3 * adj;
+
+		st.st_x += cross.v_x * amt;
+		st.st_y += cross.v_y * amt;
+		st.st_z += cross.v_z * amt;
 		break;
 	    }
 	}
@@ -204,40 +186,4 @@ cam_update(void)
 	    st.st_y + st.st_ly,
 	    st.st_z + st.st_lz,
 	    0.0f, 1.0f, 0.0f);
-}
-
-void
-tween_pushpop(int opts)
-{
-	static float sx, sy, sz, slx, sly, slz;
-
-	if ((st.st_opts & OP_TWEEN) == 0) {
-		if (opts & TWF_POP)
-			cam_update();
-		return;
-	}
-
-	if (opts & TWF_PUSH) {
-		if (opts & TWF_POS) {
-			ox = st.st_x;  sx = st.st_x;  st.st_x = tx;
-			oy = st.st_y;  sy = st.st_y;  st.st_y = ty;
-			oz = st.st_z;  sz = st.st_z;  st.st_z = tz;
-		}
-		if (opts & TWF_LOOK) {
-			olx = st.st_lx;  slx = st.st_lx;  st.st_lx = tlx;
-			oly = st.st_ly;  sly = st.st_ly;  st.st_ly = tly;
-			olz = st.st_lz;  slz = st.st_lz;  st.st_lz = tlz;
-		}
-	} else {
-		if (opts & TWF_POS) {
-			tx = st.st_x;  st.st_x = sx;
-			ty = st.st_y;  st.st_y = sy;
-			tz = st.st_z;  st.st_z = sz;
-		}
-		if (opts & TWF_LOOK) {
-			tlx = st.st_lx;  st.st_lx = slx;
-			tly = st.st_ly;  st.st_ly = sly;
-			tlz = st.st_lz;  st.st_lz = slz;
-		}
-	}
 }
