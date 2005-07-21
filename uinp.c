@@ -1,5 +1,7 @@
 /* $Id$ */
 
+#include <ctype.h>
+
 #include "buf.h"
 #include "mon.h"
 
