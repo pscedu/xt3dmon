@@ -117,9 +117,9 @@ draw(void)
 
 	if (st.st_opts & OP_GROUND)
 		glCallList(ground_dl);
-	glCallList(cluster_dl);
 	if (select_dl)
 		glCallList(select_dl);
+	glCallList(cluster_dl);
 	if (!TAILQ_EMPTY(&panels))
 		draw_panels();
 
@@ -396,7 +396,8 @@ draw_box_tex(struct vec *dim, struct fill *fillp)
 }
 
 /* Render a char from the font texture */
-void draw_char(int ch, float x, float y, float z)
+__inline void
+draw_char(int ch, float x, float y, float z)
 {
 	if(ch < 0)
 		return;
@@ -567,10 +568,16 @@ draw_node(struct node *n, int flags)
 }
 
 __inline void
-draw_mod(struct vec *v, struct vec *dim, struct fill *fillp)
+draw_mod(struct vec *vp, struct vec *dim, struct fill *fillp)
 {
+	struct vec v;
+
+	v = *vp;
+	v.v_x -= 0.01;
+	v.v_y -= 0.01;
+	v.v_z -= 0.01;
 	glPushMatrix();
-	glTranslatef(v->v_x, v->v_y, v->v_z);
+	glTranslatef(v.v_x, v.v_y, v.v_z);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
@@ -634,9 +641,9 @@ draw_cluster_physical(void)
 	struct fill mf;
 	struct vec v;
 
-	mdim.v_w = MODWIDTH;
-	mdim.v_h = MODHEIGHT;
-	mdim.v_d = MODDEPTH;
+	mdim.v_w = MODWIDTH + 0.02;
+	mdim.v_h = MODHEIGHT + 0.02;
+	mdim.v_d = MODDEPTH + 0.02;
 
 	mf.f_r = 1.00;
 	mf.f_g = 1.00;
