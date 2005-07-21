@@ -10,7 +10,10 @@ tween_probe(float *cur, float stop, float max, float *scale, float *want)
 {
 	if (stop != *cur) {
 		*want = (stop - *cur) * TWEEN_AMT;
-		if (*want > max) {
+		if (*want == 0.0f) {
+			/* recalc() won't get called. */
+			*cur = stop;
+		} else if (*want > max) {
 			*scale = max / *want;
 			if (*scale < 0.0f)
 				*scale *= -1.0f;
