@@ -521,21 +521,23 @@ panel_refresh_ninfo(struct panel *p)
 void
 panel_refresh_flyby(struct panel *p)
 {
-	static int fstate = -1;
-	int newstate;
+	static int sav_mode = -1;
 
-	newstate = (active_flyby << 1) | build_flyby;
-
-	if (newstate == fstate && panel_ready(p))
+	if (sav_mode == flyby_mode && panel_ready(p))
 		return;
-	fstate = newstate;
+	sav_mode = flyby_mode;
 
-	if (active_flyby)
+	switch (flyby_mode) {
+	case FBM_PLAY:
 		panel_set_content(p, "Playing flyby");
-	else if (build_flyby)
+		break;
+	case FBM_REC:
 		panel_set_content(p, "Recording flyby");
-	else
+		break;
+	default:
 		panel_set_content(p, "Flyby mode disabled");
+		break;
+	}
 }
 
 void
@@ -739,34 +741,28 @@ panel_toggle(int panel)
 }
 
 void
-uinpcb_cmd(void)
+flip_panels(int panels)
 {
-	/* Send command to node. */
+	int b;
+
+	while (panels) {
+		b = ffs(panels) - 1;
+		panels &= ~(1 << b);
+		panel_toggle(1 << b);
+	}
 }
 
+/*
+ * Set panels state to those specified in `start.'
+ */
 void
-uinpcb_ss(void)
+init_panels(int start)
 {
-	/* Take screenshot. */
-	if (*buf_get(&uinp.uinp_buf) != '\0')
-		screenshot(buf_get(&uinp.uinp_buf), capture_mode);
-}
+	struct panel *p;
+	int cur;
 
-void
-uinpcb_goto(void)
-{
-	struct node *n;
-	char *s;
-	int nid;
-	long l;
-
-	s = buf_get(&uinp.uinp_buf);
-	l = strtol(s, NULL, 0);
-	if (l <= 0 || l > NID_MAX || !isdigit(*s))
-		return;
-	nid = (int)l;
-
-	if ((n = node_for_nid(nid)) == NULL)
-		return;
-	cam_goto(n->n_v);
+	cur = 0;
+	TAILQ_FOREACH(p, &panels, p_link)
+		cur |= p->p_id;
+	flip_panels((cur ^ start) & ~FB_PMASK);
 }
