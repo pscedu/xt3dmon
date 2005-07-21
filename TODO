@@ -11,3 +11,4 @@ $Id$
 19. Flyby has bugs when switching modes
 21. don't recompile things - do it once and only call the
     display lists if they are enabled
+22. rename vec to fvec (float).  i know.
