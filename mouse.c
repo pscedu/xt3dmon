@@ -19,10 +19,13 @@ GLuint	 selbuf[1000];
 int	 render_mode = RM_RENDER;
 
 void
-mouseh(__unused int button, __unused int state, int u, int v)
+mouseh_null(__unused int button, __unused int state, __unused int u, __unused int v)
 {
-	if (active_flyby) /* XXX */
-		return;
+}
+
+void
+mouseh_default(__unused int button, __unused int state, int u, int v)
+{
 	spkey = glutGetModifiers();
 	if (spkey == 0 &&
 	    button == GLUT_LEFT_BUTTON &&
@@ -42,12 +45,12 @@ m_activeh_default(int u, int v)
 	lastu = u;
 	lastv = v;
 
-	tween_pushpop(TWF_PUSH | TWF_LOOK | TWF_POS);
+	tween_push(TWF_LOOK | TWF_POS);
 	if (du != 0 && spkey & GLUT_ACTIVE_CTRL)
 		cam_revolve(du);
 	if (dv != 0 && spkey & GLUT_ACTIVE_SHIFT)
 		cam_rotatev(dv);
-	tween_pushpop(TWF_POP | TWF_LOOK | TWF_POS);
+	tween_pop(TWF_LOOK | TWF_POS);
 }
 
 void
@@ -60,12 +63,12 @@ m_activeh_free(int u, int v)
 	lastu = u;
 	lastv = v;
 
-	tween_pushpop(TWF_PUSH | TWF_LOOK);
+	tween_push(TWF_LOOK);
 	if (du != 0 && spkey == GLUT_ACTIVE_CTRL)
 		cam_rotateu(du);
 	if (dv != 0 && spkey == GLUT_ACTIVE_CTRL)
 		cam_rotatev(dv);
-	tween_pushpop(TWF_POP | TWF_LOOK);
+	tween_pop(TWF_LOOK);
 }
 
 void
