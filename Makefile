@@ -24,7 +24,7 @@ depend:
 	${MKDEP} ${INCLUDE} ${SRCS}
 
 clean:
-	rm -rf ${PROG} ${OBJS}
+	rm -rf ${PROG} ${OBJS} gmon.out
 
 obj:
 	mkdir obj
