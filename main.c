@@ -36,8 +36,7 @@ struct node		*invmap[NID_MAX];
 int			 datasrc = DS_FILE;
 int			 win_width = 800;
 int			 win_height = 600;
-int			 active_flyby = 0;
-int			 build_flyby = 0;
+int			 flyby_mode = FBM_OFF;
 int			 capture_mode = PNG_FRAMES;
 int			 font_id;
 int			 wired_width;
@@ -49,7 +48,6 @@ float			 tz = STARTZ, tlz = STARTLZ, oz = STARTZ, olz = STARTLZ;
 GLint			 cluster_dl, ground_dl, select_dl;
 struct timeval		 lastsync;
 long			 fps = 50;
-int			 gDebugCapture;
 
 const char *opdesc[] = {
 	/*  0 */ "Texture mode",
@@ -460,7 +458,7 @@ main(int argc, char *argv[])
 	glutSpecialFunc(spkeyh_default);
 	glutDisplayFunc(draw);
 	glutIdleFunc(idle);
-	glutMouseFunc(mouseh);
+	glutMouseFunc(mouseh_default);
 	glutMotionFunc(m_activeh_default);
 	glutPassiveMotionFunc(m_passiveh_default);
 	glutMainLoop();
