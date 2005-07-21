@@ -121,6 +121,10 @@
 #define PNG_FRAMES	4
 #define PPM_FRAMES	3
 
+#define FBM_OFF		0
+#define FBM_PLAY	1
+#define FBM_REC		2
+
 struct vec {
 	float		 v_x;
 	float		 v_y;
@@ -342,10 +346,8 @@ struct pinfo {
 #define CAMDIR_FORWARD	4
 #define CAMDIR_BACK	5
 
-#define TWF_PUSH	(1<<0)
-#define TWF_POP		(1<<1)
-#define TWF_LOOK	(1<<2)
-#define TWF_POS		(1<<3)
+#define TWF_LOOK	(1<<1)
+#define TWF_POS		(1<<2)
 
 #define NDF_DONTPUSH	(1<<0)
 #define NDF_NOOPTS	(1<<1)
@@ -389,13 +391,18 @@ void			 dbh_connect(struct dbh *);
 void			 db_physmap(void);
 
 /* cam.c */
-void			 cam_move(int);
+void			 cam_move(int, float);
 void			 cam_revolve(int);
 void			 cam_rotateu(int);
 void			 cam_rotatev(int);
 void			 cam_update(void);
 void			 cam_goto(struct vec *);
-void			 tween_pushpop(int);
+
+/* capture.c */
+void			 capture_fb(int);
+void 			 begin_capture(int);
+void			 end_capture(void);
+void			 screenshot(char *, int);
 
 /* draw.c */
 void			 draw(void);
@@ -403,16 +410,24 @@ void			 draw_node(struct node *, int);
 void			 draw_node_pipes(struct vec *);
 void			 make_ground(void);
 void			 make_cluster(void);
-void 			 rgb_contrast(struct fill *c);
+
+/* flyby.c */
+void 			 flyby_begin(int);
+void 			 flyby_end(void);
+void			 flyby_read(void);
+void			 flyby_write(void);
+void			 flyby_update(void);
 
 /* key.c */
 void			 keyh_flyby(unsigned char, int, int);
+void			 keyh_actflyby(unsigned char, int, int);
 void			 keyh_uinput(unsigned char, int, int);
 void			 keyh_panel(unsigned char, int, int);
 void			 keyh_mode(unsigned char, int, int);
 void			 keyh_vmode(unsigned char, int, int);
 void			 keyh_default(unsigned char, int, int);
 void			 spkeyh_default(int, int, int);
+void			 spkeyh_actflyby(int, int, int);
 
 /* job.c */
 struct job		*job_findbyid(int);
@@ -437,7 +452,8 @@ void			 m_activeh_null(int, int);
 void			 m_activeh_free(int, int);
 void			 m_passiveh_default(int, int);
 void			 m_passiveh_null(int, int);
-void			 mouseh(int, int, int, int);
+void			 mouseh_default(int, int, int, int);
+void			 mouseh_null(int, int, int, int);
 void			 sel_record_begin(void);
 void			 sel_record_end(void);
 
@@ -449,8 +465,7 @@ void			 panel_show(int);
 void			 panel_hide(int);
 void			 panel_status_addinfo(const char *, ...);
 void			 panel_status_setinfo(const char *, ...);
-void			 uinpcb_cmd(void);
-void			 uinpcb_goto(void);
+void			 flip_panels(int);
 
 /* parse.c */
 void			 parse_jobmap(void);
@@ -461,19 +476,21 @@ void			 parse_mem(void);
 void			 obj_batch_start(struct objlist *);
 void			 obj_batch_end(struct objlist *);
 
-/* capture.c */
-void			 capture_fb(int);
-void 			 begin_capture(int);
-void			 end_capture(void);
-void			 screenshot(char *, int);
+/* tween.c */
+void			 tween_push(int);
+void			 tween_pop(int);
+void			 tween_probe(float *, float, float, float *, float *);
+void			 tween_recalc(float *, float, float, float);
 
-/* flyby.c */
-void 			 begin_flyby(char);
-void 			 end_flyby(void);
-void			 read_flyby(void);
-void			 write_flyby(void);
-void			 update_flyby(void);
-void			 flip_panels(int);
+/* uinp.c */
+void			 uinpcb_cmd(void);
+void			 uinpcb_goto(void);
+
+/* widget.c */
+void			 draw_box_outline(const struct vec *, const struct fill *);
+void			 draw_box_filled(const struct vec *, const struct fill *);
+void			 draw_box_tex(const struct vec *, const struct fill *);
+void 			 rgb_contrast(struct fill *c);
 
 extern struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 extern struct node	*invmap[];
@@ -514,8 +531,7 @@ extern float		 tx, tlx, ox, olx;
 extern float		 ty, tly, oy, oly;
 extern float		 tz, tlz, oz, olz;
 
-extern int		 active_flyby;
-extern int		 build_flyby;
+extern int		 flyby_mode;
 extern int		 capture_mode;
 
 extern int		 win_width;
@@ -523,5 +539,3 @@ extern int		 win_height;
 
 extern unsigned long	 vmem;
 extern long		 rmem;
-
-extern int gDebugCapture;
