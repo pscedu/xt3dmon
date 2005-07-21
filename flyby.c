@@ -25,8 +25,7 @@ begin_flyby(char m)
 			err(1, "%s", _PATH_FLYBY);
 		}
 		active_flyby = 1;
-//		rebuild(RF_COMPILE); /* XXX: is this needed? */
-		init_panels(fb.fb_panels); /* XXX: is this right? */
+		rebuild(RF_INIT);
 	} else if (m == 'w') {
 		if ((flyby_fp = fopen(_PATH_FLYBY, "ab")) == NULL)
 			err(1, "%s", _PATH_FLYBY);
