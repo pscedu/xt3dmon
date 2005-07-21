@@ -16,13 +16,8 @@
 #include "mon.h"
 #include "cdefs.h"
 
-extern double fmax(double, double);
-extern double fmin(double, double);
-
 #define TWEEN_MAX_POS	(2.0f)
 #define TWEEN_MAX_LOOK	(0.04f)
-#define TWEEN_THRES	(0.001f)
-#define TWEEN_AMT	(0.05f)
 
 struct vec wivstart, wivdim;
 
@@ -30,37 +25,11 @@ struct fill fill_black = { 0.0f, 0.0f, 0.0f, 1.0f, 0, 0 };
 struct fill fill_grey  = { 0.2f, 0.2f, 0.2f, 1.0f, 0, 0 };
 struct fill fill_light_blue = { 0.2f, 0.4f, 0.6f, 1.0f, 0, 0 };
 
-__inline void
-tween_probe(float *cur, float stop, float max, float *scale, float *want)
-{
-	if (stop != *cur) {
-		*want = (stop - *cur) * TWEEN_AMT;
-		if (*want > max) {
-			*scale = max / *want;
-			if (*scale < 0.0f)
-				*scale *= -1.0f;
-		}
-	}
-}
-
-__inline void
-tween_recalc(float *cur, float stop, float scale, float want)
-{
-	if (want) {
-		if (scale < 0.001)
-			scale = 0.001;
-		*cur += want * scale;
-		if (stop - *cur < TWEEN_THRES &&
-		    stop - *cur > -TWEEN_THRES)
-			*cur = stop;
-	}
-}
-
 void
 draw(void)
 {
-	if (active_flyby || build_flyby)
-		update_flyby();
+	if (flyby_mode)
+		flyby_update();
 
 	if (st.st_vmode == VM_WIRED)
 		if (st.st_x + WI_CLIPX > wivstart.v_x + wivdim.v_w ||
@@ -124,7 +93,7 @@ draw(void)
 		draw_panels();
 
 	glClearColor(0.0, 0.0, 0.2, 1.0);
-	if (st.st_opts & OP_CAPTURE || gDebugCapture)
+	if (st.st_opts & OP_CAPTURE)
 		capture_fb(capture_mode);
 	if (render_mode == RM_SELECT)
 		sel_record_end();
@@ -132,274 +101,11 @@ draw(void)
 		glutSwapBuffers();
 }
 
-/*
- *	y			12
- *     / \	    +-----------------------+ (x+w,y+h,z+d)
- *	|	   /			   /|
- *	|      10 / |		       11 / |
- *	|	 /  	    9		 /  |
- *	|	+-----------------------+   |
- *	|	|   			|   | 7
- *	|	|   | 8			|   |
- *	|	|   			|   |
- *	|	| 5 |			| 6 |
- *	|	|   		4	|   |
- *	|	|   + - - - - - - - - - | - + (x+w,y,z+d)
- *	|	|  /			|  /
- *	|	| / 2			| / 3
- *	|	|/			|/
- *	|	+-----------------------+
- *	|    (x,y,z)	   1	     (x,y,z+d)
- *	|
- *	+----------------------------------------------->z
- *     /
- *    /
- *  |_
- *  x
- */
-void
-draw_box_outline(const struct vec *dim, const struct fill *fillp)
-{
-	float w = dim->v_w, h = dim->v_h, d = dim->v_d;
-	float x, y, z;
-
-	x = y = z = 0.0f;
-
-	/* Wireframe outline */
-	x -= WFRAMEWIDTH;
-	y -= WFRAMEWIDTH;
-	z -= WFRAMEWIDTH;
-	w += 2.0f * WFRAMEWIDTH;
-	h += 2.0f * WFRAMEWIDTH;
-	d += 2.0f * WFRAMEWIDTH;
-
-	/* Antialiasing */
-	glEnable(GL_LINE_SMOOTH);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
-
-	glLineWidth(1.0);
-	glColor4f(fillp->f_r, fillp->f_g, fillp->f_b, fillp->f_a);
-	glBegin(GL_LINES);
-
-	/* Back */
-	glVertex3f(x, y, z);			/* 1 */
-	glVertex3f(x, y, z+d);
-
-	glVertex3f(x, y, z);			/* 2 */
-	glVertex3f(x+w, y, z);
-
-	glVertex3f(x, y, z+d);			/* 3 */
-	glVertex3f(x+w, y, z+d);
-
-	glVertex3f(x+w, y, z);			/* 4 */
-	glVertex3f(x+w, y, z+d);
-
-	glVertex3f(x, y, z);			/* 5 */
-	glVertex3f(x, y+h, z);
-
-	glVertex3f(x, y, z+d);			/* 6 */
-	glVertex3f(x, y+h, z+d);
-
-	glVertex3f(x+w, y, z+d);		/* 7 */
-	glVertex3f(x+w, y+h, z+d);
-
-	glVertex3f(x+w, y, z);			/* 8 */
-	glVertex3f(x+w, y+h, z);
-
-	glVertex3f(x, y+h, z);			/* 9 */
-	glVertex3f(x, y+h, z+d);
-
-	glVertex3f(x, y+h, z);			/* 10 */
-	glVertex3f(x+w, y+h, z);
-
-	glVertex3f(x, y+h, z+d);		/* 11 */
-	glVertex3f(x+w, y+h, z+d);
-
-	glVertex3f(x+w, y+h, z);		/* 12 */
-	glVertex3f(x+w, y+h, z+d);
-
-	glEnd();
-	glDisable(GL_LINE_SMOOTH);
-	glDisable(GL_BLEND);
-}
-
-void
-draw_box_filled(const struct vec *dim, const struct fill *fillp)
-{
-	float w = dim->v_w, h = dim->v_h, d = dim->v_d;
-	float x, y, z;
-
-	x = y = z = 0.0f;
-	glColor4f(fillp->f_r, fillp->f_g, fillp->f_b, fillp->f_a);
-	glBegin(GL_QUADS);
-
-	/* Back */
-	glVertex3f(x, y, z);
-	glVertex3f(x, y+h, z);
-	glVertex3f(x+w, y+h, z);
-	glVertex3f(x+w, y, z);
-
-	/* Front */
-	glVertex3f(x, y, z+d);
-	glVertex3f(x, y+h, z+d);
-	glVertex3f(x+w, y+h, z+d);
-	glVertex3f(x+w, y, z+d);
-
-	/* Right */
-	glVertex3f(x+w, y, z);
-	glVertex3f(x+w, y, z+d);
-	glVertex3f(x+w, y+h, z+d);
-	glVertex3f(x+w, y+h, z);
-
-	/* Left */
-	glVertex3f(x, y, z);
-	glVertex3f(x, y, z+d);
-	glVertex3f(x, y+h, z+d);
-	glVertex3f(x, y+h, z);
-
-	/* Top */
-	glVertex3f(x, y+h, z);
-	glVertex3f(x, y+h, z+d);
-	glVertex3f(x+w, y+h, z+d);
-	glVertex3f(x+w, y+h, z);
-
-	/* Bottom */
-	glVertex3f(x, y, z);
-	glVertex3f(x, y, z+d);
-	glVertex3f(x+w, y, z+d);
-	glVertex3f(x+w, y, z);
-
-	glEnd();
-}
-
-
-__inline void
-draw_box_tex(struct vec *dim, struct fill *fillp)
-{
-	float x = 0.0f, y = 0.0f, z = 0.0f;
-	float w = dim->v_w;
-	float h = dim->v_h;
-	float d = dim->v_d;
-	float uw, uh, ud;
-	float color[4];
-	GLenum param;
-
-	/* Number of times to tile image */
-	uw = 0.5 * TILE_TEXTURE;
-	ud = 1.0 * TILE_TEXTURE;
-	uh = 1.0 * TILE_TEXTURE;
-
-	glEnable(GL_TEXTURE_2D);
-
-	if (st.st_opts & (OP_BLEND | OP_DIMNONSEL)) {
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
-		param = GL_BLEND;
-	} else
-		param = GL_REPLACE;
-
-	glBindTexture(GL_TEXTURE_2D, fillp->f_texid);
-
-	color[0] = fillp->f_r;
-	color[1] = fillp->f_g;
-	color[2] = fillp->f_b;
-	color[3] = fillp->f_a;
-
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, param);
-
-	if (st.st_opts & (OP_BLEND | OP_DIMNONSEL))
-		glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, color);
-
-	/* Polygon Offset */
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	glEnable(GL_POLYGON_OFFSET_FILL);
-	glPolygonOffset(1.0, 3.0);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-	glBegin(GL_QUADS);
-
-	/* Back */
-	glVertex3f(x, y, z);
-	glTexCoord2f(0.0, 0.0);
-	glVertex3f(x, y+h, z);
-	glTexCoord2f(0.0, uw);
-	glVertex3f(x+w, y+h, z);
-	glTexCoord2f(uh, uw);
-	glVertex3f(x+w, y, z);
-	glTexCoord2f(uh, 0.0);
-
-	/* Front */
-	glVertex3f(x, y, z+d);
-	glTexCoord2f(0.0, 0.0);
-	glVertex3f(x, y+h, z+d);
-	glTexCoord2f(0.0, uw);
-	glVertex3f(x+w, y+h, z+d);
-	glTexCoord2f(uh, uw);
-	glVertex3f(x+w, y, z+d);
-	glTexCoord2f(uh, 0.0);
-
-	/* Right */
-	glVertex3f(x+w, y, z);
-	glTexCoord2f(0.0, 0.0);
-	glVertex3f(x+w, y, z+d);
-	glTexCoord2f(0.0, ud);
-	glVertex3f(x+w, y+h, z+d);
-	glTexCoord2f(uh, ud);
-	glVertex3f(x+w, y+h, z);
-	glTexCoord2f(uh, 0.0);
-
-	/* Left */
-	glVertex3f(x, y, z);
-	glTexCoord2f(0.0, 0.0);
-	glVertex3f(x, y, z+d);
-	glTexCoord2f(0.0, ud);
-	glVertex3f(x, y+h, z+d);
-	glTexCoord2f(uh, ud);
-	glVertex3f(x, y+h, z);
-	glTexCoord2f(uh, 0.0);
-
-	/* Top */
-	glVertex3f(x, y+h, z);
-	glTexCoord2f(0.0, 0.0);
-	glVertex3f(x, y+h, z+d);
-	glTexCoord2f(0.0, uw);
-	glVertex3f(x+w, y+h, z+d);
-	glTexCoord2f(ud, uw);
-	glVertex3f(x+w, y+h, z);
-	glTexCoord2f(ud, 0.0);
-
-	/* Bottom */
-	glVertex3f(x, y, z);
-	glTexCoord2f(0.0, 0.0);
-	glVertex3f(x, y, z+d);
-	glTexCoord2f(0.0, uw);
-	glVertex3f(x+w, y, z+d);
-	glTexCoord2f(ud, uw);
-	glVertex3f(x+w, y, z);
-	glTexCoord2f(ud, 0.0);
-
-	glEnd();
-
-	if (st.st_opts & (OP_BLEND | OP_DIMNONSEL))
-		glDisable(GL_BLEND);
-
-	/* Disable Polygon Offset */
-	glDisable(GL_LIGHTING);
-	glDisable(GL_LIGHT0);
-	glDisable(GL_POLYGON_OFFSET_FILL);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-	glDisable(GL_TEXTURE_2D);
-}
-
 /* Render a char from the font texture */
 __inline void
 draw_char(int ch, float x, float y, float z)
 {
-	if(ch < 0)
+	if (ch < 0)
 		return;
 
 	glTexCoord2f(FONT_TEXCOORD_S*ch, 0.0);
@@ -461,7 +167,7 @@ draw_node_label(struct node *n)
 
 	for(i = 0, j = 0; i < 8; i++, j++) {
 		/* Place a space between 'NODE' and id */
-		if(j == 4)
+		if (j == 4)
 			j++;
 		draw_char(list[i], -0.001, NODEDEPTH/2.0,
 		    FONT_Z_OFFSET+FONT_DISPLACE_W*(float)(j));
@@ -872,111 +578,4 @@ make_cluster(void)
 	}
 
 	glEndList();
-}
-
-/*
- * The following two mathematical algorithms were created from
- * pseudocode found in "Fundamentals of Interactive Computer Graphics".
- */
-void
-RGB2HSV(struct fill *c)
-{
-	float r = c->f_r;
-	float g = c->f_g;
-	float b = c->f_b;
-	float max, min, ran;
-	float rc, gc, bc;
-
-	max = fmax(fmax(r,g), b);
-	min = fmin(fmin(r,g), b);
-	ran = max - min;
-
-	c->f_h = 0;
-	c->f_s = 0;
-
-	/* Value */
-	c->f_v = max;
-
-	/* Saturation */
-	if (max != 0)
-		c->f_s = ran / max;
-
-	/* Hue */
-	if (c->f_s != 0) {
-
-		/* Measure color distances */
-		rc = (max - r) / ran;
-		gc = (max - g) / ran;
-		bc = (max - b) / ran;
-
-		/* Between yellow and magenta */
-		if (r == max)
-			c->f_h = bc - gc;
-		/* Between cyan and yellow */
-		else if (g == max)
-			c->f_h = 2 + rc - bc;
-		/* Between magenta and cyan */
-		else if (b == max)
-			c->f_h = 4 + gc - rc;
-
-		/* Convert to degrees */
-		c->f_h *= 60;
-
-		if (c->f_h < 0)
-			c->f_h += 360;
-	}
-}
-
-void
-HSV2RGB(struct fill *c)
-{
-	float s = c->f_s;
-	float h = c->f_h;
-	float v = c->f_v;
-	float f, p, q, t;
-	int i;
-
-	if (s == 0)
-		h = v;
-	else {
-		if (h == 360)
-			h = 0;
-		h /= 60;
-
-		i = floorf(h);
-		f = h - i;
-		p = v * (1 - s);
-		q = v * (1 - (s * f));
-		t = v * (1 - (s * (1 - f)));
-
-		switch (i) {
-		case 0:	c->f_r = v; c->f_g = t; c->f_b = p; break;
-		case 1: c->f_r = q; c->f_g = v; c->f_b = p; break;
-		case 2: c->f_r = p; c->f_g = v; c->f_b = t; break;
-		case 3: c->f_r = p; c->f_g = q; c->f_b = v; break;
-		case 4:	c->f_r = t; c->f_g = p; c->f_b = v; break;
-		case 5: c->f_r = v; c->f_g = p; c->f_b = q; break;
-		}
-	}
-}
-
-/* Create a contrasting color */
-void
-rgb_contrast(struct fill *c)
-{
-	RGB2HSV(c);
-
-	/* Rotate 180 degrees */
-	c->f_h -= 180;
-
-	if(c->f_h < 0)
-		c->f_h += 360;
-
-	/* Play with brightness */
-//	c->f_s -= 0.3;
-
-//	if(c->f_s < 0)
-//		c->f_s += 1.0;
-
-	HSV2RGB(c);
 }
