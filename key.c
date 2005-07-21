@@ -279,10 +279,6 @@ keyh_option(unsigned char key, __unused int u, __unused int v)
 	case 'S':
 		st.st_opts ^= OP_STEREO;
 		break;
-	case 's':
-		st.st_opts ^= OP_DIMNONSEL;
-		st.st_rf |= RF_CLUSTER | RF_SELNODE;
-		break;
 	case 'w':
 		st.st_opts ^= OP_WIREFRAME;
 		st.st_rf |= RF_CLUSTER;

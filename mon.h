@@ -262,9 +262,8 @@ struct flyby {
 #define OP_WIVMFRAME	(1<<13)
 #define OP_PIPES	(1<<14)
 #define OP_SELPIPES	(1<<15)
-#define OP_DIMNONSEL	(1<<16)
-#define OP_STEREO	(1<<17)
-#define OP_STOP		(1<<18)
+#define OP_STEREO	(1<<16)
+#define OP_STOP		(1<<17)
 
 #define SM_JOBS		0
 #define SM_FAIL		1

@@ -168,7 +168,7 @@ draw_box_tex(const struct vec *dim, const struct fill *fillp)
 
 	glEnable(GL_TEXTURE_2D);
 
-	if (st.st_opts & (OP_BLEND | OP_DIMNONSEL)) {
+	if (st.st_opts & OP_BLEND) {
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
 		param = GL_BLEND;
@@ -184,7 +184,7 @@ draw_box_tex(const struct vec *dim, const struct fill *fillp)
 
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, param);
 
-	if (st.st_opts & (OP_BLEND | OP_DIMNONSEL))
+	if (st.st_opts & OP_BLEND)
 		glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, color);
 
 	/* Polygon Offset */
@@ -258,7 +258,7 @@ draw_box_tex(const struct vec *dim, const struct fill *fillp)
 
 	glEnd();
 
-	if (st.st_opts & (OP_BLEND | OP_DIMNONSEL))
+	if (st.st_opts & OP_BLEND)
 		glDisable(GL_BLEND);
 
 	/* Disable polygon offset */

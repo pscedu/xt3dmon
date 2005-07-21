@@ -242,24 +242,17 @@ draw_node(struct node *n, int flags)
 		glTranslatef(vp->v_x, vp->v_y, vp->v_z);
 	}
 
-	if (n != selnode && selnode != NULL &&
-	    st.st_opts & OP_DIMNONSEL) {
-		/* Modify alpha for other nodes. */
-		fill = *fp;
-		fill.f_a = DIMMED_ALPHA;
-		fp = &fill;
-	}
 	if (flags & NDF_NOOPTS)
 		draw_box_filled(dimp, fp);
 	else if (st.st_opts & OP_TEX)
 		draw_box_tex(dimp, fp);
 	else {
-		if (st.st_opts & (OP_BLEND| OP_DIMNONSEL)) {
+		if (st.st_opts & OP_BLEND) {
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
 		}
 		draw_box_filled(dimp, fp);
-		if (st.st_opts & (OP_BLEND | OP_DIMNONSEL))
+		if (st.st_opts & OP_BLEND)
 			glDisable(GL_BLEND);
 	}
 	if (st.st_opts & OP_WIREFRAME)
