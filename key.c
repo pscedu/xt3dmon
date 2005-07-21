@@ -1,6 +1,7 @@
 /* $Id$ */
 
 #include <errno.h>
+#include <math.h>
 #include <unistd.h>
 
 #include "buf.h"
@@ -20,17 +21,13 @@ spkeyh_null(__unused int key, __unused int u, __unused int v)
 void
 spkeyh_actflyby(__unused int key, __unused int u, __unused int v)
 {
-	end_flyby();
-	glutKeyboardFunc(keyh_default);
-	glutSpecialFunc(spkeyh_default);
-	glutMotionFunc(m_activeh_default);
-	glutPassiveMotionFunc(m_passiveh_default);
+	flyby_end();
 }
 
 void
 keyh_actflyby(__unused unsigned char key, __unused int u, __unused int v)
 {
-	if(key == ' ') {
+	if (key == ' ') {
 		st.st_opts ^= OP_STOP;
 		if (st.st_opts & OP_STOP) {
 			stopv.v_x = tx;  stoplv.v_x = tlx;
@@ -47,11 +44,7 @@ keyh_actflyby(__unused unsigned char key, __unused int u, __unused int v)
 		}
 		return;
 	}
-	end_flyby();
-	glutKeyboardFunc(keyh_default);
-	glutSpecialFunc(spkeyh_default);
-	glutMotionFunc(m_activeh_default);
-	glutPassiveMotionFunc(m_passiveh_default);
+	flyby_end();
 }
 
 void
@@ -64,20 +57,27 @@ keyh_flyby(unsigned char key, __unused int u, __unused int v)
 		errno = 0;
 		break;
 	case 'q':
-		if (build_flyby)
-			end_flyby();
-		else if (!active_flyby)
-			begin_flyby('w');
+		switch (flyby_mode) {
+		case FBM_REC:
+			flyby_end();
+			break;
+		case FBM_PLAY:
+			break;
+		default:
+			flyby_begin(FBM_REC);
+			break;
+		}
 		break;
 	case 'p':
-		if (active_flyby)
-			end_flyby();
-		else if (!build_flyby) {
-			begin_flyby('r');
-			glutMotionFunc(m_activeh_null);
-			glutPassiveMotionFunc(m_passiveh_null);
-			glutKeyboardFunc(keyh_actflyby);
-			glutSpecialFunc(spkeyh_actflyby);
+		switch (flyby_mode) {
+		case FBM_PLAY:
+			flyby_end();
+			break;
+		case FBM_REC:
+			break;
+		default:
+			flyby_begin(FBM_PLAY);
+			break;
 		}
 		break;
 	case 'l':
@@ -235,8 +235,7 @@ keyh_option(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 'd':
 		st.st_opts ^= OP_CAPTURE;
-		gDebugCapture = !gDebugCapture;
-		if(gDebugCapture)
+		if (st.st_opts & OP_CAPTURE)
 			begin_capture(capture_mode);
 		else
 			end_capture();
@@ -377,14 +376,14 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		glutKeyboardFunc(keyh_mode);
 		break;
 	case 'O':
-		tween_pushpop(TWF_PUSH | TWF_LOOK | TWF_POS);
+		tween_push(TWF_LOOK | TWF_POS);
 		st.st_x = 0.0f;
 		st.st_y = 0.0f;
 		st.st_z = 0.0f;
 		st.st_lx = 0.0f;
 		st.st_ly = 0.0f;
 		st.st_lz = 0.0f;
-		tween_pushpop(TWF_POP | TWF_LOOK | TWF_POS);
+		tween_pop(TWF_LOOK | TWF_POS);
 		break;
 	case 'o':
 		glutKeyboardFunc(keyh_option);
@@ -463,8 +462,10 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 void
 spkeyh_default(int key, __unused int u, __unused int v)
 {
+	float r, adj, amt;
 	int dir;
 
+	amt = 0.0f; /* gcc */
 	dir = 0; /* gcc */
 	switch (key) {
 	case GLUT_KEY_LEFT:
@@ -488,7 +489,19 @@ spkeyh_default(int key, __unused int u, __unused int v)
 	default:
 		return;
 	}
-	tween_pushpop(TWF_PUSH | TWF_POS);
-	cam_move(dir);
-	tween_pushpop(TWF_POP | TWF_POS);
+	tween_push(TWF_POS);
+
+	amt = 0.3f;
+	switch (st.st_vmode) {
+	case VM_PHYSICAL:
+		r = sqrt(SQUARE(st.st_x - XCENTER) + SQUARE(st.st_z - ZCENTER));
+		adj = pow(2, r / (ROWWIDTH / 2.0f));
+		if (adj > 50.0f)
+			adj = 50.0f;
+		amt *= adj;
+		break;
+	}
+
+	cam_move(dir, amt);
+	tween_pop(TWF_POS);
 }
