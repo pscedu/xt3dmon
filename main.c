@@ -52,23 +52,25 @@ long			 fps = 50;
 int			 gDebugCapture;
 
 const char *opdesc[] = {
-	"Texture mode",
-	"Blending mode",
-	"Node wireframes",
-	"Ground and axes",
-	"Camera tweening",
-	"Capture mode",
-	"Display mode",
-	"Govern mode",
-	"Flyby loop mode",
-	"Debug mode",
-	"Free look mode",
-	"Node labels",
-	"Module mode",
-	"Wired cluster frames",
-	"Pipe mode",
-	"Selected node pipe mode",
-	"Non-select-node dimming"
+	/*  0 */ "Texture mode",
+	/*  1 */ "Blending mode",
+	/*  2 */ "Node wireframes",
+	/*  3 */ "Ground and axes",
+	/*  4 */ "Camera tweening",
+	/*  5 */ "Capture mode",
+	/*  6 */ "Display mode",
+	/*  7 */ "Govern mode",
+	/*  8 */ "Flyby loop mode",
+	/*  9 */ "Debug mode",
+	/* 10 */ "Free look mode",
+	/* 11 */ "Node labels",
+	/* 12 */ "Module mode",
+	/* 13 */ "Wired cluster frames",
+	/* 14 */ "Pipe mode",
+	/* 15 */ "Selected node pipe mode",
+	/* 16 */ "Non-select-node dimming",
+	/* 17 */ "Stereo mode",
+	/* 18 */ "Pause"
 };
 
 struct datasrc datasrcsw[] = {
@@ -164,6 +166,8 @@ refresh_state(int oldopts)
 void
 select_node(struct node *n)
 {
+	struct vec v, pos;
+
 	if (selnode == n)
 		return;
 	selnode = n;
@@ -192,34 +196,56 @@ select_node(struct node *n)
 		n->n_fillp = &selnodefill;
 	}
 
-	n->n_v->v_x -= SELNODE_GAP;
-	n->n_v->v_y -= SELNODE_GAP;
-	n->n_v->v_z -= SELNODE_GAP;
-
 	vmodes[st.st_vmode].vm_ndim.v_w += SELNODE_GAP * 2;
 	vmodes[st.st_vmode].vm_ndim.v_h += SELNODE_GAP * 2;
 	vmodes[st.st_vmode].vm_ndim.v_d += SELNODE_GAP * 2;
 
-	glPushMatrix();
-	glPushName(n->n_nid);
-	glTranslatef(n->n_v->v_x, n->n_v->v_y, n->n_v->v_z);
-	if (st.st_opts & OP_SELPIPES && (st.st_opts & OP_PIPES) == 0)
-		draw_node_pipes(&vmodes[st.st_vmode].vm_ndim);
+	switch (st.st_vmode) {
+	case VM_WIRED:
+		pos.v_x = n->n_wiv.v_x * st.st_winspx + wivstart.v_x - SELNODE_GAP;
+		pos.v_y = n->n_wiv.v_y * st.st_winspy + wivstart.v_y - SELNODE_GAP;
+		pos.v_z = n->n_wiv.v_z * st.st_winspz + wivstart.v_z - SELNODE_GAP;
+		for (v.v_x = 0.0f; v.v_x < wivdim.v_w; v.v_x += WI_WIDTH)
+			for (v.v_y = 0.0f; v.v_y < wivdim.v_h; v.v_y += WI_HEIGHT)
+				for (v.v_z = 0.0f; v.v_z < wivdim.v_d; v.v_z += WI_DEPTH) {
+					glPushMatrix();
+					glTranslatef(
+					    pos.v_x + v.v_x,
+					    pos.v_y + v.v_y,
+					    pos.v_z + v.v_z);
+					if (st.st_opts & OP_SELPIPES &&
+					    (st.st_opts & OP_PIPES) == 0)
+						draw_node_pipes(&vmodes[st.st_vmode].vm_ndim);
+		
+					draw_node(n, NDF_DONTPUSH | NDF_NOOPTS);
+					glPopMatrix();
+				}
+		break;
+	default:
+		n->n_v->v_x -= SELNODE_GAP;
+		n->n_v->v_y -= SELNODE_GAP;
+		n->n_v->v_z -= SELNODE_GAP;
 
-	draw_node(n, NDF_DONTPUSH | NDF_NOOPTS);
+		glPushMatrix();
+		glTranslatef(n->n_v->v_x, n->n_v->v_y, n->n_v->v_z);
+		if (st.st_vmode != VM_PHYSICAL &&
+		    st.st_opts & OP_SELPIPES && (st.st_opts & OP_PIPES) == 0)
+			draw_node_pipes(&vmodes[st.st_vmode].vm_ndim);
+	
+		draw_node(n, NDF_DONTPUSH | NDF_NOOPTS);
+		glPopMatrix();
 
-	n->n_fillp = n->n_ofillp;
+		n->n_v->v_x += SELNODE_GAP;
+		n->n_v->v_y += SELNODE_GAP;
+		n->n_v->v_z += SELNODE_GAP;
+		break;
+	}
 
 	vmodes[st.st_vmode].vm_ndim.v_w -= SELNODE_GAP * 2;
 	vmodes[st.st_vmode].vm_ndim.v_h -= SELNODE_GAP * 2;
 	vmodes[st.st_vmode].vm_ndim.v_d -= SELNODE_GAP * 2;
 
-	glPopName();
-	glPopMatrix();
-
-	n->n_v->v_x += SELNODE_GAP;
-	n->n_v->v_y += SELNODE_GAP;
-	n->n_v->v_z += SELNODE_GAP;
+	n->n_fillp = n->n_ofillp;
 
 	glEndList();
 }
