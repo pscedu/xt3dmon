@@ -31,4 +31,13 @@
 #define __inline
 #endif
 
+/* Begin non-standard stuff. */
+
 #define signf(a) (a < 0.0f ? -1.0f : 1.0f)
+
+#define SWAP(a, b, t)		\
+	do {			\
+		t = a;		\
+		a = b;		\
+		b = t;		\
+	} while (0)
