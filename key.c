@@ -203,15 +203,15 @@ keyh_vmode(unsigned char key, __unused int u, __unused int v)
 	switch (key) {
 	case 'o':
 		st.st_vmode = VM_WIREDONE;
-		st.st_rf |= RF_CLUSTER | RF_PERSPECTIVE | RF_GROUND | RF_SELNODE;
+		st.st_rf |= RF_CLUSTER | RF_PERSPECTIVE | RF_GROUND | RF_SELNODE | RF_DATASRC;
 		break;
 	case 'w':
 		st.st_vmode = VM_WIRED;
-		st.st_rf |= RF_CLUSTER | RF_PERSPECTIVE | RF_GROUND | RF_SELNODE;
+		st.st_rf |= RF_CLUSTER | RF_PERSPECTIVE | RF_GROUND | RF_SELNODE | RF_DATASRC;
 		break;
 	case 'p':
 		st.st_vmode = VM_PHYSICAL;
-		st.st_rf |= RF_CLUSTER | RF_PERSPECTIVE | RF_GROUND | RF_SELNODE;
+		st.st_rf |= RF_CLUSTER | RF_PERSPECTIVE | RF_GROUND | RF_SELNODE | RF_DATASRC;
 		break;
 	default:
 		return;
@@ -246,7 +246,7 @@ keyh_option(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 'f':
 		st.st_opts ^= OP_WIVMFRAME;
-		st.st_rf ^= RF_CLUSTER;
+		st.st_rf ^= RF_CLUSTER | RF_SELNODE;
 		break;
 	case 'G': /* Ludicrous Speed */
 		st.st_opts ^= OP_GOVERN;
@@ -377,12 +377,14 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		glutKeyboardFunc(keyh_mode);
 		break;
 	case 'O':
-		if (st.st_opts & OP_TWEEN)
-			tx = ty = tz = 0;
-		else {
-			st.st_x = st.st_y = st.st_z = 0;
-			cam_update();
-		}
+		tween_pushpop(TWF_PUSH | TWF_LOOK | TWF_POS);
+		st.st_x = 0.0f;
+		st.st_y = 0.0f;
+		st.st_z = 0.0f;
+		st.st_lx = 0.0f;
+		st.st_ly = 0.0f;
+		st.st_lz = 0.0f;
+		tween_pushpop(TWF_POP | TWF_LOOK | TWF_POS);
 		break;
 	case 'o':
 		glutKeyboardFunc(keyh_option);
