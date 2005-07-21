@@ -18,12 +18,19 @@
 void
 cam_move(int dir)
 {
-	float t, r, adj;
+	float r, adj;
 
-	r = sqrt(SQUARE(st.st_x - XCENTER) + SQUARE(st.st_z - ZCENTER));
-	adj = pow(2, r / (ROWWIDTH / 2.0f));
-	if (adj > 50.0f)
-		adj = 50.0f;
+	switch (st.st_vmode) {
+	case VM_PHYSICAL:
+		r = sqrt(SQUARE(st.st_x - XCENTER) + SQUARE(st.st_z - ZCENTER));
+		adj = pow(2, r / (ROWWIDTH / 2.0f));
+		if (adj > 50.0f)
+			adj = 50.0f;
+		break;
+	default:
+		adj = 1.0f;
+		break;
+	}
 
 	switch (dir) {
 	case CAMDIR_LEFT:
@@ -45,23 +52,52 @@ cam_move(int dir)
 		st.st_z -= st.st_lz * 0.3f * adj;
 		break;
 	case CAMDIR_UP:
-		if (st.st_ly < 0)
-			t = PI / 2.0f + st.st_ly;
-		else
-			t = PI / 2.0f - st.st_ly ;
-		st.st_x -= st.st_lx * st.st_ly * 0.3f * adj;
-		st.st_y += t * 0.3f;
-		st.st_z -= st.st_lz * st.st_ly * 0.3f * adj;
+	case CAMDIR_DOWN: {
+		struct vec cross, a, b;
+		float mag;
+
+		a.v_x = st.st_lx;
+		a.v_y = st.st_ly;
+		a.v_z = st.st_lz;
+		mag = sqrt(SQUARE(a.v_x) + SQUARE(a.v_y) +
+		    SQUARE(a.v_z));
+		a.v_x /= mag;
+		a.v_y /= mag;
+		a.v_z /= mag;
+
+		b.v_x = st.st_lz;
+		b.v_y = 0;
+		b.v_z = -st.st_lx;
+		mag = sqrt(SQUARE(b.v_x) + SQUARE(b.v_y) +
+		    SQUARE(b.v_z));
+		b.v_x /= mag;
+		b.v_y /= mag;
+		b.v_z /= mag;
+
+		if (dir == CAMDIR_DOWN) {
+			struct vec t;
+
+			t = b;
+			b = a;
+			a = t;
+		}
+
+		/* Follow the normal to the look vector. */
+		cross.v_x = a.v_y * b.v_z - b.v_y * a.v_z;
+		cross.v_y = b.v_x * a.v_z - a.v_x * b.v_z;
+		cross.v_z = a.v_x * b.v_y - b.v_x * a.v_y;
+
+		mag = sqrt(SQUARE(cross.v_x) + SQUARE(cross.v_y) +
+		    SQUARE(cross.v_z));
+		cross.v_x /= mag;
+		cross.v_y /= mag;
+		cross.v_z /= mag;
+		
+		st.st_x += cross.v_x * 0.3 * adj;
+		st.st_y += cross.v_y * 0.3 * adj;
+		st.st_z += cross.v_z * 0.3 * adj;
 		break;
-	case CAMDIR_DOWN:
-		if (st.st_ly < 0)
-			t = PI / 2.0f + st.st_ly;
-		else
-			t = PI / 2.0f - st.st_ly ;
-		st.st_x += st.st_lx * st.st_ly * 0.3f * adj;
-		st.st_y -= t * 0.3f;
-		st.st_z += st.st_lz * st.st_ly * 0.3f * adj;
-		break;
+	    }
 	}
 }
 
