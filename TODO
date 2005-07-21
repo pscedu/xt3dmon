@@ -13,3 +13,5 @@ $Id$
     display lists if they are enabled
 22. rename vec to fvec (float).  i know.
 23. kill OP_FREELOOK.  map it to a key.
+24. add keyh_selnode(), a special keyhandler when nodes are selected
+    up, down, left, right select adjacent nodes.
