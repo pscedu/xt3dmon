@@ -1,4 +1,5 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -W
+# $Id$
 
 use strict;
 use warnings;
