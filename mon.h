@@ -239,7 +239,8 @@ struct flyby {
 #define RF_SELNODE	(1<<4)
 #define RF_PERSPECTIVE	(1<<5)
 #define RF_GROUND	(1<<6)
-#define RF_INIT		(RF_TEX | RF_PHYSMAP | RF_DATASRC | RF_CLUSTER | RF_GROUND)
+#define RF_INIT		(RF_TEX | RF_PHYSMAP | RF_DATASRC | RF_CLUSTER | \
+			 RF_GROUND | RF_SELNODE)
 
 #define OP_TEX		(1<<0)
 #define OP_BLEND	(1<<1)
