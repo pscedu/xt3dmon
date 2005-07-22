@@ -152,22 +152,14 @@ draw_box_filled(const struct vec *dim, const struct fill *fillp)
 }
 
 void
-draw_box_tex(const struct vec *dim, const struct fill *fillp)
+draw_box_tex(const struct vec *dim, const struct fill *fillp, GLenum param)
 {
 	float w = dim->v_w;
 	float h = dim->v_h;
 	float d = dim->v_d;
 	float color[4];
-	GLenum param;
 
 	glEnable(GL_TEXTURE_2D);
-
-	if (st.st_opts & OP_BLEND) {
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
-		param = GL_BLEND;
-	} else
-		param = GL_REPLACE;
 
 	glBindTexture(GL_TEXTURE_2D, fillp->f_texid);
 
@@ -251,9 +243,6 @@ draw_box_tex(const struct vec *dim, const struct fill *fillp)
 	glVertex3f(w, 0.0, 0.0);
 
 	glEnd();
-
-	if (st.st_opts & OP_BLEND)
-		glDisable(GL_BLEND);
 
 	/* Disable polygon offset */
 	glDisable(GL_LIGHTING);
