@@ -495,7 +495,7 @@ void			 uinpcb_goto(void);
 /* widget.c */
 void			 draw_box_outline(const struct vec *, const struct fill *);
 void			 draw_box_filled(const struct vec *, const struct fill *);
-void			 draw_box_tex(const struct vec *, const struct fill *);
+void			 draw_box_tex(const struct vec *, const struct fill *, GLenum);
 void 			 rgb_contrast(struct fill *c);
 
 extern struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
