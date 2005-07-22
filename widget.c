@@ -3,6 +3,7 @@
 #include <math.h>
 
 #include "mon.h"
+#include "cdefs.h"
 
 /* GNU C bullshit. */
 extern double fmax(double, double);
@@ -153,18 +154,11 @@ draw_box_filled(const struct vec *dim, const struct fill *fillp)
 void
 draw_box_tex(const struct vec *dim, const struct fill *fillp)
 {
-	float x = 0.0f, y = 0.0f, z = 0.0f;
 	float w = dim->v_w;
 	float h = dim->v_h;
 	float d = dim->v_d;
-	float uw, uh, ud;
 	float color[4];
 	GLenum param;
-
-	/* Number of times to tile image */
-	uw = 0.5 * TILE_TEXTURE;
-	ud = 1.0 * TILE_TEXTURE;
-	uh = 1.0 * TILE_TEXTURE;
 
 	glEnable(GL_TEXTURE_2D);
 
@@ -197,64 +191,64 @@ draw_box_tex(const struct vec *dim, const struct fill *fillp)
 	glBegin(GL_QUADS);
 
 	/* Back */
-	glVertex3f(x, y, z);
 	glTexCoord2f(0.0, 0.0);
-	glVertex3f(x, y+h, z);
-	glTexCoord2f(0.0, uw);
-	glVertex3f(x+w, y+h, z);
-	glTexCoord2f(uh, uw);
-	glVertex3f(x+w, y, z);
-	glTexCoord2f(uh, 0.0);
+	glVertex3f(0.0, 0.0, 0.0);
+	glTexCoord2f(0.0, NODE_TEXCOORD(h));
+	glVertex3f(0.0, h, 0.0);
+	glTexCoord2f(NODE_TEXCOORD(w), NODE_TEXCOORD(h));
+	glVertex3f(w, h, 0.0);
+	glTexCoord2f(NODE_TEXCOORD(w), 0.0);
+	glVertex3f(w, 0.0, 0.0);
 
 	/* Front */
-	glVertex3f(x, y, z+d);
 	glTexCoord2f(0.0, 0.0);
-	glVertex3f(x, y+h, z+d);
-	glTexCoord2f(0.0, uw);
-	glVertex3f(x+w, y+h, z+d);
-	glTexCoord2f(uh, uw);
-	glVertex3f(x+w, y, z+d);
-	glTexCoord2f(uh, 0.0);
+	glVertex3f(0.0, 0.0, d);
+	glTexCoord2f(0.0, NODE_TEXCOORD(h));
+	glVertex3f(0.0, h, d);
+	glTexCoord2f(NODE_TEXCOORD(w), NODE_TEXCOORD(h));
+	glVertex3f(w, h, d);
+	glTexCoord2f(NODE_TEXCOORD(w), 0.0);
+	glVertex3f(w, 0.0, d);
 
 	/* Right */
-	glVertex3f(x+w, y, z);
 	glTexCoord2f(0.0, 0.0);
-	glVertex3f(x+w, y, z+d);
-	glTexCoord2f(0.0, ud);
-	glVertex3f(x+w, y+h, z+d);
-	glTexCoord2f(uh, ud);
-	glVertex3f(x+w, y+h, z);
-	glTexCoord2f(uh, 0.0);
+	glVertex3f(w, 0.0, 0.0);
+	glTexCoord2f(0.0, NODE_TEXCOORD(d));
+	glVertex3f(w, 0.0, d);
+	glTexCoord2f(NODE_TEXCOORD(h), NODE_TEXCOORD(d));
+	glVertex3f(w, h, d);
+	glTexCoord2f(NODE_TEXCOORD(h), 0.0);
+	glVertex3f(w, h, 0.0);
 
 	/* Left */
-	glVertex3f(x, y, z);
 	glTexCoord2f(0.0, 0.0);
-	glVertex3f(x, y, z+d);
-	glTexCoord2f(0.0, ud);
-	glVertex3f(x, y+h, z+d);
-	glTexCoord2f(uh, ud);
-	glVertex3f(x, y+h, z);
-	glTexCoord2f(uh, 0.0);
+	glVertex3f(0.0, 0.0, 0.0);
+	glTexCoord2f(0.0, NODE_TEXCOORD(d));
+	glVertex3f(0.0, 0.0, d);
+	glTexCoord2f(NODE_TEXCOORD(h), NODE_TEXCOORD(d));
+	glVertex3f(0.0, h, d);
+	glTexCoord2f(NODE_TEXCOORD(h), 0.0);
+	glVertex3f(0.0, h, 0.0);
 
 	/* Top */
-	glVertex3f(x, y+h, z);
 	glTexCoord2f(0.0, 0.0);
-	glVertex3f(x, y+h, z+d);
-	glTexCoord2f(0.0, uw);
-	glVertex3f(x+w, y+h, z+d);
-	glTexCoord2f(ud, uw);
-	glVertex3f(x+w, y+h, z);
-	glTexCoord2f(ud, 0.0);
+	glVertex3f(0.0, h, 0.0);
+	glTexCoord2f(0.0, NODE_TEXCOORD(d));
+	glVertex3f(0.0, h, d);
+	glTexCoord2f(NODE_TEXCOORD(w), NODE_TEXCOORD(d));
+	glVertex3f(w, h, d);
+	glTexCoord2f(NODE_TEXCOORD(w), 0.0);
+	glVertex3f(w, h, 0.0);
 
 	/* Bottom */
-	glVertex3f(x, y, z);
 	glTexCoord2f(0.0, 0.0);
-	glVertex3f(x, y, z+d);
-	glTexCoord2f(0.0, uw);
-	glVertex3f(x+w, y, z+d);
-	glTexCoord2f(ud, uw);
-	glVertex3f(x+w, y, z);
-	glTexCoord2f(ud, 0.0);
+	glVertex3f(0.0, 0.0, 0.0);
+	glTexCoord2f(0.0, NODE_TEXCOORD(d));
+	glVertex3f(0.0, 0.0, d);
+	glTexCoord2f(NODE_TEXCOORD(w), NODE_TEXCOORD(d));
+	glVertex3f(w, 0.0, d);
+	glTexCoord2f(NODE_TEXCOORD(w), 0.0);
+	glVertex3f(w, 0.0, 0.0);
 
 	glEnd();
 
