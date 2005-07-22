@@ -128,14 +128,7 @@ draw_node_label(struct node *n)
 	float list[MAX_CHARS];
 	struct fill c;
 	int nid;
-	int i, j;
-
-	/* texture position for 'NODE' */
-	list[0] = 0;
-	list[1] = 1;
-	list[2] = 2;
-	list[3] = 3;
-	i = 4;
+	int i = 0;
 
 	/*
 	** Parse the node id for use with
@@ -143,12 +136,12 @@ draw_node_label(struct node *n)
 	*/
 	nid = n->n_nid;
 	while(nid >= 0 && i < MAX_CHARS) {
-		list[MAX_CHARS-i+3] = 4 + nid % 10;
+		list[MAX_CHARS-i-1] = 4 + nid % 10;
 		nid /= 10;
 		i++;
 	}
 
-	while(i < 8)
+	while(i < MAX_CHARS)
 		list[i++] = -1;
 
 	glEnable(GL_TEXTURE_2D);
@@ -160,18 +153,15 @@ draw_node_label(struct node *n)
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glBindTexture(GL_TEXTURE_2D, font_id);
 
 	glBegin(GL_QUADS);
 
-	for(i = 0, j = 0; i < 8; i++, j++) {
-		/* Place a space between 'NODE' and id */
-		if (j == 4)
-			j++;
+	for(i = 0; i < MAX_CHARS; i++) {
+		/* -0.001 to place slightly in front */
 		draw_char(list[i], -0.001, NODEDEPTH/2.0,
-		    FONT_Z_OFFSET+FONT_DISPLACE_W*(float)(j));
+		    FONT_Z_OFFSET+FONT_DISPLACE_W*(float)(i));
 	}
 
 	glEnd();
