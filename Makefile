@@ -1,13 +1,12 @@
 # $Id$
 
-MKDEP = `type -t makedepend >/dev/null 2>&1 && echo makedepend -f.depend || echo mkdep`
+MKDEP = `type -t mkdep >/dev/null 2>&1 && echo mkdep || echo makedepend -f.depend`
 
 PROG = mon
 SRCS = buf.c cam.c capture.c db.c draw.c flyby.c key.c job.c \
     load_png.c main.c mouse.c panel.c parse.c tween.c uinp.c widget.c
 LIBS = -lGL -lglut -lGLU -lpng `mysql_config --libs` -pg
-INCLUDE += `mysql_config --include | sed "s/'//g"`
-CFLAGS += -Wall -W -g ${INCLUDE} `mysql_config --cflags | sed "s/'//g"` -pg
+CFLAGS += -Wall -W -g `mysql_config --cflags | sed "s/'//g"` -pg
 
 OBJS = ${SRCS:.c=.o}
 
@@ -21,7 +20,7 @@ ${PROG}: ${OBJS}
 
 depend:
 	@touch .depend
-	${MKDEP} ${INCLUDE} ${SRCS}
+	${MKDEP} ${CFLAGS} ${SRCS}
 
 clean:
 	rm -rf ${PROG} ${OBJS} gmon.out
