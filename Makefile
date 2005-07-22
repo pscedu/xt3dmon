@@ -6,7 +6,9 @@ PROG = mon
 SRCS = buf.c cam.c capture.c db.c draw.c flyby.c key.c job.c \
     load_png.c main.c mouse.c panel.c parse.c tween.c uinp.c widget.c
 LIBS = -lGL -lglut -lGLU -lpng `mysql_config --libs` -pg
-CFLAGS += -Wall -W -g `mysql_config --cflags | sed "s/'//g"` -pg
+MYSQL_CFLAGS = `mysql_config --cflags | sed "s/'//g" | \
+    awk '{for (n = 1; n <= NF; n++) if (match($$n, /^-I/)) printf "%s ", $$n }'`
+CFLAGS += -Wall -W -g ${MYSQL_CFLAGS} -pg
 
 OBJS = ${SRCS:.c=.o}
 
