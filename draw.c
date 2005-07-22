@@ -20,6 +20,7 @@
 #define TWEEN_MAX_LOOK	(0.04f)
 
 struct vec wivstart, wivdim;
+float clip;
 
 struct fill fill_black = { 0.0f, 0.0f, 0.0f, 1.0f, 0, 0 };
 struct fill fill_grey  = { 0.2f, 0.2f, 0.2f, 1.0f, 0, 0 };
@@ -30,20 +31,6 @@ draw(void)
 {
 	if (flyby_mode)
 		flyby_update();
-
-	if (st.st_vmode == VM_WIRED)
-		if (st.st_x + WI_CLIPX > wivstart.v_x + wivdim.v_w ||
-		    st.st_x - WI_CLIPX < wivstart.v_x ||
-		    st.st_y + WI_CLIPY > wivstart.v_y + wivdim.v_h ||
-		    st.st_y - WI_CLIPY < wivstart.v_y ||
-		    st.st_z + WI_CLIPZ > wivstart.v_z + wivdim.v_d ||
-		    st.st_z - WI_CLIPZ < wivstart.v_z)
-			st.st_rf |= RF_CLUSTER;
-
-	if (st.st_rf) {
-		rebuild(st.st_rf);
-		st.st_rf = 0;
-	}
 
 	if (render_mode == RM_SELECT)
 		sel_record_begin();
@@ -80,6 +67,20 @@ draw(void)
 		if (want.v_w || want.v_h || want.v_d ||
 		    want_l.v_w || want_l.v_h || want_l.v_d)
 			cam_update();
+	}
+
+	if (st.st_vmode == VM_WIRED)
+		if (st.st_x + clip > wivstart.v_x + wivdim.v_w ||
+		    st.st_x - clip < wivstart.v_x ||
+		    st.st_y + clip > wivstart.v_y + wivdim.v_h ||
+		    st.st_y - clip < wivstart.v_y ||
+		    st.st_z + clip > wivstart.v_z + wivdim.v_d ||
+		    st.st_z - clip < wivstart.v_z)
+			st.st_rf |= RF_CLUSTER;
+
+	if (st.st_rf) {
+		rebuild(st.st_rf);
+		st.st_rf = 0;
 	}
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -459,24 +460,19 @@ __inline void
 draw_wired_frame(struct vec *vp, struct vec *dimp, struct fill *fillp)
 {
 	struct fill fill = *fillp;
-	struct vec v, dim;
+	struct vec v;
 
 	v = *vp;
 	v.v_x -= st.st_winspx / 2.0f;
 	v.v_y -= st.st_winspy / 2.0f;
 	v.v_z -= st.st_winspz / 2.0f;
 
-	dim = *dimp;
-//	dim.v_w += st.st_winspx;
-//	dim.v_h += st.st_winspy;
-//	dim.v_d += st.st_winspz;
-
 	glPushMatrix();
 	glTranslatef(v.v_x, v.v_y, v.v_z);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
 	fill.f_a = 0.2;
-	draw_box_filled(&dim, &fill);
+	draw_box_filled(dimp, &fill);
 	glDisable(GL_BLEND);
 	glPopMatrix();
 }
@@ -489,25 +485,28 @@ draw_wired_frame(struct vec *vp, struct vec *dimp, struct fill *fillp)
 __inline void
 draw_clusters_wired(void)
 {
-	int xnum, znum, col, adj, x, y, z;
+	int xnum, znum, col;
+	float x, y, z, adj;
 	struct vec v, dim;
 
-	x = st.st_x - WI_CLIPX;
-	y = st.st_y - WI_CLIPY;
-	z = st.st_z - WI_CLIPZ;
+	clip = MIN3(WI_CLIPX, WI_CLIPY, WI_CLIPZ);
+
+	x = st.st_x - clip;
+	y = st.st_y - clip;
+	z = st.st_z - clip;
 
 	/* Snap to grid */
-	adj = x % WI_WIDTH;
+	adj = fmod(x, WI_WIDTH);
 	if (adj < 0)
 		adj += WI_WIDTH;
 	x -= adj;
 
-	adj = y % WI_HEIGHT;
+	adj = fmod(y, WI_HEIGHT);
 	if (adj < 0)
 		adj += WI_HEIGHT;
 	y -= adj;
 
-	adj = z % WI_DEPTH;
+	adj = fmod(z, WI_DEPTH);
 	if (adj < 0)
 		adj += WI_DEPTH;
 	z -= adj;
@@ -520,13 +519,13 @@ draw_clusters_wired(void)
 	dim.v_h = WI_HEIGHT;
 	dim.v_d = WI_DEPTH;
 
-	xnum = (st.st_x + WI_CLIPX - x + WI_WIDTH - 1) / WI_WIDTH;
-	znum = (st.st_z + WI_CLIPZ - z + WI_DEPTH - 1) / WI_DEPTH;
+	xnum = (st.st_x + clip - x + WI_WIDTH - 1) / WI_WIDTH;
+	znum = (st.st_z + clip - z + WI_DEPTH - 1) / WI_DEPTH;
 
 	col = 0;
-	for (v.v_y = y; v.v_y < st.st_y + WI_CLIPY; v.v_y += WI_HEIGHT) {
-		for (v.v_z = z; v.v_z < st.st_z + WI_CLIPZ; v.v_z += WI_DEPTH) {
-			for (v.v_x = x; v.v_x < st.st_x + WI_CLIPX; v.v_x += WI_WIDTH) {
+	for (v.v_y = y; v.v_y < st.st_y + clip; v.v_y += WI_HEIGHT) {
+		for (v.v_z = z; v.v_z < st.st_z + clip; v.v_z += WI_DEPTH) {
+			for (v.v_x = x; v.v_x < st.st_x + clip; v.v_x += WI_WIDTH) {
 				draw_cluster_wired(&v);
 				if (st.st_opts & OP_WIVMFRAME)
 					draw_wired_frame(&v, &dim,
