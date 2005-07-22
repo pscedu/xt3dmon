@@ -13,6 +13,7 @@
 
 #include <math.h>
 
+#include "cdefs.h"
 #include "mon.h"
 #include "buf.h"
 
@@ -387,8 +388,7 @@ rebuild(int opts)
 	if (opts & RF_PERSPECTIVE) {
 		float clip;
 
-		clip = MIN(WI_CLIPX, WI_CLIPY);
-		clip = MIN(clip, WI_CLIPZ);
+		clip = MIN3(WI_CLIPX, WI_CLIPY, WI_CLIPZ);
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
