@@ -253,9 +253,6 @@ keyh_option(unsigned char key, __unused int u, __unused int v)
 	case 'g':
 		st.st_opts ^= OP_GROUND;
 		break;
-	case 'L':
-		st.st_opts ^= OP_FREELOOK;
-		break;
 	case 'l':
 		st.st_opts ^= OP_NLABELS;
 		st.st_rf |= RF_CLUSTER | RF_SELNODE;

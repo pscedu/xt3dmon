@@ -61,14 +61,13 @@ const char *opdesc[] = {
 	/*  7 */ "Govern mode",
 	/*  8 */ "Flyby loop mode",
 	/*  9 */ "Debug mode",
-	/* 10 */ "Free look mode",
-	/* 11 */ "Node labels",
-	/* 12 */ "Module mode",
-	/* 13 */ "Wired cluster frames",
-	/* 14 */ "Pipe mode",
-	/* 15 */ "Selected node pipe mode",
-	/* 16 */ "Stereo mode",
-	/* 17 */ "Pause"
+	/* 10 */ "Node labels",
+	/* 11 */ "Module mode",
+	/* 12 */ "Wired cluster frames",
+	/* 13 */ "Pipe mode",
+	/* 14 */ "Selected node pipe mode",
+	/* 15 */ "Stereo mode",
+	/* 16 */ "Pause"
 };
 
 struct datasrc datasrcsw[] = {
@@ -154,9 +153,6 @@ refresh_state(int oldopts)
 	}
 	if (diff & (OP_BLEND | OP_TEX))
 		restore_textures();
-	if (diff & OP_FREELOOK)
-		glutMotionFunc(st.st_opts & OP_FREELOOK ?
-		    m_activeh_free : m_activeh_default);
 	if (diff & OP_GOVERN)
 		glutIdleFunc(st.st_opts & OP_GOVERN ? idle_govern : idle);
 }
