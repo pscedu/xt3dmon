@@ -15,3 +15,4 @@ $Id$
 23. kill OP_FREELOOK.  map it to a key.
 24. add keyh_selnode(), a special keyhandler when nodes are selected
     up, down, left, right select adjacent nodes.
+25. 'r' prefix keybinding to enable rebuild flags
