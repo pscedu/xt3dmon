@@ -99,13 +99,21 @@
 
 #define DIMMED_ALPHA	0.2
 
-#define TILE_TEXTURE	1
+//#define TILE_TEXTURE	1
 #define TEXTURE_SIZE	128.0
 
 #define FONT_WIDTH	12.0
 #define FONT_HEIGHT	12.0
 #define FONT_TEX_W 	256.0
 #define FONT_TEX_H 	16.0
+
+/*
+** Determines the texture coordinate by finding the ratio
+** between the pixel value given and the max of the three
+** possible dimensions. This gives a section of a texture
+** without stretching it...
+*/
+#define NODE_TEXCOORD(X) (1/(MAX3(NODEHEIGHT,NODEWIDTH,NODEDEPTH)/X))
 
 /* How many units of texture coordinates a character displaces */
 #define FONT_TEXCOORD_S (1/(FONT_TEX_W/FONT_WIDTH))
