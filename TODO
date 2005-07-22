@@ -7,7 +7,6 @@ $Id$
 10. random flyby/cycle focus jobs
 15. try #define __inline to see if it does anything
 16. stereo stuff
-17. unify OP_BLEND for tex/fill modes
 19. Flyby has bugs when switching modes
 21. don't recompile things - do it once and only call the
     display lists if they are enabled
