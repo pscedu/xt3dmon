@@ -480,6 +480,11 @@ void			 mouseh_null(int, int, int, int);
 void			 sel_record_begin(void);
 void			 sel_record_end(void);
 
+/* objlist.c */
+void			 obj_batch_start(struct objlist *);
+void			 obj_batch_end(struct objlist *);
+void			*getobj(void *, struct objlist *);
+
 /* panel.c */
 void			 draw_panels(void);
 void			 panel_toggle(int);
@@ -496,8 +501,6 @@ void			 parse_physmap(void);
 void			 parse_failmap(void);
 void			 parse_tempmap(void);
 void			 parse_mem(void);
-void			 obj_batch_start(struct objlist *);
-void			 obj_batch_end(struct objlist *);
 
 /* select.c */
 void			 sel_toggle(struct node *);
