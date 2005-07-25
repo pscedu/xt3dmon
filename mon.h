@@ -485,7 +485,7 @@ void			 obj_batch_start(struct objlist *);
 void			 obj_batch_end(struct objlist *);
 void			*getobj(void *, struct objlist *);
 void			 getcol(int, size_t, struct fill *);
-void			 getcol_temp(int, size_t, struct fill *);
+void			 getcol_temp(int, struct fill *);
 int			 job_cmp(const void *, const void *);
 int			 fail_cmp(const void *, const void *);
 int			 temp_cmp(const void *, const void *);
