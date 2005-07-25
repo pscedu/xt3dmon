@@ -19,6 +19,8 @@ uinpcb_ss(void)
 		screenshot(buf_get(&uinp.uinp_buf), capture_mode);
 }
 
+#define GOTO_DIST 2.5
+
 void
 uinpcb_goto(void)
 {
@@ -26,6 +28,8 @@ uinpcb_goto(void)
 	char *s;
 	int nid;
 	long l;
+	struct vec cv;
+	int mod;
 
 	s = buf_get(&uinp.uinp_buf);
 	l = strtol(s, NULL, 0);
@@ -35,5 +39,56 @@ uinpcb_goto(void)
 
 	if ((n = node_for_nid(nid)) == NULL)
 		return;
-	cam_goto(n->n_v);
+
+	/* Select the node */
+	selnode = n;
+	st.st_rf = RF_SELNODE;
+
+	cv = *n->n_v;
+	tween_push(TWF_LOOK);
+
+	switch(st.st_vmode) {
+		
+		/* Arranged as nodeid is:
+		      -------     -------
+		      |     |     |     |
+		      |  3  |     |  2  |
+		      -------     -------
+
+		   -------     -------
+		   |     |     |     |
+		   |  0  |     |  1  |
+		   -------     -------
+		*/
+		case VM_PHYSICAL:
+
+			/* Find which side of the blade it's on */
+			mod = (n->n_nid + 1) % 4;
+
+			st.st_lx = st.st_ly = 0.0;
+			cv.v_y += 0.5 * NODEHEIGHT;
+
+			/* Right side (positive z) */
+			if(mod == 2 || mod == 3) {
+
+				/* Change z and look vector */
+				cv.v_z += NODEDEPTH + GOTO_DIST;
+				st.st_lz = -1.0;
+
+			} else {
+				cv.v_z -= GOTO_DIST;
+				st.st_lz = 1.0;
+			}
+
+			break;
+
+		/* TODO */
+		case VM_WIRED:
+		case VM_WIREDONE:
+		default:
+			break;
+	}
+
+	tween_pop(TWF_LOOK);
+	cam_goto(&cv);
 }
