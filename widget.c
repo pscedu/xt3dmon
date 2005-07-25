@@ -351,11 +351,19 @@ rgb_contrast(struct fill *c)
 	if (c->f_h < 0)
 		c->f_h += 360;
 
-	/* Play with brightness */
-//	c->f_s -= 0.3;
+#if 0
+	/* Play with saturation */
+	c->f_s -= 0.6;
 
-//	if (c->f_s < 0)
-//		c->f_s += 1.0;
+	if (c->f_s < 0)
+		c->f_s += 1.0;
+
+	/* Play with value */
+	c->f_v -= 0.6;
+
+	if (c->f_v < 0)
+		c->f_v += 1.0;
+#endif
 
 	HSV2RGB(c);
 }
