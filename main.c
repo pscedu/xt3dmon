@@ -434,6 +434,7 @@ main(int argc, char *argv[])
 	glEnable(GL_DEPTH_TEST);
 
 	TAILQ_INIT(&panels);
+	SLIST_INIT(&selnodes);
 	buf_init(&uinp.uinp_buf);
 	buf_append(&uinp.uinp_buf, '\0');
 	st.st_rf |= RF_INIT;
