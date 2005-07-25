@@ -8,7 +8,6 @@
 
 int		 flyby_mode;
 static FILE	*flyby_fp;
-struct flyby	 fb;
 
 void		 init_panels(int);
 
@@ -218,7 +217,6 @@ flyby_end(void)
 		fclose(flyby_fp);
 		flyby_fp = NULL;
 	}
-	fb.fb_panels = 0;
 
 	switch (flyby_mode) {
 	case FBM_PLAY:
@@ -248,5 +246,4 @@ flyby_update(void)
 		flyby_writeseq(&st);
 		break;
 	}
-	fb.fb_panels = 0;
 }

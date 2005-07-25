@@ -40,9 +40,11 @@ uinpcb_goto(void)
 	if ((n = node_for_nid(nid)) == NULL)
 		return;
 
+#if 0
 	/* Select the node */
 	selnode = n;
 	st.st_rf = RF_SELNODE;
+#endif
 
 	cv = *n->n_v;
 	tween_push(TWF_LOOK);

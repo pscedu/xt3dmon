@@ -695,10 +695,10 @@ panel_tremove(struct panel *p)
 
 	/* XXX inspect POPT_REMOVE first? */
 	p->p_opts ^= POPT_REMOVE;
-	fb.fb_panels |= p->p_id;
-
 	for (t = p; t != TAILQ_END(&panels); t = TAILQ_NEXT(t, p_link))
 		t->p_opts |= POPT_DIRTY;
+	if (flyby_mode == FBM_REC)
+		flyby_writepanel(p->p_id);
 }
 
 void
@@ -728,7 +728,6 @@ panel_toggle(int panel)
 	p->p_fill.f_g = 1.0f;
 	p->p_fill.f_b = 1.0f;
 	p->p_fill.f_a = 1.0f;
-	fb.fb_panels |= panel;
 	SLIST_INIT(&p->p_widgets);
 
 	if (pi->pi_opts & PF_UINP) {
@@ -738,6 +737,8 @@ panel_toggle(int panel)
 		uinp.uinp_callback = pi->pi_uinpcb;
 	}
 	TAILQ_INSERT_TAIL(&panels, p, p_link);
+	if (flyby_mode == FBM_REC)
+		flyby_writepanel(p->p_id);
 }
 
 void

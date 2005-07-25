@@ -248,10 +248,6 @@ struct state {
 #define st_lz st_lv.v_z
 };
 
-struct flyby {
-	int		 fb_panels;
-};
-
 #define FB_OMASK	(OP_LOOPFLYBY | OP_CAPTURE | OP_DISPLAY | OP_STEREO | OP_STOP)
 #define FB_PMASK	(PANEL_GOTO | PANEL_CMD | PANEL_FLYBY | PANEL_SS)
 
@@ -541,7 +537,6 @@ extern struct uinput	 uinp;
 extern int		 spkey;
 
 extern struct state	 st;
-extern struct flyby	 fb;
 extern long		 fps;
 extern struct panels	 panels;
 extern struct pinfo	 pinfo[];
