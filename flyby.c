@@ -12,6 +12,29 @@ struct flyby	 fb;
 
 void		 init_panels(int);
 
+struct fbhdr {
+	int		fbh_type;
+	size_t		fbh_len;
+};
+
+struct fbinit {
+	struct state	fbi_state;
+	int		fbi_panels;
+};
+
+struct fbpanel {
+	int		fbp_panel;
+};
+
+struct fbselnode {
+	int		fbsn_nid;
+};
+
+#define FHT_INIT	1
+#define FHT_SEQ		2
+#define FHT_SELNODE	3
+#define FHT_PANEL	4
+
 /* Open the flyby data file appropriately. */
 void
 flyby_begin(int mode)
@@ -34,36 +57,68 @@ flyby_begin(int mode)
 		glutKeyboardFunc(keyh_actflyby);
 		glutSpecialFunc(spkeyh_actflyby);
 		glutMouseFunc(mouseh_null);
-
 		break;
 	case FBM_REC:
 		if ((flyby_fp = fopen(_PATH_FLYBY, "ab")) == NULL)
 			err(1, "%s", _PATH_FLYBY);
 		flyby_mode = FBM_REC;
+		flyby_writeinit(&st);
+		break;
 	}
+}
+
+void
+flyby_writemsg(int type, const void *data, size_t len)
+{
+	struct fbhdr fbh;
+
+	fbh.fbh_type = type;
+	fbh.fbh_len = len;
+	if (fwrite(&fbh, 1, sizeof(fbh), flyby_fp) != sizeof(fbh))
+		err(1, "fwrite flyby header");
+	if (fwrite(data, 1, len, flyby_fp) != len)
+		err(1, "fwrite flyby data");
 }
 
 /* Write current data for flyby. */
 void
-flyby_write(void)
+flyby_writeseq(struct state *st)
 {
 	int save;
 
-	/* Save the node ID. */
-	if (selnode != NULL)
-		fb.fb_nid = selnode->n_nid;
-	else
-		fb.fb_nid = -1;
+	save = st->st_opts;
+	st->st_opts &= ~FB_OMASK;
+	flyby_writemsg(FHT_SEQ, st, sizeof(*st));
+	st->st_opts = save;
+}
 
-	save = st.st_opts;
-	st.st_opts &= ~FB_OMASK;
-	if (fwrite(&st, sizeof(struct state), 1, flyby_fp) != 1)
-		err(1, "fwrite st");
-	st.st_opts = save;
+void
+flyby_writeinit(struct state *st)
+{
+	struct fbinit fbi;
+	struct panel *p;
 
-	fb.fb_panels &= ~FB_PMASK;		/* XXX:  stupid. */
-	if (fwrite(&fb, sizeof(struct flyby), 1, flyby_fp) != 1)
-		err(1, "fwrite fb");
+	/* One copy per init msg should be okay. */
+	fbi.fbi_state = *st;
+	fbi.fbi_panels = 0;
+
+	TAILQ_FOREACH(p, &panels, p_link)
+		fbi.fbi_panels |= p->p_id;
+
+	fbi.fbi_state.st_opts &= ~FB_OMASK;
+	flyby_writemsg(FHT_INIT, &fbi, sizeof(fbi));
+}
+
+void
+flyby_writepanel(int panel)
+{
+	flyby_writemsg(FHT_PANEL, &panel, sizeof(panel));
+}
+
+void
+flyby_writeselnode(int nid)
+{
+	flyby_writemsg(FHT_SELNODE, &nid, sizeof(nid));
 }
 
 /* Read a set of flyby data. */
@@ -71,9 +126,10 @@ void
 flyby_read(void)
 {
 	static int stereo_left;
-	int tnid, oldopts;
-	struct node *n;
+	int done, oldopts;
+	struct fbhdr fbh;
 
+	/* XXX: move to draw() */
 	if (st.st_opts & OP_STEREO) {
 		stereo_left = !stereo_left;
 		if (!stereo_left) {
@@ -87,24 +143,60 @@ flyby_read(void)
 
 	oldopts = st.st_opts;
 
-	/* Save selected node. */
-	tnid = fb.fb_nid;
-again:
-	if (fread(&st, sizeof(struct state), 1, flyby_fp) != 1 ||
-	    fread(&fb, sizeof(struct flyby), 1, flyby_fp) != 1) {
-		if (ferror(flyby_fp))
-			err(1, "fread");
-		/* End of flyby. */
-		if (feof(flyby_fp)) {
-			if (st.st_opts & OP_LOOPFLYBY) {
-				rewind(flyby_fp);
-				goto again;
-			}
-			flyby_mode = FBM_OFF;
-			flyby_end();
-			return;
+	done = 0;
+	do {
+		if (fread(&fbh, 1, sizeof(fbh), flyby_fp) != sizeof(fbh)) {
+			if (feof(flyby_fp)) {
+				if (st.st_opts & OP_LOOPFLYBY)
+					rewind(flyby_fp);
+				else {
+					flyby_end();
+					return;
+				}
+			} else
+				err(1, "fread flyby header");
 		}
-	}
+		switch (fbh.fbh_type) {
+		case FHT_INIT: {
+			struct fbinit fbi;
+
+			if (fread(&fbi, 1, sizeof(fbi), flyby_fp) !=
+			    sizeof(fbi))
+				err(1, "flyby read init");
+			st = fbi.fbi_state;
+			init_panels(fbi.fbi_panels);
+			done = 1;
+			break;
+		    }
+		case FHT_SEQ:
+			if (fread(&st, 1, sizeof(st), flyby_fp) !=
+			    sizeof(st))
+				err(1, "flyby read seq");
+			done = 1;
+			break;
+		case FHT_PANEL: {
+			struct fbpanel fbp;
+
+			if (fread(&fbp, 1, sizeof(fbp), flyby_fp) !=
+			    sizeof(fbp))
+				err(1, "flyby read panel");
+			if (fbp.fbp_panel > 0 && fbp.fbp_panel < NPANELS)
+				panel_toggle(fbp.fbp_panel);
+			break;
+		    }
+		case FHT_SELNODE: {
+			struct fbselnode fbsn;
+			struct node *n;
+
+			if (fread(&fbsn, 1, sizeof(fbsn), flyby_fp) !=
+			    sizeof(fbsn))
+				err(1, "flyby read panel");
+			if ((n = node_for_nid(fbsn.fbsn_nid)) != NULL)
+				sel_toggle(n);
+			break;
+		    }
+		}
+	} while (!done);
 
 	if (st.st_opts & OP_STEREO && stereo_left) {
 		cam_move(CAMDIR_LEFT, 0.01);
@@ -115,20 +207,6 @@ again:
 	if ((st.st_rf & OP_TWEEN) == 0)
 		cam_update();
 
-	/* XXX: this code is a mess. */
-	/* Restore selected node. */
-	if (fb.fb_nid != -1) {
-		/* Force recompile if needed. */
-		if (tnid != fb.fb_nid)
-			st.st_rf |= RF_SELNODE;
-		n = node_for_nid(fb.fb_nid);
-		if (n != NULL)
-			select_node(n);
-	} else
-		selnode = NULL;
-	/* This is safe from the panel mask. */
-	if (fb.fb_panels)
-		flip_panels(fb.fb_panels);
 	st.st_opts ^= ((st.st_opts ^ oldopts) & FB_OMASK);
 	refresh_state(oldopts);
 }
@@ -167,7 +245,7 @@ flyby_update(void)
 			flyby_read();
 		break;
 	case FBM_REC:		/* Record user commands. */
-		flyby_write();
+		flyby_writeseq(&st);
 		break;
 	}
 	fb.fb_panels = 0;
