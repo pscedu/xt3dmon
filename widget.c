@@ -2,8 +2,8 @@
 
 #include <math.h>
 
-#include "mon.h"
 #include "cdefs.h"
+#include "mon.h"
 
 /* GNU C bullshit. */
 extern double fmax(double, double);
