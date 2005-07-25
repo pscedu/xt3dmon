@@ -62,9 +62,9 @@
 #define ZCENTER		(NODESPACE + (ROWDEPTH * NROWS + \
 			    ROWSPACE * (NROWS - 1)) / 2.0f)
 
-#define WI_WIDTH	(wired_width * st.st_winspx)
-#define WI_HEIGHT	(wired_height * st.st_winspy)
-#define WI_DEPTH	(wired_depth * st.st_winspz)
+#define WI_WIDTH	(widim.iv_w * st.st_winspx)
+#define WI_HEIGHT	(widim.iv_h * st.st_winspy)
+#define WI_DEPTH	(widim.iv_d * st.st_winspz)
 #define WI_CLIPX	(st.st_winspx * vmodes[st.st_vmode].vm_clip)
 #define WI_CLIPY	(st.st_winspy * vmodes[st.st_vmode].vm_clip)
 #define WI_CLIPZ	(st.st_winspz * vmodes[st.st_vmode].vm_clip)
@@ -142,6 +142,15 @@ struct vec {
 #define v_d v_z
 };
 
+struct ivec {
+	int		 iv_x;
+	int		 iv_y;
+	int		 iv_z;
+#define iv_w iv_x
+#define iv_h iv_y
+#define iv_d iv_z
+};
+
 struct datasrc {
 	void (*ds_physmap)(void);
 };
@@ -210,12 +219,15 @@ struct node {
 	int		 n_state;
 	struct fill	*n_fillp;
 	struct fill	*n_ofillp;
-	int		 n_hide;
+	int		 n_flags;
 	struct vec	 n_wiv;
 	struct vec	 n_swiv;
 	struct vec	 n_physv;
 	struct vec	*n_v;
 };
+
+#define NF_HIDE		(1<<0)
+#define NF_SEL		(1<<1)
 
 struct state {
 	struct vec	 st_v;
@@ -525,13 +537,10 @@ extern struct pinfo	 pinfo[];
 extern struct vmode	 vmodes[];
 extern struct dbh	 dbh;
 
+extern struct ivec	 widim;
 extern int		 mode_data_clean;
 extern struct vec	 wivstart, wivdim;
 extern struct temp_range temp_map[14]; /* XXX */
-
-extern int		 wired_width;			/* XXX: convert to vec */
-extern int		 wired_height;
-extern int		 wired_depth;
 
 extern float		 tx, tlx, ox, olx;
 extern float		 ty, tly, oy, oly;

@@ -83,7 +83,7 @@ db_physmap(void)
 	char *sql;
 	long l;
 
-	wired_width = wired_height = wired_depth = 0;
+	widim.iv_w = widim.iv_h = widim.iv_d = 0;
 
 	for (r = 0; r < NROWS; r++)
 		for (cb = 0; cb < NCABS; cb++)
@@ -93,7 +93,7 @@ db_physmap(void)
 						node = &nodes[r][cb][cg][m][n];
 						node->n_state = JST_UNACC;
 						node->n_fillp = &jstates[JST_UNACC].js_fill;
-						node->n_hide = 1;
+						node->n_flags |= NF_HIDE;
 					}
 
 	if ((len = asprintf(&sql,
@@ -175,24 +175,24 @@ db_physmap(void)
 		node->n_wiv.v_y = y;
 		node->n_wiv.v_z = z;
 
-		if (x > wired_width)
-			wired_width = x;
-		if (y > wired_height)
-			wired_height = y;
-		if (z > wired_depth)
-			wired_depth = z;
+		if (x > widim.iv_w)
+			widim.iv_w = x;
+		if (y > widim.iv_h)
+			widim.iv_h = y;
+		if (z > widim.iv_d)
+			widim.iv_d = z;
 
 		db_map_set(db_status_map, row[F_status], &node->n_state);
 		db_map_set(db_type_map, row[F_type], &node->n_state);
 
 		node->n_fillp = &jstates[node->n_state].js_fill;
-		node->n_hide = 0;
+		node->n_flags &= ~NF_HIDE;
 	}
 	mysql_free_result(res);
 
-	wired_width++;
-	wired_height++;
-	wired_depth++;
+	widim.iv_w++;
+	widim.iv_h++;
+	widim.iv_d++;
 }
 
 void

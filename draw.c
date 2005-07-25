@@ -40,10 +40,10 @@ draw(void)
 		static struct vec want;
 		static struct vec want_l;
 		static struct vec sc, sc_l;
-		float scale, scale_l;
+		static float scale, scale_l;
 
-		memset(&want, 0, sizeof(want));
-		memset(&want_l, 0, sizeof(want_l));
+		want.v_w = want.v_h = want.v_d = 0.0f;
+		want_l.v_w = want_l.v_h = want_l.v_d = 0.0f;
 		sc.v_x = sc.v_y = sc.v_z = 1.0;
 		sc_l.v_x = sc_l.v_y = sc_l.v_z = 1.0;
 
@@ -221,7 +221,7 @@ draw_node(struct node *n, int flags)
 	struct fill *fp;
 	GLenum param = GL_REPLACE;
 
-	if (n->n_hide)
+	if (n->n_flags & NF_HIDE)
 		return;
 
 	fp = n->n_fillp;
