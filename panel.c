@@ -74,7 +74,8 @@ struct pinfo pinfo[] = {
 
 struct panels	 panels;
 int		 panel_offset;
-int		 mode_data_clean = 0;
+int		 mode_data_clean;
+int		 selnode_clean;
 
 int
 baseconv(int n)
@@ -369,18 +370,16 @@ panel_refresh_fps(struct panel *p)
 void
 panel_refresh_cmd(struct panel *p)
 {
-	static struct node *oldnode;
-
 	/* XXX:  is the mode_data_clean check correct? */
-	if ((uinp.uinp_opts & UINPO_DIRTY) == 0 && oldnode == selnode &&
-	    (selnode == NULL || (mode_data_clean & PANEL_LEGEND) == 0) &&
-	    panel_ready(p))
+	if ((uinp.uinp_opts & UINPO_DIRTY) == 0 &&
+	    selnode_clean & PANEL_CMD && (SLIST_EMPTY(&selnodes) ||
+	    (mode_data_clean & PANEL_CMD) == 0) && panel_ready(p))
 		return;
 	uinp.uinp_opts &= ~UINPO_DIRTY;
-	mode_data_clean |= PANEL_LEGEND;
-	oldnode = selnode;
+	mode_data_clean |= PANEL_CMD;
+	selnode_clean |= PANEL_CMD;
 
-	if (selnode == NULL)
+	if (SLIST_EMPTY(&selnodes))
 		panel_set_content(p, "Please select a node\nto send a command to.");
 	else
 		panel_set_content(p, "Sending command to host\n\n> %s",
@@ -452,22 +451,23 @@ panel_refresh_legend(struct panel *p)
 void
 panel_refresh_ninfo(struct panel *p)
 {
-	static struct node *oldnode;
+	struct node *n;
 
-	if (oldnode == selnode && (selnode == NULL ||
+	if (selnode_clean & PANEL_NINFO && (SLIST_EMPTY(&selnodes) ||
 	    (mode_data_clean & PANEL_NINFO)) && panel_ready(p))
 		return;
-	oldnode = selnode;
 	mode_data_clean |= PANEL_NINFO;
+	selnode_clean |= PANEL_NINFO;
 
-	if (selnode == NULL) {
-		panel_set_content(p, "Select a node");
+	if (SLIST_EMPTY(&selnodes)) {
+		panel_set_content(p, "Please select some nodes");
 		return;
 	}
 
+	n = SLIST_FIRST(&selnodes)->sn_nodep;
 	switch (st.st_mode) {
 	case SM_JOBS:
-		switch (selnode->n_state) {
+		switch (n->n_state) {
 		case JST_USED:
 			panel_set_content(p,
 			    "Node ID: %d\n"
@@ -478,26 +478,26 @@ panel_refresh_ninfo(struct panel *p)
 			    "Job duration: %d:%02d\n"
 			    "Job time used: %d:%02d (%d%%)\n"
 			    "Job CPUs: %d",
-			    selnode->n_nid,
-			    selnode->n_job->j_id,
-			    selnode->n_job->j_owner,
-			    selnode->n_job->j_jname,
-			    selnode->n_job->j_queue,
-			    selnode->n_job->j_tmdur / 60,
-			    selnode->n_job->j_tmdur % 60,
-			    selnode->n_job->j_tmuse / 60,
-			    selnode->n_job->j_tmuse % 60,
-			    selnode->n_job->j_tmuse * 100 /
-			      (selnode->n_job->j_tmdur ?
-			       selnode->n_job->j_tmdur : 1),
-			    selnode->n_job->j_ncpus);
+			    n->n_nid,
+			    n->n_job->j_id,
+			    n->n_job->j_owner,
+			    n->n_job->j_jname,
+			    n->n_job->j_queue,
+			    n->n_job->j_tmdur / 60,
+			    n->n_job->j_tmdur % 60,
+			    n->n_job->j_tmuse / 60,
+			    n->n_job->j_tmuse % 60,
+			    n->n_job->j_tmuse * 100 /
+			      (n->n_job->j_tmdur ?
+			       n->n_job->j_tmdur : 1),
+			    n->n_job->j_ncpus);
 			break;
 		default:
 			panel_set_content(p,
 			    "Node ID: %d\n"
 			    "Type: %s",
-			    selnode->n_nid,
-			    jstates[selnode->n_state].js_name);
+			    n->n_nid,
+			    jstates[n->n_state].js_name);
 			break;
 		}
 		break;
@@ -505,15 +505,15 @@ panel_refresh_ninfo(struct panel *p)
 		panel_set_content(p,
 		    "Node ID: %d\n"
 		    "# Failures: %s",
-		    selnode->n_nid,
-		    selnode->n_fail->f_name);
+		    n->n_nid,
+		    n->n_fail->f_name);
 		break;
 	case SM_TEMP:
 		panel_set_content(p,
 		    "Node ID: %d\n"
 		    "Temperature: %s",
-		    selnode->n_nid,
-		    selnode->n_temp->t_name);
+		    n->n_nid,
+		    n->n_temp->t_name);
 		break;
 	}
 }
