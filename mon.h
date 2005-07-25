@@ -249,7 +249,6 @@ struct state {
 };
 
 struct flyby {
-	int 		 fb_nid;
 	int		 fb_panels;
 };
 
@@ -404,6 +403,13 @@ struct objlist {
 #define ol_temps ol_udata.olu_temps
 };
 
+struct selnode {
+	struct node		*sn_nodep;
+	SLIST_ENTRY(selnode)	 sn_next;
+};
+
+SLIST_HEAD(selnodes, selnode) selnodes;
+
 /* db.c */
 void			 dbh_connect(struct dbh *);
 void			 db_physmap(void);
@@ -433,8 +439,11 @@ void			 make_cluster(void);
 void 			 flyby_begin(int);
 void 			 flyby_end(void);
 void			 flyby_read(void);
-void			 flyby_write(void);
 void			 flyby_update(void);
+void			 flyby_writeinit(struct state *);
+void			 flyby_writeseq(struct state *);
+void			 flyby_writepanel(int);
+void			 flyby_writeselnode(int);
 
 /* key.c */
 void			 keyh_flyby(unsigned char, int, int);
@@ -494,6 +503,9 @@ void			 parse_mem(void);
 void			 obj_batch_start(struct objlist *);
 void			 obj_batch_end(struct objlist *);
 
+/* select.c */
+void			 sel_toggle(struct node *);
+
 /* tween.c */
 void			 tween_push(int);
 void			 tween_pop(int);
@@ -532,10 +544,10 @@ extern struct state	 st;
 extern struct flyby	 fb;
 extern long		 fps;
 extern struct panels	 panels;
-extern struct node	*selnode;
 extern struct pinfo	 pinfo[];
 extern struct vmode	 vmodes[];
 extern struct dbh	 dbh;
+extern struct selnodes	 selnodes;
 
 extern struct ivec	 widim;
 extern int		 mode_data_clean;
