@@ -484,6 +484,8 @@ void			 sel_record_end(void);
 void			 obj_batch_start(struct objlist *);
 void			 obj_batch_end(struct objlist *);
 void			*getobj(void *, struct objlist *);
+void			 getcol(int, size_t, struct fill *);
+void			 getcol_temp(int, size_t, struct fill *);
 
 /* panel.c */
 void			 draw_panels(void);
