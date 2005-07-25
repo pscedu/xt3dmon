@@ -40,6 +40,13 @@
 	    (elem) = SLIST_NEXT((elem), memb))
 #endif
 
+#ifndef SLIST_FOREACH_PREVPTR
+#define SLIST_FOREACH_PREVPTR(elem, prev, slh, memb)			\
+	for ((prev) = &SLIST_FIRST(slh);				\
+	    ((elem) = *(prev)) != SLIST_END(slh);			\
+	    (prev) = &SLIST_NEXT((sn), memb))
+#endif
+
 #ifndef SLIST_INSERT_HEAD
 #define SLIST_INSERT_HEAD(slh, elem, memb)				\
 	do {								\
