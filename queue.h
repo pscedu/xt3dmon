@@ -69,6 +69,14 @@
 	(SLIST_FIRST(slh) == SLIST_END(slh))
 #endif
 
+#ifndef SLIST_REMOVE_AFTER
+#define SLIST_REMOVE_AFTER(elem, memb)					\
+	do {								\
+		SLIST_NEXT((elem), memb) =				\
+		    SLIST_NEXT(SLIST_NEXT((elem), memb), memb);		\
+	} while (0)
+#endif
+
 #ifndef SLIST_REMOVE
 #define SLIST_REMOVE(slh, elem, type, memb)				\
 	do {								\
