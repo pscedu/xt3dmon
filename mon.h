@@ -97,8 +97,6 @@
 #define FOVY		(45.0f)
 #define ASPECT		(win_width / (double)win_height)
 
-#define DIMMED_ALPHA	0.2
-
 //#define TILE_TEXTURE	1
 #define TEXTURE_SIZE	128.0
 
@@ -113,18 +111,18 @@
 ** possible dimensions. This gives a section of a texture
 ** without stretching it...
 */
-#define NODE_TEXCOORD(X) (1/(MAX3(NODEHEIGHT,NODEWIDTH,NODEDEPTH)/X))
+#define NODE_TEXCOORD(X) (1 / (MAX3(NODEHEIGHT, NODEWIDTH, NODEDEPTH) / X))
 
 /* How many units of texture coordinates a character displaces */
-#define FONT_TEXCOORD_S (1/(FONT_TEX_W/FONT_WIDTH))
-#define FONT_TEXCOORD_T (1/(FONT_TEX_H/FONT_HEIGHT))
+#define FONT_TEXCOORD_S (1 / (FONT_TEX_W / FONT_WIDTH))
+#define FONT_TEXCOORD_T (1 / (FONT_TEX_H / FONT_HEIGHT))
 
 /* How many pixels a character displaces on a 128x128 tile */
 #define FONT_DISPLACE_W ((FONT_WIDTH * NODEDEPTH) / TEXTURE_SIZE)
-#define FONT_DISPLACE_H ((FONT_HEIGHT* NODEHEIGHT) / TEXTURE_SIZE)
+#define FONT_DISPLACE_H ((FONT_HEIGHT * NODEHEIGHT) / TEXTURE_SIZE)
 
 #define MAX_CHARS 	4
-#define FONT_Z_OFFSET ((NODEHEIGHT-((MAX_CHARS+0)*FONT_DISPLACE_W))/2)
+#define FONT_Z_OFFSET	((NODEHEIGHT - ((MAX_CHARS + 0) * FONT_DISPLACE_W)) / 2)
 
 #define PNG_FRAMES	4
 #define PPM_FRAMES	3
@@ -159,8 +157,8 @@ struct datasrc {
 #define DS_DB		1
 
 struct vmode {
-	int		vm_clip;
-	struct fvec	vm_ndim;
+	int		 vm_clip;
+	struct fvec	 vm_ndim;		/* node dimensions */
 };
 
 struct fill {
@@ -177,7 +175,7 @@ struct fill {
 
 struct objhdr {
 	int		 oh_ref;
-	int		 oh_tref;
+	int		 oh_tref;		/* temporarily referenced */
 };
 
 #define JFL_OWNER	32
@@ -192,14 +190,14 @@ struct job {
 	char		 j_owner[JFL_OWNER];
 	char		 j_jname[JFL_NAME];
 	char		 j_queue[JFL_QUEUE];
-	int		 j_tmdur;	/* minutes */
-	int		 j_tmuse;	/* minutes */
+	int		 j_tmdur;		/* minutes */
+	int		 j_tmuse;		/* minutes */
 	int		 j_ncpus;
 };
 
 struct temp {
 	struct objhdr	 t_oh;
-	int		 t_cel;
+	int		 t_cel;			/* degrees celcius */
 	struct fill	 t_fill;
 	char		*t_name;
 };
@@ -219,8 +217,8 @@ struct node {
 	int		 n_state;
 	struct fill	*n_fillp;
 	int		 n_flags;
-	struct fvec	 n_wiv;		/* wired view position */
-	struct fvec	 n_swiv;	/* scaled */
+	struct fvec	 n_wiv;			/* wired view position */
+	struct fvec	 n_swiv;		/* scaled */
 	struct fvec	 n_physv;
 	struct fvec	*n_v;
 };
@@ -229,12 +227,12 @@ struct node {
 #define NF_SEL		(1<<1)
 
 struct state {
-	struct fvec	 st_v;
-	struct fvec	 st_lv;
+	struct fvec	 st_v;			/* camera position */
+	struct fvec	 st_lv;			/* camera look direction */
 	int		 st_opts;
-	int		 st_mode;
-	int		 st_vmode;
-	struct ivec	 st_winsp;
+	int		 st_mode;		/* data mode */
+	int		 st_vmode;		/* view mode */
+	struct ivec	 st_winsp;		/* wired node spacing */
 	int		 st_rf;
 #define st_x st_v.fv_x
 #define st_y st_v.fv_y
@@ -539,7 +537,7 @@ extern struct objlist	 job_list, temp_list, fail_list;
 extern struct fail	 fail_notfound;
 extern struct temp	 temp_notfound;
 
-extern int		 total_failures;	/* total shared among all nodes */
+extern int		 total_failures;		/* total among all nodes */
 
 extern GLint		 cluster_dl, ground_dl, select_dl;
 extern int		 render_mode;
@@ -556,15 +554,13 @@ extern struct dbh	 dbh;
 extern struct selnodes	 selnodes;
 extern size_t		 nselnodes;
 
-extern struct ivec	 widim;
+extern struct ivec	 widim;				/* wired cluster dimensions */
 extern int		 mode_data_clean;
 extern int		 selnode_clean;
-extern struct fvec	 wivstart, wivdim;
+extern struct fvec	 wivstart, wivdim;		/* repeat position & dim */
 extern struct temp_range temp_map[14]; /* XXX */
 
-extern float		 tx, tlx, ox, olx;
-extern float		 ty, tly, oy, oly;
-extern float		 tz, tlz, oz, olz;
+extern struct fvec	 tv, tlv;
 
 extern int		 flyby_mode;
 extern int		 capture_mode;

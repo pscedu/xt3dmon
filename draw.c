@@ -49,22 +49,22 @@ draw(void)
 		sc.fv_x = sc.fv_y = sc.fv_z = 1.0;
 		sc_l.fv_x = sc_l.fv_y = sc_l.fv_z = 1.0;
 
-		tween_probe(&st.st_x, tx, TWEEN_MAX_POS, &sc.fv_x, &want.fv_w);
-		tween_probe(&st.st_y, ty, TWEEN_MAX_POS, &sc.fv_y, &want.fv_h);
-		tween_probe(&st.st_z, tz, TWEEN_MAX_POS, &sc.fv_z, &want.fv_d);
-		tween_probe(&st.st_lx, tlx, TWEEN_MAX_LOOK, &sc_l.fv_x, &want_l.fv_w);
-		tween_probe(&st.st_ly, tly, TWEEN_MAX_LOOK, &sc_l.fv_y, &want_l.fv_h);
-		tween_probe(&st.st_lz, tlz, TWEEN_MAX_LOOK, &sc_l.fv_z, &want_l.fv_d);
+		tween_probe(&st.st_x, tv.fv_x, TWEEN_MAX_POS, &sc.fv_x, &want.fv_w);
+		tween_probe(&st.st_y, tv.fv_y, TWEEN_MAX_POS, &sc.fv_y, &want.fv_h);
+		tween_probe(&st.st_z, tv.fv_z, TWEEN_MAX_POS, &sc.fv_z, &want.fv_d);
+		tween_probe(&st.st_lx, tlv.fv_x, TWEEN_MAX_LOOK, &sc_l.fv_x, &want_l.fv_w);
+		tween_probe(&st.st_ly, tlv.fv_y, TWEEN_MAX_LOOK, &sc_l.fv_y, &want_l.fv_h);
+		tween_probe(&st.st_lz, tlv.fv_z, TWEEN_MAX_LOOK, &sc_l.fv_z, &want_l.fv_d);
 
 		scale = MIN3(sc.fv_x, sc.fv_y, sc.fv_z);
 		scale_l = MIN3(sc_l.fv_x, sc_l.fv_y, sc_l.fv_z);
 
-		tween_recalc(&st.st_x, tx, scale, want.fv_w);
-		tween_recalc(&st.st_y, ty, scale, want.fv_h);
-		tween_recalc(&st.st_z, tz, scale, want.fv_d);
-		tween_recalc(&st.st_lx, tlx, scale_l, want_l.fv_w);
-		tween_recalc(&st.st_ly, tly, scale_l, want_l.fv_h);
-		tween_recalc(&st.st_lz, tlz, scale_l, want_l.fv_d);
+		tween_recalc(&st.st_x, tv.fv_x, scale, want.fv_w);
+		tween_recalc(&st.st_y, tv.fv_y, scale, want.fv_h);
+		tween_recalc(&st.st_z, tv.fv_z, scale, want.fv_d);
+		tween_recalc(&st.st_lx, tlv.fv_x, scale_l, want_l.fv_w);
+		tween_recalc(&st.st_ly, tlv.fv_y, scale_l, want_l.fv_h);
+		tween_recalc(&st.st_lz, tlv.fv_z, scale_l, want_l.fv_d);
 
 		if (want.fv_w || want.fv_h || want.fv_d ||
 		    want_l.fv_w || want_l.fv_h || want_l.fv_d)

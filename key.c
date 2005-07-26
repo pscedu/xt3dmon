@@ -30,17 +30,17 @@ keyh_actflyby(__unused unsigned char key, __unused int u, __unused int v)
 	if (key == ' ') {
 		st.st_opts ^= OP_STOP;
 		if (st.st_opts & OP_STOP) {
-			stopv.fv_x = tx;  stoplv.fv_x = tlx;
-			stopv.fv_y = ty;  stoplv.fv_y = tly;
-			stopv.fv_z = tz;  stoplv.fv_z = tlz;
+			stopv.fv_x = tv.fv_x;  stoplv.fv_x = tlv.fv_x;
+			stopv.fv_y = tv.fv_y;  stoplv.fv_y = tlv.fv_y;
+			stopv.fv_z = tv.fv_z;  stoplv.fv_z = tlv.fv_z;
 
-			tx = st.st_x;  tlx = st.st_lx;
-			ty = st.st_y;  tly = st.st_ly;
-			tz = st.st_z;  tlz = st.st_lz;
+			tv.fv_x = st.st_x;  tlv.fv_x = st.st_lx;
+			tv.fv_y = st.st_y;  tlv.fv_y = st.st_ly;
+			tv.fv_z = st.st_z;  tlv.fv_z = st.st_lz;
 		} else {
-			tx = stopv.fv_x;  tlx = stoplv.fv_x;
-			ty = stopv.fv_y;  tly = stoplv.fv_y;
-			tz = stopv.fv_z;  tlz = stoplv.fv_z;
+			tv.fv_x = stopv.fv_x;  tlv.fv_x = stoplv.fv_x;
+			tv.fv_y = stopv.fv_y;  tlv.fv_y = stoplv.fv_y;
+			tv.fv_z = stopv.fv_z;  tlv.fv_z = stoplv.fv_z;
 		}
 		return;
 	}

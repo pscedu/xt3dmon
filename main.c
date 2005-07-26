@@ -39,9 +39,8 @@ int			 flyby_mode = FBM_OFF;
 int			 capture_mode = PNG_FRAMES;
 int			 font_id;
 struct ivec		 widim;
-float			 tx = STARTX, tlx = STARTLX, ox = STARTX, olx = STARTLX;
-float			 ty = STARTY, tly = STARTLY, oy = STARTY, oly = STARTLY;
-float			 tz = STARTZ, tlz = STARTLZ, oz = STARTZ, olz = STARTLZ;
+struct fvec		 tv = { STARTX, STARTY, STARTZ };
+struct fvec		 tlv = { STARTLX, STARTLY, STARTLZ };
 GLint			 cluster_dl, ground_dl, select_dl;
 struct timeval		 lastsync;
 long			 fps = 50;
@@ -142,9 +141,9 @@ refresh_state(int oldopts)
 
 	/* Restore tweening state. */
 	if (diff & OP_TWEEN) {
-		ox = tx = st.st_x;  olx = tlx = st.st_lx;
-		oy = ty = st.st_y;  oly = tly = st.st_ly;
-		oz = tz = st.st_z;  olz = tlz = st.st_lz;
+		tv.fv_x = st.st_x;  tlv.fv_x = st.st_lx;
+		tv.fv_y = st.st_y;  tlv.fv_y = st.st_ly;
+		tv.fv_z = st.st_z;  tlv.fv_z = st.st_lz;
 	}
 	if (diff & (OP_BLEND | OP_TEX))
 		restore_textures();

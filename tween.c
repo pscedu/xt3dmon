@@ -34,21 +34,21 @@ tween_recalc(float *cur, float stop, float scale, float want)
 	}
 }
 
-static float sx, sy, sz, slx, sly, slz;
+static struct fvec sv, slv;
 
 void
 tween_push(int opts)
 {
 	if (st.st_opts & OP_TWEEN) {
 		if (opts & TWF_POS) {
-			ox = st.st_x;  sx = st.st_x;  st.st_x = tx;
-			oy = st.st_y;  sy = st.st_y;  st.st_y = ty;
-			oz = st.st_z;  sz = st.st_z;  st.st_z = tz;
+			sv.fv_x = st.st_x;  st.st_x = tv.fv_x;
+			sv.fv_y = st.st_y;  st.st_y = tv.fv_y;
+			sv.fv_z = st.st_z;  st.st_z = tv.fv_z;
 		}
 		if (opts & TWF_LOOK) {
-			olx = st.st_lx;  slx = st.st_lx;  st.st_lx = tlx;
-			oly = st.st_ly;  sly = st.st_ly;  st.st_ly = tly;
-			olz = st.st_lz;  slz = st.st_lz;  st.st_lz = tlz;
+			slv.fv_x = st.st_lx;  st.st_lx = tlv.fv_x;
+			slv.fv_y = st.st_ly;  st.st_ly = tlv.fv_y;
+			slv.fv_z = st.st_lz;  st.st_lz = tlv.fv_z;
 		}
 	}
 }
@@ -58,14 +58,14 @@ tween_pop(int opts)
 {
 	if (st.st_opts & OP_TWEEN) {
 		if (opts & TWF_POS) {
-			tx = st.st_x;  st.st_x = sx;
-			ty = st.st_y;  st.st_y = sy;
-			tz = st.st_z;  st.st_z = sz;
+			tv.fv_x = st.st_x;  st.st_x = sv.fv_x;
+			tv.fv_y = st.st_y;  st.st_y = sv.fv_y;
+			tv.fv_z = st.st_z;  st.st_z = sv.fv_z;
 		}
 		if (opts & TWF_LOOK) {
-			tlx = st.st_lx;  st.st_lx = slx;
-			tly = st.st_ly;  st.st_ly = sly;
-			tlz = st.st_lz;  st.st_lz = slz;
+			tlv.fv_x = st.st_lx;  st.st_lx = slv.fv_x;
+			tlv.fv_y = st.st_ly;  st.st_ly = slv.fv_y;
+			tlv.fv_z = st.st_lz;  st.st_lz = slv.fv_z;
 		}
 	} else {
 		cam_update();

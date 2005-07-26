@@ -94,9 +94,9 @@ void
 cam_goto(struct fvec *v)
 {
 	if (st.st_opts & OP_TWEEN) {
-		tx = v->fv_x;
-		ty = v->fv_y;
-		tz = v->fv_z;
+		tv.fv_x = v->fv_x;
+		tv.fv_y = v->fv_y;
+		tv.fv_z = v->fv_z;
 	} else {
 		st.st_x = v->fv_x;
 		st.st_y = v->fv_y;
