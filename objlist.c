@@ -171,20 +171,51 @@ found:
 	return (ohp);
 }
 
+#define HUE_MIN 0
+#define HUE_MAX 360
+#define SAT_MIN 0.3
+#define SAT_MAX 1.0
+#define VAL_MIN 0.5
+#define VAL_MAX 1.0
+/*
+** For optimal colors we would like to chose colors
+** in HSV mode where Hue ranges from 0 - 360, Saturation
+** ranges from 30% - 100%, and Value ranges from 50% -
+** 100%
+*/
 void
 getcol(int n, size_t total, struct fill *fillp)
 {
+#if 0
 	double div;
-
+	
 	if (total == 1)
 		div = 0.0;
 	else
 		div = n / (double)(total - 1);
-
 	fillp->f_r = cos(div);
 	fillp->f_g = sin(div) * sin(div);
 	fillp->f_b = fabs(tan(div + PI * 3/4));
+#endif
+
+	float hinc, sinc, vinc;
+
+	/* XXX - account for predefined node colors */
+
+
+	/* Divide color wheel up evenly */
+	hinc = 360.0 / (float)(total);
+
+	/* These could be random ... */
+	sinc = (SAT_MAX - SAT_MIN) / (float)(total);
+	vinc = (VAL_MAX - VAL_MIN) / (float)(total);
+
+	fillp->f_h = hinc * n + HUE_MIN;
+	fillp->f_s = sinc * n + SAT_MIN;
+	fillp->f_v = vinc * n + VAL_MIN;
 	fillp->f_a = 1.0;
+
+	HSV2RGB(fillp);
 }
 
 void
