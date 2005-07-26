@@ -554,6 +554,7 @@ extern struct pinfo	 pinfo[];
 extern struct vmode	 vmodes[];
 extern struct dbh	 dbh;
 extern struct selnodes	 selnodes;
+extern size_t		 nselnodes;
 
 extern struct ivec	 widim;
 extern int		 mode_data_clean;
