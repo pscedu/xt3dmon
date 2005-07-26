@@ -218,7 +218,6 @@ struct node {
 	struct fail	*n_fail;
 	int		 n_state;
 	struct fill	*n_fillp;
-	struct fill	*n_ofillp;
 	int		 n_flags;
 	struct fvec	 n_wiv;		/* wired view position */
 	struct fvec	 n_swiv;	/* scaled */
@@ -428,6 +427,7 @@ void			 draw_node(struct node *, int);
 void			 draw_node_pipes(struct fvec *);
 void			 make_ground(void);
 void			 make_cluster(void);
+void			 make_select(void);
 float			 snap_to_grid(float, float, float);
 
 /* flyby.c */
@@ -462,7 +462,6 @@ void 			*load_png(char *);
 struct node		*node_for_nid(int);
 void			 refresh_state(int);
 void			 rebuild(int);
-void			 select_node(struct node *);
 void			 idle_govern(void);
 void			 idle(void);
 void			 update_textures(void);
@@ -508,6 +507,11 @@ void			 parse_mem(void);
 
 /* select.c */
 void			 sel_toggle(struct node *);
+void			 sel_clear(void);
+void			 sel_add(struct node *);
+void			 sel_insert(struct node *);
+int			 sel_del(struct node *);
+void			 sel_set(struct node *);
 
 /* tween.c */
 void			 tween_push(int);
@@ -553,6 +557,7 @@ extern struct selnodes	 selnodes;
 
 extern struct ivec	 widim;
 extern int		 mode_data_clean;
+extern int		 selnode_clean;
 extern struct fvec	 wivstart, wivdim;
 extern struct temp_range temp_map[14]; /* XXX */
 

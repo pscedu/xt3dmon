@@ -30,8 +30,6 @@
 #define FPS_TO_USEC(X)	(1000000/X)	/* Convert FPS to microseconds. */
 #define GOVERN_FPS	15		/* FPS governor. */
 
-#define SELNODE_GAP	(0.1f)
-
 struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 struct node		*invmap[NID_MAX];
 int			 datasrc = DS_FILE;
@@ -100,7 +98,6 @@ struct job_state jstates[] = {
 	{ "Checking",		{ 0.00f, 1.00f, 0.00f, 1.00f, 0, GL_INTENSITY} }	/* Green */
 };
 
-struct fill selnodefill = { 0.20f, 0.40f, 0.60f, 1.00f, 0, 0 };		/* Dark blue */
 struct node *selnode;
 
 void
@@ -153,86 +150,6 @@ refresh_state(int oldopts)
 		restore_textures();
 	if (diff & OP_GOVERN)
 		glutIdleFunc(st.st_opts & OP_GOVERN ? idle_govern : idle);
-}
-
-void
-select_node(struct node *n)
-{
-	struct fvec v, pos;
-
-	if (selnode == n)
-		return;
-	selnode = n;
-
-	if (select_dl)
-		glDeleteLists(select_dl, 1);
-	if (n == NULL) {
-		select_dl = 0;
-		panel_hide(PANEL_NINFO);
-		return;
-	}
-	panel_show(PANEL_NINFO);
-
-	select_dl = glGenLists(1);
-	glNewList(select_dl, GL_COMPILE);
-
-	if (n->n_fillp != &selnodefill) {	/* XXX:  is this test needed? */
-		n->n_ofillp = n->n_fillp;
-		n->n_fillp = &selnodefill;
-	}
-
-	vmodes[st.st_vmode].vm_ndim.fv_w += SELNODE_GAP * 2;
-	vmodes[st.st_vmode].vm_ndim.fv_h += SELNODE_GAP * 2;
-	vmodes[st.st_vmode].vm_ndim.fv_d += SELNODE_GAP * 2;
-
-	switch (st.st_vmode) {
-	case VM_WIRED:
-		pos.fv_x = n->n_wiv.fv_x * st.st_winsp.iv_x + wivstart.fv_x - SELNODE_GAP;
-		pos.fv_y = n->n_wiv.fv_y * st.st_winsp.iv_y + wivstart.fv_y - SELNODE_GAP;
-		pos.fv_z = n->n_wiv.fv_z * st.st_winsp.iv_z + wivstart.fv_z - SELNODE_GAP;
-		for (v.fv_x = 0.0f; v.fv_x < wivdim.fv_w; v.fv_x += WI_WIDTH)
-			for (v.fv_y = 0.0f; v.fv_y < wivdim.fv_h; v.fv_y += WI_HEIGHT)
-				for (v.fv_z = 0.0f; v.fv_z < wivdim.fv_d; v.fv_z += WI_DEPTH) {
-					glPushMatrix();
-					glTranslatef(
-					    pos.fv_x + v.fv_x,
-					    pos.fv_y + v.fv_y,
-					    pos.fv_z + v.fv_z);
-					if (st.st_opts & OP_SELPIPES &&
-					    (st.st_opts & OP_PIPES) == 0)
-						draw_node_pipes(&vmodes[st.st_vmode].vm_ndim);
-		
-					draw_node(n, NDF_DONTPUSH | NDF_NOOPTS);
-					glPopMatrix();
-				}
-		break;
-	default:
-		n->n_v->fv_x -= SELNODE_GAP;
-		n->n_v->fv_y -= SELNODE_GAP;
-		n->n_v->fv_z -= SELNODE_GAP;
-
-		glPushMatrix();
-		glTranslatef(n->n_v->fv_x, n->n_v->fv_y, n->n_v->fv_z);
-		if (st.st_vmode != VM_PHYSICAL &&
-		    st.st_opts & OP_SELPIPES && (st.st_opts & OP_PIPES) == 0)
-			draw_node_pipes(&vmodes[st.st_vmode].vm_ndim);
-	
-		draw_node(n, NDF_DONTPUSH | NDF_NOOPTS);
-		glPopMatrix();
-
-		n->n_v->fv_x += SELNODE_GAP;
-		n->n_v->fv_y += SELNODE_GAP;
-		n->n_v->fv_z += SELNODE_GAP;
-		break;
-	}
-
-	vmodes[st.st_vmode].vm_ndim.fv_w -= SELNODE_GAP * 2;
-	vmodes[st.st_vmode].vm_ndim.fv_h -= SELNODE_GAP * 2;
-	vmodes[st.st_vmode].vm_ndim.fv_d -= SELNODE_GAP * 2;
-
-	n->n_fillp = n->n_ofillp;
-
-	glEndList();
 }
 
 void
@@ -395,17 +312,8 @@ rebuild(int opts)
 		make_ground();
 	if (opts & RF_CLUSTER)
 		make_cluster();
-	if (opts & RF_SELNODE) {
-		struct node *n;
-
-		/*
-		 * Hack around optimization of not rebuilding
-		 * the selected node when it is already selected.
-		 */
-		n = selnode;
-		selnode = NULL;
-		select_node(n);
-	}
+	if (opts & RF_SELNODE)
+		make_select();
 }
 
 int

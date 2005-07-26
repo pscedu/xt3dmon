@@ -21,15 +21,16 @@ int	 render_mode = RM_RENDER;
 void
 mouseh_null(__unused int button, __unused int state, __unused int u, __unused int v)
 {
+//	spkey = glutGetModifiers();
 }
 
 void
 mouseh_default(__unused int button, __unused int state, int u, int v)
 {
 	spkey = glutGetModifiers();
-	if (spkey == 0 &&
-	    button == GLUT_LEFT_BUTTON &&
-	    state == GLUT_DOWN)
+//	if (spkey == 0 &&
+//	    button == GLUT_LEFT_BUTTON &&
+//	    state == GLUT_DOWN)
 		render_mode = RM_SELECT;
 	lastu = u;
 	lastv = v;
@@ -137,8 +138,23 @@ sel_record_process(GLint nrecs)
 		}
 
 	}
-	if (found && (n = node_for_nid(nid)) != NULL)
-		select_node(n);
+	if (found && (n = node_for_nid(nid)) != NULL) {
+		switch (spkey) {
+		case GLUT_ACTIVE_SHIFT:
+			sel_add(n);
+			break;
+		case GLUT_ACTIVE_CTRL:
+			sel_del(n);
+			break;
+		case 0:
+			sel_set(n);
+			break;
+		}
+		if (SLIST_EMPTY(&selnodes))
+			panel_hide(PANEL_NINFO);
+		else
+			panel_show(PANEL_NINFO);
+	}
 }
 
 void

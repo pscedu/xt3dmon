@@ -22,6 +22,7 @@ sel_insert(struct node *n)
 	SLIST_INSERT_HEAD(&selnodes, sn, sn_next);
 	if (flyby_mode == FBM_REC)
 		flyby_writeselnode(n->n_nid);
+	st.st_rf |= RF_SELNODE;
 }
 
 /*
@@ -38,6 +39,25 @@ sel_add(struct node *n)
 	sel_insert(n);
 }
 
+void
+sel_clear(void)
+{
+	struct selnode *sn, *next;
+
+	if (SLIST_EMPTY(&selnodes))
+		return;
+
+	for (sn = SLIST_FIRST(&selnodes);
+	    sn != SLIST_END(&selnodes); sn = next) {
+		next = SLIST_NEXT(sn, sn_next);
+		free(sn);
+		if (flyby_mode == FBM_REC)
+			flyby_writeselnode(sn->sn_nodep->n_nid);
+	}
+	SLIST_INIT(&selnodes);
+	st.st_rf |= RF_SELNODE;
+}
+
 int
 sel_del(struct node *n)
 {
@@ -45,9 +65,11 @@ sel_del(struct node *n)
 
 	SLIST_FOREACH_PREVPTR(sn, prev, &selnodes, sn_next)
 		if (sn->sn_nodep == n) {
-			SLIST_REMOVE_AFTER(*prev, sn_next);
+			*prev = SLIST_NEXT(sn, sn_next);
+			free(sn);
 			if (flyby_mode == FBM_REC)
 				flyby_writeselnode(n->n_nid);
+			st.st_rf |= RF_SELNODE;
 			return (1);
 		}
 	return (0);
@@ -58,4 +80,11 @@ sel_toggle(struct node *n)
 {
 	if (!sel_del(n))
 		sel_insert(n);
+}
+
+void
+sel_set(struct node *n)
+{
+	sel_clear();
+	sel_insert(n);
 }
