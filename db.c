@@ -4,7 +4,10 @@
 #define _GNU_SOURCE	/* asprintf */
 #endif
 
+#include <err.h>
 #include <limits.h>
+#include <stdio.h>
+
 #include <mysql.h>
 
 #include "mon.h"
