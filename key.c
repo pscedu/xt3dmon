@@ -360,16 +360,18 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 	case 'm':
 		glutKeyboardFunc(keyh_mode);
 		break;
-	case 'O':
+	case 'O': {
+		struct fvec v;
+
+		v.fv_x = v.fv_y = v.fv_z = 0.0f;
 		tween_push(TWF_LOOK | TWF_POS);
-		st.st_x = 0.0f;
-		st.st_y = 0.0f;
-		st.st_z = 0.0f;
+		cam_goto(&v);
 		st.st_lx = 1.0f;
 		st.st_ly = 0.0f;
 		st.st_lz = 0.0f;
 		tween_pop(TWF_LOOK | TWF_POS);
 		break;
+	    }
 	case 'o':
 		glutKeyboardFunc(keyh_option);
 		break;
