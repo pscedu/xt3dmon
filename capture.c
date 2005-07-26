@@ -1,10 +1,14 @@
 /* $Id$ */
 
 #include <sys/param.h>
+
 #include <err.h>
-#include <stdio.h>
 #include <math.h>
 #include <png.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "mon.h"
 
 #ifdef __APPLE_CC__
