@@ -33,73 +33,56 @@ uinpcb_goto(void)
 	int mod;
 
 	s = buf_get(&uinp.uinp_buf);
-	l = strtol(s, NULL, 0);
+	l = strtol(s, NULL, 10);
 	if (l <= 0 || l > NID_MAX || !isdigit(*s))
 		return;
 	nid = (int)l;
 
 	if ((n = node_for_nid(nid)) == NULL)
 		return;
-
-#if 0
-	/* Select the node */
-	selnode = n;
-	st.st_rf = RF_SELNODE;
-#endif
+	sel_add(n);
 
 	cv = *n->n_v;
-	tween_push(TWF_LOOK);
+	tween_push(TWF_LOOK | TWF_POS);
+	switch (st.st_vmode) {
+	/* Arranged as nodeid is:
+	      -------     -------
+	      |     |     |     |
+	      |  3  |     |  2  |
+	      -------     -------
 
-	switch(st.st_vmode) {
-		
-		/* Arranged as nodeid is:
-		      -------     -------
-		      |     |     |     |
-		      |  3  |     |  2  |
-		      -------     -------
+	   -------     -------
+	   |     |     |     |
+	   |  0  |     |  1  |
+	   -------     -------
+	*/
+	case VM_PHYSICAL:
+		/* Find which side of the blade it's on */
+		mod = (n->n_nid + 1) % 4; /* XXX:  wrong, should use address of n */
 
-		   -------     -------
-		   |     |     |     |
-		   |  0  |     |  1  |
-		   -------     -------
-		*/
-		case VM_PHYSICAL:
+		st.st_lx = st.st_ly = 0.0;
+		cv.fv_y += 0.5 * NODEHEIGHT;
 
-			/* Find which side of the blade it's on */
-			mod = (n->n_nid + 1) % 4;
-
-			st.st_lx = st.st_ly = 0.0;
-			cv.fv_y += 0.5 * NODEHEIGHT;
-
-			/* Right side (positive z) */
-			if(mod == 2 || mod == 3) {
-
-				/* Change z and look vector */
-				cv.fv_z += NODEDEPTH + GOTO_DIST_PHYS;
-				st.st_lz = -1.0;
-
-			} else {
-				cv.fv_z -= GOTO_DIST_PHYS;
-				st.st_lz = 1.0;
-			}
-
-			break;
-
-		case VM_WIRED:
-		case VM_WIREDONE:
-
-			/* Set to the front where the label will be */
-			cv.fv_x -= GOTO_DIST_LOG;
-			cv.fv_y += 0.5*NODEHEIGHT;
-			cv.fv_z += 0.5*NODEWIDTH;
-			st.st_ly = st.st_lz = 0.0;
-			st.st_lx = 1.0;
-			break;
-
-		default:
-			break;
+		/* Right side (positive z) */
+		if (mod == 2 || mod == 3) {
+			/* Change z and look vector */
+			cv.fv_z += NODEDEPTH + GOTO_DIST_PHYS;
+			st.st_lz = -1.0;
+		} else {
+			cv.fv_z -= GOTO_DIST_PHYS;
+			st.st_lz = 1.0;
+		}
+		break;
+	case VM_WIRED:
+	case VM_WIREDONE:
+		/* Set to the front where the label will be */
+		cv.fv_x -= GOTO_DIST_LOG;
+		cv.fv_y += 0.5*NODEHEIGHT;
+		cv.fv_z += 0.5*NODEWIDTH;
+		st.st_ly = st.st_lz = 0.0;
+		st.st_lx = 1.0;
+		break;
 	}
-
-	tween_pop(TWF_LOOK);
 	cam_goto(&cv);
+	tween_pop(TWF_LOOK | TWF_POS);
 }
