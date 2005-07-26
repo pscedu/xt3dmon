@@ -315,9 +315,11 @@ HSV2RGB(struct fill *c)
 	float f, p, q, t;
 	int i;
 
-	if (s == 0)
-		h = v;
-	else {
+	if (s == 0) {
+		c->f_r = v;
+		c->f_g = v;
+		c->f_b = v;
+	} else {
 		if (h == 360)
 			h = 0;
 		h /= 60;
