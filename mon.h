@@ -428,6 +428,7 @@ void			 draw_node(struct node *, int);
 void			 draw_node_pipes(struct fvec *);
 void			 make_ground(void);
 void			 make_cluster(void);
+float			 snap_to_grid(float, float, float);
 
 /* flyby.c */
 void 			 flyby_begin(int);
