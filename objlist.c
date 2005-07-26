@@ -171,12 +171,6 @@ found:
 	return (ohp);
 }
 
-#define HUE_MIN 0
-#define HUE_MAX 360
-#define SAT_MIN 0.3
-#define SAT_MAX 1.0
-#define VAL_MIN 0.5
-#define VAL_MAX 1.0
 /*
 ** For optimal colors we would like to chose colors
 ** in HSV mode where Hue ranges from 0 - 360, Saturation
