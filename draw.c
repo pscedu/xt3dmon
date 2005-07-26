@@ -512,9 +512,9 @@ draw_clusters_wired(void)
 	wivstart.fv_y = y;
 	wivstart.fv_z = z;
 
-	dim.fv_w = WI_WIDTH;
-	dim.fv_h = WI_HEIGHT;
-	dim.fv_d = WI_DEPTH;
+	dim.fv_w = WI_WIDTH - 0.01;
+	dim.fv_h = WI_HEIGHT - 0.01;
+	dim.fv_d = WI_DEPTH - 0.01;
 
 	xnum = (st.st_x + clip - x + WI_WIDTH - 1) / WI_WIDTH;
 	znum = (st.st_z + clip - z + WI_DEPTH - 1) / WI_DEPTH;
