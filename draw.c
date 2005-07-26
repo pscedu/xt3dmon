@@ -79,7 +79,7 @@ draw(void)
 		    st.st_z + clip > wivstart.fv_z + wivdim.fv_d ||
 		    st.st_z - clip < wivstart.fv_z) {
 			panel_status_addinfo("Rebuild triggered\n");
-	//		st.st_rf |= RF_CLUSTER;
+			st.st_rf |= RF_CLUSTER;
 		}
 
 	if (st.st_rf) {
