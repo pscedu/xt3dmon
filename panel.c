@@ -451,6 +451,7 @@ panel_refresh_legend(struct panel *p)
 void
 panel_refresh_ninfo(struct panel *p)
 {
+	struct selnode *sn;
 	struct node *n;
 
 	if (selnode_clean & PANEL_NINFO && (SLIST_EMPTY(&selnodes) ||
@@ -464,6 +465,61 @@ panel_refresh_ninfo(struct panel *p)
 		return;
 	}
 
+	if (nselnodes > 1) {
+		char *label, nids[BUFSIZ], data[BUFSIZ];
+		size_t nids_pos, data_pos;
+
+		nids[0] = data[0] = '\0';
+		nids_pos = data_pos = 0;
+		SLIST_FOREACH(sn, &selnodes, sn_next) {
+			n = sn->sn_nodep;
+			nids_pos += snprintf(nids + nids_pos,
+			    sizeof(nids) - nids_pos, ",%d", n->n_nid);
+			if (nids_pos >= sizeof(nids))
+				break;
+			switch (st.st_mode) {
+			case SM_JOBS:
+				if (n->n_state == JST_USED)
+					data_pos += snprintf(data + data_pos,
+					    sizeof(data) - data_pos, ",%d",
+					    n->n_job->j_id);
+				break;
+			case SM_TEMP:
+				data_pos += snprintf(data + data_pos,
+				    sizeof(data) - data_pos, ",%d",
+				    n->n_temp->t_cel);
+				break;
+			case SM_FAIL:
+				data_pos += snprintf(data + data_pos,
+				    sizeof(data) - data_pos, ",%d",
+				    n->n_fail->f_fails);
+				break;
+			}
+			if (data_pos >= sizeof(data))
+				break;
+		}
+
+		label = NULL; /* gcc */
+		switch (st.st_mode) {
+		case SM_JOBS:
+			label = "Job IDs";
+			break;
+		case SM_TEMP:
+			label = "Temperatures";
+			break;
+		case SM_FAIL:
+			label = "Failures";
+			break;
+		}
+
+		panel_set_content(p,
+		    "Selected %d nodes\n"
+		    "Node IDs: %s\n"
+		    "%s: %s",
+		    nselnodes, nids + 1,
+		    label, data + 1);
+		return;
+	}
 	n = SLIST_FIRST(&selnodes)->sn_nodep;
 	switch (st.st_mode) {
 	case SM_JOBS:
