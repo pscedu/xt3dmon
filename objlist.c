@@ -2,8 +2,6 @@
 
 #include <sys/param.h>
 
-#include <math.h>
-
 #include "mon.h"
 
 #define JINCR		10

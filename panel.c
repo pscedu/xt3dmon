@@ -14,8 +14,6 @@
 #define _GNU_SOURCE /* asprintf, disgusting */
 #endif
 
-#include <sys/types.h>
-
 #ifdef __APPLE_CC__
 # include <OpenGL/gl.h>
 # include <GLUT/glut.h>
@@ -24,13 +22,9 @@
 # include <GL/freeglut.h>
 #endif
 
-#include <ctype.h>
-#include <err.h>
 #include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include "buf.h"
 #include "cdefs.h"
