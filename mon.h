@@ -1,7 +1,9 @@
 /* $Id$ */
 
 #include <sys/queue.h>
+
 #include <stdio.h>
+
 #include <mysql.h>
 
 #ifdef __APPLE_CC__
