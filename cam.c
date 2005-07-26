@@ -117,11 +117,17 @@ cam_revolve(int d)
 		v.fv_z = ZCENTER;
 		break;
 	case VM_WIRED:
-	case VM_WIREDONE:
-		v.fv_x = st.st_x + st.st_lx * 100;
-		v.fv_y = st.st_y + st.st_ly * 100;
-		v.fv_z = st.st_z + st.st_lz * 100;
+	case VM_WIREDONE: {
+		float dist;
+
+		dist = MAX3(WI_WIDTH, WI_HEIGHT, WI_DEPTH);
+		if (st.st_vmode == VM_WIRED)
+			dist /= 3.0f;
+		v.fv_x = st.st_x + st.st_lx * dist;
+		v.fv_y = st.st_y + st.st_ly * dist;
+		v.fv_z = st.st_z + st.st_lz * dist;
 		break;
+	    }
 	}
 
 	r = sqrt(SQUARE(st.st_x - v.fv_x) + SQUARE(st.st_z - v.fv_z));
