@@ -341,6 +341,7 @@ HSV2RGB(struct fill *c)
 	}
 }
 
+#define MID(max, min)	((((max)-(min))/2.0)+min)
 /* Create a contrasting color */
 void
 rgb_contrast(struct fill *c)
@@ -353,19 +354,17 @@ rgb_contrast(struct fill *c)
 	if (c->f_h < 0)
 		c->f_h += 360;
 
-#if 0
-	/* Play with saturation */
-	c->f_s -= 0.6;
+	/* Sat should be [0.3-1.0] */
+	if (c->f_s < MID(SAT_MAX, SAT_MIN))
+		c->f_s = SAT_MAX;
+	else
+		c->f_s = SAT_MIN;
 
-	if (c->f_s < 0)
-		c->f_s += 1.0;
-
-	/* Play with value */
-	c->f_v -= 0.6;
-
-	if (c->f_v < 0)
-		c->f_v += 1.0;
-#endif
+	/* Val should be [0.5-1.0] */
+	if (c->f_v < MID(VAL_MAX, VAL_MIN))
+		c->f_v = VAL_MAX;
+	else
+		c->f_v = VAL_MIN;
 
 	HSV2RGB(c);
 }
