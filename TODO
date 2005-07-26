@@ -2,7 +2,7 @@ $Id$
 
 3. default the logid goto user input buffer to selnode
 8. add a fatal() function that is a wrapper over err() that breaks from
-  the DB
+  the DB, or register an atexit() to drop db conn
 10. random flyby/cycle focus jobs
 15. try #define __inline to see if it does anything
 16. stereo stuff
