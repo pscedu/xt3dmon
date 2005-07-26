@@ -127,6 +127,14 @@
 #define PNG_FRAMES	4
 #define PPM_FRAMES	3
 
+/* HSV Constants */
+#define HUE_MIN 0
+#define HUE_MAX 360
+#define SAT_MIN 0.3
+#define SAT_MAX 1.0
+#define VAL_MIN 0.5
+#define VAL_MAX 1.0
+
 #define FBM_OFF		0
 #define FBM_PLAY	1
 #define FBM_REC		2
