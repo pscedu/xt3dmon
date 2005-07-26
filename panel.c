@@ -22,9 +22,12 @@
 # include <GL/freeglut.h>
 #endif
 
+#include <err.h>
 #include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "buf.h"
 #include "cdefs.h"
