@@ -341,7 +341,8 @@ HSV2RGB(struct fill *c)
 	}
 }
 
-#define MID(max, min)	((((max)-(min))/2.0)+min)
+#define MID(max, min)	(((max) + (min)) / 2.0)
+
 /* Create a contrasting color */
 void
 rgb_contrast(struct fill *c)
