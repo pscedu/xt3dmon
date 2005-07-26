@@ -93,15 +93,9 @@ cam_move(int dir, float amt)
 void
 cam_goto(struct fvec *v)
 {
-	if (st.st_opts & OP_TWEEN) {
-		tv.fv_x = v->fv_x;
-		tv.fv_y = v->fv_y;
-		tv.fv_z = v->fv_z;
-	} else {
-		st.st_x = v->fv_x;
-		st.st_y = v->fv_y;
-		st.st_z = v->fv_z;
-	}
+	st.st_x = v->fv_x;
+	st.st_y = v->fv_y;
+	st.st_z = v->fv_z;
 }
 
 void
