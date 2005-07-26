@@ -74,8 +74,10 @@ draw(void)
 		    st.st_y + clip > wivstart.fv_y + wivdim.fv_h ||
 		    st.st_y - clip < wivstart.fv_y ||
 		    st.st_z + clip > wivstart.fv_z + wivdim.fv_d ||
-		    st.st_z - clip < wivstart.fv_z)
+		    st.st_z - clip < wivstart.fv_z) {
+			panel_status_addinfo("Rebuild triggered\n");
 			st.st_rf |= RF_CLUSTER;
+		}
 
 	if (st.st_rf) {
 		rebuild(st.st_rf);
@@ -468,6 +470,19 @@ draw_wired_frame(struct fvec *vp, struct fvec *dimp, struct fill *fillp)
 	glPopMatrix();
 }
 
+/* Snap to nearest grid */
+__inline float
+snap_to_grid(float n, float size, float clip)
+{
+	float adj;
+
+	adj = fmod(n - clip, size);
+	if(adj < 0)
+		adj += size;
+
+	return adj;
+}
+
 /*
  * Draw the cluster repeatedly till we reach the clipping plane.
  * Since we can see MIN(WI_CLIP*) away, we must construct a 3D space
@@ -477,7 +492,7 @@ __inline void
 draw_clusters_wired(void)
 {
 	int xnum, znum, col;
-	float x, y, z, adj;
+	float x, y, z;
 	struct fvec v, dim;
 
 	clip = MIN3(WI_CLIPX, WI_CLIPY, WI_CLIPZ);
@@ -486,21 +501,9 @@ draw_clusters_wired(void)
 	y = st.st_y - clip;
 	z = st.st_z - clip;
 
-	/* Snap to grid */
-	adj = fmod(x, WI_WIDTH);
-	if (adj < 0)
-		adj += WI_WIDTH;
-	x -= adj;
-
-	adj = fmod(y, WI_HEIGHT);
-	if (adj < 0)
-		adj += WI_HEIGHT;
-	y -= adj;
-
-	adj = fmod(z, WI_DEPTH);
-	if (adj < 0)
-		adj += WI_DEPTH;
-	z -= adj;
+	x -= snap_to_grid(x, WI_WIDTH, 0.0);
+	y -= snap_to_grid(y, WI_HEIGHT, 0.0);
+	z -= snap_to_grid(z, WI_DEPTH, 0.0);
 
 	wivstart.fv_x = x;
 	wivstart.fv_y = y;
