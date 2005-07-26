@@ -9,6 +9,7 @@
 #endif
 
 #include <limits.h>
+#include <stdlib.h>
 
 #include "cdefs.h"
 #include "mon.h"
