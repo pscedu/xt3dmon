@@ -40,44 +40,44 @@ cam_move(int dir, float amt)
 		break;
 	case CAMDIR_UP:
 	case CAMDIR_DOWN: {
-		struct vec cross, a, b, t;
+		struct fvec cross, a, b, t;
 		float mag;
 
-		a.v_x = st.st_lx;
-		a.v_y = st.st_ly;
-		a.v_z = st.st_lz;
-		mag = sqrt(SQUARE(a.v_x) + SQUARE(a.v_y) +
-		    SQUARE(a.v_z));
-		a.v_x /= mag;
-		a.v_y /= mag;
-		a.v_z /= mag;
+		a.fv_x = st.st_lx;
+		a.fv_y = st.st_ly;
+		a.fv_z = st.st_lz;
+		mag = sqrt(SQUARE(a.fv_x) + SQUARE(a.fv_y) +
+		    SQUARE(a.fv_z));
+		a.fv_x /= mag;
+		a.fv_y /= mag;
+		a.fv_z /= mag;
 
-		b.v_x = st.st_lz;
-		b.v_y = 0;
-		b.v_z = -st.st_lx;
-		mag = sqrt(SQUARE(b.v_x) + SQUARE(b.v_y) +
-		    SQUARE(b.v_z));
-		b.v_x /= mag;
-		b.v_y /= mag;
-		b.v_z /= mag;
+		b.fv_x = st.st_lz;
+		b.fv_y = 0;
+		b.fv_z = -st.st_lx;
+		mag = sqrt(SQUARE(b.fv_x) + SQUARE(b.fv_y) +
+		    SQUARE(b.fv_z));
+		b.fv_x /= mag;
+		b.fv_y /= mag;
+		b.fv_z /= mag;
 
 		if (dir == CAMDIR_DOWN)
 			SWAP(a, b, t);
 
 		/* Follow the normal to the look vector. */
-		cross.v_x = a.v_y * b.v_z - b.v_y * a.v_z;
-		cross.v_y = b.v_x * a.v_z - a.v_x * b.v_z;
-		cross.v_z = a.v_x * b.v_y - b.v_x * a.v_y;
+		cross.fv_x = a.fv_y * b.fv_z - b.fv_y * a.fv_z;
+		cross.fv_y = b.fv_x * a.fv_z - a.fv_x * b.fv_z;
+		cross.fv_z = a.fv_x * b.fv_y - b.fv_x * a.fv_y;
 
-		mag = sqrt(SQUARE(cross.v_x) + SQUARE(cross.v_y) +
-		    SQUARE(cross.v_z));
-		cross.v_x /= mag;
-		cross.v_y /= mag;
-		cross.v_z /= mag;
+		mag = sqrt(SQUARE(cross.fv_x) + SQUARE(cross.fv_y) +
+		    SQUARE(cross.fv_z));
+		cross.fv_x /= mag;
+		cross.fv_y /= mag;
+		cross.fv_z /= mag;
 
-		st.st_x += cross.v_x * amt;
-		st.st_y += cross.v_y * amt;
-		st.st_z += cross.v_z * amt;
+		st.st_x += cross.fv_x * amt;
+		st.st_y += cross.fv_y * amt;
+		st.st_z += cross.fv_z * amt;
 		break;
 	    }
 	}
@@ -91,17 +91,16 @@ cam_move(int dir, float amt)
  *	- respect obstructing objects in the viewing frame
  */
 void
-cam_goto(struct vec *v)
+cam_goto(struct fvec *v)
 {
-
 	if (st.st_opts & OP_TWEEN) {
-		tx = v->v_x;
-		ty = v->v_y;
-		tz = v->v_z;
+		tx = v->fv_x;
+		ty = v->fv_y;
+		tz = v->fv_z;
 	} else {
-		st.st_x = v->v_x;
-		st.st_y = v->v_y;
-		st.st_z = v->v_z;
+		st.st_x = v->fv_x;
+		st.st_y = v->fv_y;
+		st.st_z = v->fv_z;
 	}
 }
 
@@ -109,25 +108,25 @@ void
 cam_revolve(int d)
 {
 	float t, r, mag;
-	struct vec v;
+	struct fvec v;
 
 	switch (st.st_vmode) {
 	case VM_PHYSICAL:
-		v.v_x = XCENTER;
-		v.v_y = YCENTER;
-		v.v_z = ZCENTER;
+		v.fv_x = XCENTER;
+		v.fv_y = YCENTER;
+		v.fv_z = ZCENTER;
 		break;
 	case VM_WIRED:
 	case VM_WIREDONE:
-		v.v_x = st.st_x + st.st_lx * 100;
-		v.v_y = st.st_y + st.st_ly * 100;
-		v.v_z = st.st_z + st.st_lz * 100;
+		v.fv_x = st.st_x + st.st_lx * 100;
+		v.fv_y = st.st_y + st.st_ly * 100;
+		v.fv_z = st.st_z + st.st_lz * 100;
 		break;
 	}
 
-	r = sqrt(SQUARE(st.st_x - v.v_x) + SQUARE(st.st_z - v.v_z));
-	t = acosf((st.st_x - v.v_x) / r);
-	if (st.st_z < v.v_z)
+	r = sqrt(SQUARE(st.st_x - v.fv_x) + SQUARE(st.st_z - v.fv_z));
+	t = acosf((st.st_x - v.fv_x) / r);
+	if (st.st_z < v.fv_z)
 		t = 2.0f * PI - t;
 	t += .01f * (float)d;
 	if (t < 0)
@@ -137,10 +136,10 @@ cam_revolve(int d)
 	 * Maintain the magnitude of lx*lx + lz*lz.
 	 */
 	mag = sqrt(SQUARE(st.st_lx) + SQUARE(st.st_lz));
-	st.st_x = r * cos(t) + v.v_x;
-	st.st_z = r * sin(t) + v.v_z;
-	st.st_lx = (v.v_x - st.st_x) / r * mag;
-	st.st_lz = (v.v_z - st.st_z) / r * mag;
+	st.st_x = r * cos(t) + v.fv_x;
+	st.st_z = r * sin(t) + v.fv_z;
+	st.st_lx = (v.fv_x - st.st_x) / r * mag;
+	st.st_lz = (v.fv_z - st.st_z) / r * mag;
 }
 
 void

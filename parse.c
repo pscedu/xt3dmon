@@ -197,9 +197,9 @@ parse_physmap(void)
 		node = &nodes[r][cb][cg][m][n];
 		node->n_nid = nid;
 		invmap[nid] = node;
-		node->n_wiv.v_x = x;
-		node->n_wiv.v_y = y;
-		node->n_wiv.v_z = z;
+		node->n_wiv.fv_x = x;
+		node->n_wiv.fv_y = y;
+		node->n_wiv.fv_z = z;
 
 		if (x > widim.iv_w)
 			widim.iv_w = x;

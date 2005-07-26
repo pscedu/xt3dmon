@@ -562,7 +562,7 @@ panel_refresh_mem(struct panel *p)
 void
 panel_refresh_pos(struct panel *p)
 {
-	static struct vec v, lv;
+	static struct fvec v, lv;
 
 #if 0
 		if (st.st_opts & OP_TWEEN &&
@@ -573,19 +573,19 @@ panel_refresh_pos(struct panel *p)
 		else
 #endif
 
-	if (v.v_x == st.st_x && lv.v_x == st.st_lx &&
-	    v.v_y == st.st_y && lv.v_y == st.st_ly &&
-	    v.v_z == st.st_z && lv.v_z == st.st_lz &&
+	if (v.fv_x == st.st_x && lv.fv_x == st.st_lx &&
+	    v.fv_y == st.st_y && lv.fv_y == st.st_ly &&
+	    v.fv_z == st.st_z && lv.fv_z == st.st_lz &&
 	    panel_ready(p))
 		return;
 
-	v.v_x = st.st_x;
-	v.v_y = st.st_y;
-	v.v_z = st.st_z;
+	v.fv_x = st.st_x;
+	v.fv_y = st.st_y;
+	v.fv_z = st.st_z;
 
-	lv.v_x = st.st_lx;
-	lv.v_y = st.st_ly;
-	lv.v_z = st.st_lz;
+	lv.fv_x = st.st_lx;
+	lv.fv_y = st.st_ly;
+	lv.fv_z = st.st_lz;
 
 	panel_set_content(p, "Position (%.2f,%.2f,%.2f)\n"
 	    "Look (%.2f,%.2f,%.2f)", st.st_x, st.st_y, st.st_z,

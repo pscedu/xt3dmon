@@ -11,7 +11,7 @@
 #define TRANS_INC	0.10
 
 struct uinput uinp;
-struct vec stopv, stoplv;
+struct fvec stopv, stoplv;
 
 void
 spkeyh_null(__unused int key, __unused int u, __unused int v)
@@ -30,17 +30,17 @@ keyh_actflyby(__unused unsigned char key, __unused int u, __unused int v)
 	if (key == ' ') {
 		st.st_opts ^= OP_STOP;
 		if (st.st_opts & OP_STOP) {
-			stopv.v_x = tx;  stoplv.v_x = tlx;
-			stopv.v_y = ty;  stoplv.v_y = tly;
-			stopv.v_z = tz;  stoplv.v_z = tlz;
+			stopv.fv_x = tx;  stoplv.fv_x = tlx;
+			stopv.fv_y = ty;  stoplv.fv_y = tly;
+			stopv.fv_z = tz;  stoplv.fv_z = tlz;
 
-			tx = st.st_x;  tlx = st.st_lx;  
-			ty = st.st_y;  tly = st.st_ly;  
-			tz = st.st_z;  tlz = st.st_lz;  
+			tx = st.st_x;  tlx = st.st_lx;
+			ty = st.st_y;  tly = st.st_ly;
+			tz = st.st_z;  tlz = st.st_lz;
 		} else {
-			tx = stopv.v_x;  tlx = stoplv.v_x;
-			ty = stopv.v_y;  tly = stoplv.v_y;
-			tz = stopv.v_z;  tlz = stoplv.v_z;
+			tx = stopv.fv_x;  tlx = stoplv.fv_x;
+			ty = stopv.fv_y;  tly = stoplv.fv_y;
+			tz = stopv.fv_z;  tlz = stoplv.fv_z;
 		}
 		return;
 	}
@@ -294,26 +294,23 @@ keyh_decr(unsigned char key, __unused int u, __unused int v)
 	glutKeyboardFunc(keyh_default);
 	switch (key) {
 	case 'x':
-		st.st_winspx--;
-		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE | RF_SELNODE;
+		st.st_winsp.iv_x--;
 		break;
 	case 'y':
-		st.st_winspy--;
-		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE | RF_SELNODE;
+		st.st_winsp.iv_y--;
 		break;
 	case 'z':
-		st.st_winspz--;
-		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE | RF_SELNODE;
+		st.st_winsp.iv_z--;
 		break;
 	case '[':
-		st.st_winspx--;
-		st.st_winspy--;
-		st.st_winspz--;
-		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE | RF_SELNODE;
+		st.st_winsp.iv_x--;
+		st.st_winsp.iv_y--;
+		st.st_winsp.iv_z--;
 		break;
 	default:
 		return;
 	}
+	st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE | RF_SELNODE;
 	refresh_state(oldopts);
 }
 
@@ -325,26 +322,23 @@ keyh_incr(unsigned char key, __unused int u, __unused int v)
 	glutKeyboardFunc(keyh_default);
 	switch (key) {
 	case 'x':
-		st.st_winspx++;
-		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE | RF_SELNODE;
+		st.st_winsp.iv_x++;
 		break;
 	case 'y':
-		st.st_winspy++;
-		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE | RF_SELNODE;
+		st.st_winsp.iv_y++;
 		break;
 	case 'z':
-		st.st_winspz++;
-		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE | RF_SELNODE;
+		st.st_winsp.iv_z++;
 		break;
 	case ']':
-		st.st_winspx++;
-		st.st_winspy++;
-		st.st_winspz++;
-		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE | RF_SELNODE;
+		st.st_winsp.iv_x++;
+		st.st_winsp.iv_y++;
+		st.st_winsp.iv_z++;
 		break;
 	default:
 		return;
 	}
+	st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE | RF_SELNODE;
 	refresh_state(oldopts);
 }
 

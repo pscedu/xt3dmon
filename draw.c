@@ -19,7 +19,7 @@
 #define TWEEN_MAX_POS	(2.0f)
 #define TWEEN_MAX_LOOK	(0.04f)
 
-struct vec wivstart, wivdim;
+struct fvec wivstart, wivdim;
 float clip;
 
 struct fill fill_black = { 0.0f, 0.0f, 0.0f, 1.0f, 0, 0 };
@@ -37,45 +37,44 @@ draw(void)
 
 	if (st.st_opts & OP_TWEEN) {
 		/* XXX: benchmark to test static. */
-		static struct vec want;
-		static struct vec want_l;
-		static struct vec sc, sc_l;
+		static struct fvec want, want_l;
+		static struct fvec sc, sc_l;
 		static float scale, scale_l;
 
-		want.v_w = want.v_h = want.v_d = 0.0f;
-		want_l.v_w = want_l.v_h = want_l.v_d = 0.0f;
-		sc.v_x = sc.v_y = sc.v_z = 1.0;
-		sc_l.v_x = sc_l.v_y = sc_l.v_z = 1.0;
+		want.fv_w = want.fv_h = want.fv_d = 0.0f;
+		want_l.fv_w = want_l.fv_h = want_l.fv_d = 0.0f;
+		sc.fv_x = sc.fv_y = sc.fv_z = 1.0;
+		sc_l.fv_x = sc_l.fv_y = sc_l.fv_z = 1.0;
 
-		tween_probe(&st.st_x, tx, TWEEN_MAX_POS, &sc.v_x, &want.v_w);
-		tween_probe(&st.st_y, ty, TWEEN_MAX_POS, &sc.v_y, &want.v_h);
-		tween_probe(&st.st_z, tz, TWEEN_MAX_POS, &sc.v_z, &want.v_d);
-		tween_probe(&st.st_lx, tlx, TWEEN_MAX_LOOK, &sc_l.v_x, &want_l.v_w);
-		tween_probe(&st.st_ly, tly, TWEEN_MAX_LOOK, &sc_l.v_y, &want_l.v_h);
-		tween_probe(&st.st_lz, tlz, TWEEN_MAX_LOOK, &sc_l.v_z, &want_l.v_d);
+		tween_probe(&st.st_x, tx, TWEEN_MAX_POS, &sc.fv_x, &want.fv_w);
+		tween_probe(&st.st_y, ty, TWEEN_MAX_POS, &sc.fv_y, &want.fv_h);
+		tween_probe(&st.st_z, tz, TWEEN_MAX_POS, &sc.fv_z, &want.fv_d);
+		tween_probe(&st.st_lx, tlx, TWEEN_MAX_LOOK, &sc_l.fv_x, &want_l.fv_w);
+		tween_probe(&st.st_ly, tly, TWEEN_MAX_LOOK, &sc_l.fv_y, &want_l.fv_h);
+		tween_probe(&st.st_lz, tlz, TWEEN_MAX_LOOK, &sc_l.fv_z, &want_l.fv_d);
 
-		scale = MIN3(sc.v_x, sc.v_y, sc.v_z);
-		scale_l = MIN3(sc_l.v_x, sc_l.v_y, sc_l.v_z);
+		scale = MIN3(sc.fv_x, sc.fv_y, sc.fv_z);
+		scale_l = MIN3(sc_l.fv_x, sc_l.fv_y, sc_l.fv_z);
 
-		tween_recalc(&st.st_x, tx, scale, want.v_w);
-		tween_recalc(&st.st_y, ty, scale, want.v_h);
-		tween_recalc(&st.st_z, tz, scale, want.v_d);
-		tween_recalc(&st.st_lx, tlx, scale_l, want_l.v_w);
-		tween_recalc(&st.st_ly, tly, scale_l, want_l.v_h);
-		tween_recalc(&st.st_lz, tlz, scale_l, want_l.v_d);
+		tween_recalc(&st.st_x, tx, scale, want.fv_w);
+		tween_recalc(&st.st_y, ty, scale, want.fv_h);
+		tween_recalc(&st.st_z, tz, scale, want.fv_d);
+		tween_recalc(&st.st_lx, tlx, scale_l, want_l.fv_w);
+		tween_recalc(&st.st_ly, tly, scale_l, want_l.fv_h);
+		tween_recalc(&st.st_lz, tlz, scale_l, want_l.fv_d);
 
-		if (want.v_w || want.v_h || want.v_d ||
-		    want_l.v_w || want_l.v_h || want_l.v_d)
+		if (want.fv_w || want.fv_h || want.fv_d ||
+		    want_l.fv_w || want_l.fv_h || want_l.fv_d)
 			cam_update();
 	}
 
 	if (st.st_vmode == VM_WIRED)
-		if (st.st_x + clip > wivstart.v_x + wivdim.v_w ||
-		    st.st_x - clip < wivstart.v_x ||
-		    st.st_y + clip > wivstart.v_y + wivdim.v_h ||
-		    st.st_y - clip < wivstart.v_y ||
-		    st.st_z + clip > wivstart.v_z + wivdim.v_d ||
-		    st.st_z - clip < wivstart.v_z)
+		if (st.st_x + clip > wivstart.fv_x + wivdim.fv_w ||
+		    st.st_x - clip < wivstart.fv_x ||
+		    st.st_y + clip > wivstart.fv_y + wivdim.fv_h ||
+		    st.st_y - clip < wivstart.fv_y ||
+		    st.st_z + clip > wivstart.fv_z + wivdim.fv_d ||
+		    st.st_z - clip < wivstart.fv_z)
 			st.st_rf |= RF_CLUSTER;
 
 	if (st.st_rf) {
@@ -174,9 +173,9 @@ draw_node_label(struct node *n)
  * only.
  */
 __inline void
-draw_node_pipes(struct vec *dim)
+draw_node_pipes(struct fvec *dim)
 {
-	float w = dim->v_w, h = dim->v_h, d = dim->v_d;
+	float w = dim->fv_w, h = dim->fv_h, d = dim->fv_d;
 
 	/* Antialiasing */
 	glEnable(GL_BLEND);
@@ -188,16 +187,16 @@ draw_node_pipes(struct vec *dim)
 	glLineWidth(8.0);
 	glBegin(GL_LINES);
 	glColor3f(1.0f, 0.0f, 0.0f); 			/* x */
-	glVertex3f(w - st.st_winspx, h/2, d/2);
-	glVertex3f(st.st_winspx, h/2, d/2);
+	glVertex3f(w - st.st_winsp.iv_x, h/2, d/2);
+	glVertex3f(st.st_winsp.iv_x, h/2, d/2);
 
 	glColor3f(0.0f, 1.0f, 0.0f);			/* y */
-	glVertex3f(w/2, h - st.st_winspy, d/2);
-	glVertex3f(w/2, st.st_winspy, d/2);
+	glVertex3f(w/2, h - st.st_winsp.iv_y, d/2);
+	glVertex3f(w/2, st.st_winsp.iv_y, d/2);
 
 	glColor3f(0.0f, 0.0f, 1.0f);			/* z */
-	glVertex3f(w/2, h/2, d - st.st_winspz);
-	glVertex3f(w/2, h/2, st.st_winspz);
+	glVertex3f(w/2, h/2, d - st.st_winsp.iv_z);
+	glVertex3f(w/2, h/2, st.st_winsp.iv_z);
 	glEnd();
 
 	glEnable(GL_POINT_SMOOTH);
@@ -217,7 +216,7 @@ draw_node_pipes(struct vec *dim)
 __inline void
 draw_node(struct node *n, int flags)
 {
-	struct vec *vp, *dimp;
+	struct fvec *vp, *dimp;
 	struct fill *fp;
 	GLenum param = GL_REPLACE;
 
@@ -231,7 +230,7 @@ draw_node(struct node *n, int flags)
 	if ((flags & NDF_DONTPUSH) == 0) {
 		glPushMatrix();
 		glPushName(n->n_nid);
-		glTranslatef(vp->v_x, vp->v_y, vp->v_z);
+		glTranslatef(vp->fv_x, vp->fv_y, vp->fv_z);
 	}
 
 	if (st.st_opts & OP_BLEND) {
@@ -260,16 +259,16 @@ draw_node(struct node *n, int flags)
 }
 
 __inline void
-draw_mod(struct vec *vp, struct vec *dim, struct fill *fillp)
+draw_mod(struct fvec *vp, struct fvec *dim, struct fill *fillp)
 {
-	struct vec v;
+	struct fvec v;
 
 	v = *vp;
-	v.v_x -= 0.01;
-	v.v_y -= 0.01;
-	v.v_z -= 0.01;
+	v.fv_x -= 0.01;
+	v.fv_y -= 0.01;
+	v.fv_z -= 0.01;
 	glPushMatrix();
-	glTranslatef(v.v_x, v.v_y, v.v_z);
+	glTranslatef(v.fv_x, v.fv_y, v.fv_z);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
@@ -295,10 +294,10 @@ make_ground(void)
 	glColor3f(0.4f, 0.4f, 0.4f);
 	switch (st.st_vmode) {
 	case VM_WIREDONE:
-		glVertex3f( -st.st_winspx / 2.0f, -0.1f, -st.st_winspz / 2.0f);
-		glVertex3f( -st.st_winspx / 2.0f, -0.1f, WI_DEPTH);
+		glVertex3f( -st.st_winsp.iv_x / 2.0f, -0.1f, -st.st_winsp.iv_z / 2.0f);
+		glVertex3f( -st.st_winsp.iv_x / 2.0f, -0.1f, WI_DEPTH);
 		glVertex3f(WI_WIDTH, -0.1f, WI_DEPTH);
-		glVertex3f(WI_WIDTH, -0.1f, -st.st_winspz / 2.0f);
+		glVertex3f(WI_WIDTH, -0.1f, -st.st_winsp.iv_z / 2.0f);
 		break;
 	case VM_PHYSICAL:
 		glVertex3f( -5.0f, -0.1f, -5.0f);
@@ -329,24 +328,24 @@ draw_cluster_physical(void)
 {
 	int r, cb, cg, m, s, n0, n;
 	struct node *node;
-	struct vec mdim;
+	struct fvec mdim;
 	struct fill mf;
-	struct vec v;
+	struct fvec v;
 
-	mdim.v_w = MODWIDTH + 0.02;
-	mdim.v_h = MODHEIGHT + 0.02;
-	mdim.v_d = MODDEPTH + 0.02;
+	mdim.fv_w = MODWIDTH + 0.02;
+	mdim.fv_h = MODHEIGHT + 0.02;
+	mdim.fv_d = MODDEPTH + 0.02;
 
 	mf.f_r = 1.00;
 	mf.f_g = 1.00;
 	mf.f_b = 1.00;
 	mf.f_a = 0.30;
 
-	v.v_x = v.v_y = v.v_z = NODESPACE;
-	for (r = 0; r < NROWS; r++, v.v_z += ROWDEPTH + ROWSPACE) {
-		for (cb = 0; cb < NCABS; cb++, v.v_x += CABWIDTH + CABSPACE) {
-			for (cg = 0; cg < NCAGES; cg++, v.v_y += CAGEHEIGHT + CAGESPACE) {
-				for (m = 0; m < NMODS; m++, v.v_x += MODWIDTH + MODSPACE) {
+	v.fv_x = v.fv_y = v.fv_z = NODESPACE;
+	for (r = 0; r < NROWS; r++, v.fv_z += ROWDEPTH + ROWSPACE) {
+		for (cb = 0; cb < NCABS; cb++, v.fv_x += CABWIDTH + CABSPACE) {
+			for (cg = 0; cg < NCAGES; cg++, v.fv_y += CAGEHEIGHT + CAGESPACE) {
+				for (m = 0; m < NMODS; m++, v.fv_x += MODWIDTH + MODSPACE) {
 					for (n = 0; n < NNODES; n++) {
 						node = &nodes[r][cb][cg][m][n];
 						node->n_v = &node->n_physv;
@@ -355,39 +354,39 @@ draw_cluster_physical(void)
 						s = n / (NNODES / 2);
 						n0 = (n & 1) ^ ((n & 2) >> 1);
 
-						node->n_physv.v_y += s * (NODESPACE + NODEHEIGHT);
-						node->n_physv.v_z += n0 * (NODESPACE + NODEDEPTH) +
+						node->n_physv.fv_y += s * (NODESPACE + NODEHEIGHT);
+						node->n_physv.fv_z += n0 * (NODESPACE + NODEDEPTH) +
 						    s * NODESHIFT;
 						draw_node(node, 0);
 					}
 					if (st.st_opts & OP_SHOWMODS)
 						draw_mod(&v, &mdim, &mf);
 				}
-				v.v_x -= (MODWIDTH + MODSPACE) * NMODS;
+				v.fv_x -= (MODWIDTH + MODSPACE) * NMODS;
 			}
-			v.v_y -= (CAGEHEIGHT + CAGESPACE) * NCAGES;
+			v.fv_y -= (CAGEHEIGHT + CAGESPACE) * NCAGES;
 		}
-		v.v_x -= (CABWIDTH + CABSPACE) * NCABS;
+		v.fv_x -= (CABWIDTH + CABSPACE) * NCABS;
 	}
 }
 
 __inline void
-draw_cluster_pipes(struct vec *v)
+draw_cluster_pipes(struct fvec *v)
 {
 	float x, y, z, spx, spy, spz;
 	float sx, sy, sz;
-	struct vec *dimp;
+	struct fvec *dimp;
 
 	dimp = &vmodes[st.st_vmode].vm_ndim;
-	spx = st.st_winspx;
-	spy = st.st_winspy;
-	spz = st.st_winspz;
-	sx = dimp->v_w / 2;
-	sy = dimp->v_h / 2;
-	sz = dimp->v_d / 2;
+	spx = st.st_winsp.iv_x;
+	spy = st.st_winsp.iv_y;
+	spz = st.st_winsp.iv_z;
+	sx = dimp->fv_w / 2;
+	sy = dimp->fv_h / 2;
+	sz = dimp->fv_d / 2;
 
 	glPushMatrix();
-	glTranslatef(v->v_x, v->v_y, v->v_z);
+	glTranslatef(v->fv_x, v->fv_y, v->fv_z);
 
 	/* Antialiasing */
 	glEnable(GL_BLEND);
@@ -401,21 +400,21 @@ draw_cluster_pipes(struct vec *v)
 	glColor3f(0.0f, 0.0f, 1.0f);
 	for (x = sx; x < WI_WIDTH; x += spx)			/* z */
 		for (y = sy; y < WI_HEIGHT; y += spy) {
-			glVertex3f(x, y, -dimp->v_z / 2.0f);
+			glVertex3f(x, y, -dimp->fv_z / 2.0f);
 			glVertex3f(x, y, WI_DEPTH);
 		}
 
 	glColor3f(0.0f, 1.0f, 0.0f);
 	for (z = sz; z < WI_DEPTH; z += spz)			/* y */
 		for (x = sx; x < WI_WIDTH; x += spx) {
-			glVertex3f(x, -dimp->v_y / 2.0f, z);
+			glVertex3f(x, -dimp->fv_y / 2.0f, z);
 			glVertex3f(x, WI_HEIGHT, z);
 		}
 
 	glColor3f(1.0f, 0.0f, 0.0f);
 	for (y = sy; y < WI_HEIGHT; y += spy)
 		for (z = sz; z < WI_DEPTH; z += spz) {		/* x */
-			glVertex3f(-dimp->v_x / 2.0f, y, z);
+			glVertex3f(-dimp->fv_x / 2.0f, y, z);
 			glVertex3f(WI_WIDTH, y, z);
 		}
 	glDisable(GL_LINE_SMOOTH);
@@ -425,11 +424,11 @@ draw_cluster_pipes(struct vec *v)
 }
 
 __inline void
-draw_cluster_wired(struct vec *v)
+draw_cluster_wired(struct fvec *v)
 {
 	int r, cb, cg, m, n;
 	struct node *node;
-	struct vec *nv;
+	struct fvec *nv;
 
 	if (st.st_opts & OP_PIPES)
 		draw_cluster_pipes(v);
@@ -440,27 +439,27 @@ draw_cluster_wired(struct vec *v)
 					for (n = 0; n < NNODES; n++) {
 						node = &nodes[r][cb][cg][m][n];
 						nv = &node->n_swiv;
-						nv->v_x = node->n_wiv.v_x * st.st_winspx + v->v_x;
-						nv->v_y = node->n_wiv.v_y * st.st_winspy + v->v_y;
-						nv->v_z = node->n_wiv.v_z * st.st_winspz + v->v_z;
+						nv->fv_x = node->n_wiv.fv_x * st.st_winsp.iv_x + v->fv_x;
+						nv->fv_y = node->n_wiv.fv_y * st.st_winsp.iv_y + v->fv_y;
+						nv->fv_z = node->n_wiv.fv_z * st.st_winsp.iv_z + v->fv_z;
 						node->n_v = nv;
 						draw_node(node, 0);
 					}
 }
 
 __inline void
-draw_wired_frame(struct vec *vp, struct vec *dimp, struct fill *fillp)
+draw_wired_frame(struct fvec *vp, struct fvec *dimp, struct fill *fillp)
 {
 	struct fill fill = *fillp;
-	struct vec v;
+	struct fvec v;
 
 	v = *vp;
-	v.v_x -= st.st_winspx / 2.0f;
-	v.v_y -= st.st_winspy / 2.0f;
-	v.v_z -= st.st_winspz / 2.0f;
+	v.fv_x -= st.st_winsp.iv_x / 2.0f;
+	v.fv_y -= st.st_winsp.iv_y / 2.0f;
+	v.fv_z -= st.st_winsp.iv_z / 2.0f;
 
 	glPushMatrix();
-	glTranslatef(v.v_x, v.v_y, v.v_z);
+	glTranslatef(v.fv_x, v.fv_y, v.fv_z);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
 	fill.f_a = 0.2;
@@ -479,7 +478,7 @@ draw_clusters_wired(void)
 {
 	int xnum, znum, col;
 	float x, y, z, adj;
-	struct vec v, dim;
+	struct fvec v, dim;
 
 	clip = MIN3(WI_CLIPX, WI_CLIPY, WI_CLIPZ);
 
@@ -503,21 +502,21 @@ draw_clusters_wired(void)
 		adj += WI_DEPTH;
 	z -= adj;
 
-	wivstart.v_x = x;
-	wivstart.v_y = y;
-	wivstart.v_z = z;
+	wivstart.fv_x = x;
+	wivstart.fv_y = y;
+	wivstart.fv_z = z;
 
-	dim.v_w = WI_WIDTH;
-	dim.v_h = WI_HEIGHT;
-	dim.v_d = WI_DEPTH;
+	dim.fv_w = WI_WIDTH;
+	dim.fv_h = WI_HEIGHT;
+	dim.fv_d = WI_DEPTH;
 
 	xnum = (st.st_x + clip - x + WI_WIDTH - 1) / WI_WIDTH;
 	znum = (st.st_z + clip - z + WI_DEPTH - 1) / WI_DEPTH;
 
 	col = 0;
-	for (v.v_y = y; v.v_y < st.st_y + clip; v.v_y += WI_HEIGHT) {
-		for (v.v_z = z; v.v_z < st.st_z + clip; v.v_z += WI_DEPTH) {
-			for (v.v_x = x; v.v_x < st.st_x + clip; v.v_x += WI_WIDTH) {
+	for (v.fv_y = y; v.fv_y < st.st_y + clip; v.fv_y += WI_HEIGHT) {
+		for (v.fv_z = z; v.fv_z < st.st_z + clip; v.fv_z += WI_DEPTH) {
+			for (v.fv_x = x; v.fv_x < st.st_x + clip; v.fv_x += WI_WIDTH) {
 				draw_cluster_wired(&v);
 				if (st.st_opts & OP_WIVMFRAME)
 					draw_wired_frame(&v, &dim,
@@ -533,9 +532,9 @@ draw_clusters_wired(void)
 			col = !col;
 	}
 
-	wivdim.v_w = v.v_x - wivstart.v_x;
-	wivdim.v_h = v.v_y - wivstart.v_y;
-	wivdim.v_d = v.v_z - wivstart.v_z;
+	wivdim.fv_w = v.fv_x - wivstart.fv_x;
+	wivdim.fv_h = v.fv_y - wivstart.fv_y;
+	wivdim.fv_d = v.fv_z - wivstart.fv_z;
 }
 
 void
@@ -554,7 +553,7 @@ make_cluster(void)
 		draw_clusters_wired();
 		break;
 	case VM_WIREDONE: {
-		struct vec v = { 0.0f, 0.0f, 0.0f };
+		struct fvec v = { 0.0f, 0.0f, 0.0f };
 
 		draw_cluster_wired(&v);
 		break;

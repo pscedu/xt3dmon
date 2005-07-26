@@ -35,9 +35,9 @@ extern double fmin(double, double);
  *  x
  */
 void
-draw_box_outline(const struct vec *dim, const struct fill *fillp)
+draw_box_outline(const struct fvec *dim, const struct fill *fillp)
 {
-	float w = dim->v_w, h = dim->v_h, d = dim->v_d;
+	float w = dim->fv_w, h = dim->fv_h, d = dim->fv_d;
 	float x, y, z;
 
 	x = y = z = 0.0f;
@@ -103,9 +103,9 @@ draw_box_outline(const struct vec *dim, const struct fill *fillp)
 }
 
 void
-draw_box_filled(const struct vec *dim, const struct fill *fillp)
+draw_box_filled(const struct fvec *dim, const struct fill *fillp)
 {
-	float w = dim->v_w, h = dim->v_h, d = dim->v_d;
+	float w = dim->fv_w, h = dim->fv_h, d = dim->fv_d;
 	float x, y, z;
 
 	x = y = z = 0.0f;
@@ -152,11 +152,11 @@ draw_box_filled(const struct vec *dim, const struct fill *fillp)
 }
 
 void
-draw_box_tex(const struct vec *dim, const struct fill *fillp, GLenum param)
+draw_box_tex(const struct fvec *dim, const struct fill *fillp, GLenum param)
 {
-	float w = dim->v_w;
-	float h = dim->v_h;
-	float d = dim->v_d;
+	float w = dim->fv_w;
+	float h = dim->fv_h;
+	float d = dim->fv_d;
 	float color[4];
 
 	glEnable(GL_TEXTURE_2D);

@@ -85,7 +85,7 @@ struct state st = {
 	OP_WIREFRAME | OP_TWEEN | OP_GROUND | OP_DISPLAY,	/* options */
 	SM_JOBS,						/* which data to show */
 	VM_PHYSICAL,						/* viewing mode */
-	4, 4, 4,						/* wired node spacing */
+	{ 4, 4, 4 },						/* wired node spacing */
 	0							/* rebuild flags (unused) */
 };
 
@@ -158,7 +158,7 @@ refresh_state(int oldopts)
 void
 select_node(struct node *n)
 {
-	struct vec v, pos;
+	struct fvec v, pos;
 
 	if (selnode == n)
 		return;
@@ -181,23 +181,23 @@ select_node(struct node *n)
 		n->n_fillp = &selnodefill;
 	}
 
-	vmodes[st.st_vmode].vm_ndim.v_w += SELNODE_GAP * 2;
-	vmodes[st.st_vmode].vm_ndim.v_h += SELNODE_GAP * 2;
-	vmodes[st.st_vmode].vm_ndim.v_d += SELNODE_GAP * 2;
+	vmodes[st.st_vmode].vm_ndim.fv_w += SELNODE_GAP * 2;
+	vmodes[st.st_vmode].vm_ndim.fv_h += SELNODE_GAP * 2;
+	vmodes[st.st_vmode].vm_ndim.fv_d += SELNODE_GAP * 2;
 
 	switch (st.st_vmode) {
 	case VM_WIRED:
-		pos.v_x = n->n_wiv.v_x * st.st_winspx + wivstart.v_x - SELNODE_GAP;
-		pos.v_y = n->n_wiv.v_y * st.st_winspy + wivstart.v_y - SELNODE_GAP;
-		pos.v_z = n->n_wiv.v_z * st.st_winspz + wivstart.v_z - SELNODE_GAP;
-		for (v.v_x = 0.0f; v.v_x < wivdim.v_w; v.v_x += WI_WIDTH)
-			for (v.v_y = 0.0f; v.v_y < wivdim.v_h; v.v_y += WI_HEIGHT)
-				for (v.v_z = 0.0f; v.v_z < wivdim.v_d; v.v_z += WI_DEPTH) {
+		pos.fv_x = n->n_wiv.fv_x * st.st_winsp.iv_x + wivstart.fv_x - SELNODE_GAP;
+		pos.fv_y = n->n_wiv.fv_y * st.st_winsp.iv_y + wivstart.fv_y - SELNODE_GAP;
+		pos.fv_z = n->n_wiv.fv_z * st.st_winsp.iv_z + wivstart.fv_z - SELNODE_GAP;
+		for (v.fv_x = 0.0f; v.fv_x < wivdim.fv_w; v.fv_x += WI_WIDTH)
+			for (v.fv_y = 0.0f; v.fv_y < wivdim.fv_h; v.fv_y += WI_HEIGHT)
+				for (v.fv_z = 0.0f; v.fv_z < wivdim.fv_d; v.fv_z += WI_DEPTH) {
 					glPushMatrix();
 					glTranslatef(
-					    pos.v_x + v.v_x,
-					    pos.v_y + v.v_y,
-					    pos.v_z + v.v_z);
+					    pos.fv_x + v.fv_x,
+					    pos.fv_y + v.fv_y,
+					    pos.fv_z + v.fv_z);
 					if (st.st_opts & OP_SELPIPES &&
 					    (st.st_opts & OP_PIPES) == 0)
 						draw_node_pipes(&vmodes[st.st_vmode].vm_ndim);
@@ -207,12 +207,12 @@ select_node(struct node *n)
 				}
 		break;
 	default:
-		n->n_v->v_x -= SELNODE_GAP;
-		n->n_v->v_y -= SELNODE_GAP;
-		n->n_v->v_z -= SELNODE_GAP;
+		n->n_v->fv_x -= SELNODE_GAP;
+		n->n_v->fv_y -= SELNODE_GAP;
+		n->n_v->fv_z -= SELNODE_GAP;
 
 		glPushMatrix();
-		glTranslatef(n->n_v->v_x, n->n_v->v_y, n->n_v->v_z);
+		glTranslatef(n->n_v->fv_x, n->n_v->fv_y, n->n_v->fv_z);
 		if (st.st_vmode != VM_PHYSICAL &&
 		    st.st_opts & OP_SELPIPES && (st.st_opts & OP_PIPES) == 0)
 			draw_node_pipes(&vmodes[st.st_vmode].vm_ndim);
@@ -220,15 +220,15 @@ select_node(struct node *n)
 		draw_node(n, NDF_DONTPUSH | NDF_NOOPTS);
 		glPopMatrix();
 
-		n->n_v->v_x += SELNODE_GAP;
-		n->n_v->v_y += SELNODE_GAP;
-		n->n_v->v_z += SELNODE_GAP;
+		n->n_v->fv_x += SELNODE_GAP;
+		n->n_v->fv_y += SELNODE_GAP;
+		n->n_v->fv_z += SELNODE_GAP;
 		break;
 	}
 
-	vmodes[st.st_vmode].vm_ndim.v_w -= SELNODE_GAP * 2;
-	vmodes[st.st_vmode].vm_ndim.v_h -= SELNODE_GAP * 2;
-	vmodes[st.st_vmode].vm_ndim.v_d -= SELNODE_GAP * 2;
+	vmodes[st.st_vmode].vm_ndim.fv_w -= SELNODE_GAP * 2;
+	vmodes[st.st_vmode].vm_ndim.fv_h -= SELNODE_GAP * 2;
+	vmodes[st.st_vmode].vm_ndim.fv_d -= SELNODE_GAP * 2;
 
 	n->n_fillp = n->n_ofillp;
 

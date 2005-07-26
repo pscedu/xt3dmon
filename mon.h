@@ -39,9 +39,9 @@
 #define MODSPACE	(0.8f)
 #define NODESPACE	(0.2f)
 
-#define NODEWIDTH	(vmodes[st.st_vmode].vm_ndim.v_w)
-#define NODEHEIGHT	(vmodes[st.st_vmode].vm_ndim.v_h)
-#define NODEDEPTH	(vmodes[st.st_vmode].vm_ndim.v_d)
+#define NODEWIDTH	(vmodes[st.st_vmode].vm_ndim.fv_w)
+#define NODEHEIGHT	(vmodes[st.st_vmode].vm_ndim.fv_h)
+#define NODEDEPTH	(vmodes[st.st_vmode].vm_ndim.fv_d)
 #define NODESHIFT	(0.6f)
 
 #define MODWIDTH	(NODEWIDTH / 4.0f)
@@ -62,12 +62,12 @@
 #define ZCENTER		(NODESPACE + (ROWDEPTH * NROWS + \
 			    ROWSPACE * (NROWS - 1)) / 2.0f)
 
-#define WI_WIDTH	(widim.iv_w * st.st_winspx)
-#define WI_HEIGHT	(widim.iv_h * st.st_winspy)
-#define WI_DEPTH	(widim.iv_d * st.st_winspz)
-#define WI_CLIPX	(st.st_winspx * vmodes[st.st_vmode].vm_clip)
-#define WI_CLIPY	(st.st_winspy * vmodes[st.st_vmode].vm_clip)
-#define WI_CLIPZ	(st.st_winspz * vmodes[st.st_vmode].vm_clip)
+#define WI_WIDTH	(widim.iv_w * st.st_winsp.iv_x)
+#define WI_HEIGHT	(widim.iv_h * st.st_winsp.iv_y)
+#define WI_DEPTH	(widim.iv_d * st.st_winsp.iv_z)
+#define WI_CLIPX	(st.st_winsp.iv_x * vmodes[st.st_vmode].vm_clip)
+#define WI_CLIPY	(st.st_winsp.iv_y * vmodes[st.st_vmode].vm_clip)
+#define WI_CLIPZ	(st.st_winsp.iv_z * vmodes[st.st_vmode].vm_clip)
 
 #define WFRAMEWIDTH	(0.001f)
 
@@ -133,13 +133,13 @@
 #define FBM_PLAY	1
 #define FBM_REC		2
 
-struct vec {
-	float		 v_x;
-	float		 v_y;
-	float		 v_z;
-#define v_w v_x
-#define v_h v_y
-#define v_d v_z
+struct fvec {
+	float		 fv_x;
+	float		 fv_y;
+	float		 fv_z;
+#define fv_w fv_x
+#define fv_h fv_y
+#define fv_d fv_z
 };
 
 struct ivec {
@@ -160,7 +160,7 @@ struct datasrc {
 
 struct vmode {
 	int		vm_clip;
-	struct vec	vm_ndim;
+	struct fvec	vm_ndim;
 };
 
 struct fill {
@@ -220,32 +220,30 @@ struct node {
 	struct fill	*n_fillp;
 	struct fill	*n_ofillp;
 	int		 n_flags;
-	struct vec	 n_wiv;
-	struct vec	 n_swiv;
-	struct vec	 n_physv;
-	struct vec	*n_v;
+	struct fvec	 n_wiv;		/* wired view position */
+	struct fvec	 n_swiv;	/* scaled */
+	struct fvec	 n_physv;
+	struct fvec	*n_v;
 };
 
 #define NF_HIDE		(1<<0)
 #define NF_SEL		(1<<1)
 
 struct state {
-	struct vec	 st_v;
-	struct vec	 st_lv;
+	struct fvec	 st_v;
+	struct fvec	 st_lv;
 	int		 st_opts;
 	int		 st_mode;
 	int		 st_vmode;
-	int		 st_winspx;
-	int		 st_winspy;
-	int		 st_winspz;
+	struct ivec	 st_winsp;
 	int		 st_rf;
-#define st_x st_v.v_x
-#define st_y st_v.v_y
-#define st_z st_v.v_z
+#define st_x st_v.fv_x
+#define st_y st_v.fv_y
+#define st_z st_v.fv_z
 
-#define st_lx st_lv.v_x
-#define st_ly st_lv.v_y
-#define st_lz st_lv.v_z
+#define st_lx st_lv.fv_x
+#define st_ly st_lv.fv_y
+#define st_lz st_lv.fv_z
 };
 
 #define FB_OMASK	(OP_LOOPFLYBY | OP_CAPTURE | OP_DISPLAY | OP_STEREO | OP_STOP)
@@ -416,7 +414,7 @@ void			 cam_revolve(int);
 void			 cam_rotateu(int);
 void			 cam_rotatev(int);
 void			 cam_update(void);
-void			 cam_goto(struct vec *);
+void			 cam_goto(struct fvec *);
 
 /* capture.c */
 void			 capture_fb(int);
@@ -427,7 +425,7 @@ void			 screenshot(char *, int);
 /* draw.c */
 void			 draw(void);
 void			 draw_node(struct node *, int);
-void			 draw_node_pipes(struct vec *);
+void			 draw_node_pipes(struct fvec *);
 void			 make_ground(void);
 void			 make_cluster(void);
 
@@ -521,10 +519,10 @@ void			 uinpcb_cmd(void);
 void			 uinpcb_goto(void);
 
 /* widget.c */
-void			 draw_box_outline(const struct vec *, const struct fill *);
-void			 draw_box_filled(const struct vec *, const struct fill *);
-void			 draw_box_tex(const struct vec *, const struct fill *, GLenum);
-void 			 rgb_contrast(struct fill *c);
+void			 draw_box_outline(const struct fvec *, const struct fill *);
+void			 draw_box_filled(const struct fvec *, const struct fill *);
+void			 draw_box_tex(const struct fvec *, const struct fill *, GLenum);
+void 			 rgb_contrast(struct fill *);
 
 extern struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 extern struct node	*invmap[];
@@ -554,7 +552,7 @@ extern struct selnodes	 selnodes;
 
 extern struct ivec	 widim;
 extern int		 mode_data_clean;
-extern struct vec	 wivstart, wivdim;
+extern struct fvec	 wivstart, wivdim;
 extern struct temp_range temp_map[14]; /* XXX */
 
 extern float		 tx, tlx, ox, olx;

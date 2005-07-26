@@ -29,7 +29,7 @@ uinpcb_goto(void)
 	char *s;
 	int nid;
 	long l;
-	struct vec cv;
+	struct fvec cv;
 	int mod;
 
 	s = buf_get(&uinp.uinp_buf);
@@ -69,17 +69,17 @@ uinpcb_goto(void)
 			mod = (n->n_nid + 1) % 4;
 
 			st.st_lx = st.st_ly = 0.0;
-			cv.v_y += 0.5 * NODEHEIGHT;
+			cv.fv_y += 0.5 * NODEHEIGHT;
 
 			/* Right side (positive z) */
 			if(mod == 2 || mod == 3) {
 
 				/* Change z and look vector */
-				cv.v_z += NODEDEPTH + GOTO_DIST_PHYS;
+				cv.fv_z += NODEDEPTH + GOTO_DIST_PHYS;
 				st.st_lz = -1.0;
 
 			} else {
-				cv.v_z -= GOTO_DIST_PHYS;
+				cv.fv_z -= GOTO_DIST_PHYS;
 				st.st_lz = 1.0;
 			}
 
@@ -90,9 +90,9 @@ uinpcb_goto(void)
 		case VM_WIREDONE:
 
 			/* Set to the front where the label will be */
-			cv.v_x -= GOTO_DIST_LOG;
-			cv.v_y += 0.5*NODEHEIGHT;
-			cv.v_z += 0.5*NODEWIDTH;
+			cv.fv_x -= GOTO_DIST_LOG;
+			cv.fv_y += 0.5*NODEHEIGHT;
+			cv.fv_z += 0.5*NODEWIDTH;
 			st.st_ly = st.st_lz = 0.0;
 			st.st_lx = 1.0;
 			break;
