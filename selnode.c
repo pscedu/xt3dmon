@@ -1,5 +1,7 @@
 /* $Id$ */
 
+#include <stdlib.h>
+
 #include "queue.h"
 #include "mon.h"
 
