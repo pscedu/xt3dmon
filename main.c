@@ -79,6 +79,7 @@ struct vmode vmodes[] = {
 struct state st = {
 	{ STARTX, STARTY, STARTZ },				/* (x,y,z) */
 	{ STARTLX, STARTLY, STARTLZ },				/* (lx,ly,lz) */
+	{ 0.0f, 1.0f, 0.0f },					/* (ux,uy,uz) */
 	OP_WIREFRAME | OP_TWEEN | OP_GROUND | OP_DISPLAY,	/* options */
 	SM_JOBS,						/* which data to show */
 	VM_PHYSICAL,						/* viewing mode */

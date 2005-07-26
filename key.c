@@ -450,6 +450,16 @@ spkeyh_default(int key, __unused int u, __unused int v)
 	amt = 0.0f; /* gcc */
 	dir = 0; /* gcc */
 	switch (key) {
+	case GLUT_KEY_HOME:
+		st.st_uv.fv_x = 0.0f;
+		st.st_uv.fv_y -= 0.1;
+		st.st_uv.fv_z += 0.1;
+		break;
+	case GLUT_KEY_END:
+		st.st_uv.fv_x = 0.0f;
+		st.st_uv.fv_y += 0.1;
+		st.st_uv.fv_z -= 0.1;
+		break;
 	case GLUT_KEY_LEFT:
 		dir = CAMDIR_LEFT;
 		break;

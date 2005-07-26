@@ -229,6 +229,7 @@ struct node {
 struct state {
 	struct fvec	 st_v;			/* camera position */
 	struct fvec	 st_lv;			/* camera look direction */
+	struct fvec	 st_uv;			/* up direction */
 	int		 st_opts;
 	int		 st_mode;		/* data mode */
 	int		 st_vmode;		/* view mode */
@@ -520,6 +521,9 @@ void			 tween_recalc(float *, float, float, float);
 /* uinp.c */
 void			 uinpcb_cmd(void);
 void			 uinpcb_goto(void);
+
+/* vec.c */
+void			 vec_normalize(struct fvec *);
 
 /* widget.c */
 void			 draw_box_outline(const struct fvec *, const struct fill *);

@@ -41,25 +41,16 @@ cam_move(int dir, float amt)
 	case CAMDIR_UP:
 	case CAMDIR_DOWN: {
 		struct fvec cross, a, b, t;
-		float mag;
 
 		a.fv_x = st.st_lx;
 		a.fv_y = st.st_ly;
 		a.fv_z = st.st_lz;
-		mag = sqrt(SQUARE(a.fv_x) + SQUARE(a.fv_y) +
-		    SQUARE(a.fv_z));
-		a.fv_x /= mag;
-		a.fv_y /= mag;
-		a.fv_z /= mag;
+		vec_normalize(&a);
 
 		b.fv_x = st.st_lz;
 		b.fv_y = 0;
 		b.fv_z = -st.st_lx;
-		mag = sqrt(SQUARE(b.fv_x) + SQUARE(b.fv_y) +
-		    SQUARE(b.fv_z));
-		b.fv_x /= mag;
-		b.fv_y /= mag;
-		b.fv_z /= mag;
+		vec_normalize(&b);
 
 		if (dir == CAMDIR_DOWN)
 			SWAP(a, b, t);
@@ -69,12 +60,7 @@ cam_move(int dir, float amt)
 		cross.fv_y = b.fv_x * a.fv_z - a.fv_x * b.fv_z;
 		cross.fv_z = a.fv_x * b.fv_y - b.fv_x * a.fv_y;
 
-		mag = sqrt(SQUARE(cross.fv_x) + SQUARE(cross.fv_y) +
-		    SQUARE(cross.fv_z));
-		cross.fv_x /= mag;
-		cross.fv_y /= mag;
-		cross.fv_z /= mag;
-
+		vec_normalize(&cross);
 		st.st_x += cross.fv_x * amt;
 		st.st_y += cross.fv_y * amt;
 		st.st_z += cross.fv_z * amt;
@@ -161,18 +147,14 @@ cam_rotateu(int d)
 void
 cam_rotatev(int d)
 {
-	float adj, t, mag;
+	float adj, t;
 
 	adj = d * -0.005f;
 	t = asinf(st.st_ly); /* XXX:  wrong. */
 	if (t + adj < PI / 2.0f &&
 	    t + adj > -PI / 2.0f) {
 		st.st_ly = sin(t + adj);
-		mag = sqrt(SQUARE(st.st_lx) + SQUARE(st.st_ly) +
-		    SQUARE(st.st_lz));
-		st.st_lx /= mag;
-		st.st_ly /= mag;
-		st.st_lz /= mag;
+		vec_normalize(&st.st_lv);
 	}
 }
 
@@ -184,5 +166,5 @@ cam_update(void)
 	    st.st_x + st.st_lx,
 	    st.st_y + st.st_ly,
 	    st.st_z + st.st_lz,
-	    0.0f, 1.0f, 0.0f);
+	    st.st_uv.fv_x, st.st_uv.fv_y, st.st_uv.fv_z);
 }
