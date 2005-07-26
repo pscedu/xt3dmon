@@ -23,6 +23,7 @@ sel_insert(struct node *n)
 	if (flyby_mode == FBM_REC)
 		flyby_writeselnode(n->n_nid);
 	st.st_rf |= RF_SELNODE;
+	nselnodes++;
 }
 
 /*
@@ -56,6 +57,7 @@ sel_clear(void)
 	}
 	SLIST_INIT(&selnodes);
 	st.st_rf |= RF_SELNODE;
+	nselnodes = 0;
 }
 
 int
@@ -70,6 +72,7 @@ sel_del(struct node *n)
 			if (flyby_mode == FBM_REC)
 				flyby_writeselnode(n->n_nid);
 			st.st_rf |= RF_SELNODE;
+			nselnodes--;
 			return (1);
 		}
 	return (0);
