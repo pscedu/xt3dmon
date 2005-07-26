@@ -339,6 +339,12 @@ make_ground(void)
 		break;
 	}
 
+	/* Antialiasing */
+	glEnable(GL_BLEND);
+	glEnable(GL_LINE_SMOOTH);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
+
 	glLineWidth(5.0);
 	glBegin(GL_LINES);
 	glColor3f(1.0f, 1.0f, 1.0f);
@@ -351,6 +357,10 @@ make_ground(void)
 	glVertex3f(0.0f, 0.0f, -500.0f);		/* z-axis */
 	glVertex3f(0.0f, 0.0f, 500.0f);
 	glEnd();
+
+	glDisable(GL_BLEND);
+	glDisable(GL_LINE_SMOOTH);
+
 	glEndList();
 }
 
