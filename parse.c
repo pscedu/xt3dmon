@@ -812,7 +812,7 @@ parse_qstat(void)
 				break;
 			else {
 				s += strlen(q);
-				jobid = strtoul(s, NULL, 0);
+				jobid = strtoul(s, NULL, 10);
 			}
 		}
 		/* buf should always be valid here. */
@@ -852,7 +852,7 @@ parse_qstat(void)
 		q = "Resource_List.size = ";
 		if ((s = strstr(buf, q)) != NULL) {
 			s += strlen(q);
-			j_fake.j_ncpus = strtoul(s, NULL, 0);
+			j_fake.j_ncpus = strtoul(s, NULL, 10);
 		}
 
 		q = "Resource_List.walltime = ";
@@ -860,8 +860,8 @@ parse_qstat(void)
 			s += strlen(q);
 			if ((t = strchr(s, ':')) != NULL)
 				*t++ = '\0';
-			j_fake.j_tmdur = 60 * strtoul(s, NULL, 0);
-			j_fake.j_tmdur += strtoul(t, NULL, 0);
+			j_fake.j_tmdur = 60 * strtoul(s, NULL, 10);
+			j_fake.j_tmdur += strtoul(t, NULL, 10);
 		}
 
 		q = "resources_used.walltime = ";
@@ -869,8 +869,8 @@ parse_qstat(void)
 			s += strlen(q);
 			if ((t = strchr(s, ':')) != NULL)
 				*t++ = '\0';
-			j_fake.j_tmuse = 60 * strtoul(s, NULL, 0);
-			j_fake.j_tmuse += strtoul(t, NULL, 0);
+			j_fake.j_tmuse = 60 * strtoul(s, NULL, 10);
+			j_fake.j_tmuse += strtoul(t, NULL, 10);
 		}
 	}
 	fclose(fp);
