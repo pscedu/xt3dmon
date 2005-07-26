@@ -86,7 +86,6 @@ uinpcb_goto(void)
 			break;
 
 		case VM_WIRED:
-			/* XXX - snap to grid? */
 		case VM_WIREDONE:
 
 			/* Set to the front where the label will be */
