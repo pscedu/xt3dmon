@@ -386,7 +386,8 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		break;
 	/* DEBUG */
 	case 'z':
-		printf("lx: %f, ly: %f, lz: %f\n", st.st_lx, st.st_ly, st.st_lz);
+		printf("st_lx: %f, st_ly: %f, st_lz: %f\n", st.st_lx, st.st_ly, st.st_lz);
+		printf("st_x: %f, s_y: %f, st_z: %f\n", st.st_x, st.st_y, st.st_z);
 		break;
 	case '+':
 	case '_': {
