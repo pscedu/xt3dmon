@@ -15,3 +15,4 @@ $Id$
 26. overhaul color and contrast allocation on the color wheel
     for maximum performance and differienation
 27. clean up includes in files that do not need them
+28. wivframes shouldn't touch each other, blending
