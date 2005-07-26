@@ -11,7 +11,7 @@
 #endif
 
 #include <math.h>
-#include <stdio.h>
+//#include <stdio.h>
 
 #include "mon.h"
 #include "cdefs.h"

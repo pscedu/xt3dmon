@@ -15,7 +15,6 @@
 
 #include "cdefs.h"
 #include "mon.h"
-#include "buf.h"
 
 #define SLEEP_INTV	500
 

@@ -3,8 +3,6 @@
 #include <sys/param.h>
 #include <err.h>
 #include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include <math.h>
 #include <png.h>
 #include "mon.h"
