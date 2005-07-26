@@ -288,30 +288,56 @@ draw_mod(struct fvec *vp, struct fvec *dim, struct fill *fillp)
 void
 make_ground(void)
 {
+	struct fvec fv, fdim;
+	struct fill fill;
+
 	if (ground_dl)
 		glDeleteLists(ground_dl, 1);
 	ground_dl = glGenLists(1);
 	glNewList(ground_dl, GL_COMPILE);
 
-	glBegin(GL_QUADS);
 
 	/* Ground */
-	glColor3f(0.4f, 0.4f, 0.4f);
+	fill.f_r = 0.1f;
+	fill.f_g = 0.2f;
+	fill.f_b = 0.3f;
 	switch (st.st_vmode) {
 	case VM_WIREDONE:
-		glVertex3f( -st.st_winsp.iv_x / 2.0f, -0.1f, -st.st_winsp.iv_z / 2.0f);
-		glVertex3f( -st.st_winsp.iv_x / 2.0f, -0.1f, WI_DEPTH);
-		glVertex3f(WI_WIDTH, -0.1f, WI_DEPTH);
-		glVertex3f(WI_WIDTH, -0.1f, -st.st_winsp.iv_z / 2.0f);
+		fv.fv_x = -st.st_winsp.iv_x / 2.0f;
+		fv.fv_y = -0.2f;
+		fv.fv_z = -st.st_winsp.iv_z / 2.0f;
+
+		fdim.fv_w = WI_WIDTH - fv.fv_x;
+		fdim.fv_y = -fv.fv_y / 2.0f;
+		fdim.fv_d = WI_DEPTH - fv.fv_z;
+
+		glPushMatrix();
+		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
+		glBegin(GL_QUADS);
+		draw_box_filled(&fdim, &fill);
+		draw_box_outline(&fdim, &fill_black);
+		glEnd();
+		glPopMatrix();
 		break;
 	case VM_PHYSICAL:
-		glVertex3f( -5.0f, -0.1f, -5.0f);
-		glVertex3f( -5.0f, -0.1f, 2*ROWDEPTH + ROWSPACE + 5.0f);
-		glVertex3f(ROWWIDTH + 5.0f, -0.1f, 2*ROWDEPTH + ROWSPACE + 5.0f);
-		glVertex3f(ROWWIDTH + 5.0f, -0.1f, -5.0f);
+		fv.fv_x = -5.0f;
+		fv.fv_y = -0.2f;
+		fv.fv_z = -5.0f;
+
+		fdim.fv_w = ROWWIDTH - 2 * fv.fv_x;
+		fdim.fv_h = -fv.fv_y / 2.0f;
+		fdim.fv_d = 2 * ROWDEPTH + ROWSPACE - 2 * fv.fv_z;
+
+		glPushMatrix();
+		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
+		glBegin(GL_QUADS);
+		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
+		draw_box_filled(&fdim, &fill);
+		draw_box_outline(&fdim, &fill_black);
+		glEnd();
+		glPopMatrix();
 		break;
 	}
-	glEnd();
 
 	glLineWidth(5.0);
 	glBegin(GL_LINES);
