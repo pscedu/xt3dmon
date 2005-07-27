@@ -62,6 +62,12 @@ fail_eq(void *elem, void *arg)
 #define CMP(a, b) ((a) < (b) ? -1 : ((a) == (b) ? 0 : 1))
 
 int
+job_cmp(const void *a, const void *b)
+{
+	return (CMP((*(struct job **)a)->j_id, (*(struct job **)b)->j_id));
+}
+
+int
 temp_cmp(const void *a, const void *b)
 {
 	return (CMP((*(struct temp **)a)->t_cel, (*(struct temp **)b)->t_cel));
