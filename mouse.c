@@ -14,9 +14,10 @@
 #include "cdefs.h"
 #include "mon.h"
 
-int	 spkey, lastu, lastv;
-GLuint	 selbuf[1000];
-int	 render_mode = RM_RENDER;
+int	 	 spkey, lastu, lastv;
+GLuint	 	 selbuf[1000];
+int	 	 render_mode = RM_RENDER;
+struct panel	*panel_mobile;
 
 void
 mouseh_null(__unused int button, __unused int state, __unused int u, __unused int v)
@@ -29,11 +30,34 @@ mouseh_default(__unused int button, __unused int state, int u, int v)
 {
 	spkey = glutGetModifiers();
 //	if (spkey == 0 &&
-//	    button == GLUT_LEFT_BUTTON &&
-//	    state == GLUT_DOWN)
+	if (button == GLUT_LEFT_BUTTON &&
+	    state == GLUT_DOWN)
 		render_mode = RM_SELECT;
 	lastu = u;
 	lastv = v;
+
+	if (state == GLUT_UP && panel_mobile) {
+		panel_mobile->p_opts &= ~POPT_MOBILE;
+		panel_mobile->p_opts |= POPT_DIRTY;
+		panel_mobile = NULL;
+		glutMotionFunc(m_activeh_default);
+printf("reset\n");
+	}
+}
+
+void
+m_activeh_panel(int u, int v)
+{
+	int du = u - lastu, dv = v - lastv;
+
+	if (abs(du) + abs(dv) <= 1)
+		return;
+	lastu = u;
+	lastv = v;
+
+	panel_mobile->p_u += du;
+	panel_mobile->p_v -= dv;
+	panel_mobile->p_opts |= POPT_DIRTY;
 }
 
 void
@@ -87,8 +111,7 @@ sel_record_begin(void)
 	GLint viewport[4];
 	float clip;
 
-	clip = MIN(WI_CLIPX, WI_CLIPY);
-	clip = MIN(clip, WI_CLIPZ);
+	clip = MIN3(WI_CLIPX, WI_CLIPY, WI_CLIPZ);
 
 	glSelectBuffer(sizeof(selbuf) / sizeof(selbuf[0]), selbuf);
 	glGetIntegerv(GL_VIEWPORT, viewport);
@@ -97,9 +120,11 @@ sel_record_begin(void)
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
-	gluPickMatrix(lastu, win_height - lastv, 5, 5, viewport);
+	gluPickMatrix(lastu, win_height - lastv, 1, 1, viewport);
 	gluPerspective(FOVY, ASPECT, 0.1, clip);
 	glMatrixMode(GL_MODELVIEW);
+
+
 }
 
 #define SBI_LEN		0
@@ -110,15 +135,16 @@ sel_record_begin(void)
 void
 sel_record_process(GLint nrecs)
 {
-	GLuint minu, minv, *p, nid;
+	GLuint minu, minv, *p, name, origname;
+	int i, found, nametype;
 	struct node *n;
-	int i, found;
+	GLuint lastlen;
 
-	nid = 0; /* gcc */
+	name = 0; /* gcc */
 	found = 0;
 	minu = minv = UINT_MAX;
 	/* XXX:  sanity-check nrecs? */
-	for (i = 0, p = (GLuint *)selbuf; i < nrecs; i++, p += 3 + p[SBI_LEN]) {
+	for (i = 0, p = (GLuint *)selbuf; i < nrecs; i++, lastlen = p[SBI_LEN], p += 3 + p[SBI_LEN]) {
 		/*
 		 * Each record consists of the following:
 		 *	- the number of names in this stack frame,
@@ -133,27 +159,43 @@ sel_record_process(GLint nrecs)
 			if (p[SBI_VDST] < minv) {
 				minv = p[SBI_VDST];
 				found = 1;
-				nid = p[SBI_NAMEOFF];
+				name = p[SBI_NAMEOFF];
 			}
 		}
 
 	}
-	if (found && (n = node_for_nid(nid)) != NULL) {
-		switch (spkey) {
-		case GLUT_ACTIVE_SHIFT:
-			sel_add(n);
+	if (found) {
+		glnametype(name, &origname, &nametype);
+		switch (nametype) {
+		case GNAMT_NODE:
+			if ((n = node_for_nid(name)) != NULL) {
+				switch (spkey) {
+				case GLUT_ACTIVE_SHIFT:
+					sel_add(n);
+					break;
+				case GLUT_ACTIVE_CTRL:
+					sel_del(n);
+					break;
+				case 0:
+					sel_set(n);
+					break;
+				}
+				if (SLIST_EMPTY(&selnodes))
+					panel_hide(PANEL_NINFO);
+				else
+					panel_show(PANEL_NINFO);
+			}
 			break;
-		case GLUT_ACTIVE_CTRL:
-			sel_del(n);
-			break;
-		case 0:
-			sel_set(n);
+		case GNAMT_PANEL:
+			if (spkey == GLUT_ACTIVE_CTRL) {
+				glutMotionFunc(m_activeh_panel);
+				/* GL giving us crap. */
+				if ((panel_mobile =
+				    panel_for_id(origname)) != NULL)
+					panel_mobile->p_opts |= POPT_MOBILE;
+			} else printf("clicked panel\n");
 			break;
 		}
-		if (SLIST_EMPTY(&selnodes))
-			panel_hide(PANEL_NINFO);
-		else
-			panel_show(PANEL_NINFO);
 	}
 }
 
