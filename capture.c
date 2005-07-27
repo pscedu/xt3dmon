@@ -163,9 +163,12 @@ fb_mem_png(int x, int y, int w, int h)
 	 * extremely nasty and will probably take awhile...
 	 */
 	if (i >= NUM_FRAMES) {
-		for (k = 0; k < NUM_FRAMES; k++) {
-			snprintf(file, sizeof(file), "ppm/%0*d.png",
-			    (int)ceilf(log10f(MAX_FRAMES)), j++);
+		for (k = 0; k < NUM_FRAMES; k++, j++) {
+			if (st.st_opts & OP_STEREO)
+				snprintf(file, sizeof(file), "ppm/%c%010d.png",
+				    j % 2 ? 'r' : 'l', j / 2);
+			else
+				snprintf(file, sizeof(file), "ppm/%010d.png", j);
 			data2png(file, fbuf[k], w, h);
 		}
 		i = 0;
