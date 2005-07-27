@@ -1,5 +1,6 @@
 /* $Id$ */
 
+#include "cdefs.h"
 #include "mon.h"
 
 struct job *
