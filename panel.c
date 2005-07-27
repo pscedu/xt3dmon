@@ -149,6 +149,10 @@ draw_panel(struct panel *p)
 		u = win_width - w;
 		v = win_height - panel_offset;
 	}
+	if (p->p_opts & POPT_MOBILE) {
+		u = p->p_u;
+		v = p->p_v;
+	}
 
 	tweenadj = MAX(abs(p->p_u - u), abs(p->p_v - v));
 	tweenadj = MAX(tweenadj, abs(p->p_w - w));
@@ -263,6 +267,7 @@ draw_panel(struct panel *p)
 			break;
 	}
 
+	glPushName(mkglname(p->p_id, GNAMT_PANEL));
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -286,6 +291,7 @@ draw_panel(struct panel *p)
 	glVertex2d(p->p_u + p->p_w,	p->p_v - p->p_h);
 	glVertex2d(p->p_u,		p->p_v - p->p_h);
 	glEnd();
+	glPopName();
 
 	/* End 2D mode. */
 	glPopMatrix();
@@ -448,6 +454,8 @@ panel_refresh_legend(struct panel *p)
 void
 panel_refresh_ninfo(struct panel *p)
 {
+	struct objhdr *ohp;
+	struct objlist *ol;
 	struct selnode *sn;
 	struct node *n;
 
@@ -464,10 +472,11 @@ panel_refresh_ninfo(struct panel *p)
 
 	if (nselnodes > 1) {
 		char *label, nids[BUFSIZ], data[BUFSIZ];
-		size_t nids_pos, data_pos;
+		size_t j, nids_pos, data_pos;
 
 		nids[0] = data[0] = '\0';
 		nids_pos = data_pos = 0;
+
 		SLIST_FOREACH(sn, &selnodes, sn_next) {
 			n = sn->sn_nodep;
 			nids_pos += snprintf(nids + nids_pos,
@@ -477,40 +486,58 @@ panel_refresh_ninfo(struct panel *p)
 			switch (st.st_mode) {
 			case SM_JOBS:
 				if (n->n_state == JST_USED)
-					data_pos += snprintf(data + data_pos,
-					    sizeof(data) - data_pos, ",%d",
-					    n->n_job->j_id);
+					n->n_job->j_oh.oh_flags |= ~OHF_SEL;
 				break;
 			case SM_TEMP:
-				data_pos += snprintf(data + data_pos,
-				    sizeof(data) - data_pos, ",%d",
-				    n->n_temp->t_cel);
 				break;
 			case SM_FAIL:
-				data_pos += snprintf(data + data_pos,
-				    sizeof(data) - data_pos, ",%d",
-				    n->n_fail->f_fails);
 				break;
+			}
+		}
+
+		label = NULL; /* gcc */
+		ol = NULL; /* gcc */
+		switch (st.st_mode) {
+		case SM_JOBS:
+			label = "Job IDs";
+			ol = &job_list;
+			break;
+		case SM_TEMP:
+			label = "Temperatures";
+			ol = &temp_list;
+			break;
+		case SM_FAIL:
+			label = "Failures";
+			ol = &fail_list;
+			break;
+		}
+
+		for (j = 0; j < ol->ol_cur; j++) {
+			ohp = ol->ol_data[j];
+			if (ohp->oh_flags & OHF_SEL) {
+printf("found it\n");
+				ohp->oh_flags &= ~OHF_SEL;
+				switch (st.st_mode) {
+				case SM_JOBS:
+					data_pos += snprintf(data + data_pos,
+					    sizeof(data) - data_pos, ",%d",
+					    ((struct job *)ohp)->j_id);
+					break;
+				case SM_TEMP:
+					break;
+				case SM_FAIL:
+					break;
+				}
 			}
 			if (data_pos >= sizeof(data))
 				break;
 		}
 
-		label = NULL; /* gcc */
-		switch (st.st_mode) {
-		case SM_JOBS:
-			label = "Job IDs";
-			break;
-		case SM_TEMP:
-			label = "Temperatures";
-			break;
-		case SM_FAIL:
-			label = "Failures";
-			break;
-		}
+		if (data[0] == '\0')
+			strncpy(data, "_(none)", sizeof(data) - 1);
 
 		panel_set_content(p,
-		    "Selected %d nodes\n"
+		    "%d node(s) selected\n"
 		    "Node IDs: %s\n"
 		    "%s: %s",
 		    nselnodes, nids + 1,
@@ -712,6 +739,17 @@ draw_panels(void)
 		p->p_refresh(p);
 		draw_panel(p);
 	}
+}
+
+struct panel *
+panel_for_id(int id)
+{
+	struct panel *p;
+
+	TAILQ_FOREACH(p, &panels, p_link)
+		if (p->p_id == id)
+			return (p);
+	return (NULL);
 }
 
 void
