@@ -127,7 +127,7 @@
 #define PNG_FRAMES	4
 #define PPM_FRAMES	3
 
-/* HSV Constants */
+/* HSV constants. */
 #define HUE_MIN 0
 #define HUE_MAX 360
 #define SAT_MIN 0.3
@@ -135,9 +135,14 @@
 #define VAL_MIN 0.5
 #define VAL_MAX 1.0
 
+/* Flyby modes. */
 #define FBM_OFF		0
 #define FBM_PLAY	1
 #define FBM_REC		2
+
+/* GL name types. */
+#define GNAMT_NODE	1	/* must start at 1 */
+#define GNAMT_PANEL	2
 
 struct fvec {
 	float		 fv_x;
@@ -184,7 +189,12 @@ struct fill {
 struct objhdr {
 	int		 oh_ref;
 	int		 oh_tref;		/* temporarily referenced */
+	int		 oh_flags;
 };
+
+#define OHF_REF		(1<<0)			/* object is referenced */
+#define OHF_TREF	(1<<1)			/* temporarily referenced */
+#define OHF_SEL		(1<<2)			/* selected */
 
 #define JFL_OWNER	32
 #define JFL_NAME	20
@@ -344,6 +354,7 @@ struct panel {
 
 #define POPT_REMOVE	(1<<0)			/* being removed */
 #define POPT_DIRTY	(1<<1)			/* panel needs redrawn */
+#define POPT_MOBILE	(1<<2)			/* being dragged */
 
 TAILQ_HEAD(panels, panel);
 
@@ -473,6 +484,8 @@ void			 idle_govern(void);
 void			 idle(void);
 void			 update_textures(void);
 void			 restore_textures(void);
+unsigned int		 mkglname(unsigned int, int);
+void			 glnametype(unsigned int, unsigned int *, int *);
 
 /* mouse.c */
 void			 m_activeh_default(int, int);
@@ -503,6 +516,7 @@ void			 panel_show(int);
 void			 panel_hide(int);
 void			 panel_status_addinfo(const char *, ...);
 void			 panel_status_setinfo(const char *, ...);
+struct panel		*panel_for_id(int);
 void			 flip_panels(int);
 
 /* parse.c */
