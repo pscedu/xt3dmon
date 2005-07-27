@@ -315,6 +315,31 @@ rebuild(int opts)
 		make_select();
 }
 
+unsigned int
+mkglname(unsigned int name, int type)
+{
+	switch (type) {
+	case GNAMT_PANEL:
+		name += NID_MAX;
+		break;
+	}
+	return (name);
+}
+
+void
+glnametype(unsigned int name, unsigned int *origname, int *type)
+{
+	*type = 0;
+	if (name > NID_MAX) {
+		name -= NID_MAX;
+		if (*type == 0)
+			*type = GNAMT_PANEL;
+	}
+	if (*type == 0)
+		*type = GNAMT_NODE;
+	*origname = name;
+}
+
 int
 main(int argc, char *argv[])
 {
