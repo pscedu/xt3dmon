@@ -49,7 +49,6 @@ flyby_begin(int mode)
 			err(1, "%s", _PATH_FLYBY);
 		}
 		flyby_mode = FBM_PLAY;
-		rebuild(RF_INIT);
 
 		glutMotionFunc(m_activeh_null);
 		glutPassiveMotionFunc(m_passiveh_null);
@@ -163,6 +162,7 @@ flyby_read(void)
 			    sizeof(fbi))
 				err(1, "flyby read init");
 			st = fbi.fbi_state;
+			st.st_rf ^= RF_INIT;
 			init_panels(fbi.fbi_panels);
 			done = 1;
 			break;
