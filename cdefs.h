@@ -6,6 +6,8 @@
 
 #define __unused __attribute__((__unused__))
 
+#define MID(max, min) (((max) + (min)) / 2.0)
+
 #ifndef MIN
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
