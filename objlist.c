@@ -17,11 +17,11 @@ struct objlist	 temp_list = { { NULL }, 0, 0, 0, 0, TINCR, sizeof(struct temp), 
 struct objlist	 fail_list = { { NULL }, 0, 0, 0, 0, FINCR, sizeof(struct fail), temp_eq };
 
 struct fail fail_notfound = {
-	{ 0, 0 }, 0, { 0.33f, 0.66f, 0.99f, 1.00f, 0, 0 }, "0"
+	{ 0, 0, 0 }, 0, { 0.33f, 0.66f, 0.99f, 1.00f, 0, 0 }, "0"
 };
 
 struct temp temp_notfound = {
-	{ 0, 0 }, 0, { 0.00f, 0.00f, 0.00f, 1.00f, 0, 0 }, "?"
+	{ 0, 0, 0 }, 0, { 0.00f, 0.00f, 0.00f, 1.00f, 0, 0 }, "?"
 };
 
 struct temp_range temp_map[] = {
