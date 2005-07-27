@@ -486,7 +486,7 @@ panel_refresh_ninfo(struct panel *p)
 			switch (st.st_mode) {
 			case SM_JOBS:
 				if (n->n_state == JST_USED)
-					n->n_job->j_oh.oh_flags |= ~OHF_SEL;
+					n->n_job->j_oh.oh_flags |= OHF_SEL;
 				break;
 			case SM_TEMP:
 				break;
@@ -515,7 +515,6 @@ panel_refresh_ninfo(struct panel *p)
 		for (j = 0; j < ol->ol_cur; j++) {
 			ohp = ol->ol_data[j];
 			if (ohp->oh_flags & OHF_SEL) {
-printf("found it\n");
 				ohp->oh_flags &= ~OHF_SEL;
 				switch (st.st_mode) {
 				case SM_JOBS:
