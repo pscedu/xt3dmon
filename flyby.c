@@ -162,7 +162,7 @@ flyby_read(void)
 			    sizeof(fbi))
 				err(1, "flyby read init");
 			st = fbi.fbi_state;
-			st.st_rf ^= RF_INIT;
+			st.st_rf |= RF_INIT;
 			init_panels(fbi.fbi_panels);
 			done = 1;
 			break;
