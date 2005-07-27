@@ -234,7 +234,7 @@ draw_node(struct node *n, int flags)
 
 	if ((flags & NDF_DONTPUSH) == 0) {
 		glPushMatrix();
-		glPushName(n->n_nid);
+		glPushName(mkglname(n->n_nid, GNAMT_NODE));
 		glTranslatef(vp->fv_x, vp->fv_y, vp->fv_z);
 	}
 
