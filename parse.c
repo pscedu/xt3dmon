@@ -713,7 +713,8 @@ parse_tempmap(void)
 			node = &nodes[r][cb][cg][m][i];
 			temp = getobj(&t, &temp_list);
 			temp->t_cel = t;
-			free(temp->t_name);	/* getobj() zeroes data. */
+			free(temp->t_name);
+			temp->t_name = NULL;
 			if (asprintf(&temp->t_name, "%dC", t) == -1)
 				err(1, "asprintf");
 			node->n_fillp = &temp->t_fill;
