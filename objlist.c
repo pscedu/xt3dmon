@@ -82,17 +82,13 @@ fail_cmp(const void *a, const void *b)
 void
 obj_batch_start(struct objlist *ol)
 {
-	struct objhdr *ohp;
-	void **jj;
 	size_t n;
 
 	ol->ol_tcur = 0;
 	if (ol->ol_data == NULL)
 		return;
-	for (n = 0, jj = ol->ol_data; n < ol->ol_cur; jj++, n++) {
-		ohp = (struct objhdr *)*jj;
-		ohp->oh_tref = 0;
-	}
+	for (n = 0; n < ol->ol_cur; n++)
+		((struct objhdr *)ol->ol_data[n])->oh_tref = 0;
 }
 
 void
@@ -100,16 +96,15 @@ obj_batch_end(struct objlist *ol)
 {
 	struct objhdr *ohp, *swapohp;
 	size_t n, lookpos;
-	void *t, **jj;
+	void *t;
 
+	ol->ol_max = MAX(ol->ol_max, ol->ol_tcur);
 	ol->ol_cur = ol->ol_tcur;
-	if (ol->ol_tcur > ol->ol_max)
-		ol->ol_max = ol->ol_tcur;
 	if (ol->ol_data == NULL)
 		return;
 	lookpos = 0;
-	for (n = 0, jj = ol->ol_data; n < ol->ol_cur; jj++, n++) {
-		ohp = (struct objhdr *)*jj;
+	for (n = 0; n < ol->ol_cur; n++) {
+		ohp = (struct objhdr *)ol->ol_data[n];
 		if (ohp->oh_tref)
 			ohp->oh_ref = 1;
 		else {
@@ -186,7 +181,7 @@ getcol(int n, size_t total, struct fill *fillp)
 {
 #if 0
 	double div;
-	
+
 	if (total == 1)
 		div = 0.0;
 	else
