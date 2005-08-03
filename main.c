@@ -3,6 +3,7 @@
 #include "compat.h"
 
 #include <math.h>
+#include <time.h>
 
 #include "cdefs.h"
 #include "mon.h"
