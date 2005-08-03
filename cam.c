@@ -1,5 +1,7 @@
 /* $Id$ */
 
+#include "compat.h"
+
 #include <math.h>
 
 #include "cdefs.h"
