@@ -1,15 +1,6 @@
 /* $Id$ */
 
-#include <sys/param.h>
-#include <sys/time.h>
-
-#ifdef __APPLE_CC__
-# include <OpenGL/gl.h>
-# include <GLUT/glut.h>
-#else
-# include <GL/gl.h>
-# include <GL/freeglut.h>
-#endif
+#include "compat.h"
 
 #include <math.h>
 
@@ -41,7 +32,7 @@ struct ivec		 widim;
 struct fvec		 tv = { STARTX, STARTY, STARTZ };
 struct fvec		 tlv = { STARTLX, STARTLY, STARTLZ };
 GLint			 cluster_dl, ground_dl, select_dl;
-struct timeval		 lastsync;
+clock_t			 lastsync;
 long			 fps = 50;
 
 const char *opdesc[] = {
@@ -96,8 +87,6 @@ struct job_state jstates[] = {
 	{ "Bad",		{ 1.00f, 0.75f, 0.75f, 1.00f, 0, GL_INTENSITY} },	/* Pink */
 	{ "Checking",		{ 0.00f, 1.00f, 0.00f, 1.00f, 0, GL_INTENSITY} }	/* Green */
 };
-
-struct node *selnode;
 
 void
 reshape(int w, int h)
@@ -154,49 +143,45 @@ refresh_state(int oldopts)
 void
 idle_govern(void)
 {
-	struct timeval time, diff;
-	static struct timeval ftime = {0,0};
-	static struct timeval ptime = {0,0};
-	static long fcnt = 0;
+	static clock_t lastdraw_tm;
+	clock_t tm, diff;
 
-	gettimeofday(&time, NULL);
-	timersub(&time, &ptime, &diff);
-	if (diff.tv_sec * 1e9 + diff.tv_usec >= FPS_TO_USEC(GOVERN_FPS)) {
-		timersub(&time, &ftime, &diff);
-		if (diff.tv_sec >= 1) {
-			ftime = time;
-			fps = fcnt;
-			fcnt = 0;
-		}
-		timersub(&time, &lastsync, &diff);
-		if (diff.tv_sec >= SLEEP_INTV) {
-			lastsync = time;
+	if ((tm = clock()) == -1)
+		err(1, "clock");
+	diff = tm - lastdraw_tm;
+	if (diff >= GOVERN_FPS * CLOCKS_PER_SEC) {
+		diff = tm - lastsync;
+		if (diff >= SLEEP_INTV * CLOCKS_PER_SEC) {
+			lastsync = tm;
 			st.st_rf |= RF_DATASRC | RF_CLUSTER;
 			panel_status_setinfo("");
 		}
-		ptime = time;
+		lastdraw_tm = tm;
 		draw();
-		fcnt++;
 	}
 }
 
 void
 idle(void)
 {
+	static clock_t fps_tm;
 	static int tcnt, cnt;
 
 	tcnt++;
 	if (++cnt >= fps) {
-		struct timeval tv, diff;
+		clock_t tm, diff;
 
-		if (gettimeofday(&tv, NULL) == -1)
-			err(1, "gettimeofday");
-		timersub(&tv, &lastsync, &diff);
-		if (diff.tv_sec)
-			fps = tcnt / (diff.tv_sec + diff.tv_usec / 1e9f);
-		if (diff.tv_sec > SLEEP_INTV) {
+		if ((tm = clock()) == -1)
+			err(1, "clock");
+		diff = tm - fps_tm;
+		if (diff >= 1 * CLOCKS_PER_SEC) {
+			fps = tcnt * diff / CLOCKS_PER_SEC;
+			fps_tm = tm;
 			tcnt = 0;
-			lastsync = tv;
+		}
+		diff = tm - lastsync;
+		if (diff >= SLEEP_INTV * CLOCKS_PER_SEC) {
+			lastsync = tm;
 			st.st_rf |= RF_DATASRC | RF_CLUSTER;
 			panel_status_setinfo("");
 		}
@@ -270,7 +255,7 @@ rebuild(int opts)
 {
 	if (opts & RF_TEX) {
 		del_textures();
-		load_textures();
+//		load_textures();
 	}
 	if (opts & RF_PHYSMAP)
 		datasrcsw[datasrc].ds_physmap();
