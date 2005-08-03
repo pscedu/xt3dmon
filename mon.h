@@ -1,18 +1,10 @@
 /* $Id$ */
 
+#include "compat.h"
+
 #include <sys/queue.h>
 
-#include <stdio.h>
-
 #include <mysql.h>
-
-#ifdef __APPLE_CC__
-# include <OpenGL/gl.h>
-# include <GLUT/glut.h>
-#else
-# include <GL/gl.h>
-# include <GL/freeglut.h>
-#endif
 
 #include "buf.h"
 #include "queue.h"
