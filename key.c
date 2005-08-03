@@ -2,7 +2,6 @@
 
 #include <errno.h>
 #include <math.h>
-#include <unistd.h>
 
 #include "buf.h"
 #include "cdefs.h"
