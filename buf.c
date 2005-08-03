@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sysexits.h>
 
 #include "buf.h"
 
@@ -24,7 +23,7 @@ buf_realloc(struct buf *buf)
 
 	if ((ptr = realloc(buf->buf_buf,
 	     buf->buf_max * sizeof(*buf->buf_buf))) == NULL)
-		err(EX_OSERR, "realloc");
+		err(1, "realloc");
 	buf->buf_buf = ptr;
 }
 
