@@ -1,5 +1,6 @@
 /* $Id$ */
 
+#include "compat.h"
 #include "mon.h"
 
 #define TWEEN_THRES	(0.001f)

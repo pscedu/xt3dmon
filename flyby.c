@@ -1,5 +1,7 @@
 /* $Id$ */
 
+#include "compat.h"
+
 #include <err.h>
 #include <errno.h>
 #include <stdio.h>

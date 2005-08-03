@@ -1,8 +1,6 @@
 /* $Id$ */
 
-#if defined(__GNUC__ ) && !defined(_GNU_SOURCE)
-#define _GNU_SOURCE	/* asprintf */
-#endif
+#include "compat.h"
 
 #include <err.h>
 #include <limits.h>

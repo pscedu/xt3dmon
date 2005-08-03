@@ -1,13 +1,9 @@
 /* $Id$ */
 
+#include "compat.h"
+
 #include <err.h>
 #include <stdlib.h>
-
-#ifdef __APPLE_CC__
-# include <OpenGL/gl.h>
-#else
-# include <GL/gl.h>
-#endif
 
 #include <png.h>
 

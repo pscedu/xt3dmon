@@ -10,17 +10,7 @@
  *	    "dirty."
  */
 
-#if defined(__GNUC__) && !defined(_GNU_SOURCE)
-#define _GNU_SOURCE /* asprintf, disgusting */
-#endif
-
-#ifdef __APPLE_CC__
-# include <OpenGL/gl.h>
-# include <GLUT/glut.h>
-#else
-# include <GL/gl.h>
-# include <GL/freeglut.h>
-#endif
+#include "compat.h"
 
 #include <err.h>
 #include <math.h>
