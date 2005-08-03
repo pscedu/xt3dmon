@@ -1,10 +1,6 @@
 /* $Id$ */
 
-#if defined(__GNUC__) && !defined(_GNU_SOURCE)
-#define _GNU_SOURCE	/* asprintf */
-#endif
-
-#include <sys/param.h>
+#include "compat.h"
 
 #include <ctype.h>
 #include <err.h>
@@ -12,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 #include "mon.h"
 
@@ -529,8 +526,8 @@ parse_failmap(void)
 						node->n_fillp = &fail_notfound.f_fill;
 					}
 
-	total_failures = newmax = 0;
-	lineno = 0;
+	total_failures = lineno = 0;
+	newmax = 0;
 	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		lineno++;
 		p = buf;
