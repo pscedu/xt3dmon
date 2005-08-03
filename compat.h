@@ -1,5 +1,8 @@
 /* $Id$ */
 
+#ifndef _COMPAT_H
+#define _COMPAT_H
+
 #ifdef _MSC_VER
 # include <stdarg.h>
 
@@ -27,6 +30,8 @@ int ffs(int);
 # undef __inline
 # define __inline
 
+#undef SLIST_ENTRY
+
 #elif defined(__APPLE_CC__)
 
 # include <sys/param.h>
@@ -45,3 +50,5 @@ int ffs(int);
 # include <GL/gl.h>
 # include <GL/freeglut.h>
 #endif
+
+#endif /* _COMPAT_H */
