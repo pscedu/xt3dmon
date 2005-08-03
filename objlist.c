@@ -1,7 +1,6 @@
 /* $Id$ */
 
-#include <sys/param.h>
-
+#include "cdefs.h"
 #include "mon.h"
 
 #define JINCR		10
