@@ -1,13 +1,11 @@
 /* $Id$ */
 
+#include "compat.h"
+
 #include <math.h>
 
 #include "cdefs.h"
 #include "mon.h"
-
-/* GNU C bullshit. */
-extern double fmax(double, double);
-extern double fmin(double, double);
 
 /*
  *	y			12
@@ -266,8 +264,8 @@ RGB2HSV(struct fill *c)
 	float max, min, ran;
 	float rc, gc, bc;
 
-	max = fmax(fmax(r,g), b);
-	min = fmin(fmin(r,g), b);
+	max = MAX3(r, g, b);
+	min = MIN3(r, g, b);
 	ran = max - min;
 
 	c->f_h = 0;
