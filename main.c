@@ -176,7 +176,7 @@ idle(void)
 			err(1, "clock");
 		diff = tm - fps_tm;
 		if (diff >= 1 * CLOCKS_PER_SEC) {
-			fps = tcnt * diff / CLOCKS_PER_SEC;
+			fps = tcnt * CLOCKS_PER_SEC / diff;
 			fps_tm = tm;
 			tcnt = 0;
 		}
