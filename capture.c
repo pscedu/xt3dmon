@@ -1,6 +1,6 @@
 /* $Id$ */
 
-#include <sys/param.h>
+#include "compat.h"
 
 #include <err.h>
 #include <math.h>
@@ -10,14 +10,6 @@
 #include <string.h>
 
 #include "mon.h"
-
-#ifdef __APPLE_CC__
-# include <OpenGL/gl.h>
-# include <GLUT/glut.h>
-#else
-# include <GL/gl.h>
-# include <GL/freeglut.h>
-#endif
 
 #define NUM_FRAMES 200
 #define MAX_FRAMES 25000
