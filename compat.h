@@ -26,7 +26,7 @@ int asprintf(char **, const char *, ...);
 int ffs(int);
 int snprintf(char *, size_t, const char *, ...);
 int vsnprintf(char *, size_t, const char *, va_list);
-int gettimeofday(struct timeval*, void*);
+int gettimeofday(struct timeval *, void *);
 
 
 /* Taken from sys/time.h */
