@@ -11,24 +11,75 @@
 
 #include "mon.h"
 
-#define NUM_FRAMES 200
-#define MAX_FRAMES 25000
-static unsigned char *fbuf[NUM_FRAMES];
+#define _PATH_SSDIR	"snaps"
 
-/* Convert data to png */
+#define NUM_FRAMES	200
+#define MAX_FRAMES	25000
+
+void ppm_write(const char *, unsigned char *, long, long);
+void jpg_write(const char *, unsigned char *, long, long);
+void png_write(const char *, unsigned char *, long, long);
+
+struct capture_format {
+	const char	 *cf_ext;
+	int		  cf_size;
+	void		(*cf_writef)(const char *, unsigned char *, long, long);
+	int		  cf_glmode;
+} capture_formats[] = {
+	/* These must correspond to the CM_* constants. */
+	{ "png", 4, png_write, GL_RGBA },
+	{ "ppm", 3, ppm_write, GL_RGB },
+	{ "jpg", 3, jpg_write, GL_RGB }
+};
+
+static unsigned char *fbuf[NUM_FRAMES];
+static int stereo_left;
+static int fbuf_pos;
+static int capture_pos;
+
+/* Save buffer as PPM. */
 void
-data2png(char *file, unsigned char *buf, long w, long h)
+ppm_write(const char *fn, unsigned char *buf, long w, long h)
 {
 	FILE *fp;
-	int i;
+
+	if ((fp = fopen(fn, "wb")) == NULL)
+		err(1, "%s", fn);
+	fprintf(fp, "P6 %ld %ld %d\n", w, h, 255);
+	fwrite(buf, 3 * w * h, 1, fp);
+	fclose(fp);
+}
+
+/* Save buffer as JPEG. */
+void
+jpg_write(const char *fn, unsigned char *buf, long w, long h)
+{
+	char cmd[BUFSIZ];
+
+	ppm_write(fn, buf, w, h);
+
+	/* XXX:  DEBUG (definitely remove later!) */
+	memset(cmd, '\0', sizeof(cmd));
+	snprintf(cmd, sizeof(cmd), "cjpeg -quality 100 %s | "
+	    "jpegtran -flip vertical > %s.jpg; rm %s",
+	    fn, fn, fn);
+	system(cmd);
+}
+
+/* Save buffer as PNG. */
+void
+png_write(const char *fn, unsigned char *buf, long w, long h)
+{
 	png_structp png;
-	png_infop info;
 	png_bytepp rows;
+	png_infop info;
+	FILE *fp;
+	int i;
 
-	if ((fp = fopen(file,"wb")) == NULL)
-		err(1, "%s", file);
+	if ((fp = fopen(fn, "wb")) == NULL)
+		err(1, "%s", fn);
 
-	/* Setup PNG file structure */
+	/* Setup PNG file structure. */
 	if ((png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL,
 	    NULL, NULL)) == NULL)
 		errx(1, "png_create_write_struct failed");
@@ -80,205 +131,101 @@ data2png(char *file, unsigned char *buf, long w, long h)
 	fclose(fp);
 }
 
-/* Take a screenshot from the current framebuffer (PNG). */
 void
-ss_png(char *file, int x, int y, int w, int h)
+capture_writeback(int mode)
 {
-	unsigned char *buf;
-	long size;
-
-	/* num pixels * 4 bytes per pixel (RGBA). */
-	size = w * h * 4;
-	if ((buf = malloc(size * sizeof(unsigned char))) == NULL)
-		err(1, "malloc");
-
-	/* Read data from the framebuffer */
-	glReadPixels(x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, buf);
-
-	/* Write data to buf */
-	data2png(file, buf, w, h);
-
-	free(buf);
-}
-
-/* Take a screenshot from the current framebuffer (PPM). */
-void
-ss_ppm(char *file, int x, int y, int w, int h)
-{
-	unsigned char *buf;
-	long size;
-	FILE *fp;
-
-	if ((fp = fopen(file, "wb")) == NULL)
-		err(1, "%s", file);
-
-	/* Size = num pixels * 3 bytes per pixel (RGB) */
-	size = w * h * 3;
-	if ((buf = malloc(size * sizeof(unsigned char))) == NULL)
-		err(1, "malloc");
-
-	/* Read data from the framebuffer */
-	glReadPixels(x, y, w, h, GL_RGB, GL_UNSIGNED_BYTE, buf);
-
-	/* Currently uses PPM format */
-	fprintf(fp, "P6 %d %d %d\n", w, h, 255);
-	fwrite(buf, size, 1, fp);
-	fclose(fp);
-
-	free(buf);
-
-	// DEBUG - Pipe to JPEG Tools
-//	memset(cmd, '\0', sizeof(cmd));
-//	snprintf(cmd, sizeof(cmd),"/usr/local/bin/cjpeg -quality 100 %s | /usr/local/bin/jpegtran -flip vertical > %s.jpg; rm %s", file, file, file);
-//	system(cmd);
-}
-
-/*
-** Invert the y pixels because OpenGL
-void invert()
-{
-
-}
-*/
-
-/* Dump Framebuffer into memory write at end */
-void
-fb_mem_png(int x, int y, int w, int h)
-{
-	char file[PATH_MAX];
-	static int i = 0;
-	static int j = 1;
+	char fn[PATH_MAX];
+	const char *ext;
 	int k;
 
-	/*
-	 * After we reach max frames, dump them.  NOTE: this is
-	 * extremely nasty and will probably take awhile...
-	 */
-	if (i >= NUM_FRAMES) {
-		for (k = 0; k < NUM_FRAMES; k++, j++) {
-			if (st.st_opts & OP_STEREO)
-				snprintf(file, sizeof(file), "ppm/%c%010d.png",
-				    j % 2 ? 'r' : 'l', j / 2);
-			else
-				snprintf(file, sizeof(file), "ppm/%010d.png", j);
-			data2png(file, fbuf[k], w, h);
-		}
-		i = 0;
+printf("writeback %d frames\n", fbuf_pos);
+
+	ext = capture_formats[mode].cf_ext;
+	for (k = 0; k < fbuf_pos; k++, capture_pos++,
+	    stereo_left = !stereo_left) {
+		if (st.st_opts & OP_STEREO)
+			snprintf(fn, sizeof(fn), "%s/%c%07d.%s",
+			    _PATH_SSDIR, stereo_left ? 'l' : 'r',
+			    capture_pos / 2, ext);
+		else
+			snprintf(fn, sizeof(fn), "%s/%07d.%s",
+			    _PATH_SSDIR, capture_pos, ext);
+		capture_formats[mode].cf_writef(fn, fbuf[k],
+		    win_width, win_height);
 	}
-
-	/* Read data from the framebuffer. */
-	glReadPixels(x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, fbuf[i]);
-	i++;
-}
-
-/* Capture screenshots (buffered) and save as PPM (portable pixmaps). */
-void
-fb_mem_ppm(int x, int y, int w, int h)
-{
-	char file[PATH_MAX], cmd[NAME_MAX];
-	static int i = 0;
-	static int j = 1;
-	long size;
-	FILE *fp;
-	int k;
-
-	/* num pixels * 3 bytes per pixel (RGB). */
-	size = w * h * 3;
-
-	/*
-	 * After we reach max frames, dump them.  NOTE: this is
-	 * extremely nasty and will probably take awhile...
-	 */
-	if (i >= NUM_FRAMES) {
-		for (k = 0; k < NUM_FRAMES; k++) {
-			snprintf(file, sizeof(file), "ppm/%0*d.ppm",
-			    (int)ceilf(log10f(MAX_FRAMES)), j++);
-
-			if ((fp = fopen(file, "wb")) == NULL)
-				err(1, "%s", file);
-
-			/* Currently uses PPM format */
-			fprintf(fp, "P6 %d %d %d\n", w, h, 255);
-			fwrite(fbuf[k], size, 1, fp);
-			fclose(fp);
-
-			// DEBUG (definately remove later!)
-			memset(cmd, '\0', sizeof(cmd));
-			snprintf(cmd, sizeof(cmd),
-			    "cjpeg -quality 100 %s | "
-			    "jpegtran -flip vertical > %s.jpg; rm %s",
-			    file, file, file);
-			system(cmd);
-		}
-
-		i = 0;
-	}
-
-	/* Read data from the framebuffer */
-	glReadPixels(x, y, w, h, GL_RGB, GL_UNSIGNED_BYTE, fbuf[i]);
-
-	i++;
 }
 
 void
-begin_capture(int mode)
+capture_begin(int mode)
 {
-	int i;
-	GLint vp[4];
 	long size = 0;
+	int i;
 
 	glMatrixMode(GL_PROJECTION);
-	glGetIntegerv(GL_VIEWPORT, vp);
 	glMatrixMode(GL_MODELVIEW);
 
-	/* RGB(A?) */
-	size = vp[2] * vp[3] * mode;
+	/*
+	 * XXX: make sure this gets called whenever
+	 * the output file format changes.
+	 */
+	size = win_width * win_height * capture_formats[mode].cf_size;
 
-	for(i = 0; i < NUM_FRAMES; i++)
-		if ((fbuf[i] = malloc(size * sizeof(unsigned char))) == NULL)
+	for (i = 0; i < NUM_FRAMES; i++)
+		if ((fbuf[i] = malloc(size * sizeof(*fbuf[i]))) == NULL)
 			err(1, "malloc");
+	stereo_left = 1;
 }
 
 void
-end_capture(void)
+capture_end(void)
 {
 	int i;
 
+	capture_writeback(capture_mode);
 	for (i = 0; i < NUM_FRAMES; i++)
 		free(fbuf[i]);
 }
 
-
-/* Start capturing frames from the framebuffer */
 void
-capture_fb(int mode)
+capture_copyfb(int mode, unsigned char *buf)
 {
-	GLint vp[4];
-
 	glMatrixMode(GL_PROJECTION);
-	glGetIntegerv(GL_VIEWPORT, vp);
 
-	if (mode == PNG_FRAMES)
-		fb_mem_png(vp[0], vp[1], vp[2], vp[3]);
-	else
-		fb_mem_ppm(vp[0], vp[1], vp[2], vp[3]);
+	/* Read data from the framebuffer. */
+	glReadPixels(0, 0, win_width, win_height,
+	    capture_formats[mode].cf_glmode, GL_UNSIGNED_BYTE, buf);
 
 	glMatrixMode(GL_MODELVIEW);
 }
 
-/* Take a screenshot in png format */
+/* Capture a frame. */
 void
-screenshot(char *file, int mode)
+capture_frame(int mode)
 {
-	GLint vp[4];
+	/*
+	 * After we reach max frames, dump them.  NOTE: this is
+	 * nasty and will take awhile.
+	 */
+	if (fbuf_pos >= NUM_FRAMES) {
+		capture_writeback(mode);
+		fbuf_pos = 0;
+	}
+	capture_copyfb(mode, fbuf[fbuf_pos++]);
+}
 
-	glMatrixMode(GL_PROJECTION);
-	glGetIntegerv(GL_VIEWPORT, vp);
+/* Take a screenshot. */
+void
+capture_snap(const char *fn, int mode)
+{
+	static unsigned char *buf;
+	long size;
 
-	if (mode == PNG_FRAMES)
-		ss_png(file, vp[0], vp[1], vp[2], vp[3]);
-	else
-		ss_ppm(file, vp[0], vp[1], vp[2], vp[3]);
+	size = capture_formats[mode].cf_size *
+	    win_width * win_height;
+	if ((buf = realloc(buf, size * sizeof(*buf))) == NULL)
+		err(1, "realloc");
+	capture_copyfb(mode, buf);
 
-	glMatrixMode(GL_MODELVIEW);
+	/* Write data to buffer. */
+	capture_formats[mode].cf_writef(fn, buf, win_width, win_height);
 }
