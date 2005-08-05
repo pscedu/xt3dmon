@@ -13,8 +13,6 @@
 
 # include "getopt.h"
 
-# define snprintf _snprintf
-# define vsnprintf _vsnprintf
 # define acosf acos
 # define asinf asin
 # define ceilf ceil
@@ -26,6 +24,8 @@
 
 int asprintf(char **, const char *, ...);
 int ffs(int);
+int snprintf(char *, size_t, const char *, ...);
+int vsnprintf(char *, size_t, const char *, va_list);
 
 # undef __inline
 # define __inline
