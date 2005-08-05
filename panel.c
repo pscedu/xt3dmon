@@ -257,7 +257,7 @@ draw_panel(struct panel *p)
 			break;
 	}
 
-	glPushName(mkglname(p->p_id, GNAMT_PANEL));
+//	glPushName(mkglname(p->p_id, GNAMT_PANEL));
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -281,7 +281,7 @@ draw_panel(struct panel *p)
 	glVertex2d(p->p_u + p->p_w,	p->p_v - p->p_h);
 	glVertex2d(p->p_u,		p->p_v - p->p_h);
 	glEnd();
-	glPopName();
+//	glPopName();
 
 	/* End 2D mode. */
 	glPopMatrix();
