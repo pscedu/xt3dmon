@@ -116,8 +116,9 @@
 #define MAX_CHARS 	4
 #define FONT_Z_OFFSET	((NODEHEIGHT - ((MAX_CHARS + 0) * FONT_DISPLACE_W)) / 2)
 
-#define PNG_FRAMES	4
-#define PPM_FRAMES	3
+#define CM_PNG	0
+#define CM_PPM	1
+#define CM_JPG	2
 
 /* HSV constants. */
 #define HUE_MIN 0
@@ -426,10 +427,10 @@ void			 cam_update(void);
 void			 cam_goto(struct fvec *);
 
 /* capture.c */
-void			 capture_fb(int);
-void 			 begin_capture(int);
-void			 end_capture(void);
-void			 screenshot(char *, int);
+void			 capture_frame(int);
+void 			 capture_begin(int);
+void			 capture_end(void);
+void			 capture_snap(const char *, int);
 
 /* draw.c */
 void			 draw(void);

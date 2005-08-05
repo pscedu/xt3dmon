@@ -27,7 +27,7 @@ int			 datasrc = DS_FILE;
 int			 win_width = 800;
 int			 win_height = 600;
 int			 flyby_mode = FBM_OFF;
-int			 capture_mode = PNG_FRAMES;
+int			 capture_mode = CM_PNG;
 int			 font_id;
 struct ivec		 widim;
 struct fvec		 tv = { STARTX, STARTY, STARTZ };

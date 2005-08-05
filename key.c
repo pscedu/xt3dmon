@@ -235,9 +235,9 @@ keyh_option(unsigned char key, __unused int u, __unused int v)
 	case 'd':
 		st.st_opts ^= OP_CAPTURE;
 		if (st.st_opts & OP_CAPTURE)
-			begin_capture(capture_mode);
+			capture_begin(capture_mode);
 		else
-			end_capture();
+			capture_end();
 		break;
 	case 'e':
 		st.st_opts ^= OP_TWEEN;

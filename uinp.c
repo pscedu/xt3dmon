@@ -16,7 +16,7 @@ uinpcb_ss(void)
 {
 	/* Take screenshot. */
 	if (*buf_get(&uinp.uinp_buf) != '\0')
-		screenshot(buf_get(&uinp.uinp_buf), capture_mode);
+		capture_snap(buf_get(&uinp.uinp_buf), capture_mode);
 }
 
 #define GOTO_DIST_PHYS 2.5
