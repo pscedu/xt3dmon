@@ -23,7 +23,6 @@ void
 mouseh_default(__unused int button, __unused int state, int u, int v)
 {
 	spkey = glutGetModifiers();
-//	if (spkey == 0 &&
 	if (button == GLUT_LEFT_BUTTON &&
 	    state == GLUT_DOWN)
 		render_mode = RM_SELECT;
@@ -35,7 +34,6 @@ mouseh_default(__unused int button, __unused int state, int u, int v)
 		panel_mobile->p_opts |= POPT_DIRTY;
 		panel_mobile = NULL;
 		glutMotionFunc(m_activeh_default);
-printf("reset\n");
 	}
 }
 
@@ -138,7 +136,8 @@ sel_record_process(GLint nrecs)
 	found = 0;
 	minu = minv = UINT_MAX;
 	/* XXX:  sanity-check nrecs? */
-	for (i = 0, p = (GLuint *)selbuf; i < nrecs; i++, lastlen = p[SBI_LEN], p += 3 + p[SBI_LEN]) {
+	for (i = 0, p = (GLuint *)selbuf; i < nrecs;
+	    i++, lastlen = p[SBI_LEN], p += 3 + p[SBI_LEN]) {
 		/*
 		 * Each record consists of the following:
 		 *	- the number of names in this stack frame,
@@ -187,7 +186,7 @@ sel_record_process(GLint nrecs)
 				if ((panel_mobile =
 				    panel_for_id(origname)) != NULL)
 					panel_mobile->p_opts |= POPT_MOBILE;
-			} else printf("clicked panel\n");
+			}
 			break;
 		}
 	}
