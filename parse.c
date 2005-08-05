@@ -353,13 +353,14 @@ pass:
 
 	parse_badmap();
 	parse_checkmap();
-	parse_qstat();
 	errno = 0;
 
 	qsort(job_list.ol_jobs, job_list.ol_tcur, sizeof(struct job *),
 	    job_cmp);
 	for (j = 0; j < job_list.ol_tcur; j++)
 		getcol(j, job_list.ol_tcur, &job_list.ol_jobs[j]->j_fill);
+
+	parse_qstat();
 }
 
 void
