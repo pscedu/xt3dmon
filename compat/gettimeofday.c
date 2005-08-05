@@ -1,8 +1,10 @@
 /* $Id$ */
 
 #include "compat.h"
+#include "cdefs.h"
 
-int gettimeofday(struct timeval *tv, void *null)
+int
+gettimeofday(struct timeval *tv, __unused void *null)
 {
 	long tc;
 	tc = GetTickCount();
