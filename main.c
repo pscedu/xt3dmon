@@ -168,6 +168,7 @@ idle_govern(void)
 			panel_status_setinfo("");
 		}
 
+		fcnt++;
 		draw();
 	}
 }
