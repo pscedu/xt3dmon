@@ -28,11 +28,6 @@ int snprintf(char *, size_t, const char *, ...);
 int vsnprintf(char *, size_t, const char *, va_list);
 int gettimeofday(struct timeval*, void*);
 
-struct timeval
-{
-	time_t tv_sec;
-	long tv_usec;
-}
 
 /* Taken from sys/time.h */
 # define timersub(a, b, result)                                             \
