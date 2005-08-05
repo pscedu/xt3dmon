@@ -33,7 +33,7 @@ struct ivec		 widim;
 struct fvec		 tv = { STARTX, STARTY, STARTZ };
 struct fvec		 tlv = { STARTLX, STARTLY, STARTLZ };
 GLint			 cluster_dl, ground_dl, select_dl;
-clock_t			 lastsync;
+struct timeval		 lastsync;
 long			 fps = 50;
 
 const char *opdesc[] = {
@@ -144,20 +144,30 @@ refresh_state(int oldopts)
 void
 idle_govern(void)
 {
-	static clock_t lastdraw_tm;
-	clock_t tm, diff;
+	struct timeval time, diff; 
+	static struct timeval ftime = {0,0};
+	static struct timeval ptime = {0,0};
+	static long fcnt = 0;
+	
+	gettimeofday(&time, NULL);
+	timersub(&time, &ptime, &diff); 
+	if (diff.tv_sec * 1e6 + diff.tv_usec >= FPS_TO_USEC(GOVERN_FPS)) {
+		ptime = time;
 
-	if ((tm = clock()) == -1)
-		err(1, "clock");
-	diff = tm - lastdraw_tm;
-	if (diff >= GOVERN_FPS * CLOCKS_PER_SEC) {
-		diff = tm - lastsync;
-		if (diff >= SLEEP_INTV * CLOCKS_PER_SEC) {
-			lastsync = tm;
+		timersub(&time, &ftime, &diff);
+		if (diff.tv_sec >= 1) {
+			ftime = time;
+			fps = fcnt;
+			fcnt = 0;
+		}
+
+		timersub(&time, &lastsync, &diff);
+		if (diff.tv_sec >= SLEEP_INTV) {
+			lastsync = time;
 			st.st_rf |= RF_DATASRC | RF_CLUSTER;
 			panel_status_setinfo("");
 		}
-		lastdraw_tm = tm;
+
 		draw();
 	}
 }
@@ -165,6 +175,7 @@ idle_govern(void)
 void
 idle(void)
 {
+#if 0
 	static clock_t fps_tm;
 	static int tcnt, cnt;
 
@@ -180,14 +191,15 @@ idle(void)
 			fps_tm = tm;
 			tcnt = 0;
 		}
-		diff = tm - lastsync;
+//		diff = tm - lastsync;
 		if (diff >= SLEEP_INTV * CLOCKS_PER_SEC) {
-			lastsync = tm;
+//			lastsync = tm;
 			st.st_rf |= RF_DATASRC | RF_CLUSTER;
 			panel_status_setinfo("");
 		}
 		cnt = 0;
 	}
+#endif
 	draw();
 }
 
