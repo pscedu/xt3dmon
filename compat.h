@@ -26,6 +26,24 @@ int asprintf(char **, const char *, ...);
 int ffs(int);
 int snprintf(char *, size_t, const char *, ...);
 int vsnprintf(char *, size_t, const char *, va_list);
+int gettimeofday(struct timeval*, void*);
+
+struct timeval
+{
+	time_t tv_sec;
+	long tv_usec;
+}
+
+/* Taken from sys/time.h */
+# define timersub(a, b, result)                                             \
+do {                                                                        \
+	(result)->tv_sec = (a)->tv_sec - (b)->tv_sec;                       \
+	(result)->tv_usec = (a)->tv_usec - (b)->tv_usec;                    \
+	if ((result)->tv_usec < 0) {                                        \
+		--(result)->tv_sec;                                         \
+		(result)->tv_usec += 1000000;                               \
+	}                                                                   \
+} while (0)
 
 # undef __inline
 # define __inline
