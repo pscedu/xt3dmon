@@ -176,31 +176,32 @@ idle_govern(void)
 void
 idle(void)
 {
-#if 0
-	static clock_t fps_tm;
-	static int tcnt, cnt;
+	static struct timeval fps_tm;
+	static int tcnt = 0;
+	static int cnt;
 
-	tcnt++;
-	if (++cnt >= fps) {
-		clock_t tm, diff;
+//	tcnt++;
+//	if (++cnt >= fps) {
+		struct timeval tm, diff;
 
-		if ((tm = clock()) == -1)
-			err(1, "clock");
-		diff = tm - fps_tm;
-		if (diff >= 1 * CLOCKS_PER_SEC) {
-			fps = tcnt * CLOCKS_PER_SEC / diff;
+		gettimeofday(&tm, NULL);
+		timersub(&tm, &fps_tm, &diff);
+
+		if (diff.tv_sec >= 1) {
+			fps = tcnt;
 			fps_tm = tm;
 			tcnt = 0;
 		}
-//		diff = tm - lastsync;
-		if (diff >= SLEEP_INTV * CLOCKS_PER_SEC) {
-//			lastsync = tm;
+
+		timersub(&tm, &lastsync, &diff);
+		if (diff.tv_sec >= SLEEP_INTV) { /* XXX Is this right? */
+			lastsync = tm;
 			st.st_rf |= RF_DATASRC | RF_CLUSTER;
 			panel_status_setinfo("");
 		}
-		cnt = 0;
-	}
-#endif
+//		cnt = 0;
+//	}
+	tcnt++;
 	draw();
 }
 
