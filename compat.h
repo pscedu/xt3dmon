@@ -56,6 +56,7 @@ do {                                                                        \
 
 # include <OpenGL/gl.h>
 # include <GLUT/glut.h>
+# include <sys/time.h>
 
 #else /* UNIX */
 
@@ -64,6 +65,7 @@ do {                                                                        \
 # endif
 
 # include <sys/param.h>
+# include <sys/time.h>
 
 # include <GL/gl.h>
 # include <GL/freeglut.h>
