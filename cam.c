@@ -89,7 +89,7 @@ cam_goto(struct fvec *v)
 void
 cam_revolve(int d)
 {
-	float t, r, mag;
+	float t, r, mag, dist;
 	struct fvec v;
 
 	switch (st.st_vmode) {
@@ -99,9 +99,7 @@ cam_revolve(int d)
 		v.fv_z = ZCENTER;
 		break;
 	case VM_WIRED:
-	case VM_WIREDONE: {
-		float dist;
-
+	case VM_WIREDONE:
 		dist = MAX3(WI_WIDTH, WI_HEIGHT, WI_DEPTH);
 		if (st.st_vmode == VM_WIRED)
 			dist /= 3.0f;
@@ -109,7 +107,6 @@ cam_revolve(int d)
 		v.fv_y = st.st_y + st.st_ly * dist;
 		v.fv_z = st.st_z + st.st_lz * dist;
 		break;
-	    }
 	}
 
 	r = sqrt(SQUARE(st.st_x - v.fv_x) + SQUARE(st.st_z - v.fv_z));
