@@ -25,6 +25,11 @@ Enable
 mode \(em that is, establish a live connection to the
 .Li sdb
 database and query data in realtime.
+A connection is made to the local host to port 3306.
+It is assumed that this port is being SSH-forwarded to a host inside
+the XT3 network, with a command such as:
+.Pp
+.Dl $ ssh -NfL 3306:sdb:3306 phantom.psc.edu
 .El
 .Pp
 There are three data modes available, which help visualize the state
@@ -52,19 +57,27 @@ The node is currently being probe tested.
 .El
 .Pp
 The failure and temperature modes work similarly.
-The legend panel may be activated to display all possible node states
-in each mode.
+The legend panel may be activated (see the
+.Ic pl
+command) to display all possible node states in each
+mode.
 .Pp
 The following key bindings are available:
 .Bl -tag -width Ds -offset indent
 .It left, right, up, down
-Pan along the x/z plane.
+Pan the camera along its
+.Em x Ns / Ns Em y Ns / Ns
+viewing lines (left, right, forward, and backward).
+.Em z
 .It pageup, pagedown
-Pan along the y-axis (up and down).
+Pan vertically (perpendicularly) along the camera viewing line
+(up and down).
 .It left click
 Click a node for extended information.
+Hold shift and click to add nodes to the selection.
+Hold control and click to remove nodes from the selection.
 .Pp
-While holding left click, scroll the mouse to revolve around the cluster
+While holding control, scroll the mouse to revolve around the cluster
 view.
 .Pp
 While holding shift, scroll the mouse to rotate the theta and phi of the
@@ -72,7 +85,7 @@ camera view.
 .It Ic C
 Redraw the cluster.
 .It Ic c
-Clear the selected node.
+Clear the selected node(s).
 .It Ic fc
 Empty the flyby data file.
 By default, enabling recording consecutively will append flyby states to
@@ -99,8 +112,9 @@ Toggle translucency (blending).
 Toggle drawing to the screen.
 .It Ic od
 Toggle screen capture.
-Files are written to
-.Pa data/dump??.ppm .
+Files with sequeneced names are written into the
+.Pa snaps
+directory.
 .It Ic oe
 Toggle movement interpolation
 .Pq Dq tweening .
@@ -110,27 +124,22 @@ Toggle the display of cluster frames in wired view.
 Toggle the frame rate governor.
 .It Ic og
 Toggle display of the ground and axes.
-.It Ic oL
-Toggle free look mode, when the look angle is freely controlled by
-the control button and the mouse, as opposed to revolution mode.
 .It Ic ol
 Toggle the display of node labels.
 .It Ic oM
 Toggle the display of modules.
 .It Ic oP
-Toggle the display of pipes to the wired neighbors of the selected node.
+Toggle the display of pipes to the wired neighbors of any selected nodes.
 .It Ic op
 Toggle the display of pipes to the wired neighbors of all nodes.
 .It Ic oS
 Toggle stereo mode.
 Stereo mode is used during flyby playback to generate two images from
 different positions of the same scene for use on 3D projectors.
-.It Ic os
-Toggle the dimming of other nodes when a node is selected.
 .It Ic ot
 Toggle texture mapping.
 .It Ic ow
-Toggle wireframe.
+Toggle the display of wireframes around nodes.
 .It Ic pa
 Toggle all panels.
 .It Ic pc
@@ -177,6 +186,8 @@ Adjust other node translucency.
 .Bl -tag -width Pa -compact
 .It Pa data/texture Ns Em %d Ns Pa .png
 node state textures
+.It Pa data/font.png
+font texture used for node labels
 .It Pa data/rtrtrace
 physical mapping
 .It Pa data/nids_list_phantom
@@ -185,12 +196,15 @@ job mapping
 bad list
 .It Pa data/to_check_list_phantom
 check list
+.It Pa data/qstat.out
+.Xr qstat 1
+output with job infomation
 .It Pa data/temps
 node temperature data
 .It Pa data/fail
 node failure data
 .It Pa data/flyby.data
 flyby data file
-.It Pa ppm/ Ns Em %06d Ns Pa .png
+.It Pa snaps/ Ns Em %08d Ns Pa .png
 capture output files
 .El
