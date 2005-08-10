@@ -8,7 +8,7 @@
 #include "cdefs.h"
 #include "mon.h"
 
-#define SLEEP_INTV	500
+#define SLEEP_INTV	5
 
 #define STARTX		(-30.0f)
 #define STARTY		(10.0f)
@@ -370,6 +370,9 @@ main(int argc, char *argv[])
 	buf_init(&uinp.uinp_buf);
 	buf_append(&uinp.uinp_buf, '\0');
 	st.st_rf |= RF_INIT;
+
+	/* The first refresh interval will trigger this. */
+	st.st_rf &= ~RF_DATASRC;
 
 	/* glutExposeFunc(reshape); */
 	glutReshapeFunc(reshape);
