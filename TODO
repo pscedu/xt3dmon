@@ -14,4 +14,4 @@ $Id$
 26. overhaul color and contrast allocation on the color wheel
     for maximum performance and differentiation
 27. clean up includes in files that do not need them
-28. objlist reallocation is wrong
+29. poll data files for when to refresh instead of blind refresh
