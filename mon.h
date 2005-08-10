@@ -15,9 +15,13 @@
 #define _PATH_TEMPMAP	"data/temps"
 #define _PATH_BADMAP	"/usr/users/torque/bad_nids_list_phantom"
 #define _PATH_CHECKMAP	"/usr/users/torque/to_check_nids_list_phantom"
+#define _PATH_QSTAT	"data/qstat.out"
+
 #define _PATH_FLYBY	"data/flyby.data"
 #define _PATH_TEX	"data/texture%d.png"
 #define _PATH_FONT	"data/font.png"
+#define _PATH_SSDIR	"snaps"
+#define _PATH_STAT	"/proc/self/stat"
 
 #define NROWS		2
 #define NCABS		11
@@ -88,33 +92,6 @@
 
 #define FOVY		(45.0f)
 #define ASPECT		(win_width / (double)win_height)
-
-//#define TILE_TEXTURE	1
-#define TEXTURE_SIZE	128.0
-
-#define FONT_WIDTH	12.0
-#define FONT_HEIGHT	12.0
-#define FONT_TEX_W 	256.0
-#define FONT_TEX_H 	16.0
-
-/*
-** Determines the texture coordinate by finding the ratio
-** between the pixel value given and the max of the three
-** possible dimensions. This gives a section of a texture
-** without stretching it...
-*/
-#define NODE_TEXCOORD(X) (1 / (MAX3(NODEHEIGHT, NODEWIDTH, NODEDEPTH) / X))
-
-/* How many units of texture coordinates a character displaces */
-#define FONT_TEXCOORD_S (1 / (FONT_TEX_W / FONT_WIDTH))
-#define FONT_TEXCOORD_T (1 / (FONT_TEX_H / FONT_HEIGHT))
-
-/* How many pixels a character displaces on a 128x128 tile */
-#define FONT_DISPLACE_W ((FONT_WIDTH * NODEDEPTH) / TEXTURE_SIZE)
-#define FONT_DISPLACE_H ((FONT_HEIGHT * NODEHEIGHT) / TEXTURE_SIZE)
-
-#define MAX_CHARS 	4
-#define FONT_Z_OFFSET	((NODEHEIGHT - ((MAX_CHARS + 0) * FONT_DISPLACE_W)) / 2)
 
 #define CM_PNG	0
 #define CM_PPM	1
