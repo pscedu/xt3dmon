@@ -110,7 +110,7 @@ obj_batch_end(struct objlist *ol)
 			if (lookpos <= n)
 				lookpos = n + 1;
 			/* Scan forward to swap. */
-			for (; lookpos < ol->ol_cur; lookpos++) {
+			for (; lookpos < ol->ol_max; lookpos++) {
 				swapohp = ol->ol_data[lookpos];
 				if (swapohp->oh_tref) {
 					t = ol->ol_data[n];
@@ -119,8 +119,8 @@ obj_batch_end(struct objlist *ol)
 					break;
 				}
 			}
-			if (lookpos == ol->ol_cur) {
-				ol->ol_cur = n;
+			if (lookpos == ol->ol_max) {
+				ol->ol_cur = n + 1;
 				return;
 			}
 		}
