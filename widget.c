@@ -8,6 +8,15 @@
 #include "mon.h"
 
 /*
+ * Determines the texture coordinate by finding the ratio
+ * between the pixel value given and the max of the three
+ * possible dimensions.  This gives a section of a texture
+ * without stretching it.
+ */
+#define NODE_TEXCOORD(x, max) (1 / (max / x))
+
+
+/*
  *	y			12
  *     / \	    +-----------------------+ (x+w,y+h,z+d)
  *	|	   /			   /|
@@ -155,11 +164,17 @@ draw_box_tex(const struct fvec *dim, const struct fill *fillp, GLenum param)
 	float w = dim->fv_w;
 	float h = dim->fv_h;
 	float d = dim->fv_d;
+	float tw, th, td;
 	float color[4];
 
 	glEnable(GL_TEXTURE_2D);
 
 	glBindTexture(GL_TEXTURE_2D, fillp->f_texid);
+
+	float max = MAX3(w, h, d);
+	tw = NODE_TEXCOORD(w, max);
+	th = NODE_TEXCOORD(h, max);
+	td = NODE_TEXCOORD(d, max);
 
 	color[0] = fillp->f_r;
 	color[1] = fillp->f_g;
@@ -183,61 +198,61 @@ draw_box_tex(const struct fvec *dim, const struct fill *fillp, GLenum param)
 	/* Back */
 	glTexCoord2f(0.0, 0.0);
 	glVertex3f(0.0, 0.0, 0.0);
-	glTexCoord2f(0.0, NODE_TEXCOORD(h));
+	glTexCoord2f(0.0, th);
 	glVertex3f(0.0, h, 0.0);
-	glTexCoord2f(NODE_TEXCOORD(w), NODE_TEXCOORD(h));
+	glTexCoord2f(tw, th);
 	glVertex3f(w, h, 0.0);
-	glTexCoord2f(NODE_TEXCOORD(w), 0.0);
+	glTexCoord2f(tw, 0.0);
 	glVertex3f(w, 0.0, 0.0);
 
 	/* Front */
 	glTexCoord2f(0.0, 0.0);
 	glVertex3f(0.0, 0.0, d);
-	glTexCoord2f(0.0, NODE_TEXCOORD(h));
+	glTexCoord2f(0.0, th);
 	glVertex3f(0.0, h, d);
-	glTexCoord2f(NODE_TEXCOORD(w), NODE_TEXCOORD(h));
+	glTexCoord2f(tw, th);
 	glVertex3f(w, h, d);
-	glTexCoord2f(NODE_TEXCOORD(w), 0.0);
+	glTexCoord2f(tw, 0.0);
 	glVertex3f(w, 0.0, d);
 
 	/* Right */
 	glTexCoord2f(0.0, 0.0);
 	glVertex3f(w, 0.0, 0.0);
-	glTexCoord2f(0.0, NODE_TEXCOORD(d));
+	glTexCoord2f(0.0, td);
 	glVertex3f(w, 0.0, d);
-	glTexCoord2f(NODE_TEXCOORD(h), NODE_TEXCOORD(d));
+	glTexCoord2f(th, td);
 	glVertex3f(w, h, d);
-	glTexCoord2f(NODE_TEXCOORD(h), 0.0);
+	glTexCoord2f(th, 0.0);
 	glVertex3f(w, h, 0.0);
 
 	/* Left */
 	glTexCoord2f(0.0, 0.0);
 	glVertex3f(0.0, 0.0, 0.0);
-	glTexCoord2f(0.0, NODE_TEXCOORD(d));
+	glTexCoord2f(0.0, td);
 	glVertex3f(0.0, 0.0, d);
-	glTexCoord2f(NODE_TEXCOORD(h), NODE_TEXCOORD(d));
+	glTexCoord2f(th, td);
 	glVertex3f(0.0, h, d);
-	glTexCoord2f(NODE_TEXCOORD(h), 0.0);
+	glTexCoord2f(th, 0.0);
 	glVertex3f(0.0, h, 0.0);
 
 	/* Top */
 	glTexCoord2f(0.0, 0.0);
 	glVertex3f(0.0, h, 0.0);
-	glTexCoord2f(0.0, NODE_TEXCOORD(d));
+	glTexCoord2f(0.0, td);
 	glVertex3f(0.0, h, d);
-	glTexCoord2f(NODE_TEXCOORD(w), NODE_TEXCOORD(d));
+	glTexCoord2f(tw, td);
 	glVertex3f(w, h, d);
-	glTexCoord2f(NODE_TEXCOORD(w), 0.0);
+	glTexCoord2f(tw, 0.0);
 	glVertex3f(w, h, 0.0);
 
 	/* Bottom */
 	glTexCoord2f(0.0, 0.0);
 	glVertex3f(0.0, 0.0, 0.0);
-	glTexCoord2f(0.0, NODE_TEXCOORD(d));
+	glTexCoord2f(0.0, td);
 	glVertex3f(0.0, 0.0, d);
-	glTexCoord2f(NODE_TEXCOORD(w), NODE_TEXCOORD(d));
+	glTexCoord2f(tw, td);
 	glVertex3f(w, 0.0, d);
-	glTexCoord2f(NODE_TEXCOORD(w), 0.0);
+	glTexCoord2f(tw, 0.0);
 	glVertex3f(w, 0.0, 0.0);
 
 	glEnd();
