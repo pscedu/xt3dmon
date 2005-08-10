@@ -11,8 +11,6 @@
 
 #include "mon.h"
 
-#define _PATH_SSDIR	"snaps"
-
 #define NUM_FRAMES	200
 #define MAX_FRAMES	25000
 

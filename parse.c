@@ -733,8 +733,6 @@ bad:
 		getcol_temp(j, &temp_list.ol_temps[j]->t_fill);
 }
 
-#define _PATH_STAT "/proc/self/stat"
-
 void
 parse_mem(void)
 {
@@ -748,8 +746,6 @@ parse_mem(void)
 	    "%*u %*u %*d %*d %*d %*d %*d %*d %*u %lu %ld", &vmem, &rmem);
 	fclose(fp);
 }
-
-#define _PATH_QSTAT "data/qstat.out"
 
 /*
  * Job Id: 4864.phantom.psc.edu
