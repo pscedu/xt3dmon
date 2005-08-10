@@ -207,7 +207,7 @@ getcol(int n, size_t total, struct fill *fillp)
 	fillp->f_v = vinc * n + VAL_MIN;
 	fillp->f_a = 1.0;
 
-	HSV2RGB(fillp);
+	hsv_to_rgb(fillp);
 }
 
 void
