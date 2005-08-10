@@ -522,7 +522,7 @@ void			 draw_box_outline(const struct fvec *, const struct fill *);
 void			 draw_box_filled(const struct fvec *, const struct fill *);
 void			 draw_box_tex(const struct fvec *, const struct fill *, GLenum);
 void 			 rgb_contrast(struct fill *);
-void			 HSV2RGB(struct fill *);
+void			 hsv_to_rgb(struct fill *);
 
 extern struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 extern struct node	*invmap[];
