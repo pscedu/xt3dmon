@@ -15,4 +15,3 @@ $Id$
     for maximum performance and differentiation
 27. clean up includes in files that do not need them
 28. objlist reallocation is wrong
-29. revolve in wione mode is way broke
