@@ -256,7 +256,7 @@ draw_box_tex(const struct fvec *dim, const struct fill *fillp, GLenum param)
  * pseudocode found in "Fundamentals of Interactive Computer Graphics".
  */
 void
-RGB2HSV(struct fill *c)
+rgb_to_hsv(struct fill *c)
 {
 	float r = c->f_r;
 	float g = c->f_g;
@@ -305,7 +305,7 @@ RGB2HSV(struct fill *c)
 }
 
 void
-HSV2RGB(struct fill *c)
+hsv_to_rgb(struct fill *c)
 {
 	float s = c->f_s;
 	float h = c->f_h;
@@ -343,7 +343,7 @@ HSV2RGB(struct fill *c)
 void
 rgb_contrast(struct fill *c)
 {
-	RGB2HSV(c);
+	rgb_to_hsv(c);
 
 	/* Rotate 180 degrees */
 	c->f_h -= 180;
@@ -363,5 +363,5 @@ rgb_contrast(struct fill *c)
 	else
 		c->f_v = VAL_MIN;
 
-	HSV2RGB(c);
+	rgb_to_hsv(c);
 }
