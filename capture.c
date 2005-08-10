@@ -138,8 +138,6 @@ capture_writeback(int mode)
 	const char *ext;
 	int k;
 
-printf("writeback %d frames\n", fbuf_pos);
-
 	ext = capture_formats[mode].cf_ext;
 	for (k = 0; k < fbuf_pos; k++, capture_pos++,
 	    stereo_left = !stereo_left) {
