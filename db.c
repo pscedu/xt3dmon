@@ -76,6 +76,7 @@ db_physmap(void)
 {
 	int x, y, z, nid, len, r, cb, cg, m, n;
 	struct node *node;
+	struct ivec widim;
 	MYSQL_RES *res;
 	MYSQL_ROW row;
 	char *sql;
@@ -169,9 +170,9 @@ db_physmap(void)
 		node = &nodes[r][cb][cg][m][n];
 		node->n_nid = nid;
 		invmap[nid] = node;
-		node->n_wiv.fv_x = x;
-		node->n_wiv.fv_y = y;
-		node->n_wiv.fv_z = z;
+		node->n_wiv.iv_x = x;
+		node->n_wiv.iv_y = y;
+		node->n_wiv.iv_z = z;
 
 		if (x > widim.iv_w)
 			widim.iv_w = x;
@@ -188,13 +189,14 @@ db_physmap(void)
 	}
 	mysql_free_result(res);
 
-	widim.iv_w++;
-	widim.iv_h++;
-	widim.iv_d++;
+	if (++widim.iv_w != WIDIM_WIDTH ||
+	    ++widim.iv_h != WIDIM_HEIGHT ||
+	    ++widim.iv_d != WIDIM_DEPTH)
+		errx(1, "wired cluster dimensions have changed");
 }
 
 void
-refresh_jobmap(void)
+db_jobmap(void)
 {
 
 }
