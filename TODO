@@ -5,7 +5,6 @@ $Id$
   the DB, or register an atexit() to drop db conn
 10. random flyby/cycle focus jobs
 15. try #define __inline to see if it does anything
-16. stereo stuff
 21. don't recompile things - do it once and only call the
     display lists if they are enabled
 24. add keyh_selnode(), a special keyhandler when nodes are selected
