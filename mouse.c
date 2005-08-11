@@ -103,7 +103,7 @@ sel_record_begin(void)
 	GLint viewport[4];
 	float clip;
 
-	clip = MIN3(WI_CLIPX, WI_CLIPY, WI_CLIPZ);
+	clip = MIN3(WIV_CLIPX, WIV_CLIPY, WIV_CLIPZ);
 
 	glSelectBuffer(sizeof(selbuf) / sizeof(selbuf[0]), selbuf);
 	glGetIntegerv(GL_VIEWPORT, viewport);
@@ -115,8 +115,6 @@ sel_record_begin(void)
 	gluPickMatrix(lastu, win_height - lastv, 1, 1, viewport);
 	gluPerspective(FOVY, ASPECT, 0.1, clip);
 	glMatrixMode(GL_MODELVIEW);
-
-
 }
 
 #define SBI_LEN		0
