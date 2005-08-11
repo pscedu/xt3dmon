@@ -7,8 +7,6 @@ $Id$
 15. try #define __inline to see if it does anything
 21. don't recompile things - do it once and only call the
     display lists if they are enabled
-24. add keyh_selnode(), a special keyhandler when nodes are selected
-    up, down, left, right select adjacent nodes.
 25. 'r' prefix keybinding to enable rebuild flags
 27. clean up includes in files that do not need them
 29. poll data files for when to refresh instead of blind refresh
