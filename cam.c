@@ -22,26 +22,26 @@ void
 cam_move(int dir, float amt)
 {
 	switch (dir) {
-	case CAMDIR_LEFT:
+	case DIR_LEFT:
 		st.st_x += st.st_lz * amt;
 		st.st_z -= st.st_lx * amt;
 		break;
-	case CAMDIR_RIGHT:
+	case DIR_RIGHT:
 		st.st_x -= st.st_lz * amt;
 		st.st_z += st.st_lx * amt;
 		break;
-	case CAMDIR_FORWARD:
+	case DIR_FORWARD:
 		st.st_x += st.st_lx * amt;
 		st.st_y += st.st_ly * amt;
 		st.st_z += st.st_lz * amt;
 		break;
-	case CAMDIR_BACK:
+	case DIR_BACK:
 		st.st_x -= st.st_lx * amt;
 		st.st_y -= st.st_ly * amt;
 		st.st_z -= st.st_lz * amt;
 		break;
-	case CAMDIR_UP:
-	case CAMDIR_DOWN: {
+	case DIR_UP:
+	case DIR_DOWN: {
 		struct fvec cross, a, b, t;
 
 		a.fv_x = st.st_lx;
@@ -54,7 +54,7 @@ cam_move(int dir, float amt)
 		b.fv_z = -st.st_lx;
 		vec_normalize(&b);
 
-		if (dir == CAMDIR_DOWN)
+		if (dir == DIR_DOWN)
 			SWAP(a, b, t);
 
 		/* Follow the normal to the look vector. */
@@ -100,7 +100,7 @@ cam_revolve(int d)
 		break;
 	case VM_WIRED:
 	case VM_WIREDONE:
-		dist = MAX3(WI_WIDTH, WI_HEIGHT, WI_DEPTH);
+		dist = MAX3(WIV_SWIDTH, WIV_SHEIGHT, WIV_SDEPTH);
 		if (st.st_vmode == VM_WIRED)
 			dist /= 3.0f;
 		v.fv_x = st.st_x + st.st_lx * dist;
