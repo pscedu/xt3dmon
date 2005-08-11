@@ -460,22 +460,22 @@ spkeyh_default(int key, __unused int u, __unused int v)
 		st.st_uv.fv_z -= 0.1;
 		break;
 	case GLUT_KEY_LEFT:
-		dir = CAMDIR_LEFT;
+		dir = DIR_LEFT;
 		break;
 	case GLUT_KEY_RIGHT:
-		dir = CAMDIR_RIGHT;
+		dir = DIR_RIGHT;
 		break;
 	case GLUT_KEY_UP:			/* Forward */
-		dir = CAMDIR_FORWARD;
+		dir = DIR_FORWARD;
 		break;
 	case GLUT_KEY_DOWN:			/* Backward */
-		dir = CAMDIR_BACK;
+		dir = DIR_BACK;
 		break;
 	case GLUT_KEY_PAGE_UP:
-		dir = CAMDIR_UP;
+		dir = DIR_UP;
 		break;
 	case GLUT_KEY_PAGE_DOWN:
-		dir = CAMDIR_DOWN;
+		dir = DIR_DOWN;
 		break;
 	default:
 		return;

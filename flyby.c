@@ -133,7 +133,7 @@ flyby_read(void)
 	if (st.st_opts & OP_STEREO) {
 		stereo_left = !stereo_left;
 		if (!stereo_left) {
-			cam_move(CAMDIR_RIGHT, 0.02);
+			cam_move(DIR_RIGHT, 0.02);
 			return;
 		}
 	}
@@ -197,7 +197,7 @@ flyby_read(void)
 	} while (!done);
 
 	if (st.st_opts & OP_STEREO && stereo_left)
-		cam_move(CAMDIR_LEFT, 0.01);
+		cam_move(DIR_LEFT, 0.01);
 
 	/* XXX:  is this right? */
 	if ((st.st_rf & OP_TWEEN) == 0)
