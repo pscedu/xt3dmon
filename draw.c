@@ -316,9 +316,9 @@ make_ground(void)
 		fv.fv_y = -0.2f;
 		fv.fv_z = -st.st_winsp.iv_z / 2.0f;
 
-		fdim.fv_w = WI_WIDTH - fv.fv_x;
+		fdim.fv_w = WIV_SWIDTH - fv.fv_x;
 		fdim.fv_y = -fv.fv_y / 2.0f;
-		fdim.fv_d = WI_DEPTH - fv.fv_z;
+		fdim.fv_d = WIV_SDEPTH - fv.fv_z;
 
 		glPushMatrix();
 		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
@@ -448,24 +448,24 @@ draw_cluster_pipes(struct fvec *v)
 
 	glBegin(GL_LINES);
 	glColor3f(0.0f, 0.0f, 1.0f);
-	for (x = sx; x < WI_WIDTH; x += spx)			/* z */
-		for (y = sy; y < WI_HEIGHT; y += spy) {
+	for (x = sx; x < WIV_SWIDTH; x += spx)			/* z */
+		for (y = sy; y < WIV_SHEIGHT; y += spy) {
 			glVertex3f(x, y, -dimp->fv_z / 2.0f);
-			glVertex3f(x, y, WI_DEPTH);
+			glVertex3f(x, y, WIV_SDEPTH);
 		}
 
 	glColor3f(0.0f, 1.0f, 0.0f);
-	for (z = sz; z < WI_DEPTH; z += spz)			/* y */
-		for (x = sx; x < WI_WIDTH; x += spx) {
+	for (z = sz; z < WIV_SDEPTH; z += spz)			/* y */
+		for (x = sx; x < WIV_SWIDTH; x += spx) {
 			glVertex3f(x, -dimp->fv_y / 2.0f, z);
-			glVertex3f(x, WI_HEIGHT, z);
+			glVertex3f(x, WIV_SHEIGHT, z);
 		}
 
 	glColor3f(1.0f, 0.0f, 0.0f);
-	for (y = sy; y < WI_HEIGHT; y += spy)
-		for (z = sz; z < WI_DEPTH; z += spz) {		/* x */
+	for (y = sy; y < WIV_SHEIGHT; y += spy)
+		for (z = sz; z < WIV_SDEPTH; z += spz) {	/* x */
 			glVertex3f(-dimp->fv_x / 2.0f, y, z);
-			glVertex3f(WI_WIDTH, y, z);
+			glVertex3f(WIV_SWIDTH, y, z);
 		}
 	glDisable(GL_LINE_SMOOTH);
 	glDisable(GL_BLEND);
@@ -489,9 +489,9 @@ draw_cluster_wired(struct fvec *v)
 					for (n = 0; n < NNODES; n++) {
 						node = &nodes[r][cb][cg][m][n];
 						nv = &node->n_swiv;
-						nv->fv_x = node->n_wiv.fv_x * st.st_winsp.iv_x + v->fv_x;
-						nv->fv_y = node->n_wiv.fv_y * st.st_winsp.iv_y + v->fv_y;
-						nv->fv_z = node->n_wiv.fv_z * st.st_winsp.iv_z + v->fv_z;
+						nv->fv_x = node->n_wiv.iv_x * st.st_winsp.iv_x + v->fv_x;
+						nv->fv_y = node->n_wiv.iv_y * st.st_winsp.iv_y + v->fv_y;
+						nv->fv_z = node->n_wiv.iv_z * st.st_winsp.iv_z + v->fv_z;
 						node->n_v = nv;
 						draw_node(node, 0);
 					}
@@ -533,8 +533,8 @@ snap_to_grid(float n, float size, float clip)
 
 /*
  * Draw the cluster repeatedly till we reach the clipping plane.
- * Since we can see MIN(WI_CLIP*) away, we must construct a 3D space
- * MIN(WI_CLIP*)^3 large and draw the cluster multiple times inside.
+ * Since we can see MIN(WIV_CLIP*) away, we must construct a 3D space
+ * MIN(WIV_CLIP*)^3 large and draw the cluster multiple times inside.
  */
 __inline void
 draw_clusters_wired(void)
@@ -543,31 +543,31 @@ draw_clusters_wired(void)
 	float x, y, z;
 	struct fvec v, dim;
 
-	clip = MIN3(WI_CLIPX, WI_CLIPY, WI_CLIPZ);
+	clip = MIN3(WIV_CLIPX, WIV_CLIPY, WIV_CLIPZ);
 
 	x = st.st_x - clip;
 	y = st.st_y - clip;
 	z = st.st_z - clip;
 
-	x -= snap_to_grid(x, WI_WIDTH, 0.0);
-	y -= snap_to_grid(y, WI_HEIGHT, 0.0);
-	z -= snap_to_grid(z, WI_DEPTH, 0.0);
+	x -= snap_to_grid(x, WIV_SWIDTH, 0.0);
+	y -= snap_to_grid(y, WIV_SHEIGHT, 0.0);
+	z -= snap_to_grid(z, WIV_SDEPTH, 0.0);
 
 	wivstart.fv_x = x;
 	wivstart.fv_y = y;
 	wivstart.fv_z = z;
 
-	dim.fv_w = WI_WIDTH - 0.01;
-	dim.fv_h = WI_HEIGHT - 0.01;
-	dim.fv_d = WI_DEPTH - 0.01;
+	dim.fv_w = WIV_SWIDTH - 0.01;
+	dim.fv_h = WIV_SHEIGHT - 0.01;
+	dim.fv_d = WIV_SDEPTH - 0.01;
 
-	xnum = (st.st_x + clip - x + WI_WIDTH - 1) / WI_WIDTH;
-	znum = (st.st_z + clip - z + WI_DEPTH - 1) / WI_DEPTH;
+	xnum = (st.st_x + clip - x + WIV_SWIDTH - 1) / WIV_SWIDTH;
+	znum = (st.st_z + clip - z + WIV_SDEPTH - 1) / WIV_SDEPTH;
 
 	col = 0;
-	for (v.fv_y = y; v.fv_y < st.st_y + clip; v.fv_y += WI_HEIGHT) {
-		for (v.fv_z = z; v.fv_z < st.st_z + clip; v.fv_z += WI_DEPTH) {
-			for (v.fv_x = x; v.fv_x < st.st_x + clip; v.fv_x += WI_WIDTH) {
+	for (v.fv_y = y; v.fv_y < st.st_y + clip; v.fv_y += WIV_SHEIGHT) {
+		for (v.fv_z = z; v.fv_z < st.st_z + clip; v.fv_z += WIV_SDEPTH) {
+			for (v.fv_x = x; v.fv_x < st.st_x + clip; v.fv_x += WIV_SWIDTH) {
 				draw_cluster_wired(&v);
 				if (st.st_opts & OP_WIVMFRAME)
 					draw_wired_frame(&v, &dim,
@@ -644,12 +644,12 @@ make_select(void)
 
 		switch (st.st_vmode) {
 		case VM_WIRED:
-			pos.fv_x = n->n_wiv.fv_x * st.st_winsp.iv_x + wivstart.fv_x - SELNODE_GAP;
-			pos.fv_y = n->n_wiv.fv_y * st.st_winsp.iv_y + wivstart.fv_y - SELNODE_GAP;
-			pos.fv_z = n->n_wiv.fv_z * st.st_winsp.iv_z + wivstart.fv_z - SELNODE_GAP;
-			for (v.fv_x = 0.0f; v.fv_x < wivdim.fv_w; v.fv_x += WI_WIDTH)
-				for (v.fv_y = 0.0f; v.fv_y < wivdim.fv_h; v.fv_y += WI_HEIGHT)
-					for (v.fv_z = 0.0f; v.fv_z < wivdim.fv_d; v.fv_z += WI_DEPTH) {
+			pos.fv_x = n->n_wiv.iv_x * st.st_winsp.iv_x + wivstart.fv_x - SELNODE_GAP;
+			pos.fv_y = n->n_wiv.iv_y * st.st_winsp.iv_y + wivstart.fv_y - SELNODE_GAP;
+			pos.fv_z = n->n_wiv.iv_z * st.st_winsp.iv_z + wivstart.fv_z - SELNODE_GAP;
+			for (v.fv_x = 0.0f; v.fv_x < wivdim.fv_w; v.fv_x += WIV_SWIDTH)
+				for (v.fv_y = 0.0f; v.fv_y < wivdim.fv_h; v.fv_y += WIV_SHEIGHT)
+					for (v.fv_z = 0.0f; v.fv_z < wivdim.fv_d; v.fv_z += WIV_SDEPTH) {
 						glPushMatrix();
 						glTranslatef(
 						    pos.fv_x + v.fv_x,
