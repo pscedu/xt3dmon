@@ -155,21 +155,22 @@ db_physmap(void)
 			errx(1, "bad nid from database");
 		nid = (int)l;
 
-		if ((l = strtol(row[F_x], NULL, 10)) < -1 || l > INT_MAX)
+		if ((l = strtol(row[F_x], NULL, 10)) < -1 || l > WIDIM_WIDTH)
 			errx(1, "bad x from database");
 		x = (int)l;
 
-		if ((l = strtol(row[F_y], NULL, 10)) < -1 || l > INT_MAX)
+		if ((l = strtol(row[F_y], NULL, 10)) < -1 || l > WIDIM_HEIGHT)
 			errx(1, "bad y from database");
 		y = (int)l;
 
-		if ((l = strtol(row[F_z], NULL, 10)) < -1 || l > INT_MAX)
+		if ((l = strtol(row[F_z], NULL, 10)) < -1 || l > WIDIM_DEPTH)
 			errx(1, "bad z from database");
 		z = (int)l;
 
 		node = &nodes[r][cb][cg][m][n];
 		node->n_nid = nid;
 		invmap[nid] = node;
+		wimap[x][y][z] = node;
 		node->n_wiv.iv_x = x;
 		node->n_wiv.iv_y = y;
 		node->n_wiv.iv_z = z;

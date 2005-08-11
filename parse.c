@@ -155,7 +155,7 @@ parse_physmap(void)
 		if (*s != ',')
 			goto bad;
 		*s++ = '\0';
-		if ((l = strtol(p, NULL, 10)) < 0 || l >= INT_MAX)
+		if ((l = strtol(p, NULL, 10)) < 0 || l >= WIDIM_WIDTH)
 			goto bad;
 		x = (int)l;
 
@@ -170,7 +170,7 @@ parse_physmap(void)
 		if (*s != ',')
 			goto bad;
 		*s++ = '\0';
-		if ((l = strtol(p, NULL, 10)) < 0 || l >= INT_MAX)
+		if ((l = strtol(p, NULL, 10)) < 0 || l >= WIDIM_HEIGHT)
 			goto bad;
 		y = (int)l;
 
@@ -185,7 +185,7 @@ parse_physmap(void)
 		if (!isspace(*s))
 			goto bad;
 		*s++ = '\0';
-		if ((l = strtol(p, NULL, 10)) < 0 || l >= INT_MAX)
+		if ((l = strtol(p, NULL, 10)) < 0 || l >= WIDIM_DEPTH)
 			goto bad;
 		z = (int)l;
 
@@ -194,6 +194,7 @@ parse_physmap(void)
 		node = &nodes[r][cb][cg][m][n];
 		node->n_nid = nid;
 		invmap[nid] = node;
+		wimap[x][y][z] = node;
 		node->n_wiv.iv_x = x;
 		node->n_wiv.iv_y = y;
 		node->n_wiv.iv_z = z;
