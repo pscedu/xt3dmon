@@ -23,13 +23,13 @@
 
 struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 struct node		*invmap[NID_MAX];
+struct node		*wimap[WIDIM_WIDTH][WIDIM_HEIGHT][WIDIM_DEPTH];
 int			 datasrc = DS_FILE;
 int			 win_width = 800;
 int			 win_height = 600;
 int			 flyby_mode = FBM_OFF;
 int			 capture_mode = CM_PNG;
 int			 font_id;
-struct ivec		 widim;
 struct fvec		 tv = { STARTX, STARTY, STARTZ };
 struct fvec		 tlv = { STARTLX, STARTLY, STARTLZ };
 GLint			 cluster_dl, ground_dl, select_dl;
@@ -270,7 +270,7 @@ rebuild(int opts)
 {
 	if (opts & RF_TEX) {
 		del_textures();
-//		load_textures();
+		load_textures();
 	}
 	if (opts & RF_PHYSMAP)
 		datasrcsw[datasrc].ds_physmap();
@@ -298,7 +298,7 @@ rebuild(int opts)
 	if (opts & RF_PERSPECTIVE) {
 		float clip;
 
-		clip = MIN3(WI_CLIPX, WI_CLIPY, WI_CLIPZ);
+		clip = MIN3(WIV_CLIPX, WIV_CLIPY, WIV_CLIPZ);
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
