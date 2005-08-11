@@ -12,3 +12,4 @@ $Id$
 25. 'r' prefix keybinding to enable rebuild flags
 27. clean up includes in files that do not need them
 29. poll data files for when to refresh instead of blind refresh
+30. when jobs are reallocate, fill alpha is reset
