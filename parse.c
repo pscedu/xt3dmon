@@ -36,6 +36,7 @@ parse_physmap(void)
 	int lineno, r, cb, cg, m, n, nid, x, y, z;
 	char buf[BUFSIZ], *p, *s;
 	struct node *node;
+	struct ivec widim;
 	FILE *fp;
 	long l;
 
@@ -193,9 +194,9 @@ parse_physmap(void)
 		node = &nodes[r][cb][cg][m][n];
 		node->n_nid = nid;
 		invmap[nid] = node;
-		node->n_wiv.fv_x = x;
-		node->n_wiv.fv_y = y;
-		node->n_wiv.fv_z = z;
+		node->n_wiv.iv_x = x;
+		node->n_wiv.iv_y = y;
+		node->n_wiv.iv_z = z;
 
 		if (x > widim.iv_w)
 			widim.iv_w = x;
@@ -234,9 +235,10 @@ bad:
 	fclose(fp);
 	errno = 0;
 
-	widim.iv_w++;
-	widim.iv_h++;
-	widim.iv_d++;
+	if (++widim.iv_w != WIDIM_WIDTH ||
+	    ++widim.iv_h != WIDIM_HEIGHT ||
+	    ++widim.iv_d != WIDIM_DEPTH)
+		errx(1, "wired cluster dimensions have changed");
 }
 
 /*
