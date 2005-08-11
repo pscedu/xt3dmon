@@ -342,6 +342,54 @@ keyh_incr(unsigned char key, __unused int u, __unused int v)
 }
 
 void
+spkeyh_node(int key, __unused int u, __unused int v)
+{
+	struct node *n;
+	int dir;
+
+	switch (key) {
+	case GLUT_KEY_PAGE_UP:
+		dir = DIR_UP;
+		break;
+	case GLUT_KEY_PAGE_DOWN:
+		dir = DIR_DOWN;
+		break;
+	case GLUT_KEY_UP:
+		dir = DIR_FORWARD;
+		break;
+	case GLUT_KEY_DOWN:
+		dir = DIR_BACK;
+		break;
+	case GLUT_KEY_LEFT:
+		dir = DIR_LEFT;
+		break;
+	case GLUT_KEY_RIGHT:
+		dir = DIR_RIGHT;
+		break;
+	}
+	if (!SLIST_EMPTY(&selnodes)) {
+		n = node_neighbor(SLIST_FIRST(&selnodes)->sn_nodep, 1, dir);
+		/* This should never be NULL. */
+		if (n)
+			sel_set(n);
+	}
+}
+
+void
+keyh_keyh(unsigned char key, __unused int u, __unused int v)
+{
+	glutKeyboardFunc(keyh_default);
+	switch (key) {
+	case 'n':
+		glutSpecialFunc(spkeyh_node);
+		break;
+	default:
+		glutSpecialFunc(spkeyh_default);
+		break;
+	}
+}
+
+void
 keyh_default(unsigned char key, __unused int u, __unused int v)
 {
 	int oldopts = st.st_opts;
@@ -355,6 +403,9 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 'f':
 		glutKeyboardFunc(keyh_flyby);
+		break;
+	case 'k':
+		glutKeyboardFunc(keyh_keyh);
 		break;
 	case 'm':
 		glutKeyboardFunc(keyh_mode);
