@@ -472,6 +472,9 @@ void			 mouseh_null(int, int, int, int);
 void			 sel_record_begin(void);
 void			 sel_record_end(void);
 
+/* node.c */
+struct node		*node_neighbor(struct node *, int, int);
+
 /* objlist.c */
 void			 obj_batch_start(struct objlist *);
 void			 obj_batch_end(struct objlist *);
