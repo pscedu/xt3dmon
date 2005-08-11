@@ -29,6 +29,10 @@
 #define NMODS		8
 #define NNODES		4
 
+#define WIDIM_WIDTH	11
+#define WIDIM_HEIGHT	12
+#define WIDIM_DEPTH	16
+
 #define ROWSPACE	(10.0f)
 #define CABSPACE	(5.0f)
 #define CAGESPACE	(2.0f)
@@ -58,12 +62,12 @@
 #define ZCENTER		(NODESPACE + (ROWDEPTH * NROWS + \
 			    ROWSPACE * (NROWS - 1)) / 2.0f)
 
-#define WI_WIDTH	(widim.iv_w * st.st_winsp.iv_x)
-#define WI_HEIGHT	(widim.iv_h * st.st_winsp.iv_y)
-#define WI_DEPTH	(widim.iv_d * st.st_winsp.iv_z)
-#define WI_CLIPX	(st.st_winsp.iv_x * vmodes[st.st_vmode].vm_clip)
-#define WI_CLIPY	(st.st_winsp.iv_y * vmodes[st.st_vmode].vm_clip)
-#define WI_CLIPZ	(st.st_winsp.iv_z * vmodes[st.st_vmode].vm_clip)
+#define WIV_SWIDTH	(WIDIM_WIDTH  * st.st_winsp.iv_x)
+#define WIV_SHEIGHT	(WIDIM_HEIGHT * st.st_winsp.iv_y)
+#define WIV_SDEPTH	(WIDIM_DEPTH  * st.st_winsp.iv_z)
+#define WIV_CLIPX	(st.st_winsp.iv_x * vmodes[st.st_vmode].vm_clip)
+#define WIV_CLIPY	(st.st_winsp.iv_y * vmodes[st.st_vmode].vm_clip)
+#define WIV_CLIPZ	(st.st_winsp.iv_z * vmodes[st.st_vmode].vm_clip)
 
 #define WFRAMEWIDTH	(0.001f)
 
@@ -205,7 +209,7 @@ struct node {
 	int		 n_state;
 	struct fill	*n_fillp;
 	int		 n_flags;
-	struct fvec	 n_wiv;			/* wired view position */
+	struct ivec	 n_wiv;			/* wired view position */
 	struct fvec	 n_swiv;		/* scaled */
 	struct fvec	 n_physv;
 	struct fvec	*n_v;
@@ -337,12 +341,12 @@ struct pinfo {
 
 #define PF_UINP		(1<<0)
 
-#define CAMDIR_LEFT	0
-#define CAMDIR_RIGHT	1
-#define CAMDIR_UP	2
-#define CAMDIR_DOWN	3
-#define CAMDIR_FORWARD	4
-#define CAMDIR_BACK	5
+#define DIR_LEFT	0
+#define DIR_RIGHT	1
+#define DIR_UP		2
+#define DIR_DOWN	3
+#define DIR_FORWARD	4
+#define DIR_BACK	5
 
 #define TWF_LOOK	(1<<1)
 #define TWF_POS		(1<<2)
@@ -526,6 +530,7 @@ void			 hsv_to_rgb(struct fill *);
 
 extern struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 extern struct node	*invmap[];
+extern struct node	*wimap[WIDIM_WIDTH][WIDIM_HEIGHT][WIDIM_DEPTH];
 
 extern struct job_state	 jstates[];
 
@@ -551,13 +556,12 @@ extern struct dbh	 dbh;
 extern struct selnodes	 selnodes;
 extern size_t		 nselnodes;
 
-extern struct ivec	 widim;				/* wired cluster dimensions */
 extern int		 mode_data_clean;
 extern int		 selnode_clean;
 extern struct fvec	 wivstart, wivdim;		/* repeat position & dim */
 extern struct temp_range temp_map[14]; /* XXX */
 
-extern struct fvec	 tv, tlv;
+extern struct fvec	 tv, tlv;			/* tween vectors */
 
 extern int		 flyby_mode;
 extern int		 capture_mode;
