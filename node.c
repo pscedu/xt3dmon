@@ -1,11 +1,14 @@
 /* $Id$ */
 
+#include "mon.h"
+
 void
-node_physpos(struct node *n, int *r, int *cb, int *cg, int *m, int *n)
+node_physpos(struct node *node, int *r, int *cb, int *cg, int *m,
+    int *n)
 {
 	int pos;
 
-	pos = sizeof(nodes) / sizeof(*n);
+	pos = (node - &nodes[0][0][0][0][0]) / sizeof(*node);
 
 	*r = pos / (NCABS * NCAGES * NMODS * NNODES);
 	pos %= NCABS * NCAGES * NMODS * NNODES;
@@ -18,8 +21,8 @@ node_physpos(struct node *n, int *r, int *cb, int *cg, int *m, int *n)
 	*n = pos;
 }
 
-void
-node_neighbor(struct node *n, int amt, int dir)
+struct node *
+node_neighbor(struct node *node, int amt, int dir)
 {
 	int r, cb, cg, m, n;
 	struct node *rn;
@@ -32,7 +35,7 @@ node_neighbor(struct node *n, int amt, int dir)
 
 	switch (st.st_vmode) {
 	case VM_PHYSICAL:
-		node_physpos(n, &r, &cb, &cg, &m, &n);
+		node_physpos(node, &r, &cb, &cg, &m, &n);
 		switch (dir) {
 		case DIR_RIGHT:
 			m += amt;
@@ -86,11 +89,11 @@ node_neighbor(struct node *n, int amt, int dir)
 			r %= NROWS;
 			break;
 		}
-		nr = nodes[r][cb][cg][m][n];
+		rn = &nodes[r][cb][cg][m][n];
 		break;
 	case VM_WIRED:
 	case VM_WIREDONE:
-		iv = n->n_wiv;
+		iv = node->n_wiv;
 		switch (dir) {
 		case DIR_RIGHT:
 			iv.iv_x += amt;
@@ -105,7 +108,8 @@ node_neighbor(struct node *n, int amt, int dir)
 			iv.iv_z %= WIDIM_DEPTH;
 			break;
 		}
-		rn = wimap[iv.v_x][iv.v_y][iv.v_z];
+		rn = wimap[iv.iv_x][iv.iv_y][iv.iv_z];
+		break;
 	}
 	return (rn);
 }
