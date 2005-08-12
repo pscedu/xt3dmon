@@ -14,3 +14,4 @@ $Id$
 31. tex api
 32. allow revolve to revolve around selnodes
 33. remove some globals
+34. function to do rebuild option diffs
