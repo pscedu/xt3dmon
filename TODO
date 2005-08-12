@@ -13,3 +13,4 @@ $Id$
 30. when jobs are reallocate, fill alpha is reset
 31. tex api
 32. allow revolve to revolve around selnodes
+33. remove some globals
