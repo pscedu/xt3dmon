@@ -101,9 +101,9 @@ void
 sel_record_begin(void)
 {
 	GLint viewport[4];
-	float clip;
+//	float clip;
 
-	clip = MIN3(WIV_CLIPX, WIV_CLIPY, WIV_CLIPZ);
+//	clip = MIN3(WIV_CLIPX, WIV_CLIPY, WIV_CLIPZ);
 
 	glSelectBuffer(sizeof(selbuf) / sizeof(selbuf[0]), selbuf);
 	glGetIntegerv(GL_VIEWPORT, viewport);
@@ -113,6 +113,7 @@ sel_record_begin(void)
 	glPushMatrix();
 	glLoadIdentity();
 	gluPickMatrix(lastu, win_height - lastv, 1, 1, viewport);
+	/* XXX wrong */
 	gluPerspective(FOVY, ASPECT, 0.1, clip);
 	glMatrixMode(GL_MODELVIEW);
 }
@@ -203,5 +204,5 @@ sel_record_end(void)
 		sel_record_process(nrecs);
 	render_mode = RM_RENDER;
 
-	rebuild(RF_PERSPECTIVE);
+	rebuild(RF_CAM);
 }
