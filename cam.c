@@ -54,13 +54,11 @@ cam_move(int dir, float amt)
 		b.fv_z = -st.st_lx;
 		vec_normalize(&b);
 
-		if (dir == DIR_DOWN)
-			SWAP(a, b, t);
-
 		/* Follow the normal to the look vector. */
-		cross.fv_x = a.fv_y * b.fv_z - b.fv_y * a.fv_z;
-		cross.fv_y = b.fv_x * a.fv_z - a.fv_x * b.fv_z;
-		cross.fv_z = a.fv_x * b.fv_y - b.fv_x * a.fv_y;
+		if (dir == DIR_DOWN)
+			vec_crossprod(&cross, &b, &a);
+		else
+			vec_crossprod(&cross, &a, &b);
 
 		vec_normalize(&cross);
 		st.st_x += cross.fv_x * amt;
@@ -158,12 +156,17 @@ cam_rotatev(int d)
 }
 
 void
-cam_update(void)
+cam_look(struct fvec *offset)
 {
 	glLoadIdentity();
-	gluLookAt(st.st_x, st.st_y, st.st_z,
-	    st.st_x + st.st_lx,
-	    st.st_y + st.st_ly,
-	    st.st_z + st.st_lz,
-	    st.st_uv.fv_x, st.st_uv.fv_y, st.st_uv.fv_z);
+	gluLookAt(
+	    st.st_x + offset->fv_x,
+	    st.st_y + offset->fv_y,
+	    st.st_z + offset->fv_z,
+	    st.st_x + offset->fv_x + st.st_lx,
+	    st.st_y + offset->fv_y + st.st_ly,
+	    st.st_z + offset->fv_z + st.st_lz,
+	    st.st_uv.fv_x,
+	    st.st_uv.fv_y,
+	    st.st_uv.fv_z);
 }
