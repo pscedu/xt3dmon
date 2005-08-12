@@ -43,8 +43,10 @@ void panel_refresh_pos(struct panel *);
 void panel_refresh_ss(struct panel *);
 void panel_refresh_status(struct panel *);
 void panel_refresh_mem(struct panel *);
+void panel_refresh_eggs(struct panel *);
 
 void uinpcb_ss(void);
+void uinpcb_eggs(void);
 
 struct pinfo pinfo[] = {
 	{ panel_refresh_fps,	0,	 0,		 NULL },
@@ -56,7 +58,8 @@ struct pinfo pinfo[] = {
 	{ panel_refresh_pos,	0,	 0,		 NULL },
 	{ panel_refresh_ss,	PF_UINP, 0,		 uinpcb_ss },
 	{ panel_refresh_status,	0,	 0,		 NULL },
-	{ panel_refresh_mem,	0,	 0,		 NULL }
+	{ panel_refresh_mem,	0,	 0,		 NULL },
+	{ panel_refresh_eggs,	PF_UINP, 0,		 uinpcb_eggs}
 };
 
 struct panels	 panels;
@@ -670,6 +673,25 @@ panel_refresh_ss(struct panel *p)
 
 	panel_set_content(p, "Screenshot filename: %s",
 	    buf_get(&uinp.uinp_buf));
+}
+
+void
+panel_refresh_eggs(struct panel *p)
+{
+	static long x = 0;
+//	if ((uinp.uinp_opts & UINPO_DIRTY) == 0 && panel_ready(p))
+//		return;
+//	uinp.uinp_opts &= ~UINPO_DIRTY;
+
+	/* Make it blink once per second */
+	if(x++ % fps == 0) {
+		panel_set_content(p, "Follow the white rabbit...\n  %s",
+	    		buf_get(&uinp.uinp_buf));
+		x = 0;
+	} else {
+		panel_set_content(p, "Follow the white rabbit...\n> %s",
+	    		buf_get(&uinp.uinp_buf));
+	}
 }
 
 int panel_status_dirty;
