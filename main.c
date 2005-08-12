@@ -19,7 +19,7 @@
 #define STARTLZ		(-0.12f)
 
 #define FPS_TO_USEC(X)	(1000000/X)	/* Convert FPS to microseconds. */
-#define GOVERN_FPS	15		/* FPS governor. */
+#define GOVERN_FPS	30		/* FPS governor. */
 
 struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 struct node		*invmap[NID_MAX];
@@ -148,64 +148,59 @@ refresh_state(int oldopts)
 void
 idle_govern(void)
 {
-	struct timeval time, diff;
-	static struct timeval ftime = {0,0};
-	static struct timeval ptime = {0,0};
-	static long fcnt = 0;
+	static struct timeval gov_tv, fps_tv, tv, diff;
+	static long fcnt;
 
-	gettimeofday(&time, NULL);
-	timersub(&time, &ptime, &diff);
+	gettimeofday(&tv, NULL);
+	timersub(&tv, &gov_tv, &diff);
 	if (diff.tv_sec * 1e6 + diff.tv_usec >= FPS_TO_USEC(GOVERN_FPS)) {
-		ptime = time;
+		gov_tv = tv;
 
-		timersub(&time, &ftime, &diff);
-		if (diff.tv_sec >= 1) {
-			ftime = time;
+		timersub(&tv, &fps_tv, &diff);
+		if (diff.tv_sec) {
+			fps_tv = tv;
 			fps = fcnt;
 			fcnt = 0;
 		}
 
-		timersub(&time, &lastsync, &diff);
+		timersub(&tv, &lastsync, &diff);
 		if (diff.tv_sec >= SLEEP_INTV) {
-			lastsync = time;
+			lastsync = tv;
 			st.st_rf |= RF_DATASRC | RF_CLUSTER;
 			panel_status_setinfo("");
 		}
 
-		fcnt++;
 		draw();
+		fcnt++;
 	}
 }
 
 void
 idle(void)
 {
-	static struct timeval fps_tm;
-	static int tcnt = 0;
-	static int cnt;
+	static struct timeval tv, diff, fps_tv;
+	static int tcnt, cnt;
 
-//	tcnt++;
-//	if (++cnt >= fps) {
-		struct timeval tm, diff;
+	tcnt++;
+	if (++cnt >= fps + 1) {
+		if (gettimeofday(&tv, NULL) == -1)
+			err(1, "gettimeofday");
 
-		gettimeofday(&tm, NULL);
-		timersub(&tm, &fps_tm, &diff);
-
-		if (diff.tv_sec >= 1) {
-			fps = tcnt;
-			fps_tm = tm;
+		timersub(&tv, &fps_tv, &diff);
+		if (diff.tv_sec) {
+			fps = tcnt / (diff.tv_sec + diff.tv_usec / 1e6f);
+			fps_tv = tv;
 			tcnt = 0;
 		}
 
-		timersub(&tm, &lastsync, &diff);
-		if (diff.tv_sec >= SLEEP_INTV) { /* XXX Is this right? */
-			lastsync = tm;
+		timersub(&tv, &lastsync, &diff);
+		if (diff.tv_sec > SLEEP_INTV) {
+			lastsync = tv;
 			st.st_rf |= RF_DATASRC | RF_CLUSTER;
 			panel_status_setinfo("");
 		}
-//		cnt = 0;
-//	}
-	tcnt++;
+		cnt = 0;
+	}
 	draw();
 }
 
