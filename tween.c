@@ -6,6 +6,8 @@
 #define TWEEN_THRES	(0.001f)
 #define TWEEN_AMT	(0.05f)
 
+int cam_dirty = 1;
+
 __inline void
 tween_probe(float *cur, float stop, float max, float *scale, float *want)
 {
@@ -68,7 +70,6 @@ tween_pop(int opts)
 			tlv.fv_y = st.st_ly;  st.st_ly = slv.fv_y;
 			tlv.fv_z = st.st_lz;  st.st_lz = slv.fv_z;
 		}
-	} else {
-		cam_update();
-	}
+	} else
+		cam_dirty = 1;
 }
