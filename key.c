@@ -205,19 +205,17 @@ keyh_vmode(unsigned char key, __unused int u, __unused int v)
 	switch (key) {
 	case 'o':
 		st.st_vmode = VM_WIREDONE;
-		st.st_rf |= RF_CLUSTER | RF_PERSPECTIVE | RF_GROUND | RF_SELNODE | RF_DATASRC;
 		break;
 	case 'w':
 		st.st_vmode = VM_WIRED;
-		st.st_rf |= RF_CLUSTER | RF_PERSPECTIVE | RF_GROUND | RF_SELNODE | RF_DATASRC;
 		break;
 	case 'p':
 		st.st_vmode = VM_PHYSICAL;
-		st.st_rf |= RF_CLUSTER | RF_PERSPECTIVE | RF_GROUND | RF_SELNODE | RF_DATASRC;
 		break;
 	default:
 		return;
 	}
+	st.st_rf |= RF_CLUSTER | RF_CAM | RF_GROUND | RF_SELNODE | RF_DATASRC;
 	refresh_state(oldopts);
 }
 
@@ -309,7 +307,7 @@ keyh_decr(unsigned char key, __unused int u, __unused int v)
 	default:
 		return;
 	}
-	st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE | RF_SELNODE;
+	st.st_rf |= RF_CLUSTER | RF_GROUND | RF_CAM | RF_SELNODE;
 	refresh_state(oldopts);
 }
 
@@ -337,7 +335,7 @@ keyh_incr(unsigned char key, __unused int u, __unused int v)
 	default:
 		return;
 	}
-	st.st_rf |= RF_CLUSTER | RF_GROUND | RF_PERSPECTIVE | RF_SELNODE;
+	st.st_rf |= RF_CLUSTER | RF_GROUND | RF_CAM | RF_SELNODE;
 	refresh_state(oldopts);
 }
 
