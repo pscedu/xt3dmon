@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "buf.h"
 #include "cdefs.h"
@@ -44,6 +45,8 @@ void panel_refresh_ss(struct panel *);
 void panel_refresh_status(struct panel *);
 void panel_refresh_mem(struct panel *);
 void panel_refresh_eggs(struct panel *);
+
+int blink_panel(struct timeval*, char**, int, int*, long);
 
 void uinpcb_ss(void);
 void uinpcb_eggs(void);
@@ -675,23 +678,23 @@ panel_refresh_ss(struct panel *p)
 	    buf_get(&uinp.uinp_buf));
 }
 
+#define BLINK_INTERVAL 1000000
 void
 panel_refresh_eggs(struct panel *p)
 {
-	static long x = 0;
-//	if ((uinp.uinp_opts & UINPO_DIRTY) == 0 && panel_ready(p))
-//		return;
-//	uinp.uinp_opts &= ~UINPO_DIRTY;
+	char *s[] = {"Follow the white rabbit...\n  %s",
+			"Follow the white rabbit...\n> %s"};
+	static struct timeval pre = {0,0};
+	static int i = 0;
+	int dirty;
+	
+	dirty = blink_panel(&pre, s, 2, &i, BLINK_INTERVAL);
 
-	/* Make it blink once per second */
-	if(x++ % fps == 0) {
-		panel_set_content(p, "Follow the white rabbit...\n  %s",
-	    		buf_get(&uinp.uinp_buf));
-		x = 0;
-	} else {
-		panel_set_content(p, "Follow the white rabbit...\n> %s",
-	    		buf_get(&uinp.uinp_buf));
-	}
+	if ((uinp.uinp_opts & UINPO_DIRTY) == 0 && panel_ready(p) && !dirty)
+		return;
+	uinp.uinp_opts &= ~UINPO_DIRTY;
+
+	panel_set_content(p, s[i], buf_get(&uinp.uinp_buf));
 }
 
 int panel_status_dirty;
@@ -868,4 +871,28 @@ init_panels(int start)
 	TAILQ_FOREACH(p, &panels, p_link)
 		cur |= p->p_id;
 	flip_panels((cur ^ start) & ~FB_PMASK);
+}
+
+/* Blink panel text (swap between two strings during interval */
+int blink_panel(struct timeval *pre, char **s, int size, int *i, long interval)
+{
+	struct timeval tv, diff;
+	char *str = s[*i];
+	int tog = 0;
+
+	gettimeofday(&tv, NULL);
+	timersub(&tv, pre, &diff);
+
+	/* Make it blink once per second */
+	if(diff.tv_sec * 1e6 + diff.tv_usec > interval) {
+		*pre = tv;
+
+		/* Swap */
+		if(++(*i) == size)
+			*i = 0;
+		str = s[*i];
+		tog = 1;
+	}
+
+	return tog;
 }
