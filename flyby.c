@@ -125,18 +125,8 @@ flyby_writeselnode(int nid)
 void
 flyby_read(void)
 {
-	static int stereo_left;
 	int done, oldopts;
 	struct fbhdr fbh;
-
-	/* XXX: move to draw() */
-	if (st.st_opts & OP_STEREO) {
-		stereo_left = !stereo_left;
-		if (!stereo_left) {
-			cam_move(DIR_RIGHT, 0.02);
-			return;
-		}
-	}
 
 	oldopts = st.st_opts;
 
@@ -196,12 +186,9 @@ flyby_read(void)
 		}
 	} while (!done);
 
-	if (st.st_opts & OP_STEREO && stereo_left)
-		cam_move(DIR_LEFT, 0.01);
-
 	/* XXX:  is this right? */
 	if ((st.st_rf & OP_TWEEN) == 0)
-		cam_update();
+		cam_dirty = 1;
 
 	st.st_opts ^= ((st.st_opts ^ oldopts) & FB_OMASK);
 	refresh_state(oldopts);
@@ -222,7 +209,7 @@ flyby_end(void)
 		glutMotionFunc(m_activeh_default);
 		glutPassiveMotionFunc(m_passiveh_default);
 		glutMouseFunc(mouseh_default);
-		cam_update();
+		cam_dirty = 1;
 		/* rebuild(RF_INIT); */
 		break;
 	}
