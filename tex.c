@@ -1,44 +1,43 @@
 /* $Id$ */
 
+#include "compat.h"
+#include "mon.h"
+
 /*
  * Load all textures into memory.
  */
 void
 tex_load(void)
 {
+	unsigned int i, w, h;
 	char path[NAME_MAX];
 	void *data;
-	unsigned int i;
 
-	/* Any texture Easter eggs? */
-	if (easter_eggs(EGG_UPDATE))
-		return;
-	
 	/* Read in texture IDs. */
 	for (i = 0; i < NJST; i++) {
 		if (eggs & EGG_BORG)
 			snprintf(path, sizeof(path), _PATH_BORG);
 		else
 			snprintf(path, sizeof(path), _PATH_TEX, i);
-		data = png_load(path);
+		data = png_load(path, &w, &h);
 		tex_init(data, jstates[i].js_fill.f_alpha_fmt,
-		    GL_RGBA, i + 1);
+		    GL_RGBA, i + 1, w, h);
 		jstates[i].js_fill.f_texid = i + 1;
 	}
 
 	/* Load the font texture */
 	font_id = i + 1;
-	data = png_load(_PATH_FONT);
+	data = png_load(_PATH_FONT, &w, &h);
 
 	/* This puts background color over white in texture */
-	tex_init(data, GL_INTENSITY, GL_RGBA, font_id);
+	tex_init(data, GL_INTENSITY, GL_RGBA, font_id, w, h);
 }
 
 /*
  * "Initialize" texture data that are loaded into memory.
  */
 void
-tex_init(void *data, GLint ifmt, GLenum fmt, GLuint id)
+tex_init(void *data, GLint ifmt, GLenum fmt, GLuint id, GLuint w, GLuint h)
 {
 	glGenTextures(1, &id);
 	glBindTexture(GL_TEXTURE_2D, id);
@@ -50,7 +49,7 @@ tex_init(void *data, GLint ifmt, GLenum fmt, GLuint id)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	/* fmt is either GL_INTENSITY, GL_RGBA, ... */
-	glTexImage2D(GL_TEXTURE_2D, 0, ifmt, width, height, 0, fmt,
+	glTexImage2D(GL_TEXTURE_2D, 0, ifmt, w, h, 0, fmt,
 	    GL_UNSIGNED_BYTE, data);
 	free(data);
 }
