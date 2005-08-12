@@ -165,6 +165,9 @@ keyh_panel(unsigned char key, __unused int u, __unused int v)
 	case 'S':
 		panel_toggle(PANEL_STATUS);
 		break;
+	case '~':
+		panel_toggle(PANEL_EGGS);
+		break;
 	}
 }
 
