@@ -249,6 +249,9 @@ struct state {
 #define RF_INIT		(RF_TEX | RF_PHYSMAP | RF_DATASRC | RF_CLUSTER | \
 			 RF_GROUND | RF_SELNODE)
 
+#define EGG_UPDATE	(1<<0)
+#define EGG_BORG 	(1<<1)
+
 #define OP_TEX		(1<<0)
 #define OP_BLEND	(1<<1)
 #define OP_WIREFRAME	(1<<2)
@@ -324,6 +327,7 @@ struct panel {
 #define PANEL_SS	(1<<7)
 #define PANEL_STATUS	(1<<8)
 #define PANEL_MEM	(1<<9)
+#define PANEL_EGGS	(1<<10) 		/* don't include below (secret) */
 #define NPANELS		10
 
 #define POPT_REMOVE	(1<<0)			/* being removed */
@@ -422,6 +426,9 @@ void			 make_cluster(void);
 void			 make_select(void);
 float			 snap_to_grid(float, float, float);
 
+/* eggs.c */
+int				 easter_eggs(int);
+
 /* flyby.c */
 void 			 flyby_begin(int);
 void 			 flyby_end(void);
@@ -460,6 +467,7 @@ void			 update_textures(void);
 void			 restore_textures(void);
 unsigned int		 mkglname(unsigned int, int);
 void			 glnametype(unsigned int, unsigned int *, int *);
+void			 del_textures(void);
 
 /* mouse.c */
 void			 m_activeh_default(int, int);
