@@ -12,3 +12,4 @@ $Id$
 29. poll data files for when to refresh instead of blind refresh
 30. when jobs are reallocate, fill alpha is reset
 31. tex api
+32. allow revolve to revolve around selnodes
