@@ -42,7 +42,7 @@ cam_move(int dir, float amt)
 		break;
 	case DIR_UP:
 	case DIR_DOWN: {
-		struct fvec cross, a, b, t;
+		struct fvec cross, a, b;
 
 		a.fv_x = st.st_lx;
 		a.fv_y = st.st_ly;
