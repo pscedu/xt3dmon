@@ -91,6 +91,8 @@
 #define SIGN(x)		((x) == 0 ? 1 : abs(x)/(x))
 #define PI		(3.14159265358979323)
 
+#define DEG_TO_RAD(x)	((x) * PI / 180)
+
 #define RM_SELECT	0
 #define RM_RENDER	1
 
@@ -236,7 +238,7 @@ struct state {
 #define st_lz st_lv.fv_z
 };
 
-#define FB_OMASK	(OP_LOOPFLYBY | OP_CAPTURE | OP_DISPLAY | OP_STEREO | OP_STOP)
+#define FB_OMASK	(OP_LOOPFLYBY | OP_CAPTURE | OP_DISPLAY | OP_STOP)
 #define FB_PMASK	(PANEL_GOTO | PANEL_CMD | PANEL_FLYBY | PANEL_SS)
 
 #define RF_TEX		(1<<0)
@@ -244,10 +246,10 @@ struct state {
 #define RF_DATASRC	(1<<2)
 #define RF_CLUSTER	(1<<3)
 #define RF_SELNODE	(1<<4)
-#define RF_PERSPECTIVE	(1<<5)
+#define RF_CAM		(1<<5)
 #define RF_GROUND	(1<<6)
 #define RF_INIT		(RF_TEX | RF_PHYSMAP | RF_DATASRC | RF_CLUSTER | \
-			 RF_GROUND | RF_SELNODE)
+			 RF_GROUND | RF_SELNODE | RF_CAM)
 
 #define EGG_UPDATE	(1<<0)
 #define EGG_BORG 	(1<<1)
@@ -267,8 +269,7 @@ struct state {
 #define OP_WIVMFRAME	(1<<12)
 #define OP_PIPES	(1<<13)
 #define OP_SELPIPES	(1<<14)
-#define OP_STEREO	(1<<15)
-#define OP_STOP		(1<<16)
+#define OP_STOP		(1<<17)
 
 #define SM_JOBS		0
 #define SM_FAIL		1
@@ -328,7 +329,7 @@ struct panel {
 #define PANEL_STATUS	(1<<8)
 #define PANEL_MEM	(1<<9)
 #define PANEL_EGGS	(1<<10) 		/* don't include below (secret) */
-#define NPANELS		10
+#define NPANELS		11
 
 #define POPT_REMOVE	(1<<0)			/* being removed */
 #define POPT_DIRTY	(1<<1)			/* panel needs redrawn */
@@ -408,8 +409,8 @@ void			 cam_move(int, float);
 void			 cam_revolve(int);
 void			 cam_rotateu(int);
 void			 cam_rotatev(int);
-void			 cam_update(void);
 void			 cam_goto(struct fvec *);
+void			 cam_look(struct fvec *);
 
 /* capture.c */
 void			 capture_frame(int);
@@ -531,6 +532,7 @@ void			 uinpcb_goto(void);
 
 /* vec.c */
 void			 vec_normalize(struct fvec *);
+void			 vec_crossprod(struct fvec *, struct fvec *, struct fvec *);
 
 /* widget.c */
 void			 draw_box_outline(const struct fvec *, const struct fill *);
@@ -552,6 +554,7 @@ extern struct temp	 temp_notfound;
 
 extern int		 total_failures;		/* total among all nodes */
 
+extern int		 stereo, cam_dirty;
 extern GLint		 cluster_dl, ground_dl, select_dl;
 extern int		 render_mode;
 extern int		 font_id;
@@ -582,3 +585,5 @@ extern int		 win_height;
 
 extern unsigned long	 vmem;
 extern long		 rmem;
+
+extern float		 clip;
