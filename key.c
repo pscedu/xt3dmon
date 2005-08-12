@@ -540,6 +540,11 @@ spkeyh_default(int key, __unused int u, __unused int v)
 			adj = 50.0f;
 		amt *= adj;
 		break;
+	case VM_WIRED:
+	case VM_WIREDONE:
+		amt *= cbrt(st.st_winsp.iv_x * st.st_winsp.iv_y *
+		    st.st_winsp.iv_z);
+		break;
 	}
 
 	cam_move(dir, amt);
