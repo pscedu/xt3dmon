@@ -212,6 +212,10 @@ load_textures(void)
 	void *data;
 	unsigned int i;
 
+	/* Any texture easter eggs? */
+	if(easter_eggs(EGG_UPDATE))
+		return;
+	
 	/* Read in texture IDs. */
 	for (i = 0; i < NJST; i++) {
 		snprintf(path, sizeof(path), _PATH_TEX, i);
