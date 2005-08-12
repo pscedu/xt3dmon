@@ -137,13 +137,13 @@ capture_writeback(int mode)
 	int k;
 
 	ext = capture_formats[mode].cf_ext;
-	for (k = 0; k < fbuf_pos; k++, capture_pos++,
-	    stereo_left = !stereo_left) {
-		if (st.st_opts & OP_STEREO)
+	for (k = 0; k < fbuf_pos; k++, capture_pos++) {
+		if (stereo) {
 			snprintf(fn, sizeof(fn), "%s/%c%07d.%s",
 			    _PATH_SSDIR, stereo_left ? 'l' : 'r',
 			    capture_pos / 2, ext);
-		else
+			stereo_left = !stereo_left;
+		} else
 			snprintf(fn, sizeof(fn), "%s/%07d.%s",
 			    _PATH_SSDIR, capture_pos, ext);
 		capture_formats[mode].cf_writef(fn, fbuf[k],
@@ -202,11 +202,16 @@ capture_frame(int mode)
 	 * After we reach max frames, dump them.  NOTE: this is
 	 * nasty and will take awhile.
 	 */
-	if (fbuf_pos >= NUM_FRAMES) {
+	if (fbuf_pos + 1 >= NUM_FRAMES) {
 		capture_writeback(mode);
 		fbuf_pos = 0;
 	}
 	capture_copyfb(mode, fbuf[fbuf_pos++]);
+	if (stereo) {
+		glDrawBuffer(GL_BACK_RIGHT);
+		capture_copyfb(mode, fbuf[fbuf_pos++]);
+		glDrawBuffer(GL_BACK_LEFT);
+	}
 }
 
 /* Take a screenshot. */
