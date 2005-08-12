@@ -7,9 +7,6 @@
 #include "mon.h"
 #include "cdefs.h"
 
-#define TWEEN_MAX_POS	(2.0f)
-#define TWEEN_MAX_LOOK	(0.04f)
-
 #define SELNODE_GAP	(0.1f)
 
 #define TEXTURE_SIZE	128.0
@@ -42,79 +39,45 @@ struct fvec fvzero = { 0.0f, 0.0f, 0.0f };
 
 #define NEAR (1.0)
 
-void
-draw(void)
+__inline void
+draw_scene(void)
 {
+	if (st.st_opts & OP_GROUND)
+		glCallList(ground_dl);
+	if (select_dl)
+		glCallList(select_dl);
+	glCallList(cluster_dl);
+	if (!TAILQ_EMPTY(&panels))
+		draw_panels();
+}
+
+void
+drawh_select(void)
+{
+	sel_record_begin();
+	draw_scene();
+	sel_record_end();
+}
+
+void
+drawh_stereo(void)
+{
+#if 0
 	static double ratio, radians, wd2, ndfl, eyeadj;
 	static float left, right, top, bottom;
 	static struct fvec stereo_fv, *fvp;
 
-	if (flyby_mode)
-		flyby_update();
-
-	if (render_mode == RM_SELECT)
-		sel_record_begin();
-
-	if (st.st_opts & OP_TWEEN) {
-		/* XXX: benchmark to test static. */
-		static struct fvec want, want_l;
-		static struct fvec sc, sc_l;
-		static float scale, scale_l;
-
-		want.fv_w = want.fv_h = want.fv_d = 0.0f;
-		want_l.fv_w = want_l.fv_h = want_l.fv_d = 0.0f;
-		sc.fv_x = sc.fv_y = sc.fv_z = 1.0f;
-		sc_l.fv_x = sc_l.fv_y = sc_l.fv_z = 1.0f;
-
-		tween_probe(&st.st_x, tv.fv_x, TWEEN_MAX_POS, &sc.fv_x, &want.fv_w);
-		tween_probe(&st.st_y, tv.fv_y, TWEEN_MAX_POS, &sc.fv_y, &want.fv_h);
-		tween_probe(&st.st_z, tv.fv_z, TWEEN_MAX_POS, &sc.fv_z, &want.fv_d);
-		tween_probe(&st.st_lx, tlv.fv_x, TWEEN_MAX_LOOK, &sc_l.fv_x, &want_l.fv_w);
-		tween_probe(&st.st_ly, tlv.fv_y, TWEEN_MAX_LOOK, &sc_l.fv_y, &want_l.fv_h);
-		tween_probe(&st.st_lz, tlv.fv_z, TWEEN_MAX_LOOK, &sc_l.fv_z, &want_l.fv_d);
-
-		scale = MIN3(sc.fv_x, sc.fv_y, sc.fv_z);
-		scale_l = MIN3(sc_l.fv_x, sc_l.fv_y, sc_l.fv_z);
-
-		tween_recalc(&st.st_x, tv.fv_x, scale, want.fv_w);
-		tween_recalc(&st.st_y, tv.fv_y, scale, want.fv_h);
-		tween_recalc(&st.st_z, tv.fv_z, scale, want.fv_d);
-		tween_recalc(&st.st_lx, tlv.fv_x, scale_l, want_l.fv_w);
-		tween_recalc(&st.st_ly, tlv.fv_y, scale_l, want_l.fv_h);
-		tween_recalc(&st.st_lz, tlv.fv_z, scale_l, want_l.fv_d);
-
-		if (want.fv_w || want.fv_h || want.fv_d ||
-		    want_l.fv_w || want_l.fv_h || want_l.fv_d)
-			cam_dirty = 1;
-	}
-
-	if (st.st_vmode == VM_WIRED)
-		if (st.st_x + clip > wivstart.fv_x + wivdim.fv_w ||
-		    st.st_x - clip < wivstart.fv_x ||
-		    st.st_y + clip > wivstart.fv_y + wivdim.fv_h ||
-		    st.st_y - clip < wivstart.fv_y ||
-		    st.st_z + clip > wivstart.fv_z + wivdim.fv_d ||
-		    st.st_z - clip < wivstart.fv_z) {
-			panel_status_addinfo("Rebuild triggered\n");
-			st.st_rf |= RF_CLUSTER;
-		}
-
-	if (st.st_rf) {
-		rebuild(st.st_rf);
-		st.st_rf = 0;
-	}
-
 	fvp = &fvzero;
 	eyeadj = 0.0f;
 #if 0
-	if (stereo)
+	if (stereo_mode)
 		glDrawBuffer(GL_BACK);
 	else
 		glDrawBuffer(GL_BACK_LEFT);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
 
-	if (stereo) {
+	if (stereo_mode) {
 		glDrawBuffer(GL_BACK_RIGHT);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -147,6 +110,36 @@ draw(void)
 
 		glDrawBuffer(GL_BACK_LEFT);
 	}
+#endif
+}
+
+__inline void
+wired_update(void)
+{
+	if (st.st_x + clip > wivstart.fv_x + wivdim.fv_w ||
+	    st.st_x - clip < wivstart.fv_x ||
+	    st.st_y + clip > wivstart.fv_y + wivdim.fv_h ||
+	    st.st_y - clip < wivstart.fv_y ||
+	    st.st_z + clip > wivstart.fv_z + wivdim.fv_d ||
+	    st.st_z - clip < wivstart.fv_z) {
+		panel_status_addinfo("Rebuild triggered\n");
+		st.st_rf |= RF_CLUSTER;
+	}
+}
+
+void
+drawh_default(void)
+{
+	if (flyby_mode)
+		flyby_update();
+	if (st.st_opts & OP_TWEEN)
+		tween_update();
+	if (st.st_vmode == VM_WIRED)
+		wired_update();
+	if (st.st_rf) {
+		rebuild(st.st_rf);
+		st.st_rf = 0;
+	}
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	if (cam_dirty) {
@@ -154,44 +147,17 @@ draw(void)
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-
-		ratio = win_width / (double)win_height;
-		radians = DEG_TO_RAD(FOVY) / 2;
-		wd2 = NEAR * tan(radians);
-		ndfl = NEAR / 20;
-
-		right = ratio * wd2 + eyeadj * ndfl / 2;
-		left = -ratio * wd2 + eyeadj * ndfl / 2;
-		top = wd2;
-		bottom = -wd2;
-
-		glFrustum(left, right, bottom, top, NEAR, clip);
-
+		gluPerspective(FOVY, ASPECT, NEAR, clip);
 		glMatrixMode(GL_MODELVIEW);
-//		glDrawBuffer(GL_BACK_LEFT);
-		cam_look(fvp);
+		cam_look();
 	}
 	draw_scene();
 
 	glClearColor(0.0, 0.0, 0.2, 1.0);
 	if (st.st_opts & OP_CAPTURE)
 		capture_frame(capture_mode);
-	if (render_mode == RM_SELECT)
-		sel_record_end();
 	else if (st.st_opts & OP_DISPLAY)
 		glutSwapBuffers();
-}
-
-__inline void
-draw_scene(void)
-{
-	if (st.st_opts & OP_GROUND)
-		glCallList(ground_dl);
-	if (select_dl)
-		glCallList(select_dl);
-	glCallList(cluster_dl);
-	if (!TAILQ_EMPTY(&panels))
-		draw_panels();
 }
 
 /* Render a char from the font texture */
