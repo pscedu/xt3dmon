@@ -93,7 +93,7 @@ void
 resizeh(int w, int h)
 {
 	struct panel *p;
-printf("resize %.3f\n", clip);
+
 	win_width = w;
 	win_height = h;
 
