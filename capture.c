@@ -138,7 +138,7 @@ capture_writeback(int mode)
 
 	ext = capture_formats[mode].cf_ext;
 	for (k = 0; k < fbuf_pos; k++, capture_pos++) {
-		if (stereo) {
+		if (stereo_mode) {
 			snprintf(fn, sizeof(fn), "%s/%c%07d.%s",
 			    _PATH_SSDIR, stereo_left ? 'l' : 'r',
 			    capture_pos / 2, ext);
@@ -207,7 +207,7 @@ capture_frame(int mode)
 		fbuf_pos = 0;
 	}
 	capture_copyfb(mode, fbuf[fbuf_pos++]);
-	if (stereo) {
+	if (stereo_mode) {
 		glDrawBuffer(GL_BACK_RIGHT);
 		capture_copyfb(mode, fbuf[fbuf_pos++]);
 		glDrawBuffer(GL_BACK_LEFT);
