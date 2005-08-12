@@ -38,9 +38,17 @@ struct fill fill_grey  = { 0.2f, 0.2f, 0.2f, 1.0f, 0, 0 };
 struct fill fill_light_blue = { 0.2f, 0.4f, 0.6f, 1.0f, 0, 0 };
 struct fill selnodefill = { 0.20f, 0.40f, 0.60f, 1.00f, 0, 0 };		/* Dark blue */
 
+struct fvec fvzero = { 0.0f, 0.0f, 0.0f };
+
+#define NEAR (1.0)
+
 void
 draw(void)
 {
+	static double ratio, radians, wd2, ndfl, eyeadj;
+	static float left, right, top, bottom;
+	static struct fvec stereo_fv, *fvp;
+
 	if (flyby_mode)
 		flyby_update();
 
@@ -55,8 +63,8 @@ draw(void)
 
 		want.fv_w = want.fv_h = want.fv_d = 0.0f;
 		want_l.fv_w = want_l.fv_h = want_l.fv_d = 0.0f;
-		sc.fv_x = sc.fv_y = sc.fv_z = 1.0;
-		sc_l.fv_x = sc_l.fv_y = sc_l.fv_z = 1.0;
+		sc.fv_x = sc.fv_y = sc.fv_z = 1.0f;
+		sc_l.fv_x = sc_l.fv_y = sc_l.fv_z = 1.0f;
 
 		tween_probe(&st.st_x, tv.fv_x, TWEEN_MAX_POS, &sc.fv_x, &want.fv_w);
 		tween_probe(&st.st_y, tv.fv_y, TWEEN_MAX_POS, &sc.fv_y, &want.fv_h);
@@ -77,7 +85,7 @@ draw(void)
 
 		if (want.fv_w || want.fv_h || want.fv_d ||
 		    want_l.fv_w || want_l.fv_h || want_l.fv_d)
-			cam_update();
+			cam_dirty = 1;
 	}
 
 	if (st.st_vmode == VM_WIRED)
@@ -96,15 +104,74 @@ draw(void)
 		st.st_rf = 0;
 	}
 
+	fvp = &fvzero;
+	eyeadj = 0.0f;
+#if 0
+	if (stereo)
+		glDrawBuffer(GL_BACK);
+	else
+		glDrawBuffer(GL_BACK_LEFT);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+#endif
 
-	if (st.st_opts & OP_GROUND)
-		glCallList(ground_dl);
-	if (select_dl)
-		glCallList(select_dl);
-	glCallList(cluster_dl);
-	if (!TAILQ_EMPTY(&panels))
-		draw_panels();
+	if (stereo) {
+		glDrawBuffer(GL_BACK_RIGHT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		vec_crossprod(&st.st_lv, &st.st_uv, &stereo_fv);
+		vec_normalize(&stereo_fv);
+		eyeadj = 0.2f;
+		stereo_fv.fv_x *= eyeadj / 2.0f;
+		stereo_fv.fv_y *= eyeadj / 2.0f;
+		stereo_fv.fv_z *= eyeadj / 2.0f;
+
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+
+		right = ratio * wd2 - eyeadj * ndfl / 2;
+		left = -ratio * wd2 - eyeadj * ndfl / 2;
+		top = wd2;
+		bottom = -wd2;
+		glFrustum(left, right, bottom, top, NEAR, clip);
+
+		glMatrixMode(GL_MODELVIEW);
+	//	glDrawBuffer(GL_BACK_RIGHT);
+		cam_look(&stereo_fv);
+		draw_scene();
+
+		stereo_fv.fv_x *= -1;
+		stereo_fv.fv_y *= -1;
+		stereo_fv.fv_z *= -1;
+		fvp = &stereo_fv;
+		cam_dirty = 1;
+
+		glDrawBuffer(GL_BACK_LEFT);
+	}
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	if (cam_dirty) {
+		cam_dirty = 0;
+
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+
+		ratio = win_width / (double)win_height;
+		radians = DEG_TO_RAD(FOVY) / 2;
+		wd2 = NEAR * tan(radians);
+		ndfl = NEAR / 20;
+
+		right = ratio * wd2 + eyeadj * ndfl / 2;
+		left = -ratio * wd2 + eyeadj * ndfl / 2;
+		top = wd2;
+		bottom = -wd2;
+
+		glFrustum(left, right, bottom, top, NEAR, clip);
+
+		glMatrixMode(GL_MODELVIEW);
+//		glDrawBuffer(GL_BACK_LEFT);
+		cam_look(fvp);
+	}
+	draw_scene();
 
 	glClearColor(0.0, 0.0, 0.2, 1.0);
 	if (st.st_opts & OP_CAPTURE)
@@ -113,6 +180,18 @@ draw(void)
 		sel_record_end();
 	else if (st.st_opts & OP_DISPLAY)
 		glutSwapBuffers();
+}
+
+__inline void
+draw_scene(void)
+{
+	if (st.st_opts & OP_GROUND)
+		glCallList(ground_dl);
+	if (select_dl)
+		glCallList(select_dl);
+	glCallList(cluster_dl);
+	if (!TAILQ_EMPTY(&panels))
+		draw_panels();
 }
 
 /* Render a char from the font texture */
@@ -543,7 +622,7 @@ draw_clusters_wired(void)
 	float x, y, z;
 	struct fvec v, dim;
 
-	clip = MIN3(WIV_CLIPX, WIV_CLIPY, WIV_CLIPZ);
+//	clip = MIN3(WIV_CLIPX, WIV_CLIPY, WIV_CLIPZ);
 
 	x = st.st_x - clip;
 	y = st.st_y - clip;
