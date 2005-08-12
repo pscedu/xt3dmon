@@ -86,3 +86,20 @@ uinpcb_goto(void)
 	cam_goto(&cv);
 	tween_pop(TWF_LOOK | TWF_POS);
 }
+
+void
+uinpcb_eggs(void)
+{
+	char *cmd;
+
+	cmd = buf_get(&uinp.uinp_buf);
+
+	/* Parse Easter Egg Keywords =) */
+	if (*cmd != '\0') {
+		
+		if(strcmp(cmd, "borg") == 0) {
+			easter_eggs(EGG_BORG);
+			load_textures();
+		}
+	}
+}
