@@ -29,13 +29,14 @@ int			 win_width = 800;
 int			 win_height = 600;
 int			 flyby_mode = FBM_OFF;
 int			 capture_mode = CM_PNG;
+int			 stereo_mode;
 int			 font_id;
 struct fvec		 tv = { STARTX, STARTY, STARTZ };
 struct fvec		 tlv = { STARTLX, STARTLY, STARTLZ };
 GLint			 cluster_dl, ground_dl, select_dl;
 struct timeval		 lastsync;
 long			 fps = 50;
-int			 stereo;
+void			(*drawh)(void);
 
 const char *opdesc[] = {
 	/*  0 */ "Texture mode",
@@ -140,13 +141,14 @@ refresh_state(int oldopts)
 		tv.fv_z = st.st_z;  tlv.fv_z = st.st_lz;
 	}
 	if (diff & (OP_BLEND | OP_TEX))
-		restore_textures();
+		tex_restore();
 	if (diff & OP_GOVERN)
-		glutIdleFunc(st.st_opts & OP_GOVERN ? idle_govern : idle);
+		glutIdleFunc(st.st_opts & OP_GOVERN ?
+		    idleh_govern : idleh_default);
 }
 
 void
-idle_govern(void)
+idleh_govern(void)
 {
 	static struct timeval gov_tv, fps_tv, tv, diff;
 	static long fcnt;
@@ -170,13 +172,13 @@ idle_govern(void)
 			panel_status_setinfo("");
 		}
 
-		draw();
+		(*drawh)();
 		fcnt++;
 	}
 }
 
 void
-idle(void)
+idleh_default(void)
 {
 	static struct timeval tv, diff, fps_tv;
 	static int tcnt, cnt;
@@ -201,79 +203,15 @@ idle(void)
 		}
 		cnt = 0;
 	}
-	draw();
-}
-
-void
-load_textures(void)
-{
-	char path[NAME_MAX];
-	void *data;
-	unsigned int i;
-
-	/* Any texture easter eggs? */
-	if(easter_eggs(EGG_UPDATE))
-		return;
-	
-	/* Read in texture IDs. */
-	for (i = 0; i < NJST; i++) {
-		snprintf(path, sizeof(path), _PATH_TEX, i);
-		data = load_png(path);
-		load_texture(data, jstates[i].js_fill.f_alpha_fmt,
-		    GL_RGBA, i + 1);
-		jstates[i].js_fill.f_texid = i + 1;
-	}
-
-	/* Load the font texture */
-	font_id = i + 1;
-	data = load_png(_PATH_FONT);
-
-	/* This puts background color over white in texture */
-	load_texture(data, GL_INTENSITY, GL_RGBA, font_id);
-}
-
-void
-del_textures(void)
-{
-	int i;
-
-	/* Delete textures from memory. */
-	for (i = 0; i < NJST; i++)
-		if (jstates[i].js_fill.f_texid)
-			glDeleteTextures(1, &jstates[i].js_fill.f_texid);
-}
-
-void
-restore_textures(void)
-{
-	/* Reload the textures if needed */
-	if (st.st_opts & OP_TEX) {
-		int fmt = jstates[0].js_fill.f_alpha_fmt;
-
-		if ((st.st_opts & OP_BLEND && fmt != GL_INTENSITY) ||
-		   ((st.st_opts & OP_BLEND) == 0 && fmt != GL_RGBA))
-			update_textures();
-	}
-}
-
-void
-update_textures(void)
-{
-	int j, newfmt;
-
-	newfmt = (jstates[0].js_fill.f_alpha_fmt == GL_RGBA ?
-	    GL_INTENSITY : GL_RGBA);
-	for (j = 0; j < NJST; j++)
-		jstates[j].js_fill.f_alpha_fmt = newfmt;
-	st.st_rf |= RF_TEX | RF_CLUSTER;
+	(*drawh)();
 }
 
 void
 rebuild(int opts)
 {
 	if (opts & RF_TEX) {
-		del_textures();
-		load_textures();
+		tex_remove();
+		tex_load();
 	}
 	if (opts & RF_PHYSMAP)
 		datasrcsw[datasrc].ds_physmap();
@@ -359,6 +297,8 @@ main(int argc, char *argv[])
 	GLint vp[4];
 	int flags, c;
 
+	drawh = drawh_default;
+
 	flags = GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE;
 	glutInit(&argc, argv);
 	while ((c = getopt(argc, argv, "ls")) != -1)
@@ -369,7 +309,8 @@ main(int argc, char *argv[])
 			break;
 		case 's':
 			flags |= GLUT_STEREO;
-			stereo = 1;
+			drawh = drawh_stereo;
+			stereo_mode = 1;
 			break;
 		default:
 			usage();
@@ -401,8 +342,8 @@ main(int argc, char *argv[])
 	glutReshapeFunc(resizeh);
 	glutKeyboardFunc(keyh_default);
 	glutSpecialFunc(spkeyh_default);
-	glutDisplayFunc(draw);
-	glutIdleFunc(idle);
+	glutDisplayFunc(drawh);
+	glutIdleFunc(idleh_default);
 	glutMouseFunc(mouseh_default);
 	glutMotionFunc(m_activeh_default);
 	glutPassiveMotionFunc(m_passiveh_default);
