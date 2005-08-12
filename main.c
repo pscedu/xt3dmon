@@ -35,6 +35,7 @@ struct fvec		 tlv = { STARTLX, STARTLY, STARTLZ };
 GLint			 cluster_dl, ground_dl, select_dl;
 struct timeval		 lastsync;
 long			 fps = 50;
+int			 stereo;
 
 const char *opdesc[] = {
 	/*  0 */ "Texture mode",
@@ -52,8 +53,7 @@ const char *opdesc[] = {
 	/* 12 */ "Wired cluster frames",
 	/* 13 */ "Pipe mode",
 	/* 14 */ "Selected node pipe mode",
-	/* 15 */ "Stereo mode",
-	/* 16 */ "Pause"
+	/* 15 */ "Pause"
 };
 
 struct datasrc datasrcsw[] = {
@@ -90,15 +90,19 @@ struct job_state jstates[] = {
 };
 
 void
-reshape(int w, int h)
+resizeh(int w, int h)
 {
 	struct panel *p;
-
+printf("resize %.3f\n", clip);
 	win_width = w;
 	win_height = h;
 
-	rebuild(RF_PERSPECTIVE);
-	cam_update();
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glViewport(0, 0, win_width, win_height);
+	gluPerspective(FOVY, ASPECT, 1, clip);
+	glMatrixMode(GL_MODELVIEW);
+	cam_dirty = 1;
 
 	TAILQ_FOREACH(p, &panels, p_link)
 		p->p_opts |= POPT_DIRTY;
@@ -144,13 +148,13 @@ refresh_state(int oldopts)
 void
 idle_govern(void)
 {
-	struct timeval time, diff; 
+	struct timeval time, diff;
 	static struct timeval ftime = {0,0};
 	static struct timeval ptime = {0,0};
 	static long fcnt = 0;
-	
+
 	gettimeofday(&time, NULL);
-	timersub(&time, &ptime, &diff); 
+	timersub(&time, &ptime, &diff);
 	if (diff.tv_sec * 1e6 + diff.tv_usec >= FPS_TO_USEC(GOVERN_FPS)) {
 		ptime = time;
 
@@ -299,17 +303,17 @@ rebuild(int opts)
 		}
 		parse_mem();
 	}
-	if (opts & RF_PERSPECTIVE) {
-		float clip;
-
-		clip = MIN3(WIV_CLIPX, WIV_CLIPY, WIV_CLIPZ);
-
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glViewport(0, 0, win_width, win_height);
-		gluPerspective(FOVY, ASPECT, 1, clip);
-		glMatrixMode(GL_MODELVIEW);
-		cam_update();
+	if (opts & RF_CAM) {
+		switch (st.st_vmode) {
+		case VM_PHYSICAL:
+		case VM_WIREDONE:
+			clip = vmodes[st.st_vmode].vm_clip;
+			break;
+		case VM_WIRED:
+			clip = MIN3(WIV_CLIPX, WIV_CLIPY, WIV_CLIPZ);
+			break;
+		}
+		cam_dirty = 1;
 	}
 	if (opts & RF_GROUND && st.st_opts & OP_GROUND)
 		make_ground();
@@ -344,27 +348,47 @@ glnametype(unsigned int name, unsigned int *origname, int *type)
 	*origname = name;
 }
 
+void
+usage(void)
+{
+	extern char *__progname;
+
+	fprintf(stderr, "usage: %s [-ls]\n",
+	    __progname);
+	exit(1);
+}
+
 int
 main(int argc, char *argv[])
 {
-	int c;
+	GLint vp[4];
+	int flags, c;
 
+	flags = GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE;
 	glutInit(&argc, argv);
-
-	while ((c = getopt(argc, argv, "l")) != -1)
+	while ((c = getopt(argc, argv, "ls")) != -1)
 		switch (c) {
 		case 'l':
 			datasrc = DS_DB;
 			dbh_connect(&dbh);
 			break;
+		case 's':
+			flags |= GLUT_STEREO;
+			stereo = 1;
+			break;
+		default:
+			usage();
+			/* NOTREACHED */
 		}
 
-	/* op_reset = 1; */
-	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
+	glutInitDisplayMode(flags);
 	glutInitWindowPosition(0, 0);
-	glutInitWindowSize(win_width, win_height);
 	if (glutCreateWindow("XT3 Monitor") == GL_FALSE)
 		errx(1, "CreateWindow");
+	glutFullScreen();
+	glGetIntegerv(GL_VIEWPORT, vp);
+	win_width = vp[2];
+	win_height = vp[3];
 
 	glShadeModel(GL_SMOOTH);
 	glEnable(GL_DEPTH_TEST);
@@ -379,7 +403,7 @@ main(int argc, char *argv[])
 	st.st_rf &= ~RF_DATASRC;
 
 	/* glutExposeFunc(reshape); */
-	glutReshapeFunc(reshape);
+	glutReshapeFunc(resizeh);
 	glutKeyboardFunc(keyh_default);
 	glutSpecialFunc(spkeyh_default);
 	glutDisplayFunc(draw);
