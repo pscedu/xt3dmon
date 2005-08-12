@@ -7,16 +7,13 @@
 
 #include <png.h>
 
-static png_uint_32 width;
-static png_uint_32 height;
-
 /*
  * Use libpng to read a PNG file
  * into an newly allocated buffer.
  * (Note: must call free() to dispose!)
  */
 void *
-load_png(char *file)
+png_load(char *file, unsigned int *w, unsigned int *h)
 {
 	unsigned char header[10];
 	png_bytepp rows = NULL;
@@ -118,24 +115,24 @@ load_png(char *file)
 	//OLD: png_read_png(ptr, info, PNG_TRANSFORM_IDENTITY, NULL);
 
 	/* Get the size of the image */
-	height = png_get_image_height(ptr, info);
-	width = png_get_image_width(ptr, info);
+	*h = png_get_image_height(ptr, info);
+	*w = png_get_image_width(ptr, info);
 	//OLD: rowbytes = png_get_rowbytes(ptr, info);
 
 	/* Buffers for the data */
-	if ((rows = (malloc(height * sizeof(png_bytep)))) == NULL)
+	if ((rows = (malloc(*h * sizeof(png_bytep)))) == NULL)
 		err(1, "malloc");
 
 	/* rowbytes/width will tell either RGB or RGBA etc... */
-	if ((data = malloc(height*width*4*sizeof(png_bytep))) == NULL)
+	if ((data = malloc(*w * *h * 4 * sizeof(png_bytep))) == NULL)
 		err(1, "malloc");
 
 	/* Set the rows to properly point to our data buffer */
 	// OLD: Copy the data into a single buffer */
 	if (rows && data) {
 		/* Get the data */
-		for (i = 0; i < height; i++)
-			rows[height - 1 - i] = data+(i * 4 *width);
+		for (i = 0; i < *h; i++)
+			rows[*h - 1 - i] = data + (*w * i * 4);
 
 		/* Read the image rows */
 		png_read_image(ptr, rows);
@@ -149,23 +146,4 @@ load_png(char *file)
 
 	fclose(fp);
 	return (data);
-}
-
-void
-load_texture(void *data, GLint ifmt, GLenum fmt, GLuint id)
-{
-	glGenTextures(1, &id);
-	glBindTexture(GL_TEXTURE_2D, id);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	/* fmt is either GL_INTENSITY, GL_RGBA, ... */
-	glTexImage2D(GL_TEXTURE_2D, 0, ifmt, width, height, 0, fmt,
-	    GL_UNSIGNED_BYTE, data);
-
-	free(data);
 }
