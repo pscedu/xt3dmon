@@ -19,6 +19,7 @@
 
 #define _PATH_FLYBY	"data/flyby.data"
 #define _PATH_TEX	"data/texture%d.png"
+#define _PATH_BORG	"data/borg.png"
 #define _PATH_FONT	"data/font.png"
 #define _PATH_SSDIR	"snaps"
 #define _PATH_STAT	"/proc/self/stat"
@@ -251,8 +252,8 @@ struct state {
 #define RF_INIT		(RF_TEX | RF_PHYSMAP | RF_DATASRC | RF_CLUSTER | \
 			 RF_GROUND | RF_SELNODE | RF_CAM)
 
-#define EGG_UPDATE	(1<<0)
-#define EGG_BORG 	(1<<1)
+#define EGG_BORG 	(1<<0)
+#define EGG_MATRIX 	(1<<1)
 
 #define OP_TEX		(1<<0)
 #define OP_BLEND	(1<<1)
@@ -410,7 +411,7 @@ void			 cam_revolve(int);
 void			 cam_rotateu(int);
 void			 cam_rotatev(int);
 void			 cam_goto(struct fvec *);
-void			 cam_look(struct fvec *);
+void			 cam_look(void);
 
 /* capture.c */
 void			 capture_frame(int);
@@ -419,7 +420,9 @@ void			 capture_end(void);
 void			 capture_snap(const char *, int);
 
 /* draw.c */
-void			 draw(void);
+void			 drawh_default(void);
+void			 drawh_stereo(void);
+void			 drawh_select(void);
 void			 draw_node(struct node *, int);
 void			 draw_node_pipes(struct fvec *);
 void			 make_ground(void);
@@ -428,7 +431,7 @@ void			 make_select(void);
 float			 snap_to_grid(float, float, float);
 
 /* eggs.c */
-int				 easter_eggs(int);
+void			 egg_borg(void);
 
 /* flyby.c */
 void 			 flyby_begin(int);
@@ -455,20 +458,23 @@ void			 spkeyh_actflyby(int, int, int);
 struct job		*job_findbyid(int);
 
 /* load_png.c */
-void			 load_texture(void *, GLint, GLenum, GLuint);
-void 			*load_png(char *);
+void 			*png_load(char *, unsigned int *, unsigned int *);
 
 /* main.c */
 struct node		*node_for_nid(int);
 void			 refresh_state(int);
 void			 rebuild(int);
-void			 idle_govern(void);
-void			 idle(void);
-void			 update_textures(void);
-void			 restore_textures(void);
+void			 idleh_govern(void);
+void			 idleh_default(void);
 unsigned int		 mkglname(unsigned int, int);
 void			 glnametype(unsigned int, unsigned int *, int *);
-void			 del_textures(void);
+
+/* tex.c */
+void			 tex_load(void);
+void			 tex_init(void *, GLint, GLenum, GLuint, GLuint, GLuint);
+void			 tex_update(void);
+void			 tex_restore(void);
+void			 tex_remove(void);
 
 /* mouse.c */
 void			 m_activeh_default(int, int);
@@ -522,6 +528,7 @@ void			 sel_set(struct node *);
 
 /* tween.c */
 void			 tween_push(int);
+void			 tween_update(void);
 void			 tween_pop(int);
 void			 tween_probe(float *, float, float, float *, float *);
 void			 tween_recalc(float *, float, float, float);
@@ -554,7 +561,7 @@ extern struct temp	 temp_notfound;
 
 extern int		 total_failures;		/* total among all nodes */
 
-extern int		 stereo, cam_dirty;
+extern int		 cam_dirty;
 extern GLint		 cluster_dl, ground_dl, select_dl;
 extern int		 render_mode;
 extern int		 font_id;
@@ -579,6 +586,7 @@ extern struct fvec	 tv, tlv;			/* tween vectors */
 
 extern int		 flyby_mode;
 extern int		 capture_mode;
+extern int		 stereo_mode;
 
 extern int		 win_width;
 extern int		 win_height;
@@ -587,3 +595,4 @@ extern unsigned long	 vmem;
 extern long		 rmem;
 
 extern float		 clip;
+extern int		 eggs;
