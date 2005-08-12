@@ -1,10 +1,14 @@
 /* $Id$ */
 
 #include "compat.h"
+#include "cdefs.h"
 #include "mon.h"
 
 #define TWEEN_THRES	(0.001f)
 #define TWEEN_AMT	(0.05f)
+
+#define TWEEN_MAX_POS	(2.0f)
+#define TWEEN_MAX_LOOK	(0.04f)
 
 int cam_dirty = 1;
 
@@ -35,6 +39,41 @@ tween_recalc(float *cur, float stop, float scale, float want)
 		    stop - *cur > -TWEEN_THRES)
 			*cur = stop;
 	}
+}
+
+__inline void
+tween_update(void)
+{
+	/* XXX: benchmark to test static. */
+	static struct fvec want, want_l;
+	static struct fvec sc, sc_l;
+	static float scale, scale_l;
+
+	want.fv_w = want.fv_h = want.fv_d = 0.0f;
+	want_l.fv_w = want_l.fv_h = want_l.fv_d = 0.0f;
+	sc.fv_x = sc.fv_y = sc.fv_z = 1.0f;
+	sc_l.fv_x = sc_l.fv_y = sc_l.fv_z = 1.0f;
+
+	tween_probe(&st.st_x, tv.fv_x, TWEEN_MAX_POS, &sc.fv_x, &want.fv_w);
+	tween_probe(&st.st_y, tv.fv_y, TWEEN_MAX_POS, &sc.fv_y, &want.fv_h);
+	tween_probe(&st.st_z, tv.fv_z, TWEEN_MAX_POS, &sc.fv_z, &want.fv_d);
+	tween_probe(&st.st_lx, tlv.fv_x, TWEEN_MAX_LOOK, &sc_l.fv_x, &want_l.fv_w);
+	tween_probe(&st.st_ly, tlv.fv_y, TWEEN_MAX_LOOK, &sc_l.fv_y, &want_l.fv_h);
+	tween_probe(&st.st_lz, tlv.fv_z, TWEEN_MAX_LOOK, &sc_l.fv_z, &want_l.fv_d);
+
+	scale = MIN3(sc.fv_x, sc.fv_y, sc.fv_z);
+	scale_l = MIN3(sc_l.fv_x, sc_l.fv_y, sc_l.fv_z);
+
+	tween_recalc(&st.st_x, tv.fv_x, scale, want.fv_w);
+	tween_recalc(&st.st_y, tv.fv_y, scale, want.fv_h);
+	tween_recalc(&st.st_z, tv.fv_z, scale, want.fv_d);
+	tween_recalc(&st.st_lx, tlv.fv_x, scale_l, want_l.fv_w);
+	tween_recalc(&st.st_ly, tlv.fv_y, scale_l, want_l.fv_h);
+	tween_recalc(&st.st_lz, tlv.fv_z, scale_l, want_l.fv_d);
+
+	if (want.fv_w || want.fv_h || want.fv_d ||
+	    want_l.fv_w || want_l.fv_h || want_l.fv_d)
+		cam_dirty = 1;
 }
 
 static struct fvec sv, slv;
