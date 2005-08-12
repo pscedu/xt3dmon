@@ -155,17 +155,14 @@ cam_rotatev(int d)
 	}
 }
 
-void
-cam_look(struct fvec *offset)
+__inline void
+cam_look(void)
 {
 	glLoadIdentity();
-	gluLookAt(
-	    st.st_x + offset->fv_x,
-	    st.st_y + offset->fv_y,
-	    st.st_z + offset->fv_z,
-	    st.st_x + offset->fv_x + st.st_lx,
-	    st.st_y + offset->fv_y + st.st_ly,
-	    st.st_z + offset->fv_z + st.st_lz,
+	gluLookAt(st.st_x, st.st_y, st.st_z,
+	    st.st_x + st.st_lx,
+	    st.st_y + st.st_ly,
+	    st.st_z + st.st_lz,
 	    st.st_uv.fv_x,
 	    st.st_uv.fv_y,
 	    st.st_uv.fv_z);
