@@ -94,12 +94,9 @@ uinpcb_eggs(void)
 
 	cmd = buf_get(&uinp.uinp_buf);
 
-	/* Parse Easter Egg Keywords =) */
-	if (*cmd != '\0') {
-		
-		if(strcmp(cmd, "borg") == 0) {
-			easter_eggs(EGG_BORG);
-			load_textures();
-		}
+	/* Parse Easter egg keywords =) */
+	if (strcmp(cmd, "borg") == 0) {
+		eggs ^= EGG_BORG;
+		egg_borg();
 	}
 }
