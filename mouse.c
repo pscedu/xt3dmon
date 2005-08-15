@@ -10,8 +10,8 @@
 
 int	 	 spkey, lastu, lastv;
 GLuint	 	 selbuf[1000];
-int	 	 render_mode = RM_RENDER;
 struct panel	*panel_mobile;
+void		(*drawh_old)(void);
 
 void
 mouseh_null(__unused int button, __unused int state, __unused int u, __unused int v)
@@ -24,8 +24,11 @@ mouseh_default(__unused int button, __unused int state, int u, int v)
 {
 	spkey = glutGetModifiers();
 	if (button == GLUT_LEFT_BUTTON &&
-	    state == GLUT_DOWN)
-		render_mode = RM_SELECT;
+	    state == GLUT_DOWN) {
+		drawh_old = drawh;
+		drawh = drawh_select;
+		glutDisplayFunc(drawh);
+	}
 	lastu = u;
 	lastv = v;
 
@@ -79,8 +82,6 @@ m_passiveh_default(int u, int v)
 {
 	lastu = u;
 	lastv = v;
-
-//	render_mode = RM_SELECT;
 }
 
 void
@@ -128,6 +129,7 @@ sel_record_process(GLint nrecs)
 {
 	GLuint minu, minv, *p, name, origname;
 	int i, found, nametype;
+	struct panel *pl;
 	struct node *n;
 	GLuint lastlen;
 
@@ -149,18 +151,34 @@ sel_record_process(GLint nrecs)
 		if (p[SBI_UDST] <= minu) {
 			minu = p[SBI_UDST];
 			if (p[SBI_VDST] < minv) {
+				name = p[SBI_NAMEOFF];
+				/*
+				 * XXX: hack to allow 2D objects to
+				 * be properly selected.
+				 */
+				glnametype(p[SBI_NAMEOFF], &origname,
+				    &nametype);
+				if (nametype == GNAMT_PANEL) {
+					if ((pl =
+					    panel_for_id(origname)) == NULL)
+						continue;
+					if (lastu < pl->p_u ||
+					    lastu > pl->p_u + pl->p_w ||
+					    win_height - lastv < pl->p_v ||
+					    win_height - lastv > pl->p_v + pl->p_h)
+						continue;
+				}
+				name = p[SBI_NAMEOFF];
 				minv = p[SBI_VDST];
 				found = 1;
-				name = p[SBI_NAMEOFF];
 			}
 		}
 
 	}
 	if (found) {
-		glnametype(name, &origname, &nametype);
 		switch (nametype) {
 		case GNAMT_NODE:
-			if ((n = node_for_nid(name)) != NULL) {
+			if ((n = node_for_nid(origname)) != NULL) {
 				switch (spkey) {
 				case GLUT_ACTIVE_SHIFT:
 					sel_add(n);
@@ -202,7 +220,8 @@ sel_record_end(void)
 
 	if ((nrecs = glRenderMode(GL_RENDER)) != 0)
 		sel_record_process(nrecs);
-	render_mode = RM_RENDER;
+	drawh = drawh_old;
+	glutDisplayFunc(drawh);
 
 	rebuild(RF_CAM);
 }
