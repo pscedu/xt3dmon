@@ -499,15 +499,15 @@ spkeyh_default(int key, __unused int u, __unused int v)
 	dir = 0; /* gcc */
 	switch (key) {
 	case GLUT_KEY_HOME:
-		st.st_uv.fv_x = 0.0f;
-		st.st_uv.fv_y -= 0.1;
-		st.st_uv.fv_z += 0.1;
-		break;
+		tween_push(TWF_ROLL);
+		cam_roll(0.1f);
+		tween_pop(TWF_ROLL);
+		return;
 	case GLUT_KEY_END:
-		st.st_uv.fv_x = 0.0f;
-		st.st_uv.fv_y += 0.1;
-		st.st_uv.fv_z -= 0.1;
-		break;
+		tween_push(TWF_ROLL);
+		cam_roll(-0.1f);
+		tween_pop(TWF_ROLL);
+		return;
 	case GLUT_KEY_LEFT:
 		dir = DIR_LEFT;
 		break;
@@ -529,7 +529,6 @@ spkeyh_default(int key, __unused int u, __unused int v)
 	default:
 		return;
 	}
-	tween_push(TWF_POS);
 
 	amt = 0.3f;
 	switch (st.st_vmode) {
@@ -547,6 +546,7 @@ spkeyh_default(int key, __unused int u, __unused int v)
 		break;
 	}
 
+	tween_push(TWF_POS);
 	cam_move(dir, amt);
 	tween_pop(TWF_POS);
 }
