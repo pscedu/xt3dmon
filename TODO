@@ -17,3 +17,4 @@ $Id$
 34. function to do rebuild option diffs
 36. function timeout callbacks for registering event coordination
 37. overhaul glselection code to use stu's method
+38. window resize/initialization bugs
