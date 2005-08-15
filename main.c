@@ -33,6 +33,7 @@ int			 stereo_mode;
 int			 font_id;
 struct fvec		 tv = { STARTX, STARTY, STARTZ };
 struct fvec		 tlv = { STARTLX, STARTLY, STARTLZ };
+struct fvec		 tuv = { 0.0f, 1.0f, 0.0f };
 GLint			 cluster_dl, ground_dl, select_dl;
 struct timeval		 lastsync;
 long			 fps = 50;
