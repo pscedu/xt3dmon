@@ -56,6 +56,47 @@ m_activeh_panel(int u, int v)
 }
 
 void
+revolve_center_cluster(struct fvec *cen)
+{
+	float dist;
+
+	switch (st.st_vmode) {
+	case VM_PHYSICAL:
+		cen->fv_x = XCENTER;
+		cen->fv_y = YCENTER;
+		cen->fv_z = ZCENTER;
+		break;
+	case VM_WIRED:
+	case VM_WIREDONE:
+		dist = MAX3(WIV_SWIDTH, WIV_SHEIGHT, WIV_SDEPTH);
+		if (st.st_vmode == VM_WIRED)
+			dist /= 3.0f;
+		cen->fv_x = st.st_x + st.st_lx * dist;
+		cen->fv_y = st.st_y + st.st_ly * dist;
+		cen->fv_z = st.st_z + st.st_lz * dist;
+		break;
+	}
+}
+
+void
+revolve_center_selnode(struct fvec *cen)
+{
+	struct selnode *sn;
+
+	if (nselnodes == 0) {
+		revolve_center_cluster(cen);
+		return;
+	}
+	sn = SLIST_FIRST(&selnodes);
+
+	cen->fv_x = sn->sn_nodep->n_v->fv_x;
+	cen->fv_y = sn->sn_nodep->n_v->fv_y;
+	cen->fv_z = sn->sn_nodep->n_v->fv_z;
+}
+
+void (*revolve_centerf)(struct fvec *) = revolve_center_selnode;
+
+void
 m_activeh_default(int u, int v)
 {
 	int du = u - lastu, dv = v - lastv;
@@ -66,14 +107,14 @@ m_activeh_default(int u, int v)
 	lastv = v;
 
 	tween_push(TWF_LOOK | TWF_POS);
-	if (du != 0 && spkey & GLUT_ACTIVE_CTRL)
-		cam_revolve(du);
-	if (spkey & GLUT_ACTIVE_SHIFT) {
-		if (dv != 0)
-			cam_rotatev(dv);
-		if (du != 0)
-			cam_rotateu(du);
+	if (spkey & GLUT_ACTIVE_CTRL) {
+		struct fvec center;
+
+		(*revolve_centerf)(&center);
+		cam_revolve(&center, du, dv);
 	}
+	if (spkey & GLUT_ACTIVE_SHIFT)
+		cam_rotate(du, dv);
 	tween_pop(TWF_LOOK | TWF_POS);
 }
 
