@@ -94,9 +94,6 @@
 
 #define DEG_TO_RAD(x)	((x) * PI / 180)
 
-#define RM_SELECT	0
-#define RM_RENDER	1
-
 #define FOVY		(45.0f)
 #define ASPECT		(win_width / (double)win_height)
 
@@ -306,6 +303,7 @@ struct panel {
 	int			  p_dl;
 	char			 *p_str;
 	size_t			  p_strlen;
+	int			  p_stick;
 	int			  p_u;
 	int			  p_v;
 	int			  p_w;
@@ -335,6 +333,12 @@ struct panel {
 #define POPT_REMOVE	(1<<0)			/* being removed */
 #define POPT_DIRTY	(1<<1)			/* panel needs redrawn */
 #define POPT_MOBILE	(1<<2)			/* being dragged */
+
+#define PSTICK_TL	1
+#define PSTICK_TR	2
+#define PSTICK_BL	3
+#define PSTICK_BR	4
+#define PSTICK_FREE	5
 
 TAILQ_HEAD(panels, panel);
 
@@ -563,7 +567,6 @@ extern int		 total_failures;		/* total among all nodes */
 
 extern int		 cam_dirty;
 extern GLint		 cluster_dl, ground_dl, select_dl;
-extern int		 render_mode;
 extern int		 font_id;
 extern struct uinput	 uinp;
 extern int		 spkey;
@@ -596,3 +599,5 @@ extern long		 rmem;
 
 extern float		 clip;
 extern int		 eggs;
+
+extern void		(*drawh)(void);
