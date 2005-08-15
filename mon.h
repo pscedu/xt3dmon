@@ -125,6 +125,10 @@ struct fvec {
 #define fv_w fv_x
 #define fv_h fv_y
 #define fv_d fv_z
+
+#define fv_r fv_x
+#define fv_t fv_y
+#define fv_p fv_z
 };
 
 struct ivec {
@@ -234,6 +238,10 @@ struct state {
 #define st_lx st_lv.fv_x
 #define st_ly st_lv.fv_y
 #define st_lz st_lv.fv_z
+
+#define st_ux st_uv.fv_x
+#define st_uy st_uv.fv_y
+#define st_uz st_uv.fv_z
 };
 
 #define FB_OMASK	(OP_LOOPFLYBY | OP_CAPTURE | OP_DISPLAY | OP_STOP)
@@ -358,8 +366,9 @@ struct pinfo {
 #define DIR_FORWARD	4
 #define DIR_BACK	5
 
-#define TWF_LOOK	(1<<1)
-#define TWF_POS		(1<<2)
+#define TWF_LOOK	(1<<0)
+#define TWF_POS		(1<<1)
+#define TWF_ROLL	(1<<2)
 
 #define NDF_DONTPUSH	(1<<0)
 #define NDF_NOOPTS	(1<<1)
@@ -411,9 +420,9 @@ void			 db_physmap(void);
 
 /* cam.c */
 void			 cam_move(int, float);
-void			 cam_revolve(int);
-void			 cam_rotateu(int);
-void			 cam_rotatev(int);
+void			 cam_revolve(struct fvec *, float, float);
+void			 cam_rotate(float, float);
+void			 cam_roll(float);
 void			 cam_goto(struct fvec *);
 void			 cam_look(void);
 
@@ -544,6 +553,8 @@ void			 uinpcb_goto(void);
 /* vec.c */
 void			 vec_normalize(struct fvec *);
 void			 vec_crossprod(struct fvec *, struct fvec *, struct fvec *);
+void			 vec_cart2sphere(struct fvec *, struct fvec *);
+void			 vec_sphere2cart(struct fvec *, struct fvec *);
 
 /* widget.c */
 void			 draw_box_outline(const struct fvec *, const struct fill *);
@@ -585,7 +596,7 @@ extern int		 selnode_clean;
 extern struct fvec	 wivstart, wivdim;		/* repeat position & dim */
 extern struct temp_range temp_map[14]; /* XXX */
 
-extern struct fvec	 tv, tlv;			/* tween vectors */
+extern struct fvec	 tv, tlv, tuv;			/* tween vectors */
 
 extern int		 flyby_mode;
 extern int		 capture_mode;
