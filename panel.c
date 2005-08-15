@@ -697,34 +697,15 @@ panel_refresh_mem(struct panel *p)
 void
 panel_refresh_pos(struct panel *p)
 {
-	static struct fvec v, lv;
-
-#if 0
-		if (st.st_opts & OP_TWEEN &&
-		    st.st_x == tx && st.st_lx == tlx &&
-		    st.st_y == ty && st.st_ly == tly &&
-		    st.st_z == tz && st.st_lz == tlz)
-			/* don't compile */;
-		else
-#endif
-
-	if (v.fv_x == st.st_x && lv.fv_x == st.st_lx &&
-	    v.fv_y == st.st_y && lv.fv_y == st.st_ly &&
-	    v.fv_z == st.st_z && lv.fv_z == st.st_lz &&
-	    panel_ready(p))
+	if (!cam_dirty && panel_ready(p))
 		return;
 
-	v.fv_x = st.st_x;
-	v.fv_y = st.st_y;
-	v.fv_z = st.st_z;
-
-	lv.fv_x = st.st_lx;
-	lv.fv_y = st.st_ly;
-	lv.fv_z = st.st_lz;
-
 	panel_set_content(p, "Position (%.2f,%.2f,%.2f)\n"
-	    "Look (%.2f,%.2f,%.2f)", st.st_x, st.st_y, st.st_z,
-	    st.st_lx, st.st_ly, st.st_lz);
+	    "Look (%.2f,%.2f,%.2f)\n"
+	    "Roll (%.2f,%.2f,%.2f)",
+	    st.st_x, st.st_y, st.st_z,
+	    st.st_lx, st.st_ly, st.st_lz,
+	    st.st_ux, st.st_uy, st.st_uz);
 }
 
 void
