@@ -89,22 +89,33 @@ cam_revolve(int d)
 {
 	float t, r, mag, dist;
 	struct fvec v;
+	struct selnode *sn;
 
-	switch (st.st_vmode) {
-	case VM_PHYSICAL:
-		v.fv_x = XCENTER;
-		v.fv_y = YCENTER;
-		v.fv_z = ZCENTER;
-		break;
-	case VM_WIRED:
-	case VM_WIREDONE:
-		dist = MAX3(WIV_SWIDTH, WIV_SHEIGHT, WIV_SDEPTH);
-		if (st.st_vmode == VM_WIRED)
-			dist /= 3.0f;
-		v.fv_x = st.st_x + st.st_lx * dist;
-		v.fv_y = st.st_y + st.st_ly * dist;
-		v.fv_z = st.st_z + st.st_lz * dist;
-		break;
+	/* Determine the center point to revolve around */
+	if(nselnodes > 0 && spkey & GLUT_ACTIVE_ALT) {
+		sn = SLIST_FIRST(&selnodes);
+
+		v.fv_x = sn->sn_nodep->n_v->fv_x;
+		v.fv_y = sn->sn_nodep->n_v->fv_y;
+		v.fv_z = sn->sn_nodep->n_v->fv_z;
+
+	} else {
+		switch (st.st_vmode) {
+		case VM_PHYSICAL:
+			v.fv_x = XCENTER;
+			v.fv_y = YCENTER;
+			v.fv_z = ZCENTER;
+			break;
+		case VM_WIRED:
+		case VM_WIREDONE:
+			dist = MAX3(WIV_SWIDTH, WIV_SHEIGHT, WIV_SDEPTH);
+			if (st.st_vmode == VM_WIRED)
+				dist /= 3.0f;
+			v.fv_x = st.st_x + st.st_lx * dist;
+			v.fv_y = st.st_y + st.st_ly * dist;
+			v.fv_z = st.st_z + st.st_lz * dist;
+			break;
+		}
 	}
 
 	r = sqrt(SQUARE(st.st_x - v.fv_x) + SQUARE(st.st_z - v.fv_z));
