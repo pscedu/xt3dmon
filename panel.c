@@ -65,8 +65,14 @@ struct pinfo pinfo[] = {
 	{ panel_refresh_eggs,	PF_UINP, 0,		 uinpcb_eggs}
 };
 
+#define PVOFF_TL 0
+#define PVOFF_TR 1
+#define PVOFF_BL 2
+#define PVOFF_BR 3
+#define NPVOFF 4
+
 struct panels	 panels;
-int		 panel_offset;
+int		 panel_offset[NPVOFF];
 int		 mode_data_clean;
 int		 selnode_clean;
 
@@ -117,8 +123,28 @@ draw_panel(struct panel *p)
 	if (p->p_opts & POPT_REMOVE) {
 		w = 0;
 		h = 0;
-		u = win_width;
-		v = win_height - panel_offset;
+		switch (p->p_stick) {
+		case PSTICK_TL:
+			u = -p->p_w;
+			v = win_height - panel_offset[PVOFF_TL];
+			break;
+		case PSTICK_BL:
+			u = -p->p_w;
+			v = panel_offset[PVOFF_BL];
+			break;
+		case PSTICK_TR:
+			u = win_width;
+			v = win_height - panel_offset[PVOFF_TR];
+			break;
+		case PSTICK_BR:
+			u = win_width;
+			v = panel_offset[PVOFF_BR];
+			break;
+		default:
+			u = p->p_u;
+			v = p->p_v;
+			break;
+		}
 	} else {
 		lineno = 1;
 		curlen = w = 0;
@@ -142,8 +168,28 @@ draw_panel(struct panel *p)
 			h += ((p->p_nwidgets + 1) / 2) * PWIDGET_HEIGHT +
 			    ((p->p_nwidgets + 1) / 2 - 1) * PWIDGET_PADDING;
 		}
-		u = win_width - w;
-		v = win_height - panel_offset;
+		switch (p->p_stick) {
+		case PSTICK_TL:
+			u = win_width - w;
+			v = win_height - panel_offset[PVOFF_TL];
+			break;
+		case PSTICK_BL:
+			u = win_width - w;
+			v = panel_offset[PVOFF_BL];
+			break;
+		case PSTICK_TR:
+			u = win_width - w;
+			v = win_height - panel_offset[PVOFF_TR];
+			break;
+		case PSTICK_BR:
+			u = win_width - w;
+			v = panel_offset[PVOFF_BR];
+			break;
+		default:
+			u = p->p_u;
+			v = p->p_v;
+			break;
+		}
 	}
 	if (p->p_opts & POPT_MOBILE) {
 		u = p->p_u;
@@ -158,8 +204,8 @@ draw_panel(struct panel *p)
 		if (!tweenadj)
 			tweenadj = 1;
 		/*
-		 * The panel is being animated, so don't time
-		 * recompiling it.
+		 * The panel is being animated, so don't waste
+		 * time recompiling it.
 		 */
 		compile = 0;
 	} else
@@ -263,11 +309,11 @@ draw_panel(struct panel *p)
 			break;
 	}
 
-//	glPushName(mkglname(p->p_id, GNAMT_PANEL));
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	/* Draw background. */
+	glPushName(mkglname(p->p_id, GNAMT_PANEL));
 	glBegin(GL_POLYGON);
 	glColor4f(0.4, 0.6, 0.8, 0.8);
 	glVertex2d(p->p_u,		p->p_v);
@@ -275,6 +321,7 @@ draw_panel(struct panel *p)
 	glVertex2d(p->p_u + p->p_w,	p->p_v - p->p_h);
 	glVertex2d(p->p_u,		p->p_v - p->p_h);
 	glEnd();
+	glPopName();
 
 	glDisable(GL_BLEND);
 
@@ -287,7 +334,6 @@ draw_panel(struct panel *p)
 	glVertex2d(p->p_u + p->p_w,	p->p_v - p->p_h);
 	glVertex2d(p->p_u,		p->p_v - p->p_h);
 	glEnd();
-//	glPopName();
 
 	/* End 2D mode. */
 	glPopMatrix();
@@ -302,7 +348,21 @@ draw_panel(struct panel *p)
 		glCallList(p->p_dl);
 	}
 done:
-	panel_offset += p->p_h + 3; /* spacing */
+	/* spacing */
+	switch (p->p_stick) {
+	case PSTICK_TL:
+		panel_offset[PVOFF_TL] += p->p_h + 3;
+		break;
+	case PSTICK_TR:
+		panel_offset[PVOFF_TR] += p->p_h + 3;
+		break;
+	case PSTICK_BL:
+		panel_offset[PVOFF_BL] += p->p_h + 3;
+		break;
+	case PSTICK_BR:
+		panel_offset[PVOFF_BR] += p->p_h + 3;
+		break;
+	}
 }
 
 void
@@ -687,7 +747,7 @@ panel_refresh_eggs(struct panel *p)
 	static struct timeval pre = {0,0};
 	static int i = 0;
 	int dirty;
-	
+
 	dirty = blink_panel(&pre, s, 2, &i, BLINK_INTERVAL);
 
 	if ((uinp.uinp_opts & UINPO_DIRTY) == 0 && panel_ready(p) && !dirty)
@@ -747,7 +807,7 @@ draw_panels(void)
 	 * Can't use TAILQ_FOREACH() since draw_panel() may remove
 	 * a panel.
 	 */
-	panel_offset = 1;
+	memset(panel_offset, 0, sizeof(panel_offset));
 	for (p = TAILQ_FIRST(&panels); p != TAILQ_END(&panels); p = np) {
 		np = TAILQ_NEXT(p, p_link);
 		p->p_refresh(p);
@@ -827,8 +887,9 @@ panel_toggle(int panel)
 	p->p_str = NULL;
 	p->p_refresh = pi->pi_refresh;
 	p->p_id = panel;
+	p->p_stick = PSTICK_TR;
 	p->p_u = win_width;
-	p->p_v = win_height - panel_offset - 1;
+	p->p_v = win_height - panel_offset[PVOFF_TR] - 1;
 	p->p_fill.f_r = 1.0f;
 	p->p_fill.f_g = 1.0f;
 	p->p_fill.f_b = 1.0f;
