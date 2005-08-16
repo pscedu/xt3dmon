@@ -46,7 +46,7 @@ void panel_refresh_status(struct panel *);
 void panel_refresh_mem(struct panel *);
 void panel_refresh_eggs(struct panel *);
 
-int blink_panel(struct timeval*, char**, int, int*, long);
+int panel_blink(struct timeval *, char **, int, int *, long);
 
 void uinpcb_ss(void);
 void uinpcb_eggs(void);
@@ -757,7 +757,7 @@ panel_refresh_eggs(struct panel *p)
 	static int i = 0;
 	int dirty;
 
-	dirty = blink_panel(&pre, s, 2, &i, BLINK_INTERVAL);
+	dirty = panel_blink(&pre, s, 2, &i, BLINK_INTERVAL);
 
 	if ((uinp.uinp_opts & UINPO_DIRTY) == 0 && panel_ready(p) && !dirty)
 		return;
@@ -961,8 +961,8 @@ init_panels(int start)
 	flip_panels((cur ^ start) & ~FB_PMASK);
 }
 
-/* Blink panel text (swap between two strings during interval */
-int blink_panel(struct timeval *pre, char **s, int size, int *i, long interval)
+/* Blink panel text (swap between two strings during interval). */
+int panel_blink(struct timeval *pre, char **s, int size, int *i, long interval)
 {
 	struct timeval tv, diff;
 	char *str = s[*i];
