@@ -93,24 +93,37 @@ drawh_stereo(void)
 	}
 
 	fvp = &fvzero;
-	eyeadj = 0.0f;
-
-	glDrawBuffer(GL_BACK);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	/* Draw right buffer. */
-	glDrawBuffer(GL_BACK_RIGHT);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	vec_crossprod(&st.st_lv, &st.st_uv, &stereo_fv);
 	vec_normalize(&stereo_fv);
 	eyeadj = 0.2f;
+	ndfl = 0.2f;
+
+	if (stereo_mode == STM_ACT)
+		glDrawBuffer(GL_BACK);
+#if 0
+	if (stereo_mode == STM_ACT) {
+		glDrawBuffer(GL_BACK_LEFT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glDrawBuffer(GL_BACK_RIGHT);
+	}
+#endif
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	stereo_fv.fv_x *= eyeadj / 2.0f;
 	stereo_fv.fv_y *= eyeadj / 2.0f;
 	stereo_fv.fv_z *= eyeadj / 2.0f;
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
+	/* Draw right buffer. */
+	switch (stereo_mode) {
+	case STM_ACT:
+		glDrawBuffer(GL_BACK_RIGHT);
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		break;
+	case STM_PASV:
+		glutSetWindow(window_ids[1]);
+		break;
+	}
 
 	right = ratio * wd2 - eyeadj * ndfl / 2;
 	left = -ratio * wd2 - eyeadj * ndfl / 2;
@@ -119,23 +132,41 @@ drawh_stereo(void)
 	glFrustum(left, right, bottom, top, NEAR, clip);
 
 	glMatrixMode(GL_MODELVIEW);
-//	glDrawBuffer(GL_BACK_RIGHT);
-	cam_look(&stereo_fv);
-	draw_scene();
-
-	stereo_fv.fv_x *= -1;
-	stereo_fv.fv_y *= -1;
-	stereo_fv.fv_z *= -1;
-	fvp = &stereo_fv;
-
-	/* Draw right buffer. */
-	glDrawBuffer(GL_BACK_LEFT);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective(FOVY, ASPECT, NEAR, clip);
-	glMatrixMode(GL_MODELVIEW);
+	st.st_x += stereo_fv.fv_x;
+	st.st_y += stereo_fv.fv_y;
+	st.st_z += stereo_fv.fv_z;
 	cam_look();
 	draw_scene();
+
+	/* Draw left buffer. */
+	switch (stereo_mode) {
+	case STM_ACT:
+		glDrawBuffer(GL_BACK_LEFT);
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		break;
+	case STM_PASV:
+		glutSetWindow(window_ids[0]);
+		break;
+	}
+
+	right = ratio * wd2 + eyeadj * ndfl / 2;
+	left = -ratio * wd2 + eyeadj * ndfl / 2;
+//	top = wd2;
+//	bottom = -wd2;
+	glFrustum(left, right, bottom, top, NEAR, clip);
+
+	glMatrixMode(GL_MODELVIEW);
+	st.st_x -= 2 * stereo_fv.fv_x;
+	st.st_y -= 2 * stereo_fv.fv_y;
+	st.st_y -= 2 * stereo_fv.fv_z;
+	cam_look();
+	draw_scene();
+
+	/* Restore camera position. */
+	st.st_x += stereo_fv.fv_x;
+	st.st_y += stereo_fv.fv_y;
+	st.st_z += stereo_fv.fv_z;
 
 	glClearColor(0.0, 0.0, 0.2, 1.0);
 	if (st.st_opts & OP_CAPTURE)
