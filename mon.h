@@ -118,6 +118,11 @@
 #define GNAMT_NODE	1	/* must start at 1 */
 #define GNAMT_PANEL	2
 
+/* Stereo display mode types. */
+#define STM_NONE	0
+#define STM_ACT		1
+#define STM_PASV	2
+
 struct fvec {
 	float		 fv_x;
 	float		 fv_y;
