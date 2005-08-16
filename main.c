@@ -38,6 +38,7 @@ GLint			 cluster_dl, ground_dl, select_dl;
 struct timeval		 lastsync;
 long			 fps = 50;
 void			(*drawh)(void);
+int			 window_ids[2];
 
 const char *opdesc[] = {
 	/*  0 */ "Texture mode",
@@ -294,16 +295,20 @@ main(int argc, char *argv[])
 
 	flags = GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE;
 	glutInit(&argc, argv);
-	while ((c = getopt(argc, argv, "ls")) != -1)
+	while ((c = getopt(argc, argv, "lap")) != -1)
 		switch (c) {
 		case 'l':
 			datasrc = DS_DB;
 			dbh_connect(&dbh);
 			break;
-		case 's':
+		case 'a':
 			flags |= GLUT_STEREO;
 			drawh = drawh_stereo;
-			stereo_mode = 1;
+			stereo_mode = STM_ACT;
+			break;
+		case 'p':
+			drawh = drawh_stereo;
+			stereo_mode = STM_PASV;
 			break;
 		default:
 			usage();
@@ -312,12 +317,25 @@ main(int argc, char *argv[])
 
 	glutInitDisplayMode(flags);
 	glutInitWindowPosition(0, 0);
-	if (glutCreateWindow("XT3 Monitor") == GL_FALSE)
+	if ((window_ids[0] = glutCreateWindow("XT3 Monitor")) == GL_FALSE)
 		errx(1, "CreateWindow");
 	glutFullScreen();
 	glGetIntegerv(GL_VIEWPORT, vp);
 	win_width = vp[2];
 	win_height = vp[3];
+
+	if (stereo_mode == STM_PASV) {
+		win_width /= 2;
+		glutReshapeWindow(win_width, win_height);
+//		glutPositionWindow(0, 0);
+
+		if ((window_ids[1] = glutCreateWindow("XT3 Monitor")) ==
+		    GL_FALSE)
+			errx(1, "CreateWindow");
+		glutReshapeWindow(win_width, win_height);
+		glutPositionWindow(win_width, 0);
+		glutSetWindow(window_ids[0]);
+	}
 
 	glShadeModel(GL_SMOOTH);
 	glEnable(GL_DEPTH_TEST);
