@@ -288,8 +288,8 @@ usage(void)
 int
 main(int argc, char *argv[])
 {
+	int flags, c, sw, sh;
 	GLint vp[4];
-	int flags, c;
 
 	drawh = drawh_default;
 
@@ -316,25 +316,19 @@ main(int argc, char *argv[])
 		}
 
 	glutInitDisplayMode(flags);
+	sw = glutGet(GLUT_SCREEN_WIDTH);
+	sh = glutGet(GLUT_SCREEN_HEIGHT);
+	if (stereo_mode == STM_PASV)
+		sw /= 2;
 	glutInitWindowPosition(0, 0);
+	glutInitWindowSize(sw, sh);
 	if ((window_ids[0] = glutCreateWindow("XT3 Monitor")) == GL_FALSE)
-		errx(1, "CreateWindow");
-	glutFullScreen();
-	glGetIntegerv(GL_VIEWPORT, vp);
-	win_width = vp[2];
-	win_height = vp[3];
-
+		errx(1, "glutCreateWindow");
 	if (stereo_mode == STM_PASV) {
-		win_width /= 2;
-		glutReshapeWindow(win_width, win_height);
-//		glutPositionWindow(0, 0);
-
+		glutInitWindowPosition(sw, 0);
 		if ((window_ids[1] = glutCreateWindow("XT3 Monitor")) ==
 		    GL_FALSE)
-			errx(1, "CreateWindow");
-		glutReshapeWindow(win_width, win_height);
-		glutPositionWindow(win_width, 0);
-		glutSetWindow(window_ids[0]);
+			errx(1, "glutCreateWindow");
 	}
 
 	glShadeModel(GL_SMOOTH);
