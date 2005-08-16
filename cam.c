@@ -85,84 +85,82 @@ cam_goto(struct fvec *v)
 }
 
 void
-cam_revolve(int d)
+cam_revolve(struct fvec *center, float d_theta, float d_phi)
 {
-	float t, r, mag, dist;
-	struct fvec v;
-	struct selnode *sn;
+	struct fvec diff;
+	float r2, r3, t, p;
 
-	/* Determine the center point to revolve around */
-	if(nselnodes > 0 && spkey & GLUT_ACTIVE_ALT) {
-		sn = SLIST_FIRST(&selnodes);
+	diff.fv_x = st.st_x - center->fv_x;
+	diff.fv_y = st.st_y - center->fv_y;
+	diff.fv_z = st.st_z - center->fv_z;
 
-		v.fv_x = sn->sn_nodep->n_v->fv_x;
-		v.fv_y = sn->sn_nodep->n_v->fv_y;
-		v.fv_z = sn->sn_nodep->n_v->fv_z;
-
-	} else {
-		switch (st.st_vmode) {
-		case VM_PHYSICAL:
-			v.fv_x = XCENTER;
-			v.fv_y = YCENTER;
-			v.fv_z = ZCENTER;
-			break;
-		case VM_WIRED:
-		case VM_WIREDONE:
-			dist = MAX3(WIV_SWIDTH, WIV_SHEIGHT, WIV_SDEPTH);
-			if (st.st_vmode == VM_WIRED)
-				dist /= 3.0f;
-			v.fv_x = st.st_x + st.st_lx * dist;
-			v.fv_y = st.st_y + st.st_ly * dist;
-			v.fv_z = st.st_z + st.st_lz * dist;
-			break;
-		}
-	}
-
-	r = sqrt(SQUARE(st.st_x - v.fv_x) + SQUARE(st.st_z - v.fv_z));
-	t = acosf((st.st_x - v.fv_x) / r);
-	if (st.st_z < v.fv_z)
+	r2 = sqrt(SQUARE(diff.fv_x) + SQUARE(diff.fv_z));
+	r3 = vec_mag(&diff);
+	t = acosf(diff.fv_x / r2);
+	p = asinf(diff.fv_y / r3);
+	if (st.st_z < center->fv_z)
 		t = 2.0f * PI - t;
-	t += .01f * (float)d;
-	if (t < 0)
+	t += 0.01f * d_theta;
+	p += 0.01f * d_phi;
+	while (t < 0)
 		t += PI * 2.0f;
 
-	/*
-	 * Maintain the magnitude of lx*lx + lz*lz.
-	 */
-	mag = sqrt(SQUARE(st.st_lx) + SQUARE(st.st_lz));
-	st.st_x = r * cos(t) + v.fv_x;
-	st.st_z = r * sin(t) + v.fv_z;
-	st.st_lx = (v.fv_x - st.st_x) / r * mag;
-	st.st_lz = (v.fv_z - st.st_z) / r * mag;
+	st.st_x = r3 * cos(t) * cos(p);
+	st.st_y = r3 * sin(p);
+	st.st_z = r3 * sin(t) * cos(p);
+
+	st.st_lx = -st.st_x;
+	st.st_ly = -st.st_y;
+	st.st_lz = -st.st_z;
+
+	st.st_x += center->fv_x;
+	st.st_y += center->fv_y;
+	st.st_z += center->fv_z;
+
+	vec_normalize(&st.st_lv);
 }
 
+/* XXX: amt only works when small - use fmod to get remainders of 2*PI. */
 void
-cam_rotateu(int d)
+cam_roll(float amt)
 {
 	float t, mag;
 
-	mag = sqrt(SQUARE(st.st_lx) + SQUARE(st.st_lz));
-	t = acosf(st.st_lx / mag);
-	if (st.st_lz < 0)
+	mag = sqrt(SQUARE(st.st_uy) + SQUARE(st.st_uz));
+	t = acosf(st.st_uy / mag);
+	if (st.st_uz < 0)
 		t = 2.0f * PI - t;
-	t += 0.01f * (float)d;
+	t += amt;
 	if (t < 0)
 		t += PI * 2.0f;
-	st.st_lx = cos(t) * mag;
-	st.st_lz = sin(t) * mag;
+	st.st_ux = cos(t) * mag;
+	st.st_uz = sin(t) * mag;
 }
 
 void
-cam_rotatev(int d)
+cam_rotate(float d_theta, float d_phi)
 {
-	float adj, t;
+	float t, mag;
 
-	adj = d * -0.005f;
-	t = asinf(st.st_ly); /* XXX:  wrong. */
-	if (t + adj < PI / 2.0f &&
-	    t + adj > -PI / 2.0f) {
-		st.st_ly = sin(t + adj);
-		vec_normalize(&st.st_lv);
+	if (d_theta) {
+		mag = sqrt(SQUARE(st.st_lx) + SQUARE(st.st_lz));
+		t = acosf(st.st_lx / mag);
+		if (st.st_lz < 0)
+			t = 2.0f * PI - t;
+		t += 0.01f * d_theta;
+		if (t < 0)
+			t += PI * 2.0f;
+		st.st_lx = cos(t) * mag;
+		st.st_lz = sin(t) * mag;
+	}
+	if (d_phi) {
+		d_phi *= -0.005f;
+		t = asinf(st.st_ly); /* XXX:  wrong. */
+		if (t + d_phi < PI / 2.0f &&
+		    t + d_phi > -PI / 2.0f) {
+			st.st_ly = sin(t + d_phi);
+			vec_normalize(&st.st_lv);
+		}
 	}
 }
 
