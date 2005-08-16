@@ -420,7 +420,7 @@ make_ground(void)
 __inline void
 draw_cluster_physical(void)
 {
-	int r, cb, cg, m, s, n0, n;
+	int r, cb, cg, m, n;
 	struct node *node;
 	struct fvec mdim;
 	struct fill mf;
@@ -444,13 +444,7 @@ draw_cluster_physical(void)
 						node = &nodes[r][cb][cg][m][n];
 						node->n_v = &node->n_physv;
 						node->n_physv = v;
-
-						s = n / (NNODES / 2);
-						n0 = (n & 1) ^ ((n & 2) >> 1);
-
-						node->n_physv.fv_y += s * (NODESPACE + NODEHEIGHT);
-						node->n_physv.fv_z += n0 * (NODESPACE + NODEDEPTH) +
-						    s * NODESHIFT;
+						node_adjmodpos(n, &node->n_physv);
 						draw_node(node, 0);
 					}
 					if (st.st_opts & OP_SHOWMODS)
