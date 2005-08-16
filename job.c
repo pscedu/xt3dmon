@@ -24,7 +24,7 @@ job_findbyid(int id)
 }
 
 void
-job_highlight(struct job *j)
+job_highlight(__unused struct job *j)
 {
 
 }
