@@ -342,9 +342,11 @@ keyh_incr(unsigned char key, __unused int u, __unused int v)
 void
 spkeyh_node(int key, __unused int u, __unused int v)
 {
+	struct selnode *sn;
 	struct node *n;
 	int dir;
 
+	spkey = glutGetModifiers();
 	switch (key) {
 	case GLUT_KEY_PAGE_UP:
 		dir = DIR_UP;
@@ -365,12 +367,14 @@ spkeyh_node(int key, __unused int u, __unused int v)
 		dir = DIR_RIGHT;
 		break;
 	}
-	if (!SLIST_EMPTY(&selnodes)) {
-		n = node_neighbor(SLIST_FIRST(&selnodes)->sn_nodep, 1, dir);
-		/* This should never be NULL. */
-		if (n)
-			sel_set(n);
-	}
+	if (!SLIST_EMPTY(&selnodes))
+		SLIST_FOREACH(sn, &selnodes, sn_next) {
+			n = node_neighbor(sn->sn_nodep, 1, dir);
+			if (spkey & GLUT_ACTIVE_SHIFT)
+				sel_add(n);
+			else
+				sel_replace(sn, n);
+		}
 }
 
 void
