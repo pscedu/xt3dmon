@@ -515,9 +515,11 @@ panel_refresh_legend(struct panel *p)
 void
 panel_refresh_ninfo(struct panel *p)
 {
+	int r, cb, cg, m, no;
 	struct objhdr *ohp;
 	struct objlist *ol;
 	struct selnode *sn;
+	struct ivec *iv;
 	struct node *n;
 
 	if (selnode_clean & PANEL_NINFO && (SLIST_EMPTY(&selnodes) ||
@@ -604,13 +606,20 @@ panel_refresh_ninfo(struct panel *p)
 		    label, data + 1);
 		return;
 	}
+
+	/* Only one selected node. */
 	n = SLIST_FIRST(&selnodes)->sn_nodep;
+	node_physpos(n, &r, &cb, &cg, &m, &no);
+	iv = &n->n_wiv;
+
 	switch (st.st_mode) {
 	case SM_JOBS:
 		switch (n->n_state) {
 		case JST_USED:
 			panel_set_content(p,
 			    "Node ID: %d\n"
+			    "Wired position: (%d,%d,%d)\n"
+			    "Physical position: (%d,%d,%d,%d,%d)\n"
 			    "Job ID: %d\n"
 			    "Job owner: %s\n"
 			    "Job name: %s\n"
@@ -619,6 +628,8 @@ panel_refresh_ninfo(struct panel *p)
 			    "Job time used: %d:%02d (%d%%)\n"
 			    "Job CPUs: %d",
 			    n->n_nid,
+			    iv->iv_x, iv->iv_y, iv->iv_z,
+			    r, cb, cg, m, no,
 			    n->n_job->j_id,
 			    n->n_job->j_owner,
 			    n->n_job->j_jname,
@@ -635,8 +646,12 @@ panel_refresh_ninfo(struct panel *p)
 		default:
 			panel_set_content(p,
 			    "Node ID: %d\n"
+			    "Wired position: (%d,%d,%d)\n"
+			    "Physical position: (%d,%d,%d,%d,%d)\n"
 			    "Type: %s",
 			    n->n_nid,
+			    iv->iv_x, iv->iv_y, iv->iv_z,
+			    r, cb, cg, m, no,
 			    jstates[n->n_state].js_name);
 			break;
 		}
@@ -644,15 +659,23 @@ panel_refresh_ninfo(struct panel *p)
 	case SM_FAIL:
 		panel_set_content(p,
 		    "Node ID: %d\n"
+		    "Wired position: (%d,%d,%d)\n"
+		    "Physical position: (%d,%d,%d,%d,%d)\n"
 		    "# Failures: %s",
 		    n->n_nid,
+		    iv->iv_x, iv->iv_y, iv->iv_z,
+		    r, cb, cg, m, no,
 		    n->n_fail->f_name);
 		break;
 	case SM_TEMP:
 		panel_set_content(p,
 		    "Node ID: %d\n"
+		    "Wired position: (%d,%d,%d)\n"
+		    "Physical position: (%d,%d,%d,%d,%d)\n"
 		    "Temperature: %s",
 		    n->n_nid,
+		    iv->iv_x, iv->iv_y, iv->iv_z,
+		    r, cb, cg, m, no,
 		    n->n_temp->t_name);
 		break;
 	}
