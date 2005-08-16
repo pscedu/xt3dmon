@@ -33,8 +33,21 @@ mouseh_default(__unused int button, __unused int state, int u, int v)
 	lastv = v;
 
 	if (state == GLUT_UP && panel_mobile) {
-		panel_mobile->p_opts &= ~POPT_MOBILE;
-		panel_mobile->p_opts |= POPT_DIRTY;
+		struct panel *p = panel_mobile;
+
+		p->p_opts &= ~POPT_MOBILE;
+		p->p_opts |= POPT_DIRTY;
+		if (p->p_u + p->p_w / 2 < win_width / 2) {
+			if (win_height - p->p_v + p->p_h / 2 < win_height / 2)
+				p->p_stick = PSTICK_TL;
+			else
+				p->p_stick = PSTICK_BL;
+		} else {
+			if (win_height - p->p_v + p->p_h / 2 < win_height / 2)
+				p->p_stick = PSTICK_TR;
+			else
+				p->p_stick = PSTICK_BR;
+		}
 		panel_mobile = NULL;
 		glutMotionFunc(m_activeh_default);
 	}
@@ -175,7 +188,7 @@ sel_record_process(GLint nrecs)
 	GLuint lastlen;
 
 	name = 0; /* gcc */
-	found = 0;
+	found = nametype = 0;
 	minu = minv = UINT_MAX;
 	/* XXX:  sanity-check nrecs? */
 	for (i = 0, p = (GLuint *)selbuf; i < nrecs;
@@ -192,7 +205,6 @@ sel_record_process(GLint nrecs)
 		if (p[SBI_UDST] <= minu) {
 			minu = p[SBI_UDST];
 			if (p[SBI_VDST] < minv) {
-				name = p[SBI_NAMEOFF];
 				/*
 				 * XXX: hack to allow 2D objects to
 				 * be properly selected.
@@ -205,8 +217,8 @@ sel_record_process(GLint nrecs)
 						continue;
 					if (lastu < pl->p_u ||
 					    lastu > pl->p_u + pl->p_w ||
-					    win_height - lastv < pl->p_v ||
-					    win_height - lastv > pl->p_v + pl->p_h)
+					    lastv < win_height - pl->p_v ||
+					    lastv > win_height - pl->p_v + pl->p_h)
 						continue;
 				}
 				name = p[SBI_NAMEOFF];
@@ -217,6 +229,8 @@ sel_record_process(GLint nrecs)
 
 	}
 	if (found) {
+		glnametype(name, &origname,
+		    &nametype);
 		switch (nametype) {
 		case GNAMT_NODE:
 			if ((n = node_for_nid(origname)) != NULL) {
