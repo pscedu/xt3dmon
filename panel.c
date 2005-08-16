@@ -894,6 +894,24 @@ panel_toggle(int panel)
 }
 
 void
+panel_demobilize(struct panel *p)
+{
+	p->p_opts &= ~POPT_MOBILE;
+	p->p_opts |= POPT_DIRTY;
+	if (p->p_u + p->p_w / 2 < win_width / 2) {
+		if (win_height - p->p_v + p->p_h / 2 < win_height / 2)
+			p->p_stick = PSTICK_TL;
+		else
+			p->p_stick = PSTICK_BL;
+	} else {
+		if (win_height - p->p_v + p->p_h / 2 < win_height / 2)
+			p->p_stick = PSTICK_TR;
+		else
+			p->p_stick = PSTICK_BR;
+	}
+}
+
+void
 flip_panels(int panels)
 {
 	int b;
