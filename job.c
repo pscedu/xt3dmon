@@ -22,3 +22,9 @@ job_findbyid(int id)
 	}
 	return (NULL);
 }
+
+void
+job_highlight(struct job *j)
+{
+
+}
