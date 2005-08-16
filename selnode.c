@@ -7,6 +7,19 @@
 
 size_t nselnodes;
 
+void
+sel_replace(struct selnode *sn, struct node *n)
+{
+	if (sn->sn_nodep == n)
+		return;
+	sn->sn_nodep = n;
+	if (flyby_mode == FBM_REC) {
+		flyby_writeselnode(sn->sn_nodep->n_nid);
+		flyby_writeselnode(n->n_nid);
+	}
+	st.st_rf |= RF_SELNODE;
+}
+
 /*
  * "Low-level" add: does the nitty-gritty of the data structure for
  * adding a specific node to the list of selected nodes.

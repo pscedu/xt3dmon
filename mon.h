@@ -539,6 +539,7 @@ void			 sel_add(struct node *);
 void			 sel_insert(struct node *);
 int			 sel_del(struct node *);
 void			 sel_set(struct node *);
+void			 sel_replace(struct selnode *, struct node *);
 
 /* tween.c */
 void			 tween_push(int);
