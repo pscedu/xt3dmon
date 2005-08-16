@@ -503,6 +503,8 @@ void			 sel_record_end(void);
 /* node.c */
 struct node		*node_neighbor(struct node *, int, int);
 void			 node_physpos(struct node *, int *, int *, int *, int *, int *);
+void			 node_getmodpos(int, int *, int *);
+void			 node_adjmodpos(int, struct fvec *);
 
 /* objlist.c */
 void			 obj_batch_start(struct objlist *);

@@ -2,6 +2,37 @@
 
 #include "mon.h"
 
+/*
+ * Determine row/column within module.
+ *
+ *	  +---+ +---+	Row 1	^ y
+ *	  | 2 | | 3 |		|
+ *	  +---+ +---+		|
+ *	+---+ +---+	Row 0	|
+ *	| 1 | | 0 |		|
+ *	+---+ +---+		|
+ *				|
+ *	Col 1 Col 0		|
+ *				|
+ * z <--------------------------+ (0,0,0)
+ */
+__inline void
+node_getmodpos(int n, int *row, int *col)
+{
+	*row = n / (NNODES / 2);
+	*col = (n & 1) ^ ((n & 2) >> 1);
+}
+
+__inline void
+node_adjmodpos(int n, struct fvec *fv)
+{
+	int row, col;
+
+	node_getmodpos(n, &row, &col);
+	fv->fv_y += row * (NODESPACE + NODEHEIGHT);
+	fv->fv_z += col * (NODESPACE + NODEDEPTH) + row * NODESHIFT;
+}
+
 void
 node_physpos(struct node *node, int *r, int *cb, int *cg, int *m,
     int *n)
@@ -24,7 +55,7 @@ node_physpos(struct node *node, int *r, int *cb, int *cg, int *m,
 struct node *
 node_neighbor(struct node *node, int amt, int dir)
 {
-	int r, cb, cg, m, n;
+	int r, cb, cg, m, n, row, col;
 	struct node *rn;
 	struct ivec iv;
 	int rem, adj;
@@ -80,13 +111,14 @@ node_neighbor(struct node *node, int amt, int dir)
 				if (n < 0)
 					n += NNODES;
 				n %= NNODES;
+				node_getmodpos(n, &row, &col);
 				if (adj == -1) {
 					/*
 					 * If we ended up in the top
 					 * portion when traveling
 					 * down, we wrapped.
 					 */
-					if (n >= NNODES / 2) {
+					if (row == 1) {
 						cg--;
 						cg += NCAGES;
 					}
@@ -95,7 +127,7 @@ node_neighbor(struct node *node, int amt, int dir)
 					 * If we ended up in the
 					 * bottom portion, we wrapped.
 					 */
-					if (n < NNODES / 2)
+					if (row == 0)
 						cg++;
 				}
 				cg %= NCAGES;
@@ -118,13 +150,14 @@ node_neighbor(struct node *node, int amt, int dir)
 				if (n < 0)
 					n += NNODES;
 				n %= NNODES;
+				node_getmodpos(n, &row, &col);
 				if (adj == -1) {
 					/*
 					 * If we ended up in the
 					 * front column when moving
 					 * back, we wrapped.
 					 */
-					if ((n & 1) ^ ((n & 2) >> 1)) {
+					if (col == 1) {
 						r--;
 						r += NROWS;
 					}
@@ -134,7 +167,7 @@ node_neighbor(struct node *node, int amt, int dir)
 					 * back column when moving
 					 * forward, we wrapped.
 					 */
-					if (((n & 1) ^ ((n & 2) >> 1)) == 0)
+					if (col == 0)
 						r++;
 				}
 				r %= NROWS;
