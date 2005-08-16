@@ -24,6 +24,20 @@ vec_crossprod(struct fvec *cross, struct fvec *a, struct fvec *b)
 	cross->fv_z = a->fv_x * b->fv_y - b->fv_x * a->fv_y;
 }
 
+void
+vec_set(struct fvec *fv, float x, float y, float z)
+{
+	fv->fv_x = x;
+	fv->fv_y = y;
+	fv->fv_z = z;
+}
+
+float
+vec_mag(struct fvec *fv)
+{
+	return (sqrt(SQUARE(fv->fv_x) + SQUARE(fv->fv_y) + SQUARE(fv->fv_z)));
+}
+
 #define x cart->fv_x
 #define y cart->fv_y
 #define z cart->fv_z
