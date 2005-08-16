@@ -170,12 +170,12 @@ draw_panel(struct panel *p)
 		}
 		switch (p->p_stick) {
 		case PSTICK_TL:
-			u = win_width - w;
+			u = 0;
 			v = win_height - panel_offset[PVOFF_TL];
 			break;
 		case PSTICK_BL:
-			u = win_width - w;
-			v = panel_offset[PVOFF_BL];
+			u = 0;
+			v = panel_offset[PVOFF_BL] + p->p_h;
 			break;
 		case PSTICK_TR:
 			u = win_width - w;
@@ -183,7 +183,7 @@ draw_panel(struct panel *p)
 			break;
 		case PSTICK_BR:
 			u = win_width - w;
-			v = panel_offset[PVOFF_BR];
+			v = panel_offset[PVOFF_BR] + p->p_h;
 			break;
 		default:
 			u = p->p_u;
@@ -220,9 +220,14 @@ draw_panel(struct panel *p)
 	if (p->p_h != h)
 		p->p_h -= (p->p_h - h) / tweenadj;
 
-	if ((p->p_opts & POPT_REMOVE) && p->p_u >= win_width) {
-		panel_free(p);
-		return;
+	if (p->p_opts & POPT_REMOVE) {
+		if ((p->p_stick == PSTICK_TL && p->p_u + p->p_w <= 0) ||
+		    (p->p_stick == PSTICK_BL && p->p_u + p->p_w <= 0) ||
+		    (p->p_stick == PSTICK_TR && p->p_u >= win_width) ||
+		    (p->p_stick == PSTICK_BR && p->p_u >= win_width)) {
+			panel_free(p);
+			return;
+		}
 	}
 
 	if (compile) {
