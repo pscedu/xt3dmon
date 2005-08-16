@@ -522,7 +522,7 @@ void			 panel_hide(int);
 void			 panel_status_addinfo(const char *, ...);
 void			 panel_status_setinfo(const char *, ...);
 struct panel		*panel_for_id(int);
-void			 flip_panels(int);
+void			 panel_demobilize(struct panel *);
 
 /* parse.c */
 void			 parse_jobmap(void);
