@@ -88,9 +88,9 @@ revolve_center_selnode(struct fvec *cen)
 	}
 	cen->fv_x = cen->fv_y = cen->fv_z = 0.0f;
 	SLIST_FOREACH(sn, &selnodes, sn_next) {
-		cen->fv_x += sn->sn_nodep->n_v->fv_x;
-		cen->fv_y += sn->sn_nodep->n_v->fv_y;
-		cen->fv_z += sn->sn_nodep->n_v->fv_z;
+		cen->fv_x += sn->sn_nodep->n_v->fv_x + NODEWIDTH  / 2;
+		cen->fv_y += sn->sn_nodep->n_v->fv_y + NODEHEIGHT / 2;
+		cen->fv_z += sn->sn_nodep->n_v->fv_z + NODEDEPTH  / 2;
 	}
 	cen->fv_x /= nselnodes;
 	cen->fv_y /= nselnodes;
