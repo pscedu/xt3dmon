@@ -33,21 +33,7 @@ mouseh_default(__unused int button, __unused int state, int u, int v)
 	lastv = v;
 
 	if (state == GLUT_UP && panel_mobile) {
-		struct panel *p = panel_mobile;
-
-		p->p_opts &= ~POPT_MOBILE;
-		p->p_opts |= POPT_DIRTY;
-		if (p->p_u + p->p_w / 2 < win_width / 2) {
-			if (win_height - p->p_v + p->p_h / 2 < win_height / 2)
-				p->p_stick = PSTICK_TL;
-			else
-				p->p_stick = PSTICK_BL;
-		} else {
-			if (win_height - p->p_v + p->p_h / 2 < win_height / 2)
-				p->p_stick = PSTICK_TR;
-			else
-				p->p_stick = PSTICK_BR;
-		}
+		panel_demobilize(panel_mobile);
 		panel_mobile = NULL;
 		glutMotionFunc(m_activeh_default);
 	}
@@ -100,11 +86,15 @@ revolve_center_selnode(struct fvec *cen)
 		revolve_center_cluster(cen);
 		return;
 	}
-	sn = SLIST_FIRST(&selnodes);
-
-	cen->fv_x = sn->sn_nodep->n_v->fv_x;
-	cen->fv_y = sn->sn_nodep->n_v->fv_y;
-	cen->fv_z = sn->sn_nodep->n_v->fv_z;
+	cen->fv_x = cen->fv_y = cen->fv_z = 0.0f;
+	SLIST_FOREACH(sn, &selnodes, sn_next) {
+		cen->fv_x += sn->sn_nodep->n_v->fv_x;
+		cen->fv_y += sn->sn_nodep->n_v->fv_y;
+		cen->fv_z += sn->sn_nodep->n_v->fv_z;
+	}
+	cen->fv_x /= nselnodes;
+	cen->fv_y /= nselnodes;
+	cen->fv_z /= nselnodes;
 }
 
 void (*revolve_centerf)(struct fvec *) = revolve_center_selnode;
