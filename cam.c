@@ -126,14 +126,14 @@ cam_roll(float amt)
 {
 	float t, mag;
 
-	mag = sqrt(SQUARE(st.st_uy) + SQUARE(st.st_uz));
+	mag = vec_mag(&st.st_uv);
 	t = acosf(st.st_uy / mag);
 	if (st.st_uz < 0)
 		t = 2.0f * PI - t;
 	t += amt;
 	if (t < 0)
 		t += PI * 2.0f;
-	st.st_ux = cos(t) * mag;
+	st.st_uy = cos(t) * mag;
 	st.st_uz = sin(t) * mag;
 }
 
