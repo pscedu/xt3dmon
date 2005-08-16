@@ -40,6 +40,20 @@ struct fvec fvzero = { 0.0f, 0.0f, 0.0f };
 #define NEAR (1.0)
 
 __inline void
+wired_update(void)
+{
+	if (st.st_x + clip > wivstart.fv_x + wivdim.fv_w ||
+	    st.st_x - clip < wivstart.fv_x ||
+	    st.st_y + clip > wivstart.fv_y + wivdim.fv_h ||
+	    st.st_y - clip < wivstart.fv_y ||
+	    st.st_z + clip > wivstart.fv_z + wivdim.fv_d ||
+	    st.st_z - clip < wivstart.fv_z) {
+		panel_status_addinfo("Rebuild triggered\n");
+		st.st_rf |= RF_CLUSTER;
+	}
+}
+
+__inline void
 draw_scene(void)
 {
 	if (st.st_opts & OP_GROUND)
@@ -67,64 +81,68 @@ drawh_stereo(void)
 	static float left, right, top, bottom;
 	static struct fvec stereo_fv, *fvp;
 
+	if (flyby_mode)
+		flyby_update();
+	if (st.st_opts & OP_TWEEN)
+		tween_update();
+	if (st.st_vmode == VM_WIRED)
+		wired_update();
+	if (st.st_rf) {
+		rebuild(st.st_rf);
+		st.st_rf = 0;
+	}
+
 	fvp = &fvzero;
 	eyeadj = 0.0f;
-#if 0
-	if (stereo_mode)
-		glDrawBuffer(GL_BACK);
-	else
-		glDrawBuffer(GL_BACK_LEFT);
+
+	glDrawBuffer(GL_BACK);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	/* Draw right buffer. */
+	glDrawBuffer(GL_BACK_RIGHT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	vec_crossprod(&st.st_lv, &st.st_uv, &stereo_fv);
+	vec_normalize(&stereo_fv);
+	eyeadj = 0.2f;
+	stereo_fv.fv_x *= eyeadj / 2.0f;
+	stereo_fv.fv_y *= eyeadj / 2.0f;
+	stereo_fv.fv_z *= eyeadj / 2.0f;
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	right = ratio * wd2 - eyeadj * ndfl / 2;
+	left = -ratio * wd2 - eyeadj * ndfl / 2;
+	top = wd2;
+	bottom = -wd2;
+	glFrustum(left, right, bottom, top, NEAR, clip);
+
+	glMatrixMode(GL_MODELVIEW);
+//	glDrawBuffer(GL_BACK_RIGHT);
+	cam_look(&stereo_fv);
+	draw_scene();
+
+	stereo_fv.fv_x *= -1;
+	stereo_fv.fv_y *= -1;
+	stereo_fv.fv_z *= -1;
+	fvp = &stereo_fv;
+
+	/* Draw right buffer. */
+	glDrawBuffer(GL_BACK_LEFT);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(FOVY, ASPECT, NEAR, clip);
+	glMatrixMode(GL_MODELVIEW);
+	cam_look();
+	draw_scene();
+
+	glClearColor(0.0, 0.0, 0.2, 1.0);
+	if (st.st_opts & OP_CAPTURE)
+		capture_frame(capture_mode);
+	else if (st.st_opts & OP_DISPLAY)
+		glutSwapBuffers();
 #endif
-
-	if (stereo_mode) {
-		glDrawBuffer(GL_BACK_RIGHT);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		vec_crossprod(&st.st_lv, &st.st_uv, &stereo_fv);
-		vec_normalize(&stereo_fv);
-		eyeadj = 0.2f;
-		stereo_fv.fv_x *= eyeadj / 2.0f;
-		stereo_fv.fv_y *= eyeadj / 2.0f;
-		stereo_fv.fv_z *= eyeadj / 2.0f;
-
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-
-		right = ratio * wd2 - eyeadj * ndfl / 2;
-		left = -ratio * wd2 - eyeadj * ndfl / 2;
-		top = wd2;
-		bottom = -wd2;
-		glFrustum(left, right, bottom, top, NEAR, clip);
-
-		glMatrixMode(GL_MODELVIEW);
-	//	glDrawBuffer(GL_BACK_RIGHT);
-		cam_look(&stereo_fv);
-		draw_scene();
-
-		stereo_fv.fv_x *= -1;
-		stereo_fv.fv_y *= -1;
-		stereo_fv.fv_z *= -1;
-		fvp = &stereo_fv;
-		cam_dirty = 1;
-
-		glDrawBuffer(GL_BACK_LEFT);
-	}
-#endif
-}
-
-__inline void
-wired_update(void)
-{
-	if (st.st_x + clip > wivstart.fv_x + wivdim.fv_w ||
-	    st.st_x - clip < wivstart.fv_x ||
-	    st.st_y + clip > wivstart.fv_y + wivdim.fv_h ||
-	    st.st_y - clip < wivstart.fv_y ||
-	    st.st_z + clip > wivstart.fv_z + wivdim.fv_d ||
-	    st.st_z - clip < wivstart.fv_z) {
-		panel_status_addinfo("Rebuild triggered\n");
-		st.st_rf |= RF_CLUSTER;
-	}
 }
 
 void
@@ -159,24 +177,24 @@ drawh_default(void)
 		glutSwapBuffers();
 }
 
-/* Render a char from the font texture */
+/* Render a character from the font texture. */
 __inline void
 draw_char(int ch, float x, float y, float z)
 {
 	if (ch < 0)
 		return;
 
-	glTexCoord2f(FONT_TEXCOORD_S*ch, 0.0);
+	glTexCoord2f(FONT_TEXCOORD_S * ch, 0.0);
 	glVertex3f(x, y, z);
 
-	glTexCoord2f(FONT_TEXCOORD_S*ch, FONT_TEXCOORD_T);
-	glVertex3f(x, y+FONT_DISPLACE_H, z);
+	glTexCoord2f(FONT_TEXCOORD_S * ch, FONT_TEXCOORD_T);
+	glVertex3f(x, y + FONT_DISPLACE_H, z);
 
-	glTexCoord2f(FONT_TEXCOORD_S*(ch+1), FONT_TEXCOORD_T);
-	glVertex3f(x, y+FONT_DISPLACE_H, z+FONT_DISPLACE_W);
+	glTexCoord2f(FONT_TEXCOORD_S * (ch + 1), FONT_TEXCOORD_T);
+	glVertex3f(x, y + FONT_DISPLACE_H, z + FONT_DISPLACE_W);
 
-	glTexCoord2f(FONT_TEXCOORD_S*(ch+1), 0.0);
-	glVertex3f(x, y, z+FONT_DISPLACE_W);
+	glTexCoord2f(FONT_TEXCOORD_S * (ch + 1), 0.0);
+	glVertex3f(x, y, z + FONT_DISPLACE_W);
 }
 
 __inline void
@@ -188,9 +206,9 @@ draw_node_label(struct node *n)
 	int i = 0;
 
 	/*
-	** Parse the node id for use with
-	** NODE0123456789 (so 4 letter gap before 0)
-	*/
+	 * Parse the node id for use with
+	 * NODE0123456789 (so 4 letter gap before 0)
+	 */
 	nid = n->n_nid;
 	while(nid >= 0 && i < MAX_CHARS) {
 		list[MAX_CHARS-i-1] = 4 + nid % 10;
