@@ -555,6 +555,8 @@ void			 vec_normalize(struct fvec *);
 void			 vec_crossprod(struct fvec *, struct fvec *, struct fvec *);
 void			 vec_cart2sphere(struct fvec *, struct fvec *);
 void			 vec_sphere2cart(struct fvec *, struct fvec *);
+void			 vec_set(struct fvec *, float, float, float);
+float			 vec_mag(struct fvec *);
 
 /* widget.c */
 void			 draw_box_outline(const struct fvec *, const struct fill *);
