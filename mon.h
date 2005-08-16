@@ -474,7 +474,6 @@ struct job		*job_findbyid(int);
 void 			*png_load(char *, unsigned int *, unsigned int *);
 
 /* main.c */
-struct node		*node_for_nid(int);
 void			 refresh_state(int);
 void			 rebuild(int);
 void			 idleh_govern(void);
@@ -505,6 +504,7 @@ struct node		*node_neighbor(struct node *, int, int);
 void			 node_physpos(struct node *, int *, int *, int *, int *, int *);
 void			 node_getmodpos(int, int *, int *);
 void			 node_adjmodpos(int, struct fvec *);
+struct node		*node_for_nid(int);
 
 /* objlist.c */
 void			 obj_batch_start(struct objlist *);

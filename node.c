@@ -199,3 +199,11 @@ node_neighbor(struct node *node, int amt, int dir)
 	}
 	return (rn);
 }
+
+struct node *
+node_for_nid(int nid)
+{
+	if (nid > NID_MAX || nid < 0)
+		return (NULL);
+	return (invmap[nid]);
+}

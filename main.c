@@ -110,14 +110,6 @@ resizeh(int w, int h)
 		p->p_opts |= POPT_DIRTY;
 }
 
-struct node *
-node_for_nid(int nid)
-{
-	if (nid > NID_MAX || nid < 0)
-		return (NULL);
-	return (invmap[nid]);
-}
-
 /*
  * Serial entry point to special-case code for handling states changes.
  */
