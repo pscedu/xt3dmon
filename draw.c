@@ -39,6 +39,11 @@ struct fvec fvzero = { 0.0f, 0.0f, 0.0f };
 
 #define NEAR (1.0)
 
+int gRow = 0;
+int gCab = 0;
+int gCag = 0;
+int gShowMods = 0;
+
 __inline void
 wired_update(void)
 {
@@ -56,6 +61,10 @@ wired_update(void)
 __inline void
 draw_scene(void)
 {
+
+if(gShowMods)
+draw_mods(gRow, gCab, gCag);
+
 	if (st.st_opts & OP_GROUND)
 		glCallList(ground_dl);
 	if (select_dl)
@@ -66,11 +75,219 @@ draw_scene(void)
 }
 
 void
+draw_rows(void)
+{
+	struct fvec dim;
+	float dx, dy, dz;
+	int r;
+
+	dx = NODESPACE;
+	dy = NODESPACE;
+	dz = NODESPACE;
+
+	/* XXX Width is a little off add NODEWIDTH? */
+	dim.fv_w = ROWWIDTH + NODEWIDTH;
+
+	dim.fv_h = CABHEIGHT;
+	dim.fv_d = ROWDEPTH + NODESHIFT;
+
+	for(r = 0; r < NROWS; r++) {
+		glPushMatrix();
+		glTranslatef(dx, dy, dz);
+		glPushName(mkglname(r, GNAMT_ROW));
+		draw_box_filled(&dim, &fill_black);
+		glPopName();
+		glPopMatrix();
+
+		dz += ROWSPACE + ROWDEPTH;
+	}
+}
+
+void
+draw_cabs(int row)
+{
+	struct fvec dim;
+	float dx, dy, dz;
+	int c;
+
+	dx = NODESPACE;
+	dy = NODESPACE;
+	dz = NODESPACE + row * (ROWSPACE + ROWDEPTH);
+
+	dim.fv_w = CABWIDTH + NODEWIDTH;
+	dim.fv_h = CABHEIGHT;
+	dim.fv_d = ROWDEPTH + NODESHIFT;
+
+	for(c = 0; c < NCABS; c++) {
+		glPushMatrix();
+		glTranslatef(dx, dy, dz);
+		glPushName(mkglname(c, GNAMT_CAB));
+		draw_box_filled(&dim, &fill_black);
+		glPopName();
+		glPopMatrix();
+
+		dx += CABWIDTH + CABSPACE;
+	}
+}
+
+void
+draw_cages(int row, int cab)
+{
+	struct fvec dim;
+	float dx, dy, dz;
+	int c;
+
+	dx = NODESPACE + cab * (CABSPACE + CABWIDTH);
+	dy = NODESPACE;
+	dz = NODESPACE + row * (ROWSPACE + ROWDEPTH);
+
+	dim.fv_w = CABWIDTH + NODEWIDTH;
+	dim.fv_h = CAGEHEIGHT;
+	dim.fv_d = ROWDEPTH + NODESHIFT;
+
+	for(c = 0; c < NCAGES; c++) {
+		glPushMatrix();
+		glTranslatef(dx, dy, dz);
+		glPushName(mkglname(c, GNAMT_CAG));
+		draw_box_filled(&dim, &fill_black);
+		glPopName();
+		glPopMatrix();
+
+		dy += CAGEHEIGHT + CAGESPACE;
+	}
+}
+
+void
+draw_mods(int row, int cab, int cage)
+{
+	struct fvec dim;
+	float dx, dy, dz;
+	int m;
+
+	/* Account for the cabnet */
+	dx = NODESPACE + cab * (CABSPACE + CABWIDTH);
+	dy = NODESPACE + cage * (CAGESPACE + CAGEHEIGHT);
+	dz = NODESPACE + row * (ROWSPACE + ROWDEPTH);
+
+	dim.fv_w = MODWIDTH + NODEWIDTH;
+	dim.fv_h = MODHEIGHT;
+	dim.fv_d = MODDEPTH;
+
+	for(m = 0; m < NMODS; m++) {
+		glPushMatrix();
+		glTranslatef(dx, dy, dz);
+		glPushName(mkglname(m, GNAMT_MOD));
+		draw_box_filled(&dim, &fill_black);
+		glPopName();
+		glPopMatrix();
+
+		dx += MODWIDTH + MODSPACE;
+	}
+}
+
+void
+draw_nodes(int row, int cab, int cage, int mod)
+{
+	struct fvec dim;
+	float dx, dy, dz;
+	int n, col, mrow;
+
+	dx = NODESPACE + cab * (CABSPACE + CABWIDTH);
+	dy = NODESPACE + cage * (CAGESPACE + CAGEHEIGHT);
+	dz = NODESPACE + row * (ROWSPACE + ROWDEPTH);
+
+	/* Account for the module */
+	dx += (MODWIDTH + MODSPACE) * mod;
+
+	dim.fv_w = NODEWIDTH;
+	dim.fv_h = NODEHEIGHT;
+	dim.fv_d = NODEDEPTH;
+
+	/* row 1 is offset -> z, col 1 is offset z too */
+	for(n = 0; n < NNODES; n++) {
+
+		col = (n & 1) ^ ((n & 2) >> 1);
+		mrow = ((n & 2) >> 1);
+
+		glPushMatrix();
+		glTranslatef(dx, dy + mrow * (NODEHEIGHT + NODESPACE),
+			dz + col * (NODEDEPTH + NODESPACE) + mrow * NODESHIFT);
+		glPushName(mkglname(n, GNAMT_NODE));
+		draw_box_filled(&dim, ((n % 2 == 0) ? &fill_black : &fill_light_blue));
+		glPopName();
+		glPopMatrix();
+	}
+}
+
+void
 drawh_select(void)
 {
-	sel_record_begin();
-	draw_scene();
-	sel_record_end();
+	int i, done;
+	int *ret;
+	int panel, row, cab, cag, mod, node;
+	struct node *n;
+	
+
+	ret = &panel;
+	node = -1;
+	done = 0;
+//	i = GNAMT_PANEL;
+	i = GNAMT_ROW;
+	while(!done && i <= GNAMT_NODE) {
+		sel_record_begin();
+		switch(i) {
+//			case GNAMT_PANEL: 
+//				if (!TAILQ_EMPTY(&panels))
+//					draw_panels();
+//				break;
+			case GNAMT_ROW:
+				draw_rows();
+				ret = &row;
+				break;
+			case GNAMT_CAB:
+				draw_cabs(row);
+				ret = &cab;
+				break;
+			case GNAMT_CAG:
+				draw_cages(row, cab);
+				ret = &cag;
+				break;
+			case GNAMT_MOD:
+				draw_mods(row, cab, cag);
+				ret = &mod;
+				break;
+			case GNAMT_NODE:
+				draw_nodes(row, cab, cag, mod);
+				ret = &node;
+				break;
+			default: break;
+		}
+		*ret = sel_record_end(&done);
+		i++;
+	}
+
+// XXX:
+gRow = row; gCab = cab; gCag = cag;
+
+	if(node != -1) {
+		if ((n = &nodes[row][cab][cag][mod][node]) != NULL) {
+			switch (spkey) {
+			case GLUT_ACTIVE_SHIFT:
+				sel_add(n);
+				break;
+			case GLUT_ACTIVE_CTRL:
+				sel_del(n);
+				break;
+			case 0:
+				sel_set(n);
+				break;
+			}
+			if (SLIST_EMPTY(&selnodes))
+				panel_hide(PANEL_NINFO);
+			else
+				panel_show(PANEL_NINFO);
+		}
+	}
 }
 
 void
@@ -192,6 +409,8 @@ drawh_default(void)
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	if (cam_dirty) {
+		cam_dirty = 0;
+
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		gluPerspective(FOVY, ASPECT, NEAR, clip);
@@ -199,7 +418,6 @@ drawh_default(void)
 		cam_look();
 	}
 	draw_scene();
-	cam_dirty = 0;
 
 	glClearColor(0.0, 0.0, 0.2, 1.0);
 	if (st.st_opts & OP_CAPTURE)
@@ -398,7 +616,6 @@ make_ground(void)
 	ground_dl = glGenLists(1);
 	glNewList(ground_dl, GL_COMPILE);
 
-
 	/* Ground */
 	fill.f_r = 0.1f;
 	fill.f_g = 0.2f;
@@ -415,10 +632,8 @@ make_ground(void)
 
 		glPushMatrix();
 		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
-		glBegin(GL_QUADS);
 		draw_box_filled(&fdim, &fill);
 		draw_box_outline(&fdim, &fill_black);
-		glEnd();
 		glPopMatrix();
 		break;
 	case VM_PHYSICAL:
@@ -432,11 +647,8 @@ make_ground(void)
 
 		glPushMatrix();
 		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
-		glBegin(GL_QUADS);
-		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
 		draw_box_filled(&fdim, &fill);
 		draw_box_outline(&fdim, &fill_black);
-		glEnd();
 		glPopMatrix();
 		break;
 	}
