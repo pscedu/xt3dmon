@@ -52,11 +52,11 @@
 #define CAGEHEIGHT	(NODEHEIGHT * (NNODES / 2) + \
 			    (NODESPACE * (NNODES / 2 - 1)))
 #define CABWIDTH	(MODWIDTH * NMODS + MODSPACE * (NMODS - 1))
+#define CABHEIGHT 	(CAGEHEIGHT * NCAGES + CAGESPACE * (NCAGES - 1));
 
 #define ROWWIDTH	(CABWIDTH * NCABS + CABSPACE * (NCABS - 1))
 #define ROWDEPTH	(NODEDEPTH * (NNODES / 2) + \
 			    (NODESPACE * (NNODES / 2 - 1)))
-
 #define XCENTER		(NODESPACE + ROWWIDTH / 2)
 #define YCENTER		(NODESPACE + (CAGEHEIGHT * NCAGES + \
 			    CAGESPACE * (NCAGES - 1)) / 2.0f)
@@ -114,9 +114,16 @@
 #define FBM_PLAY	1
 #define FBM_REC		2
 
-/* GL name types. */
-#define GNAMT_NODE	1	/* must start at 1 */
-#define GNAMT_PANEL	2
+/* Order here is important! */
+enum {
+	GNAMT_PANEL = 1, /* must start at 1 */
+	GNAMT_ROW,
+	GNAMT_CAB,
+	GNAMT_CAG,
+	GNAMT_MOD,
+	GNAMT_NODE	
+};
+
 
 /* Stereo display mode types. */
 #define STM_NONE	0
@@ -502,7 +509,7 @@ void			 m_passiveh_null(int, int);
 void			 mouseh_default(int, int, int, int);
 void			 mouseh_null(int, int, int, int);
 void			 sel_record_begin(void);
-void			 sel_record_end(void);
+int			 sel_record_end(int*);
 
 /* node.c */
 struct node		*node_neighbor(struct node *, int, int);
