@@ -43,6 +43,7 @@ int gRow = 0;
 int gCab = 0;
 int gCag = 0;
 int gShowMods = 0;
+void draw_mods(int row, int cab, int cage);
 
 __inline void
 wired_update(void)
