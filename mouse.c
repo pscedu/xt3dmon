@@ -168,15 +168,17 @@ sel_record_begin(void)
 #define SBI_VDST	2
 #define SBI_NAMEOFF	3
 
-void
-sel_record_process(GLint nrecs)
+int
+sel_record_process(GLint nrecs, int *done)
 {
-	GLuint minu, minv, *p, name, origname;
+	GLuint minu, minv, *p, name;
 	int i, found, nametype;
 	struct panel *pl;
 	struct node *n;
 	GLuint lastlen;
+	GLuint origname = -1;
 
+	*done = 1;
 	name = 0; /* gcc */
 	found = nametype = 0;
 	minu = minv = UINT_MAX;
@@ -222,6 +224,7 @@ sel_record_process(GLint nrecs)
 		glnametype(name, &origname,
 		    &nametype);
 		switch (nametype) {
+#if 0
 		case GNAMT_NODE:
 			if ((n = node_for_nid(origname)) != NULL) {
 				switch (spkey) {
@@ -241,6 +244,7 @@ sel_record_process(GLint nrecs)
 					panel_show(PANEL_NINFO);
 			}
 			break;
+#endif
 		case GNAMT_PANEL:
 			if (spkey == GLUT_ACTIVE_CTRL) {
 				glutMotionFunc(m_activeh_panel);
@@ -250,23 +254,40 @@ sel_record_process(GLint nrecs)
 					panel_mobile->p_opts |= POPT_MOBILE;
 			}
 			break;
+		
+		/* anything special needed here? XXX */
+		case GNAMT_ROW: printf("row selected: %d\n", origname); *done = 0; break;
+		case GNAMT_CAB: printf("cabnet selected: %d\n", origname); *done = 0; break;
+		case GNAMT_CAG: printf("cage selected: %d\n", origname); *done = 0; break;
+		case GNAMT_MOD: printf("module: %d\n", origname); *done = 0; break;
+		case GNAMT_NODE: printf("node: %d\n", origname); break;
 		}
 	}
+
+	return origname;
 }
 
-void
-sel_record_end(void)
+int
+sel_record_end(int *done)
 {
 	int nrecs;
+	int ret = -1;
+
+	*done = 1;
 
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 	glFlush();
 
-	if ((nrecs = glRenderMode(GL_RENDER)) != 0)
-		sel_record_process(nrecs);
-	drawh = drawh_old;
-	glutDisplayFunc(drawh);
+	if ((nrecs = glRenderMode(GL_RENDER)) != 0) {
+		ret = sel_record_process(nrecs, done);
+	}
+	
+	if(done)
+		drawh = drawh_old;
 
+	glutDisplayFunc(drawh);
 	rebuild(RF_CAM);
+
+	return ret;
 }
