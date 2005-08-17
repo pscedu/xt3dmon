@@ -254,7 +254,7 @@ sel_record_process(GLint nrecs, int *done)
 					panel_mobile->p_opts |= POPT_MOBILE;
 			}
 			break;
-		
+
 		/* anything special needed here? XXX */
 		case GNAMT_ROW: printf("row selected: %d\n", origname); *done = 0; break;
 		case GNAMT_CAB: printf("cabnet selected: %d\n", origname); *done = 0; break;
@@ -282,11 +282,12 @@ sel_record_end(int *done)
 	if ((nrecs = glRenderMode(GL_RENDER)) != 0) {
 		ret = sel_record_process(nrecs, done);
 	}
-	
-	if(done)
-		drawh = drawh_old;
 
-	glutDisplayFunc(drawh);
+	if (done) {
+		drawh = drawh_old;
+		glutDisplayFunc(drawh);
+	}
+	/* st.st_rf |= RF_CAM; */
 	rebuild(RF_CAM);
 
 	return ret;

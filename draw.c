@@ -410,7 +410,6 @@ drawh_default(void)
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	if (cam_dirty) {
-		cam_dirty = 0;
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -419,6 +418,7 @@ drawh_default(void)
 		cam_look();
 	}
 	draw_scene();
+	cam_dirty = 0;
 
 	glClearColor(0.0, 0.0, 0.2, 1.0);
 	if (st.st_opts & OP_CAPTURE)
