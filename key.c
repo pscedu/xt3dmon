@@ -12,6 +12,8 @@
 struct uinput uinp;
 struct fvec stopv, stoplv;
 
+extern int gShowMods;
+
 void
 spkeyh_null(__unused int key, __unused int u, __unused int v)
 {
@@ -438,8 +440,7 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		break;
 	/* DEBUG */
 	case 'z':
-		printf("st_lx: %f, st_ly: %f, st_lz: %f\n", st.st_lx, st.st_ly, st.st_lz);
-		printf("st_x: %f, s_y: %f, st_z: %f\n", st.st_x, st.st_y, st.st_z);
+		gShowMods = !gShowMods;
 		break;
 	case '+':
 	case '_': {
