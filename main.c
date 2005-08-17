@@ -253,25 +253,33 @@ rebuild(int opts)
 unsigned int
 mkglname(unsigned int name, int type)
 {
+#if 0
+	int n;
+
 	switch (type) {
-	case GNAMT_PANEL:
-		name += NID_MAX;
-		break;
+	case GNMAT_NODE:  n = 0; break;
+	case GNAMT_PANEL: n = 1; break;
+	case GNMAT_ROW:	  n = 2; break;
+	case GNMAT_CAB:	  n = 3; break;
+	case GNMAT_CAG:	  n = 4; break;
+	case GNMAT_MOD:	  n = 5; break;
 	}
+#endif
+	
+	name += (type - 1)*NID_MAX;
 	return (name);
 }
 
 void
 glnametype(unsigned int name, unsigned int *origname, int *type)
 {
-	*type = 0;
-	if (name > NID_MAX) {
+	*type = GNAMT_PANEL;
+	while (name >= NID_MAX)
+	{
 		name -= NID_MAX;
-		if (*type == 0)
-			*type = GNAMT_PANEL;
+		(*type)++;
 	}
-	if (*type == 0)
-		*type = GNAMT_NODE;
+
 	*origname = name;
 }
 
