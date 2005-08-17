@@ -171,14 +171,19 @@ draw_mods(int row, int cab, int cage)
 	dz = NODESPACE + row * (ROWSPACE + ROWDEPTH);
 
 	dim.fv_w = MODWIDTH + NODEWIDTH;
-	dim.fv_h = MODHEIGHT;
-	dim.fv_d = MODDEPTH;
+	dim.fv_h = NODEHEIGHT;
+	dim.fv_d = NODEDEPTH * 2 + NODESPACE;
 
 	for(m = 0; m < NMODS; m++) {
 		glPushMatrix();
-		glTranslatef(dx, dy, dz);
 		glPushName(mkglname(m, GNAMT_MOD));
+
+		/* Draw the rows individually */
+		glTranslatef(dx, dy, dz);
 		draw_box_filled(&dim, &fill_black);
+		glTranslatef(0,NODESPACE + NODEHEIGHT,NODESHIFT);
+		draw_box_filled(&dim, &fill_black);
+		
 		glPopName();
 		glPopMatrix();
 
