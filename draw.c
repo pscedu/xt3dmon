@@ -39,12 +39,6 @@ struct fvec fvzero = { 0.0f, 0.0f, 0.0f };
 
 #define NEAR (1.0)
 
-int gRow = 0;
-int gCab = 0;
-int gCag = 0;
-int gShowMods = 0;
-void draw_mods(int row, int cab, int cage);
-
 __inline void
 wired_update(void)
 {
@@ -62,10 +56,6 @@ wired_update(void)
 __inline void
 draw_scene(void)
 {
-
-if(gShowMods)
-draw_mods(gRow, gCab, gCag);
-
 	if (st.st_opts & OP_GROUND)
 		glCallList(ground_dl);
 	if (select_dl)
@@ -76,224 +66,219 @@ draw_mods(gRow, gCab, gCag);
 }
 
 void
-draw_rows(void)
+draw_shadow_rows(void)
 {
-	struct fvec dim;
-	float dx, dy, dz;
+	struct fvec dim, v;
 	int r;
 
-	dx = NODESPACE;
-	dy = NODESPACE;
-	dz = NODESPACE;
+	v.fv_x = NODESPACE;
+	v.fv_y = NODESPACE;
+	v.fv_z = NODESPACE;
 
 	/* XXX Width is a little off add NODEWIDTH? */
-	dim.fv_w = ROWWIDTH + NODEWIDTH;
-
+	dim.fv_w = ROWWIDTH; // + NODEWIDTH;
 	dim.fv_h = CABHEIGHT;
 	dim.fv_d = ROWDEPTH + NODESHIFT;
 
-	for(r = 0; r < NROWS; r++) {
+	for (r = 0; r < NROWS; r++, v.fv_z += ROWSPACE + ROWDEPTH) {
 		glPushMatrix();
-		glTranslatef(dx, dy, dz);
-		glPushName(mkglname(r, GNAMT_ROW));
+		glTranslatef(v.fv_x, v.fv_y, v.fv_z);
+		glPushName(gsn_get(r, gscb_row, 0));
 		draw_box_filled(&dim, &fill_black);
 		glPopName();
 		glPopMatrix();
-
-		dz += ROWSPACE + ROWDEPTH;
 	}
 }
 
 void
-draw_cabs(int row)
+draw_shadow_cabs(const struct physcoord *pc)
 {
-	struct fvec dim;
-	float dx, dy, dz;
-	int c;
+	struct fvec dim, v;
+	int cb;
 
-	dx = NODESPACE;
-	dy = NODESPACE;
-	dz = NODESPACE + row * (ROWSPACE + ROWDEPTH);
+	v.fv_x = NODESPACE;
+	v.fv_y = NODESPACE;
+	v.fv_z = NODESPACE + pc->pc_r * (ROWSPACE + ROWDEPTH);
 
 	dim.fv_w = CABWIDTH + NODEWIDTH;
 	dim.fv_h = CABHEIGHT;
 	dim.fv_d = ROWDEPTH + NODESHIFT;
 
-	for(c = 0; c < NCABS; c++) {
+	for (cb = 0; cb < NCABS; cb++, v.fv_x += CABWIDTH + CABSPACE) {
 		glPushMatrix();
-		glTranslatef(dx, dy, dz);
-		glPushName(mkglname(c, GNAMT_CAB));
+		glTranslatef(v.fv_x, v.fv_y, v.fv_z);
+		glPushName(gsn_get(cb, gscb_cab, 0));
 		draw_box_filled(&dim, &fill_black);
 		glPopName();
 		glPopMatrix();
-
-		dx += CABWIDTH + CABSPACE;
 	}
 }
 
 void
-draw_cages(int row, int cab)
+draw_shadow_cages(const struct physcoord *pc)
 {
-	struct fvec dim;
-	float dx, dy, dz;
-	int c;
+	struct fvec dim, v;
+	int cg;
 
-	dx = NODESPACE + cab * (CABSPACE + CABWIDTH);
-	dy = NODESPACE;
-	dz = NODESPACE + row * (ROWSPACE + ROWDEPTH);
+	v.fv_x = NODESPACE + pc->pc_cb * (CABSPACE + CABWIDTH);
+	v.fv_y = NODESPACE;
+	v.fv_z = NODESPACE + pc->pc_r * (ROWSPACE + ROWDEPTH);
 
 	dim.fv_w = CABWIDTH + NODEWIDTH;
 	dim.fv_h = CAGEHEIGHT;
 	dim.fv_d = ROWDEPTH + NODESHIFT;
 
-	for(c = 0; c < NCAGES; c++) {
+	for (cg = 0; cg < NCAGES; cg++, v.fv_y += CAGEHEIGHT + CAGESPACE) {
 		glPushMatrix();
-		glTranslatef(dx, dy, dz);
-		glPushName(mkglname(c, GNAMT_CAG));
+		glTranslatef(v.fv_x, v.fv_y, v.fv_z);
+		glPushName(gsn_get(cg, gscb_cage, 0));
 		draw_box_filled(&dim, &fill_black);
 		glPopName();
 		glPopMatrix();
-
-		dy += CAGEHEIGHT + CAGESPACE;
 	}
 }
 
 void
-draw_mods(int row, int cab, int cage)
+draw_shadow_mods(const struct physcoord *pc)
 {
-	struct fvec dim;
-	float dx, dy, dz;
+	struct fvec dim, v;
 	int m;
 
-	/* Account for the cabnet */
-	dx = NODESPACE + cab * (CABSPACE + CABWIDTH);
-	dy = NODESPACE + cage * (CAGESPACE + CAGEHEIGHT);
-	dz = NODESPACE + row * (ROWSPACE + ROWDEPTH);
+	/* Account for the cabinet. */
+	v.fv_x = NODESPACE + pc->pc_cb * (CABSPACE + CABWIDTH);
+	v.fv_y = NODESPACE + pc->pc_cg * (CAGESPACE + CAGEHEIGHT);
+	v.fv_z = NODESPACE + pc->pc_r * (ROWSPACE + ROWDEPTH);
 
 	dim.fv_w = MODWIDTH + NODEWIDTH;
 	dim.fv_h = NODEHEIGHT;
 	dim.fv_d = NODEDEPTH * 2 + NODESPACE;
 
-	for(m = 0; m < NMODS; m++) {
+	for (m = 0; m < NMODS; m++, v.fv_x += MODWIDTH + MODSPACE) {
 		glPushMatrix();
-		glPushName(mkglname(m, GNAMT_MOD));
+		glPushName(gsn_get(m, gscb_mod, 0));
 
-		/* Draw the rows individually */
-		glTranslatef(dx, dy, dz);
+		/* Draw the rows individually. */
+		glTranslatef(v.fv_x, v.fv_y, v.fv_z);
 		draw_box_filled(&dim, &fill_black);
-		glTranslatef(0,NODESPACE + NODEHEIGHT,NODESHIFT);
+		glTranslatef(0, NODESPACE + NODEHEIGHT, NODESHIFT);
 		draw_box_filled(&dim, &fill_black);
-		
+
 		glPopName();
 		glPopMatrix();
-
-		dx += MODWIDTH + MODSPACE;
 	}
 }
 
 void
-draw_nodes(int row, int cab, int cage, int mod)
+draw_shadow_nodes(const struct physcoord *pc)
 {
-	struct fvec dim;
-	float dx, dy, dz;
-	int n, col, mrow;
+	struct fvec dim, v, nv;
+	struct node *node;
+	int n;
 
-	dx = NODESPACE + cab * (CABSPACE + CABWIDTH);
-	dy = NODESPACE + cage * (CAGESPACE + CAGEHEIGHT);
-	dz = NODESPACE + row * (ROWSPACE + ROWDEPTH);
+	v.fv_x = NODESPACE + pc->pc_cb * (CABSPACE + CABWIDTH);
+	v.fv_y = NODESPACE + pc->pc_cg * (CAGESPACE + CAGEHEIGHT);
+	v.fv_z = NODESPACE + pc->pc_r * (ROWSPACE + ROWDEPTH);
 
-	/* Account for the module */
-	dx += (MODWIDTH + MODSPACE) * mod;
+	/* Account for the module. */
+	v.fv_x += (MODWIDTH + MODSPACE) * pc->pc_m;
 
 	dim.fv_w = NODEWIDTH;
 	dim.fv_h = NODEHEIGHT;
 	dim.fv_d = NODEDEPTH;
 
 	/* row 1 is offset -> z, col 1 is offset z too */
-	for(n = 0; n < NNODES; n++) {
+	for (n = 0; n < NNODES; n++) {
+		nv = v;
+		node_adjmodpos(n, &nv);
 
-		col = (n & 1) ^ ((n & 2) >> 1);
-		mrow = ((n & 2) >> 1);
+		node = &nodes[pc->pc_r][pc->pc_cb][pc->pc_cg][pc->pc_m][n];
+		if (node->n_flags & NF_HIDE)
+			continue;
 
 		glPushMatrix();
-		glTranslatef(dx, dy + mrow * (NODEHEIGHT + NODESPACE),
-			dz + col * (NODEDEPTH + NODESPACE) + mrow * NODESHIFT);
-		glPushName(mkglname(n, GNAMT_NODE));
-		draw_box_filled(&dim, ((n % 2 == 0) ? &fill_black : &fill_light_blue));
+		glTranslatef(nv.fv_x, nv.fv_y, nv.fv_z);
+		glPushName(gsn_get(node->n_nid, gscb_node, 0));
+		draw_box_filled(&dim, &fill_black);
 		glPopName();
 		glPopMatrix();
 	}
 }
 
 void
+draw_shadow_panels(void)
+{
+}
+
+void
 drawh_select(void)
 {
-	int i, done;
-	int *ret;
-	int panel, row, cab, cag, mod, node;
-	struct node *n;
-	
+	struct physcoord pc, chance;
+	int nrecs;
 
-	ret = &panel;
-	node = -1;
-	done = 0;
-//	i = GNAMT_PANEL;
-	i = GNAMT_ROW;
-	while(!done && i <= GNAMT_NODE) {
-		sel_record_begin();
-		switch(i) {
-//			case GNAMT_PANEL: 
-//				if (!TAILQ_EMPTY(&panels))
-//					draw_panels();
-//				break;
-			case GNAMT_ROW:
-				draw_rows();
-				ret = &row;
-				break;
-			case GNAMT_CAB:
-				draw_cabs(row);
-				ret = &cab;
-				break;
-			case GNAMT_CAG:
-				draw_cages(row, cab);
-				ret = &cag;
-				break;
-			case GNAMT_MOD:
-				draw_mods(row, cab, cag);
-				ret = &mod;
-				break;
-			case GNAMT_NODE:
-				draw_nodes(row, cab, cag, mod);
-				ret = &node;
-				break;
-			default: break;
-		}
-		*ret = sel_record_end(&done);
-		i++;
-	}
+	sel_begin();
+	draw_shadow_panels();
+	nrecs = sel_end();
+	if (nrecs && sel_process(nrecs, 0, SPF_2D) != SP_MISS)
+		goto end;
 
-// XXX:
-gRow = row; gCab = cab; gCag = cag;
+printf("\nclick\n");
 
-	if(node != -1) {
-		if ((n = &nodes[row][cab][cag][mod][node]) != NULL) {
-			switch (spkey) {
-			case GLUT_ACTIVE_SHIFT:
-				sel_add(n);
+	switch (st.st_vmode) {
+	case VM_PHYSICAL:
+		for (chance.pc_r = 0; chance.pc_r < NROWS; chance.pc_r++) {
+			sel_begin();
+			draw_shadow_rows();
+			nrecs = sel_end();
+			if (nrecs == 0 ||
+			    (pc.pc_r = sel_process(nrecs, chance.pc_r, 0)) == SP_MISS)
 				break;
-			case GLUT_ACTIVE_CTRL:
-				sel_del(n);
-				break;
-			case 0:
-				sel_set(n);
-				break;
+printf("click in row %d (chance %d)\n", pc.pc_r, chance.pc_r);
+			for (chance.pc_cb = 0; chance.pc_cb < NCABS; chance.pc_r++) {
+				sel_begin();
+				draw_shadow_cabs(&pc);
+				nrecs = sel_end();
+				if (nrecs == 0 || (pc.pc_cb =
+				    sel_process(nrecs, chance.pc_cb, 0)) == SP_MISS)
+					break;
+printf(" click in cab %d (chance %d)\n", pc.pc_cb, chance.pc_cb);
+				for (chance.pc_cg = 0; chance.pc_cg < NCAGES; chance.pc_cg++) {
+					sel_begin();
+					draw_shadow_cages(&pc);
+					nrecs = sel_end();
+					if (nrecs == 0 || (pc.pc_cg =
+					    sel_process(nrecs, chance.pc_cg, 0)) == SP_MISS)
+						break;
+printf("  click in cage %d (chance %d)\n", pc.pc_cg, chance.pc_cg);
+					for (chance.pc_m = 0; chance.pc_m < NMODS; chance.pc_m++) {
+						sel_begin();
+						draw_shadow_mods(&pc);
+						nrecs = sel_end();
+						if (nrecs == 0 || (pc.pc_m =
+						    sel_process(nrecs, chance.pc_m, 0)) == SP_MISS)
+							break;
+
+printf("   click in mod %d (chance %d)\n", pc.pc_m, chance.pc_m);
+						sel_begin();
+						draw_shadow_nodes(&pc);
+						nrecs = sel_end();
+						if (nrecs && sel_process(nrecs, 0, 0) != SP_MISS)
+							goto end;
+					}
+				}
 			}
-			if (SLIST_EMPTY(&selnodes))
-				panel_hide(PANEL_NINFO);
-			else
-				panel_show(PANEL_NINFO);
 		}
+		break;
+	case VM_WIRED:
+	case VM_WIREDONE:
+//		sel_begin();
+//		draw_shadow_wired_cluster();
+//		sel_end();
+		break;
 	}
+end:
+	drawh = drawh_old;
+	glutDisplayFunc(drawh);
+	st.st_rf |= RF_CAM;
 }
 
 void
@@ -560,7 +545,7 @@ draw_node(struct node *n, int flags)
 
 	if ((flags & NDF_DONTPUSH) == 0) {
 		glPushMatrix();
-		glPushName(mkglname(n->n_nid, GNAMT_NODE));
+//		glPushName(mkglname(n->n_nid, GNAMT_NODE));
 		glTranslatef(vp->fv_x, vp->fv_y, vp->fv_z);
 	}
 
@@ -584,7 +569,7 @@ draw_node(struct node *n, int flags)
 		draw_node_label(n);
 
 	if ((flags & NDF_DONTPUSH) == 0) {
-		glPopName();
+//		glPopName();
 		glPopMatrix();
 	}
 }
