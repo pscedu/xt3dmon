@@ -6,9 +6,10 @@
 #include "mon.h"
 
 size_t nselnodes;
+struct selnodes selnodes;
 
 void
-sel_replace(struct selnode *sn, struct node *n)
+sn_replace(struct selnode *sn, struct node *n)
 {
 	if (sn->sn_nodep == n)
 		return;
@@ -25,7 +26,7 @@ sel_replace(struct selnode *sn, struct node *n)
  * adding a specific node to the list of selected nodes.
  */
 void
-sel_insert(struct node *n)
+sn_insert(struct node *n)
 {
 	struct selnode *sn;
 
@@ -43,18 +44,18 @@ sel_insert(struct node *n)
  * "High-level" add: for commands such as "Select the node 415."
  */
 void
-sel_add(struct node *n)
+sn_add(struct node *n)
 {
 	struct selnode *sn;
 
 	SLIST_FOREACH(sn, &selnodes, sn_next)
 		if (sn->sn_nodep == n)
 			return;
-	sel_insert(n);
+	sn_insert(n);
 }
 
 void
-sel_clear(void)
+sn_clear(void)
 {
 	struct selnode *sn, *next;
 
@@ -74,7 +75,7 @@ sel_clear(void)
 }
 
 int
-sel_del(struct node *n)
+sn_del(struct node *n)
 {
 	struct selnode *sn, **prev;
 
@@ -92,15 +93,15 @@ sel_del(struct node *n)
 }
 
 void
-sel_toggle(struct node *n)
+sn_toggle(struct node *n)
 {
-	if (!sel_del(n))
-		sel_insert(n);
+	if (!sn_del(n))
+		sn_insert(n);
 }
 
 void
-sel_set(struct node *n)
+sn_set(struct node *n)
 {
-	sel_clear();
-	sel_insert(n);
+	sn_clear();
+	sn_insert(n);
 }

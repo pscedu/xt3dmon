@@ -180,7 +180,7 @@ flyby_read(void)
 			    sizeof(fbsn))
 				err(1, "flyby read panel");
 			if ((n = node_for_nid(fbsn.fbsn_nid)) != NULL)
-				sel_toggle(n);
+				sn_toggle(n);
 			break;
 		    }
 		}

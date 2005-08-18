@@ -40,7 +40,7 @@ uinpcb_goto(void)
 
 	if ((n = node_for_nid(nid)) == NULL)
 		return;
-	sel_add(n);
+	sn_add(n);
 
 	cv = *n->n_v;
 	tween_push(TWF_LOOK | TWF_POS);
