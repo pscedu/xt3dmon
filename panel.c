@@ -318,7 +318,6 @@ draw_panel(struct panel *p)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	/* Draw background. */
-	glPushName(mkglname(p->p_id, GNAMT_PANEL));
 	glBegin(GL_POLYGON);
 	glColor4f(0.4, 0.6, 0.8, 0.8);
 	glVertex2d(p->p_u,		p->p_v);
@@ -326,7 +325,6 @@ draw_panel(struct panel *p)
 	glVertex2d(p->p_u + p->p_w,	p->p_v - p->p_h);
 	glVertex2d(p->p_u,		p->p_v - p->p_h);
 	glEnd();
-	glPopName();
 
 	glDisable(GL_BLEND);
 
