@@ -6,14 +6,18 @@
 #define JINCR		10
 #define FINCR		10
 #define TINCR		10
+#define GINCR		10
 
 int		 job_eq(void *, void *);
 int		 fail_eq(void *, void *);
 int		 temp_eq(void *, void *);
+int		 glname_eq(void *, void *);
 
 struct objlist	 job_list  = { { NULL }, 0, 0, 0, 0, JINCR, sizeof(struct job), job_eq };
 struct objlist	 temp_list = { { NULL }, 0, 0, 0, 0, TINCR, sizeof(struct temp), fail_eq };
 struct objlist	 fail_list = { { NULL }, 0, 0, 0, 0, FINCR, sizeof(struct fail), temp_eq };
+
+struct objlist	 glname_list = { { NULL }, 0, 0, 0, 0, GINCR, sizeof(struct glname), glname_eq };
 
 struct fail fail_notfound = {
 	{ 0, 0, 0 }, 0, { 0.33f, 0.66f, 0.99f, 1.00f, 0, 0 }, "0"
@@ -58,7 +62,11 @@ fail_eq(void *elem, void *arg)
 	return (((struct fail *)elem)->f_fails == *(int *)arg);
 }
 
-#define CMP(a, b) ((a) < (b) ? -1 : ((a) == (b) ? 0 : 1))
+int
+glname_eq(void *elem, void *arg)
+{
+	return (((struct glname *)elem)->gn_id == *(int *)arg);
+}
 
 int
 job_cmp(const void *a, const void *b)
