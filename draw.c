@@ -545,7 +545,10 @@ draw_node(struct node *n, int flags)
 
 	if ((flags & NDF_DONTPUSH) == 0) {
 		glPushMatrix();
-//		glPushName(mkglname(n->n_nid, GNAMT_NODE));
+		/*
+		 * We assume that the stack we are in otherwise
+		 * has done the translation itself.
+		 */
 		glTranslatef(vp->fv_x, vp->fv_y, vp->fv_z);
 	}
 
@@ -568,10 +571,8 @@ draw_node(struct node *n, int flags)
 	if (st.st_opts & OP_NLABELS)
 		draw_node_label(n);
 
-	if ((flags & NDF_DONTPUSH) == 0) {
-//		glPopName();
+	if ((flags & NDF_DONTPUSH) == 0)
 		glPopMatrix();
-	}
 }
 
 __inline void
