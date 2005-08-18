@@ -12,8 +12,6 @@
 struct uinput uinp;
 struct fvec stopv, stoplv;
 
-extern int gShowMods;
-
 void
 spkeyh_null(__unused int key, __unused int u, __unused int v)
 {
@@ -373,9 +371,9 @@ spkeyh_node(int key, __unused int u, __unused int v)
 		SLIST_FOREACH(sn, &selnodes, sn_next) {
 			n = node_neighbor(sn->sn_nodep, 1, dir);
 			if (spkey & GLUT_ACTIVE_SHIFT)
-				sel_add(n);
+				sn_add(n);
 			else
-				sel_replace(sn, n);
+				sn_replace(sn, n);
 		}
 }
 
@@ -403,7 +401,7 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		st.st_rf |= RF_CLUSTER;
 		break;
 	case 'c':
-		sel_clear();
+		sn_clear();
 		break;
 	case 'f':
 		glutKeyboardFunc(keyh_flyby);
@@ -440,7 +438,7 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		break;
 	/* DEBUG */
 	case 'z':
-		gShowMods = !gShowMods;
+//		gShowMods = !gShowMods;
 		break;
 	case '+':
 	case '_': {
