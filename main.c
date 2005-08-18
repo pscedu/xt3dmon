@@ -250,39 +250,6 @@ rebuild(int opts)
 		make_select();
 }
 
-unsigned int
-mkglname(unsigned int name, int type)
-{
-#if 0
-	int n;
-
-	switch (type) {
-	case GNMAT_NODE:  n = 0; break;
-	case GNAMT_PANEL: n = 1; break;
-	case GNMAT_ROW:	  n = 2; break;
-	case GNMAT_CAB:	  n = 3; break;
-	case GNMAT_CAG:	  n = 4; break;
-	case GNMAT_MOD:	  n = 5; break;
-	}
-#endif
-	
-	name += (type - 1)*NID_MAX;
-	return (name);
-}
-
-void
-glnametype(unsigned int name, unsigned int *origname, int *type)
-{
-	*type = GNAMT_PANEL;
-	while (name >= NID_MAX)
-	{
-		name -= NID_MAX;
-		(*type)++;
-	}
-
-	*origname = name;
-}
-
 void
 usage(void)
 {
@@ -297,7 +264,6 @@ int
 main(int argc, char *argv[])
 {
 	int flags, c, sw, sh;
-	GLint vp[4];
 
 	drawh = drawh_default;
 
