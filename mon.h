@@ -57,6 +57,7 @@
 #define ROWWIDTH	(CABWIDTH * NCABS + CABSPACE * (NCABS - 1))
 #define ROWDEPTH	(NODEDEPTH * (NNODES / 2) + \
 			    (NODESPACE * (NNODES / 2 - 1)))
+
 #define XCENTER		(NODESPACE + ROWWIDTH / 2)
 #define YCENTER		(NODESPACE + (CAGEHEIGHT * NCAGES + \
 			    CAGESPACE * (NCAGES - 1)) / 2.0f)
@@ -94,6 +95,19 @@
 
 #define DEG_TO_RAD(x)	((x) * PI / 180)
 
+#define CMP(a, b) \
+	((a) < (b) ? -1 : ((a) == (b) ? 0 : 1))
+
+#define SIGNF(a) \
+	(a < 0.0f ? -1.0f : 1.0f)
+
+#define SWAP(a, b, t)		\
+	do {			\
+		t = a;		\
+		a = b;		\
+		b = t;		\
+	} while (0)
+
 #define FOVY		(45.0f)
 #define ASPECT		(win_width / (double)win_height)
 
@@ -114,21 +128,16 @@
 #define FBM_PLAY	1
 #define FBM_REC		2
 
-/* Order here is important! */
-enum {
-	GNAMT_PANEL = 1, /* must start at 1 */
-	GNAMT_ROW,
-	GNAMT_CAB,
-	GNAMT_CAG,
-	GNAMT_MOD,
-	GNAMT_NODE	
-};
-
-
 /* Stereo display mode types. */
 #define STM_NONE	0
 #define STM_ACT		1
 #define STM_PASV	2
+
+/* Selection processing flags. */
+#define SPF_2D		(1<<0)
+
+/* Selection processing return values. */
+#define SP_MISS		(-1)
 
 struct fvec {
 	float		 fv_x;
@@ -150,6 +159,17 @@ struct ivec {
 #define iv_w iv_x
 #define iv_h iv_y
 #define iv_d iv_z
+
+#define iv_u iv_x
+#define iv_v iv_y
+};
+
+struct physcoord {
+	int		 pc_r;
+	int		 pc_cb;
+	int		 pc_cg;
+	int		 pc_m;
+	int		 pc_n;
 };
 
 struct datasrc {
@@ -405,6 +425,7 @@ struct objlist {
 		struct job	**olu_jobs;
 		struct fail	**olu_fails;
 		struct temp	**olu_temps;
+		struct glname	**olu_glnames;
 	}		 ol_udata;
 	size_t		 ol_cur;
 	size_t		 ol_tcur;
@@ -417,14 +438,24 @@ struct objlist {
 #define ol_jobs  ol_udata.olu_jobs
 #define ol_fails ol_udata.olu_fails
 #define ol_temps ol_udata.olu_temps
+#define ol_glnames ol_udata.olu_glnames
 };
+
+struct glname {
+	struct objhdr		  gn_oh;
+	int			  gn_id;
+	int			  gn_flags;
+	void			(*gn_cb)(int);
+};
+
+#define GNF_2D		(1<<0)
 
 struct selnode {
 	struct node		*sn_nodep;
 	SLIST_ENTRY(selnode)	 sn_next;
 };
 
-SLIST_HEAD(selnodes, selnode) selnodes;
+SLIST_HEAD(selnodes, selnode);
 
 /* db.c */
 void			 dbh_connect(struct dbh *);
@@ -490,8 +521,6 @@ void			 refresh_state(int);
 void			 rebuild(int);
 void			 idleh_govern(void);
 void			 idleh_default(void);
-unsigned int		 mkglname(unsigned int, int);
-void			 glnametype(unsigned int, unsigned int *, int *);
 
 /* tex.c */
 void			 tex_load(void);
@@ -504,12 +533,11 @@ void			 tex_remove(void);
 void			 m_activeh_default(int, int);
 void			 m_activeh_null(int, int);
 void			 m_activeh_free(int, int);
+void			 m_activeh_panel(int, int);
 void			 m_passiveh_default(int, int);
 void			 m_passiveh_null(int, int);
 void			 mouseh_default(int, int, int, int);
 void			 mouseh_null(int, int, int, int);
-void			 sel_record_begin(void);
-int			 sel_record_end(int*);
 
 /* node.c */
 struct node		*node_neighbor(struct node *, int, int);
@@ -547,13 +575,26 @@ void			 parse_tempmap(void);
 void			 parse_mem(void);
 
 /* select.c */
-void			 sel_toggle(struct node *);
-void			 sel_clear(void);
-void			 sel_add(struct node *);
-void			 sel_insert(struct node *);
-int			 sel_del(struct node *);
-void			 sel_set(struct node *);
-void			 sel_replace(struct selnode *, struct node *);
+void			 sel_begin(void);
+int			 sel_end(void);
+int			 sel_process(int, int, int);
+
+unsigned int		 gsn_get(int, void (*)(int), int);
+void			 gscb_row(int);
+void			 gscb_cab(int);
+void			 gscb_cage(int);
+void			 gscb_mod(int);
+void			 gscb_node(int);
+void			 gscb_panel(int);
+
+/* selnode.c */
+void			 sn_toggle(struct node *);
+void			 sn_clear(void);
+void			 sn_add(struct node *);
+void			 sn_insert(struct node *);
+int			 sn_del(struct node *);
+void			 sn_set(struct node *);
+void			 sn_replace(struct selnode *, struct node *);
 
 /* tween.c */
 void			 tween_push(int);
@@ -587,7 +628,7 @@ extern struct node	*wimap[WIDIM_WIDTH][WIDIM_HEIGHT][WIDIM_DEPTH];
 
 extern struct job_state	 jstates[];
 
-extern struct objlist	 job_list, temp_list, fail_list;
+extern struct objlist	 job_list, temp_list, fail_list, glname_list;
 
 extern struct fail	 fail_notfound;
 extern struct temp	 temp_notfound;
@@ -622,6 +663,8 @@ extern int		 stereo_mode;
 
 extern int		 win_width;
 extern int		 win_height;
+extern int		 lastu;
+extern int		 lastv;
 
 extern unsigned long	 vmem;
 extern long		 rmem;
@@ -630,3 +673,5 @@ extern float		 clip;
 extern int		 eggs;
 
 extern void		(*drawh)(void);
+extern void		(*drawh_old)(void);
+struct panel		*panel_mobile;
