@@ -19,9 +19,6 @@ uinpcb_ss(void)
 		capture_snap(buf_get(&uinp.uinp_buf), capture_mode);
 }
 
-#define GOTO_DIST_PHYS 2.5
-#define GOTO_DIST_LOG  2.5
-
 void
 uinpcb_goto(void)
 {
@@ -29,8 +26,6 @@ uinpcb_goto(void)
 	char *s;
 	int nid;
 	long l;
-	struct fvec cv;
-	int mod;
 
 	s = buf_get(&uinp.uinp_buf);
 	l = strtol(s, NULL, 10);
@@ -41,50 +36,7 @@ uinpcb_goto(void)
 	if ((n = node_for_nid(nid)) == NULL)
 		return;
 	sn_add(n);
-
-	cv = *n->n_v;
-	tween_push(TWF_LOOK | TWF_POS);
-	switch (st.st_vmode) {
-	/* Arranged as nodeid is:
-	      -------     -------
-	      |     |     |     |
-	      |  3  |     |  2  |
-	      -------     -------
-
-	   -------     -------
-	   |     |     |     |
-	   |  0  |     |  1  |
-	   -------     -------
-	*/
-	case VM_PHYSICAL:
-		/* Find which side of the blade it's on */
-		mod = (n->n_nid + 1) % 4; /* XXX:  wrong, should use address of n */
-
-		st.st_lx = st.st_ly = 0.0;
-		cv.fv_y += 0.5 * NODEHEIGHT;
-
-		/* Right side (positive z) */
-		if (mod == 2 || mod == 3) {
-			/* Change z and look vector */
-			cv.fv_z += NODEDEPTH + GOTO_DIST_PHYS;
-			st.st_lz = -1.0;
-		} else {
-			cv.fv_z -= GOTO_DIST_PHYS;
-			st.st_lz = 1.0;
-		}
-		break;
-	case VM_WIRED:
-	case VM_WIREDONE:
-		/* Set to the front where the label will be */
-		cv.fv_x -= GOTO_DIST_LOG;
-		cv.fv_y += 0.5*NODEHEIGHT;
-		cv.fv_z += 0.5*NODEWIDTH;
-		st.st_ly = st.st_lz = 0.0;
-		st.st_lx = 1.0;
-		break;
-	}
-	cam_goto(&cv);
-	tween_pop(TWF_LOOK | TWF_POS);
+	node_goto(n);
 }
 
 void
@@ -95,8 +47,11 @@ uinpcb_eggs(void)
 	cmd = buf_get(&uinp.uinp_buf);
 
 	/* Parse Easter egg keywords =) */
-	if (strcmp(cmd, "borg") == 0) {
+	if (strcasecmp(cmd, "borg") == 0) {
 		eggs ^= EGG_BORG;
 		egg_borg();
+	} else if (strcasecmp(cmd, "matrix") == 0) {
+		eggs ^= EGG_MATRIX;
+		egg_matrix();
 	}
 }
