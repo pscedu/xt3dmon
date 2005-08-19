@@ -513,7 +513,7 @@ panel_refresh_legend(struct panel *p)
 void
 panel_refresh_ninfo(struct panel *p)
 {
-	int r, cb, cg, m, no;
+	struct physcoord pc;
 	struct objhdr *ohp;
 	struct objlist *ol;
 	struct selnode *sn;
@@ -607,7 +607,7 @@ panel_refresh_ninfo(struct panel *p)
 
 	/* Only one selected node. */
 	n = SLIST_FIRST(&selnodes)->sn_nodep;
-	node_physpos(n, &r, &cb, &cg, &m, &no);
+	node_physpos(n, &pc);
 	iv = &n->n_wiv;
 
 	switch (st.st_mode) {
@@ -627,7 +627,7 @@ panel_refresh_ninfo(struct panel *p)
 			    "Job CPUs: %d",
 			    n->n_nid,
 			    iv->iv_x, iv->iv_y, iv->iv_z,
-			    r, cb, cg, m, no,
+			    pc.pc_r, pc.pc_cb, pc.pc_cg, pc.pc_m, pc.pc_n,
 			    n->n_job->j_id,
 			    n->n_job->j_owner,
 			    n->n_job->j_jname,
@@ -649,7 +649,7 @@ panel_refresh_ninfo(struct panel *p)
 			    "Type: %s",
 			    n->n_nid,
 			    iv->iv_x, iv->iv_y, iv->iv_z,
-			    r, cb, cg, m, no,
+			    pc.pc_r, pc.pc_cb, pc.pc_cg, pc.pc_m, pc.pc_n,
 			    jstates[n->n_state].js_name);
 			break;
 		}
@@ -662,7 +662,7 @@ panel_refresh_ninfo(struct panel *p)
 		    "# Failures: %s",
 		    n->n_nid,
 		    iv->iv_x, iv->iv_y, iv->iv_z,
-		    r, cb, cg, m, no,
+		    pc.pc_r, pc.pc_cb, pc.pc_cg, pc.pc_m, pc.pc_n,
 		    n->n_fail->f_name);
 		break;
 	case SM_TEMP:
@@ -673,7 +673,7 @@ panel_refresh_ninfo(struct panel *p)
 		    "Temperature: %s",
 		    n->n_nid,
 		    iv->iv_x, iv->iv_y, iv->iv_z,
-		    r, cb, cg, m, no,
+		    pc.pc_r, pc.pc_cb, pc.pc_cg, pc.pc_m, pc.pc_n,
 		    n->n_temp->t_name);
 		break;
 	}
@@ -764,45 +764,12 @@ panel_refresh_eggs(struct panel *p)
 	panel_set_content(p, s[i], buf_get(&uinp.uinp_buf));
 }
 
-int panel_status_dirty;
-char panel_status_content[BUFSIZ];
-
-void
-panel_status_setinfo(const char *fmt, ...)
-{
-	va_list ap;
-
-	va_start(ap, fmt);
-	vsnprintf(panel_status_content, sizeof(panel_status_content),
-	    fmt, ap);
-	va_end(ap);
-
-	panel_status_dirty = 1;
-}
-
-void
-panel_status_addinfo(const char *fmt, ...)
-{
-	va_list ap;
-	int len;
-
-	len = strlen(panel_status_content);
-
-	va_start(ap, fmt);
-	vsnprintf(panel_status_content + len,
-	    sizeof(panel_status_content) - len, fmt, ap);
-	va_end(ap);
-
-	panel_status_dirty = 1;
-}
-
 void
 panel_refresh_status(struct panel *p)
 {
-	if (panel_status_dirty == 0 && panel_ready(p))
+	if (panel_ready(p))
 		return;
-	panel_status_dirty = 0;
-	panel_set_content(p, "Status\n%s", panel_status_content);
+	panel_set_content(p, "Status\n%s", status_get());
 }
 
 void
