@@ -28,3 +28,8 @@ job_highlight(__unused struct job *j)
 {
 
 }
+
+void
+job_goto(__unused struct job *j)
+{
+}
