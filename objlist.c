@@ -186,7 +186,7 @@ found:
 void
 getcol(int n, size_t total, struct fill *fillp)
 {
-	struct fvec hinc, sinc, vinc;
+	float hinc, sinc, vinc;
 
 	/* Divide color wheel up evenly */
 	hinc = 360.0 / (float)(total);
