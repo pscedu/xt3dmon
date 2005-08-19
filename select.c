@@ -99,6 +99,22 @@ sel_process(int nrecs, int rank, int flags)
 	 */
 	sr = &((struct selrec *)selbuf)[rank];
 	gn = glname_list.ol_glnames[sr->sr_name];
+
+	if (flags & SPF_2D) {
+		/*
+		 * XXX: this code is wrong.
+		 * It should loop through and check each
+		 * item in selbuf and decrement rank
+		 * accordingly for those fitting in the
+		 * range, until the correct record is found.
+		 */
+		 if (lastu < gn->gn_u ||
+		     lastu > gn->gn_u + gn->gn_w ||
+		     lastv < win_height - gn->gn_v ||
+		     lastv > win_height - gn->gn_v + gn->gn_h)
+		 	return (SP_MISS);
+	}
+
 	gn->gn_cb(gn->gn_id);
 	return (gn->gn_id);
 }
@@ -137,16 +153,14 @@ gsn_get(int id, void (*cb)(int), int flags)
  * GL selection callbacks.
  */
 void
-gscb_panel(int gsnid)
+gscb_panel(int id)
 {
-	int p_id;
-
 	if (spkey == GLUT_ACTIVE_CTRL) {
-		glutMotionFunc(m_activeh_panel);
-		p_id = glname_list.ol_glnames[gsnid]->gn_id;
 		/* GL giving us crap. */
-		if ((panel_mobile = panel_for_id(p_id)) != NULL)
+		if ((panel_mobile = panel_for_id(id)) != NULL) {
+			glutMotionFunc(m_activeh_panel);
 			panel_mobile->p_opts |= POPT_MOBILE;
+		}
 	}
 }
 
