@@ -20,11 +20,11 @@ struct objlist	 fail_list = { { NULL }, 0, 0, 0, 0, FINCR, sizeof(struct fail), 
 struct objlist	 glname_list = { { NULL }, 0, 0, 0, 0, GINCR, sizeof(struct glname), glname_eq };
 
 struct fail fail_notfound = {
-	{ 0, 0, 0 }, 0, { 0.33f, 0.66f, 0.99f, 1.00f, 0, 0 }, "0"
+	{ 0 }, 0, { 0.33f, 0.66f, 0.99f, 1.00f, 0, 0 }, "0"
 };
 
 struct temp temp_notfound = {
-	{ 0, 0, 0 }, 0, { 0.00f, 0.00f, 0.00f, 1.00f, 0, 0 }, "?"
+	{ 0 }, 0, { 0.00f, 0.00f, 0.00f, 1.00f, 0, 0 }, "?"
 };
 
 struct temp_range temp_map[] = {
@@ -95,7 +95,7 @@ obj_batch_start(struct objlist *ol)
 	if (ol->ol_data == NULL)
 		return;
 	for (n = 0; n < ol->ol_cur; n++)
-		((struct objhdr *)ol->ol_data[n])->oh_tref = 0;
+		((struct objhdr *)ol->ol_data[n])->oh_flags &= ~OHF_TREF;
 }
 
 void
@@ -112,15 +112,15 @@ obj_batch_end(struct objlist *ol)
 	lookpos = 0;
 	for (n = 0; n < ol->ol_cur; n++) {
 		ohp = (struct objhdr *)ol->ol_data[n];
-		if (ohp->oh_tref)
-			ohp->oh_ref = 1;
+		if (ohp->oh_flags & OHF_TREF)
+			ohp->oh_flags |= OHF_REF;
 		else {
 			if (lookpos <= n)
 				lookpos = n + 1;
 			/* Scan forward to swap. */
 			for (; lookpos < ol->ol_max; lookpos++) {
 				swapohp = ol->ol_data[lookpos];
-				if (swapohp->oh_tref) {
+				if (swapohp->oh_flags & OHF_TREF) {
 					t = ol->ol_data[n];
 					ol->ol_data[n] = ol->ol_data[lookpos];
 					ol->ol_data[lookpos++] = t;
@@ -170,9 +170,9 @@ getobj(void *arg, struct objlist *ol)
 	}
 	ohp = ol->ol_data[ol->ol_tcur];
 found:
-	if (!ohp->oh_tref) {
+	if ((ohp->oh_flags & OHF_TREF) == 0) {
 		ol->ol_tcur++;
-		ohp->oh_tref = 1;
+		ohp->oh_flags |= OHF_TREF;
 	}
 	return (ohp);
 }
