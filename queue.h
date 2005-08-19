@@ -97,6 +97,36 @@
 	} while (0)
 #endif
 
+#ifndef LIST_INSERT_BEFORE
+#define LIST_INSERT_BEFORE(elem, newelem, memb)				\
+	do {								\
+		LIST_NEXT((newelem), memb) = (elem);			\
+		(newelem)->memb.le_prev = (elem)->memb.le_prev;		\
+		*(elem)->memb.le_prev = (newelem);			\
+		(elem)->memb.le_prev = &LIST_NEXT((newelem), memb);	\
+	} while (0)
+#endif
+
+#ifndef LIST_FOREACH
+#define LIST_FOREACH(elem, lh, memb)					\
+	for ((elem) = LIST_FIRST(lh);					\
+	    (elem) != LIST_END(lh);					\
+	    (elem) = LIST_NEXT((elem), memb))
+#endif
+
+#ifndef LIST_FIRST
+#define LIST_FIRST(lh) (lh)->lh_first
+#endif
+
+#ifndef LIST_END
+#define LIST_END(lh) NULL
+#endif
+
+#ifndef LIST_NEXT
+#define LIST_NEXT(elem, memb)						\
+	((elem)->memb.le_next)
+#endif
+
 #ifndef TAILQ_END
 #define TAILQ_END(tqh) NULL
 #endif
@@ -108,7 +138,12 @@
 
 #ifndef TAILQ_NEXT
 #define TAILQ_NEXT(elem, memb)						\
-	(((elem)->memb).tqe_next)
+	((elem)->memb.tqe_next)
+#endif
+
+#ifndef TAILQ_PREV
+#define TAILQ_PREV(elem, memb)						\
+	((elem)->memb.tqe_prev)
 #endif
 
 #ifndef TAILQ_EMPTY
