@@ -60,7 +60,7 @@ node_neighbor(struct node *node, int amt, int dir)
 	struct ivec iv;
 
 	adj = 1;
-	nr = NULL;
+	rn = NULL;
 	switch (dir) {
 	case DIR_LEFT:
 		dir = DIR_RIGHT;
