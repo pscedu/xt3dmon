@@ -434,6 +434,12 @@ struct glname {
 	int			  gn_id;
 	int			  gn_flags;
 	void			(*gn_cb)(int);
+
+	/* Hack around GL's unwillingness to do 2D selection. */
+	int			  gn_u;
+	int			  gn_v;
+	int			  gn_h;
+	int			  gn_w;
 };
 
 #define GNF_2D		(1<<0)
@@ -565,6 +571,7 @@ int			 temp_cmp(const void *, const void *);
 
 /* panel.c */
 void			 draw_panels(void);
+void			 draw_shadow_panels(void);
 void			 panel_toggle(int);
 void			 panel_tremove(struct panel *);
 void			 panel_show(int);
