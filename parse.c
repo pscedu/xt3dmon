@@ -577,8 +577,8 @@ parse_failmap(void)
 			newmax = nofails;
 		continue;
 bad:
-		warnx("%s:%d: malformed line: %s [s: %s, p: %s, l:%ld]",
-		    _PATH_FAILMAP, lineno, buf, s, p, l);
+		warnx("%s:%d: malformed line: %s [s: %s, p: %s]",
+		    _PATH_FAILMAP, lineno, buf, s, p);
 	}
 	if (ferror(fp))
 		warn("%s", _PATH_FAILMAP);
@@ -768,6 +768,7 @@ parse_qstat(void)
 	int jobid;
 	FILE *fp;
 
+	s = NULL; /* gcc */
 	if ((fp = fopen(_PATH_QSTAT, "r")) == NULL) {
 		warn("%s", _PATH_QSTAT);
 		return;
