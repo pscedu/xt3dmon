@@ -48,7 +48,7 @@ wired_update(void)
 	    st.st_y - clip < wivstart.fv_y ||
 	    st.st_z + clip > wivstart.fv_z + wivdim.fv_d ||
 	    st.st_z - clip < wivstart.fv_z) {
-		panel_status_addinfo("Rebuild triggered\n");
+		status_add("Rebuild triggered\n");
 		st.st_rf |= RF_CLUSTER;
 	}
 }
