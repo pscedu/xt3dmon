@@ -56,7 +56,8 @@ const char *opdesc[] = {
 	/* 12 */ "Wired cluster frames",
 	/* 13 */ "Pipe mode",
 	/* 14 */ "Selected node pipe mode",
-	/* 15 */ "Pause"
+	/* 15 */ "Pause",
+	/* 16 */ "Job tour mode"
 };
 
 struct datasrc datasrcsw[] = {
@@ -124,7 +125,7 @@ refresh_state(int oldopts)
 	while (dup) {
 		i = ffs(dup) - 1;
 		dup &= ~(1 << i);
-		panel_status_addinfo("%s %s", opdesc[i],
+		status_add("%s %s", opdesc[i],
 		    (st.st_opts & (1 << i) ? "enabled\n" : "disabled\n"));
 	}
 
@@ -163,7 +164,7 @@ idleh_govern(void)
 		if (diff.tv_sec >= SLEEP_INTV) {
 			lastsync = tv;
 			st.st_rf |= RF_DATASRC | RF_CLUSTER;
-			panel_status_setinfo("");
+			status_clear();
 		}
 
 		(*drawh)();
@@ -193,7 +194,7 @@ idleh_default(void)
 		if (diff.tv_sec > SLEEP_INTV) {
 			lastsync = tv;
 			st.st_rf |= RF_DATASRC | RF_CLUSTER;
-			panel_status_setinfo("");
+			status_clear();
 		}
 		cnt = 0;
 	}
@@ -255,7 +256,7 @@ usage(void)
 {
 	extern char *__progname;
 
-	fprintf(stderr, "usage: %s [-ls]\n",
+	fprintf(stderr, "usage: %s [-alp]\n",
 	    __progname);
 	exit(1);
 }
@@ -307,6 +308,12 @@ main(int argc, char *argv[])
 
 	glShadeModel(GL_SMOOTH);
 	glEnable(GL_DEPTH_TEST);
+
+	/* Callout queue initialization. */
+	LIST_INIT(&calloutq);
+	callout_add(1, cocb_fps);
+	callout_add(5, cocb_datasrc);
+	callout_add(5, cocb_clearstatus);	/* XXX: enable when PANEL_STATUS? */
 
 	TAILQ_INIT(&panels);
 	SLIST_INIT(&selnodes);
