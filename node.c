@@ -34,31 +34,30 @@ node_adjmodpos(int n, struct fvec *fv)
 }
 
 void
-node_physpos(struct node *node, int *r, int *cb, int *cg, int *m,
-    int *n)
+node_physpos(struct node *node, struct physcoord *pc)
 {
 	int pos;
 
 	pos = node - &nodes[0][0][0][0][0];
 
-	*r = pos / (NCABS * NCAGES * NMODS * NNODES);
+	pc->pc_r = pos / (NCABS * NCAGES * NMODS * NNODES);
 	pos %= NCABS * NCAGES * NMODS * NNODES;
-	*cb = pos / (NCAGES * NMODS * NNODES);
+	pc->pc_cb = pos / (NCAGES * NMODS * NNODES);
 	pos %= NCAGES * NMODS * NNODES;
-	*cg = pos / (NMODS * NNODES);
+	pc->pc_cg = pos / (NMODS * NNODES);
 	pos %= NMODS * NNODES;
-	*m = pos / NNODES;
+	pc->pc_m = pos / NNODES;
 	pos %= NNODES;
-	*n = pos;
+	pc->pc_n = pos;
 }
 
 struct node *
 node_neighbor(struct node *node, int amt, int dir)
 {
-	int r, cb, cg, m, n, row, col;
+	int rem, adj, row, col;
+	struct physcoord pc;
 	struct node *rn;
 	struct ivec iv;
-	int rem, adj;
 
 	adj = 1;
 	switch (dir) {
@@ -76,22 +75,22 @@ node_neighbor(struct node *node, int amt, int dir)
 		break;
 	}
 
-	node_physpos(node, &r, &cb, &cg, &m, &n);
+	node_physpos(node, &pc);
 	iv = node->n_wiv;
 	for (rem = abs(amt); rem > 0; rem--) {
 		switch (st.st_vmode) {
 		case VM_PHYSICAL:
 			switch (dir) {
 			case DIR_RIGHT:
-				m += adj;
-				if (m < 0) {
-					cb--;
-					m += NMODS;
-					cb += NCABS;
-				} else if (m >= NMODS)
-					cb++;
-				m %= NMODS;
-				cb %= NCABS;
+				pc.pc_m += adj;
+				if (pc.pc_m < 0) {
+					pc.pc_cb--;
+					pc.pc_m += NMODS;
+					pc.pc_cb += NCABS;
+				} else if (pc.pc_m >= NMODS)
+					pc.pc_cb++;
+				pc.pc_m %= NMODS;
+				pc.pc_cb %= NCABS;
 				break;
 			case DIR_UP:
 				/*
@@ -104,14 +103,14 @@ node_neighbor(struct node *node, int amt, int dir)
 				 *	2 | 1
 				 *	1 | 2
 				 */
-				if (n % 2)
-					n++;
+				if (pc.pc_n % 2)
+					pc.pc_n++;
 				else
-					n--;
-				if (n < 0)
-					n += NNODES;
-				n %= NNODES;
-				node_getmodpos(n, &row, &col);
+					pc.pc_n--;
+				if (pc.pc_n < 0)
+					pc.pc_n += NNODES;
+				pc.pc_n %= NNODES;
+				node_getmodpos(pc.pc_n, &row, &col);
 				if (adj == -1) {
 					/*
 					 * If we ended up in the top
@@ -119,8 +118,8 @@ node_neighbor(struct node *node, int amt, int dir)
 					 * down, we wrapped.
 					 */
 					if (row == 1) {
-						cg--;
-						cg += NCAGES;
+						pc.pc_cg--;
+						pc.pc_cg += NCAGES;
 					}
 				} else {
 					/*
@@ -128,9 +127,9 @@ node_neighbor(struct node *node, int amt, int dir)
 					 * bottom portion, we wrapped.
 					 */
 					if (row == 0)
-						cg++;
+						pc.pc_cg++;
 				}
-				cg %= NCAGES;
+				pc.pc_cg %= NCAGES;
 				break;
 			case DIR_FORWARD:
 				/*
@@ -143,14 +142,14 @@ node_neighbor(struct node *node, int amt, int dir)
 				 *	2 | 3
 				 *	3 | 2
 				 */
-				if (n % 2)
-					n--;
+				if (pc.pc_n % 2)
+					pc.pc_n--;
 				else
-					n++;
-				if (n < 0)
-					n += NNODES;
-				n %= NNODES;
-				node_getmodpos(n, &row, &col);
+					pc.pc_n++;
+				if (pc.pc_n < 0)
+					pc.pc_n += NNODES;
+				pc.pc_n %= NNODES;
+				node_getmodpos(pc.pc_n, &row, &col);
 				if (adj == -1) {
 					/*
 					 * If we ended up in the
@@ -158,8 +157,8 @@ node_neighbor(struct node *node, int amt, int dir)
 					 * back, we wrapped.
 					 */
 					if (col == 1) {
-						r--;
-						r += NROWS;
+						pc.pc_r--;
+						pc.pc_r += NROWS;
 					}
 				} else {
 					/*
@@ -168,12 +167,12 @@ node_neighbor(struct node *node, int amt, int dir)
 					 * forward, we wrapped.
 					 */
 					if (col == 0)
-						r++;
+						pc.pc_r++;
 				}
-				r %= NROWS;
+				pc.pc_r %= NROWS;
 				break;
 			}
-			rn = &nodes[r][cb][cg][m][n];
+			rn = &nodes[pc.pc_r][pc.pc_cb][pc.pc_cg][pc.pc_m][pc.pc_n];
 			break;
 		case VM_WIRED:
 		case VM_WIREDONE:
@@ -206,4 +205,48 @@ node_for_nid(int nid)
 	if (nid > NID_MAX || nid < 0)
 		return (NULL);
 	return (invmap[nid]);
+}
+
+#define GOTO_DIST_PHYS 2.5
+#define GOTO_DIST_LOG  2.5
+
+void
+node_goto(struct node *n)
+{
+	struct physcoord pc;
+	int row, col;
+
+	tween_push(TWF_LOOK | TWF_POS);
+	st.st_v = *n->n_v;
+	switch (st.st_vmode) {
+	case VM_PHYSICAL:
+		st.st_lx = 0.0f;
+		st.st_ly = 0.0f;
+
+		st.st_y += 0.5 * NODEHEIGHT;
+
+		node_physpos(n, &pc);
+		node_getmodpos(pc.pc_n, &row, &col);
+		/* Right side (positive z). */
+		if (row == 1) {
+			st.st_z += NODEDEPTH + GOTO_DIST_PHYS;
+			st.st_lz = -1.0;
+		} else {
+			st.st_z -= GOTO_DIST_PHYS;
+			st.st_lz = 1.0;
+		}
+		break;
+	case VM_WIRED:
+	case VM_WIREDONE:
+		/* Set to the front where the label is. */
+		st.st_x -= GOTO_DIST_LOG;
+		st.st_y += 0.5 * NODEHEIGHT;
+		st.st_z += 0.5 * NODEWIDTH;
+
+		st.st_lx = 1.0f;
+		st.st_ly = 0.0f;
+		st.st_lz = 0.0f;
+		break;
+	}
+	tween_pop(TWF_LOOK | TWF_POS);
 }
