@@ -7,7 +7,7 @@
 .Nd XT3 monitor
 .Sh SYNOPSIS
 .Nm xt3dmon
-.Op Fl l
+.Op Fl alp
 .Sh DESCRIPTION
 .Nm
 is a 3D program that graphically displays the various attributes of the
@@ -19,6 +19,12 @@ updated to reflect what is happening in reality.
 .Pp
 The options are as follows:
 .Bl -tag -width Ds
+.It Fl a
+Enable active stereo mode.
+In this mode, if the video hardware supports it,
+.Nm
+will manage buffers for both the left and right eyes to be
+overlaid on the same window.
 .It Fl l
 Enable
 .Dq live
@@ -30,6 +36,11 @@ It is assumed that this port is being SSH-forwarded to a host inside
 the XT3 network, with a command such as:
 .Pp
 .Dl $ ssh -NfL 3306:sdb:3306 phantom.psc.edu
+.It Fl p
+Enable passive stereo mode.
+In this mode, two windows are created and maintained individually,
+for use by a stereo projector overlaying the right side of the
+available screen space with the left.
 .El
 .Pp
 There are three data modes available, which help visualize the state
@@ -132,10 +143,6 @@ Toggle the display of modules.
 Toggle the display of pipes to the wired neighbors of any selected nodes.
 .It Ic op
 Toggle the display of pipes to the wired neighbors of all nodes.
-.It Ic oS
-Toggle stereo mode.
-Stereo mode is used during flyby playback to generate two images from
-different positions of the same scene for use on 3D projectors.
 .It Ic ot
 Toggle texture mapping.
 .It Ic ow
