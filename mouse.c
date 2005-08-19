@@ -32,7 +32,7 @@ mouseh_default(__unused int button, __unused int state, int u, int v)
 	lastu = u;
 	lastv = v;
 
-	if (state == GLUT_UP && panel_mobile) {
+	if (state == GLUT_UP && panel_mobile != NULL) {
 		panel_demobilize(panel_mobile);
 		panel_mobile = NULL;
 		glutMotionFunc(m_activeh_default);
