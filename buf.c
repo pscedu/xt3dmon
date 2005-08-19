@@ -9,7 +9,7 @@
 
 #define BUF_GROWAMT 30
 
-void
+__inline void
 buf_init(struct buf *buf)
 {
 	buf->buf_pos = buf->buf_max = -1;
@@ -37,38 +37,38 @@ buf_append(struct buf *buf, char ch)
 	buf->buf_buf[buf->buf_pos] = ch;
 }
 
-char *
+__inline char *
 buf_get(struct buf *buf)
 {
 	return (buf->buf_buf);
 }
 
-void
+__inline void
 buf_set(struct buf *buf, char *s)
 {
 	/* XXX:  adjust pos and max. */
 	buf->buf_buf = s;
 }
 
-void
+__inline void
 buf_free(struct buf *buf)
 {
 	free(buf->buf_buf);
 }
 
-void
+__inline void
 buf_reset(struct buf *buf)
 {
 	buf->buf_pos = -1;
 }
 
-void
+__inline void
 buf_chop(struct buf *buf)
 {
 	buf->buf_pos--;
 }
 
-int
+__inline int
 buf_len(struct buf *buf)
 {
 	return (buf->buf_pos + 1);
