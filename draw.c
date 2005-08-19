@@ -205,11 +205,6 @@ draw_shadow_nodes(const struct physcoord *pc)
 }
 
 void
-draw_shadow_panels(void)
-{
-}
-
-void
 drawh_select(void)
 {
 	struct physcoord pc, chance;
