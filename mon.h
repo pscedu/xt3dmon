@@ -8,21 +8,7 @@
 
 #include "buf.h"
 #include "queue.h"
-
-#define _PATH_JOBMAP	"data/nids_list_phantom"
-#define _PATH_PHYSMAP	"data/rtrtrace"
-#define _PATH_FAILMAP	"data/fail"
-#define _PATH_TEMPMAP	"data/temps"
-#define _PATH_BADMAP	"/usr/users/torque/bad_nids_list_phantom"
-#define _PATH_CHECKMAP	"/usr/users/torque/to_check_nids_list_phantom"
-#define _PATH_QSTAT	"data/qstat.out"
-
-#define _PATH_FLYBY	"data/flyby.data"
-#define _PATH_TEX	"data/texture%d.png"
-#define _PATH_BORG	"data/borg.png"
-#define _PATH_FONT	"data/font.png"
-#define _PATH_SSDIR	"snaps"
-#define _PATH_STAT	"/proc/self/stat"
+#include "pathnames.h"
 
 #define NROWS		2
 #define NCABS		11
@@ -197,14 +183,13 @@ struct fill {
 };
 
 struct objhdr {
-	int		 oh_ref;
-	int		 oh_tref;		/* temporarily referenced */
 	int		 oh_flags;
 };
 
 #define OHF_REF		(1<<0)			/* object is referenced */
 #define OHF_TREF	(1<<1)			/* temporarily referenced */
 #define OHF_SEL		(1<<2)			/* selected */
+#define OHF_USR1	(1<<3)			/* specific to object */
 
 #define JFL_OWNER	32
 #define JFL_NAME	20
@@ -222,6 +207,8 @@ struct job {
 	int		 j_tmuse;		/* minutes */
 	int		 j_ncpus;
 };
+
+#define JOHF_TOURED	OHF_USR1
 
 struct temp {
 	struct objhdr	 t_oh;
@@ -307,7 +294,8 @@ struct state {
 #define OP_WIVMFRAME	(1<<12)
 #define OP_PIPES	(1<<13)
 #define OP_SELPIPES	(1<<14)
-#define OP_STOP		(1<<17)
+#define OP_STOP		(1<<15)
+#define OP_TOURJOB	(1<<16)
 
 #define SM_JOBS		0
 #define SM_FAIL		1
@@ -451,15 +439,31 @@ struct glname {
 #define GNF_2D		(1<<0)
 
 struct selnode {
-	struct node		*sn_nodep;
-	SLIST_ENTRY(selnode)	 sn_next;
+	struct node		 *sn_nodep;
+	SLIST_ENTRY(selnode)	  sn_next;
 };
 
 SLIST_HEAD(selnodes, selnode);
 
+struct callout_ent {
+	int			  ce_when;
+	void			(*ce_cb)(void);
+	LIST_ENTRY(callout_ent)	  ce_link;
+};
+
+LIST_HEAD(calloutq, callout_ent);
+
 /* db.c */
 void			 dbh_connect(struct dbh *);
 void			 db_physmap(void);
+
+/* callout.c */
+void			 callout_add(int, void (*)(void));
+int			 callout_next(int);
+void			 cocb_fps(void);
+void			 cocb_datasrc(void);
+void			 cocb_clearstatus(void);
+void			 cocb_tourjob(void);
 
 /* cam.c */
 void			 cam_move(int, float);
@@ -488,6 +492,7 @@ float			 snap_to_grid(float, float, float);
 
 /* eggs.c */
 void			 egg_borg(void);
+void			 egg_matrix(void);
 
 /* flyby.c */
 void 			 flyby_begin(int);
@@ -512,6 +517,7 @@ void			 spkeyh_actflyby(int, int, int);
 
 /* job.c */
 struct job		*job_findbyid(int);
+void			 job_goto(struct job *);
 
 /* load_png.c */
 void 			*png_load(char *, unsigned int *, unsigned int *);
@@ -541,10 +547,11 @@ void			 mouseh_null(int, int, int, int);
 
 /* node.c */
 struct node		*node_neighbor(struct node *, int, int);
-void			 node_physpos(struct node *, int *, int *, int *, int *, int *);
+void			 node_physpos(struct node *, struct physcoord *);
 void			 node_getmodpos(int, int *, int *);
 void			 node_adjmodpos(int, struct fvec *);
 struct node		*node_for_nid(int);
+void			 node_goto(struct node *);
 
 /* objlist.c */
 void			 obj_batch_start(struct objlist *);
@@ -562,8 +569,6 @@ void			 panel_toggle(int);
 void			 panel_tremove(struct panel *);
 void			 panel_show(int);
 void			 panel_hide(int);
-void			 panel_status_addinfo(const char *, ...);
-void			 panel_status_setinfo(const char *, ...);
 struct panel		*panel_for_id(int);
 void			 panel_demobilize(struct panel *);
 
@@ -595,6 +600,12 @@ void			 sn_insert(struct node *);
 int			 sn_del(struct node *);
 void			 sn_set(struct node *);
 void			 sn_replace(struct selnode *, struct node *);
+
+/* status.c */
+void			 status_add(const char *, ...);
+void			 status_set(const char *, ...);
+void			 status_clear(void);
+const char		*status_get(void);
 
 /* tween.c */
 void			 tween_push(int);
@@ -647,6 +658,7 @@ extern struct panels	 panels;
 extern struct pinfo	 pinfo[];
 extern struct vmode	 vmodes[];
 extern struct dbh	 dbh;
+extern struct calloutq	 calloutq;
 extern struct selnodes	 selnodes;
 extern size_t		 nselnodes;
 
