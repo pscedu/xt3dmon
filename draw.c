@@ -400,7 +400,6 @@ drawh_default(void)
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	if (cam_dirty) {
-
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		gluPerspective(FOVY, ASPECT, NEAR, clip);
