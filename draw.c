@@ -233,7 +233,7 @@ printf("\nclick\n");
 			    (pc.pc_r = sel_process(nrecs, chance.pc_r, 0)) == SP_MISS)
 				break;
 printf("click in row %d (chance %d)\n", pc.pc_r, chance.pc_r);
-			for (chance.pc_cb = 0; chance.pc_cb < NCABS; chance.pc_r++) {
+			for (chance.pc_cb = 0; chance.pc_cb < NCABS; chance.pc_cb++) {
 				sel_begin();
 				draw_shadow_cabs(&pc);
 				nrecs = sel_end();
