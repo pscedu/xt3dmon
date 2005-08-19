@@ -23,3 +23,5 @@ $Id$
 42. barrel is messed up when lz changes
 43. think about making a new header file (split up mon.h)
 44. try pushMatrix() with 2D selection
+45. divide color wheel among all modes (free/down/disabled/etc)
+    and probably keep these the same always
