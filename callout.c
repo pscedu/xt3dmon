@@ -102,7 +102,7 @@ cocb_tourjob(void)
 	for (j = 0; j < job_list.ol_cur; j++)
 		if ((job_list.ol_jobs[j]->j_oh.oh_flags & JOHF_TOURED) == 0) {
 			job_list.ol_jobs[j]->j_oh.oh_flags |= JOHF_TOURED;
-			job_goto(job_list.ol_jobs[j]->j_id);
+			job_goto(job_list.ol_jobs[j]);
 			break;
 		}
 	callout_add(10, cocb_tourjob);
