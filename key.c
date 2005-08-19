@@ -366,6 +366,8 @@ spkeyh_node(int key, __unused int u, __unused int v)
 	case GLUT_KEY_RIGHT:
 		dir = DIR_RIGHT;
 		break;
+	default:
+		return;
 	}
 	if (!SLIST_EMPTY(&selnodes))
 		SLIST_FOREACH(sn, &selnodes, sn_next) {
