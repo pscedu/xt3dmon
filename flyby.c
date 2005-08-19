@@ -186,6 +186,18 @@ flyby_read(void)
 		}
 	} while (!done);
 
+#if 0
+	/*
+	 * A new message type should be created that
+	 * gets written to the file whenever (v,lv,uv)
+	 * changes.
+	 */
+	if (ost.st_v != ost.st_v ||
+	    ost.st_lv != ost.st_lv ||
+	    ost.st_uv != ost.st_uv)
+		cam_dirty = 1;
+#endif
+
 	/* XXX:  is this right? */
 	if ((st.st_rf & OP_TWEEN) == 0)
 		cam_dirty = 1;

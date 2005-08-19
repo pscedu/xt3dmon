@@ -168,6 +168,7 @@ getobj(void *arg, struct objlist *ol)
 		}
 		ol->ol_alloc = max;
 	}
+//	memset(ol->ol_data[ol->ol_tcur], 0, ol->ol_objlen);
 	ohp = ol->ol_data[ol->ol_tcur];
 found:
 	if ((ohp->oh_flags & OHF_TREF) == 0) {
@@ -178,30 +179,14 @@ found:
 }
 
 /*
-** For optimal colors we would like to chose colors
-** in HSV mode where Hue ranges from 0 - 360, Saturation
-** ranges from 30% - 100%, and Value ranges from 50% -
-** 100%
-*/
+ * For optimal colors, we would like to choose colors
+ * in HSV mode where hue ranges from 0-360, saturation
+ * ranges from 30%-100%, and value ranges from 50%-100%.
+ */
 void
 getcol(int n, size_t total, struct fill *fillp)
 {
-#if 0
-	double div;
-
-	if (total == 1)
-		div = 0.0;
-	else
-		div = n / (double)(total - 1);
-	fillp->f_r = cos(div);
-	fillp->f_g = sin(div) * sin(div);
-	fillp->f_b = fabs(tan(div + PI * 3/4));
-#endif
-
-	float hinc, sinc, vinc;
-
-	/* XXX - account for predefined node colors */
-
+	struct fvec hinc, sinc, vinc;
 
 	/* Divide color wheel up evenly */
 	hinc = 360.0 / (float)(total);
