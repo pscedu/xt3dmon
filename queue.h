@@ -141,11 +141,6 @@
 	((elem)->memb.tqe_next)
 #endif
 
-#ifndef TAILQ_PREV
-#define TAILQ_PREV(elem, memb)						\
-	((elem)->memb.tqe_prev)
-#endif
-
 #ifndef TAILQ_EMPTY
 #define TAILQ_EMPTY(tqh)						\
 	(TAILQ_FIRST(tqh) == TAILQ_END(tqh))
