@@ -77,11 +77,8 @@ cam_move(int dir, float amt)
  *	- respect obstructing objects in the viewing frame
  */
 void
-cam_goto(struct fvec *v)
+cam_goto(__unused struct fvec *v)
 {
-	st.st_x = v->fv_x;
-	st.st_y = v->fv_y;
-	st.st_z = v->fv_z;
 }
 
 void
