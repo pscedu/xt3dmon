@@ -106,6 +106,52 @@ panel_free(struct panel *p)
 }
 
 void
+draw_shadow_panels(void)
+{
+	struct glname *gn;
+	struct panel *p;
+	int name;
+
+	glPushAttrib(GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
+
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	gluOrtho2D(0.0, win_width, 0.0, win_height);
+
+	TAILQ_FOREACH(p, &panels, p_link) {
+		name = gsn_get(p->p_id, gscb_panel, GNF_2D);
+		gn = glname_list.ol_glnames[name];
+		gn->gn_u = p->p_u;
+		gn->gn_v = p->p_v;
+		gn->gn_h = p->p_h;
+		gn->gn_w = p->p_w;
+
+		glPushMatrix();
+		glPushName(name);
+		glBegin(GL_POLYGON);
+		glVertex2d(p->p_u,		p->p_v);
+		glVertex2d(p->p_u + p->p_w,	p->p_v);
+		glVertex2d(p->p_u + p->p_w,	p->p_v - p->p_h);
+		glVertex2d(p->p_u,		p->p_v - p->p_h);
+		glEnd();
+		glPopName();
+		glPopMatrix();
+	}
+
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+
+	glPopAttrib();
+}
+
+void
 draw_panel(struct panel *p)
 {
 	int compile, npw, tweenadj, u, v, w, h;
@@ -442,9 +488,12 @@ panel_refresh_cmd(struct panel *p)
 	selnode_clean |= PANEL_CMD;
 
 	if (SLIST_EMPTY(&selnodes))
-		panel_set_content(p, "Please select a node\nto send a command to.");
+		panel_set_content(p,
+		    "Send Command To Node\nNo node(s) selected.");
 	else
-		panel_set_content(p, "Sending command to host\n\n> %s",
+		panel_set_content(p,
+		    "Send Command To Node\n\nnid%d> %s",
+		    SLIST_FIRST(&selnodes)->sn_nodep->n_nid,
 		    buf_get(&uinp.uinp_buf));
 }
 
@@ -463,7 +512,8 @@ panel_refresh_legend(struct panel *p)
 	pw = SLIST_FIRST(&p->p_widgets);
 	switch (st.st_mode) {
 	case SM_JOBS:
-		panel_set_content(p, "Jobs: %d", job_list.ol_cur);
+		panel_set_content(p, "Job Legend\nTotal jobs: %d",
+		    job_list.ol_cur);
 		for (j = 0; j < NJST; j++, pw = nextp) {
 			if (j == JST_USED)
 				continue;
@@ -480,7 +530,8 @@ panel_refresh_legend(struct panel *p)
 		}
 		break;
 	case SM_FAIL:
-		panel_set_content(p, "Failures: %d", total_failures);
+		panel_set_content(p, "Failure Legend\nTotal: %d",
+		    total_failures);
 		pw = panel_get_pwidget(p, pw, &nextp);
 		pw->pw_fillp = &fail_notfound.f_fill;
 		pw->pw_str = fail_notfound.f_name;
@@ -494,7 +545,7 @@ panel_refresh_legend(struct panel *p)
 		}
 		break;
 	case SM_TEMP:
-		panel_set_content(p, "Temperature");
+		panel_set_content(p, "Temperature Legend");
 		pw = panel_get_pwidget(p, pw, &nextp);
 		pw->pw_fillp = &temp_notfound.t_fill;
 		pw->pw_str = temp_notfound.t_name;
@@ -527,7 +578,7 @@ panel_refresh_ninfo(struct panel *p)
 	selnode_clean |= PANEL_NINFO;
 
 	if (SLIST_EMPTY(&selnodes)) {
-		panel_set_content(p, "Please select some nodes");
+		panel_set_content(p, "Node Information\nNo node(s) selected");
 		return;
 	}
 
@@ -560,15 +611,15 @@ panel_refresh_ninfo(struct panel *p)
 		ol = NULL; /* gcc */
 		switch (st.st_mode) {
 		case SM_JOBS:
-			label = "Job IDs";
+			label = "Job ID(s)";
 			ol = &job_list;
 			break;
 		case SM_TEMP:
-			label = "Temperatures";
+			label = "Temperature(s)";
 			ol = &temp_list;
 			break;
 		case SM_FAIL:
-			label = "Failures";
+			label = "Failure(s)";
 			ol = &fail_list;
 			break;
 		}
@@ -597,8 +648,9 @@ panel_refresh_ninfo(struct panel *p)
 			strncpy(data, "_(none)", sizeof(data) - 1);
 
 		panel_set_content(p,
+		    "Node Information\n"
 		    "%d node(s) selected\n"
-		    "Node IDs: %s\n"
+		    "Node ID(s): %s\n"
 		    "%s: %s",
 		    nselnodes, nids + 1,
 		    label, data + 1);
@@ -615,6 +667,7 @@ panel_refresh_ninfo(struct panel *p)
 		switch (n->n_state) {
 		case JST_USED:
 			panel_set_content(p,
+			    "Node Information\n"
 			    "Node ID: %d\n"
 			    "Wired position: (%d,%d,%d)\n"
 			    "Physical position: (%d,%d,%d,%d,%d)\n"
@@ -643,6 +696,7 @@ panel_refresh_ninfo(struct panel *p)
 			break;
 		default:
 			panel_set_content(p,
+			    "Node Information\n"
 			    "Node ID: %d\n"
 			    "Wired position: (%d,%d,%d)\n"
 			    "Physical position: (%d,%d,%d,%d,%d)\n"
@@ -656,6 +710,7 @@ panel_refresh_ninfo(struct panel *p)
 		break;
 	case SM_FAIL:
 		panel_set_content(p,
+		    "Node Information\n"
 		    "Node ID: %d\n"
 		    "Wired position: (%d,%d,%d)\n"
 		    "Physical position: (%d,%d,%d,%d,%d)\n"
@@ -667,6 +722,7 @@ panel_refresh_ninfo(struct panel *p)
 		break;
 	case SM_TEMP:
 		panel_set_content(p,
+		    "Node Information\n"
 		    "Node ID: %d\n"
 		    "Wired position: (%d,%d,%d)\n"
 		    "Physical position: (%d,%d,%d,%d,%d)\n"
@@ -708,7 +764,8 @@ panel_refresh_goto(struct panel *p)
 		return;
 	uinp.uinp_opts &= ~UINPO_DIRTY;
 
-	panel_set_content(p, "Node ID: %s", buf_get(&uinp.uinp_buf));
+	panel_set_content(p, "Go To Node\nNode ID: %s",
+	    buf_get(&uinp.uinp_buf));
 }
 
 void
@@ -717,7 +774,7 @@ panel_refresh_mem(struct panel *p)
 	if ((mode_data_clean & PANEL_MEM) && panel_ready(p))
 		return;
 	mode_data_clean |= PANEL_MEM;
-	panel_set_content(p, "VSZ: %lu\nRSS: %ld\n", vmem, rmem);
+	panel_set_content(p, "Memory Usage\nVSZ: %lu\nRSS: %ld\n", vmem, rmem);
 }
 
 void
