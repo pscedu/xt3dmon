@@ -23,7 +23,8 @@ mouseh_default(__unused int button, __unused int state, int u, int v)
 {
 	spkey = glutGetModifiers();
 	if (button == GLUT_LEFT_BUTTON &&
-	    state == GLUT_DOWN) {
+	    state == GLUT_DOWN &&
+	    drawh != drawh_select) {
 		drawh_old = drawh;
 		drawh = drawh_select;
 		glutDisplayFunc(drawh);
