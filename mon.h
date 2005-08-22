@@ -405,7 +405,7 @@ struct temp_range {
 	char		*m_name;
 };
 
-typedef int (*cmpf_t)(void *, void *);
+typedef int (*cmpf_t)(const void *, const void *);
 
 struct objlist {
 	union {
@@ -431,7 +431,8 @@ struct objlist {
 
 struct glname {
 	struct objhdr		  gn_oh;
-	int			  gn_id;
+	int			  gn_id;	/* Underlying object id. */
+	int			  gn_name;	/* GL name. */
 	int			  gn_flags;
 	void			(*gn_cb)(int);
 
@@ -562,7 +563,7 @@ void			 node_goto(struct node *);
 /* objlist.c */
 void			 obj_batch_start(struct objlist *);
 void			 obj_batch_end(struct objlist *);
-void			*getobj(void *, struct objlist *);
+void			*getobj(const void *, struct objlist *);
 void			 getcol(int, size_t, struct fill *);
 void			 getcol_temp(int, struct fill *);
 int			 job_cmp(const void *, const void *);
