@@ -60,8 +60,8 @@ sel_process(int nrecs, int rank, int flags)
 {
 	struct selrec *sr;
 	struct glname *gn;
+	int i, start;
 	GLuint *p;
-	int i;
 
 	/* XXX:  sanity-check nrecs? */
 	for (i = 0, p = selbuf; i < nrecs; i++, p += 3 + p[SBI_LEN])
@@ -78,6 +78,7 @@ sel_process(int nrecs, int rank, int flags)
 	 * they have been drawn on the screen and explicitly check
 	 * that the cursor is within the bounds.
 	 */
+	start = 0;
 	if ((flags & SPF_2D) == 0) {
 		/* Skip 2D records. */
 		for (i = 0, sr = (struct selrec *)selbuf; i < nrecs;
@@ -86,33 +87,30 @@ sel_process(int nrecs, int rank, int flags)
 			if ((gn->gn_flags & GNF_2D) == 0)
 				break;
 		}
-		rank += i;
-	}
-
-	if (rank > nrecs) {
-		warnx("requested selection record rank (%d) out of range", rank);
-		return (SP_MISS);
+		start = i;
 	}
 
 	/*
 	 * Find the selection record with the given rank.
 	 */
-	sr = &((struct selrec *)selbuf)[rank];
-	gn = glname_list.ol_glnames[sr->sr_name];
+	sr = &((struct selrec *)selbuf)[start];
+	for (i = start; i < nrecs; i++, sr++) {
+		gn = glname_list.ol_glnames[sr->sr_name];
 
-	if (flags & SPF_2D) {
-		/*
-		 * XXX: this code is wrong.
-		 * It should loop through and check each
-		 * item in selbuf and decrement rank
-		 * accordingly for those fitting in the
-		 * range, until the correct record is found.
-		 */
-		 if (lastu < gn->gn_u ||
-		     lastu > gn->gn_u + gn->gn_w ||
-		     lastv < win_height - gn->gn_v ||
-		     lastv > win_height - gn->gn_v + gn->gn_h)
-		 	return (SP_MISS);
+		if (flags & SPF_2D) {
+			if (lastu < gn->gn_u ||
+			    lastu > gn->gn_u + gn->gn_w ||
+			    lastv < win_height - gn->gn_v ||
+			    lastv > win_height - gn->gn_v + gn->gn_h)
+				continue;
+		}
+		if (rank-- == 0)
+			break;
+	}
+
+	if (i == nrecs) {
+//		warnx("requested selection record rank out of range");
+		return (SP_MISS);
 	}
 
 	gn->gn_cb(gn->gn_id);
