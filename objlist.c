@@ -8,10 +8,10 @@
 #define TINCR		10
 #define GINCR		10
 
-int		 job_eq(void *, void *);
-int		 fail_eq(void *, void *);
-int		 temp_eq(void *, void *);
-int		 glname_eq(void *, void *);
+int		 job_eq(const void *, const void *);
+int		 fail_eq(const void *, const void *);
+int		 temp_eq(const void *, const void *);
+int		 glname_eq(const void *, const void *);
 
 struct objlist	 job_list  = { { NULL }, 0, 0, 0, 0, JINCR, sizeof(struct job), job_eq };
 struct objlist	 temp_list = { { NULL }, 0, 0, 0, 0, TINCR, sizeof(struct temp), fail_eq };
@@ -45,27 +45,27 @@ struct temp_range temp_map[] = {
 };
 
 int
-job_eq(void *elem, void *arg)
+job_eq(const void *elem, const void *arg)
 {
 	return (((struct job *)elem)->j_id == *(int *)arg);
 }
 
 int
-temp_eq(void *elem, void *arg)
+temp_eq(const void *elem, const void *arg)
 {
 	return (((struct temp *)elem)->t_cel == *(int *)arg);
 }
 
 int
-fail_eq(void *elem, void *arg)
+fail_eq(const void *elem, const void *arg)
 {
 	return (((struct fail *)elem)->f_fails == *(int *)arg);
 }
 
 int
-glname_eq(void *elem, void *arg)
+glname_eq(const void *elem, const void *arg)
 {
-	return (((struct glname *)elem)->gn_id == *(int *)arg);
+	return (((struct glname *)elem)->gn_name == *(int *)arg);
 }
 
 int
@@ -140,7 +140,7 @@ obj_batch_end(struct objlist *ol)
  * zero; otherwise, they will match empty objects after memset().
  */
 void *
-getobj(void *arg, struct objlist *ol)
+getobj(const void *arg, struct objlist *ol)
 {
 	void **jj, *j = NULL;
 	struct objhdr *ohp;
@@ -155,7 +155,7 @@ getobj(void *arg, struct objlist *ol)
 		}
 	}
 	/* Not found; add. */
-	if (ol->ol_tcur + 1 >= ol->ol_alloc) {
+	if (ol->ol_tcur >= ol->ol_alloc) {
 		max = ol->ol_alloc + ol->ol_incr;
 		if ((ol->ol_data = realloc(ol->ol_data,
 		    max * sizeof(*ol->ol_data))) == NULL)
