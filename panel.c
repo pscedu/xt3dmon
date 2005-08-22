@@ -126,7 +126,7 @@ draw_shadow_panels(void)
 
 	TAILQ_FOREACH(p, &panels, p_link) {
 		name = gsn_get(p->p_id, gscb_panel, GNF_2D);
-		gn = glname_list.ol_glnames[name];
+		gn = getobj(&name, &glname_list);
 		gn->gn_u = p->p_u;
 		gn->gn_v = p->p_v;
 		gn->gn_h = p->p_h;
