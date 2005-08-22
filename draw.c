@@ -216,8 +216,6 @@ drawh_select(void)
 	if (nrecs && sel_process(nrecs, 0, SPF_2D) != SP_MISS)
 		goto end;
 
-printf("\nclick\n");
-
 	switch (st.st_vmode) {
 	case VM_PHYSICAL:
 		for (chance.pc_r = 0; chance.pc_r < NROWS; chance.pc_r++) {
@@ -227,7 +225,7 @@ printf("\nclick\n");
 			if (nrecs == 0 ||
 			    (pc.pc_r = sel_process(nrecs, chance.pc_r, 0)) == SP_MISS)
 				break;
-printf("click in row %d (chance %d)\n", pc.pc_r, chance.pc_r);
+//printf("click in row %d (chance %d)\n", pc.pc_r, chance.pc_r);
 			for (chance.pc_cb = 0; chance.pc_cb < NCABS; chance.pc_cb++) {
 				sel_begin();
 				draw_shadow_cabs(&pc);
@@ -235,7 +233,7 @@ printf("click in row %d (chance %d)\n", pc.pc_r, chance.pc_r);
 				if (nrecs == 0 || (pc.pc_cb =
 				    sel_process(nrecs, chance.pc_cb, 0)) == SP_MISS)
 					break;
-printf(" click in cab %d (chance %d)\n", pc.pc_cb, chance.pc_cb);
+//printf(" click in cab %d (chance %d)\n", pc.pc_cb, chance.pc_cb);
 				for (chance.pc_cg = 0; chance.pc_cg < NCAGES; chance.pc_cg++) {
 					sel_begin();
 					draw_shadow_cages(&pc);
@@ -243,7 +241,7 @@ printf(" click in cab %d (chance %d)\n", pc.pc_cb, chance.pc_cb);
 					if (nrecs == 0 || (pc.pc_cg =
 					    sel_process(nrecs, chance.pc_cg, 0)) == SP_MISS)
 						break;
-printf("  click in cage %d (chance %d)\n", pc.pc_cg, chance.pc_cg);
+//printf("  click in cage %d (chance %d)\n", pc.pc_cg, chance.pc_cg);
 					for (chance.pc_m = 0; chance.pc_m < NMODS; chance.pc_m++) {
 						sel_begin();
 						draw_shadow_mods(&pc);
@@ -252,7 +250,7 @@ printf("  click in cage %d (chance %d)\n", pc.pc_cg, chance.pc_cg);
 						    sel_process(nrecs, chance.pc_m, 0)) == SP_MISS)
 							break;
 
-printf("   click in mod %d (chance %d)\n", pc.pc_m, chance.pc_m);
+//printf("   click in mod %d (chance %d)\n", pc.pc_m, chance.pc_m);
 						sel_begin();
 						draw_shadow_nodes(&pc);
 						nrecs = sel_end();
