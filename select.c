@@ -83,7 +83,7 @@ sel_process(int nrecs, int rank, int flags)
 		/* Skip 2D records. */
 		for (i = 0, sr = (struct selrec *)selbuf; i < nrecs;
 		    i++, sr++) {
-			gn = glname_list.ol_glnames[sr->sr_name];
+			gn = getobj(&sr->sr_name, &glname_list);
 			if ((gn->gn_flags & GNF_2D) == 0)
 				break;
 		}
@@ -95,9 +95,11 @@ sel_process(int nrecs, int rank, int flags)
 	 */
 	sr = &((struct selrec *)selbuf)[start];
 	for (i = start; i < nrecs; i++, sr++) {
-		gn = glname_list.ol_glnames[sr->sr_name];
+		gn = getobj(&sr->sr_name, &glname_list);
 
 		if (flags & SPF_2D) {
+			if ((gn->gn_flags & GNF_2D) == 0)
+				return (SP_MISS);
 			if (lastu < gn->gn_u ||
 			    lastu > gn->gn_u + gn->gn_w ||
 			    lastv < win_height - gn->gn_v ||
@@ -138,9 +140,10 @@ unsigned int
 gsn_get(int id, void (*cb)(int), int flags)
 {
 	struct glname *gn;
-	int cur = glname_list.ol_tcur;
+	int cur = glname_list.ol_tcur + 100;
 
 	gn = getobj(&cur, &glname_list);
+	gn->gn_name = cur;
 	gn->gn_id = id;
 	gn->gn_cb = cb;
 	gn->gn_flags = flags;
