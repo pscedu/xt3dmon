@@ -1,5 +1,7 @@
 /* $Id$ */
 
+#include "compat.h"
+
 #include <stdlib.h>
 
 #include "queue.h"
