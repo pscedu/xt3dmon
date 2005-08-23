@@ -37,7 +37,7 @@ struct fill selnodefill = { 0.20f, 0.40f, 0.60f, 1.00f, 0, 0 };		/* Dark blue */
 
 struct fvec fvzero = { 0.0f, 0.0f, 0.0f };
 
-#define NEAR (1.0)
+#define NEARCLIP (1.0)
 
 __inline void
 wired_update(void)
@@ -330,7 +330,7 @@ drawh_stereo(void)
 	left = -ratio * wd2 - eyeadj * ndfl / 2;
 	top = wd2;
 	bottom = -wd2;
-	glFrustum(left, right, bottom, top, NEAR, clip);
+	glFrustum(left, right, bottom, top, NEARCLIP, clip);
 
 	glMatrixMode(GL_MODELVIEW);
 	st.st_x += stereo_fv.fv_x;
@@ -355,7 +355,7 @@ drawh_stereo(void)
 	left = -ratio * wd2 + eyeadj * ndfl / 2;
 //	top = wd2;
 //	bottom = -wd2;
-	glFrustum(left, right, bottom, top, NEAR, clip);
+	glFrustum(left, right, bottom, top, NEARCLIP, clip);
 
 	glMatrixMode(GL_MODELVIEW);
 	st.st_x -= 2 * stereo_fv.fv_x;
@@ -395,7 +395,7 @@ drawh_default(void)
 	if (cam_dirty) {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		gluPerspective(FOVY, ASPECT, NEAR, clip);
+		gluPerspective(FOVY, ASPECT, NEARCLIP, clip);
 		glMatrixMode(GL_MODELVIEW);
 		cam_look();
 	}
