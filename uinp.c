@@ -47,10 +47,10 @@ uinpcb_eggs(void)
 	cmd = buf_get(&uinp.uinp_buf);
 
 	/* Parse Easter egg keywords =) */
-	if (strcasecmp(cmd, "borg") == 0) {
+	if (strcmp(cmd, "borg") == 0) {
 		eggs ^= EGG_BORG;
 		egg_borg();
-	} else if (strcasecmp(cmd, "matrix") == 0) {
+	} else if (strcmp(cmd, "matrix") == 0) {
 		eggs ^= EGG_MATRIX;
 		egg_matrix();
 	}
