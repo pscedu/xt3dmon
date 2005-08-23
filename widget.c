@@ -164,14 +164,14 @@ draw_box_tex(const struct fvec *dim, const struct fill *fillp, GLenum param)
 	float w = dim->fv_w;
 	float h = dim->fv_h;
 	float d = dim->fv_d;
-	float tw, th, td;
+	float max, tw, th, td;
 	float color[4];
 
 	glEnable(GL_TEXTURE_2D);
 
 	glBindTexture(GL_TEXTURE_2D, fillp->f_texid);
 
-	float max = MAX3(w, h, d);
+	max = MAX3(w, h, d);
 	tw = NODE_TEXCOORD(w, max);
 	th = NODE_TEXCOORD(h, max);
 	td = NODE_TEXCOORD(d, max);
