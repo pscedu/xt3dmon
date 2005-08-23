@@ -39,6 +39,7 @@ struct timeval		 lastsync;
 long			 fps = 50;
 void			(*drawh)(void);
 int			 window_ids[2];
+const char		*progname;
 
 const char *opdesc[] = {
 	/*  0 */ "Texture mode",
@@ -254,10 +255,7 @@ rebuild(int opts)
 void
 usage(void)
 {
-	extern char *__progname;
-
-	fprintf(stderr, "usage: %s [-alp]\n",
-	    __progname);
+	fprintf(stderr, "usage: %s [-alp]\n", progname);
 	exit(1);
 }
 
@@ -266,6 +264,7 @@ main(int argc, char *argv[])
 {
 	int flags, c, sw, sh;
 
+	progname = argv[0];
 	drawh = drawh_default;
 
 	flags = GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE;
