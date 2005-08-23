@@ -78,8 +78,8 @@ The following key bindings are available:
 .It left, right, up, down
 Pan the camera along its
 .Em x Ns / Ns Em y Ns / Ns
-viewing lines (left, right, forward, and backward).
 .Em z
+viewing lines (left, right, forward, and backward).
 .It pageup, pagedown
 Pan vertically (perpendicularly) along the camera viewing line
 (up and down).
@@ -109,6 +109,18 @@ Press any key to break out of playback mode.
 .It Ic fq
 Toggle the recording and saving of the live state, for use in flyby
 playbacks.
+.It kc kd
+Restore the arrow keys to camera movement (see
+.Ic kn
+below).
+.It Ic kn
+Remap the arrow keys to move about the neighbors of any selected nodes.
+.Pp
+While holding shift, neighbors in the direction of the key pressed will
+be selected additionally instead of in place of the currently selected
+nodes.
+.Pp
+Pressing
 .It Ic mf
 Switch to failure data mode.
 .It Ic mj
@@ -123,7 +135,7 @@ Toggle translucency (blending).
 Toggle drawing to the screen.
 .It Ic od
 Toggle screen capture.
-Files with sequeneced names are written into the
+Files with sequenced names are written into the
 .Pa snaps
 directory.
 .It Ic oe
