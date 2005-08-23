@@ -4,9 +4,9 @@
 #include "mon.h"
 
 struct job *
-job_findbyid(int id)
+job_findbyid(size_t id)
 {
-	int n, lo, hi, tid;
+	size_t n, lo, hi, tid;
 
 	lo = 0;
 	hi = MAX(job_list.ol_tcur, job_list.ol_cur);

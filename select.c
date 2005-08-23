@@ -140,7 +140,7 @@ unsigned int
 gsn_get(int id, void (*cb)(int), int flags)
 {
 	struct glname *gn;
-	int cur = glname_list.ol_tcur + 100;
+	unsigned int cur = glname_list.ol_tcur + 100;
 
 	gn = getobj(&cur, &glname_list);
 	gn->gn_name = cur;

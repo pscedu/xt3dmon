@@ -36,7 +36,7 @@ status_add(const char *fmt, ...)
 {
 	struct panel *p;
 	va_list ap;
-	int len;
+	size_t len;
 
 	len = strlen(status_buf);
 

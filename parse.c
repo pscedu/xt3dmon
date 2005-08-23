@@ -503,11 +503,11 @@ bad:
 void
 parse_failmap(void)
 {
-	int nid, lineno, r, cb, cg, m, n;
-	size_t j, newmax, nofails;
+	int newmax, nofails, nid, lineno, r, cb, cg, m, n;
 	char *p, *s, buf[BUFSIZ];
 	struct node *node;
 	struct fail *fail;
+	size_t j;
 	FILE *fp;
 	long l;
 

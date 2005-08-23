@@ -184,7 +184,7 @@ found:
  * ranges from 30%-100%, and value ranges from 50%-100%.
  */
 void
-getcol(int n, size_t total, struct fill *fillp)
+getcol(size_t n, size_t total, struct fill *fillp)
 {
 	float hinc, sinc, vinc;
 
@@ -204,7 +204,7 @@ getcol(int n, size_t total, struct fill *fillp)
 }
 
 void
-getcol_temp(int n, struct fill *fillp)
+getcol_temp(size_t n, struct fill *fillp)
 {
 	int cel = temp_list.ol_temps[n]->t_cel;
 	int idx;

@@ -432,7 +432,7 @@ struct objlist {
 struct glname {
 	struct objhdr		  gn_oh;
 	int			  gn_id;	/* Underlying object id. */
-	int			  gn_name;	/* GL name. */
+	unsigned int 		  gn_name;	/* GL name. */
 	int			  gn_flags;
 	void			(*gn_cb)(int);
 
@@ -523,7 +523,7 @@ void			 spkeyh_default(int, int, int);
 void			 spkeyh_actflyby(int, int, int);
 
 /* job.c */
-struct job		*job_findbyid(int);
+struct job		*job_findbyid(size_t);
 void			 job_goto(struct job *);
 
 /* load_png.c */
@@ -564,8 +564,8 @@ void			 node_goto(struct node *);
 void			 obj_batch_start(struct objlist *);
 void			 obj_batch_end(struct objlist *);
 void			*getobj(const void *, struct objlist *);
-void			 getcol(int, size_t, struct fill *);
-void			 getcol_temp(int, struct fill *);
+void			 getcol(size_t, size_t, struct fill *);
+void			 getcol_temp(size_t, struct fill *);
 int			 job_cmp(const void *, const void *);
 int			 fail_cmp(const void *, const void *);
 int			 temp_cmp(const void *, const void *);
