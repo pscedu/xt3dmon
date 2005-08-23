@@ -13,8 +13,11 @@
 
 # include "getopt.h"
 
+# define atanf atan
 # define acosf acos
 # define asinf asin
+# define cosf cos
+# define sinf sin
 # define ceilf ceil
 # define floorf floor
 # define log10f log10
