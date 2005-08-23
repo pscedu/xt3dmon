@@ -512,7 +512,7 @@ panel_refresh_legend(struct panel *p)
 	pw = SLIST_FIRST(&p->p_widgets);
 	switch (st.st_mode) {
 	case SM_JOBS:
-		panel_set_content(p, "Job Legend\nTotal jobs: %d",
+		panel_set_content(p, "Job Legend\nTotal jobs: %lu",
 		    job_list.ol_cur);
 		for (j = 0; j < NJST; j++, pw = nextp) {
 			if (j == JST_USED)
@@ -530,7 +530,7 @@ panel_refresh_legend(struct panel *p)
 		}
 		break;
 	case SM_FAIL:
-		panel_set_content(p, "Failure Legend\nTotal: %d",
+		panel_set_content(p, "Failure Legend\nTotal: %lu",
 		    total_failures);
 		pw = panel_get_pwidget(p, pw, &nextp);
 		pw->pw_fillp = &fail_notfound.f_fill;
