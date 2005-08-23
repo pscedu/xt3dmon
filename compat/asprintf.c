@@ -17,6 +17,7 @@ asprintf(char **ptr, const char *fmt, ...)
 	len = vsnprintf(NULL, 0, fmt, ap);
 	va_end(ap);
 
+	len++;
 	if ((*ptr = malloc(len)) == NULL)
 		return (-1);
 
