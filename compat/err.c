@@ -1,8 +1,10 @@
 /* $Id$ */
 
+#include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 void
 err(int code, const char *fmt, ...)
@@ -13,6 +15,7 @@ err(int code, const char *fmt, ...)
 	vfprintf(stderr, fmt, ap);
 	va_end(ap);
 
+	fprintf(stderr, ": %s\n", strerror(errno));
 	exit(code);
 }
 
@@ -25,6 +28,7 @@ errx(int code, const char *fmt, ...)
 	vfprintf(stderr, fmt, ap);
 	va_end(ap);
 
+	fprintf(stderr, "\n");
 	exit(code);
 }
 
@@ -36,6 +40,8 @@ warnx(const char *fmt, ...)
 	va_start(ap, fmt);
 	vfprintf(stderr, fmt, ap);
 	va_end(ap);
+
+	fprintf(stderr, "\n");
 }
 
 void
@@ -46,4 +52,6 @@ warn(const char *fmt, ...)
 	va_start(ap, fmt);
 	vfprintf(stderr, fmt, ap);
 	va_end(ap);
+
+	fprintf(stderr, ": %s\n", strerror(errno));
 }
