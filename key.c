@@ -247,7 +247,7 @@ keyh_option(unsigned char key, __unused int u, __unused int v)
 		st.st_opts ^= OP_WIVMFRAME;
 		st.st_rf ^= RF_CLUSTER | RF_SELNODE;
 		break;
-	case 'G': /* Ludicrous Speed */
+	case 'G':
 		st.st_opts ^= OP_GOVERN;
 		break;
 	case 'g':
@@ -394,11 +394,42 @@ keyh_keyh(unsigned char key, __unused int u, __unused int v)
 }
 
 void
+keyh_alpha(unsigned char key, __unused int u, __unused int v)
+{
+	int oldopts = st.st_opts;
+
+	struct selnode *sn;
+	glutKeyboardFunc(keyh_default);
+	switch (key) {
+	case 'j':
+		hl_clearall();
+		SLIST_FOREACH(sn, &selnodes, sn_next)
+			if (sn->sn_nodep->n_job != NULL)
+				job_hl(sn->sn_nodep->n_job);
+		break;
+	case 'r':
+		hl_restoreall();
+		break;
+	case 'n':
+		hl_clearall();
+		break;
+	default:
+		return;
+	}
+	st.st_opts |= OP_BLEND;
+	st.st_rf |= RF_CLUSTER | RF_SELNODE;
+	refresh_state(oldopts);
+}
+
+void
 keyh_default(unsigned char key, __unused int u, __unused int v)
 {
 	int oldopts = st.st_opts;
 
 	switch (key) {
+	case 'a':
+		glutKeyboardFunc(keyh_alpha);
+		break;
 	case 'C':
 		st.st_rf |= RF_CLUSTER;
 		break;
