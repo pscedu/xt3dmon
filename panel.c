@@ -110,7 +110,7 @@ draw_shadow_panels(void)
 {
 	struct glname *gn;
 	struct panel *p;
-	int name;
+	unsigned int name;
 
 	glPushAttrib(GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
 

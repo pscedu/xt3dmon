@@ -65,7 +65,7 @@ fail_eq(const void *elem, const void *arg)
 int
 glname_eq(const void *elem, const void *arg)
 {
-	return (((struct glname *)elem)->gn_name == *(int *)arg);
+	return (((struct glname *)elem)->gn_name == *(unsigned int *)arg);
 }
 
 int
