@@ -442,13 +442,13 @@ draw_node_label(struct node *n)
 	 * NODE0123456789 (so 4 letter gap before 0)
 	 */
 	nid = n->n_nid;
-	while(nid >= 0 && i < MAX_CHARS) {
+	while (nid >= 0 && i < MAX_CHARS) {
 		list[MAX_CHARS-i-1] = 4 + nid % 10;
 		nid /= 10;
 		i++;
 	}
 
-	while(i < MAX_CHARS)
+	while (i < MAX_CHARS)
 		list[i++] = -1;
 
 	glEnable(GL_TEXTURE_2D);
@@ -465,10 +465,10 @@ draw_node_label(struct node *n)
 
 	glBegin(GL_QUADS);
 
-	for(i = 0; i < MAX_CHARS; i++) {
+	for (i = 0; i < MAX_CHARS; i++) {
 		/* -0.001 to place slightly in front */
-		draw_char(list[i], -0.001, NODEDEPTH/2.0,
-		    FONT_Z_OFFSET+FONT_DISPLACE_W*(float)(i));
+		draw_char(list[i], -0.001, NODEDEPTH / 2.0,
+		    FONT_Z_OFFSET + FONT_DISPLACE_W * (float)i);
 	}
 
 	glEnd();
@@ -528,7 +528,8 @@ draw_node(struct node *n, int flags)
 	struct fill *fp;
 	GLenum param = GL_REPLACE;
 
-	if (n->n_flags & NF_HIDE)
+	if (n->n_flags & NF_HIDE ||
+	    ((st.st_opts & OP_BLEND) && n->n_fillp->f_a == 0.0f))
 		return;
 
 	fp = n->n_fillp;
