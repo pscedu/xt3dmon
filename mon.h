@@ -525,6 +525,11 @@ void			 spkeyh_actflyby(int, int, int);
 /* job.c */
 struct job		*job_findbyid(size_t);
 void			 job_goto(struct job *);
+void			 job_hl(struct job *);
+
+/* hl.c */
+void			 hl_clearall(void);
+void			 hl_restoreall(void);
 
 /* load_png.c */
 void 			*png_load(char *, unsigned int *, unsigned int *);
