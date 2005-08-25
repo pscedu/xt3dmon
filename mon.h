@@ -99,7 +99,6 @@
 
 #define CM_PNG	0
 #define CM_PPM	1
-#define CM_JPG	2
 
 /* HSV constants. */
 #define HUE_MIN 0
@@ -485,6 +484,7 @@ void			 capture_frame(int);
 void 			 capture_begin(int);
 void			 capture_end(void);
 void			 capture_snap(const char *, int);
+void			 capture_snapfd(int, int);
 
 /* draw.c */
 void			 drawh_default(void);
@@ -533,6 +533,7 @@ void			 hl_restoreall(void);
 
 /* load_png.c */
 void 			*png_load(char *, unsigned int *, unsigned int *);
+void			 png_write(FILE *, unsigned char *, long, long);
 
 /* main.c */
 void			 refresh_state(int);
