@@ -8,7 +8,7 @@
 #include "cdefs.h"
 #include "mon.h"
 
-#define SLEEP_INTV	5
+#define SLEEP_INTV	500
 
 #define STARTX		(-30.0f)
 #define STARTY		(10.0f)
@@ -269,16 +269,18 @@ main(int argc, char *argv[])
 
 	flags = GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE;
 	glutInit(&argc, argv);
-	while ((c = getopt(argc, argv, "lap")) != -1)
+	while ((c = getopt(argc, argv, "adlp")) != -1)
 		switch (c) {
-		case 'l':
-			datasrc = DS_DB;
-			dbh_connect(&dbh);
-			break;
 		case 'a':
 			flags |= GLUT_STEREO;
 			drawh = drawh_stereo;
 			stereo_mode = STM_ACT;
+			break;
+		case 'd':
+			break;
+		case 'l':
+			datasrc = DS_DB;
+			dbh_connect(&dbh);
 			break;
 		case 'p':
 			drawh = drawh_stereo;
