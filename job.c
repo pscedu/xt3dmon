@@ -23,10 +23,10 @@ job_findbyid(size_t id)
 	return (NULL);
 }
 
-void
-job_highlight(__unused struct job *j)
+__inline void
+job_hl(struct job *j)
 {
-
+	j->j_fill.f_a = 1.0f;
 }
 
 void
