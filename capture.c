@@ -14,20 +14,17 @@
 #define NUM_FRAMES	200
 #define MAX_FRAMES	25000
 
-void ppm_write(const char *, unsigned char *, long, long);
-void jpg_write(const char *, unsigned char *, long, long);
-void png_write(const char *, unsigned char *, long, long);
+void ppm_write(FILE *, unsigned char *, long, long);
 
 struct capture_format {
 	const char	 *cf_ext;
 	int		  cf_size;
-	void		(*cf_writef)(const char *, unsigned char *, long, long);
+	void		(*cf_writef)(FILE *, unsigned char *, long, long);
 	int		  cf_glmode;
 } capture_formats[] = {
 	/* These must correspond to the CM_* constants. */
 	{ "png", 4, png_write, GL_RGBA },
 	{ "ppm", 3, ppm_write, GL_RGB },
-	{ "jpg", 3, jpg_write, GL_RGB }
 };
 
 static unsigned char *fbuf[NUM_FRAMES];
@@ -37,96 +34,10 @@ static int capture_pos;
 
 /* Save buffer as PPM. */
 void
-ppm_write(const char *fn, unsigned char *buf, long w, long h)
+ppm_write(FILE *fp, unsigned char *buf, long w, long h)
 {
-	FILE *fp;
-
-	if ((fp = fopen(fn, "wb")) == NULL)
-		err(1, "%s", fn);
 	fprintf(fp, "P6 %ld %ld %d\n", w, h, 255);
 	fwrite(buf, 3 * w * h, 1, fp);
-	fclose(fp);
-}
-
-/* Save buffer as JPEG. */
-void
-jpg_write(const char *fn, unsigned char *buf, long w, long h)
-{
-	char cmd[BUFSIZ];
-
-	ppm_write(fn, buf, w, h);
-
-	/* XXX:  DEBUG (definitely remove later!) */
-	memset(cmd, '\0', sizeof(cmd));
-	snprintf(cmd, sizeof(cmd), "cjpeg -quality 100 %s | "
-	    "jpegtran -flip vertical > %s.jpg; rm %s",
-	    fn, fn, fn);
-	system(cmd);
-}
-
-/* Save buffer as PNG. */
-void
-png_write(const char *fn, unsigned char *buf, long w, long h)
-{
-	png_structp png;
-	png_bytepp rows;
-	png_infop info;
-	FILE *fp;
-	int i;
-
-	if ((fp = fopen(fn, "wb")) == NULL)
-		err(1, "%s", fn);
-
-	/* Setup PNG file structure. */
-	if ((png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL,
-	    NULL, NULL)) == NULL)
-		errx(1, "png_create_write_struct failed");
-
-	if ((info = png_create_info_struct(png)) == NULL) {
-		png_destroy_write_struct(&png, NULL);
-		errx(1, "png_create_info_struct failed");
-	}
-
-	if (setjmp(png_jmpbuf(png))) {
-		png_destroy_write_struct(&png, NULL);
-		err(1, "setjmp");
-	}
-
-	/* We want I/O without zlib compression (highest quality & fast). */
-	png_init_io(png, fp);
-//	png_set_compression_level(png, Z_NO_COMPRESSION);
-	png_set_compression_level(png, 4);
-	png_set_compression_mem_level(png, 8);
-//	png_set_compression_strategy(png, Z_DEFAULT_STRATEGY);
-
-	/* Set the header/info. */
-	png_set_IHDR(png, info, w, h, 8, PNG_COLOR_TYPE_RGB_ALPHA,
-	    PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
-	    PNG_FILTER_TYPE_DEFAULT);
-
-	png_write_info(png, info);
-
-	/* Pack single byte pixels. */
-	png_set_packing(png);
-
-	if ((rows = malloc(sizeof(png_bytep) * h)) == NULL)
-		err(1, "malloc");
-
-	/*
-	 * Parse into rows [RGBA (4 pix * width)]
-	 * Note: this takes into account vertical flip
-	 * use rows[h] then call invert() does the same.
-	 */
-	for (i = 0; i < h; i++)
-		rows[h - i - 1] = buf + (i * w * 4);
-
-	/* Actaully write the data. */
-	png_write_image(png, rows);
-	png_write_end(png, info);
-	png_destroy_write_struct(&png, &info);
-
-	free(rows);
-	fclose(fp);
 }
 
 void
@@ -134,6 +45,7 @@ capture_writeback(int mode)
 {
 	char fn[PATH_MAX];
 	const char *ext;
+	FILE *fp;
 	int k;
 
 	ext = capture_formats[mode].cf_ext;
@@ -146,8 +58,11 @@ capture_writeback(int mode)
 		} else
 			snprintf(fn, sizeof(fn), "%s/%07d.%s",
 			    _PATH_SSDIR, capture_pos, ext);
-		capture_formats[mode].cf_writef(fn, fbuf[k],
+		if ((fp = fopen(fn, "wb")) == NULL)
+			err(1, "%s", fn);
+		capture_formats[mode].cf_writef(fp, fbuf[k],
 		    win_width, win_height);
+		fclose(fp);
 	}
 }
 
@@ -220,6 +135,7 @@ capture_snap(const char *fn, int mode)
 {
 	static unsigned char *buf;
 	long size;
+	FILE *fp;
 
 	size = capture_formats[mode].cf_size *
 	    win_width * win_height;
@@ -228,5 +144,28 @@ capture_snap(const char *fn, int mode)
 	capture_copyfb(mode, buf);
 
 	/* Write data to buffer. */
-	capture_formats[mode].cf_writef(fn, buf, win_width, win_height);
+	if ((fp = fopen(fn, "wb")) == NULL)
+		err(1, "%s", fn);
+	capture_formats[mode].cf_writef(fp, buf, win_width, win_height);
+	fclose(fp);
+}
+
+void
+capture_snapfd(int fd, int mode)
+{
+	static unsigned char *buf;
+	long size;
+	FILE *fp;
+
+	size = capture_formats[mode].cf_size *
+	    win_width * win_height;
+	if ((buf = realloc(buf, size * sizeof(*buf))) == NULL)
+		err(1, "realloc");
+	capture_copyfb(mode, buf);
+
+	/* Write data to buffer. */
+	if ((fp = fdopen(fd, "wb")) == NULL)
+		err(1, "fd %d", fd);
+	capture_formats[mode].cf_writef(fp, buf, win_width, win_height);
+	fclose(fp);
 }
