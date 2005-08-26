@@ -511,6 +511,15 @@ void			 flyby_writeseq(struct state *);
 void			 flyby_writepanel(int);
 void			 flyby_writeselnode(int);
 
+/* hl.c */
+void			 hl_clearall(void);
+void			 hl_restoreall(void);
+
+/* job.c */
+struct job		*job_findbyid(size_t);
+void			 job_goto(struct job *);
+void			 job_hl(struct job *);
+
 /* key.c */
 void			 keyh_flyby(unsigned char, int, int);
 void			 keyh_actflyby(unsigned char, int, int);
@@ -522,15 +531,6 @@ void			 keyh_default(unsigned char, int, int);
 void			 spkeyh_default(int, int, int);
 void			 spkeyh_actflyby(int, int, int);
 
-/* job.c */
-struct job		*job_findbyid(size_t);
-void			 job_goto(struct job *);
-void			 job_hl(struct job *);
-
-/* hl.c */
-void			 hl_clearall(void);
-void			 hl_restoreall(void);
-
 /* load_png.c */
 void 			*png_load(char *, unsigned int *, unsigned int *);
 void			 png_write(FILE *, unsigned char *, long, long);
@@ -540,13 +540,6 @@ void			 refresh_state(int);
 void			 rebuild(int);
 void			 idleh_govern(void);
 void			 idleh_default(void);
-
-/* tex.c */
-void			 tex_load(void);
-void			 tex_init(void *, GLint, GLenum, GLuint, GLuint, GLuint);
-void			 tex_update(void);
-void			 tex_restore(void);
-void			 tex_remove(void);
 
 /* mouse.c */
 void			 m_activeh_default(int, int);
@@ -615,11 +608,21 @@ int			 sn_del(struct node *);
 void			 sn_set(struct node *);
 void			 sn_replace(struct selnode *, struct node *);
 
+/* server.c */
+void			 serv_init(void);
+
 /* status.c */
 void			 status_add(const char *, ...);
 void			 status_set(const char *, ...);
 void			 status_clear(void);
 const char		*status_get(void);
+
+/* tex.c */
+void			 tex_load(void);
+void			 tex_init(void *, GLint, GLenum, GLuint, GLuint, GLuint);
+void			 tex_update(void);
+void			 tex_restore(void);
+void			 tex_remove(void);
 
 /* tween.c */
 void			 tween_push(int);
