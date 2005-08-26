@@ -277,6 +277,7 @@ main(int argc, char *argv[])
 			stereo_mode = STM_ACT;
 			break;
 		case 'd':
+			serv_init();
 			break;
 		case 'l':
 			datasrc = DS_DB;
