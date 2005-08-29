@@ -10,6 +10,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "cdefs.h"
 #include "mon.h"
 
 #define PORT	24242
@@ -27,19 +28,21 @@ int svc_z(char *, int *, struct state *, struct state *);
 int svc_lx(char *, int *, struct state *, struct state *);
 int svc_ly(char *, int *, struct state *, struct state *);
 int svc_lz(char *, int *, struct state *, struct state *);
+int svc_vmode(char *, int *, struct state *, struct state *);
 
 struct sv_cmd {
 	const char	 *svc_name;
 	int		(*svc_act)(char *, int *, struct state *, struct state *);
 } sv_cmds[] = {
-	{ "sw",	svc_sw },
-	{ "sh",	svc_sh },
-	{ "x",	svc_x },
-	{ "y",	svc_y },
-	{ "z",	svc_z },
-	{ "lx",	svc_lx },
-	{ "ly",	svc_ly },
-	{ "lz",	svc_lz }
+	{ "sw",		svc_sw },
+	{ "sh",		svc_sh },
+	{ "x",		svc_x },
+	{ "y",		svc_y },
+	{ "z",		svc_z },
+	{ "lx",		svc_lx },
+	{ "ly",		svc_ly },
+	{ "lz",		svc_lz },
+	{ "vmode",	svc_vmode }
 };
 
 int sock;
@@ -64,12 +67,12 @@ serv_init(void)
 {
 	struct sockaddr_in sin;
 	socklen_t sz;
-	int fflags;
 
 	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 		err(1, "socket");
 
 /*
+	int fflags;
 	if (fcntl(sock, F_GETFL, &fflags) == -1)
 		err(1, "fcntl F_GETFL");
 	fflags |= O_NONBLOCK;
@@ -205,7 +208,7 @@ serv_parse(char *s, struct state *stp, struct state *mask)
 #define MAXHEIGHT 768
 
 int
-svc_sw(char *t, int *used, struct state *stp, struct state *mask)
+svc_sw(char *t, int *used, __unused struct state *stp, __unused struct state *mask)
 {
 	int new;
 
@@ -218,7 +221,7 @@ svc_sw(char *t, int *used, struct state *stp, struct state *mask)
 }
 
 int
-svc_sh(char *t, int *used, struct state *stp, struct state *mask)
+svc_sh(char *t, int *used, __unused struct state *stp, __unused struct state *mask)
 {
 	int new;
 
@@ -294,4 +297,32 @@ svc_lz(char *t, int *used, struct state *stp, struct state *mask)
 		return (0);
 	mask->st_lv.fv_z = 1.0f;
 	return (1);
+}
+
+int
+svc_vmode(char *t, int *used, struct state *stp, __unused struct state *mask)
+{
+	struct {
+		const char	*name;
+		int		 vmode;
+	} *ent, tab[] = {
+		/*
+		 * Because the way strncmp() is used, longer
+		 * keywords with identical prefixes as other keywords
+		 * must be ordered here first.
+		 */
+		{ "wiredone",	VM_WIREDONE },
+		{ "wired",	VM_WIRED },
+		{ "physical",	VM_PHYSICAL },
+		{ NULL,		0 }
+	};
+	for (ent = tab; ent->name != NULL; ent++)
+		if (strncmp(t, ent->name, strlen(ent->name)) == 0) {
+			*used = strlen(ent->name);
+			stp->st_vmode = ent->vmode;
+			st.st_rf |= RF_CLUSTER | RF_CAM | RF_GROUND |
+			    RF_SELNODE | RF_DATASRC;
+			return (1);
+		}
+	return (0);
 }
