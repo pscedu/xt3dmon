@@ -536,6 +536,7 @@ void 			*png_load(char *, unsigned int *, unsigned int *);
 void			 png_write(FILE *, unsigned char *, long, long);
 
 /* main.c */
+void			 resizeh(int, int);
 void			 refresh_state(int);
 void			 rebuild(int);
 void			 idleh_govern(void);
