@@ -19,6 +19,8 @@
 void serv_drawh(void);
 int serv_parse(char *, struct state *, struct state *);;
 
+int svc_sw(char *, int *, struct state *, struct state *);
+int svc_sh(char *, int *, struct state *, struct state *);
 int svc_x(char *, int *, struct state *, struct state *);
 int svc_y(char *, int *, struct state *, struct state *);
 int svc_z(char *, int *, struct state *, struct state *);
@@ -30,6 +32,8 @@ struct sv_cmd {
 	const char	 *svc_name;
 	int		(*svc_act)(char *, int *, struct state *, struct state *);
 } sv_cmds[] = {
+	{ "sw",	svc_sw },
+	{ "sh",	svc_sh },
 	{ "x",	svc_x },
 	{ "y",	svc_y },
 	{ "z",	svc_z },
@@ -65,10 +69,12 @@ serv_init(void)
 	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 		err(1, "socket");
 
+/*
 	if (fcntl(sock, F_GETFL, &fflags) == -1)
 		err(1, "fcntl F_GETFL");
 	fflags |= O_NONBLOCK;
-	if (fcntl(sock, F_SETFL, &fflags) == -1)
+*/
+	if (fcntl(sock, F_SETFL, O_NONBLOCK) == -1)
 		err(1, "fcntl F_SETFL");
 
 	memset(&sin, 0, sizeof(sin));
@@ -120,6 +126,7 @@ serv_drawh(void)
 		usleep(USLEEP);
 		return;
 	}
+	warnx("Servicing new connection");
 //	sn_clear();
 //	hl_restoreall();
 	for (i = 0; i < MAXTRIES; i++) {
@@ -131,7 +138,10 @@ serv_drawh(void)
 				err(1, "read");
 			continue;
 		}
+		if (len == 0)
+			goto drop;
 		buf[len] = '\0';
+		warnx("Parsing input");
 		switch (serv_parse(buf, &nst, &stmask)) {
 		case SERVP_ERR:
 			goto drop;
@@ -142,9 +152,12 @@ serv_drawh(void)
 	if (i == MAXTRIES)
 		goto drop;
 snap:
+	warnx("Writing snapshot");
+	resizeh(win_width, win_height);
 	drawh_default();
 	capture_snapfd(clifd, CM_PNG);
 drop:
+	warnx("Closing connection");
 	close(clifd);
 }
 
@@ -158,28 +171,63 @@ serv_parse(char *s, struct state *stp, struct state *mask)
 	for (t = s; *t != '\0'; t++) {
 		while (isspace(*t))
 			t++;
+		warnx("cmdbuf: >>>>>%s<<<<<", t);
 		svc = bsearch(t, sv_cmds, sizeof(sv_cmds) / sizeof(sv_cmds[0]),
 		   sizeof(sv_cmds[0]), svc_findcmp);
 		if (svc == NULL)
 			return (SERVP_ERR);
+		warnx(" Parsed '%s' command", svc->svc_name);
 		t += strlen(svc->svc_name);
 		while (isspace(*t))
 			t++;
 		if (*t++ != ':')
 			return (SERVP_ERR);
+		warnx(" Examining value");
 		while (isspace(*t))
 			t++;
 		if (!svc->svc_act(t, &len, stp, mask))
 			return (SERVP_ERR);
+		warnx(" Command action performed successfully");
 		t += len;
-		if (*t++ != '\n')
+		if (*t != '\n')
 			return (SERVP_ERR);
+		warnx(" Command parse complete, advance %d", len);
 	}
+	warnx("Done parsing");
 	if (mask->st_v.fv_x && mask->st_v.fv_y && mask->st_z &&
 	    mask->st_lv.fv_x && mask->st_lv.fv_y && mask->st_lz)
 		return (SERVP_DONE);
 	else
 		return (SERVP_CONT);
+}
+
+#define MAXWIDTH 1024
+#define MAXHEIGHT 768
+
+int
+svc_sw(char *t, int *used, struct state *stp, struct state *mask)
+{
+	int new;
+
+	if (sscanf(t, "%d%n", &new, used) != 1)
+		return (0);
+	if (new < 1 || new > MAXWIDTH)
+		return (0);
+	win_width = new;
+	return (1);
+}
+
+int
+svc_sh(char *t, int *used, struct state *stp, struct state *mask)
+{
+	int new;
+
+	if (sscanf(t, "%d%n", &new, used) != 1)
+		return (0);
+	if (new < 1 || new > MAXHEIGHT)
+		return (0);
+	win_height = new;
+	return (1);
 }
 
 int
