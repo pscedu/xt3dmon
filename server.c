@@ -59,7 +59,7 @@ svc_findcmp(const void *k, const void *elem)
 {
 	const char *field = ((const struct sv_cmd *)elem)->svc_name;
 
-	return (strncmp((const char *)k, field, strlen(field)));
+	return (strcmp((const char *)k, field));
 }
 
 void
@@ -93,7 +93,7 @@ serv_init(void)
 	if (listen(sock, Q) == -1)
 		err(1, "listen");
 
-	st.st_opts &= ~(OP_DISPLAY | OP_TWEEN);
+	st.st_opts &= ~(OP_TWEEN);
 
 	drawh = serv_drawh;
 
@@ -112,14 +112,19 @@ void
 serv_drawh(void)
 {
 	struct sockaddr_in sin;
-	struct state nst, stmask;
+	struct state stmask;
 	char buf[BUFSIZ];
 	socklen_t sz;
 	int i, clifd;
 	ssize_t len;
 
+/*
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClearColor(0.0, 0.0, 0.2, 1.0);
+	glutSwapBuffers();
+*/
+
 	sz = 0;
-	nst = st;
 	memset(&stmask, 0, sizeof(stmask));
 	if ((clifd = accept(sock, (struct sockaddr *)&sin, &sz)) == -1) {
 		if (errno != EWOULDBLOCK &&
@@ -129,6 +134,7 @@ serv_drawh(void)
 		usleep(USLEEP);
 		return;
 	}
+	fprintf(stderr, "\n");
 	warnx("Servicing new connection");
 //	sn_clear();
 //	hl_restoreall();
@@ -145,8 +151,9 @@ serv_drawh(void)
 			goto drop;
 		buf[len] = '\0';
 		warnx("Parsing input");
-		switch (serv_parse(buf, &nst, &stmask)) {
+		switch (serv_parse(buf, &st, &stmask)) {
 		case SERVP_ERR:
+			warnx("Error encountered");
 			goto drop;
 		case SERVP_DONE:
 			goto snap;
@@ -156,7 +163,9 @@ serv_drawh(void)
 		goto drop;
 snap:
 	warnx("Writing snapshot");
+	glutReshapeWindow(win_width, win_height);
 	resizeh(win_width, win_height);
+	st.st_rf |= RF_CAM;
 	drawh_default();
 	capture_snapfd(clifd, CM_PNG);
 drop:
@@ -168,35 +177,34 @@ int
 serv_parse(char *s, struct state *stp, struct state *mask)
 {
 	struct sv_cmd *svc;
-	char *t;
+	char *t, *p, *q;
 	int len;
 
 	for (t = s; *t != '\0'; t++) {
 		while (isspace(*t))
 			t++;
-		warnx("cmdbuf: >>>>>%s<<<<<", t);
+//		warnx("cmdbuf: >>>>>%s<<<<<", t);
+		if ((p = strchr(t, ':')) == NULL)
+			return (SERVP_ERR);
+		for (q = p; q > t && isspace(*--q); )
+			;
+		*++q = '\0';
 		svc = bsearch(t, sv_cmds, sizeof(sv_cmds) / sizeof(sv_cmds[0]),
 		   sizeof(sv_cmds[0]), svc_findcmp);
-		if (svc == NULL)
+		if (svc == NULL) {
+			warnx("Unknown command: %s", t);
 			return (SERVP_ERR);
+		}
 		warnx(" Parsed '%s' command", svc->svc_name);
-		t += strlen(svc->svc_name);
-		while (isspace(*t))
-			t++;
-		if (*t++ != ':')
-			return (SERVP_ERR);
-		warnx(" Examining value");
-		while (isspace(*t))
-			t++;
+		t = p;
+		while (isspace(*++t))
+			;
 		if (!svc->svc_act(t, &len, stp, mask))
 			return (SERVP_ERR);
-		warnx(" Command action performed successfully");
 		t += len;
 		if (*t != '\n')
 			return (SERVP_ERR);
-		warnx(" Command parse complete, advance %d", len);
 	}
-	warnx("Done parsing");
 	if (mask->st_v.fv_x && mask->st_v.fv_y && mask->st_z &&
 	    mask->st_lv.fv_x && mask->st_lv.fv_y && mask->st_lz)
 		return (SERVP_DONE);
