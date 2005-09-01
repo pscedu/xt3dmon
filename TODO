@@ -28,3 +28,4 @@ $Id$
 46. compile selection objects into display lists
 47. double check shadow obj dimensions
 48. move the id into ohp instead of maintaing separate vars
+49. kill callback system and replace with glutTimerFunc
