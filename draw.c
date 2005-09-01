@@ -494,15 +494,15 @@ draw_node_pipes(struct fvec *dim)
 
 	glLineWidth(8.0);
 	glBegin(GL_LINES);
-	glColor3f(1.0f, 0.0f, 0.0f); 			/* x */
+	glColor3f(0.0f, 0.0f, 1.0f); 			/* x - blue */
 	glVertex3f(w - st.st_winsp.iv_x, h/2, d/2);
 	glVertex3f(st.st_winsp.iv_x, h/2, d/2);
 
-	glColor3f(0.0f, 1.0f, 0.0f);			/* y */
+	glColor3f(1.0f, 0.0f, 0.0f);			/* y - red */
 	glVertex3f(w/2, h - st.st_winsp.iv_y, d/2);
 	glVertex3f(w/2, st.st_winsp.iv_y, d/2);
 
-	glColor3f(0.0f, 0.0f, 1.0f);			/* z */
+	glColor3f(0.0f, 1.0f, 0.0f);			/* z - green */
 	glVertex3f(w/2, h/2, d - st.st_winsp.iv_z);
 	glVertex3f(w/2, h/2, st.st_winsp.iv_z);
 	glEnd();
@@ -731,23 +731,23 @@ draw_cluster_pipes(struct fvec *v)
 	glLineWidth(8.0);
 
 	glBegin(GL_LINES);
-	glColor3f(0.0f, 0.0f, 1.0f);
-	for (x = sx; x < WIV_SWIDTH; x += spx)			/* z */
+	glColor3f(0.0f, 1.0f, 0.0f);
+	for (x = sx; x < WIV_SWIDTH; x += spx)			/* z - green */
 		for (y = sy; y < WIV_SHEIGHT; y += spy) {
 			glVertex3f(x, y, -dimp->fv_z / 2.0f);
 			glVertex3f(x, y, WIV_SDEPTH);
 		}
 
-	glColor3f(0.0f, 1.0f, 0.0f);
-	for (z = sz; z < WIV_SDEPTH; z += spz)			/* y */
+	glColor3f(1.0f, 0.0f, 0.0f);
+	for (z = sz; z < WIV_SDEPTH; z += spz)			/* y - red */
 		for (x = sx; x < WIV_SWIDTH; x += spx) {
 			glVertex3f(x, -dimp->fv_y / 2.0f, z);
 			glVertex3f(x, WIV_SHEIGHT, z);
 		}
 
-	glColor3f(1.0f, 0.0f, 0.0f);
+	glColor3f(0.0f, 0.0f, 1.0f);
 	for (y = sy; y < WIV_SHEIGHT; y += spy)
-		for (z = sz; z < WIV_SDEPTH; z += spz) {	/* x */
+		for (z = sz; z < WIV_SDEPTH; z += spz) {	/* x - blue */
 			glVertex3f(-dimp->fv_x / 2.0f, y, z);
 			glVertex3f(WIV_SWIDTH, y, z);
 		}
