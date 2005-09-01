@@ -29,3 +29,5 @@ $Id$
 47. double check shadow obj dimensions
 48. move the id into ohp instead of maintaing separate vars
 49. kill callback system and replace with glutTimerFunc
+50. (server mode) use overlay display cleanup of damaged glut win in
+    generated screenshots
