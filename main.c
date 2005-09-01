@@ -263,6 +263,7 @@ int
 main(int argc, char *argv[])
 {
 	int flags, c, sw, sh;
+	int server = 0;
 
 	progname = argv[0];
 	drawh = drawh_default;
@@ -277,11 +278,10 @@ main(int argc, char *argv[])
 			stereo_mode = STM_ACT;
 			break;
 		case 'd':
-			serv_init();
+			server = 1;
 			break;
 		case 'l':
 			datasrc = DS_DB;
-			dbh_connect(&dbh);
 			break;
 		case 'p':
 			drawh = drawh_stereo;
@@ -291,6 +291,12 @@ main(int argc, char *argv[])
 			usage();
 			/* NOTREACHED */
 		}
+
+	/* XXX:  Sanity-check flags. */
+	if (server)
+		serv_init();
+	if (datasrc == DS_DB)
+		dbh_connect(&dbh);
 
 	glutInitDisplayMode(flags);
 	sw = glutGet(GLUT_SCREEN_WIDTH);
