@@ -31,3 +31,4 @@ $Id$
 49. kill callback system and replace with glutTimerFunc
 50. (server mode) use overlay display cleanup of damaged glut win in
     generated screenshots
+51. kill nselnodes
