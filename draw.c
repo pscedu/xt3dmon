@@ -679,7 +679,7 @@ draw_cluster_physical(void)
 	mf.f_r = 1.00;
 	mf.f_g = 1.00;
 	mf.f_b = 1.00;
-	mf.f_a = 0.30;
+	mf.f_a = 0.20;
 
 	v.fv_x = v.fv_y = v.fv_z = NODESPACE;
 	for (r = 0; r < NROWS; r++, v.fv_z += ROWDEPTH + ROWSPACE) {
