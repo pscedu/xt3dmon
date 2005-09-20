@@ -66,13 +66,17 @@ revolve_center_cluster(struct fvec *cen)
 		cen->fv_z = ZCENTER;
 		break;
 	case VM_WIRED:
-	case VM_WIREDONE:
 		dist = MAX3(WIV_SWIDTH, WIV_SHEIGHT, WIV_SDEPTH);
 		if (st.st_vmode == VM_WIRED)
 			dist /= 3.0f;
 		cen->fv_x = st.st_x + st.st_lx * dist;
 		cen->fv_y = st.st_y + st.st_ly * dist;
 		cen->fv_z = st.st_z + st.st_lz * dist;
+		break;
+	case VM_WIREDONE:
+		cen->fv_x = WIDIM_WIDTH  * st.st_winsp.iv_x / 2.0f;
+		cen->fv_y = WIDIM_HEIGHT * st.st_winsp.iv_y / 2.0f;
+		cen->fv_z = WIDIM_DEPTH  * st.st_winsp.iv_z / 2.0f;
 		break;
 	}
 }
