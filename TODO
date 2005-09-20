@@ -32,3 +32,5 @@ $Id$
 50. (server mode) use overlay display cleanup of damaged glut win in
     generated screenshots
 51. kill nselnodes
+52. cache the current selected stuff to check for short circuiting --
+    if it follows the cursor, this should save on small movements
