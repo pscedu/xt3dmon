@@ -34,3 +34,4 @@ $Id$
 51. kill nselnodes
 52. cache the current selected stuff to check for short circuiting --
     if it follows the cursor, this should save on small movements
+53. find some what to alloc wi sel steps once
