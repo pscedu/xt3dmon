@@ -115,7 +115,8 @@ sel_process(int nrecs, int rank, int flags)
 		return (SP_MISS);
 	}
 
-	gn->gn_cb(gn->gn_id);
+	if (gn->gn_cb != NULL)
+		gn->gn_cb(gn->gn_id);
 	return (gn->gn_id);
 }
 
@@ -163,26 +164,6 @@ gscb_panel(int id)
 			panel_mobile->p_opts |= POPT_MOBILE;
 		}
 	}
-}
-
-void
-gscb_row(__unused int a)
-{
-}
-
-void
-gscb_cab(__unused int a)
-{
-}
-
-void
-gscb_cage(__unused int a)
-{
-}
-
-void
-gscb_mod(__unused int a)
-{
 }
 
 void
