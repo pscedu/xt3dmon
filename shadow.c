@@ -310,12 +310,24 @@ cubeno_to_v(int cubeno, int cuts, struct wiselstep *ws)
 	ws->ws_mag.iv_y = len.iv_y;
 	ws->ws_mag.iv_z = len.iv_z;
 
-	if ((n = ws->ws_off.iv_x + ws->ws_mag.iv_x) > magp->iv_x)
+	/* Shorten/extend the magnitude as needed. */
+	n = ws->ws_off.iv_x + ws->ws_mag.iv_x;
+	if (n > magp->iv_x)
 		ws->ws_mag.iv_x -= n - magp->iv_x;
-	if ((n = ws->ws_off.iv_y + ws->ws_mag.iv_y) > magp->iv_y)
+	else if (magp->iv_x - n < len.iv_x / 2)
+		ws->ws_mag.iv_x += magp->iv_x - n;
+
+	n = ws->ws_off.iv_y + ws->ws_mag.iv_y;
+	if (n > magp->iv_y)
 		ws->ws_mag.iv_y -= n - magp->iv_y;
-	if ((n = ws->ws_off.iv_z + ws->ws_mag.iv_z) > magp->iv_z)
+	else if (magp->iv_y - n < len.iv_y / 2)
+		ws->ws_mag.iv_y += magp->iv_y - n;
+
+	n = ws->ws_off.iv_z + ws->ws_mag.iv_z;
+	if (n > magp->iv_z)
 		ws->ws_mag.iv_z -= n - magp->iv_z;
+	else if (magp->iv_z - n < len.iv_z / 2)
+		ws->ws_mag.iv_z += magp->iv_z - n;
 }
 
 void
