@@ -251,3 +251,12 @@ node_goto(struct node *n)
 	}
 	tween_pop(TWF_LOOK | TWF_POS);
 }
+
+int
+node_show(struct node *n)
+{
+	if (n->n_flags & NF_HIDE ||
+	    ((st.st_opts & OP_BLEND) && n->n_fillp->f_a == 0.0f))
+		return (0);
+	return (1);
+}
