@@ -593,10 +593,6 @@ int			 sel_end(void);
 int			 sel_process(int, int, int);
 
 unsigned int		 gsn_get(int, void (*)(int), int);
-void			 gscb_row(int);
-void			 gscb_cab(int);
-void			 gscb_cage(int);
-void			 gscb_mod(int);
 void			 gscb_node(int);
 void			 gscb_panel(int);
 
@@ -704,4 +700,7 @@ extern int		 eggs;
 
 extern void		(*drawh)(void);
 extern void		(*drawh_old)(void);
-struct panel		*panel_mobile;
+extern struct panel	*panel_mobile;
+
+extern struct fill	 fill_black;
+extern struct fill	 fill_light_blue;
