@@ -559,6 +559,7 @@ void			 node_getmodpos(int, int *, int *);
 void			 node_adjmodpos(int, struct fvec *);
 struct node		*node_for_nid(int);
 void			 node_goto(struct node *);
+int			 node_show(struct node *);
 
 /* objlist.c */
 void			 obj_batch_start(struct objlist *);
