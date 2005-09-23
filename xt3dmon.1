@@ -7,7 +7,7 @@
 .Nd XT3 monitor
 .Sh SYNOPSIS
 .Nm xt3dmon
-.Op Fl alp
+.Op Fl adlp
 .Sh DESCRIPTION
 .Nm
 is a 3D program that graphically displays the various attributes of the
@@ -25,6 +25,14 @@ In this mode, if the video hardware supports it,
 .Nm
 will manage buffers for both the left and right eyes to be
 overlaid on the same window.
+.It Fl d
+Enable
+.Dq daemon
+mode \(em that is,
+.Nm
+will listen on TCP connections to accept requests from clients to
+generate screen captures and will send the resulting images as the
+response.
 .It Fl l
 Enable
 .Dq live
@@ -80,6 +88,9 @@ Pan the camera along its
 .Em x Ns / Ns Em y Ns / Ns
 .Em z
 viewing lines (left, right, forward, and backward).
+.It home, end
+.Dq Barrel roll
+the camera to the left or right.
 .It pageup, pagedown
 Pan vertically (perpendicularly) along the camera viewing line
 (up and down).
@@ -93,6 +104,10 @@ view.
 .Pp
 While holding shift, scroll the mouse to rotate the theta and phi of the
 camera view.
+.It Ic aj
+Hide all nodes not belonging to any job of any selected node.
+.It Ic ar
+Restore drawing of all nodes.
 .It Ic C
 Redraw the cluster.
 .It Ic c
