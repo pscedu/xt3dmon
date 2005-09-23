@@ -69,9 +69,14 @@ serv_init(void)
 {
 	struct sockaddr_in sin;
 	socklen_t sz;
+	int optval;
 
 	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 		err(1, "socket");
+	optval = 1;
+	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval,
+	    sizeof(optval)) == -1)
+		err(1, "setsockopt");
 
 /*
 	int fflags;
@@ -95,9 +100,11 @@ serv_init(void)
 	if (listen(sock, BACKLOG) == -1)
 		err(1, "listen");
 
-	st.st_opts &= ~(OP_TWEEN);
+	st.st_opts &= ~(OP_TWEEN | OP_GROUND);
 
 	drawh = serv_drawh;
+	rebuild(RF_DATASRC | RF_PHYSMAP | RF_CLUSTER);
+	st.st_rf &= ~(RF_DATASRC | RF_PHYSMAP | RF_CLUSTER);
 
 	qsort(sv_cmds, sizeof(sv_cmds) / sizeof(sv_cmds[0]),
 	    sizeof(sv_cmds[0]), svc_cmp);
@@ -137,7 +144,7 @@ serv_drawh(void)
 	fprintf(stderr, "\n");
 	warnx("Servicing new connection");
 //	sn_clear();
-//	hl_restoreall();
+	hl_restoreall();
 	for (i = 0; i < MAXTRIES; i++) {
 		usleep(TRYWAIT);
 		if ((len = read(clifd, buf, sizeof(buf) - 1)) == -1) {
@@ -154,7 +161,7 @@ serv_drawh(void)
 		warnx("Parsing input");
 		switch (serv_parse(buf)) {
 		case SERVP_ERR:
-			warnx("Error encountered");
+			warnx("Error encountered <%s>", buf);
 			goto drop;
 		case SERVP_DONE:
 			goto snap;
@@ -184,9 +191,13 @@ serv_parse(char *s)
 	for (t = s; *t != '\0'; t++) {
 		while (isspace(*t))
 			t++;
+		if (*t == '\0')
+			break;
 //		warnx("cmdbuf: >>>>>%s<<<<<", t);
-		if ((p = strchr(t, ':')) == NULL)
+		if ((p = strchr(t, ':')) == NULL) {
+			warnx("No colon in command");
 			return (SERVP_ERR);
+		}
 		for (q = p; q > t && isspace(*--q); )
 			;
 		*++q = '\0';
@@ -295,6 +306,9 @@ svc_job(char *t, int *used)
 	if (sscanf(t, "%d%n", &jobid, used) != 1)
 		return (0);
 	if ((j = job_findbyid(jobid)) != NULL) {
+		st.st_opts |= OP_BLEND;
+		st.st_rf |= RF_CLUSTER;
+
 		hl_clearall();
 		job_hl(j);
 	}
@@ -323,7 +337,7 @@ svc_vmode(char *t, int *used)
 			*used = strlen(ent->name);
 			st.st_vmode = ent->vmode;
 			st.st_rf |= RF_CLUSTER | RF_CAM | RF_GROUND |
-			    RF_SELNODE | RF_DATASRC;
+			    RF_SELNODE;
 			return (1);
 		}
 	return (0);
