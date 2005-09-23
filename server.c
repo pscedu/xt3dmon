@@ -14,25 +14,26 @@
 #include "mon.h"
 
 #define PORT	24242
-#define Q	100
+#define BACKLOG	128
 #define USLEEP	100
 
 void serv_drawh(void);
-int serv_parse(char *, struct state *, struct state *);;
+int serv_parse(char *);
 
-int svc_sw(char *, int *, struct state *, struct state *);
-int svc_sh(char *, int *, struct state *, struct state *);
-int svc_x(char *, int *, struct state *, struct state *);
-int svc_y(char *, int *, struct state *, struct state *);
-int svc_z(char *, int *, struct state *, struct state *);
-int svc_lx(char *, int *, struct state *, struct state *);
-int svc_ly(char *, int *, struct state *, struct state *);
-int svc_lz(char *, int *, struct state *, struct state *);
-int svc_vmode(char *, int *, struct state *, struct state *);
+int svc_sw(char *, int *);
+int svc_sh(char *, int *);
+int svc_x(char *, int *);
+int svc_y(char *, int *);
+int svc_z(char *, int *);
+int svc_lx(char *, int *);
+int svc_ly(char *, int *);
+int svc_lz(char *, int *);
+int svc_job(char *, int *);
+int svc_vmode(char *, int *);
 
 struct sv_cmd {
 	const char	 *svc_name;
-	int		(*svc_act)(char *, int *, struct state *, struct state *);
+	int		(*svc_act)(char *, int *);
 } sv_cmds[] = {
 	{ "sw",		svc_sw },
 	{ "sh",		svc_sh },
@@ -42,6 +43,7 @@ struct sv_cmd {
 	{ "lx",		svc_lx },
 	{ "ly",		svc_ly },
 	{ "lz",		svc_lz },
+	{ "job",	svc_job },
 	{ "vmode",	svc_vmode }
 };
 
@@ -90,7 +92,7 @@ serv_init(void)
 	sz = sizeof(sin);
 	if (bind(sock, (struct sockaddr *)&sin, sz) == -1)
 		err(1, "bind");
-	if (listen(sock, Q) == -1)
+	if (listen(sock, BACKLOG) == -1)
 		err(1, "listen");
 
 	st.st_opts &= ~(OP_TWEEN);
@@ -112,7 +114,6 @@ void
 serv_drawh(void)
 {
 	struct sockaddr_in sin;
-	struct state stmask;
 	char buf[BUFSIZ];
 	socklen_t sz;
 	int i, clifd;
@@ -125,7 +126,6 @@ serv_drawh(void)
 */
 
 	sz = 0;
-	memset(&stmask, 0, sizeof(stmask));
 	if ((clifd = accept(sock, (struct sockaddr *)&sin, &sz)) == -1) {
 		if (errno != EWOULDBLOCK &&
 		    errno != EAGAIN &&
@@ -147,11 +147,12 @@ serv_drawh(void)
 				err(1, "read");
 			continue;
 		}
+		i = 0;
 		if (len == 0)
-			goto drop;
+			break;
 		buf[len] = '\0';
 		warnx("Parsing input");
-		switch (serv_parse(buf, &st, &stmask)) {
+		switch (serv_parse(buf)) {
 		case SERVP_ERR:
 			warnx("Error encountered");
 			goto drop;
@@ -174,7 +175,7 @@ drop:
 }
 
 int
-serv_parse(char *s, struct state *stp, struct state *mask)
+serv_parse(char *s)
 {
 	struct sv_cmd *svc;
 	char *t, *p, *q;
@@ -199,24 +200,20 @@ serv_parse(char *s, struct state *stp, struct state *mask)
 		t = p;
 		while (isspace(*++t))
 			;
-		if (!svc->svc_act(t, &len, stp, mask))
+		if (!svc->svc_act(t, &len))
 			return (SERVP_ERR);
 		t += len;
 		if (*t != '\n')
 			return (SERVP_ERR);
 	}
-	if (mask->st_v.fv_x && mask->st_v.fv_y && mask->st_z &&
-	    mask->st_lv.fv_x && mask->st_lv.fv_y && mask->st_lz)
-		return (SERVP_DONE);
-	else
-		return (SERVP_CONT);
+	return (SERVP_CONT);
 }
 
 #define MAXWIDTH 1024
 #define MAXHEIGHT 768
 
 int
-svc_sw(char *t, int *used, __unused struct state *stp, __unused struct state *mask)
+svc_sw(char *t, int *used)
 {
 	int new;
 
@@ -229,7 +226,7 @@ svc_sw(char *t, int *used, __unused struct state *stp, __unused struct state *ma
 }
 
 int
-svc_sh(char *t, int *used, __unused struct state *stp, __unused struct state *mask)
+svc_sh(char *t, int *used)
 {
 	int new;
 
@@ -242,73 +239,70 @@ svc_sh(char *t, int *used, __unused struct state *stp, __unused struct state *ma
 }
 
 int
-svc_x(char *t, int *used, struct state *stp, struct state *mask)
+svc_x(char *t, int *used)
 {
-	if (mask->st_v.fv_x)
+	if (sscanf(t, "%f%n", &st.st_v.fv_x, used) != 1)
 		return (0);
-	if (sscanf(t, "%f%n", &stp->st_v.fv_x, used) != 1)
-		return (0);
-	mask->st_v.fv_x = 1.0f;
 	return (1);
 }
 
 int
-svc_y(char *t, int *used, struct state *stp, struct state *mask)
+svc_y(char *t, int *used)
 {
-	if (mask->st_v.fv_y)
+	if (sscanf(t, "%f%n", &st.st_v.fv_y, used) != 1)
 		return (0);
-	if (sscanf(t, "%f%n", &stp->st_v.fv_y, used) != 1)
-		return (0);
-	mask->st_v.fv_y = 1.0f;
 	return (1);
 }
 
 int
-svc_z(char *t, int *used, struct state *stp, struct state *mask)
+svc_z(char *t, int *used)
 {
-	if (mask->st_v.fv_z)
+	if (sscanf(t, "%f%n", &st.st_v.fv_z, used) != 1)
 		return (0);
-	if (sscanf(t, "%f%n", &stp->st_v.fv_z, used) != 1)
-		return (0);
-	mask->st_v.fv_z = 1.0f;
 	return (1);
 }
 
 int
-svc_lx(char *t, int *used, struct state *stp, struct state *mask)
+svc_lx(char *t, int *used)
 {
-	if (mask->st_lv.fv_x)
+	if (sscanf(t, "%f%n", &st.st_lv.fv_x, used) != 1)
 		return (0);
-	if (sscanf(t, "%f%n", &stp->st_lv.fv_x, used) != 1)
-		return (0);
-	mask->st_lv.fv_x = 1.0f;
 	return (1);
 }
 
 int
-svc_ly(char *t, int *used, struct state *stp, struct state *mask)
+svc_ly(char *t, int *used)
 {
-	if (mask->st_lv.fv_y)
+	if (sscanf(t, "%f%n", &st.st_lv.fv_y, used) != 1)
 		return (0);
-	if (sscanf(t, "%f%n", &stp->st_lv.fv_y, used) != 1)
-		return (0);
-	mask->st_lv.fv_y = 1.0f;
 	return (1);
 }
 
 int
-svc_lz(char *t, int *used, struct state *stp, struct state *mask)
+svc_lz(char *t, int *used)
 {
-	if (mask->st_lv.fv_z)
+	if (sscanf(t, "%f%n", &st.st_lv.fv_z, used) != 1)
 		return (0);
-	if (sscanf(t, "%f%n", &stp->st_lv.fv_z, used) != 1)
-		return (0);
-	mask->st_lv.fv_z = 1.0f;
 	return (1);
 }
 
 int
-svc_vmode(char *t, int *used, struct state *stp, __unused struct state *mask)
+svc_job(char *t, int *used)
+{
+	struct job *j;
+	int jobid;
+
+	if (sscanf(t, "%d%n", &jobid, used) != 1)
+		return (0);
+	if ((j = job_findbyid(jobid)) != NULL) {
+		hl_clearall();
+		job_hl(j);
+	}
+	return (1);
+}
+
+int
+svc_vmode(char *t, int *used)
 {
 	struct {
 		const char	*name;
@@ -327,7 +321,7 @@ svc_vmode(char *t, int *used, struct state *stp, __unused struct state *mask)
 	for (ent = tab; ent->name != NULL; ent++)
 		if (strncmp(t, ent->name, strlen(ent->name)) == 0) {
 			*used = strlen(ent->name);
-			stp->st_vmode = ent->vmode;
+			st.st_vmode = ent->vmode;
 			st.st_rf |= RF_CLUSTER | RF_CAM | RF_GROUND |
 			    RF_SELNODE | RF_DATASRC;
 			return (1);
