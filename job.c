@@ -10,6 +10,8 @@ job_findbyid(size_t id)
 
 	lo = 0;
 	hi = MAX(job_list.ol_tcur, job_list.ol_cur);
+	if (hi == 0)
+		return (NULL);
 	while (lo <= hi) {
 		n = MID(lo, hi);
 		tid = job_list.ol_jobs[n]->j_id;
