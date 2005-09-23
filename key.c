@@ -397,16 +397,27 @@ void
 keyh_alpha(unsigned char key, __unused int u, __unused int v)
 {
 	int oldopts = st.st_opts;
-
 	struct selnode *sn;
+
 	glutKeyboardFunc(keyh_default);
 	switch (key) {
-	case 'j':
+	case 'j': {
+		int foundjob = 0;
+
+		SLIST_FOREACH(sn, &selnodes, sn_next)
+			if (sn->sn_nodep->n_job != NULL) {
+				foundjob = 1;
+				break;
+			}
+		if (!foundjob)
+			break;
+
 		hl_clearall();
 		SLIST_FOREACH(sn, &selnodes, sn_next)
 			if (sn->sn_nodep->n_job != NULL)
 				job_hl(sn->sn_nodep->n_job);
 		break;
+	    }
 	case 'r':
 		hl_restoreall();
 		break;
