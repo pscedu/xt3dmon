@@ -131,40 +131,40 @@ db_physmap(void)
 	if (!res)
 		err(1, "%s", dbh_error(&dbh));
 	while ((row = mysql_fetch_row(res))) {
-		if ((l = strtol(row[F_r], NULL, 10)) < -1 || l > NROWS)
+		if ((l = strtol(row[F_r], NULL, 10)) < 0 || l >= NROWS)
 			errx(1, "bad row from database");
 		r = (int)l;
 
-		if ((l = strtol(row[F_cb], NULL, 10)) < -1 || l > NCABS)
+		if ((l = strtol(row[F_cb], NULL, 10)) < 0 || l >= NCABS)
 			errx(1, "bad cab from database");
 		cb = (int)l;
 
-		if ((l = strtol(row[F_cg], NULL, 10)) < -1 || l > NCAGES)
+		if ((l = strtol(row[F_cg], NULL, 10)) < 0 || l >= NCAGES)
 			errx(1, "bad cage from database");
 		cg = (int)l;
 
-		if ((l = strtol(row[F_m], NULL, 10)) < -1 || l > NMODS)
+		if ((l = strtol(row[F_m], NULL, 10)) < 0 || l >= NMODS)
 			errx(1, "bad mod from database");
 		m = (int)l;
 
-		if ((l = strtol(row[F_n], NULL, 10)) < -1 || l > NNODES)
+		if ((l = strtol(row[F_n], NULL, 10)) < 0 || l >= NNODES)
 			errx(1, "bad node from database");
 		n = (int)l;
 
-		if ((l = strtol(row[F_nid], NULL, 10)) < -1 || l > NID_MAX)
+		if ((l = strtol(row[F_nid], NULL, 10)) < 0 || l > NID_MAX)
 			errx(1, "bad nid from database");
 		nid = (int)l;
 
-		if ((l = strtol(row[F_x], NULL, 10)) < -1 || l > WIDIM_WIDTH)
+		if ((l = strtol(row[F_x], NULL, 10)) < 0 || l >= WIDIM_WIDTH)
 			errx(1, "bad x from database");
 		x = (int)l;
 
-		if ((l = strtol(row[F_y], NULL, 10)) < -1 || l > WIDIM_HEIGHT)
+		if ((l = strtol(row[F_y], NULL, 10)) < 0 || l >= WIDIM_HEIGHT)
 			errx(1, "bad y from database");
 		y = (int)l;
 
-		if ((l = strtol(row[F_z], NULL, 10)) < -1 || l > WIDIM_DEPTH)
-			errx(1, "bad z from database");
+		if ((l = strtol(row[F_z], NULL, 10)) < 0 || l >= WIDIM_DEPTH)
+			errx(1, "bad z from database: %s", row[F_z]);
 		z = (int)l;
 
 		node = &nodes[r][cb][cg][m][n];
