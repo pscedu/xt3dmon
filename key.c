@@ -457,7 +457,7 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		glutKeyboardFunc(keyh_mode);
 		break;
 	case 'O': {
-		tween_push(TWF_LOOK | TWF_POS);
+		tween_push(TWF_LOOK | TWF_POS | TWF_ROLL);
 		st.st_x = 0.0f;
 		st.st_y = 0.0f;
 		st.st_z = 0.0f;
@@ -465,7 +465,11 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		st.st_lx = 1.0f;
 		st.st_ly = 0.0f;
 		st.st_lz = 0.0f;
-		tween_pop(TWF_LOOK | TWF_POS);
+
+		st.st_lx = 0.0f;
+		st.st_ly = 1.0f;
+		st.st_lz = 0.0f;
+		tween_pop(TWF_LOOK | TWF_POS | TWF_ROLL);
 		break;
 	    }
 	case 'o':
@@ -479,10 +483,6 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		/* NOTREACHED */
 	case 'v':
 		glutKeyboardFunc(keyh_vmode);
-		break;
-	/* DEBUG */
-	case 'z':
-//		gShowMods = !gShowMods;
 		break;
 	case '+':
 	case '_': {
