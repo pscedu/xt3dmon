@@ -58,7 +58,8 @@ const char *opdesc[] = {
 	/* 13 */ "Pipe mode",
 	/* 14 */ "Selected node pipe mode",
 	/* 15 */ "Pause",
-	/* 16 */ "Job tour mode"
+	/* 16 */ "Job tour mode",
+	/* 17 */ "Skeleton"
 };
 
 struct datasrc datasrcsw[] = {

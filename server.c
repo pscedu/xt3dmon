@@ -306,7 +306,7 @@ svc_job(char *t, int *used)
 	if (sscanf(t, "%d%n", &jobid, used) != 1)
 		return (0);
 	if ((j = job_findbyid(jobid)) != NULL) {
-		st.st_opts |= OP_BLEND;
+		st.st_opts |= OP_BLEND | OP_SKEL;
 		st.st_rf |= RF_CLUSTER;
 
 		hl_clearall();

@@ -681,6 +681,27 @@ make_cluster(void)
 		struct fvec v = { 0.0f, 0.0f, 0.0f };
 
 		draw_cluster_wired(&v);
+		if (st.st_opts & OP_SKEL) {
+			struct fill fill = fill_light_blue;
+			struct fvec dim;
+
+#define SKEL_GAP (0.1f)
+
+			dim.fv_w = ((WIDIM_WIDTH  - 1) * st.st_winsp.iv_x) + NODEWIDTH  + 2 * SKEL_GAP;
+			dim.fv_h = ((WIDIM_HEIGHT - 1) * st.st_winsp.iv_x) + NODEHEIGHT + 2 * SKEL_GAP;
+			dim.fv_z = ((WIDIM_DEPTH  - 1) * st.st_winsp.iv_x) + NODEDEPTH  + 2 * SKEL_GAP;
+
+			fill.f_a = 0.60f;
+
+			glPushMatrix();
+			glTranslatef(-SKEL_GAP, -SKEL_GAP, -SKEL_GAP);
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
+			draw_box_filled(&dim, &fill);
+			draw_box_outline(&dim, &fill_black);
+			glDisable(GL_BLEND);
+			glPopMatrix();
+		}
 		break;
 	    }
 	}

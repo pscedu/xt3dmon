@@ -269,6 +269,10 @@ keyh_option(unsigned char key, __unused int u, __unused int v)
 		st.st_opts ^= OP_PIPES;
 		st.st_rf |= RF_CLUSTER;
 		break;
+	case 's':
+		st.st_opts ^= OP_SKEL;
+		st.st_rf |= RF_CLUSTER;
+		break;
 	case 't':
 		st.st_opts ^= OP_TEX;
 		st.st_rf |= RF_CLUSTER | RF_SELNODE;

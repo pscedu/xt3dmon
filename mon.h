@@ -295,6 +295,7 @@ struct state {
 #define OP_SELPIPES	(1<<14)
 #define OP_STOP		(1<<15)
 #define OP_TOURJOB	(1<<16)
+#define OP_SKEL		(1<<17)
 
 #define SM_JOBS		0
 #define SM_FAIL		1
