@@ -17,23 +17,31 @@
 #define BACKLOG	128
 #define USLEEP	100
 
-void serv_drawh(void);
-int serv_parse(char *);
+struct session;
 
-int svc_sw(char *, int *);
-int svc_sh(char *, int *);
-int svc_x(char *, int *);
-int svc_y(char *, int *);
-int svc_z(char *, int *);
-int svc_lx(char *, int *);
-int svc_ly(char *, int *);
-int svc_lz(char *, int *);
-int svc_job(char *, int *);
-int svc_vmode(char *, int *);
+void serv_drawh(void);
+int serv_parse(char *, struct session *);
+
+int svc_sw(char *, int *, struct session *);
+int svc_sh(char *, int *, struct session *);
+int svc_x(char *, int *, struct session *);
+int svc_y(char *, int *, struct session *);
+int svc_z(char *, int *, struct session *);
+int svc_lx(char *, int *, struct session *);
+int svc_ly(char *, int *, struct session *);
+int svc_lz(char *, int *, struct session *);
+int svc_job(char *, int *, struct session *);
+int svc_clicku(char *, int *, struct session *);
+int svc_clickv(char *, int *, struct session *);
+int svc_vmode(char *, int *, struct session *);
+
+struct session {
+	int		ss_click;
+};
 
 struct sv_cmd {
 	const char	 *svc_name;
-	int		(*svc_act)(char *, int *);
+	int		(*svc_act)(char *, int *, struct session *);
 } sv_cmds[] = {
 	{ "sw",		svc_sw },
 	{ "sh",		svc_sh },
@@ -44,6 +52,8 @@ struct sv_cmd {
 	{ "ly",		svc_ly },
 	{ "lz",		svc_lz },
 	{ "job",	svc_job },
+	{ "clicku",	svc_clicku },
+	{ "clickv",	svc_clickv },
 	{ "vmode",	svc_vmode }
 };
 
@@ -121,6 +131,7 @@ void
 serv_drawh(void)
 {
 	struct sockaddr_in sin;
+	struct session ss;
 	char buf[BUFSIZ];
 	socklen_t sz;
 	int i, clifd;
@@ -133,6 +144,7 @@ serv_drawh(void)
 */
 
 	sz = 0;
+	memset(&ss, 0, sizeof(ss));
 	if ((clifd = accept(sock, (struct sockaddr *)&sin, &sz)) == -1) {
 		if (errno != EWOULDBLOCK &&
 		    errno != EAGAIN &&
@@ -159,7 +171,7 @@ serv_drawh(void)
 			break;
 		buf[len] = '\0';
 		warnx("Parsing input");
-		switch (serv_parse(buf)) {
+		switch (serv_parse(buf, &ss)) {
 		case SERVP_ERR:
 			warnx("Error encountered <%s>", buf);
 			goto drop;
@@ -174,6 +186,10 @@ snap:
 	glutReshapeWindow(win_width, win_height);
 	resizeh(win_width, win_height);
 	st.st_rf |= RF_CAM;
+
+	if (ss.ss_click)
+		drawh_select();
+
 	drawh_default();
 	capture_snapfd(clifd, CM_PNG);
 drop:
@@ -182,7 +198,7 @@ drop:
 }
 
 int
-serv_parse(char *s)
+serv_parse(char *s, struct session *ss)
 {
 	struct sv_cmd *svc;
 	char *t, *p, *q;
@@ -211,7 +227,7 @@ serv_parse(char *s)
 		t = p;
 		while (isspace(*++t))
 			;
-		if (!svc->svc_act(t, &len))
+		if (!svc->svc_act(t, &len, ss))
 			return (SERVP_ERR);
 		t += len;
 		if (*t != '\n')
@@ -224,7 +240,7 @@ serv_parse(char *s)
 #define MAXHEIGHT 768
 
 int
-svc_sw(char *t, int *used)
+svc_sw(char *t, int *used, __unused struct session *ss)
 {
 	int new;
 
@@ -237,7 +253,7 @@ svc_sw(char *t, int *used)
 }
 
 int
-svc_sh(char *t, int *used)
+svc_sh(char *t, int *used, __unused struct session *ss)
 {
 	int new;
 
@@ -250,7 +266,7 @@ svc_sh(char *t, int *used)
 }
 
 int
-svc_x(char *t, int *used)
+svc_x(char *t, int *used, __unused struct session *ss)
 {
 	if (sscanf(t, "%f%n", &st.st_v.fv_x, used) != 1)
 		return (0);
@@ -258,7 +274,7 @@ svc_x(char *t, int *used)
 }
 
 int
-svc_y(char *t, int *used)
+svc_y(char *t, int *used, __unused struct session *ss)
 {
 	if (sscanf(t, "%f%n", &st.st_v.fv_y, used) != 1)
 		return (0);
@@ -266,7 +282,7 @@ svc_y(char *t, int *used)
 }
 
 int
-svc_z(char *t, int *used)
+svc_z(char *t, int *used, __unused struct session *ss)
 {
 	if (sscanf(t, "%f%n", &st.st_v.fv_z, used) != 1)
 		return (0);
@@ -274,7 +290,7 @@ svc_z(char *t, int *used)
 }
 
 int
-svc_lx(char *t, int *used)
+svc_lx(char *t, int *used, __unused struct session *ss)
 {
 	if (sscanf(t, "%f%n", &st.st_lv.fv_x, used) != 1)
 		return (0);
@@ -282,7 +298,7 @@ svc_lx(char *t, int *used)
 }
 
 int
-svc_ly(char *t, int *used)
+svc_ly(char *t, int *used, __unused struct session *ss)
 {
 	if (sscanf(t, "%f%n", &st.st_lv.fv_y, used) != 1)
 		return (0);
@@ -290,7 +306,7 @@ svc_ly(char *t, int *used)
 }
 
 int
-svc_lz(char *t, int *used)
+svc_lz(char *t, int *used, __unused struct session *ss)
 {
 	if (sscanf(t, "%f%n", &st.st_lv.fv_z, used) != 1)
 		return (0);
@@ -298,7 +314,7 @@ svc_lz(char *t, int *used)
 }
 
 int
-svc_job(char *t, int *used)
+svc_job(char *t, int *used, __unused struct session *ss)
 {
 	struct job *j;
 	int jobid;
@@ -316,7 +332,25 @@ svc_job(char *t, int *used)
 }
 
 int
-svc_vmode(char *t, int *used)
+svc_clicku(char *t, int *used, struct session *ss)
+{
+	if (sscanf(t, "%d%n", &lastu, used) != 1)
+		return (0);
+	ss->ss_click = 1;
+	return (1);
+}
+
+int
+svc_clickv(char *t, int *used, struct session *ss)
+{
+	if (sscanf(t, "%d%n", &lastv, used) != 1)
+		return (0);
+	ss->ss_click = 1;
+	return (1);
+}
+
+int
+svc_vmode(char *t, int *used, __unused struct session *ss)
 {
 	struct {
 		const char	*name;
