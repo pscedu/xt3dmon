@@ -1,37 +1,35 @@
 $Id$
 
+reminders:
+(o) don't recompile things - do it once and only call the
+    display lists if they are enabled
+(o) add more info to the status panel
+(o) clean up includes in files that do not need them
+
 3. default the logid goto user input buffer to selnode
 8. add a fatal() function that is a wrapper over err() that breaks from
   the DB, or register an atexit() to drop db conn
 10. random flyby/cycle focus jobs
 15. try #define __inline to see if it does anything
-21. don't recompile things - do it once and only call the
-    display lists if they are enabled
 25. 'r' prefix keybinding to enable rebuild flags
-27. clean up includes in files that do not need them
 29. poll data files for when to refresh instead of blind refresh
 30. when jobs are reallocate, fill alpha is reset
 33. remove some globals
 34. function to do rebuild option diffs
-36. function timeout callbacks for registering event coordination
-37. overhaul glselection code to use stu's method
 38. window resize/initialization bugs
 39. be more intelligent about swapping between frustums in drawing
     stereo scenes (don't flip twice, just flip back and forth)
-40. add more info to the status panel
 41. move sticky to pinfo for persistence
 42. barrel is messed up when lz changes
 43. think about making a new header file (split up mon.h)
-44. try pushMatrix() with 2D selection
 45. divide color wheel among all modes (free/down/disabled/etc)
     and probably keep these the same always
 46. compile selection objects into display lists
-47. double check shadow obj dimensions
 48. move the id into ohp instead of maintaing separate vars
 49. kill callback system and replace with glutTimerFunc
 50. (server mode) use overlay display cleanup of damaged glut win in
     generated screenshots
-51. kill nselnodes
+51. kill nselnodes (if SLIST_EMPTY())
 52. cache the current selected stuff to check for short circuiting --
     if it follows the cursor, this should save on small movements
 53. find some what to alloc wi sel steps once
