@@ -111,6 +111,7 @@ serv_init(void)
 		err(1, "listen");
 
 	st.st_opts &= ~(OP_TWEEN | OP_GROUND);
+	st.st_opts |= OP_NLABELS;
 
 	drawh = serv_drawh;
 	rebuild(RF_DATASRC | RF_PHYSMAP | RF_CLUSTER);
@@ -142,6 +143,8 @@ serv_drawh(void)
 	glClearColor(0.0, 0.0, 0.2, 1.0);
 	glutSwapBuffers();
 */
+
+	st.st_opts &= ~(OP_BLEND | OP_SKEL);
 
 	sz = 0;
 	memset(&ss, 0, sizeof(ss));
