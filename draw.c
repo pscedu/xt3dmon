@@ -193,7 +193,7 @@ drawh_default(void)
 	draw_scene();
 	cam_dirty = 0;
 
-	glClearColor(0.0, 0.0, 0.2, 1.0);
+	glClearColor(0.0, 0.0, 0.0, 1.0);
 	if (st.st_opts & OP_CAPTURE)
 		capture_frame(capture_mode);
 	else if (st.st_opts & OP_DISPLAY)
@@ -681,6 +681,7 @@ make_cluster(void)
 		struct fvec v = { 0.0f, 0.0f, 0.0f };
 
 		draw_cluster_wired(&v);
+
 		if (st.st_opts & OP_SKEL) {
 			struct fill fill = fill_light_blue;
 			struct fvec dim;
@@ -691,7 +692,7 @@ make_cluster(void)
 			dim.fv_h = ((WIDIM_HEIGHT - 1) * st.st_winsp.iv_x) + NODEHEIGHT + 2 * SKEL_GAP;
 			dim.fv_z = ((WIDIM_DEPTH  - 1) * st.st_winsp.iv_x) + NODEDEPTH  + 2 * SKEL_GAP;
 
-			fill.f_a = 0.60f;
+			fill.f_a = 0.40f;
 
 			glPushMatrix();
 			glTranslatef(-SKEL_GAP, -SKEL_GAP, -SKEL_GAP);
