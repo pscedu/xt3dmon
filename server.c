@@ -110,7 +110,7 @@ serv_init(void)
 	if (listen(sock, BACKLOG) == -1)
 		err(1, "listen");
 
-	st.st_opts &= ~(OP_TWEEN | OP_GROUND);
+	st.st_opts &= ~(OP_TWEEN);
 	st.st_opts |= OP_NLABELS;
 
 	drawh = serv_drawh;

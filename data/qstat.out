@@ -1,220 +1,228 @@
-Job Id: 4805.phantom.psc.edu
-    Job_Name = jov128
-    Job_Owner = glatzmai@phantom.psc.edu
+Job Id: 43476.phantom.psc.edu
+    Job_Name = run.sub
+    Job_Owner = pivkin@tg-login1.bigben.psc.teragrid.org
     job_state = Q
-    queue = ClassA
+    queue = batch
     server = phantom.psc.edu
     Checkpoint = u
-    ctime = Fri Jul 15 01:55:34 2005
-    Error_Path = phantom.psc.edu:/lustre/glatz/jov128.e4805
-    exec_host = phantom/0
+    ctime = Wed Sep 28 17:26:18 2005
+    Error_Path = tg-login1.bigben.psc.teragrid.org:/usr/users/1/pivkin/V300_p0.
+	1/TEST2/run.err
+    Hold_Types = n
+    Join_Path = n
+    Keep_Files = n
+    Mail_Points = ae
+    Mail_Users = piv@cfm.brown.edu
+    mtime = Thu Sep 29 15:25:32 2005
+    Output_Path = tg-login1.bigben.psc.teragrid.org:/usr/users/1/pivkin/V300_p0
+	.1/TEST2/run.out
+    Priority = 0
+    qtime = Wed Sep 28 17:26:18 2005
+    Rerunable = True
+    Resource_List.size = 24
+    Resource_List.walltime = 03:45:00
+    comment = Requested walltime exceeds available for this period.  System dra
+	in scheduled for Thu Sep 29 17:50:00 EDT 2005
+    etime = Wed Sep 28 17:26:18 2005
+
+Job Id: 43477.phantom.psc.edu
+    Job_Name = run.sub
+    Job_Owner = pivkin@tg-login1.bigben.psc.teragrid.org
+    job_state = Q
+    queue = batch
+    server = phantom.psc.edu
+    Checkpoint = u
+    ctime = Wed Sep 28 17:29:03 2005
+    Error_Path = tg-login1.bigben.psc.teragrid.org:/usr/users/1/pivkin/V300_p0.
+	1/TEST5/run.err
+    Hold_Types = n
+    Join_Path = n
+    Keep_Files = n
+    Mail_Points = ae
+    Mail_Users = piv@cfm.brown.edu
+    mtime = Thu Sep 29 15:25:32 2005
+    Output_Path = tg-login1.bigben.psc.teragrid.org:/usr/users/1/pivkin/V300_p0
+	.1/TEST5/run.out
+    Priority = 0
+    qtime = Wed Sep 28 17:29:03 2005
+    Rerunable = True
+    Resource_List.size = 24
+    Resource_List.walltime = 03:45:00
+    comment = Requested walltime exceeds available for this period.  System dra
+	in scheduled for Thu Sep 29 17:50:00 EDT 2005
+    etime = Wed Sep 28 17:29:03 2005
+
+Job Id: 43495.phantom.psc.edu
+    Job_Name = run_homeA.pbs
+    Job_Owner = gottlieb@tg-login1.bigben.psc.teragrid.org
+    job_state = Q
+    queue = batch
+    server = phantom.psc.edu
+    Checkpoint = u
+    ctime = Thu Sep 29 00:00:42 2005
+    Error_Path = tg-login1.bigben.psc.teragrid.org:/usr/users/0/gottlieb/b708/r
+	un_homeA.pbs.e43495
+    exec_host = tg-login3.bigben.psc.teragrid.org
+    Hold_Types = n
+    Join_Path = oe
+    Keep_Files = n
+    Mail_Points = a
+    mtime = Thu Sep 29 15:25:32 2005
+    Output_Path = tg-login1.bigben.psc.teragrid.org:/usr/users/0/gottlieb/b708/
+	run_homeA.pbs.o43495
+    Priority = 0
+    qtime = Thu Sep 29 00:00:42 2005
+    Rerunable = True
+    Resource_List.nid_list = 22..95:152..223:256..351:384..479:512..607:644..73
+	5:768..863:896..909:912..915:924..991:1024..1119:1152..1247:1280..1375:
+	1412..1503:1536..1631:1664..1759:1792..1887:1920..2015:2048..2111
+    Resource_List.size = 1536
+    Resource_List.walltime = 04:15:00
+    session_id = 7043
+    comment = Requested walltime exceeds available for this period.  System dra
+	in scheduled for Thu Sep 29 17:50:00 EDT 2005
+    etime = Thu Sep 29 00:00:42 2005
+
+Job Id: 43498.phantom.psc.edu
+    Job_Name = run_homeA.pbs
+    Job_Owner = gottlieb@tg-login2.bigben.psc.teragrid.org
+    job_state = Q
+    queue = batch
+    server = phantom.psc.edu
+    Checkpoint = u
+    ctime = Thu Sep 29 04:27:03 2005
+    Error_Path = tg-login2.bigben.psc.teragrid.org:/usr/users/0/gottlieb/b708/r
+	un_homeA.pbs.e43498
+    Hold_Types = n
+    Join_Path = oe
+    Keep_Files = n
+    Mail_Points = a
+    mtime = Thu Sep 29 15:25:32 2005
+    Output_Path = tg-login2.bigben.psc.teragrid.org:/usr/users/0/gottlieb/b708/
+	run_homeA.pbs.o43498
+    Priority = 0
+    qtime = Thu Sep 29 04:27:03 2005
+    Rerunable = True
+    Resource_List.size = 1536
+    Resource_List.walltime = 04:15:00
+    comment = Requested walltime exceeds available for this period.  System dra
+	in scheduled for Thu Sep 29 17:50:00 EDT 2005
+    etime = Thu Sep 29 04:27:03 2005
+
+Job Id: 43538.phantom.psc.edu
+    Job_Name = D4bh
+    Job_Owner = tiziana@tg-login2.bigben.psc.teragrid.org
+    job_state = Q
+    queue = batch
+    server = phantom.psc.edu
+    Checkpoint = u
+    ctime = Thu Sep 29 12:31:39 2005
+    Error_Path = tg-login2.bigben.psc.teragrid.org:/usr/users/9/tiziana/D4bh/P-
+	Gadget2/D4bh.e43538
     Hold_Types = n
     Join_Path = eo
     Keep_Files = n
-    Mail_Points = e
-    Mail_Users = glatz@es.ucsc.edu
-    mtime = Fri Jul 15 15:18:16 2005
-    Output_Path = phantom.psc.edu:/lustre/glatz/jov128.o4805
+    Mail_Points = a
+    mtime = Thu Sep 29 15:25:32 2005
+    Output_Path = tg-login2.bigben.psc.teragrid.org:/usr/users/9/tiziana/D4bh/P
+	-Gadget2/D4bh.o43538
     Priority = 0
-    qtime = Fri Jul 15 01:55:34 2005
+    qtime = Thu Sep 29 12:31:39 2005
     Rerunable = True
-    Resource_List.nid_list = 2623..2655:2688..2771:2773..2783
-    Resource_List.size = 128
+    Resource_List.size = 64
     Resource_List.walltime = 06:00:00
-    session_id = 16685
-    comment = Queue ClassA not in started state.
-    etime = Fri Jul 15 01:55:34 2005
+    comment = Requested walltime exceeds available for this period.  System dra
+	in scheduled for Thu Sep 29 17:50:00 EDT 2005
+    etime = Thu Sep 29 12:31:39 2005
 
-Job Id: 4806.phantom.psc.edu
-    Job_Name = run_7.08ncp.pbs
-    Job_Owner = gottlieb@phantom.psc.edu
-    job_state = Q
-    queue = ClassA
+Job Id: 43557.phantom.psc.edu
+    Job_Name = run_home.pbs
+    Job_Owner = gottlieb@tg-login2.bigben.psc.teragrid.org
+    resources_used.cput = 00:00:00
+    resources_used.mem = 13216kb
+    resources_used.vmem = 28248kb
+    resources_used.walltime = 01:55:10
+    job_state = R
+    queue = batch
     server = phantom.psc.edu
     Checkpoint = u
-    ctime = Fri Jul 15 03:39:42 2005
-    Error_Path = phantom.psc.edu:/usr/users/0/gottlieb/b708/run_7.08ncp.pbs.e48
-	06
+    ctime = Thu Sep 29 13:28:54 2005
+    Error_Path = tg-login2.bigben.psc.teragrid.org:/usr/users/0/gottlieb/b708/r
+	un_home.pbs.e43557
+    exec_host = tg-login1.bigben.psc.teragrid.org
     Hold_Types = n
     Join_Path = oe
     Keep_Files = n
     Mail_Points = a
-    mtime = Fri Jul 15 15:18:16 2005
-    Output_Path = phantom.psc.edu:/usr/users/0/gottlieb/b708/run_7.08ncp.pbs.o4
-	806
+    mtime = Thu Sep 29 13:29:25 2005
+    Output_Path = tg-login2.bigben.psc.teragrid.org:/usr/users/0/gottlieb/b708/
+	run_home.pbs.o43557
     Priority = 0
-    qtime = Fri Jul 15 03:39:42 2005
+    qtime = Thu Sep 29 13:28:54 2005
     Rerunable = True
-    Resource_List.size = 2048
-    Resource_List.walltime = 03:00:00
-    comment = Queue ClassA not in started state.
-    etime = Fri Jul 15 14:28:37 2005
+    Resource_List.nid_list = 1440..1503:1536..1631:1664..1759:1792..1887:1920..
+	2015:2048..2143:2176..2271:2304..2399:2432..2527:2560..2655:2688..2783
+    Resource_List.size = 1024
+    Resource_List.walltime = 03:20:00
+    session_id = 9840
+    comment = Starting job at 09/29/05 13:29
+    etime = Thu Sep 29 13:28:54 2005
 
-Job Id: 4811.phantom.psc.edu
-    Job_Name = pop.job
-    Job_Owner = levesque@phantom.psc.edu
-    job_state = Q
-    queue = ClassA
-    server = phantom.psc.edu
-    Checkpoint = u
-    ctime = Fri Jul 15 08:09:48 2005
-    Error_Path = phantom.psc.edu:/usr/users/2/levesque/pop/bench/pop.job.e4811
-    Hold_Types = n
-    Join_Path = eo
-    Keep_Files = n
-    Mail_Points = a
-    mtime = Fri Jul 15 15:18:16 2005
-    Output_Path = phantom.psc.edu:/usr/users/2/levesque/pop/bench/pop.job.o4811
-	
-    Priority = 0
-    qtime = Fri Jul 15 08:09:48 2005
-    Rerunable = True
-    Resource_List.size = 1728
-    Resource_List.walltime = 00:10:00
-    comment = Queue ClassA not in started state.
-    etime = Fri Jul 15 08:09:48 2005
-
-Job Id: 4864.phantom.psc.edu
-    Job_Name = run.cpmd
-    Job_Owner = stbrown@phantom.psc.edu
+Job Id: 43570.phantom.psc.edu
+    Job_Name = runppm513.sh
+    Job_Owner = dporter@tg-login3.bigben.psc.teragrid.org
     resources_used.cput = 00:00:00
-    resources_used.mem = 11156kb
-    resources_used.vmem = 29448kb
-    resources_used.walltime = 02:38:03
+    resources_used.mem = 15544kb
+    resources_used.vmem = 57744kb
+    resources_used.walltime = 01:35:31
     job_state = R
-    queue = ClassB
+    queue = demo
     server = phantom.psc.edu
     Checkpoint = u
-    ctime = Fri Jul 15 12:39:13 2005
-    Error_Path = phantom.psc.edu:/usr/users/4/stbrown/scratch/psc-bench/hbfg/me
-	m_testing/512/run.cpmd.e4864
-    exec_host = phantom/3
+    ctime = Thu Sep 29 13:49:03 2005
+    Error_Path = /dev/pts/10
+    exec_host = tg-login2.bigben.psc.teragrid.org
     Hold_Types = n
-    Join_Path = eo
-    Keep_Files = n
+    interactive = True
+    Join_Path = n
+    Keep_Files = eo
     Mail_Points = a
-    mtime = Fri Jul 15 12:39:13 2005
-    Output_Path = phantom.psc.edu:/usr/users/4/stbrown/scratch/psc-bench/hbfg/m
-	em_testing/512/run.cpmd.o4864
+    mtime = Thu Sep 29 13:49:04 2005
+    Output_Path = /dev/pts/10
     Priority = 0
-    qtime = Fri Jul 15 12:39:13 2005
+    qtime = Thu Sep 29 13:49:03 2005
     Rerunable = True
-    Resource_List.nid_list = 717..735:768..863:896..991:1024..1119:1152..1247:1
-	280..1375:1412..1424
-    Resource_List.size = 512
+    Resource_List.nid_list = 12..95:152..223:256..351:384..479:512..607:644..71
+	2
+    Resource_List.size = 513
     Resource_List.walltime = 03:00:00
-    session_id = 18144
-    comment = Starting job at 07/15/05 12:39
-    etime = Fri Jul 15 12:39:13 2005
+    session_id = 4730
+    comment = Starting job at 09/29/05 13:49
+    etime = Thu Sep 29 13:49:03 2005
 
-Job Id: 4881.phantom.psc.edu
-    Job_Name = psc1734
-    Job_Owner = gomez@phantom.psc.edu
+Job Id: 43571.phantom.psc.edu
+    Job_Name = lagv.1E
+    Job_Owner = pyeung@tg-login1.bigben.psc.teragrid.org
     job_state = Q
-    queue = ClassB
+    queue = batch
     server = phantom.psc.edu
     Checkpoint = u
-    ctime = Fri Jul 15 14:09:36 2005
-    Error_Path = phantom.psc.edu:/usr/users/8/gomez/leo/1734/psc1734.e4881
+    ctime = Thu Sep 29 13:49:23 2005
+    Error_Path = tg-login1.bigben.psc.teragrid.org:/lustre/pyeung/lagv.2048/1E.
+	1024/stderr.qsub
     Hold_Types = n
-    Join_Path = eo
+    Join_Path = n
     Keep_Files = n
-    Mail_Points = a
-    mtime = Fri Jul 15 15:18:16 2005
-    Output_Path = phantom.psc.edu:/usr/users/8/gomez/leo/1734/psc1734.o4881
+    Mail_Points = abe
+    Mail_Users = pk.yeung@ae.gatech.edu
+    mtime = Thu Sep 29 15:25:32 2005
+    Output_Path = tg-login1.bigben.psc.teragrid.org:/lustre/pyeung/lagv.2048/1E
+	.1024/stdout.qsub
     Priority = 0
-    qtime = Fri Jul 15 14:09:36 2005
+    qtime = Thu Sep 29 13:49:23 2005
     Rerunable = True
-    Resource_List.size = 1734
-    Resource_List.walltime = 00:02:00
-    comment = Job scheduled to start by Fri Jul 15 15:39:00 EDT 2005
-    etime = Fri Jul 15 14:09:36 2005
-
-Job Id: 4884.phantom.psc.edu
-    Job_Name = pallas1.job
-    Job_Owner = raymond@phantom.psc.edu
-    resources_used.cput = 00:00:00
-    resources_used.mem = 9208kb
-    resources_used.vmem = 33460kb
-    resources_used.walltime = 00:44:44
-    job_state = R
-    queue = ClassB
-    server = phantom.psc.edu
-    Checkpoint = u
-    ctime = Fri Jul 15 14:32:32 2005
-    Error_Path = phantom.psc.edu:/usr/users/3/raymond/1.1.08/pallas1.job.e4884
-    exec_host = phantom/1
-    Hold_Types = n
-    Join_Path = oe
-    Keep_Files = n
-    Mail_Points = a
-    mtime = Fri Jul 15 14:32:32 2005
-    Output_Path = phantom.psc.edu:/usr/users/3/raymond/1.1.08/pallas1.job.o4884
-	
-    Priority = 0
-    qtime = Fri Jul 15 14:32:32 2005
-    Rerunable = True
-    Resource_List.nid_list = 2715..2718
-    Resource_List.size = 4
+    Resource_List.size = 1024
     Resource_List.walltime = 01:00:00
-    session_id = 22869
-    comment = Starting job at 07/15/05 14:32
-    etime = Fri Jul 15 14:32:32 2005
+    comment = Job scheduled to start by Thu Sep 29 16:49:00 EDT 2005
+    etime = Thu Sep 29 13:49:23 2005
 
-Job Id: 20
-	Job_Name = yourtestjob
-	Job_Owner = yanovich
-	resources_used.walltime = 05:00
-	job_state = R
-	queue = CoolQueue
-	Resource_List.size = 20
-	Resource_List.walltime = 11:41
-Job Id: 27
-	Job_Name = myjob2test
-	Job_Owner = rbudden
-	resources_used.walltime = 03:00
-	job_state = R
-	queue = NotCoolQueue
-	Resource_List.size = 22
-	Resource_List.walltime = 00:28
-Job Id: 278
-	Job_Name = important
-	Job_Owner = dsimmel
-	resources_used.walltime = 07:00
-	job_state = R
-	queue = TestQueue
-	Resource_List.size = 28
-	Resource_List.walltime = 06:21
-Job Id: 48
-	Job_Name = xt3mon
-	Job_Owner = yanovich
-	resources_used.walltime = 04:00
-	job_state = R
-	queue = ClassB
-	Resource_List.size = 10
-	Resource_List.walltime = 03:59
-Job Id: 50
-	Job_Name = mytestjob
-	Job_Owner = yanovich
-	resources_used.walltime = 02:00
-	job_state = R
-	queue = ClassA
-	Resource_List.size = 45
-	Resource_List.walltime = 10:24
-Job Id: 500
-	Job_Name = jraytest
-	Job_Owner = scott
-	resources_used.walltime = 01:00
-	job_state = R
-	queue = ClassA
-	Resource_List.size = 25
-	Resource_List.walltime = 06:32
-Job Id: 58
-
-	Job_Name = mod_fum
-	Job_Owner = gridfe
-	resources_used.walltime = 03:00
-	job_state = R
-	queue = ClassB
-	Resource_List.size = 60
-	Resource_List.walltime = 07:39
