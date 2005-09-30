@@ -6,7 +6,8 @@
 struct job *
 job_findbyid(size_t id)
 {
-	size_t n, lo, hi, tid;
+	size_t n, tid;
+	int lo, hi;
 
 	lo = 0;
 	hi = MAX(job_list.ol_tcur, job_list.ol_cur);
