@@ -48,12 +48,14 @@ main(int argc, char *argv[])
 	    "lx: %.3f\n"
 	    "ly: %.3f\n"
 	    "lz: %.3f\n",
-	    500, 300,
+	    800, 450,
 	    -4.0f, 32.8f, 51.5f,
 	    0.6f, -0.40, -0.7);
 	len = strlen(buf);
 	if (write(s, buf, len) != len)
 		err(1, "write");
+	if (shutdown(s, SHUT_WR) == -1)
+		err(1, "shutdown");
 	fprintf(stderr, "Command sent, awaiting reply\n");
 	while ((len = read(s, buf, sizeof(buf))) != -1 && len != 0)
 		if (write(STDOUT_FILENO, buf, len) != len)
