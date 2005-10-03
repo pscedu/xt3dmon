@@ -485,6 +485,9 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 	case 'q':
 		exit(0);
 		/* NOTREACHED */
+	case 'R':
+		st.st_rf |= ST_DATASRC;
+		break;
 	case 'v':
 		glutKeyboardFunc(keyh_vmode);
 		break;
