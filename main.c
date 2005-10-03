@@ -8,7 +8,7 @@
 #include "cdefs.h"
 #include "mon.h"
 
-#define SLEEP_INTV	500
+#define SLEEP_INTV	5
 
 #define STARTX		(-30.0f)
 #define STARTY		(10.0f)
@@ -319,10 +319,10 @@ main(int argc, char *argv[])
 	glEnable(GL_DEPTH_TEST);
 
 	/* Callout queue initialization. */
-	LIST_INIT(&calloutq);
-	callout_add(1, cocb_fps);
-	callout_add(5, cocb_datasrc);
-	callout_add(5, cocb_clearstatus);	/* XXX: enable when PANEL_STATUS? */
+//	LIST_INIT(&calloutq);
+//	callout_add(1, cocb_fps);
+//	callout_add(5, cocb_datasrc);
+//	callout_add(5, cocb_clearstatus);	/* XXX: enable when PANEL_STATUS? */
 
 	TAILQ_INIT(&panels);
 	SLIST_INIT(&selnodes);
