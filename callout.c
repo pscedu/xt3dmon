@@ -14,21 +14,21 @@ cocb_fps(void)
 	fcnt = 0;
 
 	/* Call us again one second in the future. */
-	callout_add(1, cocb_fps);
+//	callout_add(1, cocb_fps);
 }
 
 void
 cocb_datasrc(void)
 {
 	st.st_rf |= RF_DATASRC | RF_CLUSTER;
-	callout_add(5, cocb_datasrc);
+//	callout_add(5, cocb_datasrc);
 }
 
 void
 cocb_clearstatus(void)
 {
 	status_clear();
-	callout_add(5, cocb_clearstatus);
+//	callout_add(5, cocb_clearstatus);
 }
 
 void
@@ -44,5 +44,5 @@ cocb_tourjob(void)
 			job_goto(job_list.ol_jobs[j]);
 			break;
 		}
-	callout_add(10, cocb_tourjob);
+//	callout_add(10, cocb_tourjob);
 }
