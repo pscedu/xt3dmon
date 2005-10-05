@@ -142,59 +142,19 @@ refresh_state(int oldopts)
 void
 idleh_govern(void)
 {
-	static struct timeval gov_tv, fps_tv, tv, diff;
-	static long fcnt;
+	static struct timeval gov_tv, tv, diff;
 
 	gettimeofday(&tv, NULL);
 	timersub(&tv, &gov_tv, &diff);
 	if (diff.tv_sec * 1e6 + diff.tv_usec >= FPS_TO_USEC(GOVERN_FPS)) {
 		gov_tv = tv;
-
-		timersub(&tv, &fps_tv, &diff);
-		if (diff.tv_sec) {
-			fps_tv = tv;
-			fps = fcnt;
-			fcnt = 0;
-		}
-
-		timersub(&tv, &lastsync, &diff);
-		if (diff.tv_sec >= SLEEP_INTV) {
-			lastsync = tv;
-			st.st_rf |= RF_DATASRC | RF_CLUSTER;
-			status_clear();
-		}
-
 		(*drawh)();
-		fcnt++;
 	}
 }
 
 void
 idleh_default(void)
 {
-	static struct timeval tv, diff, fps_tv;
-	static int tcnt, cnt;
-
-	tcnt++;
-	if (++cnt >= fps + 1) {
-		if (gettimeofday(&tv, NULL) == -1)
-			err(1, "gettimeofday");
-
-		timersub(&tv, &fps_tv, &diff);
-		if (diff.tv_sec) {
-			fps = tcnt / (diff.tv_sec + diff.tv_usec / 1e6f);
-			fps_tv = tv;
-			tcnt = 0;
-		}
-
-		timersub(&tv, &lastsync, &diff);
-		if (diff.tv_sec > SLEEP_INTV) {
-			lastsync = tv;
-			st.st_rf |= RF_DATASRC | RF_CLUSTER;
-			status_clear();
-		}
-		cnt = 0;
-	}
 	(*drawh)();
 }
 
@@ -313,11 +273,9 @@ main(int argc, char *argv[])
 	glShadeModel(GL_SMOOTH);
 	glEnable(GL_DEPTH_TEST);
 
-	/* Callout queue initialization. */
-//	LIST_INIT(&calloutq);
-//	callout_add(1, cocb_fps);
-//	callout_add(5, cocb_datasrc);
-//	callout_add(5, cocb_clearstatus);	/* XXX: enable when PANEL_STATUS? */
+	glutTimerFunc(1000, cocb_fps, 0);
+	glutTimerFunc(5000, cocb_datasrc, 0);
+	glutTimerFunc(5000, cocb_clearstatus, 0); /* XXX: enable/disable when PANEL_STATUS? */
 
 	TAILQ_INIT(&panels);
 	SLIST_INIT(&selnodes);

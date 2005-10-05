@@ -490,12 +490,10 @@ void			 db_tempmap(void);
 void			 db_failmap(void);
 
 /* callout.c */
-void			 callout_add(int, void (*)(void));
-int			 callout_next(int);
-void			 cocb_fps(void);
-void			 cocb_datasrc(void);
-void			 cocb_clearstatus(void);
-void			 cocb_tourjob(void);
+void			 cocb_fps(int);
+void			 cocb_datasrc(int);
+void			 cocb_clearstatus(int);
+void			 cocb_tourjob(int);
 
 /* cam.c */
 void			 cam_move(int, float);
@@ -706,7 +704,6 @@ extern struct panels	 panels;
 extern struct pinfo	 pinfo[];
 extern struct vmode	 vmodes[];
 extern struct dbh	 dbh;
-extern struct calloutq	 calloutq;
 extern struct selnodes	 selnodes;
 extern size_t		 nselnodes;
 

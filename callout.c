@@ -1,38 +1,39 @@
 /* $Id$ */
 
+#include "compat.h"
+
 #include <sys/queue.h>
 
+#include "cdefs.h"
 #include "mon.h"
 #include "queue.h"
 
 void
-cocb_fps(void)
+cocb_fps(__unused int a)
 {
 	static int fcnt;
 
 	fps = fcnt;
 	fcnt = 0;
-
-	/* Call us again one second in the future. */
-//	callout_add(1, cocb_fps);
+	glutTimerFunc(1000, cocb_fps, 0);
 }
 
 void
-cocb_datasrc(void)
+cocb_datasrc(__unused int a)
 {
 	st.st_rf |= RF_DATASRC | RF_CLUSTER;
-//	callout_add(5, cocb_datasrc);
+	glutTimerFunc(5000, cocb_datasrc, 0);
 }
 
 void
-cocb_clearstatus(void)
+cocb_clearstatus(__unused int a)
 {
 	status_clear();
-//	callout_add(5, cocb_clearstatus);
+	glutTimerFunc(5000, cocb_clearstatus, 0);
 }
 
 void
-cocb_tourjob(void)
+cocb_tourjob(__unused int a)
 {
 	size_t j;
 
@@ -44,5 +45,5 @@ cocb_tourjob(void)
 			job_goto(job_list.ol_jobs[j]);
 			break;
 		}
-//	callout_add(10, cocb_tourjob);
+	glutTimerFunc(15000, cocb_tourjob, 0);
 }
