@@ -18,13 +18,13 @@
 #define STARTLY		(0.0f)
 #define STARTLZ		(-0.12f)
 
-#define FPS_TO_USEC(X)	(1000000/X)	/* Convert FPS to microseconds. */
+#define FPS_TO_USEC(x)	(1e6 / x)	/* Convert FPS to microseconds. */
 #define GOVERN_FPS	30		/* FPS governor. */
 
 struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 struct node		*invmap[NID_MAX];
 struct node		*wimap[WIDIM_WIDTH][WIDIM_HEIGHT][WIDIM_DEPTH];
-int			 datasrc = DS_FILE;
+int			 dsp = DSP_LOCAL;
 int			 win_width = 800;
 int			 win_height = 600;
 int			 flyby_mode = FBM_OFF;
@@ -60,11 +60,6 @@ const char *opdesc[] = {
 	/* 15 */ "Pause",
 	/* 16 */ "Job tour mode",
 	/* 17 */ "Skeleton"
-};
-
-struct datasrc datasrcsw[] = {
-	{ parse_physmap },
-	{ db_physmap }
 };
 
 struct vmode vmodes[] = {
@@ -211,7 +206,7 @@ rebuild(int opts)
 		tex_load();
 	}
 	if (opts & RF_PHYSMAP)
-		datasrcsw[datasrc].ds_physmap();
+		ds_refresh(DS_PHYS, 0);
 	if (opts & RF_DATASRC) {
 		mode_data_clean = 0;
 		switch (st.st_mode) {
@@ -282,7 +277,7 @@ main(int argc, char *argv[])
 			server = 1;
 			break;
 		case 'l':
-			datasrc = DS_DB;
+			dsp = DSP_DB;
 			break;
 		case 'p':
 			drawh = drawh_stereo;
@@ -296,7 +291,7 @@ main(int argc, char *argv[])
 	/* XXX:  Sanity-check flags. */
 	if (server)
 		serv_init();
-	if (datasrc == DS_DB)
+	if (dsp == DSP_DB)
 		dbh_connect(&dbh);
 
 	glutInitDisplayMode(flags);

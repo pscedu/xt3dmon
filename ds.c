@@ -1,13 +1,10 @@
 /* $Id$ */
 
-#define DS_TEMP		0
-#define DS_PHYS		1
-#define DS_JOBS		2
-#define DS_BAD		3
-#define DS_CHECK	4
-#define DS_QSTAT	5
-#define DS_MEM		6
-#define DS_FAIL		7
+#include <sys/types.h>
+
+#include <fcntl.h>
+
+#include "mon.h"
 
 #define _RPATH_TEMP	"/xt3data/temps"
 #define _RPATH_PHYS	"/xt3data/rtrtrace"
@@ -21,51 +18,68 @@
 #define RDS_PORT	80
 
 struct datasrc {
-	const char *ds_lpath;
-	const char *ds_rpath;
+	const char	*ds_lpath;
+	const char	*ds_rpath;
+	void		(*ds_dbf)(void);
 } datasrcs[] = {
-	{ _PATH_TEMPMAP,	_RPATH_TEMP },
-	{ _PATH_PHYSMAP,	_RPATH_PHYS },
-	{ _PATH_JOBMAP,		_RPATH_JOBS },
-	{ _PATH_BADMAP,		_RPATH_BAD },
-	{ _PATH_CHECKMAP,	_RPATH_CHECK },
-	{ _PATH_QSTAT,		_RPATH_QSTAT },
-	{ _PATH_STAT,		_RPATH_STAT },
-	{ _PATH_FAILMAP,	_RPATH_FAIL }
+	{ _PATH_TEMPMAP,  _RPATH_TEMP,  db_tempmap },
+	{ _PATH_PHYSMAP,  _RPATH_PHYS,  db_physmap },
+	{ _PATH_JOBMAP,   _RPATH_JOBS,  db_jobmap },
+	{ _PATH_BADMAP,   _RPATH_BAD,   db_badmap },
+	{ _PATH_CHECKMAP, _RPATH_CHECK, db_checkmap },
+	{ _PATH_QSTAT,    _RPATH_QSTAT, db_qstat },
+	{ _PATH_STAT,     _PATH_STAT,   NULL },
+	{ _PATH_FAILMAP,  _RPATH_FAIL,  db_failmap }
 };
 #define NDATASRCS (sizeof(datasrcs) / sizeof(datasrcs[0]))
 
-#define DSF_CRIT	(1<<0)
-#define DSF_REMOTE	(1<<1)
+void
+ds_refresh(int type, int flags)
+{
+	switch (dsp) {
+	case DSP_LOCAL:
+	case DSP_REMOTE:
+		ds_open(type, flags);
+		break;
+	case DSP_DB:
+		break;
+	}
+}
 
 int
 ds_open(int type, int flags)
 {
 	struct datasrc *ds;
+	int fd;
 
-	if (type < 0 || type >= NDATASRCS)
+	if (type < 0 || type >= (int)NDATASRCS)
 		errx(1, "datasrc type out of range");
-	ds = datasrcs[type];
+	ds = &datasrcs[type];
 
-	if (flags & DSF_REMOTE) {
+	switch (dsp) {
+	case DSP_REMOTE: {
 		struct http_req r;
 
 		if (ds->ds_rpath == NULL)
 			errx(1, "no remote data available for datasrc type");
 		memset(&r, 0, sizeof(r));
-		r->htreq_server = RDS_HOST;
-		r->htreq_port = RDS_PORT;
+		r.htreq_server = RDS_HOST;
+		r.htreq_port = RDS_PORT;
 
-		r->htreq_method = "GET";
-		r->htreq_version = "HTTP/1.1";
-		r->htreq_version = ds->ds_rpath;
-		return (http_open(&r));
-	}
-	if ((fd = open(ds->ds_lpath, O_RDONLY)) == -1) {
-		if (flags & DSF_CRIT)
-			err(1, "%s", ds->ds_lpath);
-		warn(1, "%s", ds->ds_lpath);
-		return (-1);
+		r.htreq_method = "GET";
+		r.htreq_version = "HTTP/1.1";
+		r.htreq_version = ds->ds_rpath;
+		fd = http_open(&r, NULL);
+		break;
+	    }
+	case DSP_LOCAL:
+		if ((fd = open(ds->ds_lpath, O_RDONLY)) == -1) {
+			if (flags & DSF_CRIT)
+				err(1, "%s", ds->ds_lpath);
+			warn("%s", ds->ds_lpath);
+			return (-1);
+		}
+		break;
 	}
 	return (fd);
 }

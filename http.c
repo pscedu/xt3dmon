@@ -1,29 +1,21 @@
 /* $Id$ */
 
-typedef u_int16_t port_t;
+#include <sys/types.h>
+#include <sys/socket.h>
 
-struct http_req {
-	const char	*htreq_server;
-	port_t		 htreq_port;		/* host-byte order. */
-	int		 htreq_flags;
+#include <netdb.h>
+#include <stdio.h>
 
-	const char	*htreq_method;
-	const char	*htreq_version;
-	const char	*htreq_url;
-	const char	**htreq_extra;		/* NULL-terminate. */
-};
-
-struct http_res {
-};
-
-#define HTF_SEND_HOST	(1<<0)
+#include "cdefs.h"
+#include "mon.h"
 
 int
-http_open(struct http_req *req, struct http_res *res)
+http_open(struct http_req *req, __unused struct http_res *res)
 {
 	struct addrinfo hints, *ai, *res0;
 	char *sport, *cause, buf[BUFSIZ];
-	int needed, error, s;
+	int want, error, s;
+	const char **hdr;
 
 	want = snprintf(NULL, 0, "%d", req->htreq_port);
 	if (want == -1)
@@ -59,18 +51,19 @@ http_open(struct http_req *req, struct http_res *res)
 		err(1, "%s", cause);
 	freeaddrinfo(res0);
 
-	snprintf(buf, "%s %s %s\r\n", req->htreq_method,
+	snprintf(buf, sizeof(buf), "%s %s %s\r\n", req->htreq_method,
 	    req->htreq_url, req->htreq_version);
-	if (write(s, buf, strlen(buf)) != strlen(buf))
+	if (write(s, buf, strlen(buf)) != (int)strlen(buf))
 		err(1, "write");
-	if (req->htreq_flags & HTF_SEND_HOST) {
-		snprintf(buf, "Host: %s\r\n", req->htreq_server);
-		if (write(s, buf, strlen(buf)) != strlen(buf))
+	/* XXX: disgusting */
+	if (strcmp(req->htreq_version, "HTTP/1.1") == 0) {
+		snprintf(buf, sizeof(buf), "Host: %s\r\n",
+		    req->htreq_server);
+		if (write(s, buf, strlen(buf)) != (int)strlen(buf))
 			err(1, "write");
 	}
 	for (hdr = req->htreq_extra; hdr != NULL; hdr++)
-		if (write(s, buf, strlen(buf)) != strlen(buf))
+		if (write(s, buf, strlen(buf)) != (int)strlen(buf))
 			err(1, "write");
-
 	return (s);
 }

@@ -124,6 +124,24 @@
 /* Selection processing return values. */
 #define SP_MISS		(-1)
 
+/* Data source providers. */
+#define DSP_LOCAL	0
+#define DSP_DB		1
+#define DSP_REMOTE	2
+
+/* Data sources -- order impacts datasrc[] in ds.c. */
+#define DS_TEMP		0
+#define DS_PHYS		1
+#define DS_JOBS		2
+#define DS_BAD		3
+#define DS_CHECK	4
+#define DS_QSTAT	5
+#define DS_MEM		6
+#define DS_FAIL		7
+
+/* Data source fetching flags. */
+#define DSF_CRIT	(1<<0)
+
 struct fvec {
 	float		 fv_x;
 	float		 fv_y;
@@ -156,13 +174,6 @@ struct physcoord {
 	int		 pc_m;
 	int		 pc_n;
 };
-
-struct datasrc {
-	void (*ds_physmap)(void);
-};
-
-#define DS_FILE		0
-#define DS_DB		1
 
 struct vmode {
 	int		 vm_clip;
@@ -452,17 +463,31 @@ struct selnode {
 
 SLIST_HEAD(selnodes, selnode);
 
-struct callout_ent {
-	int			  ce_when;
-	void			(*ce_cb)(void);
-	LIST_ENTRY(callout_ent)	  ce_link;
+typedef u_int16_t	 port_t;
+
+struct http_req {
+	const char	*htreq_server;
+	port_t		 htreq_port;		/* host-byte order. */
+	int		 htreq_flags;
+
+	const char	*htreq_method;
+	const char	*htreq_version;
+	const char	*htreq_url;
+	const char	**htreq_extra;		/* NULL-terminate. */
 };
 
-LIST_HEAD(calloutq, callout_ent);
+struct http_res {
+};
 
 /* db.c */
 void			 dbh_connect(struct dbh *);
 void			 db_physmap(void);
+void			 db_jobmap(void);
+void			 db_badmap(void);
+void			 db_checkmap(void);
+void			 db_qstat(void);
+void			 db_tempmap(void);
+void			 db_failmap(void);
 
 /* callout.c */
 void			 callout_add(int, void (*)(void));
@@ -498,6 +523,10 @@ void			 make_cluster(void);
 void			 make_select(void);
 float			 snap_to_grid(float, float, float);
 
+/* ds.c */
+int			 ds_open(int, int);
+void			 ds_refresh(int, int);
+
 /* eggs.c */
 void			 egg_borg(void);
 void			 egg_matrix(void);
@@ -515,6 +544,9 @@ void			 flyby_writeselnode(int);
 /* hl.c */
 void			 hl_clearall(void);
 void			 hl_restoreall(void);
+
+/* http.c */
+int			 http_open(struct http_req *, struct http_res *);
 
 /* job.c */
 struct job		*job_findbyid(size_t);
@@ -706,3 +738,4 @@ extern struct panel	*panel_mobile;
 
 extern struct fill	 fill_black;
 extern struct fill	 fill_light_blue;
+extern int		 dsp;				/* Data source provider. */

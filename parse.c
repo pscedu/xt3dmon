@@ -601,7 +601,7 @@ bad:
 void
 parse_tempmap(void)
 {
-	int t, lineno, i, r, cb, cg, m, n;
+	int fd, t, lineno, i, r, cb, cg, m, n;
 	char buf[BUFSIZ], *p, *s;
 	struct node *node;
 	struct temp *temp;
@@ -609,7 +609,10 @@ parse_tempmap(void)
 	FILE *fp;
 	long l;
 
-	if ((fp = fopen(_PATH_TEMPMAP, "r")) == NULL) {
+	if ((fd = ds_open(DS_TEMP, 0)) == -1)
+		return;
+
+	if ((fp = fdopen(fd, "r")) == NULL) {
 		warn("%s", _PATH_TEMPMAP);
 		return;
 	}
