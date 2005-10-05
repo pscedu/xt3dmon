@@ -251,7 +251,7 @@ rebuild(int opts)
 void
 usage(void)
 {
-	fprintf(stderr, "usage: %s [-alp]\n", progname);
+	fprintf(stderr, "usage: %s [-adlp]\n", progname);
 	exit(1);
 }
 
