@@ -144,6 +144,7 @@ serv_drawh(void)
 	glutSwapBuffers();
 */
 
+	/* Reset some things for the new session. */
 	st.st_opts &= ~(OP_BLEND | OP_SKEL);
 
 	sz = 0;
@@ -190,8 +191,10 @@ snap:
 	resizeh(win_width, win_height);
 	st.st_rf |= RF_CAM;
 
-	if (ss.ss_click)
+	if (ss.ss_click) {
 		drawh_select();
+		panel_hide(PANEL_NINFO);
+	}
 
 	drawh_default();
 	capture_snapfd(clifd, CM_PNG);
@@ -328,9 +331,13 @@ svc_job(char *t, int *used, __unused struct session *ss)
 		st.st_opts |= OP_BLEND | OP_SKEL;
 		st.st_rf |= RF_CLUSTER;
 
+printf("NOSEL JOB node alpha %.3f\n", invmap[1474]->n_fillp->f_a);
 		hl_clearall();
+printf("NOSEL JOB node alpha %.3f\n", invmap[1474]->n_fillp->f_a);
 		job_hl(j);
+printf("NOSEL JOB node alpha %.3f\n\n", invmap[1474]->n_fillp->f_a);
 	}
+else printf("JOB NOT FOUND: %d\n", jobid);
 	return (1);
 }
 
@@ -339,7 +346,7 @@ svc_clicku(char *t, int *used, struct session *ss)
 {
 	if (sscanf(t, "%d%n", &lastu, used) != 1)
 		return (0);
-	ss->ss_click = 1;
+	ss->ss_click++;
 	return (1);
 }
 
@@ -348,7 +355,7 @@ svc_clickv(char *t, int *used, struct session *ss)
 {
 	if (sscanf(t, "%d%n", &lastv, used) != 1)
 		return (0);
-	ss->ss_click = 1;
+	ss->ss_click++;
 	return (1);
 }
 
