@@ -441,17 +441,17 @@ struct objlist {
 };
 
 struct glname {
-	struct objhdr		  gn_oh;
-	int			  gn_id;	/* Underlying object id. */
-	unsigned int 		  gn_name;	/* GL name. */
-	int			  gn_flags;
-	void			(*gn_cb)(int);
+	struct objhdr	  gn_oh;
+	int		  gn_id;	/* Underlying object id. */
+	unsigned int 	  gn_name;	/* GL name. */
+	int		  gn_flags;
+	void		(*gn_cb)(int);
 
 	/* Hack around GL's unwillingness to do 2D selection. */
-	int			  gn_u;
-	int			  gn_v;
-	int			  gn_h;
-	int			  gn_w;
+	int		  gn_u;
+	int		  gn_v;
+	int		  gn_h;
+	int		  gn_w;
 };
 
 #define GNF_2D		(1<<0)
@@ -613,11 +613,14 @@ struct panel		*panel_for_id(int);
 void			 panel_demobilize(struct panel *);
 
 /* parse.c */
-void			 parse_jobmap(void);
-void			 parse_physmap(void);
-void			 parse_failmap(void);
-void			 parse_tempmap(void);
-void			 parse_mem(void);
+void			 parse_jobmap(int *);
+void			 parse_physmap(int *);
+void			 parse_failmap(int *);
+void			 parse_tempmap(int *);
+void			 parse_badmap(int *);
+void			 parse_checkmap(int *);
+void			 parse_mem(int *);
+void			 parse_qstat(int *);
 
 /* select.c */
 void			 sel_begin(void);
