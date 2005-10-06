@@ -702,7 +702,7 @@ extern struct uinput	 uinp;
 extern int		 spkey;
 
 extern struct state	 st;
-extern long		 fps;
+extern long		 fps, fps_cnt;
 extern struct panels	 panels;
 extern struct pinfo	 pinfo[];
 extern struct vmode	 vmodes[];
