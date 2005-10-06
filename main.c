@@ -36,7 +36,8 @@ struct fvec		 tlv = { STARTLX, STARTLY, STARTLZ };
 struct fvec		 tuv = { 0.0f, 1.0f, 0.0f };
 GLint			 cluster_dl, ground_dl, select_dl;
 struct timeval		 lastsync;
-long			 fps = 50;
+long			 fps = 50;	/* last fps sample */
+long			 fps_cnt = 0;	/* current fps counter */
 void			(*drawh)(void);
 int			 window_ids[2];
 const char		*progname;
@@ -147,6 +148,7 @@ idleh_govern(void)
 	gettimeofday(&tv, NULL);
 	timersub(&tv, &gov_tv, &diff);
 	if (diff.tv_sec * 1e6 + diff.tv_usec >= FPS_TO_USEC(GOVERN_FPS)) {
+		fps_cnt++;
 		gov_tv = tv;
 		(*drawh)();
 	}
@@ -155,6 +157,7 @@ idleh_govern(void)
 void
 idleh_default(void)
 {
+	fps_cnt++;
 	(*drawh)();
 }
 
@@ -172,21 +175,21 @@ rebuild(int opts)
 		switch (st.st_mode) {
 		case SM_JOBS:
 			obj_batch_start(&job_list);
-			parse_jobmap();
+			ds_refresh(DS_JOBS, 0);
 			obj_batch_end(&job_list);
 			break;
 		case SM_FAIL:
 			obj_batch_start(&fail_list);
-			parse_failmap();
+			ds_refresh(DS_FAIL, 0);
 			obj_batch_end(&fail_list);
 			break;
 		case SM_TEMP:
 			obj_batch_start(&temp_list);
-			parse_tempmap();
+			ds_refresh(DS_TEMP, 0);
 			obj_batch_end(&temp_list);
 			break;
 		}
-		parse_mem();
+		ds_refresh(DS_MEM, 0);
 	}
 	if (opts & RF_CAM) {
 		switch (st.st_vmode) {
@@ -282,9 +285,6 @@ main(int argc, char *argv[])
 	buf_init(&uinp.uinp_buf);
 	buf_append(&uinp.uinp_buf, '\0');
 	st.st_rf |= RF_INIT;
-
-	/* The first refresh interval will trigger this. */
-	st.st_rf &= ~RF_DATASRC;
 
 	/* glutExposeFunc(reshape); */
 	glutReshapeFunc(resizeh);
