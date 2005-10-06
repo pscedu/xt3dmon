@@ -360,7 +360,8 @@ pass:
 	qsort(job_list.ol_jobs, job_list.ol_tcur, sizeof(struct job *),
 	    job_cmp);
 	for (j = 0; j < job_list.ol_tcur; j++)
-		getcol(j, job_list.ol_tcur, &job_list.ol_jobs[j]->j_fill);
+		getcol(job_list.ol_jobs[j]->j_oh.oh_flags & OHF_OLD,
+		    j, job_list.ol_tcur, &job_list.ol_jobs[j]->j_fill);
 
 	/* Must read qstat info last so jobs are in our memory. */
 	ds_refresh(DS_QSTAT, 0);
@@ -591,7 +592,8 @@ bad:
 	qsort(fail_list.ol_fails, fail_list.ol_tcur, sizeof(struct fail *),
 	    fail_cmp);
 	for (j = 0; j < fail_list.ol_tcur; j++)
-		getcol(j, fail_list.ol_tcur, &fail_list.ol_fails[j]->f_fill);
+		getcol(fail_list.ol_fails[j]->f_oh.oh_flags & OHF_OLD,
+		    j, fail_list.ol_tcur, &fail_list.ol_fails[j]->f_fill);
 }
 
 /*
