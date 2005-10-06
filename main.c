@@ -44,23 +44,22 @@ const char		*progname;
 
 const char *opdesc[] = {
 	/*  0 */ "Texture mode",
-	/*  1 */ "Blending mode",
-	/*  2 */ "Node wireframes",
-	/*  3 */ "Ground and axes",
-	/*  4 */ "Camera tweening",
-	/*  5 */ "Capture mode",
-	/*  6 */ "Display mode",
-	/*  7 */ "Govern mode",
-	/*  8 */ "Flyby loop mode",
-	/*  9 */ "Debug mode",
-	/* 10 */ "Node labels",
-	/* 11 */ "Module mode",
-	/* 12 */ "Wired cluster frames",
-	/* 13 */ "Pipe mode",
-	/* 14 */ "Selected node pipe mode",
-	/* 15 */ "Pause",
-	/* 16 */ "Job tour mode",
-	/* 17 */ "Skeleton"
+	/*  1 */ "Node wireframes",
+	/*  2 */ "Ground and axes",
+	/*  3 */ "Camera tweening",
+	/*  4 */ "Capture mode",
+	/*  5 */ "Display mode",
+	/*  6 */ "Govern mode",
+	/*  7 */ "Flyby loop mode",
+	/*  8 */ "Debug mode",
+	/*  9 */ "Node labels",
+	/* 10 */ "Module mode",
+	/* 11 */ "Wired cluster frames",
+	/* 12 */ "Pipe mode",
+	/* 13 */ "Selected node pipe mode",
+	/* 14 */ "Pause",
+	/* 15 */ "Job tour mode",
+	/* 16 */ "Skeletons"
 };
 
 struct vmode vmodes[] = {
@@ -133,8 +132,6 @@ refresh_state(int oldopts)
 		tv.fv_y = st.st_y;  tlv.fv_y = st.st_ly;
 		tv.fv_z = st.st_z;  tlv.fv_z = st.st_lz;
 	}
-	if (diff & (OP_BLEND | OP_TEX))
-		tex_restore();
 	if (diff & OP_GOVERN)
 		glutIdleFunc(st.st_opts & OP_GOVERN ?
 		    idleh_govern : idleh_default);

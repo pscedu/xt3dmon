@@ -9,27 +9,29 @@
 void
 tex_load(void)
 {
-	unsigned int i, w, h;
+	unsigned int i, w, h, texid;
 	char path[NAME_MAX];
 	void *data;
 
 	/* Read in texture IDs. */
-	for (i = 0; i < NJST; i++) {
+	for (i = 0, texid = 1; i < NJST; i++, texid++) {
 		if (eggs & EGG_BORG)
 			snprintf(path, sizeof(path), _PATH_BORG);
 		else
 			snprintf(path, sizeof(path), _PATH_TEX, i);
 		data = png_load(path, &w, &h);
-		tex_init(data, jstates[i].js_fill.f_alpha_fmt,
-		    GL_RGBA, i + 1, w, h);
-		jstates[i].js_fill.f_texid = i + 1;
+		tex_init(data, GL_RGBA, GL_RGBA, texid, w, h);
+		jstates[i].js_fill.f_texid = texid;
+
+		texid++;
+		data = png_load(path, &w, &h);
+		tex_init(data, GL_INTENSITY, GL_RGBA, texid, w, h);
+		jstates[i].js_fill.f_texid_a = texid;
 	}
 
-	/* Load the font texture */
-	font_id = i + 1;
+	/* Load the font texture -- background color over white in tex */
+	font_id = texid;
 	data = png_load(_PATH_FONT, &w, &h);
-
-	/* This puts background color over white in texture */
 	tex_init(data, GL_INTENSITY, GL_RGBA, font_id, w, h);
 }
 
@@ -60,32 +62,10 @@ tex_remove(void)
 {
 	int i;
 
-	for (i = 0; i < NJST; i++)
+	for (i = 0; i < NJST; i++) {
 		if (jstates[i].js_fill.f_texid)
 			glDeleteTextures(1, &jstates[i].js_fill.f_texid);
-}
-
-/* Reload the textures if needed */
-void
-tex_restore(void)
-{
-	if (st.st_opts & OP_TEX) {
-		int fmt = jstates[0].js_fill.f_alpha_fmt;
-
-		if ((st.st_opts & OP_BLEND && fmt != GL_INTENSITY) ||
-		   ((st.st_opts & OP_BLEND) == 0 && fmt != GL_RGBA))
-			tex_update();
+		if (jstates[i].js_fill.f_texid_a)
+			glDeleteTextures(1, &jstates[i].js_fill.f_texid_a);
 	}
-}
-
-void
-tex_update(void)
-{
-	int j, newfmt;
-
-	newfmt = (jstates[0].js_fill.f_alpha_fmt == GL_RGBA ?
-	    GL_INTENSITY : GL_RGBA);
-	for (j = 0; j < NJST; j++)
-		jstates[j].js_fill.f_alpha_fmt = newfmt;
-	st.st_rf |= RF_TEX | RF_CLUSTER;
 }

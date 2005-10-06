@@ -187,7 +187,7 @@ struct fill {
 	float		 f_b;
 	float		 f_a;
 	GLuint		 f_texid;
-	GLint		 f_alpha_fmt;
+	GLuint		 f_texid_a;		/* alpha-loaded texid */
 #define f_h f_r
 #define f_s f_g
 #define f_v f_b
@@ -291,23 +291,22 @@ struct state {
 #define EGG_MATRIX 	(1<<1)
 
 #define OP_TEX		(1<<0)
-#define OP_BLEND	(1<<1)
-#define OP_WIREFRAME	(1<<2)
-#define OP_GROUND	(1<<3)
-#define OP_TWEEN	(1<<4)
-#define OP_CAPTURE	(1<<5)
-#define OP_DISPLAY	(1<<6)
-#define OP_GOVERN	(1<<7)
-#define OP_LOOPFLYBY	(1<<8)
-#define OP_DEBUG	(1<<9)
-#define OP_NLABELS	(1<<10)
-#define OP_SHOWMODS	(1<<11)
-#define OP_WIVMFRAME	(1<<12)
-#define OP_PIPES	(1<<13)
-#define OP_SELPIPES	(1<<14)
-#define OP_STOP		(1<<15)
-#define OP_TOURJOB	(1<<16)
-#define OP_SKEL		(1<<17)
+#define OP_WIREFRAME	(1<<1)
+#define OP_GROUND	(1<<2)
+#define OP_TWEEN	(1<<3)
+#define OP_CAPTURE	(1<<4)
+#define OP_DISPLAY	(1<<5)
+#define OP_GOVERN	(1<<6)
+#define OP_LOOPFLYBY	(1<<7)
+#define OP_DEBUG	(1<<8)
+#define OP_NLABELS	(1<<9)
+#define OP_SHOWMODS	(1<<10)
+#define OP_WIVMFRAME	(1<<11)
+#define OP_PIPES	(1<<12)
+#define OP_SELPIPES	(1<<13)
+#define OP_STOP		(1<<14)
+#define OP_TOURJOB	(1<<15)
+#define OP_SKEL		(1<<16)
 
 #define SM_JOBS		0
 #define SM_FAIL		1

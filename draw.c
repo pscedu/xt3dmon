@@ -335,7 +335,7 @@ draw_node(struct node *n, int flags)
 		glTranslatef(vp->fv_x, vp->fv_y, vp->fv_z);
 	}
 
-	if (st.st_opts & OP_BLEND) {
+	if (fp->f_a != 1.0f) {
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
 		param = GL_BLEND;
@@ -346,7 +346,7 @@ draw_node(struct node *n, int flags)
 	else
 		draw_box_filled(dimp, fp);
 
-	if (st.st_opts & OP_BLEND)
+	if (fp->f_a != 1.0f)
 		glDisable(GL_BLEND);
 
 	if (st.st_opts & OP_WIREFRAME)

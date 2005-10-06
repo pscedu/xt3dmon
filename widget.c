@@ -169,7 +169,10 @@ draw_box_tex(const struct fvec *dim, const struct fill *fillp, GLenum param)
 
 	glEnable(GL_TEXTURE_2D);
 
-	glBindTexture(GL_TEXTURE_2D, fillp->f_texid);
+	if (fillp->f_a == 1.0f)
+		glBindTexture(GL_TEXTURE_2D, fillp->f_texid);
+	else
+		glBindTexture(GL_TEXTURE_2D, fillp->f_texid_a);
 
 	max = MAX3(w, h, d);
 	tw = NODE_TEXCOORD(w, max);
@@ -183,7 +186,7 @@ draw_box_tex(const struct fvec *dim, const struct fill *fillp, GLenum param)
 
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, param);
 
-	if (st.st_opts & OP_BLEND)
+	if (fillp->f_a != 1.0f)
 		glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, color);
 
 	/* Polygon Offset */

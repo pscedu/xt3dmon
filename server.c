@@ -145,7 +145,7 @@ serv_drawh(void)
 */
 
 	/* Reset some things for the new session. */
-	st.st_opts &= ~(OP_BLEND | OP_SKEL);
+	st.st_opts &= ~OP_SKEL;
 
 	sz = 0;
 	memset(&ss, 0, sizeof(ss));
@@ -328,7 +328,7 @@ svc_job(char *t, int *used, __unused struct session *ss)
 	if (sscanf(t, "%d%n", &jobid, used) != 1)
 		return (0);
 	if ((j = job_findbyid(jobid)) != NULL) {
-		st.st_opts |= OP_BLEND | OP_SKEL;
+		st.st_opts |= OP_SKEL;
 		st.st_rf |= RF_CLUSTER;
 
 printf("NOSEL JOB node alpha %.3f\n", invmap[1474]->n_fillp->f_a);

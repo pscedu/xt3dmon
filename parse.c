@@ -335,6 +335,7 @@ parse_jobmap(int *fd)
 			job->j_id = jobid;
 			/* XXX: only slightly sloppy. */
 			job->j_fill.f_texid = jstates[JST_USED].js_fill.f_texid;
+			job->j_fill.f_texid_a = jstates[JST_USED].js_fill.f_texid_a;
 			node->n_job = job;
 			node->n_fillp = &job->j_fill;
 		}
