@@ -14,10 +14,6 @@
 
 #define MAXFAILS	200
 
-void		 parse_badmap(void);
-void		 parse_checkmap(void);
-void		 parse_qstat(void);
-
 int		 total_failures;
 unsigned long	 vmem;
 long		 rmem;
@@ -31,7 +27,7 @@ long		 rmem;
  *	33	c0-0 c1 s0 s1	0,5,0
  */
 void
-parse_physmap(void)
+parse_physmap(int *fd)
 {
 	int lineno, r, cb, cg, m, n, nid, x, y, z;
 	char buf[BUFSIZ], *p, *s;
@@ -54,8 +50,8 @@ parse_physmap(void)
 						node->n_flags |= NF_HIDE;
 					}
 
-	if ((fp = fopen(_PATH_PHYSMAP, "r")) == NULL) {
-		warn("%s", _PATH_PHYSMAP);
+	if ((fp = fdopen(*fd, "r")) == NULL) {
+		warn("fdopen");
 		return;
 	}
 	lineno = 0;
@@ -228,12 +224,13 @@ parse_physmap(void)
 		node->n_flags &= ~NF_HIDE;
 		continue;
 bad:
-		warnx("%s:%d: malformed line [%s] [%s]",
-		    _PATH_PHYSMAP, lineno, buf, p);
+		warnx("physmap:%d: malformed line [%s] [%s]", lineno,
+		    buf, p);
 	}
 	if (ferror(fp))
-		warn("%s", _PATH_PHYSMAP);
+		warn("fgets");
 	fclose(fp);
+	*fd = -1;
 	errno = 0;
 
 	if (++widim.iv_w != WIDIM_WIDTH ||
@@ -255,7 +252,7 @@ bad:
  *	40  1
  */
 void
-parse_jobmap(void)
+parse_jobmap(int *fd)
 {
 	int jobid, nid, lineno, enabled;
 	char buf[BUFSIZ], *p, *s;
@@ -267,8 +264,8 @@ parse_jobmap(void)
 
 	/* XXXXXX - reset fillp on all nodes. */
 
-	if ((fp = fopen(_PATH_JOBMAP, "r")) == NULL) {
-		warn("%s", _PATH_JOBMAP);
+	if ((fp = fdopen(*fd, "r")) == NULL) {
+		warn("fdopen");
 		return;
 	}
 	lineno = 0;
@@ -346,16 +343,17 @@ parse_jobmap(void)
 			node->n_fillp = &jstates[node->n_state].js_fill;
 		continue;
 bad:
-		warn("%s:%d: malformed line", _PATH_JOBMAP, lineno);
+		warn("jobmap:%d: malformed line", lineno);
 pass:
 		; //node->n_fillp = ;
 	}
 	if (ferror(fp))
-		warn("%s", _PATH_JOBMAP);
+		warn("fgets");
 	fclose(fp);
+	*fd = -1;
 
-	parse_badmap();
-	parse_checkmap();
+	ds_refresh(DS_BAD, 0);
+	ds_refresh(DS_CHECK, 0);
 	errno = 0;
 
 	qsort(job_list.ol_jobs, job_list.ol_tcur, sizeof(struct job *),
@@ -363,11 +361,12 @@ pass:
 	for (j = 0; j < job_list.ol_tcur; j++)
 		getcol(j, job_list.ol_tcur, &job_list.ol_jobs[j]->j_fill);
 
-	parse_qstat();
+	/* Must read qstat info last so jobs are in our memory. */
+	ds_refresh(DS_QSTAT, 0);
 }
 
 void
-parse_badmap(void)
+parse_badmap(int *fd)
 {
 	char *s, *p, buf[BUFSIZ];
 	int lineno, bad, nid;
@@ -375,7 +374,7 @@ parse_badmap(void)
 	FILE *fp;
 	long l;
 
-	if ((fp = fopen(_PATH_BADMAP, "r")) == NULL)
+	if ((fp = fdopen(*fd, "r")) == NULL)
 		return;						/* Failure is OK. */
 	lineno = 0;
 	while (fgets(buf, sizeof(buf), fp) != NULL) {
@@ -421,15 +420,16 @@ parse_badmap(void)
 		}
 		continue;
 bad:
-		warnx("%s:%d: malformed line", _PATH_BADMAP, lineno);
+		warnx("badmap:%d: malformed line", lineno);
 	}
 	if (ferror(fp))
-		warn("%s", _PATH_BADMAP);
+		warn("fgets");
 	fclose(fp);
+	*fd = -1;
 }
 
 void
-parse_checkmap(void)
+parse_checkmap(int *fd)
 {
 	char *s, *p, buf[BUFSIZ];
 	int lineno, checking, nid;
@@ -437,7 +437,7 @@ parse_checkmap(void)
 	FILE *fp;
 	long l;
 
-	if ((fp = fopen(_PATH_CHECKMAP, "r")) == NULL)
+	if ((fp = fdopen(*fd, "r")) == NULL)
 		return;						/* Failure is OK. */
 	lineno = 0;
 	while (fgets(buf, sizeof(buf), fp) != NULL) {
@@ -483,11 +483,12 @@ parse_checkmap(void)
 		}
 		continue;
 bad:
-		warnx("%s:%d: malformed line", _PATH_CHECKMAP, lineno);
+		warnx("checkmap:%d: malformed line", lineno);
 	}
 	if (ferror(fp))
-		warn("%s", _PATH_CHECKMAP);
+		warn("fgets");
 	fclose(fp);
+	*fd = -1;
 }
 
 /*
@@ -501,7 +502,7 @@ bad:
  *	zero data is not listed.
  */
 void
-parse_failmap(void)
+parse_failmap(int *fd)
 {
 	int newmax, nofails, nid, lineno, r, cb, cg, m, n;
 	char *p, *s, buf[BUFSIZ];
@@ -511,8 +512,8 @@ parse_failmap(void)
 	FILE *fp;
 	long l;
 
-	if ((fp = fopen(_PATH_FAILMAP, "r")) == NULL) {
-		warn("%s", _PATH_FAILMAP);
+	if ((fp = fdopen(*fd, "r")) == NULL) {
+		warn("fdopen");
 		return;
 	}
 
@@ -583,6 +584,7 @@ bad:
 	if (ferror(fp))
 		warn("%s", _PATH_FAILMAP);
 	fclose(fp);
+	*fd = -1;
 	errno = 0;
 
 	qsort(fail_list.ol_fails, fail_list.ol_tcur, sizeof(struct fail *),
@@ -599,9 +601,9 @@ bad:
  *	position	[[[[t1] t2] t3] t4]
  */
 void
-parse_tempmap(void)
+parse_tempmap(int *fd)
 {
-	int fd, t, lineno, i, r, cb, cg, m, n;
+	int t, lineno, i, r, cb, cg, m, n;
 	char buf[BUFSIZ], *p, *s;
 	struct node *node;
 	struct temp *temp;
@@ -609,11 +611,8 @@ parse_tempmap(void)
 	FILE *fp;
 	long l;
 
-	if ((fd = ds_open(DS_TEMP, 0)) == -1)
-		return;
-
-	if ((fp = fdopen(fd, "r")) == NULL) {
-		warn("%s", _PATH_TEMPMAP);
+	if ((fp = fdopen(*fd, "r")) == NULL) {
+		warn("fdopen");
 		return;
 	}
 
@@ -731,6 +730,7 @@ bad:
 	if (ferror(fp))
 		warn("%s", _PATH_TEMPMAP);
 	fclose(fp);
+	*fd = -1;
 	errno = 0;
 
 	qsort(temp_list.ol_temps, temp_list.ol_tcur, sizeof(struct temp *),
@@ -740,17 +740,18 @@ bad:
 }
 
 void
-parse_mem(void)
+parse_mem(int *fd)
 {
 	FILE *fp;
 
-	if ((fp = fopen(_PATH_STAT, "r")) == NULL) {
-		warn("%s", _PATH_STAT);
+	if ((fp = fdopen(*fd, "r")) == NULL) {
+		warn("fdopen");
 		return;
 	}
 	fscanf(fp, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u "
 	    "%*u %*u %*d %*d %*d %*d %*d %*d %*u %lu %ld", &vmem, &rmem);
 	fclose(fp);
+	*fd = -1;
 }
 
 /*
@@ -764,7 +765,7 @@ parse_mem(void)
  *   job_state = R
  */
 void
-parse_qstat(void)
+parse_qstat(int *fd)
 {
 	char state, *t, *s, *q, buf[BUFSIZ], *next;
 	struct job j_fake, *job;
@@ -772,8 +773,8 @@ parse_qstat(void)
 	FILE *fp;
 
 	s = NULL; /* gcc */
-	if ((fp = fopen(_PATH_QSTAT, "r")) == NULL) {
-		warn("%s", _PATH_QSTAT);
+	if ((fp = fdopen(*fd, "r")) == NULL) {
+		warn("fdopen");
 		return;
 	}
 	jobid = 0;
@@ -877,4 +878,5 @@ parse_qstat(void)
 		}
 	}
 	fclose(fp);
+	*fd = -1;
 }
