@@ -50,9 +50,7 @@ ds_refresh(int type, int flags)
 	case DSP_REMOTE:
 		fd = ds_http(ds->ds_rpath);
 parse:
-		if (fd == -1) {
-			if (flags & DSF_CRIT)
-				err(1, "datasrc open failed");
+		if (fd == -1 && (flags & DSF_CRIT) == 0) {
 			warn("datasrc (%d) open failed", type);
 			break;
 		}
