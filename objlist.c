@@ -94,8 +94,10 @@ obj_batch_start(struct objlist *ol)
 	ol->ol_tcur = 0;
 	if (ol->ol_data == NULL)
 		return;
-	for (n = 0; n < ol->ol_cur; n++)
+	for (n = 0; n < ol->ol_cur; n++) {
 		((struct objhdr *)ol->ol_data[n])->oh_flags &= ~OHF_TREF;
+		((struct objhdr *)ol->ol_data[n])->oh_flags |= OHF_OLD;
+	}
 }
 
 void
@@ -121,18 +123,26 @@ obj_batch_end(struct objlist *ol)
 			for (; lookpos < ol->ol_max; lookpos++) {
 				swapohp = ol->ol_data[lookpos];
 				if (swapohp->oh_flags & OHF_TREF) {
+					swapohp->oh_flags |= OHF_REF;
+
 					t = ol->ol_data[n];
 					ol->ol_data[n] = ol->ol_data[lookpos];
 					ol->ol_data[lookpos++] = t;
-					break;
 				}
 			}
 			if (lookpos == ol->ol_max) {
 				ol->ol_cur = n + 1;
-				return;
+				break;
 			}
 		}
 	}
+	for (; n < ol->ol_max; n++)
+		/*
+		 * This object disappeared, so
+		 * when it gets reused, it will
+		 * be a new object.
+		 */
+		((struct objhdr *)ol->ol_data[n])->oh_flags &= ~OHF_OLD;
 }
 
 /*
@@ -184,7 +194,7 @@ found:
  * ranges from 30%-100%, and value ranges from 50%-100%.
  */
 void
-getcol(size_t n, size_t total, struct fill *fillp)
+getcol(int old, size_t n, size_t total, struct fill *fillp)
 {
 	float hinc, sinc, vinc;
 
@@ -198,7 +208,8 @@ getcol(size_t n, size_t total, struct fill *fillp)
 	fillp->f_h = hinc * n + HUE_MIN;
 	fillp->f_s = sinc * n + SAT_MIN;
 	fillp->f_v = vinc * n + VAL_MIN;
-	fillp->f_a = 1.0;
+	if (!old)
+		fillp->f_a = 1.0;
 
 	hsv_to_rgb(fillp);
 }
