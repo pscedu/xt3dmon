@@ -169,7 +169,7 @@ rebuild(int opts)
 		tex_load();
 	}
 	if (opts & RF_PHYSMAP)
-		ds_refresh(DS_PHYS, 0);
+		ds_refresh(DS_PHYS, DSF_CRIT);
 	if (opts & RF_DATASRC) {
 		mode_data_clean = 0;
 		switch (st.st_mode) {
