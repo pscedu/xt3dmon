@@ -11,10 +11,8 @@
 void
 cocb_fps(__unused int a)
 {
-	static int fcnt;
-
-	fps = fcnt;
-	fcnt = 0;
+	fps = fps_cnt;
+	fps_cnt = 0;
 	glutTimerFunc(1000, cocb_fps, 0);
 }
 
