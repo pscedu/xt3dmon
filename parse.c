@@ -352,8 +352,8 @@ pass:
 	fclose(fp);
 	*fd = -1;
 
-	ds_refresh(DS_BAD, 0);
-	ds_refresh(DS_CHECK, 0);
+	ds_refresh(DS_BAD, DSF_IGN);
+	ds_refresh(DS_CHECK, DSF_IGN);
 	errno = 0;
 
 	qsort(job_list.ol_jobs, job_list.ol_tcur, sizeof(struct job *),

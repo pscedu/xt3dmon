@@ -51,7 +51,8 @@ ds_refresh(int type, int flags)
 		fd = ds_http(ds->ds_rpath);
 parse:
 		if (fd == -1 && (flags & DSF_CRIT) == 0) {
-			warn("datasrc (%d) open failed", type);
+			if ((flags & DSF_IGN) == 0)
+				warn("datasrc (%d) open failed", type);
 			break;
 		}
 		ds->ds_parsef(&fd);

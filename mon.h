@@ -141,6 +141,7 @@
 
 /* Data source fetching flags. */
 #define DSF_CRIT	(1<<0)
+#define DSF_IGN		(1<<1)
 
 struct fvec {
 	float		 fv_x;
