@@ -200,7 +200,8 @@ struct objhdr {
 #define OHF_REF		(1<<0)			/* object is referenced */
 #define OHF_TREF	(1<<1)			/* temporarily referenced */
 #define OHF_SEL		(1<<2)			/* selected */
-#define OHF_USR1	(1<<3)			/* specific to object */
+#define OHF_OLD		(1<<3)			/* object has been around */
+#define OHF_USR1	(1<<4)			/* specific to object */
 
 #define JFL_OWNER	32
 #define JFL_NAME	20
@@ -596,7 +597,7 @@ int			 node_show(struct node *);
 void			 obj_batch_start(struct objlist *);
 void			 obj_batch_end(struct objlist *);
 void			*getobj(const void *, struct objlist *);
-void			 getcol(size_t, size_t, struct fill *);
+void			 getcol(int, size_t, size_t, struct fill *);
 void			 getcol_temp(size_t, struct fill *);
 int			 job_cmp(const void *, const void *);
 int			 fail_cmp(const void *, const void *);
