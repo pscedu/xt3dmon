@@ -331,13 +331,9 @@ svc_job(char *t, int *used, __unused struct session *ss)
 		st.st_opts |= OP_SKEL;
 		st.st_rf |= RF_CLUSTER;
 
-printf("NOSEL JOB node alpha %.3f\n", invmap[1474]->n_fillp->f_a);
 		hl_clearall();
-printf("NOSEL JOB node alpha %.3f\n", invmap[1474]->n_fillp->f_a);
 		job_hl(j);
-printf("NOSEL JOB node alpha %.3f\n\n", invmap[1474]->n_fillp->f_a);
 	}
-else printf("JOB NOT FOUND: %d\n", jobid);
 	return (1);
 }
 
