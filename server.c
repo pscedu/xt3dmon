@@ -351,6 +351,9 @@ svc_hl(char *t, int *used, __unused struct session *ss)
 	} else if (strcmp(t, "down") == 0) {
 		jst = JST_DOWN;
 		*used = strlen("down");
+	} else if (strcmp(t, "service") == 0) {
+		jst = JST_IO;
+		*used = strlen("service");
 	} else
 		return (0);
 	hl_state(jst);
