@@ -401,6 +401,12 @@ keyh_alpha(unsigned char key, __unused int u, __unused int v)
 
 	glutKeyboardFunc(keyh_default);
 	switch (key) {
+	case 'd':
+		hl_state(JST_DOWN);
+		break;
+	case 'f':
+		hl_state(JST_FREE);
+		break;
 	case 'j': {
 		int foundjob = 0;
 

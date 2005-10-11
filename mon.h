@@ -543,6 +543,7 @@ void			 flyby_writeselnode(int);
 /* hl.c */
 void			 hl_clearall(void);
 void			 hl_restoreall(void);
+void			 hl_state(int);
 
 /* http.c */
 int			 http_open(struct http_req *, struct http_res *);

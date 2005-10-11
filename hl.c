@@ -24,3 +24,10 @@ hl_restoreall(void)
 	for (j = 0; j < NJST; j++)
 		jstates[j].js_fill.f_a = 1.0f;
 }
+
+void
+hl_state(int jst)
+{
+	hl_clearall();
+	jstates[jst].js_fill.f_a = 1.0f;
+}
