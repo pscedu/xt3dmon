@@ -31,6 +31,7 @@ int svc_lx(char *, int *, struct session *);
 int svc_ly(char *, int *, struct session *);
 int svc_lz(char *, int *, struct session *);
 int svc_job(char *, int *, struct session *);
+int svc_hl(char *, int *, struct session *);
 int svc_clicku(char *, int *, struct session *);
 int svc_clickv(char *, int *, struct session *);
 int svc_vmode(char *, int *, struct session *);
@@ -52,6 +53,7 @@ struct sv_cmd {
 	{ "ly",		svc_ly },
 	{ "lz",		svc_lz },
 	{ "job",	svc_job },
+	{ "hl",		svc_hl },
 	{ "clicku",	svc_clicku },
 	{ "clickv",	svc_clickv },
 	{ "vmode",	svc_vmode }
@@ -334,6 +336,26 @@ svc_job(char *t, int *used, __unused struct session *ss)
 		hl_clearall();
 		job_hl(j);
 	}
+	return (1);
+}
+
+int
+svc_hl(char *t, int *used, __unused struct session *ss)
+{
+	int jst;
+
+	jst = 0; /* gcc */
+	if (strcmp(t, "free") == 0) {
+		jst = JST_FREE;
+		*used = strlen("free");
+	} else if (strcmp(t, "down") == 0) {
+		jst = JST_DOWN;
+		*used = strlen("down");
+	} else
+		return (0);
+	hl_state(jst);
+	st.st_opts |= OP_SKEL;
+	st.st_rf |= RF_CLUSTER;
 	return (1);
 }
 
