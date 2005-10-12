@@ -345,13 +345,13 @@ svc_hl(char *t, int *used, __unused struct session *ss)
 	int jst;
 
 	jst = 0; /* gcc */
-	if (strcmp(t, "free") == 0) {
+	if (strncmp(t, "free", strlen("free")) == 0) {
 		jst = JST_FREE;
 		*used = strlen("free");
-	} else if (strcmp(t, "down") == 0) {
+	} else if (strncmp(t, "down", strlen("down")) == 0) {
 		jst = JST_DOWN;
 		*used = strlen("down");
-	} else if (strcmp(t, "service") == 0) {
+	} else if (strncmp(t, "service", strlen("service")) == 0) {
 		jst = JST_IO;
 		*used = strlen("service");
 	} else
