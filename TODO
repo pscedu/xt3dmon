@@ -35,3 +35,4 @@ reminders:
 53. find some way to alloc wi sel steps once
 54. in wione, draw the cube outer planes first, then inner, so gl
     tries to optimize
+55. handle SIGPIPES in server and client modes
