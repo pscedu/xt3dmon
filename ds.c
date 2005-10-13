@@ -1,6 +1,8 @@
 /* $Id$ */
 
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <time.h>
 
 #include <fcntl.h>
 
@@ -19,33 +21,69 @@
 
 int ds_http(const char *);
 
+#define DSF_AUTO	(1<<0)
+#define DSF_FORCE	(1<<1)
+#define DSF_READY	(1<<2)
+
 struct datasrc {
-	const char	*ds_lpath;
-	const char	*ds_rpath;
+	time_t		  ds_mtime;
+	int		  ds_flags;
+	int		  ds_dsp;
+	const char	 *ds_lpath;
+	const char	 *ds_rpath;
 	void		(*ds_parsef)(int *);
 	void		(*ds_dbf)(void);
 } datasrcs[] = {
-	{ _PATH_TEMPMAP,  _RPATH_TEMP,  parse_tempmap,	db_tempmap },
-	{ _PATH_PHYSMAP,  _RPATH_PHYS,  parse_physmap,	db_physmap },
-	{ _PATH_JOBMAP,   _RPATH_JOBS,  parse_jobmap,	db_jobmap },
-	{ _PATH_BADMAP,   _RPATH_BAD,   parse_badmap,	db_badmap },
-	{ _PATH_CHECKMAP, _RPATH_CHECK, parse_checkmap,	db_checkmap },
-	{ _PATH_QSTAT,    _RPATH_QSTAT, parse_qstat,	db_qstat },
-	{ _PATH_STAT,     _PATH_STAT,   parse_mem,	NULL },
-	{ _PATH_FAILMAP,  _RPATH_FAIL,  parse_failmap,	db_failmap }
+	{ 0, DSF_AUTO, DSP_LOCAL, _PATH_TEMPMAP,  _RPATH_TEMP,  parse_tempmap,	db_tempmap },
+	{ 0, DSF_AUTO, DSP_LOCAL, _PATH_PHYSMAP,  _RPATH_PHYS,  parse_physmap,	db_physmap },
+	{ 0, DSF_AUTO, DSP_LOCAL, _PATH_JOBMAP,   _RPATH_JOBS,  parse_jobmap,	db_jobmap },
+	{ 0, DSF_AUTO, DSP_LOCAL, _PATH_BADMAP,   _RPATH_BAD,   parse_badmap,	db_badmap },
+	{ 0, DSF_AUTO, DSP_LOCAL, _PATH_CHECKMAP, _RPATH_CHECK, parse_checkmap,	db_checkmap },
+	{ 0, DSF_AUTO, DSP_LOCAL, _PATH_QSTAT,    _RPATH_QSTAT, parse_qstat,	db_qstat },
+	{ 0, DSF_AUTO, DSP_LOCAL, _PATH_STAT,     NULL,		parse_mem,	NULL },
+	{ 0, DSF_AUTO, DSP_LOCAL, _PATH_FAILMAP,  _RPATH_FAIL,  parse_failmap,	db_failmap }
 };
 #define NDATASRCS (sizeof(datasrcs) / sizeof(datasrcs[0]))
+
+void
+ds_chdsp(int type, int dsp)
+{
+	struct datasrc *ds;
+
+	ds = &datasrcs[type];
+	if (ds->ds_dsp == dsp)
+		return;
+	ds->ds_dsp = dsp;
+	ds->ds_mtime = 0;
+	ds->ds_flags = 0;
+}
 
 void
 ds_refresh(int type, int flags)
 {
 	struct datasrc *ds;
-	int fd;
+	struct stat st;
+	int fd, mod;
 
+	mod = 0;
 	ds = &datasrcs[type];
-	switch (dsp) {
+	switch (ds->ds_dsp) {
 	case DSP_LOCAL:
 		fd = open(ds->ds_lpath, O_RDONLY);
+		if (fd == -1)
+			goto parse;
+		if (fstat(fd, &st) == -1)
+			err(1, "fstat %s", ds->ds_lpath);
+		/* XXX: no way to tell if it was modified with <1 second resolution. */
+		if (st.st_mtime <= ds->ds_mtime)
+			goto closeit;
+		ds->ds_mtime = st.st_mtime;
+		if ((ds->ds_flags & (DSF_AUTO | DSF_FORCE)) == 0) {
+//			ds->ds_flags |= DSF_READY;
+			status_add("New data available");
+			goto closeit;
+		}
+		ds->ds_flags &= ~DSF_FORCE;
 		goto parse;
 	case DSP_REMOTE:
 		fd = ds_http(ds->ds_rpath);
@@ -56,6 +94,7 @@ parse:
 			break;
 		}
 		ds->ds_parsef(&fd);
+closeit:
 		if (fd != -1)
 			close(fd);
 		break;
