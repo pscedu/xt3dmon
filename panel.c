@@ -586,26 +586,33 @@ panel_refresh_ninfo(struct panel *p)
 		char *label, nids[BUFSIZ], data[BUFSIZ];
 		size_t j, nids_pos, data_pos;
 
+		j = 0;
 		nids[0] = data[0] = '\0';
 		nids_pos = data_pos = 0;
-
 		SLIST_FOREACH(sn, &selnodes, sn_next) {
 			n = sn->sn_nodep;
+			strncpy(nids + nids_pos, ",",
+			    sizeof(nids) - nids_pos);
+			nids_pos++;
+			/* Only allow 10 nids per line. */
+			if (j && (j % 10) == 0) {
+				strncpy(nids + nids_pos, "\n  ",
+				    sizeof(nids) - nids_pos);
+				nids_pos += 3;
+			}
 			nids_pos += snprintf(nids + nids_pos,
-			    sizeof(nids) - nids_pos, ",%d", n->n_nid);
+			    sizeof(nids) - nids_pos, "%d", n->n_nid);
 			if (nids_pos >= sizeof(nids))
 				break;
 			switch (st.st_mode) {
 			case SM_JOBS:
 				if (n->n_state == JST_USED)
-					n->n_job->j_oh.oh_flags |= OHF_SEL;
-				break;
-			case SM_TEMP:
-				break;
-			case SM_FAIL:
+					n->n_job->j_oh.oh_flags |= OHF_TMP;
 				break;
 			}
+			j++;
 		}
+		nids[sizeof(nids) - 1] = '\0';
 
 		label = NULL; /* gcc */
 		ol = NULL; /* gcc */
@@ -626,17 +633,22 @@ panel_refresh_ninfo(struct panel *p)
 
 		for (j = 0; j < ol->ol_cur; j++) {
 			ohp = ol->ol_data[j];
-			if (ohp->oh_flags & OHF_SEL) {
-				ohp->oh_flags &= ~OHF_SEL;
+			if (ohp->oh_flags & OHF_TMP) {
+				ohp->oh_flags &= ~OHF_TMP;
 				switch (st.st_mode) {
 				case SM_JOBS:
+					strncpy(data + data_pos, ",",
+					    sizeof(data) - data_pos);
+					data_pos++;
+					/* Only allow 10 jids per line. */
+					if (j && (j % 10) == 0) {
+						strncpy(data + data_pos, "\n  ",
+						    sizeof(data) - data_pos);
+						data_pos += 3;
+					}
 					data_pos += snprintf(data + data_pos,
-					    sizeof(data) - data_pos, ",%d",
+					    sizeof(data) - data_pos, "%d",
 					    ((struct job *)ohp)->j_id);
-					break;
-				case SM_TEMP:
-					break;
-				case SM_FAIL:
 					break;
 				}
 			}
@@ -646,6 +658,7 @@ panel_refresh_ninfo(struct panel *p)
 
 		if (data[0] == '\0')
 			strncpy(data, "_(none)", sizeof(data) - 1);
+		data[sizeof(data) - 1] = '\0';
 
 		panel_set_content(p,
 		    "Node Information\n"
