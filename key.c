@@ -471,9 +471,9 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		st.st_ly = 0.0f;
 		st.st_lz = 0.0f;
 
-		st.st_lx = 0.0f;
-		st.st_ly = 1.0f;
-		st.st_lz = 0.0f;
+		st.st_ux = 0.0f;
+		st.st_uy = 1.0f;
+		st.st_uz = 0.0f;
 		tween_pop(TWF_LOOK | TWF_POS | TWF_ROLL);
 		break;
 	    }
