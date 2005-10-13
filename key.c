@@ -427,7 +427,7 @@ keyh_alpha(unsigned char key, __unused int u, __unused int v)
 	case 'r':
 		hl_restoreall();
 		break;
-	case 'n':
+	case 's':
 		hl_clearall();
 		break;
 	default:
