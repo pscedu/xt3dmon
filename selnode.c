@@ -38,6 +38,18 @@ sn_insert(struct node *n)
 	SLIST_INSERT_HEAD(&selnodes, sn, sn_next);
 	if (flyby_mode == FBM_REC)
 		flyby_writeselnode(n->n_nid);
+#if 0
+	switch (st.st_mode) {
+	case SM_JOBS:
+		if (n->n_state == JST_USED)
+			n->n_job->j_oh.oh_flags |= OHF_SEL;
+		break;
+	case SM_TEMP:
+		break;
+	case SM_FAIL:
+		break;
+	}
+#endif
 	st.st_rf |= RF_SELNODE;
 	nselnodes++;
 }
