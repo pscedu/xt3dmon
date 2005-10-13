@@ -171,19 +171,13 @@ rebuild(int opts)
 		mode_data_clean = 0;
 		switch (st.st_mode) {
 		case SM_JOBS:
-			obj_batch_start(&job_list);
 			ds_refresh(DS_JOBS, 0);
-			obj_batch_end(&job_list);
 			break;
 		case SM_FAIL:
-			obj_batch_start(&fail_list);
 			ds_refresh(DS_FAIL, 0);
-			obj_batch_end(&fail_list);
 			break;
 		case SM_TEMP:
-			obj_batch_start(&temp_list);
 			ds_refresh(DS_TEMP, 0);
-			obj_batch_end(&temp_list);
 			break;
 		}
 		ds_refresh(DS_MEM, 0);

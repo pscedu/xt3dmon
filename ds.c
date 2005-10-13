@@ -33,15 +33,16 @@ struct datasrc {
 	const char	 *ds_rpath;
 	void		(*ds_parsef)(int *);
 	void		(*ds_dbf)(void);
+	struct objlist	 *ds_objlist;
 } datasrcs[] = {
-	{ 0, DSF_AUTO, DSP_LOCAL, _PATH_TEMPMAP,  _RPATH_TEMP,  parse_tempmap,	db_tempmap },
-	{ 0, DSF_AUTO, DSP_LOCAL, _PATH_PHYSMAP,  _RPATH_PHYS,  parse_physmap,	db_physmap },
-	{ 0, DSF_AUTO, DSP_LOCAL, _PATH_JOBMAP,   _RPATH_JOBS,  parse_jobmap,	db_jobmap },
-	{ 0, DSF_AUTO, DSP_LOCAL, _PATH_BADMAP,   _RPATH_BAD,   parse_badmap,	db_badmap },
-	{ 0, DSF_AUTO, DSP_LOCAL, _PATH_CHECKMAP, _RPATH_CHECK, parse_checkmap,	db_checkmap },
-	{ 0, DSF_AUTO, DSP_LOCAL, _PATH_QSTAT,    _RPATH_QSTAT, parse_qstat,	db_qstat },
-	{ 0, DSF_AUTO, DSP_LOCAL, _PATH_STAT,     NULL,		parse_mem,	NULL },
-	{ 0, DSF_AUTO, DSP_LOCAL, _PATH_FAILMAP,  _RPATH_FAIL,  parse_failmap,	db_failmap }
+	{ 0, DSF_AUTO, DSP_LOCAL, _PATH_TEMPMAP,  _RPATH_TEMP,  parse_tempmap,	db_tempmap,	&temp_list },
+	{ 0, DSF_AUTO, DSP_LOCAL, _PATH_PHYSMAP,  _RPATH_PHYS,  parse_physmap,	db_physmap,	NULL },
+	{ 0, DSF_AUTO, DSP_LOCAL, _PATH_JOBMAP,   _RPATH_JOBS,  parse_jobmap,	db_jobmap,	&job_list },
+	{ 0, DSF_AUTO, DSP_LOCAL, _PATH_BADMAP,   _RPATH_BAD,   parse_badmap,	db_badmap,	NULL },
+	{ 0, DSF_AUTO, DSP_LOCAL, _PATH_CHECKMAP, _RPATH_CHECK, parse_checkmap,	db_checkmap,	NULL },
+	{ 0, DSF_AUTO, DSP_LOCAL, _PATH_QSTAT,    _RPATH_QSTAT, parse_qstat,	db_qstat,	NULL },
+	{ 0, DSF_AUTO, DSP_LOCAL, _PATH_STAT,     NULL,		parse_mem,	NULL,		NULL },
+	{ 0, DSF_AUTO, DSP_LOCAL, _PATH_FAILMAP,  _RPATH_FAIL,  parse_failmap,	db_failmap,	&fail_list }
 };
 #define NDATASRCS (sizeof(datasrcs) / sizeof(datasrcs[0]))
 
@@ -93,7 +94,11 @@ parse:
 				warn("datasrc (%d) open failed", type);
 			break;
 		}
+		if (ds->ds_objlist)
+			obj_batch_start(ds->ds_objlist);
 		ds->ds_parsef(&fd);
+		if (ds->ds_objlist)
+			obj_batch_end(ds->ds_objlist);
 closeit:
 		if (fd != -1)
 			close(fd);
