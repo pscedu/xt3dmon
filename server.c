@@ -7,6 +7,7 @@
 #include <err.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <signal.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -121,6 +122,8 @@ serv_init(void)
 
 	qsort(sv_cmds, sizeof(sv_cmds) / sizeof(sv_cmds[0]),
 	    sizeof(sv_cmds[0]), svc_cmp);
+	if (signal(SIGPIPE, SIG_IGN) == SIG_ERR)
+		err(1, "signal");
 }
 
 #define SERVP_DONE	0
