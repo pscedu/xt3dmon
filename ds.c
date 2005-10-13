@@ -104,7 +104,11 @@ closeit:
 			close(fd);
 		break;
 	case DSP_DB:
+		if (ds->ds_objlist)
+			obj_batch_start(ds->ds_objlist);
 		ds->ds_dbf();
+		if (ds->ds_objlist)
+			obj_batch_end(ds->ds_objlist);
 		break;
 	}
 }
