@@ -199,7 +199,7 @@ struct objhdr {
 
 #define OHF_REF		(1<<0)			/* object is referenced */
 #define OHF_TREF	(1<<1)			/* temporarily referenced */
-#define OHF_SEL		(1<<2)			/* selected */
+#define OHF_TMP		(1<<2)			/* trashable temporary flag */
 #define OHF_OLD		(1<<3)			/* object has been around */
 #define OHF_USR1	(1<<4)			/* specific to object */
 
