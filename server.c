@@ -197,10 +197,12 @@ snap:
 	st.st_rf |= RF_CAM;
 
 	if (ss.ss_click) {
+		drawh_old = serv_drawh;
 		drawh_select();
 		panel_hide(PANEL_NINFO);
 	}
 
+	drawh_old = serv_drawh;
 	drawh_default();
 	capture_snapfd(clifd, CM_PNG);
 drop:
