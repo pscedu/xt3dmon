@@ -340,7 +340,7 @@ hsv_to_rgb(struct fill *c)
 			h = 0;
 		h /= 60;
 
-		i = floorf(h);
+		i = h;
 		f = h - i;
 		p = v * (1 - s);
 		q = v * (1 - (s * f));
@@ -357,6 +357,9 @@ hsv_to_rgb(struct fill *c)
 	}
 }
 
+#define CON_VAL_MAX (0.85 * VAL_MAX)
+#define CON_VAL_MIN (0.4 * VAL_MIN)
+
 /* Create a contrasting color */
 void
 rgb_contrast(struct fill *c)
@@ -369,6 +372,7 @@ rgb_contrast(struct fill *c)
 	if (c->f_h < 0)
 		c->f_h += 360;
 
+#if 0
 	/* Sat should be [0.3-1.0] */
 	if (c->f_s < MID(SAT_MAX, SAT_MIN))
 		c->f_s = SAT_MAX;
@@ -380,6 +384,11 @@ rgb_contrast(struct fill *c)
 		c->f_v = VAL_MAX;
 	else
 		c->f_v = VAL_MIN;
+#endif
+	if (c->f_v < CON_VAL_MAX)
+		c->f_v = VAL_MAX;
+	else
+		c->f_v = CON_VAL_MIN;
 
-	rgb_to_hsv(c);
+	hsv_to_rgb(c);
 }
