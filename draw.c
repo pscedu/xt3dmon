@@ -65,13 +65,15 @@ draw_scene(void)
 		draw_panels();
 }
 
+#define FOCAL_POINT (2.0f) /* distance from cam to center of 3d focus */
+#define FOCAL_LENGTH (5.0f) /* length of 3d focus */
+
 void
 drawh_stereo(void)
 {
-#if 0
-	static double ratio, radians, wd2, ndfl, eyeadj;
+	static double ratio, radians, wd2, ndfl, eyesep;
 	static float left, right, top, bottom;
-	static struct fvec stereo_fv, *fvp;
+	static struct fvec stereo_fv;
 
 	if (flyby_mode)
 		flyby_update();
@@ -84,41 +86,33 @@ drawh_stereo(void)
 		st.st_rf = 0;
 	}
 
-	fvp = &fvzero;
-	vec_crossprod(&st.st_lv, &st.st_uv, &stereo_fv);
+	ratio = ASPECT;
+	radians = DEG_TO_RAD(FOVY / 2);
+	wd2 = FOCAL_POINT * tan(radians);
+	ndfl = FOCAL_POINT / FOCAL_LENGTH;
+	eyesep = 0.2f;
+
+	vec_crossprod(&stereo_fv, &st.st_lv, &st.st_uv);
 	vec_normalize(&stereo_fv);
-	eyeadj = 0.2f;
-	ndfl = 0.2f;
-
-	if (stereo_mode == STM_ACT)
-		glDrawBuffer(GL_BACK);
-#if 0
-	if (stereo_mode == STM_ACT) {
-		glDrawBuffer(GL_BACK_LEFT);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glDrawBuffer(GL_BACK_RIGHT);
-	}
-#endif
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	stereo_fv.fv_x *= eyeadj / 2.0f;
-	stereo_fv.fv_y *= eyeadj / 2.0f;
-	stereo_fv.fv_z *= eyeadj / 2.0f;
+	stereo_fv.fv_x *= eyesep / 2.0f;
+	stereo_fv.fv_y *= eyesep / 2.0f;
+	stereo_fv.fv_z *= eyesep / 2.0f;
 
 	/* Draw right buffer. */
 	switch (stereo_mode) {
 	case STM_ACT:
 		glDrawBuffer(GL_BACK_RIGHT);
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
 		break;
 	case STM_PASV:
 		glutSetWindow(window_ids[1]);
 		break;
 	}
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	right = ratio * wd2 - eyeadj * ndfl / 2;
-	left = -ratio * wd2 - eyeadj * ndfl / 2;
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	left = -ratio * wd2 - eyesep * ndfl / 2;
+	right = ratio * wd2 - eyesep * ndfl / 2;
 	top = wd2;
 	bottom = -wd2;
 	glFrustum(left, right, bottom, top, NEARCLIP, clip);
@@ -130,42 +124,49 @@ drawh_stereo(void)
 	cam_look();
 	draw_scene();
 
+	if (stereo_mode == STM_PASV) {
+		glClearColor(0.2, 0.2, 0.2, 1.0);
+		/* XXX: capture frame */
+		if (st.st_opts & OP_DISPLAY)
+			glutSwapBuffers();
+	}
+
 	/* Draw left buffer. */
 	switch (stereo_mode) {
 	case STM_ACT:
 		glDrawBuffer(GL_BACK_LEFT);
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
 		break;
 	case STM_PASV:
 		glutSetWindow(window_ids[0]);
 		break;
 	}
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	right = ratio * wd2 + eyeadj * ndfl / 2;
-	left = -ratio * wd2 + eyeadj * ndfl / 2;
-//	top = wd2;
-//	bottom = -wd2;
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	left = -ratio * wd2 + eyesep * ndfl / 2;
+	right = ratio * wd2 + eyesep * ndfl / 2;
+	top = wd2;
+	bottom = -wd2;
 	glFrustum(left, right, bottom, top, NEARCLIP, clip);
 
 	glMatrixMode(GL_MODELVIEW);
 	st.st_x -= 2 * stereo_fv.fv_x;
 	st.st_y -= 2 * stereo_fv.fv_y;
-	st.st_y -= 2 * stereo_fv.fv_z;
+	st.st_z -= 2 * stereo_fv.fv_z;
 	cam_look();
 	draw_scene();
+
+	glClearColor(0.2, 0.2, 0.2, 1.0);
+	if (st.st_opts & OP_CAPTURE)
+		capture_frame(capture_mode);
+	else if (st.st_opts & OP_DISPLAY)
+		glutSwapBuffers();
 
 	/* Restore camera position. */
 	st.st_x += stereo_fv.fv_x;
 	st.st_y += stereo_fv.fv_y;
 	st.st_z += stereo_fv.fv_z;
-
-	glClearColor(0.0, 0.0, 0.2, 1.0);
-	if (st.st_opts & OP_CAPTURE)
-		capture_frame(capture_mode);
-	else if (st.st_opts & OP_DISPLAY)
-		glutSwapBuffers();
-#endif
 }
 
 void
