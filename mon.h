@@ -722,6 +722,7 @@ extern struct fvec	 tv, tlv, tuv;			/* tween vectors */
 extern int		 flyby_mode;
 extern int		 capture_mode;
 extern int		 stereo_mode;
+extern int		 window_ids[2];
 
 extern int		 win_width;
 extern int		 win_height;
