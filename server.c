@@ -36,6 +36,7 @@ int svc_hl(char *, int *, struct session *);
 int svc_clicku(char *, int *, struct session *);
 int svc_clickv(char *, int *, struct session *);
 int svc_vmode(char *, int *, struct session *);
+int svc_smode(char *, int *, struct session *);
 
 struct session {
 	int		ss_click;
@@ -57,7 +58,8 @@ struct sv_cmd {
 	{ "hl",		svc_hl },
 	{ "clicku",	svc_clicku },
 	{ "clickv",	svc_clickv },
-	{ "vmode",	svc_vmode }
+	{ "vmode",	svc_vmode },
+	{ "smode",	svc_smode }
 };
 
 int sock;
@@ -81,6 +83,7 @@ void
 serv_init(void)
 {
 	struct sockaddr_in sin;
+	struct panel *p;
 	socklen_t sz;
 	int optval;
 
@@ -115,6 +118,13 @@ serv_init(void)
 
 	st.st_opts &= ~(OP_TWEEN);
 	st.st_opts |= OP_NLABELS;
+
+	panel_toggle(PANEL_DATE);
+	if ((p = panel_for_id(PANEL_DATE)) != NULL) {
+		p->p_stick = PSTICK_BL;
+		p->p_u = 0;
+		p->p_v = 0;
+	}
 
 	drawh = serv_drawh;
 	rebuild(RF_DATASRC | RF_PHYSMAP | RF_CLUSTER);
@@ -163,8 +173,8 @@ serv_drawh(void)
 		return;
 	}
 	fprintf(stderr, "\n");
-	warnx("Servicing new connection");
-//	sn_clear();
+	dbg_warn("Servicing new connection");
+	sn_clear();
 	hl_restoreall();
 	for (i = 0; i < MAXTRIES; i++) {
 		usleep(TRYWAIT);
@@ -179,10 +189,10 @@ serv_drawh(void)
 		if (len == 0)
 			break;
 		buf[len] = '\0';
-		warnx("Parsing input");
+		dbg_warn("Parsing input");
 		switch (serv_parse(buf, &ss)) {
 		case SERVP_ERR:
-			warnx("Error encountered <%s>", buf);
+			dbg_warn("Error encountered <%s>", buf);
 			goto drop;
 		case SERVP_DONE:
 			goto snap;
@@ -191,7 +201,7 @@ serv_drawh(void)
 	if (i == MAXTRIES)
 		goto drop;
 snap:
-	warnx("Writing snapshot");
+	dbg_warn("Writing snapshot");
 	glutReshapeWindow(win_width, win_height);
 	resizeh(win_width, win_height);
 	st.st_rf |= RF_CAM;
@@ -206,7 +216,7 @@ snap:
 	drawh_default();
 	capture_snapfd(clifd, CM_PNG);
 drop:
-	warnx("Closing connection");
+	dbg_warn("Closing connection");
 	close(clifd);
 }
 
@@ -224,7 +234,7 @@ serv_parse(char *s, struct session *ss)
 			break;
 //		warnx("cmdbuf: >>>>>%s<<<<<", t);
 		if ((p = strchr(t, ':')) == NULL) {
-			warnx("No colon in command");
+			dbg_warn("No colon in command");
 			return (SERVP_ERR);
 		}
 		for (q = p; q > t && isspace(*--q); )
@@ -233,10 +243,10 @@ serv_parse(char *s, struct session *ss)
 		svc = bsearch(t, sv_cmds, sizeof(sv_cmds) / sizeof(sv_cmds[0]),
 		   sizeof(sv_cmds[0]), svc_findcmp);
 		if (svc == NULL) {
-			warnx("Unknown command: %s", t);
+			dbg_warn("Unknown command: %s", t);
 			return (SERVP_ERR);
 		}
-		warnx(" Parsed '%s' command", svc->svc_name);
+		dbg_warn(" Parsed '%s' command", svc->svc_name);
 		t = p;
 		while (isspace(*++t))
 			;
@@ -341,6 +351,14 @@ svc_job(char *t, int *used, __unused struct session *ss)
 		hl_clearall();
 		job_hl(j);
 	}
+else {
+ unsigned int i;
+
+ printf("job %d not found:", jobid);
+ for (i = 0; i < job_list.ol_cur; i++)
+  printf(" %d", job_list.ol_jobs[i]->j_id);
+ printf("\n");
+}
 	return (1);
 }
 
@@ -385,30 +403,59 @@ svc_clickv(char *t, int *used, struct session *ss)
 	return (1);
 }
 
+/*
+ * Because the way strncmp() is used, longer
+ * keywords with identical prefixes as other keywords
+ * must be ordered here first.
+ *
+ * Tables are NULL-terminated in sve_name.
+ */
+struct svc_enum {
+	const char	*sve_name;
+	int		 sve_value;
+};
+
+struct svc_enum *
+sve_find(const char *s, struct svc_enum *tab, int *used)
+{
+	struct svc_enum *sve;
+
+	for (sve = tab; sve->sve_name != NULL; sve++)
+		if (strncmp(s, sve->sve_name, strlen(sve->sve_name)) == 0) {
+			*used = strlen(sve->sve_name);
+			return (sve);
+		}
+	return (NULL);
+}
+
 int
 svc_vmode(char *t, int *used, __unused struct session *ss)
 {
-	struct {
-		const char	*name;
-		int		 vmode;
-	} *ent, tab[] = {
-		/*
-		 * Because the way strncmp() is used, longer
-		 * keywords with identical prefixes as other keywords
-		 * must be ordered here first.
-		 */
+	struct svc_enum *sve, tab[] = {
 		{ "wiredone",	VM_WIREDONE },
 		{ "wired",	VM_WIRED },
 		{ "physical",	VM_PHYSICAL },
 		{ NULL,		0 }
 	};
-	for (ent = tab; ent->name != NULL; ent++)
-		if (strncmp(t, ent->name, strlen(ent->name)) == 0) {
-			*used = strlen(ent->name);
-			st.st_vmode = ent->vmode;
-			st.st_rf |= RF_CLUSTER | RF_CAM | RF_GROUND |
-			    RF_SELNODE;
-			return (1);
-		}
-	return (0);
+	if ((sve = sve_find(t, tab, used)) == NULL)
+		return (0);
+	st.st_vmode = sve->sve_value;
+	st.st_rf |= RF_CLUSTER | RF_CAM | RF_GROUND | RF_SELNODE;
+	return (1);
+}
+
+int
+svc_smode(char *t, int *used, __unused struct session *ss)
+{
+	struct svc_enum *sve, tab[] = {
+		{ "temp",	SM_TEMP },
+		{ "jobs",	SM_JOBS },
+		{ "fail",	SM_FAIL },
+		{ NULL,		0 }
+	};
+	if ((sve = sve_find(t, tab, used)) == NULL)
+		return (0);
+	st.st_mode = sve->sve_value;
+	st.st_rf |= RF_CLUSTER | RF_DATASRC;
+	return (1);
 }
