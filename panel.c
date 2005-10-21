@@ -45,6 +45,7 @@ void panel_refresh_ss(struct panel *);
 void panel_refresh_status(struct panel *);
 void panel_refresh_mem(struct panel *);
 void panel_refresh_eggs(struct panel *);
+void panel_refresh_date(struct panel *);
 
 int panel_blink(struct timeval *, char **, int, int *, long);
 
@@ -62,7 +63,8 @@ struct pinfo pinfo[] = {
 	{ panel_refresh_ss,	PF_UINP, 0,		 uinpcb_ss },
 	{ panel_refresh_status,	0,	 0,		 NULL },
 	{ panel_refresh_mem,	0,	 0,		 NULL },
-	{ panel_refresh_eggs,	PF_UINP, 0,		 uinpcb_eggs}
+	{ panel_refresh_eggs,	PF_UINP, 0,		 uinpcb_eggs },
+	{ panel_refresh_date,	PF_XPARENT, 0,		 NULL }
 };
 
 #define PVOFF_TL 0
@@ -360,29 +362,31 @@ draw_panel(struct panel *p)
 			break;
 	}
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	if ((pinfo[baseconv(p->p_id) - 1].pi_opts & PF_XPARENT) == 0) {
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	/* Draw background. */
-	glBegin(GL_POLYGON);
-	glColor4f(0.4, 0.6, 0.8, 0.8);
-	glVertex2d(p->p_u,		p->p_v);
-	glVertex2d(p->p_u + p->p_w,	p->p_v);
-	glVertex2d(p->p_u + p->p_w,	p->p_v - p->p_h);
-	glVertex2d(p->p_u,		p->p_v - p->p_h);
-	glEnd();
+		/* Draw background. */
+		glBegin(GL_POLYGON);
+		glColor4f(0.4, 0.6, 0.8, 0.8);
+		glVertex2d(p->p_u,		p->p_v);
+		glVertex2d(p->p_u + p->p_w,	p->p_v);
+		glVertex2d(p->p_u + p->p_w,	p->p_v - p->p_h);
+		glVertex2d(p->p_u,		p->p_v - p->p_h);
+		glEnd();
 
-	glDisable(GL_BLEND);
+		glDisable(GL_BLEND);
 
-	/* Draw border. */
-	glLineWidth(PANEL_BWIDTH);
-	glBegin(GL_LINE_LOOP);
-	glColor4f(0.2, 0.4, 0.6, 1.0);
-	glVertex2d(p->p_u,		p->p_v);
-	glVertex2d(p->p_u + p->p_w,	p->p_v);
-	glVertex2d(p->p_u + p->p_w,	p->p_v - p->p_h);
-	glVertex2d(p->p_u,		p->p_v - p->p_h);
-	glEnd();
+		/* Draw border. */
+		glLineWidth(PANEL_BWIDTH);
+		glBegin(GL_LINE_LOOP);
+		glColor4f(0.2, 0.4, 0.6, 1.0);
+		glVertex2d(p->p_u,		p->p_v);
+		glVertex2d(p->p_u + p->p_w,	p->p_v);
+		glVertex2d(p->p_u + p->p_w,	p->p_v - p->p_h);
+		glVertex2d(p->p_u,		p->p_v - p->p_h);
+		glEnd();
+	}
 
 	/* End 2D mode. */
 	glPopMatrix();
@@ -832,6 +836,42 @@ panel_refresh_eggs(struct panel *p)
 	uinp.uinp_opts &= ~UINPO_DIRTY;
 
 	panel_set_content(p, s[i], buf_get(&uinp.uinp_buf));
+}
+
+void
+panel_date_invalidate(__unused int a)
+{
+	struct panel *p;
+
+	p = panel_for_id(PANEL_DATE);
+	if (p == NULL)
+		errx(1, "internal error: date invalidate callback "
+		    "called but no date panel present");
+	p->p_opts |= POPT_USRDIRTY;
+}
+
+#define TMBUF_SIZ 30
+
+void
+panel_refresh_date(struct panel *p)
+{
+	static char tmbuf[TMBUF_SIZ];
+	struct tm tm;
+	time_t now;
+
+	if ((p->p_opts & POPT_USRDIRTY) == 0 &&
+	    panel_ready(p))
+		return;
+	if (p->p_str == NULL ||
+	    p->p_opts & POPT_USRDIRTY) {
+		p->p_opts &= ~POPT_USRDIRTY;
+		time(&now);
+		localtime_r(&now, &tm);
+		strftime(tmbuf, sizeof(tmbuf), "%b %e %y %H:%M", &tm);
+		panel_set_content(p, "(c) 2005 PSC\n%s", tmbuf);
+		glutTimerFunc(1000 * (60 - tm.tm_sec),
+		    panel_date_invalidate, 0);
+	}
 }
 
 void
