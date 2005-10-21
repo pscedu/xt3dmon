@@ -20,14 +20,14 @@ void
 cocb_datasrc(__unused int a)
 {
 	st.st_rf |= RF_DATASRC | RF_CLUSTER;
-	glutTimerFunc(5000, cocb_datasrc, 0);
+	glutTimerFunc(1000, cocb_datasrc, 0);
 }
 
 void
 cocb_clearstatus(__unused int a)
 {
 	status_clear();
-	glutTimerFunc(5000, cocb_clearstatus, 0);
+	glutTimerFunc(10000, cocb_clearstatus, 0);
 }
 
 void
