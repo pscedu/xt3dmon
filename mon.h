@@ -367,12 +367,14 @@ struct panel {
 #define PANEL_SS	(1<<7)
 #define PANEL_STATUS	(1<<8)
 #define PANEL_MEM	(1<<9)
-#define PANEL_EGGS	(1<<10) 		/* don't include below (secret) */
-#define NPANELS		11
+#define PANEL_EGGS	(1<<10)
+#define PANEL_DATE	(1<<11)
+#define NPANELS		12
 
 #define POPT_REMOVE	(1<<0)			/* being removed */
 #define POPT_DIRTY	(1<<1)			/* panel needs redrawn */
-#define POPT_MOBILE	(1<<2)			/* being dragged */
+#define POPT_USRDIRTY	(1<<2)			/* user-flag for the same */
+#define POPT_MOBILE	(1<<3)			/* being dragged */
 
 #define PSTICK_TL	1
 #define PSTICK_TR	2
@@ -390,6 +392,7 @@ struct pinfo {
 };
 
 #define PF_UINP		(1<<0)
+#define PF_XPARENT	(1<<1)			/* panel is transparent */
 
 #define DIR_LEFT	0
 #define DIR_RIGHT	1
@@ -489,6 +492,9 @@ void			 db_checkmap(void);
 void			 db_qstat(void);
 void			 db_tempmap(void);
 void			 db_failmap(void);
+
+/* dbg.c */
+void			 dbg_warn(const char *, ...);
 
 /* callout.c */
 void			 cocb_fps(int);
@@ -697,6 +703,7 @@ extern struct temp	 temp_notfound;
 
 extern int		 total_failures;		/* total among all nodes */
 
+extern int		 verbose;
 extern int		 cam_dirty;
 extern GLint		 cluster_dl, ground_dl, select_dl;
 extern int		 font_id;
