@@ -435,7 +435,7 @@ make_ground(void)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
 
-	glLineWidth(5.0);
+	glLineWidth(1.0);
 	glBegin(GL_LINES);
 	glColor3f(1.0f, 1.0f, 1.0f);
 	glVertex3f(-500.0f, 0.0f, 0.0f);		/* x-axis */
@@ -699,8 +699,7 @@ make_cluster(void)
 			glTranslatef(-SKEL_GAP, -SKEL_GAP, -SKEL_GAP);
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
-			draw_box_filled(&dim, &fill);
-			draw_box_outline(&dim, &fill_black);
+			draw_box_outline(&dim, &fill_light_blue);
 			glDisable(GL_BLEND);
 			glPopMatrix();
 		}
