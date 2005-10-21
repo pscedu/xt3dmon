@@ -123,7 +123,9 @@ serv_init(void)
 	if ((p = panel_for_id(PANEL_DATE)) != NULL) {
 		p->p_stick = PSTICK_BL;
 		p->p_u = 0;
-		p->p_v = 0;
+		p->p_v = 40; /* XXX: hack to font size */
+		p->p_w = 80;
+		p->p_h = 40;
 	}
 
 	drawh = serv_drawh;
