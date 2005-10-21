@@ -56,11 +56,11 @@ wired_update(void)
 __inline void
 draw_scene(void)
 {
-	if (st.st_opts & OP_GROUND)
-		glCallList(ground_dl);
 	if (select_dl)
 		glCallList(select_dl);
 	glCallList(cluster_dl);
+	if (st.st_opts & OP_GROUND)
+		glCallList(ground_dl);
 	if (!TAILQ_EMPTY(&panels))
 		draw_panels();
 }
@@ -396,6 +396,7 @@ make_ground(void)
 	fill.f_r = 0.1f;
 	fill.f_g = 0.2f;
 	fill.f_b = 0.3f;
+	fill.f_a = 0.1f;
 	switch (st.st_vmode) {
 	case VM_WIREDONE:
 		fv.fv_x = -st.st_winsp.iv_x / 2.0f;
@@ -408,8 +409,11 @@ make_ground(void)
 
 		glPushMatrix();
 		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR);
 		draw_box_filled(&fdim, &fill);
 		draw_box_outline(&fdim, &fill_black);
+		glDisable(GL_BLEND);
 		glPopMatrix();
 		break;
 	case VM_PHYSICAL:
@@ -423,8 +427,11 @@ make_ground(void)
 
 		glPushMatrix();
 		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR);
 		draw_box_filled(&fdim, &fill);
 		draw_box_outline(&fdim, &fill_black);
+		glDisable(GL_BLEND);
 		glPopMatrix();
 		break;
 	}
