@@ -180,6 +180,7 @@ rebuild(int opts)
 			break;
 		}
 		ds_refresh(DS_MEM, 0);
+		hl_refresh();
 	}
 	if (opts & RF_CAM) {
 		switch (st.st_vmode) {
