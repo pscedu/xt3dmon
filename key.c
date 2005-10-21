@@ -138,6 +138,9 @@ keyh_panel(unsigned char key, __unused int u, __unused int v)
 	case 'c':
 		panel_toggle(PANEL_CMD);
 		break;
+	case 'd':
+		panel_toggle(PANEL_DATE);
+		break;
 	case 'F':
 		panel_toggle(PANEL_FLYBY);
 		break;
