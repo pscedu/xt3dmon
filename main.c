@@ -8,8 +8,6 @@
 #include "cdefs.h"
 #include "mon.h"
 
-#define SLEEP_INTV	5
-
 #define STARTX		(-30.0f)
 #define STARTY		(10.0f)
 #define STARTZ		(25.0f)
@@ -41,6 +39,7 @@ long			 fps_cnt = 0;	/* current fps counter */
 void			(*drawh)(void);
 int			 window_ids[2];
 const char		*progname;
+int			 verbose;
 
 const char *opdesc[] = {
 	/*  0 */ "Texture mode",
@@ -205,7 +204,7 @@ rebuild(int opts)
 void
 usage(void)
 {
-	fprintf(stderr, "usage: %s [-adlp]\n", progname);
+	fprintf(stderr, "usage: %s [-adlpv]\n", progname);
 	exit(1);
 }
 
@@ -220,7 +219,7 @@ main(int argc, char *argv[])
 
 	flags = GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE;
 	glutInit(&argc, argv);
-	while ((c = getopt(argc, argv, "adlp")) != -1)
+	while ((c = getopt(argc, argv, "adlpv")) != -1)
 		switch (c) {
 		case 'a':
 			flags |= GLUT_STEREO;
@@ -237,14 +236,15 @@ main(int argc, char *argv[])
 			drawh = drawh_stereo;
 			stereo_mode = STM_PASV;
 			break;
+		case 'v':
+			verbose++;
+			break;
 		default:
 			usage();
 			/* NOTREACHED */
 		}
 
 	/* XXX:  Sanity-check flags. */
-	if (server)
-		serv_init();
 	if (dsp == DSP_DB)
 		dbh_connect(&dbh);
 
@@ -267,15 +267,18 @@ main(int argc, char *argv[])
 	glShadeModel(GL_SMOOTH);
 	glEnable(GL_DEPTH_TEST);
 
-	glutTimerFunc(1000, cocb_fps, 0);
-	glutTimerFunc(5000, cocb_datasrc, 0);
-	glutTimerFunc(5000, cocb_clearstatus, 0); /* XXX: enable/disable when PANEL_STATUS? */
+	glutTimerFunc(1, cocb_fps, 0);
+	glutTimerFunc(1, cocb_datasrc, 0);
+	glutTimerFunc(1, cocb_clearstatus, 0); /* XXX: enable/disable when PANEL_STATUS? */
 
 	TAILQ_INIT(&panels);
 	SLIST_INIT(&selnodes);
 	buf_init(&uinp.uinp_buf);
 	buf_append(&uinp.uinp_buf, '\0');
 	st.st_rf |= RF_INIT;
+
+	if (server)
+		serv_init();
 
 	/* glutExposeFunc(reshape); */
 	glutReshapeFunc(resizeh);
