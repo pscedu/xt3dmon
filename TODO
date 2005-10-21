@@ -36,3 +36,5 @@ reminders:
 54. in wione, draw the cube outer planes first, then inner, so gl
     tries to optimize
 55. handle SIGPIPES in server and client modes
+56. datasrc refresh code checks if the file is diff, so maybe the
+    cronjob should check too?
