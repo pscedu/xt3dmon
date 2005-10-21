@@ -550,6 +550,8 @@ void			 flyby_writeselnode(int);
 void			 hl_clearall(void);
 void			 hl_restoreall(void);
 void			 hl_state(int);
+void			 hl_refresh(void);
+void			 hl_seljobs(void);
 
 /* http.c */
 int			 http_open(struct http_req *, struct http_res *);
