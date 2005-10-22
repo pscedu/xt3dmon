@@ -33,6 +33,8 @@ http_open(struct http_req *req, __unused struct http_res *res)
 		err(1, "getaddrinfo");
 	free(sport);
 
+	s = -1;
+	cause = NULL; /* gcc */
 	for (ai = res0; ai != NULL; ai = ai->ai_next) {
 		if ((s = socket(ai->ai_family, ai->ai_socktype,
 		    ai->ai_protocol)) == -1) {
