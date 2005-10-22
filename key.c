@@ -541,6 +541,9 @@ spkeyh_default(int key, __unused int u, __unused int v)
 	amt = 0.0f; /* gcc */
 	dir = 0; /* gcc */
 	switch (key) {
+	case GLUT_KEY_F12:
+		restart();
+		/* NOTREACHED */
 	case GLUT_KEY_HOME:
 		tween_push(TWF_ROLL);
 		cam_roll(0.1f);
