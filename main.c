@@ -189,6 +189,8 @@ rebuild(int opts)
 		switch (st.st_mode) {
 		case SM_JOBS:
 			ds_refresh(DS_JOBS, 0);
+			ds_refresh(DS_BAD, DSF_IGN);
+			ds_refresh(DS_CHECK, DSF_IGN);
 			break;
 		case SM_FAIL:
 			ds_refresh(DS_FAIL, 0);
