@@ -218,6 +218,11 @@ snap:
 		drawh_select();
 		panel_hide(PANEL_NINFO);
 	}
+	if (ss.ss_sid) {
+		if (!dsc_exists(ss.ss_sid))
+			dsc_clone(ss.ss_sid);
+		dsc_load(ss.ss_sid);
+	}
 
 	drawh_old = serv_drawh;
 	drawh_default();
@@ -464,6 +469,21 @@ svc_smode(char *t, int *used, __unused struct session *ss)
 }
 
 int
+sid_valid(const char *sid)
+{
+	const char *s;
+
+	for (s = sid; *s != '\0'; s++)
+		if (!isalnum(*s))
+			return (0);
+	if (s - sid == SID_LEN)
+		return (1);
+	else
+		return (0);
+	/* NOTREACHED */
+}
+
+int
 svc_sid(char *t, int *used, __unused struct session *ss)
 {
 	char fmtbuf[10];
@@ -471,6 +491,8 @@ svc_sid(char *t, int *used, __unused struct session *ss)
 	snprintf(fmtbuf, sizeof(fmtbuf), "%%%ds%%n",
 	    sizeof(ss->ss_sid) - 1);
 	if (sscanf(t, fmtbuf, ss->ss_sid, used) != 1)
+		return (0);
+	if (!sid_valid(ss->ss_sid))
 		return (0);
 	return (1);
 }
