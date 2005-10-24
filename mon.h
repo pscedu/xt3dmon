@@ -557,7 +557,7 @@ void			 hl_seljobs(void);
 int			 http_open(struct http_req *, struct http_res *);
 
 /* job.c */
-struct job		*job_findbyid(size_t);
+struct job		*job_findbyid(int);
 void			 job_goto(struct job *);
 void			 job_hl(struct job *);
 
