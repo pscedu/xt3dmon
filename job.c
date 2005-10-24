@@ -4,6 +4,18 @@
 #include "mon.h"
 
 struct job *
+job_findbyid(int id)
+{
+	size_t n;
+
+	for (n = 0; n < job_list.ol_cur; n++)
+		if (job_list.ol_jobs[n]->j_id == id)
+			return (job_list.ol_jobs[n]);
+	return (NULL);
+}
+
+#if 0
+struct job *
 job_findbyid(size_t id)
 {
 	size_t n, tid;
@@ -25,6 +37,7 @@ job_findbyid(size_t id)
 	}
 	return (NULL);
 }
+#endif
 
 __inline void
 job_hl(struct job *j)
