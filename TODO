@@ -40,3 +40,4 @@ reminders:
     cronjob should check too?
 57. dsc chdir to avoid races
 58. SKEL for physvmode
+59. panel timestamp reflects sid
