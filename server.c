@@ -37,9 +37,13 @@ int svc_clicku(char *, int *, struct session *);
 int svc_clickv(char *, int *, struct session *);
 int svc_vmode(char *, int *, struct session *);
 int svc_smode(char *, int *, struct session *);
+int svc_sid(char *, int *, struct session *);
+
+#define SID_LEN 12	/* excluding NUL */
 
 struct session {
 	int		ss_click;
+	char		ss_sid[SID_LEN + 1];
 };
 
 struct sv_cmd {
@@ -59,7 +63,8 @@ struct sv_cmd {
 	{ "clicku",	svc_clicku },
 	{ "clickv",	svc_clickv },
 	{ "vmode",	svc_vmode },
-	{ "smode",	svc_smode }
+	{ "smode",	svc_smode },
+	{ "sid",	svc_sid }
 };
 
 int sock;
@@ -194,7 +199,7 @@ serv_drawh(void)
 		dbg_warn("Parsing input");
 		switch (serv_parse(buf, &ss)) {
 		case SERVP_ERR:
-			dbg_warn("Error encountered <%s>", buf);
+//			dbg_warn("Error encountered", buf);
 			goto drop;
 		case SERVP_DONE:
 			goto snap;
@@ -206,7 +211,7 @@ snap:
 	dbg_warn("Writing snapshot");
 	glutReshapeWindow(win_width, win_height);
 	resizeh(win_width, win_height);
-	st.st_rf |= RF_CAM;
+	st.st_rf |= RF_CAM | RF_DATASRC;
 
 	if (ss.ss_click) {
 		drawh_old = serv_drawh;
@@ -252,11 +257,15 @@ serv_parse(char *s, struct session *ss)
 		t = p;
 		while (isspace(*++t))
 			;
-		if (!svc->svc_act(t, &len, ss))
+		if (!svc->svc_act(t, &len, ss)) {
+			dbg_warn("Error in value: %s", t);
 			return (SERVP_ERR);
+		}
 		t += len;
-		if (*t != '\n')
+		if (*t != '\n') {
+			dbg_warn("EOL expected: %s", t);
 			return (SERVP_ERR);
+		}
 	}
 	return (SERVP_CONT);
 }
@@ -353,14 +362,6 @@ svc_job(char *t, int *used, __unused struct session *ss)
 		hl_clearall();
 		job_hl(j);
 	}
-else {
- unsigned int i;
-
- printf("job %d not found:", jobid);
- for (i = 0; i < job_list.ol_cur; i++)
-  printf(" %d", job_list.ol_jobs[i]->j_id);
- printf("\n");
-}
 	return (1);
 }
 
@@ -459,5 +460,17 @@ svc_smode(char *t, int *used, __unused struct session *ss)
 		return (0);
 	st.st_mode = sve->sve_value;
 	st.st_rf |= RF_CLUSTER | RF_DATASRC | RF_SMODE;
+	return (1);
+}
+
+int
+svc_sid(char *t, int *used, __unused struct session *ss)
+{
+	char fmtbuf[10];
+
+	snprintf(fmtbuf, sizeof(fmtbuf), "%%%ds%%n",
+	    sizeof(ss->ss_sid) - 1);
+	if (sscanf(t, fmtbuf, ss->ss_sid, used) != 1)
+		return (0);
 	return (1);
 }
