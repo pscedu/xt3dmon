@@ -27,7 +27,7 @@ long		 rmem;
  *	33	c0-0 c1 s0 s1	0,5,0
  */
 void
-parse_physmap(int *fd)
+parse_physmap(struct datasrc *ds)
 {
 	int lineno, r, cb, cg, m, n, nid, x, y, z;
 	char buf[BUFSIZ], *p, *s;
@@ -50,7 +50,7 @@ parse_physmap(int *fd)
 						node->n_flags |= NF_HIDE;
 					}
 
-	if ((fp = fdopen(*fd, "r")) == NULL) {
+	if ((fp = fdopen(ds->ds_fd, "r")) == NULL) {
 		warn("fdopen");
 		return;
 	}
@@ -230,7 +230,7 @@ bad:
 	if (ferror(fp))
 		warn("fgets");
 	fclose(fp);
-	*fd = -1;
+	ds->ds_fd = -1;
 	errno = 0;
 
 	if (++widim.iv_w != WIDIM_WIDTH ||
@@ -252,7 +252,7 @@ bad:
  *	40  1
  */
 void
-parse_jobmap(int *fd)
+parse_jobmap(struct datasrc *ds)
 {
 	int jobid, nid, lineno, enabled;
 	char buf[BUFSIZ], *p, *s;
@@ -261,6 +261,8 @@ parse_jobmap(int *fd)
 	size_t j;
 	FILE *fp;
 	long l;
+
+printf("parsing new jobmap\n");
 
 #if 0
 	/* XXXXXX - reset fillp on all nodes. */
@@ -277,7 +279,7 @@ parse_jobmap(int *fd)
 					}
 #endif
 
-	if ((fp = fdopen(*fd, "r")) == NULL) {
+	if ((fp = fdopen(ds->ds_fd, "r")) == NULL) {
 		warn("fdopen");
 		return;
 	}
@@ -364,10 +366,8 @@ pass:
 	if (ferror(fp))
 		warn("fgets");
 	fclose(fp);
-	*fd = -1;
+	ds->ds_fd = -1;
 
-	ds_refresh(DS_BAD, DSF_IGN);
-	ds_refresh(DS_CHECK, DSF_IGN);
 	errno = 0;
 
 //	qsort(job_list.ol_jobs, job_list.ol_tcur, sizeof(struct job *),
@@ -381,7 +381,7 @@ pass:
 }
 
 void
-parse_badmap(int *fd)
+parse_badmap(struct datasrc *ds)
 {
 	char *s, *p, buf[BUFSIZ];
 	int lineno, bad, nid;
@@ -389,7 +389,7 @@ parse_badmap(int *fd)
 	FILE *fp;
 	long l;
 
-	if ((fp = fdopen(*fd, "r")) == NULL)
+	if ((fp = fdopen(ds->ds_fd, "r")) == NULL)
 		return;						/* Failure is OK. */
 	lineno = 0;
 	while (fgets(buf, sizeof(buf), fp) != NULL) {
@@ -440,11 +440,11 @@ bad:
 	if (ferror(fp))
 		warn("fgets");
 	fclose(fp);
-	*fd = -1;
+	ds->ds_fd = -1;
 }
 
 void
-parse_checkmap(int *fd)
+parse_checkmap(struct datasrc *ds)
 {
 	char *s, *p, buf[BUFSIZ];
 	int lineno, checking, nid;
@@ -452,7 +452,7 @@ parse_checkmap(int *fd)
 	FILE *fp;
 	long l;
 
-	if ((fp = fdopen(*fd, "r")) == NULL)
+	if ((fp = fdopen(ds->ds_fd, "r")) == NULL)
 		return;						/* Failure is OK. */
 	lineno = 0;
 	while (fgets(buf, sizeof(buf), fp) != NULL) {
@@ -503,7 +503,7 @@ bad:
 	if (ferror(fp))
 		warn("fgets");
 	fclose(fp);
-	*fd = -1;
+	ds->ds_fd = -1;
 }
 
 /*
@@ -517,7 +517,7 @@ bad:
  *	zero data is not listed.
  */
 void
-parse_failmap(int *fd)
+parse_failmap(struct datasrc *ds)
 {
 	int newmax, nofails, nid, lineno, r, cb, cg, m, n;
 	char *p, *s, buf[BUFSIZ];
@@ -527,7 +527,7 @@ parse_failmap(int *fd)
 	FILE *fp;
 	long l;
 
-	if ((fp = fdopen(*fd, "r")) == NULL) {
+	if ((fp = fdopen(ds->ds_fd, "r")) == NULL) {
 		warn("fdopen");
 		return;
 	}
@@ -599,7 +599,7 @@ bad:
 	if (ferror(fp))
 		warn("%s", _PATH_FAILMAP);
 	fclose(fp);
-	*fd = -1;
+	ds->ds_fd = -1;
 	errno = 0;
 
 	qsort(fail_list.ol_fails, fail_list.ol_tcur, sizeof(struct fail *),
@@ -617,7 +617,7 @@ bad:
  *	position	[[[[t1] t2] t3] t4]
  */
 void
-parse_tempmap(int *fd)
+parse_tempmap(struct datasrc *ds)
 {
 	int t, lineno, i, r, cb, cg, m, n;
 	char buf[BUFSIZ], *p, *s;
@@ -627,7 +627,7 @@ parse_tempmap(int *fd)
 	FILE *fp;
 	long l;
 
-	if ((fp = fdopen(*fd, "r")) == NULL) {
+	if ((fp = fdopen(ds->ds_fd, "r")) == NULL) {
 		warn("fdopen");
 		return;
 	}
@@ -746,7 +746,7 @@ bad:
 	if (ferror(fp))
 		warn("%s", _PATH_TEMPMAP);
 	fclose(fp);
-	*fd = -1;
+	ds->ds_fd = -1;
 	errno = 0;
 
 	qsort(temp_list.ol_temps, temp_list.ol_tcur, sizeof(struct temp *),
@@ -756,18 +756,18 @@ bad:
 }
 
 void
-parse_mem(int *fd)
+parse_mem(struct datasrc *ds)
 {
 	FILE *fp;
 
-	if ((fp = fdopen(*fd, "r")) == NULL) {
+	if ((fp = fdopen(ds->ds_fd, "r")) == NULL) {
 		warn("fdopen");
 		return;
 	}
 	fscanf(fp, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u "
 	    "%*u %*u %*d %*d %*d %*d %*d %*d %*u %lu %ld", &vmem, &rmem);
 	fclose(fp);
-	*fd = -1;
+	ds->ds_fd = -1;
 }
 
 /*
@@ -781,7 +781,7 @@ parse_mem(int *fd)
  *   job_state = R
  */
 void
-parse_qstat(int *fd)
+parse_qstat(struct datasrc *ds)
 {
 	char state, *t, *s, *q, buf[BUFSIZ], *next;
 	struct job j_fake, *job;
@@ -789,7 +789,7 @@ parse_qstat(int *fd)
 	FILE *fp;
 
 	s = NULL; /* gcc */
-	if ((fp = fdopen(*fd, "r")) == NULL) {
+	if ((fp = fdopen(ds->ds_fd, "r")) == NULL) {
 		warn("fdopen");
 		return;
 	}
@@ -894,5 +894,5 @@ parse_qstat(int *fd)
 		}
 	}
 	fclose(fp);
-	*fd = -1;
+	ds->ds_fd = -1;
 }

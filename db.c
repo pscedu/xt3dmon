@@ -9,6 +9,7 @@
 #include <mysql.h>
 
 #include "mon.h"
+#include "cdefs.h"
 
 #define DBH_HOST	"localhost"
 #define DBH_USER	"basic"
@@ -72,7 +73,7 @@ db_map_set(struct db_map_ent *map, const char *dbval, int *field)
 }
 
 void
-db_physmap(void)
+db_physmap(__unused struct datasrc *ds)
 {
 	int x, y, z, nid, len, r, cb, cg, m, n;
 	struct node *node;
@@ -197,31 +198,31 @@ db_physmap(void)
 }
 
 void
-db_jobmap(void)
+db_jobmap(__unused struct datasrc *ds)
 {
 }
 
 void
-db_tempmap(void)
+db_tempmap(__unused struct datasrc *ds)
 {
 }
 
 void
-db_badmap(void)
+db_badmap(__unused struct datasrc *ds)
 {
 }
 
 void
-db_checkmap(void)
+db_checkmap(__unused struct datasrc *ds)
 {
 }
 
 void
-db_qstat(void)
+db_qstat(__unused struct datasrc *ds)
 {
 }
 
 void
-db_failmap(void)
+db_failmap(__unused struct datasrc *ds)
 {
 }
