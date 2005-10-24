@@ -285,6 +285,7 @@ struct state {
 #define RF_SELNODE	(1<<4)
 #define RF_CAM		(1<<5)
 #define RF_GROUND	(1<<6)
+#define RF_SMODE	(1<<7)
 #define RF_INIT		(RF_TEX | RF_PHYSMAP | RF_DATASRC | RF_CLUSTER | \
 			 RF_GROUND | RF_SELNODE | RF_CAM)
 
@@ -483,6 +484,22 @@ struct http_req {
 struct http_res {
 };
 
+struct datasrc {
+	time_t		  ds_mtime;
+	int		  ds_flags;
+	int		  ds_dsp;
+	const char	 *ds_lpath;
+	const char	 *ds_rpath;
+	void		(*ds_parsef)(int *);
+	void		(*ds_dbf)(void);
+	struct objlist	 *ds_objlist;
+};
+
+#define DSF_AUTO	(1<<0)
+#define DSF_FORCE	(1<<1)
+#define DSF_READY	(1<<2)
+
+
 /* db.c */
 void			 dbh_connect(struct dbh *);
 void			 db_physmap(void);
@@ -530,6 +547,7 @@ float			 snap_to_grid(float, float, float);
 
 /* ds.c */
 int			 ds_open(int, int);
+struct datasrc		*ds_get(int);
 void			 ds_refresh(int, int);
 
 /* eggs.c */
@@ -580,6 +598,7 @@ void			 png_write(FILE *, unsigned char *, long, long);
 void			 resizeh(int, int);
 void			 refresh_state(int);
 void			 rebuild(int);
+void			 restart(void);
 void			 idleh_govern(void);
 void			 idleh_default(void);
 
