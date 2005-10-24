@@ -202,6 +202,15 @@ rebuild(int opts)
 		make_select();
 }
 
+char **sav_argv;
+
+void
+restart(void)
+{
+	execvp(sav_argv[0], sav_argv);
+	err(1, "execvp");
+}
+
 void
 usage(void)
 {
@@ -216,6 +225,7 @@ main(int argc, char *argv[])
 	int server = 0;
 
 	progname = argv[0];
+	sav_argv = argv;
 	drawh = drawh_default;
 
 	flags = GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE;
