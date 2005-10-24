@@ -21,20 +21,7 @@
 
 int ds_http(const char *);
 
-#define DSF_AUTO	(1<<0)
-#define DSF_FORCE	(1<<1)
-#define DSF_READY	(1<<2)
-
-struct datasrc {
-	time_t		  ds_mtime;
-	int		  ds_flags;
-	int		  ds_dsp;
-	const char	 *ds_lpath;
-	const char	 *ds_rpath;
-	void		(*ds_parsef)(int *);
-	void		(*ds_dbf)(void);
-	struct objlist	 *ds_objlist;
-} datasrcs[] = {
+struct datasrc datasrcs[] = {
 	{ 0, DSF_AUTO, DSP_LOCAL, _PATH_TEMPMAP,  _RPATH_TEMP,  parse_tempmap,	db_tempmap,	&temp_list },
 	{ 0, DSF_AUTO, DSP_LOCAL, _PATH_PHYSMAP,  _RPATH_PHYS,  parse_physmap,	db_physmap,	NULL },
 	{ 0, DSF_AUTO, DSP_LOCAL, _PATH_JOBMAP,   _RPATH_JOBS,  parse_jobmap,	db_jobmap,	&job_list },
@@ -59,6 +46,12 @@ ds_chdsp(int type, int dsp)
 	ds->ds_flags = 0;
 }
 
+__inline struct datasrc *
+ds_get(int type)
+{
+	return (&datasrcs[type]);
+}
+
 void
 ds_refresh(int type, int flags)
 {
@@ -76,10 +69,11 @@ ds_refresh(int type, int flags)
 		if (fstat(fd, &st) == -1)
 			err(1, "fstat %s", ds->ds_lpath);
 		/* XXX: no way to tell if it was modified with <1 second resolution. */
-		if (st.st_mtime <= ds->ds_mtime)
+		if (st.st_mtime <= ds->ds_mtime &&
+		    (ds->ds_flags & DSF_FORCE) == 0)
 			goto closeit;
 		ds->ds_mtime = st.st_mtime;
-		if ((ds->ds_flags & (DSF_AUTO | DSF_FORCE)) == 0) {
+		if ((ds->ds_flags & DSF_AUTO) == 0) {
 //			ds->ds_flags |= DSF_READY;
 			status_add("New data available");
 			goto closeit;
