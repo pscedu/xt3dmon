@@ -38,3 +38,5 @@ reminders:
 55. handle SIGPIPES in server and client modes
 56. datasrc refresh code checks if the file is diff, so maybe the
     cronjob should check too?
+57. dsc chdir to avoid races
+58. SKEL for physvmode
