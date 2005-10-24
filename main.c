@@ -166,6 +166,24 @@ rebuild(int opts)
 	}
 	if (opts & RF_PHYSMAP)
 		ds_refresh(DS_PHYS, DSF_CRIT);
+	if (opts & RF_SMODE) {
+		struct datasrc *ds;
+		int dsmode;
+
+		switch (st.st_mode) {
+		case SM_JOBS:
+			dsmode = DS_JOBS;
+			break;
+		case SM_FAIL:
+			dsmode = DS_FAIL;
+			break;
+		case SM_TEMP:
+			dsmode = DS_TEMP;
+			break;
+		}
+		ds = ds_get(dsmode);
+		ds->ds_flags |= DSF_FORCE;
+	}
 	if (opts & RF_DATASRC) {
 		mode_data_clean = 0;
 		switch (st.st_mode) {
