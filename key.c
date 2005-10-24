@@ -183,15 +183,15 @@ keyh_mode(unsigned char key, __unused int u, __unused int v)
 	switch (key) {
 	case 'j':
 		st.st_mode = SM_JOBS;
-		st.st_rf |= RF_CLUSTER | RF_DATASRC;
+		st.st_rf |= RF_CLUSTER | RF_DATASRC | RF_SMODE;
 		break;
 	case 'f':
 		st.st_mode = SM_FAIL;
-		st.st_rf |= RF_CLUSTER | RF_DATASRC;
+		st.st_rf |= RF_CLUSTER | RF_DATASRC | RF_SMODE;
 		break;
 	case 't':
 		st.st_mode = SM_TEMP;
-		st.st_rf |= RF_CLUSTER | RF_DATASRC;
+		st.st_rf |= RF_CLUSTER | RF_DATASRC | RF_SMODE;
 		break;
 	default:
 		return;
