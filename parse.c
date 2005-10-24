@@ -262,7 +262,20 @@ parse_jobmap(int *fd)
 	FILE *fp;
 	long l;
 
+#if 0
 	/* XXXXXX - reset fillp on all nodes. */
+	for (r = 0; r < NROWS; r++)
+		for (cb = 0; cb < NCABS; cb++)
+			for (cg = 0; cg < NCAGES; cg++)
+				for (m = 0; m < NMODS; m++)
+					for (n = 0; n < NNODES; n++) {
+						node = &nodes[r][cb][cg][m][n];
+						if (node->n_state != JST_USED)
+							continue;
+						node->n_job = NULL;
+						node->n_fillp = &fail_notfound.f_fill;
+					}
+#endif
 
 	if ((fp = fdopen(*fd, "r")) == NULL) {
 		warn("fdopen");
@@ -357,8 +370,8 @@ pass:
 	ds_refresh(DS_CHECK, DSF_IGN);
 	errno = 0;
 
-	qsort(job_list.ol_jobs, job_list.ol_tcur, sizeof(struct job *),
-	    job_cmp);
+//	qsort(job_list.ol_jobs, job_list.ol_tcur, sizeof(struct job *),
+//	    job_cmp);
 	for (j = 0; j < job_list.ol_tcur; j++)
 		getcol(job_list.ol_jobs[j]->j_oh.oh_flags & OHF_OLD,
 		    j, job_list.ol_tcur, &job_list.ol_jobs[j]->j_fill);
