@@ -485,14 +485,19 @@ struct http_res {
 };
 
 struct datasrc {
+	const char	 *ds_name;
 	time_t		  ds_mtime;
 	int		  ds_flags;
 	int		  ds_dsp;
 	const char	 *ds_lpath;
 	const char	 *ds_rpath;
-	void		(*ds_parsef)(int *);
-	void		(*ds_dbf)(void);
+	void		(*ds_parsef)(struct datasrc *);
+	void		(*ds_dbf)(struct datasrc *);
 	struct objlist	 *ds_objlist;
+	union {
+		int	  dsu_fd;
+	}		  ds_u;
+#define ds_fd ds_u.dsu_fd
 };
 
 #define DSF_AUTO	(1<<0)
@@ -502,13 +507,14 @@ struct datasrc {
 
 /* db.c */
 void			 dbh_connect(struct dbh *);
-void			 db_physmap(void);
-void			 db_jobmap(void);
-void			 db_badmap(void);
-void			 db_checkmap(void);
-void			 db_qstat(void);
-void			 db_tempmap(void);
-void			 db_failmap(void);
+
+void			 db_physmap(struct datasrc *);
+void			 db_jobmap(struct datasrc *);
+void			 db_badmap(struct datasrc *);
+void			 db_checkmap(struct datasrc *);
+void			 db_qstat(struct datasrc *);
+void			 db_tempmap(struct datasrc *);
+void			 db_failmap(struct datasrc *);
 
 /* dbg.c */
 void			 dbg_warn(const char *, ...);
@@ -546,7 +552,7 @@ void			 make_select(void);
 float			 snap_to_grid(float, float, float);
 
 /* ds.c */
-int			 ds_open(int, int);
+struct datasrc		*ds_open(int);
 struct datasrc		*ds_get(int);
 void			 ds_refresh(int, int);
 
@@ -642,14 +648,14 @@ struct panel		*panel_for_id(int);
 void			 panel_demobilize(struct panel *);
 
 /* parse.c */
-void			 parse_jobmap(int *);
-void			 parse_physmap(int *);
-void			 parse_failmap(int *);
-void			 parse_tempmap(int *);
-void			 parse_badmap(int *);
-void			 parse_checkmap(int *);
-void			 parse_mem(int *);
-void			 parse_qstat(int *);
+void			 parse_jobmap(struct datasrc *);
+void			 parse_physmap(struct datasrc *);
+void			 parse_failmap(struct datasrc *);
+void			 parse_tempmap(struct datasrc *);
+void			 parse_badmap(struct datasrc *);
+void			 parse_checkmap(struct datasrc *);
+void			 parse_mem(struct datasrc *);
+void			 parse_qstat(struct datasrc *);
 
 /* select.c */
 void			 sel_begin(void);
