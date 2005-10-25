@@ -556,6 +556,12 @@ struct datasrc		*ds_open(int);
 struct datasrc		*ds_get(int);
 void			 ds_refresh(int, int);
 
+int			 dsc_exists(const char *);
+void			 dsc_clone(int, const char *);
+void			 dsc_load(int, const char *);
+
+int			 st_dsmode(void);
+
 /* eggs.c */
 void			 egg_borg(void);
 void			 egg_matrix(void);
