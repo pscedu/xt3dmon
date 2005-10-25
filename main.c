@@ -170,6 +170,7 @@ rebuild(int opts)
 		struct datasrc *ds;
 		int dsmode;
 
+		dsmode = -1;
 		switch (st.st_mode) {
 		case SM_JOBS:
 			dsmode = DS_JOBS;
