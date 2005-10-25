@@ -219,9 +219,15 @@ snap:
 		panel_hide(PANEL_NINFO);
 	}
 	if (ss.ss_sid) {
-		if (!dsc_exists(ss.ss_sid))
-			dsc_clone(ss.ss_sid);
-		dsc_load(ss.ss_sid);
+		int ds;
+
+		ds = st_dsmode();
+		if (!dsc_exists(ss.ss_sid)) {
+			dsc_clone(DS_JOBS, ss.ss_sid);
+			dsc_clone(DS_TEMP, ss.ss_sid);
+		}
+		dsc_load(ds, ss.ss_sid);
+		st.st_rf &= ~(RF_DATASRC | RF_SMODE);
 	}
 
 	drawh_old = serv_drawh;
@@ -263,7 +269,8 @@ serv_parse(char *s, struct session *ss)
 		while (isspace(*++t))
 			;
 		if (!svc->svc_act(t, &len, ss)) {
-			dbg_warn("Error in value: %s", t);
+			warnx("Error in value: %s [%s]", t,
+			    svc->svc_name);
 			return (SERVP_ERR);
 		}
 		t += len;
@@ -275,8 +282,8 @@ serv_parse(char *s, struct session *ss)
 	return (SERVP_CONT);
 }
 
-#define MAXWIDTH 1024
-#define MAXHEIGHT 768
+#define MAXWIDTH 1600
+#define MAXHEIGHT 900
 
 int
 svc_sw(char *t, int *used, __unused struct session *ss)
