@@ -143,6 +143,12 @@
 #define DSF_CRIT	(1<<0)
 #define DSF_IGN		(1<<1)
 
+/* GL window identifiers for passive stereo. */
+#define WINID_LEFT	0
+#define WINID_RIGHT	1
+
+#define WINID_DEF	0
+
 struct fvec {
 	float		 fv_x;
 	float		 fv_y;
@@ -341,7 +347,7 @@ struct pwidget {
 
 struct panel {
 	int			  p_id;
-	int			  p_dl;
+	int			  p_dl[2];
 	char			 *p_str;
 	size_t			  p_strlen;
 	int			  p_stick;
@@ -546,9 +552,9 @@ void			 drawh_stereo(void);
 void			 drawh_select(void);
 void			 draw_node(struct node *, int);
 void			 draw_node_pipes(struct fvec *);
-void			 make_ground(void);
-void			 make_cluster(void);
-void			 make_select(void);
+void			 make_ground(int);
+void			 make_cluster(int);
+void			 make_select(int);
 float			 snap_to_grid(float, float, float);
 
 /* ds.c */
@@ -644,7 +650,7 @@ int			 fail_cmp(const void *, const void *);
 int			 temp_cmp(const void *, const void *);
 
 /* panel.c */
-void			 draw_panels(void);
+void			 draw_panels(int);
 void			 draw_shadow_panels(void);
 void			 panel_toggle(int);
 void			 panel_tremove(struct panel *);
@@ -738,7 +744,7 @@ extern int		 total_failures;		/* total among all nodes */
 
 extern int		 verbose;
 extern int		 cam_dirty;
-extern GLint		 cluster_dl, ground_dl, select_dl;
+extern GLint		 cluster_dl[2], ground_dl[2], select_dl[2];
 extern int		 font_id;
 extern struct uinput	 uinp;
 extern int		 spkey;

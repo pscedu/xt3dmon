@@ -54,15 +54,15 @@ wired_update(void)
 }
 
 __inline void
-draw_scene(void)
+draw_scene(int wid)
 {
-	if (select_dl)
-		glCallList(select_dl);
-	glCallList(cluster_dl);
+	if (select_dl[wid])
+		glCallList(select_dl[wid]);
+	glCallList(cluster_dl[wid]);
 	if (st.st_opts & OP_GROUND)
-		glCallList(ground_dl);
+		glCallList(ground_dl[wid]);
 	if (!TAILQ_EMPTY(&panels))
-		draw_panels();
+		draw_panels(wid);
 }
 
 #define FOCAL_POINT (2.0f) /* distance from cam to center of 3d focus */
@@ -90,7 +90,7 @@ drawh_stereo(void)
 	radians = DEG_TO_RAD(FOVY / 2);
 	wd2 = FOCAL_POINT * tan(radians);
 	ndfl = FOCAL_POINT / FOCAL_LENGTH;
-	eyesep = 0.2f;
+	eyesep = 0.12f;
 
 	vec_crossprod(&stereo_fv, &st.st_lv, &st.st_uv);
 	vec_normalize(&stereo_fv);
@@ -104,7 +104,7 @@ drawh_stereo(void)
 		glDrawBuffer(GL_BACK_RIGHT);
 		break;
 	case STM_PASV:
-		glutSetWindow(window_ids[1]);
+		glutSetWindow(window_ids[WINID_RIGHT]);
 		break;
 	}
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -122,12 +122,14 @@ drawh_stereo(void)
 	st.st_y += stereo_fv.fv_y;
 	st.st_z += stereo_fv.fv_z;
 	cam_look();
-	draw_scene();
+	draw_scene(WINID_RIGHT);
 
 	if (stereo_mode == STM_PASV) {
 		glClearColor(0.2, 0.2, 0.2, 1.0);
 		/* XXX: capture frame */
-		if (st.st_opts & OP_DISPLAY)
+		if (st.st_opts & OP_CAPTURE)
+			capture_frame(capture_mode);
+		else if (st.st_opts & OP_DISPLAY)
 			glutSwapBuffers();
 	}
 
@@ -137,7 +139,7 @@ drawh_stereo(void)
 		glDrawBuffer(GL_BACK_LEFT);
 		break;
 	case STM_PASV:
-		glutSetWindow(window_ids[0]);
+		glutSetWindow(window_ids[WINID_LEFT]);
 		break;
 	}
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -155,7 +157,7 @@ drawh_stereo(void)
 	st.st_y -= 2 * stereo_fv.fv_y;
 	st.st_z -= 2 * stereo_fv.fv_z;
 	cam_look();
-	draw_scene();
+	draw_scene(WINID_LEFT);
 
 	glClearColor(0.2, 0.2, 0.2, 1.0);
 	if (st.st_opts & OP_CAPTURE)
@@ -191,7 +193,7 @@ drawh_default(void)
 		glMatrixMode(GL_MODELVIEW);
 		cam_look();
 	}
-	draw_scene();
+	draw_scene(WINID_DEF);
 	cam_dirty = 0;
 
 	glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -382,15 +384,15 @@ draw_mod(struct fvec *vp, struct fvec *dim, struct fill *fillp)
 }
 
 void
-make_ground(void)
+make_ground(int wid)
 {
 	struct fvec fv, fdim;
 	struct fill fill;
 
-	if (ground_dl)
-		glDeleteLists(ground_dl, 1);
-	ground_dl = glGenLists(1);
-	glNewList(ground_dl, GL_COMPILE);
+	if (ground_dl[wid])
+		glDeleteLists(ground_dl[wid], 1);
+	ground_dl[wid] = glGenLists(1);
+	glNewList(ground_dl[wid], GL_COMPILE);
 
 	/* Ground */
 	fill.f_r = 0.1f;
@@ -647,6 +649,7 @@ draw_clusters_wired(void)
 	znum = (st.st_z + clip - z + WIV_SDEPTH - 1) / WIV_SDEPTH;
 
 	col = 0;
+	v.fv_z = v.fv_x = 0.0f; /* gcc */
 	for (v.fv_y = y; v.fv_y < st.st_y + clip; v.fv_y += WIV_SHEIGHT) {
 		for (v.fv_z = z; v.fv_z < st.st_z + clip; v.fv_z += WIV_SDEPTH) {
 			for (v.fv_x = x; v.fv_x < st.st_x + clip; v.fv_x += WIV_SWIDTH) {
@@ -671,12 +674,12 @@ draw_clusters_wired(void)
 }
 
 void
-make_cluster(void)
+make_cluster(int wid)
 {
-	if (cluster_dl)
-		glDeleteLists(cluster_dl, 1);
-	cluster_dl = glGenLists(1);
-	glNewList(cluster_dl, GL_COMPILE);
+	if (cluster_dl[wid])
+		glDeleteLists(cluster_dl[wid], 1);
+	cluster_dl[wid] = glGenLists(1);
+	glNewList(cluster_dl[wid], GL_COMPILE);
 
 	switch (st.st_vmode) {
 	case VM_PHYSICAL:
@@ -718,7 +721,7 @@ make_cluster(void)
 }
 
 void
-make_select(void)
+make_select(int wid)
 {
 	struct fvec pos, v;
 	struct selnode *sn;
@@ -726,15 +729,15 @@ make_select(void)
 	struct node *n;
 
 	selnode_clean = 0;
-	if (select_dl)
-		glDeleteLists(select_dl, 1);
+	if (select_dl[wid])
+		glDeleteLists(select_dl[wid], 1);
 	if (SLIST_EMPTY(&selnodes)) {
-		select_dl = 0;
+		select_dl[wid] = 0;
 		return;
 	}
 
-	select_dl = glGenLists(1);
-	glNewList(select_dl, GL_COMPILE);
+	select_dl[wid] = glGenLists(1);
+	glNewList(select_dl[wid], GL_COMPILE);
 
 	vmodes[st.st_vmode].vm_ndim.fv_w += SELNODE_GAP * 2;
 	vmodes[st.st_vmode].vm_ndim.fv_h += SELNODE_GAP * 2;

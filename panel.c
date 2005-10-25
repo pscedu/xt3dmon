@@ -47,7 +47,7 @@ void panel_refresh_mem(struct panel *);
 void panel_refresh_eggs(struct panel *);
 void panel_refresh_date(struct panel *);
 
-int panel_blink(struct timeval *, char **, int, int *, long);
+int  panel_blink(struct timeval *, char **, int, int *, long);
 
 void uinpcb_ss(void);
 void uinpcb_eggs(void);
@@ -94,8 +94,10 @@ panel_free(struct panel *p)
 {
 	struct pwidget *pw, *nextp;
 
-	if (p->p_dl)
-		glDeleteLists(p->p_dl, 1);
+	if (p->p_dl[WINID_LEFT])
+		glDeleteLists(p->p_dl[WINID_LEFT], 1);
+	if (p->p_dl[WINID_RIGHT])
+		glDeleteLists(p->p_dl[WINID_RIGHT], 1);
 	TAILQ_REMOVE(&panels, p, p_link);
 	for (pw = SLIST_FIRST(&p->p_widgets);
 	    pw != SLIST_END(&p->p_widgets);
@@ -153,20 +155,177 @@ draw_shadow_panels(void)
 	glPopAttrib();
 }
 
+/*
+ * The panel drawing API naming is horrible but is consistent:
+ * draw_panel is the low-level function that draws an actual panel.
+ * panel_draw is the high-level panel function that does what is
+ * necessary to put a panel on the screen.
+ */
 void
-draw_panel(struct panel *p)
+draw_panel(struct panel *p, int toff)
 {
-	int compile, npw, tweenadj, u, v, w, h;
-	int lineno, curlen, toff, uoff, voff;
+	int npw, uoff, voff;
 	struct pwidget *pw;
 	char *s;
 
-	if ((p->p_opts & POPT_DIRTY) == 0 && p->p_dl) {
-		glCallList(p->p_dl);
+	/* Save state and set things up for 2D. */
+	glPushAttrib(GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
+
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	gluOrtho2D(0.0, win_width, 0.0, win_height);
+
+	glColor4f(p->p_fill.f_r, p->p_fill.f_g, p->p_fill.f_b, p->p_fill.f_a);
+
+	/* Panel content. */
+	voff = p->p_v - toff;
+	uoff = p->p_u + toff;
+	for (s = p->p_str; *s != '\0'; s++) {
+		if (*s == '\n' || s == p->p_str) {
+			voff -= LETTER_HEIGHT;
+			if (voff < p->p_v - p->p_h)
+				break;
+			glRasterPos2d(uoff, voff);
+			if (*s == '\n')
+				continue;
+		}
+		glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
+	}
+
+	npw = 0;
+	uoff += p->p_w / 2;
+	voff += PWIDGET_HEIGHT; /* first loop cuts into this */
+	SLIST_FOREACH(pw, &p->p_widgets, pw_next) {
+		struct fill *fp = pw->pw_fillp;
+
+		uoff += p->p_w / 2 * (npw % 2 ? 1 : -1);
+		if (npw % 2 == 0)
+			voff -= PWIDGET_HEIGHT + PWIDGET_PADDING;
+		if (voff - PWIDGET_HEIGHT < p->p_v - p->p_h)
+			break;
+
+		/* Draw widget background. */
+		glBegin(GL_POLYGON);
+		glColor4f(fp->f_r, fp->f_g, fp->f_b, 1.0f /* XXX */);
+		glVertex2d(uoff + 1,			voff);
+		glVertex2d(uoff + PWIDGET_LENGTH,	voff);
+		glVertex2d(uoff + PWIDGET_LENGTH,	voff - PWIDGET_HEIGHT + 1);
+		glVertex2d(uoff + 1,			voff - PWIDGET_HEIGHT + 1);
+		glEnd();
+
+		/* Draw widget border. */
+		glLineWidth(1.0f);
+		glBegin(GL_LINE_LOOP);
+		glColor4f(0.00f, 0.00f, 0.00f, 1.00f);
+		glVertex2d(uoff,			voff);
+		glVertex2d(uoff + PWIDGET_LENGTH + 1,	voff);
+		glVertex2d(uoff + PWIDGET_LENGTH,	voff - PWIDGET_HEIGHT);
+		glVertex2d(uoff,			voff - PWIDGET_HEIGHT);
+		glEnd();
+
+		glColor4f(p->p_fill.f_r, p->p_fill.f_g, p->p_fill.f_b, p->p_fill.f_a);
+		glRasterPos2d(uoff + PWIDGET_LENGTH + PWIDGET_PADDING,
+		    voff - PWIDGET_HEIGHT + 3);
+		for (s = pw->pw_str; *s != '\0' &&
+		    (s - pw->pw_str) * LETTER_WIDTH + PWIDGET_LENGTH +
+		    PWIDGET_PADDING * 4 < p->p_w / 2; s++)
+			glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
+
+		/*
+		 * We may have to break early because of the way
+		 * persistent memory allocations are performed.
+		 */
+		if (++npw >= p->p_nwidgets)
+			break;
+	}
+
+	if ((pinfo[baseconv(p->p_id) - 1].pi_opts & PF_XPARENT) == 0) {
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		/* Draw background. */
+		glBegin(GL_POLYGON);
+		glColor4f(0.4, 0.6, 0.8, 0.8);
+		glVertex2d(p->p_u,		p->p_v);
+		glVertex2d(p->p_u + p->p_w,	p->p_v);
+		glVertex2d(p->p_u + p->p_w,	p->p_v - p->p_h);
+		glVertex2d(p->p_u,		p->p_v - p->p_h);
+		glEnd();
+
+		glDisable(GL_BLEND);
+
+		/* Draw border. */
+		glLineWidth(PANEL_BWIDTH);
+		glBegin(GL_LINE_LOOP);
+		glColor4f(0.2, 0.4, 0.6, 1.0);
+		glVertex2d(p->p_u,		p->p_v);
+		glVertex2d(p->p_u + p->p_w,	p->p_v);
+		glVertex2d(p->p_u + p->p_w,	p->p_v - p->p_h);
+		glVertex2d(p->p_u,		p->p_v - p->p_h);
+		glEnd();
+	}
+
+	/* End 2D mode. */
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+
+	glPopAttrib();
+}
+
+__inline void
+make_panel(struct panel *p, int wid, int compile, int toff)
+{
+	if (compile) {
+		if (p->p_dl[wid])
+			glDeleteLists(p->p_dl[wid], 1);
+		p->p_dl[wid] = glGenLists(1);
+		glNewList(p->p_dl[wid], GL_COMPILE);
+	}
+
+	draw_panel(p, toff);
+
+	if (compile) {
+		glEndList();
+		p->p_opts &= ~POPT_DIRTY;
+		glCallList(p->p_dl[wid]);
+	}
+}
+
+void
+panel_draw(struct panel *p, int wid)
+{
+	int compile, tweenadj, u, v, w, h;
+	int lineno, curlen;
+	int toff;
+	char *s;
+
+	if ((p->p_opts & POPT_DIRTY) == 0 && p->p_dl[wid]) {
+		glCallList(p->p_dl[wid]);
 		goto done;
 	}
 
 	toff = PANEL_PADDING + PANEL_BWIDTH;
+
+	/*
+	 * The second window should see the same panel
+	 * as the right, so skip calculation (it would
+	 * actually be very bad).
+	 */
+	if (stereo_mode == STM_PASV && wid == WINID_LEFT) {
+		/*
+		 * make_panel() on the first window
+		 * will have cleared the dirty bit.
+		 */
+		make_panel(p, wid, p->p_opts & POPT_DIRTY, toff);
+		goto done;
+	}
 
 	if (p->p_opts & POPT_REMOVE) {
 		w = 0;
@@ -278,128 +437,8 @@ draw_panel(struct panel *p)
 		}
 	}
 
-	if (compile) {
-		if (p->p_dl)
-			glDeleteLists(p->p_dl, 1);
-		p->p_dl = glGenLists(1);
-		glNewList(p->p_dl, GL_COMPILE);
-	}
+	make_panel(p, wid, compile, toff);
 
-	/* Save state and set things up for 2D. */
-	glPushAttrib(GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
-
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-
-	gluOrtho2D(0.0, win_width, 0.0, win_height);
-
-	glColor4f(p->p_fill.f_r, p->p_fill.f_g, p->p_fill.f_b, p->p_fill.f_a);
-
-	/* Panel content. */
-	voff = p->p_v - toff;
-	uoff = p->p_u + toff;
-	for (s = p->p_str; *s != '\0'; s++) {
-		if (*s == '\n' || s == p->p_str) {
-			voff -= LETTER_HEIGHT;
-			if (voff < p->p_v - p->p_h)
-				break;
-			glRasterPos2d(uoff, voff);
-			if (*s == '\n')
-				continue;
-		}
-		glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
-	}
-
-	npw = 0;
-	uoff += p->p_w / 2;
-	voff += PWIDGET_HEIGHT; /* first loop cuts into this */
-	SLIST_FOREACH(pw, &p->p_widgets, pw_next) {
-		struct fill *fp = pw->pw_fillp;
-
-		uoff += p->p_w / 2 * (npw % 2 ? 1 : -1);
-		if (npw % 2 == 0)
-			voff -= PWIDGET_HEIGHT + PWIDGET_PADDING;
-		if (voff - PWIDGET_HEIGHT < p->p_v - p->p_h)
-			break;
-
-		/* Draw widget background. */
-		glBegin(GL_POLYGON);
-		glColor4f(fp->f_r, fp->f_g, fp->f_b, 1.0f /* XXX */);
-		glVertex2d(uoff + 1,			voff);
-		glVertex2d(uoff + PWIDGET_LENGTH,	voff);
-		glVertex2d(uoff + PWIDGET_LENGTH,	voff - PWIDGET_HEIGHT + 1);
-		glVertex2d(uoff + 1,			voff - PWIDGET_HEIGHT + 1);
-		glEnd();
-
-		/* Draw widget border. */
-		glLineWidth(1.0f);
-		glBegin(GL_LINE_LOOP);
-		glColor4f(0.00f, 0.00f, 0.00f, 1.00f);
-		glVertex2d(uoff,			voff);
-		glVertex2d(uoff + PWIDGET_LENGTH + 1,	voff);
-		glVertex2d(uoff + PWIDGET_LENGTH,	voff - PWIDGET_HEIGHT);
-		glVertex2d(uoff,			voff - PWIDGET_HEIGHT);
-		glEnd();
-
-		glColor4f(p->p_fill.f_r, p->p_fill.f_g, p->p_fill.f_b, p->p_fill.f_a);
-		glRasterPos2d(uoff + PWIDGET_LENGTH + PWIDGET_PADDING,
-		    voff - PWIDGET_HEIGHT + 3);
-		for (s = pw->pw_str; *s != '\0' &&
-		    (s - pw->pw_str) * LETTER_WIDTH + PWIDGET_LENGTH +
-		    PWIDGET_PADDING * 4 < p->p_w / 2; s++)
-			glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
-
-		/*
-		 * We may have to break early because of the way
-		 * persistent memory allocations are performed.
-		 */
-		if (++npw >= p->p_nwidgets)
-			break;
-	}
-
-	if ((pinfo[baseconv(p->p_id) - 1].pi_opts & PF_XPARENT) == 0) {
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-		/* Draw background. */
-		glBegin(GL_POLYGON);
-		glColor4f(0.4, 0.6, 0.8, 0.8);
-		glVertex2d(p->p_u,		p->p_v);
-		glVertex2d(p->p_u + p->p_w,	p->p_v);
-		glVertex2d(p->p_u + p->p_w,	p->p_v - p->p_h);
-		glVertex2d(p->p_u,		p->p_v - p->p_h);
-		glEnd();
-
-		glDisable(GL_BLEND);
-
-		/* Draw border. */
-		glLineWidth(PANEL_BWIDTH);
-		glBegin(GL_LINE_LOOP);
-		glColor4f(0.2, 0.4, 0.6, 1.0);
-		glVertex2d(p->p_u,		p->p_v);
-		glVertex2d(p->p_u + p->p_w,	p->p_v);
-		glVertex2d(p->p_u + p->p_w,	p->p_v - p->p_h);
-		glVertex2d(p->p_u,		p->p_v - p->p_h);
-		glEnd();
-	}
-
-	/* End 2D mode. */
-	glPopMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-
-	glPopAttrib();
-
-	if (compile) {
-		glEndList();
-		p->p_opts &= ~POPT_DIRTY;
-		glCallList(p->p_dl);
-	}
 done:
 	/* spacing */
 	switch (p->p_stick) {
@@ -883,7 +922,7 @@ panel_refresh_status(struct panel *p)
 }
 
 void
-draw_panels(void)
+draw_panels(int wid)
 {
 	struct panel *p, *np;
 
@@ -894,8 +933,10 @@ draw_panels(void)
 	memset(panel_offset, 0, sizeof(panel_offset));
 	for (p = TAILQ_FIRST(&panels); p != TAILQ_END(&panels); p = np) {
 		np = TAILQ_NEXT(p, p_link);
-		p->p_refresh(p);
-		draw_panel(p);
+		if (stereo_mode != STM_PASV ||
+		   wid == WINID_RIGHT)
+			p->p_refresh(p);
+		panel_draw(p, wid);
 	}
 }
 

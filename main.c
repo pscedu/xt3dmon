@@ -32,7 +32,7 @@ int			 font_id;
 struct fvec		 tv = { STARTX, STARTY, STARTZ };
 struct fvec		 tlv = { STARTLX, STARTLY, STARTLZ };
 struct fvec		 tuv = { 0.0f, 1.0f, 0.0f };
-GLint			 cluster_dl, ground_dl, select_dl;
+GLint			 cluster_dl[2], ground_dl[2], select_dl[2];
 struct timeval		 lastsync;
 long			 fps = 50;	/* last fps sample */
 long			 fps_cnt = 0;	/* current fps counter */
@@ -158,6 +158,18 @@ idleh_default(void)
 }
 
 void
+make_obj(void (*f)(int))
+{
+	if (stereo_mode == STM_PASV) {
+		glutSetWindow(window_ids[WINID_LEFT]);
+		(*f)(WINID_LEFT);
+		glutSetWindow(window_ids[WINID_RIGHT]);
+		(*f)(WINID_RIGHT);
+	} else
+		(*f)(WINID_DEF);
+}
+
+void
 rebuild(int opts)
 {
 	if (opts & RF_TEX) {
@@ -216,11 +228,11 @@ rebuild(int opts)
 		cam_dirty = 1;
 	}
 	if (opts & RF_GROUND && st.st_opts & OP_GROUND)
-		make_ground();
+		make_obj(make_ground);
 	if (opts & RF_CLUSTER)
-		make_cluster();
+		make_obj(make_cluster);
 	if (opts & RF_SELNODE)
-		make_select();
+		make_obj(make_select);
 }
 
 char **sav_argv;
@@ -237,6 +249,13 @@ usage(void)
 {
 	fprintf(stderr, "usage: %s [-adlpv]\n", progname);
 	exit(1);
+}
+
+void
+setup_glut(void)
+{
+	glShadeModel(GL_SMOOTH);
+	glEnable(GL_DEPTH_TEST);
 }
 
 int
@@ -289,15 +308,14 @@ main(int argc, char *argv[])
 	glutInitWindowSize(sw, sh);
 	if ((window_ids[0] = glutCreateWindow("XT3 Monitor")) == GL_FALSE)
 		errx(1, "glutCreateWindow");
+	setup_glut();
 	if (stereo_mode == STM_PASV) {
 		glutInitWindowPosition(sw, 0);
-		if ((window_ids[1] = glutCreateWindow("XT3 Monitor")) ==
-		    GL_FALSE)
+		if ((window_ids[WINID_RIGHT] =
+		    glutCreateWindow("XT3 Monitor")) == GL_FALSE)
 			errx(1, "glutCreateWindow");
+		setup_glut();
 	}
-
-	glShadeModel(GL_SMOOTH);
-	glEnable(GL_DEPTH_TEST);
 
 	glutTimerFunc(1, cocb_fps, 0);
 	glutTimerFunc(1, cocb_datasrc, 0);
