@@ -190,7 +190,7 @@ dsc_create(const char *sid)
 int
 dsc_exists(const char *sid)
 {
-	char fn[NAME_MAX];
+	char fn[PATH_MAX];
 	struct stat st;
 
 	snprintf(fn, sizeof(fn), "%s/%s", _PATH_SESSIONS, sid);
@@ -244,10 +244,9 @@ dsc_open(int type, const char *sid)
 	struct datasrc *ds;
 	char fn[PATH_MAX];
 
+	ds = ds_get(type);
 	snprintf(fn, sizeof(fn), "%s/%s/%s", _PATH_SESSIONS, sid,
 	    ds->ds_name);
-
-	ds = ds_get(type);
 	if ((ds->ds_fd = open(fn, O_RDONLY, 0)) == -1)
 		return (NULL);
 	return (ds);
@@ -269,4 +268,23 @@ dsc_load(int type, const char *sid)
 		err(1, "dsc_open");
 	ds_read(ds);
 	dsc_close(ds);
+}
+
+int
+st_dsmode(void)
+{
+	int ds = -1;
+
+	switch (st.st_mode) {
+	case SM_JOBS:
+		ds = DS_JOBS;
+		break;
+	case SM_FAIL:
+		ds = DS_FAIL;
+		break;
+	case SM_TEMP:
+		ds = DS_TEMP;
+		break;
+	}
+	return (ds);
 }
