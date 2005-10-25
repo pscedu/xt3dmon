@@ -125,9 +125,14 @@ ds_refresh(int type, int flags)
 		switch (ds->ds_dsp) {
 		case DSP_LOCAL:
 		case DSP_REMOTE:
-			if (ds->ds_fd == -1)
-				warn("datasrc (%s) open failed",
-				    ds->ds_name);
+			if (ds->ds_fd == -1) {
+				if (flags & DSF_CRIT)
+					err(1, "datasrc (%s) open failed",
+					    ds->ds_name);
+				else if ((flags & DSF_IGN) == 0)
+					warn("datasrc (%s) open failed",
+					    ds->ds_name);
+			}
 			break;
 		}
 	}
