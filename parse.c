@@ -283,6 +283,22 @@ printf("parsing new jobmap\n");
 		warn("fdopen");
 		return;
 	}
+
+	/* XXXXXX: is this necessary? */
+#if 0
+	for (r = 0; r < NROWS; r++)
+		for (cb = 0; cb < NCABS; cb++)
+			for (cg = 0; cg < NCAGES; cg++)
+				for (m = 0; m < NMODS; m++)
+					for (n = 0; n < NNODES; n++) {
+						node = &nodes[r][cb][cg][m][n];
+						if (node->n_state == JST_USED) {
+							node->n_state = JST_FREE;
+							node->n_fillp = &jstates[JST_FREE].js_fill;
+						}
+					}
+#endif
+
 	lineno = 0;
 	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		lineno++;
