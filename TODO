@@ -41,3 +41,4 @@ reminders:
 57. dsc chdir to avoid races
 58. SKEL for physvmode
 59. panel timestamp reflects sid
+60. sigcatch USR1 and datasrc and pkill in cron
