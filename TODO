@@ -43,3 +43,4 @@ reminders:
 59. panel timestamp reflects sid
 60. sigcatch USR1 and datasrc and pkill in cron
 61. fix textures/gl in stereo
+62. yod
