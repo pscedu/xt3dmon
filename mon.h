@@ -444,13 +444,17 @@ struct objlist {
 	size_t		 ol_alloc;
 	size_t		 ol_incr;
 	size_t		 ol_objlen;
+	int		 ol_flags;
 	cmpf_t		 ol_eq;
+	cmpf_t		 ol_cmpf;
 #define ol_data  ol_udata.olu_data
 #define ol_jobs  ol_udata.olu_jobs
 #define ol_fails ol_udata.olu_fails
 #define ol_temps ol_udata.olu_temps
 #define ol_glnames ol_udata.olu_glnames
 };
+
+#define OLF_SORT	(1<<0)
 
 struct glname {
 	struct objhdr	  gn_oh;

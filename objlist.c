@@ -13,11 +13,13 @@ int		 fail_eq(const void *, const void *);
 int		 temp_eq(const void *, const void *);
 int		 glname_eq(const void *, const void *);
 
-struct objlist	 job_list  = { { NULL }, 0, 0, 0, 0, JINCR, sizeof(struct job), job_eq };
-struct objlist	 temp_list = { { NULL }, 0, 0, 0, 0, TINCR, sizeof(struct temp), fail_eq };
-struct objlist	 fail_list = { { NULL }, 0, 0, 0, 0, FINCR, sizeof(struct fail), temp_eq };
+int		 job_cmp(const void *, const void *);
 
-struct objlist	 glname_list = { { NULL }, 0, 0, 0, 0, GINCR, sizeof(struct glname), glname_eq };
+struct objlist	 job_list    = { { NULL }, 0, 0, 0, 0, JINCR, sizeof(struct job),  OLF_SORT, job_eq, job_cmp };
+struct objlist	 temp_list   = { { NULL }, 0, 0, 0, 0, TINCR, sizeof(struct temp), 0,	     fail_eq, NULL };
+struct objlist	 fail_list   = { { NULL }, 0, 0, 0, 0, FINCR, sizeof(struct fail), 0,	     temp_eq, NULL };
+
+struct objlist	 glname_list = { { NULL }, 0, 0, 0, 0, GINCR, sizeof(struct glname), 0,	     glname_eq, NULL };
 
 struct fail fail_notfound = {
 	{ 0 }, 0, { 0.33f, 0.66f, 0.99f, 1.00f, 0, 0 }, "0"
@@ -143,6 +145,9 @@ obj_batch_end(struct objlist *ol)
 		 * be a new object.
 		 */
 		((struct objhdr *)ol->ol_data[n])->oh_flags &= ~OHF_OLD;
+	if (ol->ol_flags & OLF_SORT)
+		qsort(ol->ol_data, job_list.ol_cur, sizeof(void *),
+		    ol->ol_cmpf);
 }
 
 /*
