@@ -294,6 +294,7 @@ make_panel(struct panel *p, int wid, int compile, int toff)
 	if (compile) {
 		glEndList();
 		p->p_opts &= ~POPT_DIRTY;
+		p->p_opts |= POPT_COMPILE;
 		glCallList(p->p_dl[wid]);
 	}
 }
@@ -305,11 +306,6 @@ panel_draw(struct panel *p, int wid)
 	int lineno, curlen;
 	int toff;
 	char *s;
-
-	if ((p->p_opts & POPT_DIRTY) == 0 && p->p_dl[wid]) {
-		glCallList(p->p_dl[wid]);
-		goto done;
-	}
 
 	toff = PANEL_PADDING + PANEL_BWIDTH;
 
@@ -323,7 +319,13 @@ panel_draw(struct panel *p, int wid)
 		 * make_panel() on the first window
 		 * will have cleared the dirty bit.
 		 */
-		make_panel(p, wid, p->p_opts & POPT_DIRTY, toff);
+		make_panel(p, wid, p->p_opts & POPT_COMPILE, toff);
+		p->p_opts &= ~POPT_COMPILE;
+		return;
+	}
+
+	if ((p->p_opts & POPT_DIRTY) == 0 && p->p_dl[wid]) {
+		glCallList(p->p_dl[wid]);
 		goto done;
 	}
 
