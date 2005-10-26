@@ -255,6 +255,7 @@ void
 parse_jobmap(struct datasrc *ds)
 {
 	int jobid, nid, lineno, enabled;
+	int r, cb, cg, m, n;
 	char buf[BUFSIZ], *p, *s;
 	struct node *node;
 	struct job *job;
@@ -262,9 +263,11 @@ parse_jobmap(struct datasrc *ds)
 	FILE *fp;
 	long l;
 
-printf("parsing new jobmap\n");
+	if ((fp = fdopen(ds->ds_fd, "r")) == NULL) {
+		warn("fdopen");
+		return;
+	}
 
-#if 0
 	/* XXXXXX - reset fillp on all nodes. */
 	for (r = 0; r < NROWS; r++)
 		for (cb = 0; cb < NCABS; cb++)
@@ -272,32 +275,13 @@ printf("parsing new jobmap\n");
 				for (m = 0; m < NMODS; m++)
 					for (n = 0; n < NNODES; n++) {
 						node = &nodes[r][cb][cg][m][n];
-						if (node->n_state != JST_USED)
-							continue;
-						node->n_job = NULL;
-						node->n_fillp = &fail_notfound.f_fill;
-					}
-#endif
-
-	if ((fp = fdopen(ds->ds_fd, "r")) == NULL) {
-		warn("fdopen");
-		return;
-	}
-
-	/* XXXXXX: is this necessary? */
-#if 0
-	for (r = 0; r < NROWS; r++)
-		for (cb = 0; cb < NCABS; cb++)
-			for (cg = 0; cg < NCAGES; cg++)
-				for (m = 0; m < NMODS; m++)
-					for (n = 0; n < NNODES; n++) {
-						node = &nodes[r][cb][cg][m][n];
-						if (node->n_state == JST_USED) {
-							node->n_state = JST_FREE;
-							node->n_fillp = &jstates[JST_FREE].js_fill;
+						/* XXX: kinda hacky. */
+						if (node->n_state == JST_USED ||
+						    node->n_state == JST_FREE) {
+							node->n_job = NULL;
+							node->n_fillp = &fail_notfound.f_fill;
 						}
 					}
-#endif
 
 	lineno = 0;
 	while (fgets(buf, sizeof(buf), fp) != NULL) {
@@ -391,9 +375,6 @@ pass:
 	for (j = 0; j < job_list.ol_tcur; j++)
 		getcol(job_list.ol_jobs[j]->j_oh.oh_flags & OHF_OLD,
 		    j, job_list.ol_tcur, &job_list.ol_jobs[j]->j_fill);
-
-	/* Must read qstat info last so jobs are in our memory. */
-	ds_refresh(DS_QSTAT, 0);
 }
 
 void
@@ -833,6 +814,7 @@ parse_qstat(struct datasrc *ds)
 				memcpy(job->j_queue, j_fake.j_queue,
 				    sizeof(job->j_queue));
 			}
+else printf("j not found: %d\n", jobid);
 
 			/* Setup next job. */
 			jobid = 0;
