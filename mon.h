@@ -382,6 +382,7 @@ struct panel {
 #define POPT_DIRTY	(1<<1)			/* panel needs redrawn */
 #define POPT_USRDIRTY	(1<<2)			/* user-flag for the same */
 #define POPT_MOBILE	(1<<3)			/* being dragged */
+#define POPT_COMPILE	(1<<4)			/* stereo syncing */
 
 #define PSTICK_TL	1
 #define PSTICK_TR	2
