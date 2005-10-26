@@ -44,3 +44,4 @@ reminders:
 60. sigcatch USR1 and datasrc and pkill in cron
 61. fix textures/gl in stereo
 62. yod
+63. stereo selection mode
