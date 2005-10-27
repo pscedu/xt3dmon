@@ -45,3 +45,4 @@ reminders:
 61. fix textures/gl in stereo
 62. yod
 63. stereo selection mode
+64. make job searching bsearch again, since it is sorted
