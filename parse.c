@@ -279,7 +279,10 @@ parse_jobmap(struct datasrc *ds)
 						if (node->n_state == JST_USED ||
 						    node->n_state == JST_FREE) {
 							node->n_job = NULL;
-							node->n_fillp = &fail_notfound.f_fill;
+							node->n_state = JST_DOWN;
+							node->n_fillp = &jstates[JST_DOWN].js_fill;
+						} else {
+							node->n_fillp = &jstates[node->n_state].js_fill;
 						}
 					}
 
