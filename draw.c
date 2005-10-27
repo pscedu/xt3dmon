@@ -90,7 +90,7 @@ drawh_stereo(void)
 	radians = DEG_TO_RAD(FOVY / 2);
 	wd2 = FOCAL_POINT * tan(radians);
 	ndfl = FOCAL_POINT / FOCAL_LENGTH;
-	eyesep = 0.12f;
+	eyesep = 0.30f;
 
 	vec_crossprod(&stereo_fv, &st.st_lv, &st.st_uv);
 	vec_normalize(&stereo_fv);
