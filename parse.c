@@ -817,7 +817,6 @@ parse_qstat(struct datasrc *ds)
 				memcpy(job->j_queue, j_fake.j_queue,
 				    sizeof(job->j_queue));
 			}
-else printf("j not found: %d\n", jobid);
 
 			/* Setup next job. */
 			jobid = 0;
