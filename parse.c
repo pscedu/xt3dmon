@@ -275,6 +275,8 @@ parse_jobmap(struct datasrc *ds)
 				for (m = 0; m < NMODS; m++)
 					for (n = 0; n < NNODES; n++) {
 						node = &nodes[r][cb][cg][m][n];
+						node->n_flags &= ~NF_SKEL;
+
 						/* XXX: kinda hacky. */
 						if (node->n_state == JST_USED ||
 						    node->n_state == JST_FREE) {
@@ -544,6 +546,7 @@ parse_failmap(struct datasrc *ds)
 						node = &nodes[r][cb][cg][m][n];
 						node->n_fail = &fail_notfound;
 						node->n_fillp = &fail_notfound.f_fill;
+						node->n_flags &= ~NF_SKEL;
 					}
 
 	total_failures = lineno = 0;
@@ -644,6 +647,7 @@ parse_tempmap(struct datasrc *ds)
 						node = &nodes[r][cb][cg][m][n];
 						node->n_temp = &temp_notfound;
 						node->n_fillp = &temp_notfound.t_fill;
+						node->n_flags |= NF_SKEL;
 					}
 
 	lineno = 0;
@@ -738,6 +742,7 @@ parse_tempmap(struct datasrc *ds)
 				err(1, "asprintf");
 			node->n_fillp = &temp->t_fill;
 			node->n_temp = temp;
+			node->n_flags &= ~NF_SKEL;
 		}
 		continue;
 bad:
