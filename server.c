@@ -224,9 +224,12 @@ snap:
 		ds = st_dsmode();
 		if (!dsc_exists(ss.ss_sid)) {
 			dsc_clone(DS_JOBS, ss.ss_sid);
+			dsc_clone(DS_QSTAT, ss.ss_sid);
 			dsc_clone(DS_TEMP, ss.ss_sid);
 		}
 		dsc_load(ds, ss.ss_sid);
+		if (ds == DS_JOBS)
+			dsc_load(DS_QSTAT, ss.ss_sid);
 		st.st_rf &= ~(RF_DATASRC | RF_SMODE);
 	}
 
