@@ -131,11 +131,11 @@ m_passiveh_default(int u, int v)
 	lastu = u;
 	lastv = v;
 
-	if (drawh != drawh_select) {
-		drawh_old = drawh;
-		drawh = drawh_select;
-		glutDisplayFunc(drawh);
-	}
+//	if (drawh != drawh_select) {
+//		drawh_old = drawh;
+//		drawh = drawh_select;
+//		glutDisplayFunc(drawh);
+//	}
 }
 
 void
