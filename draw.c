@@ -30,10 +30,11 @@
 struct fvec wivstart, wivdim;
 float clip;
 
-struct fill fill_black = { 0.0f, 0.0f, 0.0f, 1.0f, 0, 0 };
-struct fill fill_grey  = { 0.2f, 0.2f, 0.2f, 1.0f, 0, 0 };
-struct fill fill_light_blue = { 0.2f, 0.4f, 0.6f, 1.0f, 0, 0 };
-struct fill selnodefill = { 0.20f, 0.40f, 0.60f, 1.00f, 0, 0 };		/* Dark blue */
+struct fill fill_black		= { 0.0f, 0.0f, 0.0f, 1.0f, 0, 0 };
+struct fill fill_grey		= { 0.2f, 0.2f, 0.2f, 1.0f, 0, 0 };
+struct fill fill_light_blue	= { 0.2f, 0.4f, 0.6f, 1.0f, 0, 0 };
+struct fill fill_yellow		= { 1.0f, 1.0f, 0.0f, 1.0f, 0, 0 };
+struct fill fill_selnode	= { 0.2f, 0.4f, 0.6f, 1.0f, 0, 0 };
 
 struct fvec fvzero = { 0.0f, 0.0f, 0.0f };
 
@@ -318,8 +319,9 @@ draw_node_pipes(struct fvec *dim)
 __inline void
 draw_node(struct node *n, int flags)
 {
+	struct fill *fp, *fill_wireframe;
 	struct fvec *vp, *dimp;
-	struct fill *fp;
+
 	GLenum param = GL_REPLACE;
 
 	if (!node_show(n))
@@ -344,16 +346,22 @@ draw_node(struct node *n, int flags)
 		param = GL_BLEND;
 	}
 
-	if (st.st_opts & OP_TEX)
-		draw_box_tex(dimp, fp, param);
-	else
-		draw_box_filled(dimp, fp);
+	if (n->n_flags & NF_SKEL)
+		fill_wireframe = &fill_yellow;
+	else {
+		fill_wireframe = &fill_black;
+
+		if (st.st_opts & OP_TEX)
+			draw_box_tex(dimp, fp, param);
+		else
+			draw_box_filled(dimp, fp);
+	}
 
 	if (fp->f_a != 1.0f)
 		glDisable(GL_BLEND);
 
 	if (st.st_opts & OP_WIREFRAME)
-		draw_box_outline(dimp, &fill_black);
+		draw_box_outline(dimp, fill_wireframe);
 	if (st.st_opts & OP_NLABELS)
 		draw_node_label(n);
 
@@ -746,7 +754,7 @@ make_select(int wid)
 	SLIST_FOREACH(sn, &selnodes, sn_next) {
 		n = sn->sn_nodep;
 		ofp = n->n_fillp;
-		n->n_fillp = &selnodefill;
+		n->n_fillp = &fill_selnode;
 
 		switch (st.st_vmode) {
 		case VM_WIRED:
