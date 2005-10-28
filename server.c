@@ -43,6 +43,7 @@ int svc_sid(char *, int *, struct session *);
 
 struct session {
 	int		ss_click;
+	int		ss_jobid;
 	char		ss_sid[SID_LEN + 1];
 };
 
@@ -232,6 +233,17 @@ snap:
 			dsc_load(DS_QSTAT, ss.ss_sid);
 		st.st_rf &= ~(RF_DATASRC | RF_SMODE);
 	}
+	if (ss.ss_jobid) {
+		struct job *j;
+
+		if ((j = job_findbyid(ss.ss_jobid)) != NULL) {
+			st.st_opts |= OP_SKEL;
+			st.st_rf |= RF_CLUSTER;
+
+			hl_clearall();
+			job_hl(j);
+		}
+	}
 
 	drawh_old = serv_drawh;
 	drawh_default();
@@ -363,19 +375,11 @@ svc_lz(char *t, int *used, __unused struct session *ss)
 }
 
 int
-svc_job(char *t, int *used, __unused struct session *ss)
+svc_job(char *t, int *used, struct session *ss)
 {
-	struct job *j;
-	int jobid;
-
-	if (sscanf(t, "%d%n", &jobid, used) != 1)
+	if (sscanf(t, "%d%n", &ss->ss_jobid, used) != 1) {
+		ss->ss_jobid = 0;
 		return (0);
-	if ((j = job_findbyid(jobid)) != NULL) {
-		st.st_opts |= OP_SKEL;
-		st.st_rf |= RF_CLUSTER;
-
-		hl_clearall();
-		job_hl(j);
 	}
 	return (1);
 }
