@@ -258,6 +258,7 @@ struct node {
 
 #define NF_HIDE		(1<<0)
 #define NF_SEL		(1<<1)
+#define NF_SKEL		(1<<2)			/* only display skeleton of node */
 
 struct state {
 	struct fvec	 st_v;			/* camera position */
