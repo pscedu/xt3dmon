@@ -66,6 +66,14 @@ typedef signed int ssize_t;
 
 #define mkdir(path, mode) mkdir(path)
 
+#define localtime_r(clock, result)	\
+	do {				\
+		struct tm *_tm;		\
+					\
+		_tm = localtime(clock);	\
+		*result = *_tm;		\
+	} while (0)
+
 
 #elif defined(__APPLE_CC__)
 
