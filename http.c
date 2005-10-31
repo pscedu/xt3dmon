@@ -1,9 +1,7 @@
 /* $Id$ */
 
-#include <sys/types.h>
-#include <sys/socket.h>
+#include "compat.h"
 
-#include <netdb.h>
 #include <stdio.h>
 
 #include "cdefs.h"
