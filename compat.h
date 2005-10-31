@@ -4,9 +4,17 @@
 #define _COMPAT_H
 
 #ifdef _MSC_VER
+
+#define WIN32_LEAN_AND_MEAN
+
 # include <stdarg.h>
 
+# include <io.h>
+# include <direct.h>
 # include <windows.h>
+
+# include <winsock2.h>
+# include <ws2tcpip.h>
 
 # include <GL/gl.h>
 # include <GL/glut.h>
@@ -21,6 +29,11 @@
 # define ceilf ceil
 # define floorf floor
 # define log10f log10
+
+# define write _write
+# define read _read
+
+#define round(a) floor((a) + 0.5)
 
 # define NAME_MAX BUFSIZ
 # define PATH_MAX BUFSIZ
@@ -48,13 +61,22 @@ do {                                                                        \
 
 #undef SLIST_ENTRY
 
+typedef UINT16 u_int16_t;
+typedef signed int ssize_t;
+
+#define mkdir(path, mode) mkdir(path)
+
+
 #elif defined(__APPLE_CC__)
 
 # include <sys/param.h>
+# include <sys/time.h>
 
 # include <OpenGL/gl.h>
 # include <GLUT/glut.h>
-# include <sys/time.h>
+
+# include <unistd.h>
+# include <netdb.h>
 
 #else /* UNIX */
 
@@ -63,10 +85,15 @@ do {                                                                        \
 # endif
 
 # include <sys/param.h>
+# include <sys/socket.h>
 # include <sys/time.h>
 
 # include <GL/gl.h>
 # include <GL/freeglut.h>
+
+# include <unistd.h>
+# include <netdb.h>
+
 #endif
 
 #endif /* _COMPAT_H */
