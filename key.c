@@ -587,8 +587,8 @@ spkeyh_default(int key, __unused int u, __unused int v)
 		break;
 	case VM_WIRED:
 	case VM_WIREDONE:
-		amt *= cbrt(st.st_winsp.iv_x * st.st_winsp.iv_y *
-		    st.st_winsp.iv_z);
+		amt *= pow(st.st_winsp.iv_x * st.st_winsp.iv_y *
+		    st.st_winsp.iv_z, 1/3.0);
 		break;
 	}
 
