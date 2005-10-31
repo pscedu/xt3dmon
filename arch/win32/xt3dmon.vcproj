@@ -34,8 +34,10 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="ws2_32.lib libpng.lib libmysql.lib glut32.lib"
 				OutputFile="$(OutDir)/xt3dmon.exe"
 				LinkIncremental="2"
+				AdditionalLibraryDirectories="&quot;C:\Program Files\MySQL\MySQL Server 4.1\lib\opt&quot;"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/xt3dmon.pdb"
 				SubSystem="1"
