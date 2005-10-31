@@ -4,8 +4,8 @@
 
 #include <stdlib.h>
 
-#include "queue.h"
 #include "mon.h"
+#include "queue.h"
 
 size_t nselnodes;
 struct selnodes selnodes;
