@@ -494,6 +494,7 @@ struct http_req {
 };
 
 struct http_res {
+	int		 htres_code;
 };
 
 struct datasrc {
