@@ -1,6 +1,8 @@
 .\" $Id$
-.Dd August 23, 2005
+.Dd November 1, 2005
 .Dt XT3DMON 1
+.\" .ds volume Pittsburgh Supercomputing Center
+.\" .ds vT Pittsburgh Supercomputing Center
 .Os http://www.psc.edu/
 .Sh NAME
 .Nm xt3dmon
@@ -10,10 +12,10 @@
 .Op Fl adlp
 .Sh DESCRIPTION
 .Nm
-is a 3D program that graphically displays the various attributes of the
-of the Cray
+is a 3D program that graphically displays various data sets of
+information about the BigBen Cray
 .Tn XT3
-Redstorm cluster.
+cluster.
 At regular intervals, the data are re-read and the display is
 updated to reflect what is happening in reality.
 .Pp
@@ -60,15 +62,15 @@ differentiated by color and/or texture:
 .It Free
 The node is available.
 .It Disabled (PBS)
-The node is administratively disabled and is not allocated by PBS.
+The node is not accounted for by PBS.
 .It Disabled (HW)
 The node is disabled in the physical map (hardware).
 .It Used
 The node is in use by a job.
 .It Service
 The node is a service node, not a compute node.
-.It Unaccounted
-The node is not accounted for in the physical map.
+.\" .It Unaccounted
+.\" The node is not accounted for in the physical map.
 .It Bad
 The node has failed required probe tests.
 .It Checking
@@ -104,10 +106,16 @@ view.
 .Pp
 While holding shift, scroll the mouse to rotate the theta and phi of the
 camera view.
+.It Ic ad
+Display only PBS-disabled nodes.
+.It Ic af
+Display only free (i.e., no job running) nodes.
 .It Ic aj
-Hide all nodes not belonging to any job of any selected node.
+Display only nodes in jobs of any selected nodes.
 .It Ic ar
-Restore drawing of all nodes.
+Restore display of all nodes.
+.It Ic as
+Display only selected nodes.
 .It Ic C
 Redraw the cluster.
 .It Ic c
@@ -142,8 +150,6 @@ Switch to job data mode (default).
 Switch to temperature data mode.
 .It Ic O
 Return the camera to the origin (0,0,0).
-.It Ic ob
-Toggle translucency (blending).
 .It Ic oD
 Toggle drawing to the screen.
 .It Ic od
@@ -168,14 +174,18 @@ Toggle the display of modules.
 Toggle the display of pipes to the wired neighbors of any selected nodes.
 .It Ic op
 Toggle the display of pipes to the wired neighbors of all nodes.
+.It Ic os
+Toggle skeleton mode.
 .It Ic ot
 Toggle texture mapping.
 .It Ic ow
 Toggle the display of wireframes around nodes.
 .It Ic pa
 Toggle all panels.
-.It Ic pc
-Toggle the command panel.
+.\" .It Ic pc
+.\" Toggle the command panel.
+.It Ic pd
+Toggle the date/time panel.
 .It Ic pF
 Toggle the flyby overview panel.
 .It Ic pf
@@ -196,6 +206,8 @@ Toggle the status panel.
 Toggle the screenshot panel.
 .It Ic q
 Quit.
+.It Ic R
+Manually refresh current data set.
 .It Ic vo
 Switch to the wired viewing mode with only one cluster drawn.
 .It Ic vp
