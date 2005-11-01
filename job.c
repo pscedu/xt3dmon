@@ -1,7 +1,7 @@
 /* $Id$ */
 
-#include "cdefs.h"
 #include "mon.h"
+#include "cdefs.h"
 
 struct job *
 job_findbyid(int id)

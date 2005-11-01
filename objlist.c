@@ -1,7 +1,7 @@
 /* $Id$ */
 
-#include "cdefs.h"
 #include "mon.h"
+#include "cdefs.h"
 
 #define JINCR		10
 #define FINCR		10
