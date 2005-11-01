@@ -213,7 +213,7 @@ rebuild(int opts)
 			ds_refresh(DS_TEMP, 0);
 			break;
 		}
-		ds_refresh(DS_MEM, 0);
+		ds_refresh(DS_MEM, DSF_IGN);
 		hl_refresh();
 	}
 	if (opts & RF_CAM) {
