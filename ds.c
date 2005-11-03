@@ -34,8 +34,6 @@ struct datasrc datasrcs[] = {
 };
 #define NDATASRCS (sizeof(datasrcs) / sizeof(datasrcs[0]))
 
-#define _PATH_SESSIONS "/tmp/xtsess"
-
 void
 ds_close(struct datasrc *ds)
 {

@@ -14,3 +14,5 @@
 #define _PATH_FONT	"data/font.png"
 #define _PATH_SSDIR	"snaps"
 #define _PATH_STAT	"/proc/self/stat"
+
+#define _PATH_SESSIONS	"/tmp/xtsess"
