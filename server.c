@@ -18,8 +18,6 @@
 #define BACKLOG	128
 #define USLEEP	100
 
-struct session;
-
 void serv_drawh(void);
 int serv_parse(char *, struct session *);
 
@@ -38,14 +36,6 @@ int svc_clickv(char *, int *, struct session *);
 int svc_vmode(char *, int *, struct session *);
 int svc_smode(char *, int *, struct session *);
 int svc_sid(char *, int *, struct session *);
-
-#define SID_LEN 12	/* excluding NUL */
-
-struct session {
-	int		ss_click;
-	int		ss_jobid;
-	char		ss_sid[SID_LEN + 1];
-};
 
 struct sv_cmd {
 	const char	 *svc_name;
@@ -69,6 +59,7 @@ struct sv_cmd {
 };
 
 int sock;
+struct session *ssp;
 
 int
 svc_cmp(const void *a, const void *b)
@@ -220,6 +211,7 @@ snap:
 		panel_hide(PANEL_NINFO);
 	}
 	if (ss.ss_sid) {
+		struct panel *p;
 		int ds;
 
 		ds = st_dsmode();
@@ -232,7 +224,11 @@ snap:
 		if (ds == DS_JOBS)
 			dsc_load(DS_QSTAT, ss.ss_sid);
 		st.st_rf &= ~(RF_DATASRC | RF_SMODE);
-	}
+
+		if ((p = panel_for_id(PANEL_DATE)) != NULL)
+			p->p_opts |= POPT_USRDIRTY;
+	} else
+		st.st_rf |= RF_DATASRC; /* grab new data */
 	if (ss.ss_jobid) {
 		struct job *j;
 
@@ -246,7 +242,9 @@ snap:
 	}
 
 	drawh_old = serv_drawh;
+	ssp = &ss;
 	drawh_default();
+	ssp = NULL;
 	capture_snapfd(clifd, CM_PNG);
 drop:
 	dbg_warn("Closing connection");
