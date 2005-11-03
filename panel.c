@@ -12,6 +12,8 @@
 
 #include "compat.h"
 
+#include <sys/stat.h>
+
 #include <err.h>
 #include <math.h>
 #include <stdarg.h>
@@ -906,12 +908,28 @@ panel_refresh_date(struct panel *p)
 	if (p->p_str == NULL ||
 	    p->p_opts & POPT_USRDIRTY) {
 		p->p_opts &= ~POPT_USRDIRTY;
-		time(&now);
+
+		/*
+		 * If a session is live, (other than race
+		 * conditions) the directory should exit.
+		 */
+		if (ssp != NULL) {
+			char fn[PATH_MAX];
+			struct stat stb;
+
+			snprintf(fn, sizeof(fn), "%s/%s",
+			    _PATH_SESSIONS, ssp->ss_sid);
+			if (stat(fn, &stb) == -1)
+				err(1, "stat %s", fn);
+			now = stb.st_mtime;
+		} else {
+			time(&now);
+			glutTimerFunc(1000 * (60 - tm.tm_sec),
+			    panel_date_invalidate, 0);
+		}
 		localtime_r(&now, &tm);
 		strftime(tmbuf, sizeof(tmbuf), "%b %e %y %H:%M", &tm);
 		panel_set_content(p, "(c) 2005 PSC\n%s", tmbuf);
-		glutTimerFunc(1000 * (60 - tm.tm_sec),
-		    panel_date_invalidate, 0);
 	}
 }
 
