@@ -480,6 +480,10 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 	case 'v':
 		glutKeyboardFunc(keyh_vmode);
 		break;
+	case 'Z':
+		drawh = drawh_default;
+		glutDisplayFunc(drawh);
+		break;
 	case '+':
 	case '_': {
 		float incr, *field;
