@@ -86,6 +86,8 @@ typedef signed int ssize_t;
 # include <unistd.h>
 # include <netdb.h>
 
+# define port_t tcpip_port_t
+
 #else /* UNIX */
 
 # if defined(__GNUC__) && !defined(_GNU_SOURCE)
