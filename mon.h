@@ -517,6 +517,13 @@ struct datasrc {
 #define DSF_FORCE	(1<<1)
 #define DSF_READY	(1<<2)
 
+#define SID_LEN 12	/* excluding NUL */
+
+struct session {
+	int		 ss_click;
+	int		 ss_jobid;
+	char		 ss_sid[SID_LEN + 1];
+};
 
 /* db.c */
 void			 dbh_connect(struct dbh *);
@@ -795,3 +802,5 @@ extern struct panel	*panel_mobile;
 extern struct fill	 fill_black;
 extern struct fill	 fill_light_blue;
 extern int		 dsp;				/* Data source provider. */
+
+extern struct session	*ssp;
