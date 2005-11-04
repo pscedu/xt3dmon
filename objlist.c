@@ -91,62 +91,29 @@ fail_cmp(const void *a, const void *b)
 void
 obj_batch_start(struct objlist *ol)
 {
-	size_t n;
-
 	ol->ol_tcur = 0;
-	if (ol->ol_data == NULL)
-		return;
-	for (n = 0; n < ol->ol_cur; n++) {
-		((struct objhdr *)ol->ol_data[n])->oh_flags &= ~OHF_TREF;
-		((struct objhdr *)ol->ol_data[n])->oh_flags |= OHF_OLD;
-	}
 }
 
 void
 obj_batch_end(struct objlist *ol)
 {
-	struct objhdr *ohp, *swapohp;
-	size_t n, lookpos;
-	void *t;
+	struct objhdr *ohp;
+	size_t n;
 
 	ol->ol_max = MAX(ol->ol_max, ol->ol_tcur);
 	ol->ol_cur = ol->ol_tcur;
-	if (ol->ol_data == NULL)
+	if (ol->ol_data == NULL)		/* XXX */
 		return;
-	lookpos = 0;
 	for (n = 0; n < ol->ol_cur; n++) {
 		ohp = (struct objhdr *)ol->ol_data[n];
-		if (ohp->oh_flags & OHF_TREF)
-			ohp->oh_flags |= OHF_REF;
-		else {
-			if (lookpos <= n)
-				lookpos = n + 1;
-			/* Scan forward to swap. */
-			for (; lookpos < ol->ol_max; lookpos++) {
-				swapohp = ol->ol_data[lookpos];
-				if (swapohp->oh_flags & OHF_TREF) {
-					swapohp->oh_flags |= OHF_REF;
-
-					t = ol->ol_data[n];
-					ol->ol_data[n] = ol->ol_data[lookpos];
-					ol->ol_data[lookpos++] = t;
-				}
-			}
-			if (lookpos == ol->ol_max) {
-				ol->ol_cur = n + 1;
-				break;
-			}
-		}
+		ohp->oh_flags |= OHF_OLD;
 	}
-	for (; n < ol->ol_max; n++)
-		/*
-		 * This object disappeared, so
-		 * when it gets reused, it will
-		 * be a new object.
-		 */
-		((struct objhdr *)ol->ol_data[n])->oh_flags &= ~OHF_OLD;
+	for (; n < ol->ol_max; n++) {
+		ohp = (struct objhdr *)ol->ol_data[n];
+		ohp->oh_flags &= ~OHF_OLD;
+	}
 	if (ol->ol_flags & OLF_SORT)
-		qsort(ol->ol_data, job_list.ol_cur, sizeof(void *),
+		qsort(ol->ol_data, ol->ol_cur, sizeof(void *),
 		    ol->ol_cmpf);
 }
 
@@ -157,17 +124,22 @@ obj_batch_end(struct objlist *ol)
 void *
 getobj(const void *arg, struct objlist *ol)
 {
-	void **jj, *j = NULL;
 	struct objhdr *ohp;
 	size_t n, max;
+	void *j;
 
 	if (ol->ol_data != NULL) {
-		max = MAX(ol->ol_max, ol->ol_tcur);
-		for (n = 0, jj = ol->ol_data; n < max; jj++, n++) {
-			ohp = (struct objhdr *)*jj;
-			if (ol->ol_eq(ohp, arg))
-				goto found;
-		}
+		/* XXX: bsearch() */
+		for (n = 0; n < ol->ol_tcur; n++)
+			if (ol->ol_eq(ol->ol_data[n], arg))
+				return (ol->ol_data[n]);
+		for (; n < ol->ol_max; n++)
+			if (ol->ol_eq(ol->ol_data[n], arg)) {
+				j = ol->ol_data[ol->ol_tcur];
+				ol->ol_data[ol->ol_tcur] = ol->ol_data[n];
+				ol->ol_data[n] = j;
+				goto new;
+			}
 	}
 	/* Not found; add. */
 	if (ol->ol_tcur >= ol->ol_alloc) {
@@ -183,13 +155,9 @@ getobj(const void *arg, struct objlist *ol)
 		}
 		ol->ol_alloc = max;
 	}
+new:
 //	memset(ol->ol_data[ol->ol_tcur], 0, ol->ol_objlen);
-	ohp = ol->ol_data[ol->ol_tcur];
-found:
-	if ((ohp->oh_flags & OHF_TREF) == 0) {
-		ol->ol_tcur++;
-		ohp->oh_flags |= OHF_TREF;
-	}
+	ohp = ol->ol_data[ol->ol_tcur++];
 	return (ohp);
 }
 
