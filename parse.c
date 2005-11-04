@@ -375,8 +375,8 @@ pass:
 
 	errno = 0;
 
-//	qsort(job_list.ol_jobs, job_list.ol_tcur, sizeof(struct job *),
-//	    job_cmp);
+	qsort(job_list.ol_jobs, job_list.ol_tcur, sizeof(struct job *),
+	    job_cmp);
 	for (j = 0; j < job_list.ol_tcur; j++)
 		getcol(job_list.ol_jobs[j]->j_oh.oh_flags & OHF_OLD,
 		    j, job_list.ol_tcur, &job_list.ol_jobs[j]->j_fill);

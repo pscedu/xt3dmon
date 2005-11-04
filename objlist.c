@@ -17,7 +17,7 @@ int		 job_cmp(const void *, const void *);
 
 struct objlist	 job_list    = { { NULL }, 0, 0, 0, 0, JINCR, sizeof(struct job),  OLF_SORT, job_eq, job_cmp };
 struct objlist	 temp_list   = { { NULL }, 0, 0, 0, 0, TINCR, sizeof(struct temp), 0,	     fail_eq, NULL };
-struct objlist	 fail_list   = { { NULL }, 0, 0, 0, 0, FINCR, sizeof(struct fail), 0,	     temp_eq, NULL };
+struct objlist	 fail_list   = { { NULL }, 0, 0, 0, 0, FINCR, sizeof(struct fail), OLF_SORT, temp_eq, NULL };
 
 struct objlist	 glname_list = { { NULL }, 0, 0, 0, 0, GINCR, sizeof(struct glname), 0,	     glname_eq, NULL };
 
@@ -112,9 +112,9 @@ obj_batch_end(struct objlist *ol)
 		ohp = (struct objhdr *)ol->ol_data[n];
 		ohp->oh_flags &= ~OHF_OLD;
 	}
-	if (ol->ol_flags & OLF_SORT)
-		qsort(ol->ol_data, ol->ol_cur, sizeof(void *),
-		    ol->ol_cmpf);
+//	if (ol->ol_flags & OLF_SORT)
+//		qsort(ol->ol_data, ol->ol_cur, sizeof(void *),
+//		    ol->ol_cmpf);
 }
 
 /*
