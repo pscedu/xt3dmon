@@ -203,11 +203,9 @@ struct objhdr {
 	int		 oh_flags;
 };
 
-#define OHF_REF		(1<<0)			/* object is referenced */
-#define OHF_TREF	(1<<1)			/* temporarily referenced */
-#define OHF_TMP		(1<<2)			/* trashable temporary flag */
-#define OHF_OLD		(1<<3)			/* object has been around */
-#define OHF_USR1	(1<<4)			/* specific to object */
+#define OHF_TMP		(1<<0)			/* trashable temporary flag */
+#define OHF_OLD		(1<<1)			/* object has been around */
+#define OHF_USR1	(1<<2)			/* specific to object */
 
 #define JFL_OWNER	32
 #define JFL_NAME	20
@@ -610,6 +608,7 @@ int			 http_open(struct http_req *, struct http_res *);
 struct job		*job_findbyid(int);
 void			 job_goto(struct job *);
 void			 job_hl(struct job *);
+void			 prjobs(void);
 
 /* key.c */
 void			 keyh_flyby(unsigned char, int, int);
