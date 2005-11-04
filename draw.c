@@ -403,8 +403,8 @@ make_ground(int wid)
 	glNewList(ground_dl[wid], GL_COMPILE);
 
 	/* Ground */
-	fill.f_r = 0.1f;
-	fill.f_g = 0.2f;
+	fill.f_r = 0.3f;
+	fill.f_g = 0.3f;
 	fill.f_b = 0.3f;
 	fill.f_a = 0.1f;
 	switch (st.st_vmode) {
