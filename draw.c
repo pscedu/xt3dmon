@@ -27,6 +27,8 @@
 #define MAX_CHARS 	4
 #define FONT_Z_OFFSET	((NODEHEIGHT - ((MAX_CHARS + 0) * FONT_DISPLACE_W)) / 2)
 
+#define SKEL_GAP (0.1f)
+
 struct fvec wivstart, wivdim;
 float clip;
 
@@ -474,11 +476,10 @@ make_ground(int wid)
 __inline void
 draw_cluster_physical(void)
 {
+	struct fvec v, mdim, skel;
 	int r, cb, cg, m, n;
 	struct node *node;
-	struct fvec mdim;
 	struct fill mf;
-	struct fvec v;
 
 	mdim.fv_w = MODWIDTH + 0.02;
 	mdim.fv_h = MODHEIGHT + 0.02;
@@ -488,6 +489,10 @@ draw_cluster_physical(void)
 	mf.f_g = 1.00;
 	mf.f_b = 1.00;
 	mf.f_a = 0.20;
+
+	skel.fv_w = CABWIDTH  + 2 * SKEL_GAP;
+	skel.fv_h = CABHEIGHT + 2 * SKEL_GAP;
+	skel.fv_z = MODDEPTH  + 2 * SKEL_GAP;
 
 	v.fv_x = v.fv_y = v.fv_z = NODESPACE;
 	for (r = 0; r < NROWS; r++, v.fv_z += ROWDEPTH + ROWSPACE) {
@@ -505,8 +510,40 @@ draw_cluster_physical(void)
 						draw_mod(&v, &mdim, &mf);
 				}
 				v.fv_x -= (MODWIDTH + MODSPACE) * NMODS;
+				if (st.st_opts & OP_SKEL && cg) {
+					glPushMatrix();
+					glTranslatef(v.fv_x - SKEL_GAP,
+					    v.fv_y - CAGESPACE / 2.0f,
+					    v.fv_z - SKEL_GAP);
+					glEnable(GL_BLEND);
+					glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
+					glBegin(GL_LINE_LOOP);
+					glColor4f(fill_light_blue.f_r,
+					    fill_light_blue.f_g,
+					    fill_light_blue.f_b,
+					    fill_light_blue.f_a);
+					glVertex3f(0.0f, 0.0f, 0.0f);
+					glVertex3f(CABWIDTH + 2 * SKEL_GAP, 0.0f, 0.0f);
+					glVertex3f(CABWIDTH + 2 * SKEL_GAP, 0.0f,
+					    MODDEPTH + 2 * SKEL_GAP);
+					glVertex3f(0.0f, 0.0f,
+					    MODDEPTH + 2 * SKEL_GAP);
+					glEnd();
+					glDisable(GL_BLEND);
+					glPopMatrix();
+				}
 			}
 			v.fv_y -= (CAGEHEIGHT + CAGESPACE) * NCAGES;
+			if (st.st_opts & OP_SKEL) {
+				glPushMatrix();
+				glTranslatef(v.fv_x - SKEL_GAP,
+				    v.fv_y - SKEL_GAP, v.fv_z - SKEL_GAP);
+				glEnable(GL_BLEND);
+				glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
+				draw_box_outline(&skel, &fill_light_blue);
+				glDisable(GL_BLEND);
+				glPopMatrix();
+			}
 		}
 		v.fv_x -= (CABWIDTH + CABSPACE) * NCABS;
 	}
@@ -587,6 +624,24 @@ draw_cluster_wired(struct fvec *v)
 						node->n_v = nv;
 						draw_node(node, 0);
 					}
+	if (st.st_opts & OP_SKEL) {
+		struct fvec dim;
+
+		dim.fv_w = ((WIDIM_WIDTH  - 1) * st.st_winsp.iv_x) + NODEWIDTH  + 2 * SKEL_GAP;
+		dim.fv_h = ((WIDIM_HEIGHT - 1) * st.st_winsp.iv_x) + NODEHEIGHT + 2 * SKEL_GAP;
+		dim.fv_z = ((WIDIM_DEPTH  - 1) * st.st_winsp.iv_x) + NODEDEPTH  + 2 * SKEL_GAP;
+
+		glPushMatrix();
+		glTranslatef(-SKEL_GAP, -SKEL_GAP, -SKEL_GAP);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
+		fill_light_blue.f_a = 0.4f;
+		draw_box_outline(&dim, &fill_light_blue);
+		fill_light_blue.f_a = 1.0f;
+		glDisable(GL_BLEND);
+		glPopMatrix();
+	}
+
 }
 
 __inline void
@@ -700,27 +755,6 @@ make_cluster(int wid)
 		struct fvec v = { 0.0f, 0.0f, 0.0f };
 
 		draw_cluster_wired(&v);
-
-		if (st.st_opts & OP_SKEL) {
-			struct fill fill = fill_light_blue;
-			struct fvec dim;
-
-#define SKEL_GAP (0.1f)
-
-			dim.fv_w = ((WIDIM_WIDTH  - 1) * st.st_winsp.iv_x) + NODEWIDTH  + 2 * SKEL_GAP;
-			dim.fv_h = ((WIDIM_HEIGHT - 1) * st.st_winsp.iv_x) + NODEHEIGHT + 2 * SKEL_GAP;
-			dim.fv_z = ((WIDIM_DEPTH  - 1) * st.st_winsp.iv_x) + NODEDEPTH  + 2 * SKEL_GAP;
-
-			fill.f_a = 0.40f;
-
-			glPushMatrix();
-			glTranslatef(-SKEL_GAP, -SKEL_GAP, -SKEL_GAP);
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
-			draw_box_outline(&dim, &fill_light_blue);
-			glDisable(GL_BLEND);
-			glPopMatrix();
-		}
 		break;
 	    }
 	}
