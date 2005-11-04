@@ -11,6 +11,7 @@ LIBS = -lGL -lglut -lGLU -lpng `mysql_config --libs` -pg
 MYSQL_CFLAGS = $$(mysql_config --cflags | sed "s/'//g" | \
     awk '{for (n = 1; n <= NF; n++) if (match($$n, /^-I/)) printf "%s ", $$n }')
 CFLAGS += -Wall -W -g ${MYSQL_CFLAGS} -pg
+# CFLAGS += -O -Wuninitialized
 INCS = $$(echo ${CFLAGS} | \
     awk '{for (n = 1; n <= NF; n++) if (match($$n, /^-I/)) printf "%s ", $$n }')
 
