@@ -22,13 +22,17 @@
 
 int ds_http(const char *);
 
+#ifndef _LIVE_DSP
+# define _LIVE_DSP DSP_REMOTE
+#endif
+
 struct datasrc datasrcs[] = {
 	{ "temp", 0, DSF_AUTO, DSP_LOCAL, _PATH_TEMPMAP,  _RPATH_TEMP,  parse_tempmap,	db_tempmap,	&temp_list,	{ 0 } },
 	{ "phys", 0, DSF_AUTO, DSP_LOCAL, _PATH_PHYSMAP,  _RPATH_PHYS,  parse_physmap,	db_physmap,	NULL,		{ 0 } },
-	{ "jobs", 0, DSF_AUTO, DSP_LOCAL, _PATH_JOBMAP,   _RPATH_JOBS,  parse_jobmap,	db_jobmap,	&job_list,	{ 0 } },
+	{ "jobs", 0, DSF_AUTO, _LIVE_DSP, _PATH_JOBMAP,   _RPATH_JOBS,  parse_jobmap,	db_jobmap,	&job_list,	{ 0 } },
 	{ "bad",  0, DSF_AUTO, DSP_LOCAL, _PATH_BADMAP,   _RPATH_BAD,   parse_badmap,	db_badmap,	NULL,		{ 0 } },
 	{ "check",0, DSF_AUTO, DSP_LOCAL, _PATH_CHECKMAP, _RPATH_CHECK, parse_checkmap,	db_checkmap,	NULL,		{ 0 } },
-	{ "qstat",0, DSF_AUTO, DSP_LOCAL, _PATH_QSTAT,    _RPATH_QSTAT, parse_qstat,	db_qstat,	NULL,		{ 0 } },
+	{ "qstat",0, DSF_AUTO, _LIVE_DSP, _PATH_QSTAT,    _RPATH_QSTAT, parse_qstat,	db_qstat,	NULL,		{ 0 } },
 	{ "mem",  0, DSF_AUTO, DSP_LOCAL, _PATH_STAT,     NULL,		parse_mem,	NULL,		NULL,		{ 0 } },
 	{ "fail", 0, DSF_AUTO, DSP_LOCAL, _PATH_FAILMAP,  _RPATH_FAIL,  parse_failmap,	db_failmap,	&fail_list,	{ 0 } }
 };
