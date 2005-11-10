@@ -46,3 +46,5 @@ reminders:
 62. yod
 63. stereo selection mode
 64. make job searching bsearch again, since it is sorted
+65. rename hl_jstate to something that is nstate (global node state,
+    independent of jstate)
