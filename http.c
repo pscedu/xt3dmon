@@ -2,33 +2,33 @@
 
 #include "compat.h"
 
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 
 #include "cdefs.h"
 #include "mon.h"
 
 int
-http_open(struct http_req *req, __unused struct http_res *res)
+net_connect(const char *host, port_t port)
 {
 	struct addrinfo hints, *ai, *res0;
-	char *sport, *cause, buf[BUFSIZ];
 	int want, error, s;
-	const char **hdr;
+	char *sport, *cause;
 
-	want = snprintf(NULL, 0, "%d", req->htreq_port);
+	want = snprintf(NULL, 0, "%d", port);
 	if (want == -1)
 		err(1, "snprintf");
 	want++;
 	if ((sport = malloc(want)) == NULL)
 		err(1, "malloc");
-	snprintf(sport, want, "%d", req->htreq_port);
+	snprintf(sport, want, "%d", port);
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = PF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
-	if ((error = getaddrinfo(req->htreq_server, sport,
-	    &hints, &res0)) != 0)
-		err(1, "getaddrinfo");
+	if ((error = getaddrinfo(host, sport, &hints, &res0)) != 0)
+		err(1, "getaddrinfo %s", host);
 	free(sport);
 
 	s = -1;
@@ -50,20 +50,45 @@ http_open(struct http_req *req, __unused struct http_res *res)
 	if (s == -1)
 		err(1, "%s", cause);
 	freeaddrinfo(res0);
+	return (s);
+}
 
+int
+http_open(struct http_req *req, __unused struct http_res *res)
+{
+	const char **hdr, *p;
+	char buf[BUFSIZ];
+	int s, sdup;
+	FILE *fp;
+
+	s = net_connect(req->htreq_server, req->htreq_port);
 	snprintf(buf, sizeof(buf), "%s %s %s\r\n", req->htreq_method,
 	    req->htreq_url, req->htreq_version);
 	if (write(s, buf, strlen(buf)) != (int)strlen(buf))
 		err(1, "write");
 	/* XXX: disgusting */
 	if (strcmp(req->htreq_version, "HTTP/1.1") == 0) {
-		snprintf(buf, sizeof(buf), "Host: %s\r\n",
+		snprintf(buf, sizeof(buf), "Host: %s\r\nConnection: close\r\n",
 		    req->htreq_server);
 		if (write(s, buf, strlen(buf)) != (int)strlen(buf))
 			err(1, "write");
 	}
 	for (hdr = req->htreq_extra; hdr != NULL; hdr++)
-		if (write(s, buf, strlen(buf)) != (int)strlen(buf))
+		if (write(s, *hdr, strlen(*hdr)) != (int)strlen(*hdr))
 			err(1, "write");
+	snprintf(buf, sizeof(buf), "\r\n");
+	if (write(s, buf, strlen(buf)) != (int)strlen(buf))
+		err(1, "write");
+	if ((sdup = dup(s)) == -1)
+		err(1, "dup");
+	if ((fp = fdopen(sdup, "r")) == NULL)
+		err(1, "fdopen");
+	while (fgets(buf, sizeof(buf), fp) != NULL)
+		if (strcmp(buf, "\r\n") == 0)
+			break;
+	if (ferror(fp))
+		err(1, "fgets");
+	fclose(fp);
+	errno = 0;
 	return (s);
 }
