@@ -79,9 +79,9 @@ sn_clear(void)
 	for (sn = SLIST_FIRST(&selnodes);
 	    sn != SLIST_END(&selnodes); sn = next) {
 		next = SLIST_NEXT(sn, sn_next);
-		free(sn);
 		if (flyby_mode == FBM_REC)
 			flyby_writeselnode(sn->sn_nodep->n_nid);
+		free(sn);
 	}
 	SLIST_INIT(&selnodes);
 	st.st_rf |= RF_SELNODE;
