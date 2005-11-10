@@ -132,7 +132,7 @@ drawh_stereo(void)
 		/* XXX: capture frame */
 		if (st.st_opts & OP_CAPTURE)
 			capture_frame(capture_mode);
-		else if (st.st_opts & OP_DISPLAY)
+		if (st.st_opts & OP_DISPLAY)
 			glutSwapBuffers();
 	}
 
@@ -165,7 +165,7 @@ drawh_stereo(void)
 	glClearColor(0.2, 0.2, 0.2, 1.0);
 	if (st.st_opts & OP_CAPTURE)
 		capture_frame(capture_mode);
-	else if (st.st_opts & OP_DISPLAY)
+	if (st.st_opts & OP_DISPLAY)
 		glutSwapBuffers();
 
 	/* Restore camera position. */
@@ -202,7 +202,7 @@ drawh_default(void)
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	if (st.st_opts & OP_CAPTURE)
 		capture_frame(capture_mode);
-	else if (st.st_opts & OP_DISPLAY)
+	if (st.st_opts & OP_DISPLAY)
 		glutSwapBuffers();
 }
 
