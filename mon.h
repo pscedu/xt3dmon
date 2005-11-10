@@ -149,6 +149,11 @@
 
 #define WINID_DEF	0
 
+/* Node highlighting. */
+#define JST_HL_ALL	(-1)
+#define JST_HL_NONE	(-2)
+#define JST_HL_SELJOBS	(-3)
+
 struct fvec {
 	float		 fv_x;
 	float		 fv_y;
@@ -593,6 +598,7 @@ void			 flyby_writeinit(struct state *);
 void			 flyby_writeseq(struct state *);
 void			 flyby_writepanel(int);
 void			 flyby_writeselnode(int);
+void			 flyby_writehljstate(int);
 
 /* hl.c */
 void			 hl_clearall(void);
@@ -803,3 +809,5 @@ extern struct fill	 fill_light_blue;
 extern int		 dsp;				/* Data source provider. */
 
 extern struct session	*ssp;
+
+extern int		 hl_jstate;
