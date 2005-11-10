@@ -510,6 +510,7 @@ draw_cluster_physical(void)
 						draw_mod(&v, &mdim, &mf);
 				}
 				v.fv_x -= (MODWIDTH + MODSPACE) * NMODS;
+#if 0
 				if (st.st_opts & OP_SKEL && cg) {
 					glPushMatrix();
 					glTranslatef(v.fv_x - SKEL_GAP,
@@ -520,8 +521,7 @@ draw_cluster_physical(void)
 					glBegin(GL_LINE_LOOP);
 					glColor4f(fill_light_blue.f_r,
 					    fill_light_blue.f_g,
-					    fill_light_blue.f_b,
-					    fill_light_blue.f_a);
+					    fill_light_blue.f_b, 0.4f);
 					glVertex3f(0.0f, 0.0f, 0.0f);
 					glVertex3f(CABWIDTH + 2 * SKEL_GAP, 0.0f, 0.0f);
 					glVertex3f(CABWIDTH + 2 * SKEL_GAP, 0.0f,
@@ -532,6 +532,7 @@ draw_cluster_physical(void)
 					glDisable(GL_BLEND);
 					glPopMatrix();
 				}
+#endif
 			}
 			v.fv_y -= (CAGEHEIGHT + CAGESPACE) * NCAGES;
 			if (st.st_opts & OP_SKEL) {
@@ -540,7 +541,9 @@ draw_cluster_physical(void)
 				    v.fv_y - SKEL_GAP, v.fv_z - SKEL_GAP);
 				glEnable(GL_BLEND);
 				glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
+				fill_light_blue.f_a = 0.4f;
 				draw_box_outline(&skel, &fill_light_blue);
+				fill_light_blue.f_a = 1.0f;
 				glDisable(GL_BLEND);
 				glPopMatrix();
 			}
