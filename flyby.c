@@ -31,10 +31,22 @@ struct fbselnode {
 	int		fbsn_nid;
 };
 
+struct fbhljst {
+	int		fbhl_state;
+};
+
+union fbun {
+	struct fbinit		fbu_init;
+	struct fbpanel		fbu_panel;
+	struct fbselnode	fbu_sn;
+	struct fbhljst		fbu_hljst;
+};
+
 #define FHT_INIT	1
 #define FHT_SEQ		2
 #define FHT_SELNODE	3
 #define FHT_PANEL	4
+#define FHT_HLJSTATE	5
 
 /* Open the flyby data file appropriately. */
 void
@@ -109,16 +121,22 @@ flyby_writeinit(struct state *st)
 	flyby_writemsg(FHT_INIT, &fbi, sizeof(fbi));
 }
 
-void
+__inline void
 flyby_writepanel(int panel)
 {
 	flyby_writemsg(FHT_PANEL, &panel, sizeof(panel));
 }
 
-void
+__inline void
 flyby_writeselnode(int nid)
 {
 	flyby_writemsg(FHT_SELNODE, &nid, sizeof(nid));
+}
+
+__inline void
+flyby_writehljstate(int state)
+{
+	flyby_writemsg(FHT_HLJSTATE, &state, sizeof(state));
 }
 
 /* Read a set of flyby data. */
@@ -181,6 +199,15 @@ flyby_read(void)
 				err(1, "flyby read panel");
 			if ((n = node_for_nid(fbsn.fbsn_nid)) != NULL)
 				sn_toggle(n);
+			break;
+		    }
+		case FHT_HLJSTATE: {
+			struct fbhljst fbhl;
+			if (fread(&fbhl, 1, sizeof(fbhl), flyby_fp) !=
+			    sizeof(fbhl))
+				err(1, "flyby read panel");
+			hl_jstate = fbhl.fbhl_state;
+			hl_refresh();
 			break;
 		    }
 		}
