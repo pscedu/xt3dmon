@@ -3,19 +3,27 @@
 #include "compat.h"
 #include "mon.h"
 
-#define JST_HL_INV	(-1)
-#define JST_HL_SELJOBS	(-2)
-
-int hl_jstate = JST_HL_INV;
+int hl_jstate = JST_HL_ALL;
 
 void
 hl_refresh(void)
 {
-	if (hl_jstate >= 0 &&
-	    hl_jstate < NJST)
-		hl_state(hl_jstate);
-	if (hl_jstate == JST_HL_SELJOBS)
+	switch (hl_jstate) {
+	case JST_HL_ALL:
+		hl_restoreall();
+		break;
+	case JST_HL_NONE:
+		hl_clearall();
+		break;
+	case JST_HL_SELJOBS:
 		hl_seljobs();
+		break;
+	default:
+		if (hl_jstate >= 0 &&
+		    hl_jstate < NJST)
+			hl_state(hl_jstate);
+		break;
+	}
 }
 
 void
@@ -23,10 +31,13 @@ hl_clearall(void)
 {
 	size_t j;
 
+	hl_jstate = JST_HL_NONE;
 	for (j = 0; j < job_list.ol_cur; j++)
 		job_list.ol_jobs[j]->j_fill.f_a = 0.0f;
 	for (j = 0; j < NJST; j++)
 		jstates[j].js_fill.f_a = 0.0f;
+	if (flyby_mode == FBM_REC)
+		flyby_writehljstate(hl_jstate);
 }
 
 void
@@ -34,11 +45,13 @@ hl_restoreall(void)
 {
 	size_t j;
 
-	hl_jstate = JST_HL_INV;
+	hl_jstate = JST_HL_ALL;
 	for (j = 0; j < job_list.ol_cur; j++)
 		job_list.ol_jobs[j]->j_fill.f_a = 1.0f;
 	for (j = 0; j < NJST; j++)
 		jstates[j].js_fill.f_a = 1.0f;
+	if (flyby_mode == FBM_REC)
+		flyby_writehljstate(hl_jstate);
 }
 
 void
@@ -46,7 +59,9 @@ hl_state(int jst)
 {
 	hl_clearall();
 	jstates[jst].js_fill.f_a = 1.0f;
-	hl_jstate = JST_HL_INV;
+	hl_jstate = jst;
+	if (flyby_mode == FBM_REC)
+		flyby_writehljstate(hl_jstate);
 }
 
 void
@@ -68,4 +83,6 @@ hl_seljobs(void)
 		if (sn->sn_nodep->n_job != NULL)
 			job_hl(sn->sn_nodep->n_job);
 	hl_jstate = JST_HL_SELJOBS;
+	if (flyby_mode == FBM_REC)
+		flyby_writehljstate(hl_jstate);
 }
