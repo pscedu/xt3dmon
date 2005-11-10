@@ -9,13 +9,13 @@
 
 #include "mon.h"
 
-#define _RPATH_TEMP	"/xt3data/temps"
-#define _RPATH_PHYS	"/xt3data/rtrtrace"
-#define _RPATH_JOBS	"/xt3data/nids_list_phantom"
-#define _RPATH_BAD	"/xt3data/bad_nids_list_phantom"
-#define _RPATH_CHECK	"/xt3data/to_check_nids_list_phantom"
-#define _RPATH_QSTAT	"/xt3data/qstat.out"
-#define _RPATH_FAIL	"/xt3data/fails"
+#define _RPATH_TEMP	"/xt3-data/temps"
+#define _RPATH_PHYS	"/xt3-data/rtrtrace"
+#define _RPATH_JOBS	"/xt3-data/nids_list_phantom"
+#define _RPATH_BAD	"/xt3-data/bad_nids_list_phantom"
+#define _RPATH_CHECK	"/xt3-data/to_check_nids_list_phantom"
+#define _RPATH_QSTAT	"/xt3-data/qstat.out"
+#define _RPATH_FAIL	"/xt3-data/fails"
 
 #define RDS_HOST	"mugatu"
 #define RDS_PORT	80
