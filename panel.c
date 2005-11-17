@@ -888,8 +888,9 @@ panel_date_invalidate(__unused int a)
 
 	p = panel_for_id(PANEL_DATE);
 	if (p == NULL)
-		errx(1, "internal error: date invalidate callback "
-		    "called but no date panel present");
+		return;
+//		errx(1, "internal error: date invalidate callback "
+//		    "called but no date panel present");
 	p->p_opts |= POPT_USRDIRTY;
 }
 
