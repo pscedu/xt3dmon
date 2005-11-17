@@ -631,8 +631,8 @@ draw_cluster_wired(struct fvec *v)
 		struct fvec dim;
 
 		dim.fv_w = ((WIDIM_WIDTH  - 1) * st.st_winsp.iv_x) + NODEWIDTH  + 2 * SKEL_GAP;
-		dim.fv_h = ((WIDIM_HEIGHT - 1) * st.st_winsp.iv_x) + NODEHEIGHT + 2 * SKEL_GAP;
-		dim.fv_z = ((WIDIM_DEPTH  - 1) * st.st_winsp.iv_x) + NODEDEPTH  + 2 * SKEL_GAP;
+		dim.fv_h = ((WIDIM_HEIGHT - 1) * st.st_winsp.iv_y) + NODEHEIGHT + 2 * SKEL_GAP;
+		dim.fv_z = ((WIDIM_DEPTH  - 1) * st.st_winsp.iv_z) + NODEDEPTH  + 2 * SKEL_GAP;
 
 		glPushMatrix();
 		glTranslatef(-SKEL_GAP, -SKEL_GAP, -SKEL_GAP);
