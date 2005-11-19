@@ -122,7 +122,7 @@ capture_frame(int mode)
 		fbuf_pos = 0;
 	}
 	capture_copyfb(mode, fbuf[fbuf_pos++]);
-	if (stereo_mode) {
+	if (stereo_mode == STM_ACT) {
 		glDrawBuffer(GL_BACK_RIGHT);
 		capture_copyfb(mode, fbuf[fbuf_pos++]);
 		glDrawBuffer(GL_BACK_LEFT);
