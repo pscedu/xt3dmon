@@ -83,6 +83,8 @@ http_open(struct http_req *req, __unused struct http_res *res)
 		err(1, "dup");
 	if ((fp = fdopen(sdup, "r")) == NULL)
 		err(1, "fdopen");
+	setbuf(fp, NULL);
+	/* XXX: check status */
 	while (fgets(buf, sizeof(buf), fp) != NULL)
 		if (strcmp(buf, "\r\n") == 0)
 			break;
