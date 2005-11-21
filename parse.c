@@ -364,7 +364,7 @@ parse_jobmap(struct datasrc *ds)
 			node->n_fillp = &jstates[node->n_state].js_fill;
 		continue;
 bad:
-		warn("jobmap:%d: malformed line", lineno);
+		warn("jobmap:%d: malformed line [%s]", lineno, buf);
 pass:
 		; //node->n_fillp = ;
 	}
@@ -855,6 +855,8 @@ parse_qstat(struct datasrc *ds)
 		q = "Job_Owner = ";
 		if ((s = strstr(buf, q)) != NULL) {
 			s += strlen(q);
+			if ((q = strchr(s, '@')) != NULL)
+				*q = '\0';
 			strncpy(j_fake.j_owner, s,
 			    sizeof(j_fake.j_owner) - 1);
 			j_fake.j_owner[sizeof(j_fake.j_owner) - 1] = '\0';
