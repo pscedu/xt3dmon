@@ -256,6 +256,7 @@ struct node {
 	struct ivec	 n_wiv;			/* wired view position */
 	struct fvec	 n_swiv;		/* scaled */
 	struct fvec	 n_physv;
+	struct fvec	 n_vcur;
 	struct fvec	*n_v;
 };
 

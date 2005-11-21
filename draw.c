@@ -184,8 +184,11 @@ drawh_default(void)
 	if (st.st_vmode == VM_WIRED)
 		wired_update();
 	if (st.st_rf) {
-		rebuild(st.st_rf);
+		int rf;
+
+		rf = st.st_rf;
 		st.st_rf = 0;
+		rebuild(rf);
 	}
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -318,11 +321,31 @@ draw_node_pipes(struct fvec *dim)
 	glDisable(GL_BLEND);
 }
 
+__inline int
+node_tween_dir(float *curpos, float *targetpos)
+{
+	float diff;
+	int rv = 0;
+
+	diff = *targetpos - *curpos;
+	if (fabs(diff) < .1)
+		*curpos = *targetpos;
+	else {
+		if (fabs(diff) > 2.0)
+			diff = 2 * SIGN(diff) * sqrt(fabs(diff));
+		else
+			diff /= 3 / 4.0f;
+		*curpos += diff;
+		rv = 1;
+	}
+	return (rv);
+}
+
 __inline void
 draw_node(struct node *n, int flags)
 {
 	struct fill *fp, *fill_wireframe;
-	struct fvec *vp, *dimp;
+	struct fvec *dimp;
 
 	GLenum param = GL_REPLACE;
 
@@ -330,16 +353,21 @@ draw_node(struct node *n, int flags)
 		return;
 
 	fp = n->n_fillp;
-	vp = n->n_v;
 	dimp = &vmodes[st.st_vmode].vm_ndim;
 
 	if ((flags & NDF_DONTPUSH) == 0) {
 		glPushMatrix();
+
+		if (node_tween_dir(&n->n_vcur.fv_x, &n->n_v->fv_x) |
+		    node_tween_dir(&n->n_vcur.fv_y, &n->n_v->fv_y) |
+		    node_tween_dir(&n->n_vcur.fv_z, &n->n_v->fv_z))
+			st.st_rf |= RF_CLUSTER;
 		/*
 		 * We assume that the stack we are in otherwise
 		 * has done the translation itself.
 		 */
-		glTranslatef(vp->fv_x, vp->fv_y, vp->fv_z);
+		glTranslatef(n->n_vcur.fv_x, n->n_vcur.fv_y,
+		    n->n_vcur.fv_z);
 	}
 
 	if (fp->f_a != 1.0f) {
