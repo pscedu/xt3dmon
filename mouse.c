@@ -114,14 +114,14 @@ m_activeh_default(int u, int v)
 	lastv = v;
 
 	tween_push(TWF_LOOK | TWF_POS);
-	if (spkey & GLUT_ACTIVE_CTRL) {
+	if (spkey & GLUT_ACTIVE_SHIFT)
+		cam_rotate(du, dv);
+	else {
 		struct fvec center;
 
 		(*revolve_centerf)(&center);
 		cam_revolve(&center, du, dv);
 	}
-	if (spkey & GLUT_ACTIVE_SHIFT)
-		cam_rotate(du, dv);
 	tween_pop(TWF_LOOK | TWF_POS);
 }
 
