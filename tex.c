@@ -19,20 +19,21 @@ tex_load(void)
 			snprintf(path, sizeof(path), _PATH_BORG);
 		else
 			snprintf(path, sizeof(path), _PATH_TEX, i);
+
 		data = png_load(path, &w, &h);
 		tex_init(data, GL_RGBA, GL_RGBA, texid, w, h);
-		jstates[i].js_fill.f_texid = texid;
+		jstates[i].js_fill.f_texid[wid] = texid;
 
 		texid++;
 		data = png_load(path, &w, &h);
 		tex_init(data, GL_INTENSITY, GL_RGBA, texid, w, h);
-		jstates[i].js_fill.f_texid_a = texid;
+		jstates[i].js_fill.f_texid_a[wid] = texid;
 	}
 
 	/* Load the font texture -- background color over white in tex */
-	font_id = texid;
+	font_id[wid] = texid;
 	data = png_load(_PATH_FONT, &w, &h);
-	tex_init(data, GL_INTENSITY, GL_RGBA, font_id, w, h);
+	tex_init(data, GL_INTENSITY, GL_RGBA, font_id[wid], w, h);
 }
 
 /*

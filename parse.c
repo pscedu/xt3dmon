@@ -354,8 +354,10 @@ parse_jobmap(struct datasrc *ds)
 			job = getobj(&jobid, &job_list);
 			job->j_id = jobid;
 			/* XXX: only slightly sloppy. */
-			job->j_fill.f_texid = jstates[JST_USED].js_fill.f_texid;
-			job->j_fill.f_texid_a = jstates[JST_USED].js_fill.f_texid_a;
+			job->j_fill.f_texid[WINID_LEFT] = jstates[JST_USED].js_fill.f_texid[WINID_LEFT];
+			job->j_fill.f_texid[WINID_RIGHT] = jstates[JST_USED].js_fill.f_texid[WINID_RIGHT];
+			job->j_fill.f_texid_a[WINID_LEFT] = jstates[JST_USED].js_fill.f_texid_a[WINID_LEFT];
+			job->j_fill.f_texid_a[WINID_RIGHT] = jstates[JST_USED].js_fill.f_texid_a[WINID_RIGHT];
 			node->n_job = job;
 			node->n_fillp = &job->j_fill;
 		}
