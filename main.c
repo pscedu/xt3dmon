@@ -36,13 +36,16 @@ struct fvec		 tuv = { 0.0f, 1.0f, 0.0f };
 GLint			 cluster_dl[2], ground_dl[2], select_dl[2];
 int			 font_id[2];
 
-void			(*drawh)(void);
+void			(*gl_displayhp)(void);
 
 const char		*progname;
 int			 verbose;
 
 int			 window_ids[2];
 int			 wid;		/* current window */
+
+char **sav_argv;
+
 
 const char *opdesc[] = {
 	/*  0 */ "Texture mode",
@@ -116,28 +119,15 @@ refresh_state(int oldopts)
 		tv.fv_z = st.st_z;  tlv.fv_z = st.st_lz;
 	}
 	if (diff & OP_GOVERN)
-		glutIdleFunc(st.st_opts & OP_GOVERN ?
-		    idleh_govern : idleh_default);
-}
-
-__inline void
-mwin_run(void (*f)(int))
-{
-	if (stereo_mode == STM_PASV) {
-		glutSetWindow(window_ids[WINID_LEFT]);
-		(*f)(WINID_LEFT);
-		glutSetWindow(window_ids[WINID_RIGHT]);
-		(*f)(WINID_RIGHT);
-	} else
-		(*f)(WINID_DEF);
+		gl_run(gl_setidleh);
 }
 
 void
 rebuild(int opts)
 {
 	if (opts & RF_TEX) {
-		tex_remove();
-		tex_load();
+		gl_run(tex_remove());
+		gl_run(tex_load());
 	}
 	if (opts & RF_PHYSMAP)
 		ds_refresh(DS_PHYS, DSF_CRIT);
@@ -192,34 +182,18 @@ rebuild(int opts)
 		cam_dirty = 1;
 	}
 	if (opts & RF_GROUND && st.st_opts & OP_GROUND)
-		make_obj(make_ground);
+		gl_run(make_ground);
 	if (opts & RF_CLUSTER)
-		make_obj(make_cluster);
+		gl_run(make_cluster);
 	if (opts & RF_SELNODE)
-		make_obj(make_select);
+		gl_run(make_select);
 }
-
-char **sav_argv;
 
 void
 restart(void)
 {
 	execvp(sav_argv[0], sav_argv);
 	err(1, "execvp");
-}
-
-void
-usage(void)
-{
-	fprintf(stderr, "usage: %s [-adlpv]\n", progname);
-	exit(1);
-}
-
-void
-setup_glut(void)
-{
-	glShadeModel(GL_SMOOTH);
-	glEnable(GL_DEPTH_TEST);
 }
 
 int
@@ -230,7 +204,7 @@ main(int argc, char *argv[])
 
 	progname = argv[0];
 	sav_argv = argv;
-	drawh = drawh_default;
+	gl_displayhp = gl_displayh_default;
 
 	flags = GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE;
 	glutInit(&argc, argv);
@@ -238,7 +212,7 @@ main(int argc, char *argv[])
 		switch (c) {
 		case 'a':
 			flags |= GLUT_STEREO;
-			drawh = drawh_stereo;
+			gl_displayhp = gl_displayh_stereo;
 			stereo_mode = STM_ACT;
 			break;
 		case 'd':
@@ -248,7 +222,7 @@ main(int argc, char *argv[])
 			dsp = DSP_DB;
 			break;
 		case 'p':
-			drawh = drawh_stereo;
+			gl_displayhp = gl_displayh_stereo;
 			stereo_mode = STM_PASV;
 			break;
 		case 'v':
@@ -272,18 +246,13 @@ main(int argc, char *argv[])
 	glutInitWindowSize(sw, sh);
 	if ((window_ids[0] = glutCreateWindow("XT3 Monitor")) == GL_FALSE)
 		errx(1, "glutCreateWindow");
-	setup_glut();
 	if (stereo_mode == STM_PASV) {
 		glutInitWindowPosition(sw, 0);
 		if ((window_ids[WINID_RIGHT] =
 		    glutCreateWindow("XT3 Monitor")) == GL_FALSE)
 			errx(1, "glutCreateWindow");
-		setup_glut();
 	}
-
-	glutTimerFunc(1, cocb_fps, 0);
-//	glutTimerFunc(1, cocb_datasrc, 0);
-	glutTimerFunc(1, cocb_clearstatus, 0); /* XXX: enable/disable when PANEL_STATUS? */
+	gl_run(gl_setup);
 
 	TAILQ_INIT(&panels);
 	SLIST_INIT(&selnodes);
@@ -294,15 +263,13 @@ main(int argc, char *argv[])
 	if (server)
 		serv_init();
 
-	/* glutExposeFunc(reshape); */
-	glutReshapeFunc(resizeh);
-	glutKeyboardFunc(keyh_default);
-	glutSpecialFunc(spkeyh_default);
-	glutDisplayFunc(drawh);
-	glutIdleFunc(idleh_default);
-	glutMouseFunc(mouseh_default);
-	glutMotionFunc(m_activeh_default);
-	glutPassiveMotionFunc(m_passiveh_default);
 	glutMainLoop();
-	exit(0);
+	/* NOTREACHED */
+}
+
+void
+usage(void)
+{
+	fprintf(stderr, "usage: %s [-adlpv]\n", progname);
+	exit(1);
 }
