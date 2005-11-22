@@ -15,20 +15,14 @@ tex_load(void)
 
 	/* Read in texture IDs. */
 	for (i = 0, texid = 1; i < NJST; i++, texid++) {
-		if (eggs & EGG_BORG)
-			snprintf(path, sizeof(path), _PATH_BORG);
-		else
-			snprintf(path, sizeof(path), _PATH_TEX, i);
-
+		snprintf(path, sizeof(path), _PATH_TEX, i);
 		data = png_load(path, &w, &h);
-
 		tex_init(data, GL_RGBA, GL_RGBA, texid, w, h);
 		jstates[i].js_fill.f_texid[wid] = texid;
 
 		texid++;
 		tex_init(data, GL_INTENSITY, GL_RGBA, texid, w, h);
 		jstates[i].js_fill.f_texid_a[wid] = texid;
-
 		free(data);
 	}
 
@@ -36,6 +30,16 @@ tex_load(void)
 	data = png_load(_PATH_FONT, &w, &h);
 	tex_init(data, GL_INTENSITY, GL_RGBA, texid, w, h);
 	fill_font.f_texid_a[wid] = texid;
+	free(data);
+
+	texid++;
+	data = png_load(_PATH_BORG, &w, &h);
+	tex_init(data, GL_RGBA, GL_RGBA, texid, w, h);
+	fill_borg.f_texid[wid] = texid;
+
+	texid++;
+	tex_init(data, GL_INTENSITY, GL_RGBA, texid, w, h);
+	fill_borg.f_texid_a[wid] = texid;
 	free(data);
 }
 
