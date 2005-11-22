@@ -18,10 +18,10 @@ egg_borg(void)
 		/* Save current state */
 		ost = st;
 
-		/* Set up Borg view =) */
 		st.st_vmode = VM_WIREDONE;
 		st.st_opts |= OP_TEX;
 		st.st_opts &= (~OP_GROUND);
+		/* XXX set jstates texid to borg texid */
 
 		tween_push(TWF_LOOK | TWF_POS);
 		st.st_x = -89.0;  st.st_lx = 1.0;
