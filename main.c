@@ -16,30 +16,33 @@
 #define STARTLY		(0.0f)
 #define STARTLZ		(-0.12f)
 
-#define FPS_TO_USEC(x)	(1e6 / x)	/* Convert FPS to microseconds. */
-#define GOVERN_FPS	30		/* FPS governor. */
-
 struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 struct node		*invmap[NID_MAX];
 struct node		*wimap[WIDIM_WIDTH][WIDIM_HEIGHT][WIDIM_DEPTH];
+
 int			 dsp = DSP_LOCAL;
+
 int			 win_width = 800;
 int			 win_height = 600;
+
 int			 flyby_mode = FBM_OFF;
 int			 capture_mode = CM_PNG;
 int			 stereo_mode;
-int			 font_id;
+
 struct fvec		 tv = { STARTX, STARTY, STARTZ };
 struct fvec		 tlv = { STARTLX, STARTLY, STARTLZ };
 struct fvec		 tuv = { 0.0f, 1.0f, 0.0f };
+
 GLint			 cluster_dl[2], ground_dl[2], select_dl[2];
-struct timeval		 lastsync;
-long			 fps = 50;	/* last fps sample */
-long			 fps_cnt = 0;	/* current fps counter */
+int			 font_id[2];
+
 void			(*drawh)(void);
-int			 window_ids[2];
+
 const char		*progname;
 int			 verbose;
+
+int			 window_ids[2];
+int			 wid;		/* current window */
 
 const char *opdesc[] = {
 	/*  0 */ "Texture mode",
@@ -79,34 +82,15 @@ struct state st = {
 };
 
 struct job_state jstates[] = {
-	{ "Free",		{ 1.00f, 1.00f, 1.00f, 1.00f, 0, GL_INTENSITY} },	/* White */
-	{ "Disabled (PBS)",	{ 1.00f, 0.00f, 0.00f, 1.00f, 0, GL_INTENSITY} },	/* Red */
-	{ "Disabled (HW)",	{ 0.66f, 0.66f, 0.66f, 1.00f, 0, GL_INTENSITY} },	/* Gray */
-	{ NULL,			{ 0.00f, 0.00f, 0.00f, 1.00f, 0, GL_INTENSITY} },	/* (dynamic) */
-	{ "Service",		{ 1.00f, 1.00f, 0.00f, 1.00f, 0, GL_INTENSITY} },	/* Yellow */
-	{ "Unaccounted",	{ 0.00f, 0.00f, 1.00f, 1.00f, 0, GL_INTENSITY} },	/* Blue */
-	{ "Bad",		{ 1.00f, 0.75f, 0.75f, 1.00f, 0, GL_INTENSITY} },	/* Pink */
-	{ "Checking",		{ 0.00f, 1.00f, 0.00f, 1.00f, 0, GL_INTENSITY} }	/* Green */
+	{ "Free",		FILL_INIT(1.00f, 1.00f, 1.00f) },	/* White */
+	{ "Disabled (PBS)",	FILL_INIT(1.00f, 0.00f, 0.00f) },	/* Red */
+	{ "Disabled (HW)",	FILL_INIT(0.66f, 0.66f, 0.66f) },	/* Gray */
+	{ NULL,			FILL_INIT(0.00f, 0.00f, 0.00f) },	/* (dynamic) */
+	{ "Service",		FILL_INIT(1.00f, 1.00f, 0.00f) },	/* Yellow */
+	{ "Unaccounted",	FILL_INIT(0.00f, 0.00f, 1.00f) },	/* Blue */
+	{ "Bad",		FILL_INIT(1.00f, 0.75f, 0.75f) },	/* Pink */
+	{ "Checking",		FILL_INIT(0.00f, 1.00f, 0.00f) }	/* Green */
 };
-
-void
-resizeh(int w, int h)
-{
-	struct panel *p;
-
-	win_width = w;
-	win_height = h;
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glViewport(0, 0, win_width, win_height);
-	gluPerspective(FOVY, ASPECT, 1, clip);
-	glMatrixMode(GL_MODELVIEW);
-	cam_dirty = 1;
-
-	TAILQ_FOREACH(p, &panels, p_link)
-		p->p_opts |= POPT_DIRTY;
-}
 
 /*
  * Serial entry point to special-case code for handling states changes.
@@ -136,29 +120,8 @@ refresh_state(int oldopts)
 		    idleh_govern : idleh_default);
 }
 
-void
-idleh_govern(void)
-{
-	static struct timeval gov_tv, tv, diff;
-
-	gettimeofday(&tv, NULL);
-	timersub(&tv, &gov_tv, &diff);
-	if (diff.tv_sec * 1e6 + diff.tv_usec >= FPS_TO_USEC(GOVERN_FPS)) {
-		fps_cnt++;
-		gov_tv = tv;
-		(*drawh)();
-	}
-}
-
-void
-idleh_default(void)
-{
-	fps_cnt++;
-	(*drawh)();
-}
-
-void
-make_obj(void (*f)(int))
+__inline void
+mwin_run(void (*f)(int))
 {
 	if (stereo_mode == STM_PASV) {
 		glutSetWindow(window_ids[WINID_LEFT]);
