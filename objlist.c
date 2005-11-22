@@ -22,28 +22,28 @@ struct objlist	 fail_list   = { { NULL }, 0, 0, 0, 0, FINCR, sizeof(struct fail)
 struct objlist	 glname_list = { { NULL }, 0, 0, 0, 0, GINCR, sizeof(struct glname), 0,	     glname_eq, NULL };
 
 struct fail fail_notfound = {
-	{ 0 }, 0, { 0.33f, 0.66f, 0.99f, 1.00f, 0, 0 }, "0"
+	{ 0 }, 0, FILL_INIT(0.33f, 0.66f, 0.99f), "0"
 };
 
 struct temp temp_notfound = {
-	{ 0 }, 0, { 0.00f, 0.00f, 0.00f, 1.00f, 0, 0 }, "?"
+	{ 0 }, 0, FILL_INIT(0.00f, 0.00f, 0.00f), "?"
 };
 
 struct temp_range temp_map[] = {
-	{ { 0.0f, 0.0f, 0.4f, 1.0f, 0, 0 }, "18-22C" },
-	{ { 0.8f, 0.0f, 0.4f, 1.0f, 0, 0 }, "22-26C" },
-	{ { 0.6f, 0.0f, 0.6f, 1.0f, 0, 0 }, "26-31C" },
-	{ { 0.4f, 0.0f, 0.8f, 1.0f, 0, 0 }, "31-35C" },
-	{ { 0.2f, 0.2f, 1.0f, 1.0f, 0, 0 }, "35-40C" },
-	{ { 0.0f, 0.0f, 1.0f, 1.0f, 0, 0 }, "40-44C" },
-	{ { 0.0f, 0.6f, 0.6f, 1.0f, 0, 0 }, "44-49C" },
-	{ { 0.0f, 0.8f, 0.0f, 1.0f, 0, 0 }, "49-53C" },
-	{ { 0.4f, 1.0f, 0.0f, 1.0f, 0, 0 }, "53-57C" },
-	{ { 1.0f, 1.0f, 0.0f, 1.0f, 0, 0 }, "57-62C" },
-	{ { 1.0f, 0.8f, 0.2f, 1.0f, 0, 0 }, "62-66C" },
-	{ { 1.0f, 0.6f, 0.0f, 1.0f, 0, 0 }, "66-71C" },
-	{ { 1.0f, 0.0f, 0.0f, 1.0f, 0, 0 }, "71-75C" },
-	{ { 1.0f, 0.6f, 0.6f, 1.0f, 0, 0 }, "75-80C" }
+	{ FILL_INIT(0.0f, 0.0f, 0.4f), "18-22C" },
+	{ FILL_INIT(0.8f, 0.0f, 0.4f), "22-26C" },
+	{ FILL_INIT(0.6f, 0.0f, 0.6f), "26-31C" },
+	{ FILL_INIT(0.4f, 0.0f, 0.8f), "31-35C" },
+	{ FILL_INIT(0.2f, 0.2f, 1.0f), "35-40C" },
+	{ FILL_INIT(0.0f, 0.0f, 1.0f), "40-44C" },
+	{ FILL_INIT(0.0f, 0.6f, 0.6f), "44-49C" },
+	{ FILL_INIT(0.0f, 0.8f, 0.0f), "49-53C" },
+	{ FILL_INIT(0.4f, 1.0f, 0.0f), "53-57C" },
+	{ FILL_INIT(1.0f, 1.0f, 0.0f), "57-62C" },
+	{ FILL_INIT(1.0f, 0.8f, 0.2f), "62-66C" },
+	{ FILL_INIT(1.0f, 0.6f, 0.0f), "66-71C" },
+	{ FILL_INIT(1.0f, 0.0f, 0.0f), "71-75C" },
+	{ FILL_INIT(1.0f, 0.6f, 0.6f), "75-80C" }
 };
 
 int
