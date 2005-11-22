@@ -47,3 +47,4 @@ reminders:
 65. rename hl_jstate to something that is nstate (global node state,
     independent of jstate)
 66. show other things in the queue (other pbs queues)
+67. dynamic font widths
