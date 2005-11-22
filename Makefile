@@ -4,9 +4,9 @@ MKDEP = `type -t mkdep >/dev/null 2>&1 && echo mkdep || echo makedepend -f.depen
 
 PROG = xt3dmon
 SRCS = buf.c callout.c cam.c capture.c db.c dbg.c draw.c ds.c eggs.c
-SRCS += flyby.c hl.c http.c key.c job.c main.c mouse.c node.c objlist.c
-SRCS += panel.c parse.c png.c select.c selnode.c server.c shadow.c
-SRCS += status.c tex.c tween.c uinp.c vec.c widget.c
+SRCS += flyby.c gl.c hl.c http.c key.c job.c main.c mouse.c node.c
+SRCS += objlist.c panel.c parse.c png.c select.c selnode.c server.c
+SRCS += shadow.c status.c tex.c tween.c uinp.c vec.c widget.c
 LIBS = -lGL -lglut -lGLU -lpng `mysql_config --libs` -pg
 MYSQL_CFLAGS = $$(mysql_config --cflags | sed "s/'//g" | \
     awk '{for (n = 1; n <= NF; n++) if (match($$n, /^-I/)) printf "%s ", $$n }')
