@@ -21,19 +21,22 @@ tex_load(void)
 			snprintf(path, sizeof(path), _PATH_TEX, i);
 
 		data = png_load(path, &w, &h);
+
 		tex_init(data, GL_RGBA, GL_RGBA, texid, w, h);
 		jstates[i].js_fill.f_texid[wid] = texid;
 
 		texid++;
-		data = png_load(path, &w, &h);
 		tex_init(data, GL_INTENSITY, GL_RGBA, texid, w, h);
 		jstates[i].js_fill.f_texid_a[wid] = texid;
+
+		free(data);
 	}
 
 	/* Load the font texture -- background color over white in tex */
-	font_id[wid] = texid;
 	data = png_load(_PATH_FONT, &w, &h);
-	tex_init(data, GL_INTENSITY, GL_RGBA, font_id[wid], w, h);
+	tex_init(data, GL_INTENSITY, GL_RGBA, texid, w, h);
+	fill_font.f_texid_a[wid] = texid;
+	free(data);
 }
 
 /*
@@ -54,7 +57,6 @@ tex_init(void *data, GLint ifmt, GLenum fmt, GLuint id, GLuint w, GLuint h)
 	/* fmt is either GL_INTENSITY, GL_RGBA, ... */
 	glTexImage2D(GL_TEXTURE_2D, 0, ifmt, w, h, 0, fmt,
 	    GL_UNSIGNED_BYTE, data);
-	free(data);
 }
 
 /* Delete textures from memory. */
