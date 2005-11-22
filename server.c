@@ -201,7 +201,10 @@ serv_drawh(void)
 		goto drop;
 snap:
 	dbg_warn("Writing snapshot");
+//	win_height += 20;		/* XXX: X title bar slack */
+//	glutReshapeFunc(NULL);
 	glutReshapeWindow(win_width, win_height);
+//	glutReshapeFunc(resizeh);
 	resizeh(win_width, win_height);
 	st.st_rf |= RF_CAM | RF_DATASRC;
 
