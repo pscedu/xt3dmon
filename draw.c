@@ -29,6 +29,10 @@
 
 #define SKEL_GAP (0.1f)
 
+#define NEARCLIP (1.0)
+#define FOCAL_POINT (2.0f) /* distance from cam to center of 3d focus */
+#define FOCAL_LENGTH (5.0f) /* length of 3d focus */
+
 struct fvec wivstart, wivdim;
 float clip;
 
@@ -37,10 +41,9 @@ struct fill fill_grey		= FILL_INIT(0.2f, 0.2f, 0.2f);
 struct fill fill_light_blue	= FILL_INIT(0.2f, 0.4f, 0.6f);
 struct fill fill_yellow		= FILL_INIT(1.0f, 1.0f, 0.0f);
 struct fill fill_selnode	= FILL_INIT(0.2f, 0.4f, 0.6f);
+struct fill fill_font		= FILL_INIT(0.0f, 0.0f, 0.0f);
 
 struct fvec fvzero = { 0.0f, 0.0f, 0.0f };
-
-#define NEARCLIP (1.0)
 
 __inline void
 wired_update(void)
@@ -51,13 +54,13 @@ wired_update(void)
 	    st.st_y - clip < wivstart.fv_y ||
 	    st.st_z + clip > wivstart.fv_z + wivdim.fv_d ||
 	    st.st_z - clip < wivstart.fv_z) {
-		status_add("Rebuild triggered\n");
+//		status_add("Rebuild triggered\n");
 		st.st_rf |= RF_CLUSTER;
 	}
 }
 
 __inline void
-draw_scene(int wid)
+draw_scene(void)
 {
 	if (select_dl[wid])
 		glCallList(select_dl[wid]);
@@ -68,11 +71,8 @@ draw_scene(int wid)
 		draw_panels(wid);
 }
 
-#define FOCAL_POINT (2.0f) /* distance from cam to center of 3d focus */
-#define FOCAL_LENGTH (5.0f) /* length of 3d focus */
-
 void
-drawh_stereo(void)
+gl_displayh_stereo(void)
 {
 	static double ratio, radians, wd2, ndfl, eyesep;
 	static float left, right, top, bottom;
@@ -538,29 +538,6 @@ draw_cluster_physical(void)
 						draw_mod(&v, &mdim, &mf);
 				}
 				v.fv_x -= (MODWIDTH + MODSPACE) * NMODS;
-#if 0
-				if (st.st_opts & OP_SKEL && cg) {
-					glPushMatrix();
-					glTranslatef(v.fv_x - SKEL_GAP,
-					    v.fv_y - CAGESPACE / 2.0f,
-					    v.fv_z - SKEL_GAP);
-					glEnable(GL_BLEND);
-					glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
-					glBegin(GL_LINE_LOOP);
-					glColor4f(fill_light_blue.f_r,
-					    fill_light_blue.f_g,
-					    fill_light_blue.f_b, 0.4f);
-					glVertex3f(0.0f, 0.0f, 0.0f);
-					glVertex3f(CABWIDTH + 2 * SKEL_GAP, 0.0f, 0.0f);
-					glVertex3f(CABWIDTH + 2 * SKEL_GAP, 0.0f,
-					    MODDEPTH + 2 * SKEL_GAP);
-					glVertex3f(0.0f, 0.0f,
-					    MODDEPTH + 2 * SKEL_GAP);
-					glEnd();
-					glDisable(GL_BLEND);
-					glPopMatrix();
-				}
-#endif
 			}
 			v.fv_y -= (CAGEHEIGHT + CAGESPACE) * NCAGES;
 			if (st.st_opts & OP_SKEL) {
@@ -703,10 +680,9 @@ snap_to_grid(float n, float size, float clip)
 	float adj;
 
 	adj = fmod(n - clip, size);
-	if(adj < 0)
+	if (adj < 0)
 		adj += size;
-
-	return adj;
+	return (adj);
 }
 
 /*
@@ -720,8 +696,6 @@ draw_clusters_wired(void)
 	int xnum, znum, col;
 	float x, y, z;
 	struct fvec v, dim;
-
-//	clip = MIN3(WIV_CLIPX, WIV_CLIPY, WIV_CLIPZ);
 
 	x = st.st_x - clip;
 	y = st.st_y - clip;
@@ -768,7 +742,7 @@ draw_clusters_wired(void)
 }
 
 void
-make_cluster(int wid)
+make_cluster(void)
 {
 	if (cluster_dl[wid])
 		glDeleteLists(cluster_dl[wid], 1);
@@ -794,7 +768,7 @@ make_cluster(int wid)
 }
 
 void
-make_select(int wid)
+make_select(void)
 {
 	struct fvec pos, v;
 	struct selnode *sn;
