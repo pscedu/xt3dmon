@@ -157,12 +157,10 @@ gsn_get(int id, void (*cb)(int), int flags)
 void
 gscb_panel(int id)
 {
-	if (spkey == GLUT_ACTIVE_CTRL) {
-		/* GL giving us crap. */
-		if ((panel_mobile = panel_for_id(id)) != NULL) {
-			glutMotionFunc(m_activeh_panel);
-			panel_mobile->p_opts |= POPT_MOBILE;
-		}
+	/* GL giving us crap. */
+	if ((panel_mobile = panel_for_id(id)) != NULL) {
+		glutMotionFunc(m_activeh_panel);
+		panel_mobile->p_opts |= POPT_MOBILE;
 	}
 }
 
