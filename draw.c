@@ -32,11 +32,11 @@
 struct fvec wivstart, wivdim;
 float clip;
 
-struct fill fill_black		= { 0.0f, 0.0f, 0.0f, 1.0f, 0, 0 };
-struct fill fill_grey		= { 0.2f, 0.2f, 0.2f, 1.0f, 0, 0 };
-struct fill fill_light_blue	= { 0.2f, 0.4f, 0.6f, 1.0f, 0, 0 };
-struct fill fill_yellow		= { 1.0f, 1.0f, 0.0f, 1.0f, 0, 0 };
-struct fill fill_selnode	= { 0.2f, 0.4f, 0.6f, 1.0f, 0, 0 };
+struct fill fill_black		= FILL_INIT(0.0f, 0.0f, 0.0f);
+struct fill fill_grey		= FILL_INIT(0.2f, 0.2f, 0.2f);
+struct fill fill_light_blue	= FILL_INIT(0.2f, 0.4f, 0.6f);
+struct fill fill_yellow		= FILL_INIT(1.0f, 1.0f, 0.0f);
+struct fill fill_selnode	= FILL_INIT(0.2f, 0.4f, 0.6f);
 
 struct fvec fvzero = { 0.0f, 0.0f, 0.0f };
 
@@ -261,7 +261,7 @@ draw_node_label(struct node *n)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glBindTexture(GL_TEXTURE_2D, font_id);
+	glBindTexture(GL_TEXTURE_2D, font_id[wid]);
 
 	glBegin(GL_QUADS);
 

@@ -197,12 +197,15 @@ struct fill {
 	float		 f_g;
 	float		 f_b;
 	float		 f_a;
-	GLuint		 f_texid;
-	GLuint		 f_texid_a;		/* alpha-loaded texid */
+	GLuint		 f_texid[2];
+	GLuint		 f_texid_a[2];		/* alpha-loaded texid */
 #define f_h f_r
 #define f_s f_g
 #define f_v f_b
 };
+
+#define FILL_INIT(r, g, b)	\
+	{ r, g, b, 1.0, { 0, 0 }, { 0, 0 } }
 
 struct objhdr {
 	int		 oh_flags;
@@ -765,7 +768,7 @@ extern int		 total_failures;		/* total among all nodes */
 extern int		 verbose;
 extern int		 cam_dirty;
 extern GLint		 cluster_dl[2], ground_dl[2], select_dl[2];
-extern int		 font_id;
+extern int		 font_id[2];
 extern struct uinput	 uinp;
 extern int		 spkey;
 
