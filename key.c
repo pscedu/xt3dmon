@@ -426,6 +426,50 @@ keyh_alpha(unsigned char key, __unused int u, __unused int v)
 }
 
 void
+keyh_wioffdecr(unsigned char key, __unused int u, __unused int v)
+{
+	glutKeyboardFunc(keyh_default);
+	switch (key) {
+	case 'x':
+		xoff--;
+		break;
+	case 'y':
+		yoff--;
+		break;
+	case 'z':
+		zoff--;
+		break;
+	case '{':
+		xoff--;
+		yoff--;
+		zoff--;
+		break;
+	}
+}
+
+void
+keyh_wioffincr(unsigned char key, __unused int u, __unused int v)
+{
+	glutKeyboardFunc(keyh_default);
+	switch (key) {
+	case 'x':
+		xoff++;
+		break;
+	case 'y':
+		yoff++;
+		break;
+	case 'z':
+		zoff++;
+		break;
+	case '}':
+		xoff++;
+		yoff++;
+		zoff++;
+		break;
+	}
+}
+
+void
 keyh_default(unsigned char key, __unused int u, __unused int v)
 {
 	int oldopts = st.st_opts;
@@ -483,6 +527,12 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 	case 'Z':
 		drawh = drawh_default;
 		glutDisplayFunc(drawh);
+		break;
+	case '{':
+		glutKeyboardFunc(keyh_wioffdecr);
+		break;
+	case '}':
+		glutKeyboardFunc(keyh_wioffincr);
 		break;
 	case '+':
 	case '_': {
