@@ -261,6 +261,7 @@ struct node {
 	struct fvec	 n_physv;
 	struct fvec	 n_vcur;
 	struct fvec	*n_v;
+	int		 n_dl[2];		/* display list ID */
 };
 
 #define NF_HIDE		(1<<0)
@@ -573,9 +574,9 @@ void			 drawh_stereo(void);
 void			 drawh_select(void);
 void			 draw_node(struct node *, int);
 void			 draw_node_pipes(struct fvec *);
-void			 make_ground(int);
-void			 make_cluster(int);
-void			 make_select(int);
+void			 make_ground();
+void			 make_cluster();
+void			 make_select();
 float			 snap_to_grid(float, float, float);
 
 /* ds.c */
@@ -815,3 +816,5 @@ extern int		 dsp;				/* Data source provider. */
 extern struct session	*ssp;
 
 extern int		 hl_jstate;
+extern int		 wid;
+extern int		 xoff, yoff, zoff;
