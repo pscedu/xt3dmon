@@ -107,7 +107,8 @@ gl_displayh_stereo(void)
 		glDrawBuffer(GL_BACK_RIGHT);
 		break;
 	case STM_PASV:
-		glutSetWindow(window_ids[WINID_RIGHT]);
+		wid = WINID_RIGHT;
+		glutSetWindow(window_ids[wid]);
 		break;
 	}
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -125,7 +126,7 @@ gl_displayh_stereo(void)
 	st.st_y += stereo_fv.fv_y;
 	st.st_z += stereo_fv.fv_z;
 	cam_look();
-	draw_scene(WINID_RIGHT);
+	draw_scene();
 
 	if (stereo_mode == STM_PASV) {
 		glClearColor(0.2, 0.2, 0.2, 1.0);
@@ -142,7 +143,8 @@ gl_displayh_stereo(void)
 		glDrawBuffer(GL_BACK_LEFT);
 		break;
 	case STM_PASV:
-		glutSetWindow(window_ids[WINID_LEFT]);
+		wid = WINID_LEFT;
+		glutSetWindow(window_ids[wid]);
 		break;
 	}
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -160,7 +162,7 @@ gl_displayh_stereo(void)
 	st.st_y -= 2 * stereo_fv.fv_y;
 	st.st_z -= 2 * stereo_fv.fv_z;
 	cam_look();
-	draw_scene(WINID_LEFT);
+	draw_scene();
 
 	glClearColor(0.2, 0.2, 0.2, 1.0);
 	if (st.st_opts & OP_CAPTURE)
@@ -199,7 +201,7 @@ drawh_default(void)
 		glMatrixMode(GL_MODELVIEW);
 		cam_look();
 	}
-	draw_scene(WINID_DEF);
+	draw_scene();
 	cam_dirty = 0;
 
 	glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -422,7 +424,7 @@ draw_mod(struct fvec *vp, struct fvec *dim, struct fill *fillp)
 }
 
 void
-make_ground(int wid)
+make_ground(void)
 {
 	struct fvec fv, fdim;
 	struct fill fill;
@@ -613,31 +615,41 @@ draw_cluster_pipes(struct fvec *v)
 __inline void
 draw_cluster_wired(struct fvec *v)
 {
-	int r, cb, cg, m, n;
+	struct fvec *nv, dim, cldim, wrapv;
+	struct ivec iv, adjv;
 	struct node *node;
-	struct fvec *nv;
+
+	cldim.fv_w = (WIDIM_WIDTH  - 1) * st.st_winsp.iv_x;
+        cldim.fv_h = (WIDIM_HEIGHT - 1) * st.st_winsp.iv_y;
+        cldim.fv_d = (WIDIM_DEPTH  - 1) * st.st_winsp.iv_z;
 
 	if (st.st_opts & OP_PIPES)
 		draw_cluster_pipes(v);
-	for (r = 0; r < NROWS; r++)
-		for (cb = 0; cb < NCABS; cb++)
-			for (cg = 0; cg < NCAGES; cg++)
-				for (m = 0; m < NMODS; m++)
-					for (n = 0; n < NNODES; n++) {
-						node = &nodes[r][cb][cg][m][n];
-						nv = &node->n_swiv;
-						nv->fv_x = node->n_wiv.iv_x * st.st_winsp.iv_x + v->fv_x;
-						nv->fv_y = node->n_wiv.iv_y * st.st_winsp.iv_y + v->fv_y;
-						nv->fv_z = node->n_wiv.iv_z * st.st_winsp.iv_z + v->fv_z;
-						node->n_v = nv;
-						draw_node(node, 0);
-					}
-	if (st.st_opts & OP_SKEL) {
-		struct fvec dim;
 
-		dim.fv_w = ((WIDIM_WIDTH  - 1) * st.st_winsp.iv_x) + NODEWIDTH  + 2 * SKEL_GAP;
-		dim.fv_h = ((WIDIM_HEIGHT - 1) * st.st_winsp.iv_y) + NODEHEIGHT + 2 * SKEL_GAP;
-		dim.fv_z = ((WIDIM_DEPTH  - 1) * st.st_winsp.iv_z) + NODEDEPTH  + 2 * SKEL_GAP;
+	for (iv.iv_x = 0; iv.iv_x < WIDIM_WIDTH; iv.iv_x++)
+		for (iv.iv_y = 0; iv.iv_y < WIDIM_HEIGHT; iv.iv_y++)
+			for (iv.iv_z = 0; iv.iv_z < WIDIM_DEPTH; iv.iv_y++) {
+				adjv.iv_x = (iv.iv_x + xoff) % WIDIM_WIDTH;
+				adjv.iv_y = (iv.iv_y + yoff) % WIDIM_HEIGHT;
+				adjv.iv_z = (iv.iv_z + zoff) % WIDIM_DEPTH;
+				node = wimap[adjv.iv_x][adjv.iv_y][adjv.iv_z];
+
+				wrapv.fv_x = (iv.iv_x + xoff) / WIDIM_WIDTH  * cldim.fv_x;
+				wrapv.fv_y = (iv.iv_y + yoff) / WIDIM_HEIGHT * cldim.fv_y;
+				wrapv.fv_z = (iv.iv_z + zoff) / WIDIM_DEPTH  * cldim.fv_z;
+
+				nv = &node->n_swiv;
+				nv->fv_x = node->n_wiv.iv_x * st.st_winsp.iv_x + v->fv_x + wrapv.fv_x;
+				nv->fv_y = node->n_wiv.iv_y * st.st_winsp.iv_y + v->fv_y + wrapv.fv_y;
+				nv->fv_z = node->n_wiv.iv_z * st.st_winsp.iv_z + v->fv_z + wrapv.fv_z;
+				node->n_v = nv;
+				draw_node(node, 0);
+			}
+
+	if (st.st_opts & OP_SKEL) {
+		dim.fv_w = cldim.fv_w + NODEWIDTH  + 2 * SKEL_GAP;
+		dim.fv_h = cldim.fv_h + NODEHEIGHT + 2 * SKEL_GAP;
+		dim.fv_z = cldim.fv_d + NODEDEPTH  + 2 * SKEL_GAP;
 
 		glPushMatrix();
 		glTranslatef(-SKEL_GAP, -SKEL_GAP, -SKEL_GAP);
@@ -649,7 +661,6 @@ draw_cluster_wired(struct fvec *v)
 		glDisable(GL_BLEND);
 		glPopMatrix();
 	}
-
 }
 
 __inline void
