@@ -290,7 +290,7 @@ struct state {
 #define st_uz st_uv.fv_z
 };
 
-#define FB_OMASK	(OP_LOOPFLYBY | OP_CAPTURE | OP_DISPLAY | OP_STOP)
+#define FB_OMASK	(OP_LOOPFLYBY | OP_CAPTURE | OP_DISPLAY | OP_STOP | OP_GOVERN)
 #define FB_PMASK	(PANEL_GOTO | PANEL_CMD | PANEL_FLYBY | PANEL_SS)
 
 #define RF_TEX		(1<<0)
@@ -569,9 +569,11 @@ void			 capture_snap(const char *, int);
 void			 capture_snapfd(int, int);
 
 /* draw.c */
-void			 drawh_default(void);
-void			 drawh_stereo(void);
-void			 drawh_select(void);
+void			 gl_displayh_default(void);
+void			 gl_displayh_stereo(void);
+void			 gl_displayh_select(void);
+void			 gl_run(void (*)(void));
+
 void			 draw_node(struct node *, int);
 void			 draw_node_pipes(struct fvec *);
 void			 make_ground();
@@ -622,37 +624,41 @@ void			 job_hl(struct job *);
 void			 prjobs(void);
 
 /* key.c */
-void			 keyh_flyby(unsigned char, int, int);
-void			 keyh_actflyby(unsigned char, int, int);
-void			 keyh_uinput(unsigned char, int, int);
-void			 keyh_panel(unsigned char, int, int);
-void			 keyh_mode(unsigned char, int, int);
-void			 keyh_vmode(unsigned char, int, int);
-void			 keyh_default(unsigned char, int, int);
-void			 spkeyh_default(int, int, int);
-void			 spkeyh_actflyby(int, int, int);
+void			 gl_keyh_flyby(unsigned char, int, int);
+void			 gl_keyh_actflyby(unsigned char, int, int);
+void			 gl_keyh_uinput(unsigned char, int, int);
+void			 gl_keyh_panel(unsigned char, int, int);
+void			 gl_keyh_mode(unsigned char, int, int);
+void			 gl_keyh_vmode(unsigned char, int, int);
+void			 gl_keyh_default(unsigned char, int, int);
+void			 gl_spkeyh_default(int, int, int);
+void			 gl_spkeyh_actflyby(int, int, int);
 
 /* load_png.c */
 void 			*png_load(char *, unsigned int *, unsigned int *);
 void			 png_write(FILE *, unsigned char *, long, long);
 
 /* main.c */
-void			 resizeh(int, int);
 void			 refresh_state(int);
 void			 rebuild(int);
 void			 restart(void);
-void			 idleh_govern(void);
-void			 idleh_default(void);
+
+/* gl.c */
+void			 gl_reshapeh(int, int);
+void			 gl_idleh_govern(void);
+void			 gl_idleh_default(void);
+void			 gl_setidleh(void);
+void			 gl_setup(void);
 
 /* mouse.c */
-void			 m_activeh_default(int, int);
-void			 m_activeh_null(int, int);
-void			 m_activeh_free(int, int);
-void			 m_activeh_panel(int, int);
-void			 m_passiveh_default(int, int);
-void			 m_passiveh_null(int, int);
-void			 mouseh_default(int, int, int, int);
-void			 mouseh_null(int, int, int, int);
+void			 gl_motionh_default(int, int);
+void			 gl_motionh_null(int, int);
+void			 gl_motionh_free(int, int);
+void			 gl_motionh_panel(int, int);
+void			 gl_pasvmotionh_default(int, int);
+void			 gl_pasvmotionh_null(int, int);
+void			 gl_mouseh_default(int, int, int, int);
+void			 gl_mouseh_null(int, int, int, int);
 
 /* node.c */
 struct node		*node_neighbor(struct node *, int, int);
@@ -805,16 +811,15 @@ extern long		 rmem;
 extern float		 clip;
 extern int		 eggs;
 
-extern void		(*drawh)(void);
-extern void		(*drawh_old)(void);
+extern void		(*gl_displayhp)(void);
+extern void		(*gl_displayhp_old)(void);
 extern struct panel	*panel_mobile;
 
-extern struct fill	 fill_black;
-extern struct fill	 fill_light_blue;
+extern struct fill	 fill_black, fill_light_blue, fill_font, fill_borg;
 extern int		 dsp;				/* Data source provider. */
 
 extern struct session	*ssp;
 
 extern int		 hl_jstate;
 extern int		 wid;
-extern int		 xoff, yoff, zoff;
+extern struct ivec	 wioff;
