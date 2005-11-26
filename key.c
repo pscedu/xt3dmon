@@ -13,18 +13,18 @@ struct uinput uinp;
 struct fvec stopv, stoplv;
 
 void
-spkeyh_null(__unused int key, __unused int u, __unused int v)
+gl_spkeyh_null(__unused int key, __unused int u, __unused int v)
 {
 }
 
 void
-spkeyh_actflyby(__unused int key, __unused int u, __unused int v)
+gl_spkeyh_actflyby(__unused int key, __unused int u, __unused int v)
 {
 	flyby_end();
 }
 
 void
-keyh_actflyby(__unused unsigned char key, __unused int u, __unused int v)
+gl_keyh_actflyby(__unused unsigned char key, __unused int u, __unused int v)
 {
 	if (key == ' ') {
 		st.st_opts ^= OP_STOP;
@@ -47,9 +47,9 @@ keyh_actflyby(__unused unsigned char key, __unused int u, __unused int v)
 }
 
 void
-keyh_flyby(unsigned char key, __unused int u, __unused int v)
+gl_keyh_flyby(unsigned char key, __unused int u, __unused int v)
 {
-	glutKeyboardFunc(keyh_default);
+	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'c':
 		unlink(_PATH_FLYBY);
@@ -87,14 +87,14 @@ keyh_flyby(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-keyh_uinput(unsigned char key, __unused int u, __unused int v)
+gl_keyh_uinput(unsigned char key, __unused int u, __unused int v)
 {
 	int opts;
 
 	uinp.uinp_opts |= UINPO_DIRTY;
 	switch (key) {
 	case 13: /* enter */
-		glutKeyboardFunc(keyh_default);
+		glutKeyboardFunc(gl_keyh_default);
 		opts = uinp.uinp_opts;
 		uinp.uinp_callback();
 		buf_reset(&uinp.uinp_buf);
@@ -105,7 +105,7 @@ keyh_uinput(unsigned char key, __unused int u, __unused int v)
 	case 27: /* escape */
 		buf_reset(&uinp.uinp_buf);
 		buf_append(&uinp.uinp_buf, '\0');
-		glutKeyboardFunc(keyh_default);
+		glutKeyboardFunc(gl_keyh_default);
 		panel_tremove(uinp.uinp_panel);
 		break;
 	case 8: /* backspace */
@@ -124,11 +124,11 @@ keyh_uinput(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-keyh_panel(unsigned char key, __unused int u, __unused int v)
+gl_keyh_panel(unsigned char key, __unused int u, __unused int v)
 {
 	int j;
 
-	glutKeyboardFunc(keyh_default);
+	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'a':
 		for (j = 0; j < NPANELS; j++)
@@ -175,11 +175,11 @@ keyh_panel(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-keyh_mode(unsigned char key, __unused int u, __unused int v)
+gl_keyh_mode(unsigned char key, __unused int u, __unused int v)
 {
 	int oldopts = st.st_opts;
 
-	glutKeyboardFunc(keyh_default);
+	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'j':
 		st.st_mode = SM_JOBS;
@@ -200,11 +200,11 @@ keyh_mode(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-keyh_vmode(unsigned char key, __unused int u, __unused int v)
+gl_keyh_vmode(unsigned char key, __unused int u, __unused int v)
 {
 	int oldopts = st.st_opts;
 
-	glutKeyboardFunc(keyh_default);
+	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'o':
 		st.st_vmode = VM_WIREDONE;
@@ -223,11 +223,11 @@ keyh_vmode(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-keyh_option(unsigned char key, __unused int u, __unused int v)
+gl_keyh_option(unsigned char key, __unused int u, __unused int v)
 {
 	int oldopts = st.st_opts;
 
-	glutKeyboardFunc(keyh_default);
+	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'D':
 		st.st_opts ^= OP_DISPLAY;
@@ -287,11 +287,11 @@ keyh_option(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-keyh_decr(unsigned char key, __unused int u, __unused int v)
+gl_keyh_decr(unsigned char key, __unused int u, __unused int v)
 {
 	int oldopts = st.st_opts;
 
-	glutKeyboardFunc(keyh_default);
+	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'x':
 		st.st_winsp.iv_x--;
@@ -315,11 +315,11 @@ keyh_decr(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-keyh_incr(unsigned char key, __unused int u, __unused int v)
+gl_keyh_incr(unsigned char key, __unused int u, __unused int v)
 {
 	int oldopts = st.st_opts;
 
-	glutKeyboardFunc(keyh_default);
+	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'x':
 		st.st_winsp.iv_x++;
@@ -343,7 +343,7 @@ keyh_incr(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-spkeyh_node(int key, __unused int u, __unused int v)
+gl_spkeyh_node(int key, __unused int u, __unused int v)
 {
 	struct selnode *sn;
 	struct node *n;
@@ -383,25 +383,25 @@ spkeyh_node(int key, __unused int u, __unused int v)
 }
 
 void
-keyh_keyh(unsigned char key, __unused int u, __unused int v)
+gl_keyh_keyh(unsigned char key, __unused int u, __unused int v)
 {
-	glutKeyboardFunc(keyh_default);
+	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'n':
-		glutSpecialFunc(spkeyh_node);
+		glutSpecialFunc(gl_spkeyh_node);
 		break;
 	default:
-		glutSpecialFunc(spkeyh_default);
+		glutSpecialFunc(gl_spkeyh_default);
 		break;
 	}
 }
 
 void
-keyh_alpha(unsigned char key, __unused int u, __unused int v)
+gl_keyh_alpha(unsigned char key, __unused int u, __unused int v)
 {
 	int oldopts = st.st_opts;
 
-	glutKeyboardFunc(keyh_default);
+	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'd':
 		hl_state(JST_DOWN);
@@ -426,57 +426,57 @@ keyh_alpha(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-keyh_wioffdecr(unsigned char key, __unused int u, __unused int v)
+gl_keyh_wioffdecr(unsigned char key, __unused int u, __unused int v)
 {
-	glutKeyboardFunc(keyh_default);
+	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'x':
-		xoff--;
+		wioff.iv_x--;
 		break;
 	case 'y':
-		yoff--;
+		wioff.iv_y--;
 		break;
 	case 'z':
-		zoff--;
+		wioff.iv_z--;
 		break;
 	case '{':
-		xoff--;
-		yoff--;
-		zoff--;
+		wioff.iv_x--;
+		wioff.iv_y--;
+		wioff.iv_z--;
 		break;
 	}
 }
 
 void
-keyh_wioffincr(unsigned char key, __unused int u, __unused int v)
+gl_keyh_wioffincr(unsigned char key, __unused int u, __unused int v)
 {
-	glutKeyboardFunc(keyh_default);
+	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'x':
-		xoff++;
+		wioff.iv_x++;
 		break;
 	case 'y':
-		yoff++;
+		wioff.iv_y++;
 		break;
 	case 'z':
-		zoff++;
+		wioff.iv_z++;
 		break;
 	case '}':
-		xoff++;
-		yoff++;
-		zoff++;
+		wioff.iv_x++;
+		wioff.iv_y++;
+		wioff.iv_z++;
 		break;
 	}
 }
 
 void
-keyh_default(unsigned char key, __unused int u, __unused int v)
+gl_keyh_default(unsigned char key, __unused int u, __unused int v)
 {
 	int oldopts = st.st_opts;
 
 	switch (key) {
 	case 'a':
-		glutKeyboardFunc(keyh_alpha);
+		glutKeyboardFunc(gl_keyh_alpha);
 		break;
 	case 'C':
 		st.st_rf |= RF_CLUSTER;
@@ -485,13 +485,13 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		sn_clear();
 		break;
 	case 'f':
-		glutKeyboardFunc(keyh_flyby);
+		glutKeyboardFunc(gl_keyh_flyby);
 		break;
 	case 'k':
-		glutKeyboardFunc(keyh_keyh);
+		glutKeyboardFunc(gl_keyh_keyh);
 		break;
 	case 'm':
-		glutKeyboardFunc(keyh_mode);
+		glutKeyboardFunc(gl_keyh_mode);
 		break;
 	case 'O': {
 		tween_push(TWF_LOOK | TWF_POS | TWF_ROLL);
@@ -503,6 +503,15 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		st.st_ly = 0.0f;
 		st.st_lz = 0.0f;
 
+st.st_x = -14.0f;
+st.st_y =  33.3f;
+st.st_z =  65.0f;
+
+st.st_lx =  0.63f;
+st.st_ly = -0.31f;
+st.st_lz = -0.71f;
+
+
 		st.st_ux = 0.0f;
 		st.st_uy = 1.0f;
 		st.st_uz = 0.0f;
@@ -510,10 +519,10 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		break;
 	    }
 	case 'o':
-		glutKeyboardFunc(keyh_option);
+		glutKeyboardFunc(gl_keyh_option);
 		break;
 	case 'p':
-		glutKeyboardFunc(keyh_panel);
+		glutKeyboardFunc(gl_keyh_panel);
 		break;
 	case 'q':
 		exit(0);
@@ -522,17 +531,17 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		st.st_rf |= RF_DATASRC;
 		break;
 	case 'v':
-		glutKeyboardFunc(keyh_vmode);
+		glutKeyboardFunc(gl_keyh_vmode);
 		break;
 	case 'Z':
-		drawh = drawh_default;
-		glutDisplayFunc(drawh);
+		gl_displayhp = gl_displayh_default;
+		glutDisplayFunc(gl_displayhp);
 		break;
 	case '{':
-		glutKeyboardFunc(keyh_wioffdecr);
+		glutKeyboardFunc(gl_keyh_wioffdecr);
 		break;
 	case '}':
-		glutKeyboardFunc(keyh_wioffincr);
+		glutKeyboardFunc(gl_keyh_wioffincr);
 		break;
 	case '+':
 	case '_': {
@@ -575,10 +584,10 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 		break;
 	    }
 	case '[':
-		glutKeyboardFunc(keyh_decr);
+		glutKeyboardFunc(gl_keyh_decr);
 		break;
 	case ']':
-		glutKeyboardFunc(keyh_incr);
+		glutKeyboardFunc(gl_keyh_incr);
 		break;
 	default:
 		return;
@@ -587,7 +596,7 @@ keyh_default(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-spkeyh_default(int key, __unused int u, __unused int v)
+gl_spkeyh_default(int key, __unused int u, __unused int v)
 {
 	float r, adj, amt;
 	int dir;
