@@ -64,11 +64,11 @@ flyby_begin(int mode)
 		}
 		flyby_mode = FBM_PLAY;
 
-		glutMotionFunc(m_activeh_null);
-		glutPassiveMotionFunc(m_passiveh_null);
-		glutKeyboardFunc(keyh_actflyby);
-		glutSpecialFunc(spkeyh_actflyby);
-		glutMouseFunc(mouseh_null);
+		glutMotionFunc(gl_motionh_null);
+		glutPassiveMotionFunc(gl_pasvmotionh_null);
+		glutKeyboardFunc(gl_keyh_actflyby);
+		glutSpecialFunc(gl_spkeyh_actflyby);
+		glutMouseFunc(gl_mouseh_null);
 		break;
 	case FBM_REC:
 		if ((flyby_fp = fopen(_PATH_FLYBY, "ab")) == NULL)
@@ -243,11 +243,11 @@ flyby_end(void)
 
 	switch (flyby_mode) {
 	case FBM_PLAY:
-		glutKeyboardFunc(keyh_default);
-		glutSpecialFunc(spkeyh_default);
-		glutMotionFunc(m_activeh_default);
-		glutPassiveMotionFunc(m_passiveh_default);
-		glutMouseFunc(mouseh_default);
+		glutKeyboardFunc(gl_keyh_default);
+		glutSpecialFunc(gl_spkeyh_default);
+		glutMotionFunc(gl_motionh_default);
+		glutPassiveMotionFunc(gl_pasvmotionh_default);
+		glutMouseFunc(gl_mouseh_default);
 		cam_dirty = 1;
 		/* rebuild(RF_INIT); */
 		break;
