@@ -16,6 +16,8 @@
 #define STARTLY		(0.0f)
 #define STARTLZ		(-0.12f)
 
+void	usage(void);
+
 struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 struct node		*invmap[NID_MAX];
 struct node		*wimap[WIDIM_WIDTH][WIDIM_HEIGHT][WIDIM_DEPTH];
@@ -26,7 +28,7 @@ int			 win_width = 800;
 int			 win_height = 600;
 
 int			 flyby_mode = FBM_OFF;
-int			 capture_mode = CM_PNG;
+int			 capture_mode = CM_PPM;
 int			 stereo_mode;
 
 struct fvec		 tv = { STARTX, STARTY, STARTZ };
@@ -42,10 +44,9 @@ const char		*progname;
 int			 verbose;
 
 int			 window_ids[2];
-int			 wid;		/* current window */
+int			 wid = WINID_DEF;		/* current window */
 
 char **sav_argv;
-
 
 const char *opdesc[] = {
 	/*  0 */ "Texture mode",
@@ -126,8 +127,8 @@ void
 rebuild(int opts)
 {
 	if (opts & RF_TEX) {
-		gl_run(tex_remove());
-		gl_run(tex_load());
+		gl_run(tex_remove);
+		gl_run(tex_load);
 	}
 	if (opts & RF_PHYSMAP)
 		ds_refresh(DS_PHYS, DSF_CRIT);
@@ -265,6 +266,7 @@ main(int argc, char *argv[])
 
 	glutMainLoop();
 	/* NOTREACHED */
+	exit(0);
 }
 
 void
