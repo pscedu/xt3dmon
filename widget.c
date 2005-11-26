@@ -170,9 +170,9 @@ draw_box_tex(const struct fvec *dim, const struct fill *fillp, GLenum param)
 	glEnable(GL_TEXTURE_2D);
 
 	if (fillp->f_a == 1.0f)
-		glBindTexture(GL_TEXTURE_2D, fillp->f_texid);
+		glBindTexture(GL_TEXTURE_2D, fillp->f_texid[wid]);
 	else
-		glBindTexture(GL_TEXTURE_2D, fillp->f_texid_a);
+		glBindTexture(GL_TEXTURE_2D, fillp->f_texid_a[wid]);
 
 	max = MAX3(w, h, d);
 	tw = NODE_TEXCOORD(w, max);

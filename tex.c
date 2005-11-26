@@ -70,9 +70,9 @@ tex_remove(void)
 	int i;
 
 	for (i = 0; i < NJST; i++) {
-		if (jstates[i].js_fill.f_texid)
-			glDeleteTextures(1, &jstates[i].js_fill.f_texid);
-		if (jstates[i].js_fill.f_texid_a)
-			glDeleteTextures(1, &jstates[i].js_fill.f_texid_a);
+		if (jstates[i].js_fill.f_texid[wid])
+			glDeleteTextures(1, &jstates[i].js_fill.f_texid[wid]);
+		if (jstates[i].js_fill.f_texid_a[wid])
+			glDeleteTextures(1, &jstates[i].js_fill.f_texid_a[wid]);
 	}
 }
