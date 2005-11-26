@@ -34,6 +34,7 @@
 #define FOCAL_LENGTH (5.0f) /* length of 3d focus */
 
 struct fvec wivstart, wivdim;
+struct ivec wioff;
 float clip;
 
 struct fill fill_black		= FILL_INIT(0.0f, 0.0f, 0.0f);
@@ -42,6 +43,7 @@ struct fill fill_light_blue	= FILL_INIT(0.2f, 0.4f, 0.6f);
 struct fill fill_yellow		= FILL_INIT(1.0f, 1.0f, 0.0f);
 struct fill fill_selnode	= FILL_INIT(0.2f, 0.4f, 0.6f);
 struct fill fill_font		= FILL_INIT(0.0f, 0.0f, 0.0f);
+struct fill fill_borg		= FILL_INIT(0.0f, 0.0f, 0.0f);
 
 struct fvec fvzero = { 0.0f, 0.0f, 0.0f };
 
@@ -177,7 +179,7 @@ gl_displayh_stereo(void)
 }
 
 void
-drawh_default(void)
+gl_displayh_default(void)
 {
 	if (flyby_mode)
 		flyby_update();
@@ -629,14 +631,14 @@ draw_cluster_wired(struct fvec *v)
 	for (iv.iv_x = 0; iv.iv_x < WIDIM_WIDTH; iv.iv_x++)
 		for (iv.iv_y = 0; iv.iv_y < WIDIM_HEIGHT; iv.iv_y++)
 			for (iv.iv_z = 0; iv.iv_z < WIDIM_DEPTH; iv.iv_y++) {
-				adjv.iv_x = (iv.iv_x + xoff) % WIDIM_WIDTH;
-				adjv.iv_y = (iv.iv_y + yoff) % WIDIM_HEIGHT;
-				adjv.iv_z = (iv.iv_z + zoff) % WIDIM_DEPTH;
+				adjv.iv_x = (iv.iv_x + wioff.iv_x) % WIDIM_WIDTH;
+				adjv.iv_y = (iv.iv_y + wioff.iv_y) % WIDIM_HEIGHT;
+				adjv.iv_z = (iv.iv_z + wioff.iv_z) % WIDIM_DEPTH;
 				node = wimap[adjv.iv_x][adjv.iv_y][adjv.iv_z];
 
-				wrapv.fv_x = (iv.iv_x + xoff) / WIDIM_WIDTH  * cldim.fv_x;
-				wrapv.fv_y = (iv.iv_y + yoff) / WIDIM_HEIGHT * cldim.fv_y;
-				wrapv.fv_z = (iv.iv_z + zoff) / WIDIM_DEPTH  * cldim.fv_z;
+				wrapv.fv_x = (iv.iv_x + wioff.iv_x) / WIDIM_WIDTH  * cldim.fv_x;
+				wrapv.fv_y = (iv.iv_y + wioff.iv_y) / WIDIM_HEIGHT * cldim.fv_y;
+				wrapv.fv_z = (iv.iv_z + wioff.iv_z) / WIDIM_DEPTH  * cldim.fv_z;
 
 				nv = &node->n_swiv;
 				nv->fv_x = node->n_wiv.iv_x * st.st_winsp.iv_x + v->fv_x + wrapv.fv_x;
