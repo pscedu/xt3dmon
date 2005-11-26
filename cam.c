@@ -69,18 +69,6 @@ cam_move(int dir, float amt)
 	}
 }
 
-/*
- * Have the camera "go to" a specific place.
- * Considerations:
- *	- respect the shortest path there
- *	- respect wild camera angle tweening
- *	- respect obstructing objects in the viewing frame
- */
-void
-cam_goto(__unused struct fvec *v)
-{
-}
-
 void
 cam_revolve(struct fvec *center, float d_theta, float d_phi)
 {
