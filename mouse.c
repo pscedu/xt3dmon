@@ -10,24 +10,24 @@
 
 int	 	 spkey, lastu, lastv;
 struct panel	*panel_mobile;
-void		(*drawh_old)(void);
+void		(*gl_displayhp_old)(void);
 
 void
-mouseh_null(__unused int button, __unused int state, __unused int u, __unused int v)
+gl_mouseh_null(__unused int button, __unused int state, __unused int u, __unused int v)
 {
 //	spkey = glutGetModifiers();
 }
 
 void
-mouseh_default(__unused int button, __unused int state, int u, int v)
+gl_mouseh_default(__unused int button, __unused int state, int u, int v)
 {
 	spkey = glutGetModifiers();
 	if (button == GLUT_LEFT_BUTTON &&
 	    state == GLUT_DOWN &&
-	    drawh != drawh_select) {
-		drawh_old = drawh;
-		drawh = drawh_select;
-		glutDisplayFunc(drawh);
+	    gl_displayhp != gl_displayh_select) {
+		gl_displayhp_old = gl_displayhp;
+		gl_displayhp = gl_displayh_select;
+		glutDisplayFunc(gl_displayhp);
 	}
 	lastu = u;
 	lastv = v;
@@ -35,12 +35,12 @@ mouseh_default(__unused int button, __unused int state, int u, int v)
 	if (state == GLUT_UP && panel_mobile != NULL) {
 		panel_demobilize(panel_mobile);
 		panel_mobile = NULL;
-		glutMotionFunc(m_activeh_default);
+		glutMotionFunc(gl_motionh_default);
 	}
 }
 
 void
-m_activeh_panel(int u, int v)
+gl_motionh_panel(int u, int v)
 {
 	int du = u - lastu, dv = v - lastv;
 
@@ -104,7 +104,7 @@ revolve_center_selnode(struct fvec *cen)
 void (*revolve_centerf)(struct fvec *) = revolve_center_selnode;
 
 void
-m_activeh_default(int u, int v)
+gl_motionh_default(int u, int v)
 {
 	int du = u - lastu, dv = v - lastv;
 
@@ -126,7 +126,7 @@ m_activeh_default(int u, int v)
 }
 
 void
-m_passiveh_default(int u, int v)
+gl_pasvmotionh_default(int u, int v)
 {
 	lastu = u;
 	lastv = v;
@@ -139,14 +139,14 @@ m_passiveh_default(int u, int v)
 }
 
 void
-m_passiveh_null(int u, int v)
+gl_pasvmotionh_null(int u, int v)
 {
 	lastu = u;
 	lastv = v;
 }
 
 void
-m_activeh_null(int u, int v)
+gl_motionh_null(int u, int v)
 {
 	lastu = u;
 	lastv = v;

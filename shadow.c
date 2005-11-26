@@ -331,7 +331,7 @@ cubeno_to_v(int cubeno, int cuts, struct wiselstep *ws)
 }
 
 void
-drawh_select(void)
+gl_displayh_select(void)
 {
 	struct physcoord pc, chance;
 	int nrecs;
@@ -435,7 +435,7 @@ free:
 	    }
 	}
 end:
-	drawh = drawh_old;
-	glutDisplayFunc(drawh);
+	gl_displayhp = gl_displayhp_old;
+	glutDisplayFunc(gl_displayhp);
 	st.st_rf |= RF_CAM;
 }

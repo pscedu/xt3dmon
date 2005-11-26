@@ -159,7 +159,7 @@ gscb_panel(int id)
 {
 	/* GL giving us crap. */
 	if ((panel_mobile = panel_for_id(id)) != NULL) {
-		glutMotionFunc(m_activeh_panel);
+		glutMotionFunc(gl_motionh_panel);
 		panel_mobile->p_opts |= POPT_MOBILE;
 	}
 }

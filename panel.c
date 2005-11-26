@@ -1043,7 +1043,7 @@ panel_toggle(int panel)
 	SLIST_INIT(&p->p_widgets);
 
 	if (pi->pi_opts & PF_UINP) {
-		glutKeyboardFunc(keyh_uinput);
+		glutKeyboardFunc(gl_keyh_uinput);
 		uinp.uinp_panel = p;
 		uinp.uinp_opts = pi->pi_uinpopts;
 		uinp.uinp_callback = pi->pi_uinpcb;

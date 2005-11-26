@@ -18,7 +18,7 @@
 #define BACKLOG	128
 #define USLEEP	100
 
-void serv_drawh(void);
+void serv_displayh(void);
 int serv_parse(char *, struct session *);
 
 int svc_sw(char *, int *, struct session *);
@@ -125,7 +125,7 @@ serv_init(void)
 		p->p_h = 40;
 	}
 
-	drawh = serv_drawh;
+	gl_displayhp = serv_displayh;
 	rebuild(RF_DATASRC | RF_PHYSMAP | RF_CLUSTER);
 	st.st_rf &= ~(RF_DATASRC | RF_PHYSMAP | RF_CLUSTER);
 
@@ -143,7 +143,7 @@ serv_init(void)
 #define TRYWAIT 10	/* microseconds */
 
 void
-serv_drawh(void)
+serv_displayh(void)
 {
 	struct sockaddr_in sin;
 	struct session ss;
@@ -204,13 +204,13 @@ snap:
 //	win_height += 20;		/* XXX: X title bar slack */
 //	glutReshapeFunc(NULL);
 	glutReshapeWindow(win_width, win_height);
-//	glutReshapeFunc(resizeh);
-	resizeh(win_width, win_height);
+//	glutReshapeFunc(gl_reshapeh);
+	gl_reshapeh(win_width, win_height);
 	st.st_rf |= RF_CAM | RF_DATASRC;
 
 	if (ss.ss_click) {
-		drawh_old = serv_drawh;
-		drawh_select();
+		gl_displayhp_old = serv_displayh;
+		gl_displayh_select();
 		panel_hide(PANEL_NINFO);
 	}
 	if (ss.ss_sid) {
@@ -244,9 +244,9 @@ snap:
 		}
 	}
 
-	drawh_old = serv_drawh;
+	gl_displayhp_old = serv_displayh;
 	ssp = &ss;
-	drawh_default();
+	gl_displayh_default();
 	ssp = NULL;
 	capture_snapfd(clifd, CM_PNG);
 drop:
