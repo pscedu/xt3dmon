@@ -56,7 +56,7 @@ net_connect(const char *host, port_t port)
 int
 http_open(struct http_req *req, __unused struct http_res *res)
 {
-	const char **hdr, *p;
+	const char **hdr;
 	char buf[BUFSIZ];
 	int s, sdup;
 	FILE *fp;
