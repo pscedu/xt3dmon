@@ -1,3 +1,8 @@
+/* $Id$ */
+
+#include "compat.h"
+#include "mon.h"
+
 #define FPS_TO_USEC(x)	(1e6 / x)	/* Convert FPS to microseconds. */
 #define GOVERN_FPS	30		/* FPS governor. */
 
@@ -75,7 +80,7 @@ gl_run(void (*f)(void))
 		glutSetWindow(window_ids[wid]);
 		(*f)();
 	} else
-		(*f)(WINID_DEF);
+		(*f)();
 }
 
 __inline void
