@@ -447,7 +447,7 @@ gl_keyh_wioffdecr(unsigned char key, __unused int u, __unused int v)
 		wioff.iv_z--;
 		break;
 	}
-	st.st_rf |= RF_CLUSTER | RF_SELNODE;
+	st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND;
 	refresh_state(oldopts);
 }
 
