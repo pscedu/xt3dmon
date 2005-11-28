@@ -443,13 +443,13 @@ make_ground(void)
 	fill.f_a = 0.1f;
 	switch (st.st_vmode) {
 	case VM_WIREDONE:
-		fv.fv_x = -st.st_winsp.iv_x / 2.0f;
-		fv.fv_y = -0.2f;
-		fv.fv_z = -st.st_winsp.iv_z / 2.0f;
+		fv.fv_x = st.st_winsp.iv_x * (-0.5f + wioff.iv_x);
+		fv.fv_y = -0.2f + wioff.iv_y * st.st_winsp.iv_y;
+		fv.fv_z = st.st_winsp.iv_z * (-0.5f + wioff.iv_z);
 
-		fdim.fv_w = WIV_SWIDTH - fv.fv_x;
-		fdim.fv_y = -fv.fv_y / 2.0f;
-		fdim.fv_d = WIV_SDEPTH - fv.fv_z;
+		fdim.fv_w = WIV_SWIDTH + st.st_winsp.iv_x / 2.0f;
+		fdim.fv_y = -0.2f / 2.0f;
+		fdim.fv_d = WIV_SDEPTH + st.st_winsp.iv_z / 2.0f;
 
 		glPushMatrix();
 		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
@@ -614,6 +614,21 @@ draw_cluster_pipes(struct fvec *v)
 	glPopMatrix();
 }
 
+int
+negmod(int a, int b)
+{
+	int c;
+
+	if (a < 0) {
+		c = -a;
+		c %= b;
+		if (c)
+			c = b - c;
+	} else
+		c = a % b;
+	return (c);
+}
+
 __inline void
 draw_cluster_wired(struct fvec *v)
 {
@@ -630,15 +645,17 @@ draw_cluster_wired(struct fvec *v)
 
 	for (iv.iv_x = 0; iv.iv_x < WIDIM_WIDTH; iv.iv_x++)
 		for (iv.iv_y = 0; iv.iv_y < WIDIM_HEIGHT; iv.iv_y++)
-			for (iv.iv_z = 0; iv.iv_z < WIDIM_DEPTH; iv.iv_y++) {
-				adjv.iv_x = (iv.iv_x + wioff.iv_x) % WIDIM_WIDTH;
-				adjv.iv_y = (iv.iv_y + wioff.iv_y) % WIDIM_HEIGHT;
-				adjv.iv_z = (iv.iv_z + wioff.iv_z) % WIDIM_DEPTH;
+			for (iv.iv_z = 0; iv.iv_z < WIDIM_DEPTH; iv.iv_z++) {
+				adjv.iv_x = negmod(iv.iv_x + wioff.iv_x, WIDIM_WIDTH);
+				adjv.iv_y = negmod(iv.iv_y + wioff.iv_y, WIDIM_HEIGHT);
+				adjv.iv_z = negmod(iv.iv_z + wioff.iv_z, WIDIM_DEPTH);
 				node = wimap[adjv.iv_x][adjv.iv_y][adjv.iv_z];
+				if (node == NULL)
+					continue;
 
-				wrapv.fv_x = (iv.iv_x + wioff.iv_x) / WIDIM_WIDTH  * cldim.fv_x;
-				wrapv.fv_y = (iv.iv_y + wioff.iv_y) / WIDIM_HEIGHT * cldim.fv_y;
-				wrapv.fv_z = (iv.iv_z + wioff.iv_z) / WIDIM_DEPTH  * cldim.fv_z;
+				wrapv.fv_x = floor((iv.iv_x + wioff.iv_x) / (double)WIDIM_WIDTH)  * (WIDIM_WIDTH  * st.st_winsp.iv_x);
+				wrapv.fv_y = floor((iv.iv_y + wioff.iv_y) / (double)WIDIM_HEIGHT) * (WIDIM_HEIGHT * st.st_winsp.iv_y);
+				wrapv.fv_z = floor((iv.iv_z + wioff.iv_z) / (double)WIDIM_DEPTH)  * (WIDIM_DEPTH  * st.st_winsp.iv_z);
 
 				nv = &node->n_swiv;
 				nv->fv_x = node->n_wiv.iv_x * st.st_winsp.iv_x + v->fv_x + wrapv.fv_x;
@@ -693,6 +710,7 @@ snap_to_grid(float n, float size, float clip)
 	float adj;
 
 	adj = fmod(n - clip, size);
+//	while (adj < 0)
 	if (adj < 0)
 		adj += size;
 	return (adj);
