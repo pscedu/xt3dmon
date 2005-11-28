@@ -428,6 +428,8 @@ gl_keyh_alpha(unsigned char key, __unused int u, __unused int v)
 void
 gl_keyh_wioffdecr(unsigned char key, __unused int u, __unused int v)
 {
+	int oldopts = st.st_opts;
+
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'x':
@@ -445,11 +447,15 @@ gl_keyh_wioffdecr(unsigned char key, __unused int u, __unused int v)
 		wioff.iv_z--;
 		break;
 	}
+	st.st_rf |= RF_CLUSTER | RF_SELNODE;
+	refresh_state(oldopts);
 }
 
 void
 gl_keyh_wioffincr(unsigned char key, __unused int u, __unused int v)
 {
+	int oldopts = st.st_opts;
+
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'x':
@@ -467,6 +473,8 @@ gl_keyh_wioffincr(unsigned char key, __unused int u, __unused int v)
 		wioff.iv_z++;
 		break;
 	}
+	st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND;
+	refresh_state(oldopts);
 }
 
 void
