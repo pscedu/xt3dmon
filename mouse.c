@@ -74,9 +74,9 @@ revolve_center_cluster(struct fvec *cen)
 		cen->fv_z = st.st_z + st.st_lz * dist;
 		break;
 	case VM_WIREDONE:
-		cen->fv_x = WIDIM_WIDTH  * st.st_winsp.iv_x / 2.0f;
-		cen->fv_y = WIDIM_HEIGHT * st.st_winsp.iv_y / 2.0f;
-		cen->fv_z = WIDIM_DEPTH  * st.st_winsp.iv_z / 2.0f;
+		cen->fv_x = st.st_winsp.iv_x * (WIDIM_WIDTH  / 2.0f + wioff.iv_x);
+		cen->fv_y = st.st_winsp.iv_y * (WIDIM_HEIGHT / 2.0f + wioff.iv_y);
+		cen->fv_z = st.st_winsp.iv_z * (WIDIM_DEPTH  / 2.0f + wioff.iv_z);
 		break;
 	}
 }
