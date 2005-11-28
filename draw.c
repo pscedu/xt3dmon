@@ -614,21 +614,6 @@ draw_cluster_pipes(struct fvec *v)
 	glPopMatrix();
 }
 
-int
-negmod(int a, int b)
-{
-	int c;
-
-	if (a < 0) {
-		c = -a;
-		c %= b;
-		if (c)
-			c = b - c;
-	} else
-		c = a % b;
-	return (c);
-}
-
 __inline void
 draw_cluster_wired(struct fvec *v)
 {
@@ -650,7 +635,7 @@ draw_cluster_wired(struct fvec *v)
 				adjv.iv_y = negmod(iv.iv_y + wioff.iv_y, WIDIM_HEIGHT);
 				adjv.iv_z = negmod(iv.iv_z + wioff.iv_z, WIDIM_DEPTH);
 				node = wimap[adjv.iv_x][adjv.iv_y][adjv.iv_z];
-				if (node == NULL)
+				if (node == NULL || !node_show(node))
 					continue;
 
 				wrapv.fv_x = floor((iv.iv_x + wioff.iv_x) / (double)WIDIM_WIDTH)  * (WIDIM_WIDTH  * st.st_winsp.iv_x);
