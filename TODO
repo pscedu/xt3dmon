@@ -49,3 +49,5 @@ reminders:
 66. show other things in the queue (other pbs queues)
 67. dynamic font widths
 68. load tex only once (RF_TEX disappears)
+69. make selnode drawing respect n_curv
+70. draw_node, if (hide) curv = *v
