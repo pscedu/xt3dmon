@@ -643,6 +643,9 @@ void			 refresh_state(int);
 void			 rebuild(int);
 void			 restart(void);
 
+/* math.c */
+int			 negmod(int, int);
+
 /* gl.c */
 void			 gl_reshapeh(int, int);
 void			 gl_idleh_govern(void);
