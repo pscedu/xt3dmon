@@ -165,7 +165,7 @@ draw_shadow_nodes(const struct physcoord *pc)
 void
 draw_shadow_winodes(struct wiselstep *ws)
 {
-	struct ivec iv, *mag, *off;
+	struct ivec iv, *mag, *off, adjv;
 	struct node *node;
 	struct fvec dim;
 
@@ -179,9 +179,11 @@ draw_shadow_winodes(struct wiselstep *ws)
 	for (iv.iv_x = off->iv_x; iv.iv_x < off->iv_x + mag->iv_x; iv.iv_x++)
 		for (iv.iv_y = off->iv_y; iv.iv_y < off->iv_y + mag->iv_y; iv.iv_y++)
 			for (iv.iv_z = off->iv_z; iv.iv_z < off->iv_z + mag->iv_z; iv.iv_z++) {
-				node = wimap[iv.iv_x][iv.iv_y][iv.iv_z];
-				if (node == NULL ||
-				    !node_show(node))
+				adjv.iv_x = negmod(iv.iv_x + wioff.iv_x, WIDIM_WIDTH);
+				adjv.iv_y = negmod(iv.iv_y + wioff.iv_y, WIDIM_HEIGHT);
+				adjv.iv_z = negmod(iv.iv_z + wioff.iv_z, WIDIM_DEPTH);
+				node = wimap[adjv.iv_x][adjv.iv_y][adjv.iv_z];
+				if (node == NULL || !node_show(node))
 					continue;
 
 				glPushMatrix();
@@ -266,7 +268,9 @@ draw_shadow_wisect(struct wiselstep *ws, int cuts, int last)
 				dim.fv_d = (len.iv_z - 1) * st.st_winsp.iv_z + NODEDEPTH;
 
 				glPushMatrix();
-				glTranslatef(nv.fv_x, nv.fv_y, nv.fv_z);
+				glTranslatef(nv.fv_x + wioff.iv_x * st.st_winsp.iv_x,
+				    nv.fv_y + wioff.iv_y * st.st_winsp.iv_y,
+				    nv.fv_z + wioff.iv_z * st.st_winsp.iv_z);
 				glPushName(gsn_get(cubeno++, NULL, 0));
 				draw_box_filled(&dim, &fill_black);
 				glPopName();
