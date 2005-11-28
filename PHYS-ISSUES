@@ -1,0 +1,8 @@
+$Id$
+
+Issues with parsing a phys.conf-like file
+
+o) parsing is done on "c0-r0c0s0", which is dependent upon
+   the physical layout of the machine.  dynamic parsing?
+o) all core data structures should be converted to wimap[][][]
+   instead of nodes[][][][][]
