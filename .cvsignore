@@ -2,3 +2,4 @@ xt3dmon
 client-snap
 ppm
 gmon.out
+phys-lex.c phys-parse.c
