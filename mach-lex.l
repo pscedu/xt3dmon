@@ -2,8 +2,13 @@
 
 %{
 
+#include <errno.h>
+#include <stdarg.h>
+
+#include "mon.h"
 #include "y.tab.h"
 
+int yyerror(const char *, ...);
 
 %}
 
@@ -22,12 +27,12 @@ spans				{ return (SPANS); }
 ">"				{ return (RANGLE); }
 ,				{ return (COMMA); }
 [0-9]+				{
-					yylval.number = atoi(yytext);
+					yylval.wnumber = atoi(yytext);
 					return (WNUMBER);
 				}
 [0-9]+\.[0-9]*|[0-9]*\.[0-9]+	{
 					errno = 0;
-					yylval.number = strtod(yytext, NULL);
+					yylval.fnumber = strtod(yytext, NULL);
 					if (errno)
 						yyerror("%s", strerror(errno));
 					return (FNUMBER);
@@ -39,7 +44,12 @@ spans				{ return (SPANS); }
 				}
 #.*				{ ; }
 [\n\t]				{ ; }
-.				{ yyerror(); }
+.				{ yyerror("invalid token"); }
 
 %%
 
+int
+yywrap(void)
+{
+	return (1);
+}
