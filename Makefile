@@ -22,6 +22,9 @@ OBJS = $(patsubst %.c,%.o,$(filter %.c,${SRCS}))
 OBJS+= $(patsubst %.y,%.o,$(filter %.y,${SRCS}))
 OBJS+= $(patsubst %.l,%.o,$(filter %.l,${SRCS}))
 
+CSRCS = $(patsubst %.y,%.c,$(filter %.y,${SRCS}))
+CSRCS = $(patsubst %.l,%.c,$(filter %.l,${SRCS}))
+
 all: ${PROG}
 
 ${PROG}: ${OBJS}
@@ -32,17 +35,15 @@ ${PROG}: ${OBJS}
 
 depend:
 	@touch .depend
-	${MKDEP} ${INCS} ${SRCS}
+	${MKDEP} ${INCS} ${CSRCS}
 
 clean:
-	rm -rf ${PROG} ${OBJS} gmon.out
+	rm -rf ${PROG} ${OBJS} gmon.out phys-lex.c phys-parse.c
 
 obj:
 	mkdir obj
 
 conn:
 	ssh -NfL 3306:sdb:3306 phantom.psc.edu
-
-.depend: phys-lex.c phys-parse.c
 
 -include .depend
