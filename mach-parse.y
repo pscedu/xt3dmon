@@ -22,13 +22,13 @@ static int errors;
 %token <wnumber> WNUMBER
 %token <fnumber> FNUMBER
 
-%type <vector> vector
+%type <fv> vector
 
 %union {
 	char		*string;
 	int		 wnumber;
 	double		 fnumber;
-	struct fvec	 vector;
+	struct fvec	 fv;
 }
 
 %%
