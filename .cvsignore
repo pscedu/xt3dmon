@@ -1,5 +1,6 @@
 xt3dmon
 client-snap
-ppm
 gmon.out
-phys-lex.c phys-parse.c
+phys-lex.c
+phys-parse.c
+y.tab.h
