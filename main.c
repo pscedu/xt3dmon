@@ -36,7 +36,6 @@ struct fvec		 tlv = { STARTLX, STARTLY, STARTLZ };
 struct fvec		 tuv = { 0.0f, 1.0f, 0.0f };
 
 GLint			 cluster_dl[2], ground_dl[2], select_dl[2];
-int			 font_id[2];
 
 void			(*gl_displayhp)(void);
 
@@ -65,7 +64,8 @@ const char *opdesc[] = {
 	/* 13 */ "Selected node pipe mode",
 	/* 14 */ "Pause",
 	/* 15 */ "Job tour mode",
-	/* 16 */ "Skeletons"
+	/* 16 */ "Skeletons",
+	/* 17 */ "Node animation"
 };
 
 struct vmode vmodes[] = {
@@ -78,7 +78,8 @@ struct state st = {
 	{ STARTX, STARTY, STARTZ },				/* (x,y,z) */
 	{ STARTLX, STARTLY, STARTLZ },				/* (lx,ly,lz) */
 	{ 0.0f, 1.0f, 0.0f },					/* (ux,uy,uz) */
-	OP_WIREFRAME | OP_TWEEN | OP_GROUND | OP_DISPLAY,	/* options */
+	OP_WIREFRAME | OP_TWEEN | OP_GROUND | OP_DISPLAY |
+	    OP_NODEANIM,					/* options */
 	SM_JOBS,						/* which data to show */
 	VM_PHYSICAL,						/* viewing mode */
 	{ 4, 4, 4 },						/* wired node spacing */

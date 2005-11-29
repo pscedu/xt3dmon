@@ -159,7 +159,7 @@ serv_displayh(void)
 */
 
 	/* Reset some things for the new session. */
-	st.st_opts &= ~OP_SKEL;
+	st.st_opts &= ~(OP_SKEL | OP_NODEANIM);
 
 	sz = 0;
 	memset(&ss, 0, sizeof(ss));
