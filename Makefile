@@ -15,6 +15,7 @@ MYSQL_CFLAGS = $$(mysql_config --cflags | sed "s/'//g" | \
     awk '{for (n = 1; n <= NF; n++) if (match($$n, /^-I/)) printf "%s ", $$n }')
 CFLAGS += -Wall -W -g ${MYSQL_CFLAGS} -pg -D_LIVE_DSP=DSP_LOCAL
 # CFLAGS += -O -Wuninitialized
+YFLAGS += -d
 INCS = $$(echo ${CFLAGS} | \
     awk '{for (n = 1; n <= NF; n++) if (match($$n, /^-I/)) printf "%s ", $$n }')
 
@@ -22,8 +23,11 @@ OBJS = $(patsubst %.c,%.o,$(filter %.c,${SRCS}))
 OBJS+= $(patsubst %.y,%.o,$(filter %.y,${SRCS}))
 OBJS+= $(patsubst %.l,%.o,$(filter %.l,${SRCS}))
 
-CSRCS = $(patsubst %.y,%.c,$(filter %.y,${SRCS}))
-CSRCS = $(patsubst %.l,%.c,$(filter %.l,${SRCS}))
+CSRCS = $(filter %.c,${SRCS})
+CSRCS+= $(patsubst %.y,%.c,$(filter %.y,${SRCS}))
+CSRCS+= $(patsubst %.l,%.c,$(filter %.l,${SRCS}))
+
+CLEAN+= phys-lex.c phys-parse.c y.tab.h gmon.out
 
 all: ${PROG}
 
@@ -33,12 +37,12 @@ ${PROG}: ${OBJS}
 .c.o:
 	${CC} ${CFLAGS} -c $<
 
-depend:
+depend: ${CSRCS}
 	@touch .depend
 	${MKDEP} ${INCS} ${CSRCS}
 
 clean:
-	rm -rf ${PROG} ${OBJS} gmon.out phys-lex.c phys-parse.c
+	rm -rf ${PROG} ${OBJS} ${CLEAN}
 
 obj:
 	mkdir obj
