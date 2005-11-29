@@ -260,6 +260,9 @@ gl_keyh_option(unsigned char key, __unused int u, __unused int v)
 		st.st_opts ^= OP_SHOWMODS;
 		st.st_rf |= RF_CLUSTER;
 		break;
+	case 'n':
+		st.st_opts ^= OP_NODEANIM;
+		break;
 	case 'P':
 		st.st_opts ^= OP_SELPIPES;
 		st.st_rf |= RF_CLUSTER | RF_SELNODE;		/* XXX:  wrong. */
