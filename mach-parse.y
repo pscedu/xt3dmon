@@ -2,25 +2,34 @@
 
 %{
 
-typedef struct {
-	union {
-		double	number;
-		struct {
-			double x;
-			double y;
-			double z;
-		}	vector;
-		char	*string;
-	} v;
-	int lineno;
-} YYSTYPE;
+#include <err.h>
+#include <stdarg.h>
+
+#include "mon.h"
+
+int yylex(void);
+int yyerror(const char *, ...);
+
+//static int lineno = 1;
+static int errors;
 
 %}
 
-%token DIM
-%token MAG SIZE SPACE SPANS OFFSET CONTAINS
-%token <v.string> STRING
-%type <v.vector> vector
+%token CONTAINS DIM MAG OFFSET SIZE SPACE SPANS
+%token COMMA LANGLE LBRACKET RANGLE RBRACKET
+
+%token <string> STRING
+%token <wnumber> WNUMBER
+%token <fnumber> FNUMBER
+
+%type <vector> vector
+
+%union {
+	char		*string;
+	int		 wnumber;
+	double		 fnumber;
+	struct fvec	 vector;
+}
 
 %%
 
@@ -34,7 +43,7 @@ optnl		: '\n' optnl
 		|
 		;
 
-conf		: DIM string optnl '{' optnl {
+conf		: DIM STRING '{' {
 			free($2);
 		}
 		opts '}' {
@@ -46,3 +55,15 @@ opts		:
 
 %%
 
+int
+yyerror(const char *fmt, ...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	vwarnx(fmt, ap);
+	va_end(ap);
+
+	errors++;
+	return (0);
+}
