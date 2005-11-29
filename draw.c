@@ -265,7 +265,7 @@ draw_node_label(struct node *n)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glBindTexture(GL_TEXTURE_2D, font_id[wid]);
+	glBindTexture(GL_TEXTURE_2D, fill_font.f_texid_a[wid]);
 
 	glBegin(GL_QUADS);
 
@@ -349,7 +349,7 @@ __inline void
 draw_node(struct node *n, int flags)
 {
 	struct fill *fp, *fill_wireframe;
-	struct fvec *dimp;
+	struct fvec *dimp, *fvp;
 
 	GLenum param = GL_REPLACE;
 
@@ -359,19 +359,22 @@ draw_node(struct node *n, int flags)
 	fp = n->n_fillp;
 	dimp = &vmodes[st.st_vmode].vm_ndim;
 
+	/*
+	 * We assume that the stack we are in otherwise
+	 * has done the translation itself.
+	 */
 	if ((flags & NDF_DONTPUSH) == 0) {
 		glPushMatrix();
 
-		if (node_tween_dir(&n->n_vcur.fv_x, &n->n_v->fv_x) |
+		if (st.st_opts & OP_NODEANIM &&
+		    node_tween_dir(&n->n_vcur.fv_x, &n->n_v->fv_x) |
 		    node_tween_dir(&n->n_vcur.fv_y, &n->n_v->fv_y) |
-		    node_tween_dir(&n->n_vcur.fv_z, &n->n_v->fv_z))
+		    node_tween_dir(&n->n_vcur.fv_z, &n->n_v->fv_z)) {
 			st.st_rf |= RF_CLUSTER;
-		/*
-		 * We assume that the stack we are in otherwise
-		 * has done the translation itself.
-		 */
-		glTranslatef(n->n_vcur.fv_x, n->n_vcur.fv_y,
-		    n->n_vcur.fv_z);
+			fvp = &n->n_vcur;
+		} else
+			fvp = n->n_v;
+		glTranslatef(fvp->fv_x, fvp->fv_y, fvp->fv_z);
 	}
 
 	if (fp->f_a != 1.0f) {
