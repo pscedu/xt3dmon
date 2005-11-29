@@ -254,7 +254,6 @@ main(int argc, char *argv[])
 		    glutCreateWindow("XT3 Monitor")) == GL_FALSE)
 			errx(1, "glutCreateWindow");
 	}
-	gl_run(gl_setup);
 
 	TAILQ_INIT(&panels);
 	SLIST_INIT(&selnodes);
@@ -265,6 +264,7 @@ main(int argc, char *argv[])
 	if (server)
 		serv_init();
 
+	gl_run(gl_setup);
 	glutMainLoop();
 	/* NOTREACHED */
 	exit(0);
