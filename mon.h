@@ -325,6 +325,7 @@ struct state {
 #define OP_STOP		(1<<14)
 #define OP_TOURJOB	(1<<15)
 #define OP_SKEL		(1<<16)
+#define OP_NODEANIM	(1<<17)
 
 #define SM_JOBS		0
 #define SM_FAIL		1
@@ -779,7 +780,6 @@ extern int		 total_failures;		/* total among all nodes */
 extern int		 verbose;
 extern int		 cam_dirty;
 extern GLint		 cluster_dl[2], ground_dl[2], select_dl[2];
-extern int		 font_id[2];
 extern struct uinput	 uinp;
 extern int		 spkey;
 
