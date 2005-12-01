@@ -17,6 +17,7 @@
 #define PORT	24242
 #define BACKLOG	128
 #define USLEEP	100
+#define MSGSIZ	1024
 
 void serv_displayh(void);
 int serv_parse(char *, struct session *);
@@ -59,7 +60,7 @@ struct sv_cmd {
 };
 
 int sock;
-int nclients;
+int nsessions, nreqs;
 struct session *ssp;
 
 int
@@ -164,7 +165,9 @@ serv_drawinfo(void)
 
 	glColor3f(1.0f, 1.0f, 1.0f);
 
-	snprintf(buf, sizeof(buf), "xt3dmon server, %d client(s)", nclients);
+	snprintf(buf, sizeof(buf),
+	    "xt3dmon server, %d request(s), %d new session(s)",
+	    nreqs, nsessions);
 
 	glRasterPos2d(3, 12);
 	for (p = buf; *p != '\0'; p++)
@@ -185,7 +188,7 @@ serv_displayh(void)
 {
 	struct sockaddr_in sin;
 	struct session ss;
-	char buf[BUFSIZ];
+	char buf[MSGSIZ];
 	socklen_t sz;
 	int i, clifd;
 	ssize_t len;
@@ -207,7 +210,7 @@ serv_displayh(void)
 	}
 	fprintf(stderr, "\n");
 	dbg_warn("Servicing new connection");
-	nclients++;
+	nreqs++;
 	sn_clear();
 	hl_restoreall();
 	for (i = 0; i < MAXTRIES; i++) {
@@ -243,17 +246,13 @@ snap:
 	gl_reshapeh(win_width, win_height);
 	st.st_rf |= RF_CAM | RF_DATASRC;
 
-	if (ss.ss_click) {
-		gl_displayhp_old = serv_displayh;
-		gl_displayh_select();
-		panel_hide(PANEL_NINFO);
-	}
 	if (ss.ss_sid) {
 		struct panel *p;
 		int ds;
 
 		ds = st_dsmode();
 		if (!dsc_exists(ss.ss_sid)) {
+			nsessions++;
 			dsc_clone(DS_JOBS, ss.ss_sid);
 			dsc_clone(DS_QSTAT, ss.ss_sid);
 			dsc_clone(DS_TEMP, ss.ss_sid);
@@ -278,11 +277,26 @@ snap:
 			job_hl(j);
 		}
 	}
+	memset(buf, 0, sizeof(buf));
+	if (ss.ss_click) {
+		gl_displayhp_old = serv_displayh;
+		gl_displayh_select();
+		panel_hide(PANEL_NINFO);
+
+		if (!SLIST_EMPTY(&selnodes))
+			snprintf(buf, sizeof(buf), "nid: %d\n",
+			    SLIST_FIRST(&selnodes)->sn_nodep->n_nid);
+	}
+	/* response terminated by empty line */
+	strncat(buf, "\n", sizeof(buf) - 1);
+	if (write(clifd, buf, sizeof(buf)) != sizeof(buf))
+		err(1, "write");
 
 	gl_displayhp_old = serv_displayh;
 	ssp = &ss;
 	gl_displayh_default();
 	ssp = NULL;
+
 	capture_snapfd(clifd, CM_PNG);
 drop:
 	dbg_warn("Closing connection");
