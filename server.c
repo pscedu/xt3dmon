@@ -447,7 +447,7 @@ svc_hl(char *t, int *used, __unused struct session *ss)
 		jst = JST_DOWN;
 		*used = strlen("down");
 	} else if (strncmp(t, "service", strlen("service")) == 0) {
-		jst = JST_IO;
+		jst = JST_SVC;
 		*used = strlen("service");
 	} else
 		return (0);

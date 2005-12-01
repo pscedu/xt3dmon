@@ -63,7 +63,7 @@
 #define JST_DOWN	1
 #define JST_DISABLED	2
 #define JST_USED	3
-#define JST_IO		4
+#define JST_SVC		4
 #define JST_UNACC	5
 #define JST_BAD		6
 #define JST_CHECK	7

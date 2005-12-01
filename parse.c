@@ -214,8 +214,8 @@ parse_physmap(struct datasrc *ds)
 		case 'n': /* disabled */
 			node->n_state = JST_DISABLED;
 			break;
-		case 'i': /* I/O */
-			node->n_state = JST_IO;
+		case 'i': /* service */
+			node->n_state = JST_SVC;
 			break;
 		default:
 			goto bad;

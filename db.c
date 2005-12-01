@@ -53,7 +53,7 @@ struct db_map_ent {
 	{ "admindown",	JST_BAD,	0 },
 	{ NULL,		0,		0 }
 }, db_type_map[] = {
-	{ "service",	JST_IO,		1 },
+	{ "service",	JST_SVC,	1 },
 	{ "compute",	JST_FREE,	0 },
 	{ NULL,		0,		0 }
 };
