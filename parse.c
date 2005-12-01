@@ -211,8 +211,8 @@ parse_physmap(struct datasrc *ds)
 		case 'c': /* compute */
 			node->n_state = JST_FREE;	/* Good enough. */
 			break;
-		case 'n': /* disabled */
-			node->n_state = JST_DISABLED;
+		case 'n': /* down */
+			node->n_state = JST_DOWN;
 			break;
 		case 'i': /* service */
 			node->n_state = JST_SVC;
@@ -281,8 +281,8 @@ parse_jobmap(struct datasrc *ds)
 						if (node->n_state == JST_USED ||
 						    node->n_state == JST_FREE) {
 							node->n_job = NULL;
-							node->n_state = JST_DOWN;
-							node->n_fillp = &jstates[JST_DOWN].js_fill;
+							node->n_state = JST_DISABLED;
+							node->n_fillp = &jstates[JST_DISABLED].js_fill;
 						} else {
 							node->n_fillp = &jstates[node->n_state].js_fill;
 						}
@@ -346,7 +346,7 @@ parse_jobmap(struct datasrc *ds)
 		}
 
 		if (enabled == 0)
-			node->n_state = JST_DOWN;
+			node->n_state = JST_DISABLED;
 		else if (jobid == 0)
 			node->n_state = JST_FREE;
 		else {
