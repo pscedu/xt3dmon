@@ -249,6 +249,7 @@ main(int argc, char *argv[])
 	if ((window_ids[0] = glutCreateWindow("XT3 Monitor")) == GL_FALSE)
 		errx(1, "glutCreateWindow");
 	if (stereo_mode == STM_PASV) {
+//		glutDisplayFunc(null)
 		glutInitWindowPosition(sw, 0);
 		if ((window_ids[WINID_RIGHT] =
 		    glutCreateWindow("XT3 Monitor")) == GL_FALSE)
