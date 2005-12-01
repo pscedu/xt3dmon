@@ -435,29 +435,6 @@ svc_job(char *t, int *used, struct session *ss)
 }
 
 int
-svc_hl(char *t, int *used, __unused struct session *ss)
-{
-	int jst;
-
-	jst = 0; /* gcc */
-	if (strncmp(t, "free", strlen("free")) == 0) {
-		jst = JST_FREE;
-		*used = strlen("free");
-	} else if (strncmp(t, "down", strlen("down")) == 0) {
-		jst = JST_DOWN;
-		*used = strlen("down");
-	} else if (strncmp(t, "service", strlen("service")) == 0) {
-		jst = JST_SVC;
-		*used = strlen("service");
-	} else
-		return (0);
-	hl_state(jst);
-	st.st_opts |= OP_SKEL;
-	st.st_rf |= RF_CLUSTER;
-	return (1);
-}
-
-int
 svc_clicku(char *t, int *used, struct session *ss)
 {
 	if (sscanf(t, "%d%n", &lastu, used) != 1)
@@ -501,6 +478,27 @@ sve_find(const char *s, struct svc_enum *tab, int *used)
 }
 
 int
+svc_hl(char *t, int *used, __unused struct session *ss)
+{
+	struct svc_enum *sve, tab[] = {
+		{ "free",	JST_FREE },
+		{ "disabled",	JST_DISABLED },
+		{ "down",	JST_DOWN },
+		{ "service",	JST_SVC },
+		{ "bad",	JST_BAD },
+		{ "check",	JST_CHECK },
+		{ NULL,		0 }
+	};
+
+	if ((sve = sve_find(t, tab, used)) == NULL)
+		return (0);
+	hl_state(sve->sve_value);
+	st.st_opts |= OP_SKEL;
+	st.st_rf |= RF_CLUSTER;
+	return (1);
+}
+
+int
 svc_vmode(char *t, int *used, __unused struct session *ss)
 {
 	struct svc_enum *sve, tab[] = {
@@ -509,6 +507,7 @@ svc_vmode(char *t, int *used, __unused struct session *ss)
 		{ "physical",	VM_PHYSICAL },
 		{ NULL,		0 }
 	};
+
 	if ((sve = sve_find(t, tab, used)) == NULL)
 		return (0);
 	st.st_vmode = sve->sve_value;
@@ -525,6 +524,7 @@ svc_smode(char *t, int *used, __unused struct session *ss)
 		{ "fail",	SM_FAIL },
 		{ NULL,		0 }
 	};
+
 	if ((sve = sve_find(t, tab, used)) == NULL)
 		return (0);
 	st.st_mode = sve->sve_value;
