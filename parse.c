@@ -45,8 +45,8 @@ parse_physmap(struct datasrc *ds)
 				for (m = 0; m < NMODS; m++)
 					for (n = 0; n < NNODES; n++) {
 						node = &nodes[r][cb][cg][m][n];
-						node->n_state = JST_UNACC;
-						node->n_fillp = &jstates[JST_UNACC].js_fill;
+//						node->n_state = JST_UNACC;
+//						node->n_fillp = &jstates[JST_UNACC].js_fill;
 						node->n_flags |= NF_HIDE;
 					}
 

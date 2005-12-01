@@ -48,7 +48,7 @@ struct db_map_ent {
 	{ "up",		JST_FREE,	0 },
 	{ "down",	JST_DOWN,	1 },
 	{ "unavail",	JST_DISABLED,	1 },
-	{ "route",	JST_UNACC,	0 },
+//	{ "route",	JST_UNACC,	0 },
 	{ "suspect",	JST_CHECK,	1 },
 	{ "admindown",	JST_BAD,	0 },
 	{ NULL,		0,		0 }
@@ -91,8 +91,8 @@ db_physmap(__unused struct datasrc *ds)
 				for (m = 0; m < NMODS; m++)
 					for (n = 0; n < NNODES; n++) {
 						node = &nodes[r][cb][cg][m][n];
-						node->n_state = JST_UNACC;
-						node->n_fillp = &jstates[JST_UNACC].js_fill;
+//						node->n_state = JST_UNACC;
+//						node->n_fillp = &jstates[JST_UNACC].js_fill;
 						node->n_flags |= NF_HIDE;
 					}
 
