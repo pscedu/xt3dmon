@@ -1,5 +1,8 @@
 /* $Id$ */
 
+#ifndef __MON_H
+#define __MON_H
+
 #include "compat.h"
 
 #include <sys/queue.h>
@@ -828,3 +831,7 @@ extern struct session	*ssp;
 extern int		 hl_jstate;
 extern int		 wid;
 extern struct ivec	 wioff;
+
+extern const char	*progname;
+
+#endif	/* __MON_H */
