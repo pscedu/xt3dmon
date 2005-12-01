@@ -10,6 +10,8 @@
 
 int yyerror(const char *, ...);
 
+extern int lineno;
+
 %}
 
 %%
@@ -21,8 +23,8 @@ offset				{ return (OFFSET); }
 size				{ return (SIZE); }
 space				{ return (SPACE); }
 spans				{ return (SPANS); }
-{				{ return (LBRACKET); }
-}				{ return (RBRACKET); }
+"{"				{ return (LBRACKET); }
+"}"				{ return (RBRACKET); }
 "<"				{ return (LANGLE); }
 ">"				{ return (RANGLE); }
 ,				{ return (COMMA); }
@@ -43,8 +45,9 @@ spans				{ return (SPANS); }
 					return (STRING);
 				}
 #.*				{ ; }
-[\n\t]				{ ; }
-.				{ yyerror("invalid token"); }
+\n				{ lineno++; }
+[\t ]+				{ ; }
+.				{ yyerror("%s: invalid token", yytext); }
 
 %%
 
