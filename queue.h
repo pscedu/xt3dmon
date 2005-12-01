@@ -127,6 +127,11 @@
 	((elem)->memb.le_next)
 #endif
 
+#ifndef LIST_EMPTY
+#define LIST_EMPTY(lh)							\
+	(LIST_FIRST(lh) == LIST_END(lh))
+#endif
+
 #ifndef TAILQ_END
 #define TAILQ_END(tqh) NULL
 #endif
