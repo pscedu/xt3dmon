@@ -17,7 +17,7 @@
 #define _RPATH_QSTAT	"/xt3-data/qstat.out"
 #define _RPATH_FAIL	"/xt3-data/fails"
 
-#define RDS_HOST	"mugatu"
+#define RDS_HOST	"mugatu.psc.edu"
 #define RDS_PORT	80
 
 int ds_http(const char *);
