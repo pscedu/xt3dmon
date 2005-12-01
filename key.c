@@ -495,6 +495,14 @@ gl_keyh_default(unsigned char key, __unused int u, __unused int v)
 	case 'c':
 		sn_clear();
 		break;
+	case 'F': {
+		int t;
+
+		t = window_ids[WINID_LEFT];
+		window_ids[WINID_LEFT] = window_ids[WINID_RIGHT];
+		window_ids[WINID_RIGHT] = t;
+		break;
+	    }
 	case 'f':
 		glutKeyboardFunc(gl_keyh_flyby);
 		break;
@@ -543,6 +551,9 @@ st.st_lz = -0.71f;
 		break;
 	case 'v':
 		glutKeyboardFunc(gl_keyh_vmode);
+		break;
+	case 'J':
+		prjobs();
 		break;
 	case 'Z':
 		gl_displayhp = gl_displayh_default;
