@@ -439,6 +439,28 @@ make_ground(void)
 	ground_dl[wid] = glGenLists(1);
 	glNewList(ground_dl[wid], GL_COMPILE);
 
+	/* Antialiasing */
+	glEnable(GL_BLEND);
+	glEnable(GL_LINE_SMOOTH);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
+
+	glLineWidth(1.0);
+	glBegin(GL_LINES);
+	glColor3f(1.0f, 1.0f, 1.0f);
+	glVertex3f(-500.0f, 0.0f, 0.0f);		/* x-axis */
+	glVertex3f(500.0f, 0.0f, 0.0f);
+	glColor3f(0.6f, 0.6f, 1.0f);
+	glVertex3f(0.0f, -500.0f, 0.0f);		/* y-axis */
+	glVertex3f(0.0f, 500.0f, 0.0f);
+	glColor3f(1.0f, 0.9f, 0.0f);
+	glVertex3f(0.0f, 0.0f, -500.0f);		/* z-axis */
+	glVertex3f(0.0f, 0.0f, 500.0f);
+	glEnd();
+
+	glDisable(GL_BLEND);
+	glDisable(GL_LINE_SMOOTH);
+
 	/* Ground */
 	fill.f_r = 0.3f;
 	fill.f_g = 0.3f;
@@ -482,28 +504,6 @@ make_ground(void)
 		glPopMatrix();
 		break;
 	}
-
-	/* Antialiasing */
-	glEnable(GL_BLEND);
-	glEnable(GL_LINE_SMOOTH);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
-
-	glLineWidth(1.0);
-	glBegin(GL_LINES);
-	glColor3f(1.0f, 1.0f, 1.0f);
-	glVertex3f(-500.0f, 0.0f, 0.0f);		/* x-axis */
-	glVertex3f(500.0f, 0.0f, 0.0f);
-	glColor3f(0.6f, 0.6f, 1.0f);
-	glVertex3f(0.0f, -500.0f, 0.0f);		/* y-axis */
-	glVertex3f(0.0f, 500.0f, 0.0f);
-	glColor3f(1.0f, 0.9f, 0.0f);
-	glVertex3f(0.0f, 0.0f, -500.0f);		/* z-axis */
-	glVertex3f(0.0f, 0.0f, 500.0f);
-	glEnd();
-
-	glDisable(GL_BLEND);
-	glDisable(GL_LINE_SMOOTH);
 
 	glEndList();
 }
