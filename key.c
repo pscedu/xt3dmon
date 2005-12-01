@@ -407,7 +407,7 @@ gl_keyh_alpha(unsigned char key, __unused int u, __unused int v)
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'd':
-		hl_state(JST_DOWN);
+		hl_state(JST_DISABLED);
 		break;
 	case 'f':
 		hl_state(JST_FREE);
