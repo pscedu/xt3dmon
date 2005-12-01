@@ -60,14 +60,13 @@
 #define WFRAMEWIDTH	(0.001f)
 
 #define JST_FREE	0
-#define JST_DOWN	1
-#define JST_DISABLED	2
+#define JST_DISABLED	1
+#define JST_DOWN	2
 #define JST_USED	3
 #define JST_SVC		4
-#define JST_UNACC	5
-#define JST_BAD		6
-#define JST_CHECK	7
-#define NJST		8
+#define JST_BAD		5
+#define JST_CHECK	6
+#define NJST		7
 
 #define TEMP_MIN	18
 #define TEMP_MAX	80
@@ -256,11 +255,13 @@ struct node {
 	int		 n_state;
 	struct fill	*n_fillp;
 	int		 n_flags;
+
 	struct ivec	 n_wiv;			/* wired view position */
 	struct fvec	 n_swiv;		/* scaled */
 	struct fvec	 n_physv;
 	struct fvec	 n_vcur;
 	struct fvec	*n_v;
+
 	int		 n_dl[2];		/* display list ID */
 };
 

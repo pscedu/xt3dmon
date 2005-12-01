@@ -89,10 +89,9 @@ struct state st = {
 struct job_state jstates[] = {
 	{ "Free",		FILL_INIT(1.00f, 1.00f, 1.00f) },	/* White */
 	{ "Disabled (PBS)",	FILL_INIT(1.00f, 0.00f, 0.00f) },	/* Red */
-	{ "Disabled (HW)",	FILL_INIT(0.66f, 0.66f, 0.66f) },	/* Gray */
+	{ "Down (HW)",		FILL_INIT(0.66f, 0.66f, 0.66f) },	/* Gray */
 	{ NULL,			FILL_INIT(0.00f, 0.00f, 0.00f) },	/* (dynamic) */
 	{ "Service",		FILL_INIT(1.00f, 1.00f, 0.00f) },	/* Yellow */
-	{ "Unaccounted",	FILL_INIT(0.00f, 0.00f, 1.00f) },	/* Blue */
 	{ "Bad",		FILL_INIT(1.00f, 0.75f, 0.75f) },	/* Pink */
 	{ "Checking",		FILL_INIT(0.00f, 1.00f, 0.00f) }	/* Green */
 };
