@@ -13,6 +13,7 @@
 #include <unistd.h>
 
 #define PORT 24242
+#define MSGSIZ 1024
 
 int
 main(int argc, char *argv[])
@@ -47,7 +48,8 @@ main(int argc, char *argv[])
 	    "z: %.3f\n"
 	    "lx: %.3f\n"
 	    "ly: %.3f\n"
-	    "lz: %.3f\n",
+	    "lz: %.3f\n"
+	    "sid: clientsnapxx\n",
 	    800, 450,
 	    -4.0f, 32.8f, 51.5f,
 	    0.6f, -0.40, -0.7);
@@ -57,6 +59,9 @@ main(int argc, char *argv[])
 	if (shutdown(s, SHUT_WR) == -1)
 		err(1, "shutdown");
 	fprintf(stderr, "Command sent, awaiting reply\n");
+	if (read(s, buf, sizeof(buf)) != sizeof(buf))
+		errx(1, "invalid server response");
+	/* response is unused */
 	while ((len = read(s, buf, sizeof(buf))) != -1 && len != 0)
 		if (write(STDOUT_FILENO, buf, len) != len)
 			err(1, "write");
