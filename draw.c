@@ -508,6 +508,29 @@ make_ground(void)
 	glEndList();
 }
 
+#if 0
+void
+draw_skel(struct fvec *fv, struct fvec *dim)
+{
+	for (pd = LIST_FIRST(&physdims); pd != NULL; pd = pd_contains) {
+		if (pd->pd_flags & PDF_SKEL) {
+			for () {
+				glPushMatrix();
+				glTranslatef(v.fv_x - SKEL_GAP,
+				    v.fv_y - SKEL_GAP, v.fv_z - SKEL_GAP);
+				glEnable(GL_BLEND);
+				glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
+				fill_light_blue.f_a = 0.4f;
+				draw_box_outline(&skel, &fill_light_blue);
+				fill_light_blue.f_a = 1.0f;
+				glDisable(GL_BLEND);
+				glPopMatrix();
+			}
+		}
+	}
+}
+#endif
+
 __inline void
 draw_cluster_physical(void)
 {
@@ -530,6 +553,19 @@ draw_cluster_physical(void)
 	skel.fv_z = MODDEPTH  + 2 * SKEL_GAP;
 
 	v.fv_x = v.fv_y = v.fv_z = NODESPACE;
+#if 0
+	for (iv.iv_x = 0; iv.iv_x < WIDIM_WIDTH; iv.iv_x++)
+		for (iv.iv_y = 0; iv.iv_y < WIDIM_HEIGHT; iv.iv_y++)
+			for (iv.iv_z = 0; iv.iv_z < WIDIM_DEPTH; iv.iv_z++) {
+				n = &invmap[iv.iv_x][iv.iv_y][iv.iv_z];
+				n->n_v = &n->n_physv;
+				node_setphyspos(n, &node->n_physv);
+
+				node_adjmodpos(node->, &node->n_physv);
+				draw_node(node, 0);
+			}
+#endif
+
 	for (r = 0; r < NROWS; r++, v.fv_z += ROWDEPTH + ROWSPACE) {
 		for (cb = 0; cb < NCABS; cb++, v.fv_x += CABWIDTH + CABSPACE) {
 			for (cg = 0; cg < NCAGES; cg++, v.fv_y += CAGEHEIGHT + CAGESPACE) {
