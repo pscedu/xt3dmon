@@ -21,6 +21,7 @@ struct physdim_hd physdims;
 
 %token CONTAINS DIM MAG OFFSET SIZE SPACE SPANS
 %token COMMA LANGLE LBRACKET RANGLE RBRACKET
+%token YES NO SKEL
 
 %token <string> STRING
 %token <wnumber> WNUMBER
@@ -43,6 +44,10 @@ conf		: DIM STRING LBRACKET {
 			physdim = physdim_get($2);
 			free($2);
 		} opts_l RBRACKET {
+			if (physdim->pd_mag == 0)
+				yyerror("no magnitude specified");
+			else if (!physdim->pd_spans)
+				yyerror("no span specified");
 		}
 		;
 
@@ -73,6 +78,13 @@ opts		: MAG WNUMBER {
 				yyerror("%s: invalid span", $2);
 			free($2);
 		}
+		| SKEL STRING {
+			if (strcmp($2, "yes") == 0)
+				physdim->pd_flags |= PDF_SKEL;
+			else if (strcmp($2, "no") != 0)
+				yyerror("%s: invalid skel specification", $2);
+			free($2);
+		}
 		| CONTAINS STRING {
 			struct physdim *pd;
 
@@ -80,6 +92,7 @@ opts		: MAG WNUMBER {
 			if (pd == physdim)
 				yyerror("%s: dimension cannot contain itself", $2);
 			physdim->pd_contains = pd;
+			pd->pd_containedby = physdim;
 			LIST_REMOVE(pd, pd_link);
 			free($2);
 		}
@@ -110,7 +123,9 @@ yyerror(const char *fmt, ...)
 void
 physdim_check(void)
 {
-	struct physdim *pd;
+	struct physdim *pd, *spd;
+	struct fvec fv;
+	float *pv, *sv;
 
 	if (LIST_EMPTY(&physdims))
 		yyerror("no dimensions specified");
@@ -118,6 +133,43 @@ physdim_check(void)
 		pd = LIST_FIRST(&physdims);
 		if (LIST_NEXT(pd, pd_link))
 			yyerror("%s: incoherent dimension", pd->pd_name);
+		else {
+			LIST_FOREACH(pd, &physdims, pd_link) {
+				spd = pd;
+				while ((spd = spd->pd_contains) != NULL) {
+					if (spd == pd) {
+						yyerror("loop detected");
+						return;
+					}
+				}
+			}
+
+			/*
+			 * Now propagate spacing measurements up through
+			 * the dimensions.
+			 */
+			fv = pd->pd_size;
+			for (; pd != NULL; pd = spd) {
+				spd = pd->pd_containedby;
+				spd->pd_size = pd->pd_size;
+				switch (pd->pd_span) {
+				case DIM_X:
+					pv = &pd->pd_size.fv_x;
+					sv = &spd->pd_size.fv_x;
+					break;
+				case DIM_Y:
+					pv = &pd->pd_size.fv_y;
+					sv = &spd->pd_size.fv_y;
+					break;
+				case DIM_Z:
+					pv = &pd->pd_size.fv_z;
+					sv = &spd->pd_size.fv_z;
+					break;
+				}
+				*sv = pd->pd_mag * (*pv + 2 * pd->pd_space) +
+				    pd->pd_offset * (spd->pd_mag - 1);
+			}
+		}
 	}
 }
 
