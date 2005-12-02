@@ -88,7 +88,9 @@ db_physmap(__unused struct datasrc *ds)
 	for (iv.iv_x = 0; iv.iv_x < WIDIM_WIDTH; iv.iv_x++)
 		for (iv.iv_y = 0; iv.iv_y < WIDIM_HEIGHT; iv.iv_y++)
 			for (iv.iv_z = 0; iv.iv_z < WIDIM_DEPTH; iv.iv_z++) {
-				node = &wimap[iv.iv_x][iv.iv_y][iv.iv_z];
+				node = wimap[iv.iv_x][iv.iv_y][iv.iv_z];
+				if (node == NULL)
+					continue;
 //				node->n_state = JST_UNACC;
 //				node->n_fillp = &jstates[JST_UNACC].js_fill;
 				node->n_flags |= NF_HIDE;
