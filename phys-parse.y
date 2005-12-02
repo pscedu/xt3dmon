@@ -19,9 +19,8 @@ struct physdim_hd physdims;
 
 %}
 
-%token CONTAINS DIM MAG OFFSET SIZE SPACE SPANS
+%token CONTAINS DIM MAG OFFSET SIZE SKEL SPACE SPANS
 %token COMMA LANGLE LBRACKET RANGLE RBRACKET
-%token YES NO SKEL
 
 %token <string> STRING
 %token <wnumber> WNUMBER
@@ -46,8 +45,8 @@ conf		: DIM STRING LBRACKET {
 		} opts_l RBRACKET {
 			if (physdim->pd_mag == 0)
 				yyerror("no magnitude specified");
-			else if (!physdim->pd_spans)
-				yyerror("no span specified");
+//			if (!physdim->pd_spans)
+//				yyerror("no span specified");
 		}
 		;
 
@@ -123,7 +122,7 @@ yyerror(const char *fmt, ...)
 void
 physdim_check(void)
 {
-	struct physdim *pd, *spd;
+	struct physdim *pd, *spd, *lpd;
 	struct fvec fv;
 	float *pv, *sv;
 
@@ -134,25 +133,26 @@ physdim_check(void)
 		if (LIST_NEXT(pd, pd_link))
 			yyerror("%s: incoherent dimension", pd->pd_name);
 		else {
-			LIST_FOREACH(pd, &physdims, pd_link) {
-				spd = pd;
-				while ((spd = spd->pd_contains) != NULL) {
-					if (spd == pd) {
-						yyerror("loop detected");
-						return;
-					}
+			lpd = spd = pd;
+			while ((spd = spd->pd_contains) != NULL) {
+				if (spd == pd) {
+					yyerror("loop detected");
+					return;
 				}
+				lpd = spd;
 			}
 
 			/*
 			 * Now propagate spacing measurements up through
 			 * the dimensions.
 			 */
-			fv = pd->pd_size;
-			for (; pd != NULL; pd = spd) {
+			fv = lpd->pd_size;
+			pd = lpd;
+			for (; pd != NULL && pd->pd_containedby != NULL;
+			    pd = spd) {
 				spd = pd->pd_containedby;
 				spd->pd_size = pd->pd_size;
-				switch (pd->pd_span) {
+				switch (pd->pd_spans) {
 				case DIM_X:
 					pv = &pd->pd_size.fv_x;
 					sv = &spd->pd_size.fv_x;
