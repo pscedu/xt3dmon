@@ -33,6 +33,35 @@ node_adjmodpos(int n, struct fvec *fv)
 	fv->fv_z += col * (NODESPACE + NODEDEPTH) + row * NODESHIFT;
 }
 
+#if 0
+__inline void
+node_setphyspos(struct node *n, struct fvec *fv)
+{
+	struct physdim *pd;
+	int i, pos;
+
+	fv->fv_x = 0.0;
+	fv->fv_y = 0.0;
+	fv->fv_z = 0.0;
+
+	i = 0;
+	LIST_FOREACH(pd, &physdim, pd_link) {
+		pos = n->n_physcoord[i++];
+		switch (pd->pd_spans) {
+		case DIM_X:
+			fv->fv_x += ;
+			break;
+		case DIM_Y:
+			fv->fv_y += ;
+			break;
+		case DIM_Z:
+			fv->fv_z += ;
+			break;
+		}
+	}
+}
+#endif
+
 void
 node_physpos(struct node *node, struct physcoord *pc)
 {
