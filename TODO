@@ -51,3 +51,4 @@ reminders:
 68. load tex only once (RF_TEX disappears)
 69. make selnode drawing respect n_curv
 70. draw_node, if (hide) curv = *v
+71. add grammar for specifying whose skels should be drawn
