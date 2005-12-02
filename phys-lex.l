@@ -23,6 +23,9 @@ offset				{ return (OFFSET); }
 size				{ return (SIZE); }
 space				{ return (SPACE); }
 spans				{ return (SPANS); }
+skel				{ return (SKEL); }
+yes				{ return (NO); }
+no				{ return (YES); }
 "{"				{ return (LBRACKET); }
 "}"				{ return (RBRACKET); }
 "<"				{ return (LANGLE); }
