@@ -77,7 +77,7 @@ db_physmap(__unused struct datasrc *ds)
 {
 	int x, y, z, nid, len, r, cb, cg, m, n;
 	struct node *node;
-	struct ivec widim;
+	struct ivec widim, iv;
 	MYSQL_RES *res;
 	MYSQL_ROW row;
 	char *sql;
@@ -85,16 +85,14 @@ db_physmap(__unused struct datasrc *ds)
 
 	widim.iv_w = widim.iv_h = widim.iv_d = 0;
 
-	for (r = 0; r < NROWS; r++)
-		for (cb = 0; cb < NCABS; cb++)
-			for (cg = 0; cg < NCAGES; cg++)
-				for (m = 0; m < NMODS; m++)
-					for (n = 0; n < NNODES; n++) {
-						node = &nodes[r][cb][cg][m][n];
-//						node->n_state = JST_UNACC;
-//						node->n_fillp = &jstates[JST_UNACC].js_fill;
-						node->n_flags |= NF_HIDE;
-					}
+	for (iv.iv_x = 0; iv.iv_x < WIDIM_WIDTH; iv.iv_x++)
+		for (iv.iv_y = 0; iv.iv_y < WIDIM_HEIGHT; iv.iv_y++)
+			for (iv.iv_z = 0; iv.iv_z < WIDIM_DEPTH; iv.iv_z++) {
+				node = &wimap[iv.iv_x][iv.iv_y][iv.iv_z];
+//				node->n_state = JST_UNACC;
+//				node->n_fillp = &jstates[JST_UNACC].js_fill;
+				node->n_flags |= NF_HIDE;
+			}
 
 	if ((len = asprintf(&sql,
 	    " SELECT					"
