@@ -13,7 +13,7 @@ stop()
 	pkill -u xt3dmon xt3dmon
 }
 
-case in
+case "$1" in
 start)
 	start
 	;;
@@ -23,5 +23,8 @@ stop)
 restart)
 	stop
 	start
+	;;
+*)
+	echo "usage: $0 start|stop|restart"
 	;;
 esac
