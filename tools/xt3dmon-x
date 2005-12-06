@@ -1,6 +1,8 @@
 #!/bin/sh
 # $Id$
 
+unset DISPLAY
+
 start()
 {
 	sudo -u xt3dmon startx -- :9 &
