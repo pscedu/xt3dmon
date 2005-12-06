@@ -3,7 +3,7 @@
 
 start()
 {
-	sudo -u xt3dmon startx -- :9
+	sudo -u xt3dmon startx -- :9 &
 }
 
 stop()
