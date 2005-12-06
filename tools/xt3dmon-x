@@ -1,15 +1,25 @@
 #!/bin/sh
 # $Id$
 
+start()
+{
+	sudo -u xt3dmon startx -- :9
+}
+
+stop()
+{
+	pkill -u xt3dmon startx
+}
+
 case in
 start)
-	sudo -u xt3dmon startx -- :9
+	start
 	;;
 stop)
-	pkill -u xt3dmon startx
+	stop
 	;;
 restart)
-	$0 stop
-	$0 start
+	stop
+	start
 	;;
 esac
