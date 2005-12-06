@@ -1,0 +1,27 @@
+#!/bin/sh
+# $Id$
+
+base=/home/yanovich/code/proj/xt3dmon
+
+start()
+{
+	(cd $base && sudo -u xt3dmon ./xt3dmon -display :9 -d &)
+}
+
+stop()
+{
+	pkill -u xt3dmon xt3dmon
+}
+
+case in
+start)
+	start
+	;;
+stop)
+	stop
+	;;
+restart)
+	stop
+	start
+	;;
+esac

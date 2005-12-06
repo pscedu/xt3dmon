@@ -1,0 +1,15 @@
+#!/bin/sh
+# $Id$
+
+case in
+start)
+	sudo -u xt3dmon startx -- :9
+	;;
+stop)
+	pkill -u xt3dmon startx
+	;;
+restart)
+	$0 stop
+	$0 start
+	;;
+esac
