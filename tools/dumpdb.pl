@@ -3,6 +3,7 @@
 
 use DBI;
 use File::Basename;
+use Symbol;
 use strict;
 use warnings;
 
@@ -10,11 +11,14 @@ use warnings;
 
 my $login_host = "tg-login.bigben.psc.teragrid.org";
 my $host = "kaminari";
+my $smwhost = "smw";
 my $port = 3306;
 my $user = "basic";
 my $pass = "basic";
 my $db   = "XTAdmin";
+my $temp_path = "/home/crayadm/TempCheck/XT3CpuTemp*.txt"; # smw path to temperatures
 
+# data file base names
 my %c_fn = (
 	node	=> "node",
 	job	=> "job",
@@ -30,27 +34,30 @@ my $oldsufx = ".bak";
 my $dbh = DBI->connect("DBI:mysql:database=$db;host=$host;port=$port", $user, $pass)
     or dberr("connect $host:$port");
 
-my %t_fn = (
-	node	=> "$outdir/$c_fn{node}$tmpsufx",
-	job	=> "$outdir/$c_fn{job}$tmpsufx",
-	yod	=> "$outdir/$c_fn{yod}$tmpsufx",
-);
+my (%t_fn, %f_fn, %o_fn, %fh, $t);
+foreach $t (keys %c_fn) {
+	$t_fn{$t} = "$outdir/$c_fn{$t}$tmpsufx";
+	$f_fn{$t} = "$outdir/$c_fn{$t}";
+	$o_fn{$t} = "$outdir/$c_fn{$t}$oldsufx";
+	$fh{$t} = gensym;
+	open $fh{$t}, "> $t_fn{$t}" or err($t_fn{$t});
+}
 
-my %f_fn = (
-	node	=> "$outdir/$c_fn{node}",
-	job	=> "$outdir/$c_fn{job}",
-	yod	=> "$outdir/$c_fn{yod}",
-);
+my (@temp, $line);
 
-my %o_fn = (
-	node	=> "$outdir/$c_fn{node}$oldsufx",
-	job	=> "$outdir/$c_fn{job}$oldsufx",
-	yod	=> "$outdir/$c_fn{yod}$oldsufx",
-);
+open CONNFH, "ssh $login_host ssh $smwhost cat \$(perl -e 'print((sort { \$b cmp \$a } <$temp_path>)[0])') |"
+    or err("ssh $login_host");
+while (defined($line = <CONNFH>)) {
+	# cx0y0c1s3 44 46 48 48
+	my ($cb, $r, $cg, $m, @n) = /^cx(\d+)y(\d+)c(\d+)s(\d+)(\s+\d)+$/
+	    or warn "temp:$.: malformed line\n", next;
 
-open NODEFH, "> $t_fn{node}" or err($t_fn{node});
-open JOBFH,  "> $t_fn{job}"  or err($t_fn{job});
-open YODFH,  "> $t_fn{yod}"  or err($t_fn{yod});
+	$temp[$r]		= [] unless ref $temp[$r]		eq "ARRAY";
+	$temp[$r][$cb]		= [] unless ref $temp[$r][$cb]		eq "ARRAY";
+	$temp[$r][$cb][$cg]	= [] unless ref $temp[$r][$cb][$cg]	eq "ARRAY";
+	$temp[$r][$cb][$cg][$m] = [ @n ];
+}
+close CONNFH;
 
 my $sth = $dbh->prepare(<<SQL) or dberr("preparing sql");
 	SELECT
@@ -85,11 +92,13 @@ while ($row = $dbh->fetchrow_hashref($sth)) {
 	my $status = $row->{status} eq "down" ? "n" :
 	    ($row->{type} eq "service" ? "i" : "c");
 
+	my $temp = $temp[$row->{r}][$row->{cb}][$row->{cg}][$row->{m}][$row->{n}];
+
 	# <nid>	c<cb>-<r>c<cg>s<m>s<n>	<x>,<y>,<z>	<stat>	<enabled>	<jobid>	<temp>	<yodid>
 	# 0	c0-0c0s0s0		0,0,0		i	1		111	58	2
-	printf NODEFH "%d\tc%d-%dc%ds%ds%d\t%d,%d,%d\t%s\t%d\t%d\t%d\t%d\n",
+	printf { $fh{node} } "%d\tc%d-%dc%ds%ds%d\t%d,%d,%d\t%s\t%d\t%d\t%d\t%d\n",
 	    @$row{qw(nid cb r cg m n x y z)}, $status,
-	    @$row{qw(jobid  yodid)};
+	    1, $row->{jobid}, $temp, $row->{yodid};
 }
 $sth->finish;
 
@@ -106,7 +115,7 @@ SQL
 while ($row = $dbh->fetchrow_hashref($sth)) {
 	# XXX: escape newlines in command?
 	# <yodid>	<partition_id>	<ncpus>	<command>
-	printf YODFH "%d\t%d\t%d\t%s\n",
+	printf { $fh{yod} } "%d\t%d\t%d\t%s\n",
 	    @$row{qw(yod_id partition_id ncpus command)};
 }
 
@@ -114,31 +123,18 @@ $sth->finish;
 
 $dbh->disconnect;
 
-my $line;
 open CONNFH, "ssh $login_host qstat -f |" or err("ssh $login_host");
 while (defined($line = <CONNFH>)) {
-	print JOBFH $line;
+	print { $fh{job} } $line;
 }
 close CONNFH;
 
-close NODEFH;
-close JOBFH;
-close YODFH;
-
-# delete old backup
-unlink($o_fn{node}) or err("unlink $o_fn{node}");
-unlink($o_fn{job})  or err("unlink $o_fn{job}");
-unlink($o_fn{yod})  or err("unlink $o_fn{yod}");
-
-# move current files to backup
-rename($f_fn{node}, $o_fn{node}) or err("rename $f_fn{node} $o_fn{node}");
-rename($f_fn{job},  $o_fn{job})  or err("rename $f_fn{job}  $o_fn{job} ");
-rename($f_fn{yod},  $o_fn{yod})  or err("rename $f_fn{yod}  $o_fn{yod} ");
-
-# move new to current
-rename($t_fn{node}, $f_fn{node}) or err("rename $t_fn{node} $f_fn{node}");
-rename($t_fn{job},  $f_fn{job})  or err("rename $t_fn{job}  $f_fn{job} ");
-rename($t_fn{yod},  $f_fn{yod})  or err("rename $t_fn{yod}  $f_fn{yod} ");
+foreach $t (keys %c_fn) {
+	close $fh{$t};
+	unlink($o_fn{$t}) or err("unlink $o_fn{$t}");				# delete old backup
+	rename($f_fn{$t}, $o_fn{$t}) or err("rename $f_fn{$t} $o_fn{$t}");	# move current files to backup
+	rename($t_fn{$t}, $f_fn{$t}) or err("rename $t_fn{$t} $f_fn{$t}");	# move new to current
+}
 
 sub dberr {
 	warn "$0: ", @_, ": $DBI::errstr\n";
