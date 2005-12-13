@@ -45,17 +45,22 @@ foreach $t (keys %c_fn) {
 
 my (@temp, $line);
 
-open CONNFH, "ssh $login_host ssh $smwhost cat \$(perl -e 'print((sort { \$b cmp \$a } <$temp_path>)[0])') |"
+# ok, the fun part:
+# run a command on the smw to get latest temp filename
+# bonus points for strict
+open CONNFH, "ssh $login_host \"ssh $smwhost \\\"cat \\\\\\\$(perl -Mstrict -We " .
+    "our\@d=[our\@f=sort{\\\\\\\\\\\\\\\${b}cmp\\\\\\\\\\\\\\\$a}\\<$temp_path\\>xor+print+\\\\\\\\\\\\\\\$f[0]])\\\"\" |"
     or err("ssh $login_host");
 while (defined($line = <CONNFH>)) {
 	# cx0y0c1s3 44 46 48 48
-	my ($cb, $r, $cg, $m, @n) = /^cx(\d+)y(\d+)c(\d+)s(\d+)(\s+\d)+$/
-	    or warn "temp:$.: malformed line\n", next;
+	my ($cb, $r, $cg, $m, $n) = ($line =~ /^cx(\d+)y(\d+)c(\d+)s(\d+)((?:\s+\d+)+)\s*$/)
+	    or next;
+	$n =~ s/^\s+//;
 
 	$temp[$r]		= [] unless ref $temp[$r]		eq "ARRAY";
 	$temp[$r][$cb]		= [] unless ref $temp[$r][$cb]		eq "ARRAY";
 	$temp[$r][$cb][$cg]	= [] unless ref $temp[$r][$cb][$cg]	eq "ARRAY";
-	$temp[$r][$cb][$cg][$m] = [ @n ];
+	$temp[$r][$cb][$cg][$m] = [ split / /, $n ];
 }
 close CONNFH;
 
@@ -81,18 +86,22 @@ my $sth = $dbh->prepare(<<SQL) or dberr("preparing sql");
 		partition		AS job,
 		partition_allocation	AS job_map
 	WHERE
-		nid			= job_map.processor_id
+		cpu.processor_id	= job_map.processor_id
 	AND	job.partition_id	= job_map.partition_id
-	AND	nid			= yod_map.processor_id
+	AND	cpu.processor_id	= yod_map.processor_id
 	AND	yod.yod_id		= yod_map.yod_id
 SQL
 
 my $row;
-while ($row = $dbh->fetchrow_hashref($sth)) {
+$sth->execute();
+while ($row = $sth->fetchrow_hashref()) {
 	my $status = $row->{status} eq "down" ? "n" :
 	    ($row->{type} eq "service" ? "i" : "c");
 
 	my $temp = $temp[$row->{r}][$row->{cb}][$row->{cg}][$row->{m}][$row->{n}];
+	$temp = 0 unless $temp;
+
+	$row->{jobid} = $row->{jobid} =~ /(\d+)/ ? $1 : 0;
 
 	# <nid>	c<cb>-<r>c<cg>s<m>s<n>	<x>,<y>,<z>	<stat>	<enabled>	<jobid>	<temp>	<yodid>
 	# 0	c0-0c0s0s0		0,0,0		i	1		111	58	2
@@ -112,7 +121,8 @@ $sth = $dbh->prepare(<<SQL) or dberr("preparing sql");
 		yod
 SQL
 
-while ($row = $dbh->fetchrow_hashref($sth)) {
+$sth->execute();
+while ($row = $sth->fetchrow_hashref()) {
 	# XXX: escape newlines in command?
 	# <yodid>	<partition_id>	<ncpus>	<command>
 	printf { $fh{yod} } "%d\t%d\t%d\t%s\n",
@@ -131,9 +141,10 @@ close CONNFH;
 
 foreach $t (keys %c_fn) {
 	close $fh{$t};
-	unlink($o_fn{$t}) or err("unlink $o_fn{$t}");				# delete old backup
-	rename($f_fn{$t}, $o_fn{$t}) or err("rename $f_fn{$t} $o_fn{$t}");	# move current files to backup
-	rename($t_fn{$t}, $f_fn{$t}) or err("rename $t_fn{$t} $f_fn{$t}");	# move new to current
+	unlink($o_fn{$t});			# delete old backup
+	rename($f_fn{$t}, $o_fn{$t});		# move current files to backup
+	rename($t_fn{$t}, $f_fn{$t})		# move new to current
+	    or err("rename $t_fn{$t} $f_fn{$t}");
 }
 
 sub dberr {
