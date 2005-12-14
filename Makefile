@@ -10,10 +10,8 @@ SRCS+= node.c objlist.c panel.c parse.c phys-lex.l phys-parse.y png.c
 SRCS+= select.c selnode.c server.c shadow.c status.c tex.c tween.c
 SRCS+= uinp.c vec.c widget.c
 
-LIBS = -lGL -lglut -lGLU -lpng `mysql_config --libs` -pg
-MYSQL_CFLAGS = $$(mysql_config --cflags | sed "s/'//g" | \
-    awk '{for (n = 1; n <= NF; n++) if (match($$n, /^-I/)) printf "%s ", $$n }')
-CFLAGS += -Wall -W -g ${MYSQL_CFLAGS} -pg -D_LIVE_DSP=DSP_LOCAL
+LIBS = -lGL -lglut -lGLU -lpng -pg
+CFLAGS += -Wall -W -g -pg -D_LIVE_DSP=DSP_LOCAL
 # CFLAGS += -O -Wuninitialized
 YFLAGS += -d
 INCS = $$(echo ${CFLAGS} | \
@@ -46,8 +44,5 @@ clean:
 
 obj:
 	mkdir obj
-
-conn:
-	ssh -NfL 3306:sdb:3306 phantom.psc.edu
 
 -include .depend
