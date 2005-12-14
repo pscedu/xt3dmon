@@ -55,3 +55,6 @@ reminders:
 72. cut physv setting each time VMODE_PHYS is set, to save fp calc
 73. in_port_t
 74. merge all data into one file, since we will be merging files anyway
+75. merge fail info into node data file
+76. RF_SMODE should die, just swapping modes shouldn't make new data fetch
+77. introduce widim.iv_[whd] instead of WIDIM_WIDTH, etc.
