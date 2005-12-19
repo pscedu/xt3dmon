@@ -10,7 +10,7 @@
 #include "mon.h"
 
 int
-net_connect(const char *host, port_t port)
+net_connect(const char *host, in_port_t port)
 {
 	struct addrinfo hints, *ai, *res0;
 	int want, error, s;
