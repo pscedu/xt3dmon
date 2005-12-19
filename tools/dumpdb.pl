@@ -103,11 +103,14 @@ while ($row = $sth->fetchrow_hashref()) {
 
 	$row->{jobid} = $row->{jobid} =~ /(\d+)/ ? $1 : 0;
 
-	# <nid>	c<cb>-<r>c<cg>s<m>s<n>	<x>,<y>,<z>	<stat>	<enabled>	<jobid>	<temp>	<yodid>
-	# 0	c0-0c0s0s0		0,0,0		i	1		111	58	2
-	printf { $fh{node} } "%d\tc%d-%dc%ds%ds%d\t%d,%d,%d\t%s\t%d\t%d\t%d\t%d\n",
-	    @$row{qw(nid cb r cg m n x y z)}, $status,
-	    1, $row->{jobid}, $temp, $row->{yodid};
+	# 1	2  3 4  5 6	7 8 9	10	11	12	13	14	15
+	# nid	cb r cg m n	x y z	stat	enabled	jobid	temp	yodid	nfails
+	# 0	0  0 0  0 0	0 0 0	i	1	111	58	2	0
+
+	#                     1   2  3  4  5  6   7  8  9   10  11  12  13  14  15
+	printf { $fh{node} } "%d\t%d %d %d %d %d\t%d %d %d\t%s\t%d\t%d\t%d\t%d\t%d\n",
+	    @$row{qw(nid r cb cg m n x y z)}, $status,
+	    1, $row->{jobid}, $temp, $row->{yodid}, 0;
 }
 $sth->finish;
 
