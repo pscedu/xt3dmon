@@ -7,15 +7,12 @@
 #include <fcntl.h>
 #include <time.h>
 
+#include "cdefs.h"
 #include "mon.h"
 
-#define _RPATH_TEMP	"/xt3-data/temps"
-#define _RPATH_PHYS	"/xt3-data/rtrtrace"
-#define _RPATH_JOBS	"/xt3-data/nids_list_phantom"
-#define _RPATH_BAD	"/xt3-data/bad_nids_list_phantom"
-#define _RPATH_CHECK	"/xt3-data/to_check_nids_list_phantom"
-#define _RPATH_QSTAT	"/xt3-data/qstat.out"
-#define _RPATH_FAIL	"/xt3-data/fails"
+#define _RPATH_NODE	"/xt3-data/node"
+#define _RPATH_JOB	"/xt3-data/job"
+#define _RPATH_YOD	"/xt3-data/yod"
 
 #define RDS_HOST	"mugatu.psc.edu"
 #define RDS_PORT	80
@@ -26,17 +23,28 @@ int ds_http(const char *);
 # define _LIVE_DSP DSP_REMOTE
 #endif
 
+/* Must match DS_* defines in mon.h. */
 struct datasrc datasrcs[] = {
-	{ "temp", 0, DSF_AUTO, DSP_LOCAL, _PATH_TEMPMAP,  _RPATH_TEMP,  parse_tempmap,	db_tempmap,	&temp_list,	{ 0 } },
-	{ "phys", 0, DSF_AUTO, DSP_LOCAL, _PATH_PHYSMAP,  _RPATH_PHYS,  parse_physmap,	db_physmap,	NULL,		{ 0 } },
-	{ "jobs", 0, DSF_AUTO, _LIVE_DSP, _PATH_JOBMAP,   _RPATH_JOBS,  parse_jobmap,	db_jobmap,	&job_list,	{ 0 } },
-	{ "bad",  0, DSF_AUTO, DSP_LOCAL, _PATH_BADMAP,   _RPATH_BAD,   parse_badmap,	db_badmap,	NULL,		{ 0 } },
-	{ "check",0, DSF_AUTO, DSP_LOCAL, _PATH_CHECKMAP, _RPATH_CHECK, parse_checkmap,	db_checkmap,	NULL,		{ 0 } },
-	{ "qstat",0, DSF_AUTO, _LIVE_DSP, _PATH_QSTAT,    _RPATH_QSTAT, parse_qstat,	db_qstat,	NULL,		{ 0 } },
-	{ "mem",  0, DSF_AUTO, DSP_LOCAL, _PATH_STAT,     NULL,		parse_mem,	NULL,		NULL,		{ 0 } },
-	{ "fail", 0, DSF_AUTO, DSP_LOCAL, _PATH_FAILMAP,  _RPATH_FAIL,  parse_failmap,	db_failmap,	&fail_list,	{ 0 } }
+	{ "node", 0, DSF_AUTO, _LIVE_DSP, _PATH_NODE,  _RPATH_NODE, parse_node,	dsfi_node, dsff_node,	0 },
+	{ "job",  0, DSF_AUTO, _LIVE_DSP, _PATH_JOB,   _RPATH_JOB,  parse_job,	NULL,	   NULL,	0 },
+	{ "yod",  0, DSF_AUTO, _LIVE_DSP, _PATH_YOD,   _RPATH_YOD,  parse_yod,	NULL,	   NULL,	0 },
+	{ "mem",  0, DSF_AUTO, DSP_LOCAL, _PATH_STAT,  NULL,	    parse_mem,	NULL,	   NULL,	0 },
 };
 #define NDATASRCS (sizeof(datasrcs) / sizeof(datasrcs[0]))
+
+void
+dsfi_node(__unused struct datasrc *ds)
+{
+	obj_batch_start(&job_list);
+	obj_batch_start(&yod_list);
+}
+
+void
+dsff_node(__unused struct datasrc *ds)
+{
+	obj_batch_end(&job_list);
+	obj_batch_end(&yod_list);
+}
 
 void
 ds_close(struct datasrc *ds)
@@ -53,19 +61,16 @@ ds_close(struct datasrc *ds)
 void
 ds_read(struct datasrc *ds)
 {
-	if (ds->ds_objlist)
-		obj_batch_start(ds->ds_objlist);
+	if (ds->ds_initf)
+		ds->ds_initf(ds);
 	switch (ds->ds_dsp) {
 	case DSP_LOCAL:
 	case DSP_REMOTE:
 		ds->ds_parsef(ds);
 		break;
-	case DSP_DB:
-		ds->ds_dbf(ds);
-		break;
 	}
-	if (ds->ds_objlist)
-		obj_batch_end(ds->ds_objlist);
+	if (ds->ds_finif)
+		ds->ds_finif(ds);
 }
 
 void
@@ -237,9 +242,6 @@ dsc_clone(int type, const char *sid)
 		if (n == -1)
 			err(1, "read");
 		break;
-	case DSP_DB:
-		/* XXX: not implemented */
-		break;
 	}
 	close(fd);
 	ds_close(ds);
@@ -283,14 +285,11 @@ st_dsmode(void)
 	int ds = -1;
 
 	switch (st.st_mode) {
-	case SM_JOBS:
-		ds = DS_JOBS;
+	case SM_JOB:
+		ds = DS_JOB;
 		break;
-	case SM_FAIL:
-		ds = DS_FAIL;
-		break;
-	case SM_TEMP:
-		ds = DS_TEMP;
+	case SM_YOD:
+		ds = DS_YOD;
 		break;
 	}
 	return (ds);
