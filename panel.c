@@ -470,6 +470,7 @@ panel_set_content(struct panel *p, char *fmt, ...)
 
 	len = 0; /* gcc */
 	p->p_opts |= POPT_DIRTY;
+	/* XXX: use asprintf */
 	for (;;) {
 		va_start(ap, fmt);
 		len = vsnprintf(p->p_str, p->p_strlen,
@@ -488,6 +489,26 @@ panel_set_content(struct panel *p, char *fmt, ...)
 	/* All panels below us must be refreshed now, too. */
 	for (t = p; t != TAILQ_END(&panels); t = TAILQ_NEXT(t, p_link))
 		t->p_opts |= POPT_DIRTY;
+}
+
+void
+panel_add_content(struct panel *p, char *fmt, ...)
+{
+	char *oldstr, *newstr;
+	va_list ap;
+
+	if ((oldstr = strdup(p->p_str)) == NULL)
+		err(1, "strdup");
+
+	va_start(ap, fmt);
+	if (vasprintf(&newstr, fmt, ap) == -1)
+		err(1, "vasprintf");
+	va_end(ap);
+
+	panel_set_content(p, "%s%s", oldstr, newstr);
+
+	free(newstr);
+	free(oldstr);
 }
 
 __inline int
@@ -509,6 +530,14 @@ panel_get_pwidget(struct panel *p, struct pwidget *pw, struct pwidget **nextp)
 		*nextp = SLIST_NEXT(pw, pw_next);
 	p->p_nwidgets++;
 	return (pw);
+}
+
+void
+pwidget_set(struct panel *p, struct pwidget *pw, struct fill *fp, char *s)
+{
+	pw->pw_fillp = fp;
+	pw->pw_str = s;
+	p->p_maxwlen = MAX(p->p_maxwlen, strlen(s));
 }
 
 void
@@ -558,51 +587,63 @@ panel_refresh_legend(struct panel *p)
 	p->p_maxwlen = 0;
 	pw = SLIST_FIRST(&p->p_widgets);
 	switch (st.st_mode) {
-	case SM_JOBS:
+	case SM_JOB:
 		panel_set_content(p, "Job Legend\nTotal jobs: %lu",
 		    job_list.ol_cur);
-		for (j = 0; j < NJST; j++, pw = nextp) {
-			if (j == JST_USED)
+		for (j = 0; j < NSC; j++, pw = nextp) {
+			if (j == SC_USED)
 				continue;
 			pw = panel_get_pwidget(p, pw, &nextp);
-			pw->pw_fillp = &jstates[j].js_fill;
-			pw->pw_str = jstates[j].js_name;
-			p->p_maxwlen = MAX(p->p_maxwlen, strlen(pw->pw_str));
+			pwidget_set(p, pw, &statusclass[j].nc_fill,
+			    statusclass[j].nc_name);
 		}
 		for (j = 0; j < job_list.ol_cur; j++, pw = nextp) {
 			pw = panel_get_pwidget(p, pw, &nextp);
-			pw->pw_fillp = &job_list.ol_jobs[j]->j_fill;
-			pw->pw_str = job_list.ol_jobs[j]->j_jname;
-			p->p_maxwlen = MAX(p->p_maxwlen, strlen(pw->pw_str));
+			pwidget_set(p, pw, &job_list.ol_jobs[j]->j_fill,
+			    job_list.ol_jobs[j]->j_jname);
 		}
 		break;
 	case SM_FAIL:
 		panel_set_content(p, "Failure Legend\nTotal: %lu",
 		    total_failures);
+
 		pw = panel_get_pwidget(p, pw, &nextp);
-		pw->pw_fillp = &fail_notfound.f_fill;
-		pw->pw_str = fail_notfound.f_name;
-		p->p_maxwlen = MAX(p->p_maxwlen, strlen(pw->pw_str));
+		pwidget_set(p, pw, &fill_nodata, "No data");
+
 		pw = nextp;
-		for (j = 0; j < fail_list.ol_cur; j++, pw = nextp) {
+		for (j = 0; j < FAIL_NFAILS; j++, pw = nextp) {
 			pw = panel_get_pwidget(p, pw, &nextp);
-			pw->pw_fillp = &fail_list.ol_fails[j]->f_fill;
-			pw->pw_str = fail_list.ol_fails[j]->f_name;
-			p->p_maxwlen = MAX(p->p_maxwlen, strlen(pw->pw_str));
+			pwidget_set(p, pw, &failclass[j].nc_fill,
+			    failclass[j].nc_name);
 		}
 		break;
 	case SM_TEMP:
 		panel_set_content(p, "Temperature Legend");
+
 		pw = panel_get_pwidget(p, pw, &nextp);
-		pw->pw_fillp = &temp_notfound.t_fill;
-		pw->pw_str = temp_notfound.t_name;
-		p->p_maxwlen = MAX(p->p_maxwlen, strlen(pw->pw_str));
+		pwidget_set(p, pw, &fill_nodata, "No data");
+
 		pw = nextp;
 		for (j = 0; j < TEMP_NTEMPS; j++, pw = nextp) {
 			pw = panel_get_pwidget(p, pw, &nextp);
-			pw->pw_fillp = &temp_map[j].m_fill;
-			pw->pw_str = temp_map[j].m_name;
-			p->p_maxwlen = MAX(p->p_maxwlen, strlen(pw->pw_str));
+			pwidget_set(p, pw, &tempclass[j].nc_fill,
+			    tempclass[j].nc_name);
+		}
+		break;
+	case SM_YOD:
+		panel_set_content(p, "Yod Legend\nTotal yods: %lu",
+		    yod_list.ol_cur);
+		for (j = 0; j < NSC; j++, pw = nextp) {
+			if (j == SC_USED)
+				continue;
+			pw = panel_get_pwidget(p, pw, &nextp);
+			pwidget_set(p, pw, &statusclass[j].nc_fill,
+			    statusclass[j].nc_name);
+		}
+		for (j = 0; j < yod_list.ol_cur; j++, pw = nextp) {
+			pw = panel_get_pwidget(p, pw, &nextp);
+			pwidget_set(p, pw, &yod_list.ol_yods[j]->y_fill,
+			    yod_list.ol_yods[j]->y_cmd);
 		}
 		break;
 	}
@@ -638,70 +679,66 @@ panel_refresh_ninfo(struct panel *p)
 		nids_pos = data_pos = 0;
 		SLIST_FOREACH(sn, &selnodes, sn_next) {
 			n = sn->sn_nodep;
-			strncpy(nids + nids_pos, ",",
-			    sizeof(nids) - nids_pos);
-			nids_pos++;
-			/* Only allow 10 nids per line. */
-			if (j && (j % 10) == 0) {
-				strncpy(nids + nids_pos, "\n  ",
-				    sizeof(nids) - nids_pos);
-				nids_pos += 3;
-			}
+
 			nids_pos += snprintf(nids + nids_pos,
-			    sizeof(nids) - nids_pos, "%d", n->n_nid);
+			    sizeof(nids) - nids_pos, ",%d", n->n_nid);
+
 			if (nids_pos >= sizeof(nids))
 				break;
 			switch (st.st_mode) {
-			case SM_JOBS:
-				if (n->n_state == JST_USED)
+			case SM_JOB:
+				if (n->n_state == SC_USED)
 					n->n_job->j_oh.oh_flags |= OHF_TMP;
+				break;
+			case SM_YOD:
+				if (n->n_yod)
+					n->n_yod->y_oh.oh_flags |= OHF_TMP;
 				break;
 			}
 			j++;
 		}
-		nids[sizeof(nids) - 1] = '\0';
+		text_wrap(nids, sizeof(nids), 50);
 
 		label = NULL; /* gcc */
 		ol = NULL; /* gcc */
 		switch (st.st_mode) {
-		case SM_JOBS:
+		case SM_JOB:
 			label = "Job ID(s)";
 			ol = &job_list;
 			break;
 		case SM_TEMP:
 			label = "Temperature(s)";
-			ol = &temp_list;
 			break;
 		case SM_FAIL:
 			label = "Failure(s)";
-			ol = &fail_list;
+			break;
+		case SM_YOD:
+			label = "Yod ID(s)";
+			ol = &yod_list;
 			break;
 		}
 
-		for (j = 0; j < ol->ol_cur; j++) {
+		for (j = 0; ol && j < ol->ol_cur; j++) {
 			ohp = ol->ol_data[j];
 			if (ohp->oh_flags & OHF_TMP) {
 				ohp->oh_flags &= ~OHF_TMP;
 				switch (st.st_mode) {
-				case SM_JOBS:
-					strncpy(data + data_pos, ",",
-					    sizeof(data) - data_pos);
-					data_pos++;
-					/* Only allow 10 jids per line. */
-					if (j && (j % 10) == 0) {
-						strncpy(data + data_pos, "\n  ",
-						    sizeof(data) - data_pos);
-						data_pos += 3;
-					}
+				case SM_JOB:
 					data_pos += snprintf(data + data_pos,
-					    sizeof(data) - data_pos, "%d",
+					    sizeof(data) - data_pos, ",%d",
 					    ((struct job *)ohp)->j_id);
+					break;
+				case SM_YOD:
+					data_pos += snprintf(data + data_pos,
+					    sizeof(data) - data_pos, ",%d",
+					    ((struct yod *)ohp)->y_id);
 					break;
 				}
 			}
 			if (data_pos >= sizeof(data))
 				break;
 		}
+		text_wrap(data, sizeof(data), 50);
 
 		if (data[0] == '\0')
 			strncpy(data, "_(none)", sizeof(data) - 1);
@@ -722,76 +759,61 @@ panel_refresh_ninfo(struct panel *p)
 	node_physpos(n, &pc);
 	iv = &n->n_wiv;
 
-	switch (st.st_mode) {
-	case SM_JOBS:
-		switch (n->n_state) {
-		case JST_USED:
-			panel_set_content(p,
-			    "Node Information\n"
-			    "Node ID: %d\n"
-			    "Wired position: (%d,%d,%d)\n"
-			    "Physical position: (%d,%d,%d,%d,%d)\n"
-			    "Job ID: %d\n"
-			    "Job owner: %s\n"
-			    "Job name: %s\n"
-			    "Job queue: %s\n"
-			    "Job duration: %d:%02d\n"
-			    "Job time used: %d:%02d (%d%%)\n"
-			    "Job CPUs: %d",
-			    n->n_nid,
-			    iv->iv_x, iv->iv_y, iv->iv_z,
-			    pc.pc_r, pc.pc_cb, pc.pc_cg, pc.pc_m, pc.pc_n,
-			    n->n_job->j_id,
-			    n->n_job->j_owner,
-			    n->n_job->j_jname,
-			    n->n_job->j_queue,
-			    n->n_job->j_tmdur / 60,
-			    n->n_job->j_tmdur % 60,
-			    n->n_job->j_tmuse / 60,
-			    n->n_job->j_tmuse % 60,
-			    n->n_job->j_tmuse * 100 /
-			      (n->n_job->j_tmdur ?
-			       n->n_job->j_tmdur : 1),
-			    n->n_job->j_ncpus);
-			break;
-		default:
-			panel_set_content(p,
-			    "Node Information\n"
-			    "Node ID: %d\n"
-			    "Wired position: (%d,%d,%d)\n"
-			    "Physical position: (%d,%d,%d,%d,%d)\n"
-			    "Type: %s",
-			    n->n_nid,
-			    iv->iv_x, iv->iv_y, iv->iv_z,
-			    pc.pc_r, pc.pc_cb, pc.pc_cg, pc.pc_m, pc.pc_n,
-			    jstates[n->n_state].js_name);
-			break;
-		}
-		break;
-	case SM_FAIL:
-		panel_set_content(p,
-		    "Node Information\n"
-		    "Node ID: %d\n"
-		    "Wired position: (%d,%d,%d)\n"
-		    "Physical position: (%d,%d,%d,%d,%d)\n"
-		    "# Failures: %s",
-		    n->n_nid,
-		    iv->iv_x, iv->iv_y, iv->iv_z,
-		    pc.pc_r, pc.pc_cb, pc.pc_cg, pc.pc_m, pc.pc_n,
-		    n->n_fail->f_name);
-		break;
-	case SM_TEMP:
-		panel_set_content(p,
-		    "Node Information\n"
-		    "Node ID: %d\n"
-		    "Wired position: (%d,%d,%d)\n"
-		    "Physical position: (%d,%d,%d,%d,%d)\n"
-		    "Temperature: %s",
-		    n->n_nid,
-		    iv->iv_x, iv->iv_y, iv->iv_z,
-		    pc.pc_r, pc.pc_cb, pc.pc_cg, pc.pc_m, pc.pc_n,
-		    n->n_temp->t_name);
-		break;
+	panel_set_content(p,
+	    "Node Information\n"
+	    "Node ID: %d\n"
+	    "Wired position: (%d,%d,%d)\n"
+	    "Physical position: (%d,%d,%d,%d,%d)\n"
+	    "Temperature: %d\n"
+	    "# Failures: %d",
+	    n->n_nid,
+	    iv->iv_x, iv->iv_y, iv->iv_z,
+	    pc.pc_r, pc.pc_cb, pc.pc_cg, pc.pc_m, pc.pc_n,
+	    n->n_temp, n->n_fails);
+	if (n->n_job)
+		panel_add_content(p,
+		    "\n"
+		    "Job ID: %d\n"
+		    "Job owner: %s\n"
+		    "Job name: %s\n"
+		    "Job queue: %s\n"
+		    "Job duration: %d:%02d\n"
+		    "Job time used: %d:%02d (%d%%)\n"
+		    "Job CPUs: %d",
+		    n->n_job->j_id,
+		    n->n_job->j_owner,
+		    n->n_job->j_jname,
+		    n->n_job->j_queue,
+		    n->n_job->j_tmdur / 60,
+		    n->n_job->j_tmdur % 60,
+		    n->n_job->j_tmuse / 60,
+		    n->n_job->j_tmuse % 60,
+		    n->n_job->j_tmuse * 100 /
+		      (n->n_job->j_tmdur ?
+		       n->n_job->j_tmdur : 1),
+		    n->n_job->j_ncpus);
+	else
+		panel_add_content(p,
+		    "\n"
+		    "Type: %s",
+		    statusclass[n->n_state].nc_name);
+	if (n->n_yod) {
+		char cmdbuf[YFL_CMD];
+
+		strncpy(cmdbuf, n->n_yod->y_cmd, sizeof(cmdbuf) - 1);
+		cmdbuf[sizeof(cmdbuf) - 1] = '\0';
+		text_wrap(cmdbuf, sizeof(cmdbuf), 50);
+
+		panel_add_content(p,
+		    "\n"
+		    "Yod ID: %d\n"
+		    "Yod partition ID: %d\n"
+		    "Yod CPUs: %d\n"
+		    "Yod command: %s",
+		    n->n_yod->y_id,
+		    n->n_yod->y_partid,
+		    n->n_yod->y_ncpus,
+		    cmdbuf);
 	}
 }
 
