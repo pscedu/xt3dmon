@@ -66,33 +66,54 @@ close CONNFH;
 
 my $sth = $dbh->prepare(<<SQL) or dberr("preparing sql");
 	SELECT
-		cpu.processor_id	AS nid,
-		cpu.processor_status	AS status,
-		cpu.processor_type	AS type,
-		cpu.cab_row		AS r,
-		cpu.cab_position	AS cb,
-		cpu.cage		AS cg,
-		cpu.slot		AS m,
-		cpu.cpu			AS n,
-		cpu.x_coord		AS x,
-		cpu.y_coord		AS y,
-		cpu.z_coord		AS z,
-		job.job_id		AS jobid,
-		yod.yod_id		AS yodid
+		processor_id		AS nid,
+		yod_id			AS yid
 	FROM
-		processor		AS cpu,
-		yod			AS yod,
-		yod_allocation		AS yod_map,
-		partition		AS job,
-		partition_allocation	AS job_map
-	WHERE
-		cpu.processor_id	= job_map.processor_id
-	AND	job.partition_id	= job_map.partition_id
-	AND	cpu.processor_id	= yod_map.processor_id
-	AND	yod.yod_id		= yod_map.yod_id
+		yod_allocation
 SQL
 
-my $row;
+my ($row, %ymap, %jmap);
+
+$sth->execute();
+while ($row = $sth->fetchrow_hashref()) {
+	$ymap{$row->{nid}} = $row->{yid};
+}
+$sth->finish;
+
+$sth = $dbh->prepare(<<SQL) or dberr("preparing sql");
+	SELECT
+		jobmap.processor_id	AS nid,
+		job.job_id		AS jid
+	FROM
+		partition_allocation	jobmap,
+		partition		job
+	WHERE
+		job.partition_id = jobmap.partition_id
+SQL
+
+$sth->execute();
+while ($row = $sth->fetchrow_hashref()) {
+	($jmap{$row->{nid}} = $row->{jid}) =~ s/(\d+).*/$1/;
+}
+$sth->finish;
+
+$sth = $dbh->prepare(<<SQL) or dberr("preparing sql");
+	SELECT
+		processor_id		AS nid,
+		processor_status	AS status,
+		processor_type		AS type,
+		cab_row			AS r,
+		cab_position		AS cb,
+		cage			AS cg,
+		slot			AS m,
+		cpu			AS n,
+		x_coord			AS x,
+		y_coord			AS y,
+		z_coord			AS z
+	FROM
+		processor
+SQL
+
 $sth->execute();
 while ($row = $sth->fetchrow_hashref()) {
 	my $status = $row->{status} eq "down" ? "n" :
@@ -101,7 +122,8 @@ while ($row = $sth->fetchrow_hashref()) {
 	my $temp = $temp[$row->{r}][$row->{cb}][$row->{cg}][$row->{m}][$row->{n}];
 	$temp = 0 unless $temp;
 
-	$row->{jobid} = $row->{jobid} =~ /(\d+)/ ? $1 : 0;
+	my $jobid = exists $jmap{$row->{nid}} ? $jmap{$row->{nid}} : 0;
+	my $yodid = exists $ymap{$row->{nid}} ? $ymap{$row->{nid}} : 0;
 
 	# 1	2  3 4  5 6	7 8 9	10	11	12	13	14	15
 	# nid	cb r cg m n	x y z	stat	enabled	jobid	temp	yodid	nfails
@@ -110,7 +132,7 @@ while ($row = $sth->fetchrow_hashref()) {
 	#                     1   2  3  4  5  6   7  8  9   10  11  12  13  14  15
 	printf { $fh{node} } "%d\t%d %d %d %d %d\t%d %d %d\t%s\t%d\t%d\t%d\t%d\t%d\n",
 	    @$row{qw(nid r cb cg m n x y z)}, $status,
-	    1, $row->{jobid}, $temp, $row->{yodid}, 0;
+	    1, $jobid, $temp, $yodid, 0;
 }
 $sth->finish;
 
