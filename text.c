@@ -17,9 +17,10 @@ text_wrap(char *s, size_t len, size_t maxlinelen)
 			for (t = p; t > s && *t != '\n'; t--)
 				if (!isalnum(*t))
 					break;
-			if (t == s)
+			if (t == s || *t++ == '\0')
 				t = p;
-			memmove(t, t + 1, len - 1 - (t - s));
+			memmove(t + 1, t, len - 1 - (t - s));
+			s[len - 1] = '\0';
 			*t = '\n';
 			linelen = p - t;
 		}
