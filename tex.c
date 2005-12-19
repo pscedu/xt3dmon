@@ -14,15 +14,15 @@ tex_load(void)
 	void *data;
 
 	/* Read in texture IDs. */
-	for (i = 0, texid = 1; i < NJST; i++, texid++) {
+	for (i = 0, texid = 1; i < NSC; i++, texid++) {
 		snprintf(path, sizeof(path), _PATH_TEX, i);
 		data = png_load(path, &w, &h);
 		tex_init(data, GL_RGBA, GL_RGBA, texid, w, h);
-		jstates[i].js_fill.f_texid[wid] = texid;
+		statusclass[i].nc_fill.f_texid[wid] = texid;
 
 		texid++;
 		tex_init(data, GL_INTENSITY, GL_RGBA, texid, w, h);
-		jstates[i].js_fill.f_texid_a[wid] = texid;
+		statusclass[i].nc_fill.f_texid_a[wid] = texid;
 		free(data);
 	}
 
@@ -67,12 +67,14 @@ tex_init(void *data, GLint ifmt, GLenum fmt, GLuint id, GLuint w, GLuint h)
 void
 tex_remove(void)
 {
+	struct fill *fp;
 	int i;
 
-	for (i = 0; i < NJST; i++) {
-		if (jstates[i].js_fill.f_texid[wid])
-			glDeleteTextures(1, &jstates[i].js_fill.f_texid[wid]);
-		if (jstates[i].js_fill.f_texid_a[wid])
-			glDeleteTextures(1, &jstates[i].js_fill.f_texid_a[wid]);
+	for (i = 0; i < NSC; i++) {
+		fp = &statusclass[i].nc_fill;
+		if (fp->f_texid[wid])
+			glDeleteTextures(1, &fp->f_texid[wid]);
+		if (fp->f_texid_a[wid])
+			glDeleteTextures(1, &fp->f_texid_a[wid]);
 	}
 }
