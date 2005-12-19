@@ -4,6 +4,7 @@
 
 #include <math.h>
 
+#include "math.h"
 #include "mon.h"
 
 void
