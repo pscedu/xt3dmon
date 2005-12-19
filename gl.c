@@ -66,6 +66,8 @@ gl_setup(void)
 
 	glutTimerFunc(1, cocb_fps, 0);
 	glutTimerFunc(1, cocb_clearstatus, 0); /* XXX: enable/disable when PANEL_STATUS? */
+
+	tex_load();
 }
 
 __inline void
