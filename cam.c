@@ -5,6 +5,7 @@
 #include <math.h>
 
 #include "cdefs.h"
+#include "math.h"
 #include "mon.h"
 
 /*
