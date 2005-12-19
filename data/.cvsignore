@@ -1,3 +1,4 @@
 flyby.data
 *.new
 job node yod
+nids_list_phantom qstat.out
