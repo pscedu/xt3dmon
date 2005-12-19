@@ -6,6 +6,7 @@
 #include <time.h>
 
 #include "cdefs.h"
+#include "math.h"
 #include "mon.h"
 
 #define STARTX		(-30.0f)
@@ -80,20 +81,10 @@ struct state st = {
 	{ 0.0f, 1.0f, 0.0f },					/* (ux,uy,uz) */
 	OP_WIREFRAME | OP_TWEEN | OP_GROUND | OP_DISPLAY |
 	    OP_NODEANIM,					/* options */
-	SM_JOBS,						/* which data to show */
+	SM_JOB,							/* which data to show */
 	VM_PHYSICAL,						/* viewing mode */
 	{ 4, 4, 4 },						/* wired node spacing */
 	0							/* rebuild flags (unused) */
-};
-
-struct job_state jstates[] = {
-	{ "Free",		FILL_INIT(1.00f, 1.00f, 1.00f) },	/* White */
-	{ "Disabled (PBS)",	FILL_INIT(1.00f, 0.00f, 0.00f) },	/* Red */
-	{ "Down (HW)",		FILL_INIT(0.66f, 0.66f, 0.66f) },	/* Gray */
-	{ NULL,			FILL_INIT(0.00f, 0.00f, 0.00f) },	/* (dynamic) */
-	{ "Service",		FILL_INIT(1.00f, 1.00f, 0.00f) },	/* Yellow */
-	{ "Bad",		FILL_INIT(1.00f, 0.75f, 0.75f) },	/* Pink */
-	{ "Checking",		FILL_INIT(0.00f, 1.00f, 0.00f) }	/* Green */
 };
 
 /*
@@ -123,53 +114,96 @@ refresh_state(int oldopts)
 		gl_run(gl_setidleh);
 }
 
+int
+roundclass(int t, int min, int max, int nclasses)
+{
+	if (t < min)
+		t = min;
+	else if (t > max)
+		t = max;
+	return ((t - min) * nclasses / (max - min));
+}
+
+void
+smode_change(void)
+{
+	struct ivec iv;
+	struct node *n;
+
+	IVEC_FOREACH(&iv, &widim) {
+		n = wimap[iv.iv_x][iv.iv_y][iv.iv_z];
+		if (n == NULL)
+			continue;
+
+		switch (st.st_mode) {
+		case SM_JOB:
+			if (n->n_job)
+				n->n_fillp = &n->n_job->j_fill;
+			else
+				n->n_fillp = &statusclass[n->n_state].nc_fill;
+			break;
+		case SM_YOD:
+			if (n->n_yod)
+				n->n_fillp = &n->n_yod->y_fill;
+			else
+				n->n_fillp = &statusclass[n->n_state].nc_fill;
+			break;
+		case SM_TEMP:
+			if (n->n_temp != DV_NODATA)
+				n->n_fillp = &tempclass[roundclass(n->n_temp,
+				    TEMP_MIN, TEMP_MAX, TEMP_NTEMPS)].nc_fill;
+			else
+				n->n_fillp = &fill_nodata;
+			break;
+		case SM_FAIL:
+			if (n->n_fails != DV_NODATA)
+				n->n_fillp = &failclass[roundclass(n->n_fails,
+			    FAIL_MIN, FAIL_MAX, FAIL_NFAILS)].nc_fill;
+			else
+				n->n_fillp = &fill_nodata;
+			break;
+		}
+	}
+}
+
 void
 rebuild(int opts)
 {
-	if (opts & RF_TEX) {
-		gl_run(tex_remove);
-		gl_run(tex_load);
-	}
-	if (opts & RF_PHYSMAP)
-		ds_refresh(DS_PHYS, DSF_CRIT);
 	if (opts & RF_SMODE) {
 		struct datasrc *ds;
 		int dsmode;
 
 		dsmode = -1;
 		switch (st.st_mode) {
-		case SM_JOBS:
-			dsmode = DS_JOBS;
+		case SM_JOB:
+			dsmode = DS_JOB;
 			break;
-		case SM_FAIL:
-			dsmode = DS_FAIL;
-			break;
-		case SM_TEMP:
-			dsmode = DS_TEMP;
+		case SM_YOD:
+			dsmode = DS_YOD;
 			break;
 		}
-		ds = ds_get(dsmode);
-		ds->ds_flags |= DSF_FORCE;
+		/* Force update when changing modes. */
+		if (dsmode != -1) {
+			ds = ds_get(dsmode);
+			ds->ds_flags |= DSF_FORCE;
+		}
 	}
 	if (opts & RF_DATASRC) {
 		mode_data_clean = 0;
+		ds_refresh(DS_NODE, 0);
 		switch (st.st_mode) {
-		case SM_JOBS:
-			ds_refresh(DS_JOBS, 0);
-			ds_refresh(DS_QSTAT, 0);
-			ds_refresh(DS_BAD, DSF_IGN);
-			ds_refresh(DS_CHECK, DSF_IGN);
+		case SM_JOB:
+			ds_refresh(DS_JOB, 0);
 			break;
-		case SM_FAIL:
-			ds_refresh(DS_FAIL, 0);
-			break;
-		case SM_TEMP:
-			ds_refresh(DS_TEMP, 0);
+		case SM_YOD:
+			ds_refresh(DS_YOD, 0);
 			break;
 		}
 		ds_refresh(DS_MEM, DSF_IGN);
 		hl_refresh();
 	}
+	if (opts & RF_SMODE)
+		smode_change();
 	if (opts & RF_CAM) {
 		switch (st.st_vmode) {
 		case VM_PHYSICAL:
@@ -209,7 +243,7 @@ main(int argc, char *argv[])
 
 	flags = GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE;
 	glutInit(&argc, argv);
-	while ((c = getopt(argc, argv, "adlpv")) != -1)
+	while ((c = getopt(argc, argv, "adpv")) != -1)
 		switch (c) {
 		case 'a':
 			flags |= GLUT_STEREO;
@@ -218,9 +252,6 @@ main(int argc, char *argv[])
 			break;
 		case 'd':
 			server = 1;
-			break;
-		case 'l':
-			dsp = DSP_DB;
 			break;
 		case 'p':
 			gl_displayhp = gl_displayh_stereo;
@@ -233,10 +264,6 @@ main(int argc, char *argv[])
 			usage();
 			/* NOTREACHED */
 		}
-
-	/* XXX:  Sanity-check flags. */
-	if (dsp == DSP_DB)
-		dbh_connect(&dbh);
 
 	glutInitDisplayMode(flags);
 	sw = glutGet(GLUT_SCREEN_WIDTH);
