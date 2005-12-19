@@ -58,3 +58,5 @@ reminders:
 75. merge fail info into node data file
 76. RF_SMODE should die, just swapping modes shouldn't make new data fetch
 77. introduce widim.iv_[whd] instead of WIDIM_WIDTH, etc.
+78. merge capture_copy*
+79. merge win_width blah into ivec
