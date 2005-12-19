@@ -60,3 +60,4 @@ reminders:
 77. introduce widim.iv_[whd] instead of WIDIM_WIDTH, etc.
 78. merge capture_copy*
 79. merge win_width blah into ivec
+80. merge hl_*all to hl_setall(1.0 vs. 0.0)
