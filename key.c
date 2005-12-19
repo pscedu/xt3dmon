@@ -5,6 +5,7 @@
 
 #include "buf.h"
 #include "cdefs.h"
+#include "math.h"
 #include "mon.h"
 
 #define TRANS_INC	0.10
@@ -182,20 +183,21 @@ gl_keyh_mode(unsigned char key, __unused int u, __unused int v)
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'j':
-		st.st_mode = SM_JOBS;
-		st.st_rf |= RF_CLUSTER | RF_DATASRC | RF_SMODE;
+		st.st_mode = SM_JOB;
 		break;
 	case 'f':
 		st.st_mode = SM_FAIL;
-		st.st_rf |= RF_CLUSTER | RF_DATASRC | RF_SMODE;
 		break;
 	case 't':
 		st.st_mode = SM_TEMP;
-		st.st_rf |= RF_CLUSTER | RF_DATASRC | RF_SMODE;
+		break;
+	case 'y':
+		st.st_mode = SM_YOD;
 		break;
 	default:
 		return;
 	}
+	st.st_rf |= RF_CLUSTER | RF_DATASRC | RF_SMODE | RF_SELNODE;
 	refresh_state(oldopts);
 }
 
@@ -407,10 +409,10 @@ gl_keyh_alpha(unsigned char key, __unused int u, __unused int v)
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'd':
-		hl_state(JST_DISABLED);
+		hl_state(SC_DISABLED);
 		break;
 	case 'f':
-		hl_state(JST_FREE);
+		hl_state(SC_FREE);
 		break;
 	case 'j':
 		hl_seljobs();
@@ -594,8 +596,8 @@ st.st_lz = -0.71f;
 		if (key == '-')
 			incr *= -1;
 
-		for (j = 0; j < NJST; j++) {
-			field = &jstates[j].js_fill.f_a;
+		for (j = 0; j < NSC; j++) {
+			field = &statusclass[j].nc_fill.f_a;
 			*field += incr;
 			if (*field > 1.0f)
 				*field = 1.0f;
