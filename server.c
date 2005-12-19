@@ -128,8 +128,8 @@ serv_init(void)
 	}
 
 	gl_displayhp = serv_displayh;
-	rebuild(RF_DATASRC | RF_PHYSMAP | RF_CLUSTER);
-	st.st_rf &= ~(RF_DATASRC | RF_PHYSMAP | RF_CLUSTER);
+	rebuild(RF_DATASRC | RF_CLUSTER);
+	st.st_rf &= ~(RF_DATASRC | RF_CLUSTER);
 
 	qsort(sv_cmds, sizeof(sv_cmds) / sizeof(sv_cmds[0]),
 	    sizeof(sv_cmds[0]), svc_cmp);
@@ -253,13 +253,19 @@ snap:
 		ds = st_dsmode();
 		if (!dsc_exists(ss.ss_sid)) {
 			nsessions++;
-			dsc_clone(DS_JOBS, ss.ss_sid);
-			dsc_clone(DS_QSTAT, ss.ss_sid);
-			dsc_clone(DS_TEMP, ss.ss_sid);
+			dsc_clone(DS_NODE, ss.ss_sid);
+			dsc_clone(DS_JOB, ss.ss_sid);
+			dsc_clone(DS_YOD, ss.ss_sid);
 		}
 		dsc_load(ds, ss.ss_sid);
-		if (ds == DS_JOBS)
-			dsc_load(DS_QSTAT, ss.ss_sid);
+		switch (ds) {
+		case DS_JOB:
+			dsc_load(DS_JOB, ss.ss_sid);
+			break;
+		case DS_YOD:
+			dsc_load(DS_YOD, ss.ss_sid);
+			break;
+		}
 		st.st_rf &= ~(RF_DATASRC | RF_SMODE);
 
 		if ((p = panel_for_id(PANEL_DATE)) != NULL)
@@ -481,12 +487,10 @@ int
 svc_hl(char *t, int *used, __unused struct session *ss)
 {
 	struct svc_enum *sve, tab[] = {
-		{ "free",	JST_FREE },
-		{ "disabled",	JST_DISABLED },
-		{ "down",	JST_DOWN },
-		{ "service",	JST_SVC },
-		{ "bad",	JST_BAD },
-		{ "check",	JST_CHECK },
+		{ "free",	SC_FREE },
+		{ "disabled",	SC_DISABLED },
+		{ "down",	SC_DOWN },
+		{ "service",	SC_SVC },
 		{ NULL,		0 }
 	};
 
@@ -520,7 +524,8 @@ svc_smode(char *t, int *used, __unused struct session *ss)
 {
 	struct svc_enum *sve, tab[] = {
 		{ "temp",	SM_TEMP },
-		{ "jobs",	SM_JOBS },
+		{ "jobs",	SM_JOB },
+		{ "yods",	SM_YOD },
 		{ "fail",	SM_FAIL },
 		{ NULL,		0 }
 	};
