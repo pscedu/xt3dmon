@@ -7,8 +7,6 @@
 
 #include <sys/queue.h>
 
-#include <mysql.h>
-
 #include "buf.h"
 #include "queue.h"
 #include "pathnames.h"
@@ -62,32 +60,27 @@
 
 #define WFRAMEWIDTH	(0.001f)
 
-#define JST_FREE	0
-#define JST_DISABLED	1
-#define JST_DOWN	2
-#define JST_USED	3
-#define JST_SVC		4
-#define JST_BAD		5
-#define JST_CHECK	6
-#define NJST		7
+#define DV_NODATA	(-1)
+
+#define SC_FREE		0
+#define SC_DISABLED	1
+#define SC_DOWN		2
+#define SC_USED		3
+#define SC_SVC		4
+#define NSC		5
 
 #define TEMP_MIN	18
 #define TEMP_MAX	80
-#define TEMP_NTEMPS	(sizeof(temp_map) / sizeof(temp_map[0]))
+#define TEMP_NTEMPS	(sizeof(tempclass) / sizeof(tempclass[0]))
+
+#define FAIL_MIN	0
+#define FAIL_MAX	20
+#define FAIL_NFAILS	(sizeof(failclass) / sizeof(failclass[0]))
 
 #define NID_MAX		3000
 
-#define SQUARE(x)	((x) * (x))
-#define SIGN(x)		((x) == 0 ? 1 : abs(x) / (x))
-#define PI		(3.14159265358979323)
-
-#define DEG_TO_RAD(x)	((x) * PI / 180)
-
 #define CMP(a, b) \
 	((a) < (b) ? -1 : ((a) == (b) ? 0 : 1))
-
-#define SIGNF(a) \
-	(a < 0.0f ? -1.0f : 1.0f)
 
 #define SWAP(a, b, t)		\
 	do {			\
@@ -99,16 +92,16 @@
 #define FOVY		(45.0f)
 #define ASPECT		(win_width / (double)win_height)
 
-#define CM_PNG	0
-#define CM_PPM	1
+#define CM_PNG		0
+#define CM_PPM		1
 
 /* HSV constants. */
-#define HUE_MIN 0
-#define HUE_MAX 360
-#define SAT_MIN 0.3
-#define SAT_MAX 1.0
-#define VAL_MIN 0.5
-#define VAL_MAX 1.0
+#define HUE_MIN		0
+#define HUE_MAX		360
+#define SAT_MIN		(0.3)
+#define SAT_MAX		(1.0)
+#define VAL_MIN		(0.5)
+#define VAL_MAX		(1.0)
 
 /* Flyby modes. */
 #define FBM_OFF		0
@@ -128,18 +121,13 @@
 
 /* Data source providers. */
 #define DSP_LOCAL	0
-#define DSP_DB		1
-#define DSP_REMOTE	2
+#define DSP_REMOTE	1
 
 /* Data sources -- order impacts datasrc[] in ds.c. */
-#define DS_TEMP		0
-#define DS_PHYS		1
-#define DS_JOBS		2
-#define DS_BAD		3
-#define DS_CHECK	4
-#define DS_QSTAT	5
-#define DS_MEM		6
-#define DS_FAIL		7
+#define DS_NODE		0
+#define DS_JOB		1
+#define DS_YOD		2
+#define DS_MEM		3
 
 /* Data source fetching flags. */
 #define DSF_CRIT	(1<<0)
@@ -152,9 +140,9 @@
 #define WINID_DEF	0
 
 /* Node highlighting. */
-#define JST_HL_ALL	(-1)
-#define JST_HL_NONE	(-2)
-#define JST_HL_SELJOBS	(-3)
+#define SC_HL_ALL	(-1)
+#define SC_HL_NONE	(-2)
+#define SC_HL_SELJOBS	(-3)
 
 struct fvec {
 	float		 fv_x;
@@ -181,7 +169,7 @@ struct ivec {
 #define iv_v iv_y
 };
 
-struct physcoord {
+struct physcoord {				/* XXX: become just dynamic array */
 	int		 pc_r;
 	int		 pc_cb;
 	int		 pc_cg;
@@ -199,6 +187,7 @@ struct fill {
 	float		 f_g;
 	float		 f_b;
 	float		 f_a;
+	int		 f_flags;
 	GLuint		 f_texid[2];
 	GLuint		 f_texid_a[2];		/* alpha-loaded texid */
 #define f_h f_r
@@ -206,8 +195,13 @@ struct fill {
 #define f_v f_b
 };
 
-#define FILL_INIT(r, g, b)	\
-	{ r, g, b, 1.0, { 0, 0 }, { 0, 0 } }
+#define FF_SKEL		(1<<0)
+
+#define FILL_INIT(r, g, b)		\
+	FILL_INITF((r), (g), (b), 0)
+
+#define FILL_INITF(r, g, b, flags)	\
+	{ r, g, b, 1.0, flags, { 0, 0 }, { 0, 0 } }
 
 struct objhdr {
 	int		 oh_flags;
@@ -236,25 +230,24 @@ struct job {
 
 #define JOHF_TOURED	OHF_USR1
 
-struct temp {
-	struct objhdr	 t_oh;
-	int		 t_cel;			/* degrees celcius */
-	struct fill	 t_fill;
-	char		*t_name;
-};
+#define YFL_CMD		100
 
-struct fail {
-	struct objhdr	 f_oh;
-	int		 f_fails;
-	struct fill	 f_fill;
-	char		*f_name;
+struct yod {
+	struct objhdr	 y_oh;
+	int		 y_id;
+	struct fill	 y_fill;
+
+	int		 y_partid;
+	char		 y_cmd[YFL_CMD];
+	int		 y_ncpus;
 };
 
 struct node {
 	int		 n_nid;
 	struct job	*n_job;
-	struct temp	*n_temp;
-	struct fail	*n_fail;
+	struct yod	*n_yod;
+	int		 n_temp;
+	int		 n_fails;
 	int		 n_state;
 	struct fill	*n_fillp;
 	int		 n_flags;
@@ -270,7 +263,6 @@ struct node {
 
 #define NF_HIDE		(1<<0)
 #define NF_SEL		(1<<1)
-#define NF_SKEL		(1<<2)			/* only display skeleton of node */
 #define NF_DIRTY	(1<<3)			/* node needs recompiled */
 
 struct state {
@@ -298,16 +290,13 @@ struct state {
 #define FB_OMASK	(OP_LOOPFLYBY | OP_CAPTURE | OP_DISPLAY | OP_STOP | OP_GOVERN)
 #define FB_PMASK	(PANEL_GOTO | PANEL_CMD | PANEL_FLYBY | PANEL_SS)
 
-#define RF_TEX		(1<<0)
-#define RF_PHYSMAP	(1<<1)
-#define RF_DATASRC	(1<<2)
-#define RF_CLUSTER	(1<<3)
-#define RF_SELNODE	(1<<4)
-#define RF_CAM		(1<<5)
-#define RF_GROUND	(1<<6)
-#define RF_SMODE	(1<<7)
-#define RF_INIT		(RF_TEX | RF_PHYSMAP | RF_DATASRC | RF_CLUSTER | \
-			 RF_GROUND | RF_SELNODE | RF_CAM)
+#define RF_DATASRC	(1<<0)
+#define RF_CLUSTER	(1<<1)
+#define RF_SELNODE	(1<<2)
+#define RF_CAM		(1<<3)
+#define RF_GROUND	(1<<4)
+#define RF_SMODE	(1<<5)
+#define RF_INIT		(RF_DATASRC | RF_CLUSTER | RF_GROUND | RF_SELNODE | RF_CAM | RF_SMODE)
 
 #define EGG_BORG 	(1<<0)
 #define EGG_MATRIX 	(1<<1)
@@ -331,17 +320,18 @@ struct state {
 #define OP_SKEL		(1<<16)
 #define OP_NODEANIM	(1<<17)
 
-#define SM_JOBS		0
+#define SM_JOB		0
 #define SM_FAIL		1
 #define SM_TEMP		2
+#define SM_YOD		3
 
 #define VM_PHYSICAL	0
 #define VM_WIRED	1
 #define VM_WIREDONE	2
 
-struct job_state {
-	char		*js_name;
-	struct fill	 js_fill;
+struct nodeclass {
+	char		*nc_name;
+	struct fill	 nc_fill;
 };
 
 struct uinput {
@@ -431,26 +421,13 @@ struct pinfo {
 #define NDF_DONTPUSH	(1<<0)
 #define NDF_NOOPTS	(1<<1)
 
-struct dbh {
-	union {
-		MYSQL dbhu_mysql;
-	} dbh_u;
-#define dbh_mysql dbh_u.dbhu_mysql
-};
-
-struct temp_range {
-	struct fill	 m_fill;
-	char		*m_name;
-};
-
 typedef int (*cmpf_t)(const void *, const void *);
 
 struct objlist {
 	union {
 		void		**olu_data;
 		struct job	**olu_jobs;
-		struct fail	**olu_fails;
-		struct temp	**olu_temps;
+		struct yod	**olu_yods;
 		struct glname	**olu_glnames;
 	}		 ol_udata;
 	size_t		 ol_cur;
@@ -462,14 +439,11 @@ struct objlist {
 	int		 ol_flags;
 	cmpf_t		 ol_eq;
 	cmpf_t		 ol_cmpf;
-#define ol_data  ol_udata.olu_data
-#define ol_jobs  ol_udata.olu_jobs
-#define ol_fails ol_udata.olu_fails
-#define ol_temps ol_udata.olu_temps
-#define ol_glnames ol_udata.olu_glnames
+#define ol_data		 ol_udata.olu_data
+#define ol_jobs		 ol_udata.olu_jobs
+#define ol_yods		 ol_udata.olu_yods
+#define ol_glnames	 ol_udata.olu_glnames
 };
-
-#define OLF_SORT	(1<<0)
 
 struct glname {
 	struct objhdr	  gn_oh;
@@ -494,11 +468,9 @@ struct selnode {
 
 SLIST_HEAD(selnodes, selnode);
 
-typedef u_int16_t	 port_t;
-
 struct http_req {
 	const char	*htreq_server;
-	port_t		 htreq_port;		/* host-byte order. */
+	in_port_t	 htreq_port;		/* host-byte order. */
 	int		 htreq_flags;
 
 	const char	*htreq_method;
@@ -519,12 +491,9 @@ struct datasrc {
 	const char	 *ds_lpath;
 	const char	 *ds_rpath;
 	void		(*ds_parsef)(struct datasrc *);
-	void		(*ds_dbf)(struct datasrc *);
-	struct objlist	 *ds_objlist;
-	union {
-		int	  dsu_fd;
-	}		  ds_u;
-#define ds_fd ds_u.dsu_fd
+	void		(*ds_initf)(struct datasrc *);
+	void		(*ds_finif)(struct datasrc *);
+	int		  ds_fd;
 };
 
 #define DSF_AUTO	(1<<0)
@@ -539,20 +508,6 @@ struct session {
 	char		 ss_sid[SID_LEN + 1];
 };
 
-/* db.c */
-void			 dbh_connect(struct dbh *);
-
-void			 db_physmap(struct datasrc *);
-void			 db_jobmap(struct datasrc *);
-void			 db_badmap(struct datasrc *);
-void			 db_checkmap(struct datasrc *);
-void			 db_qstat(struct datasrc *);
-void			 db_tempmap(struct datasrc *);
-void			 db_failmap(struct datasrc *);
-
-/* dbg.c */
-void			 dbg_warn(const char *, ...);
-
 /* callout.c */
 void			 cocb_fps(int);
 void			 cocb_datasrc(int);
@@ -564,7 +519,6 @@ void			 cam_move(int, float);
 void			 cam_revolve(struct fvec *, float, float);
 void			 cam_rotate(float, float);
 void			 cam_roll(float);
-void			 cam_goto(struct fvec *);
 void			 cam_look(void);
 
 /* capture.c */
@@ -574,14 +528,15 @@ void			 capture_end(void);
 void			 capture_snap(const char *, int);
 void			 capture_snapfd(int, int);
 
+/* dbg.c */
+void			 dbg_warn(const char *, ...);
+
 /* draw.c */
 void			 gl_displayh_default(void);
 void			 gl_displayh_stereo(void);
 void			 gl_displayh_select(void);
-void			 gl_run(void (*)(void));
 
 void			 draw_node(struct node *, int);
-void			 draw_node_pipes(struct fvec *);
 void			 make_ground();
 void			 make_cluster();
 void			 make_select();
@@ -595,6 +550,9 @@ void			 ds_refresh(int, int);
 int			 dsc_exists(const char *);
 void			 dsc_clone(int, const char *);
 void			 dsc_load(int, const char *);
+
+void			 dsfi_node(struct datasrc *);
+void			 dsff_node(struct datasrc *);
 
 int			 st_dsmode(void);
 
@@ -611,7 +569,15 @@ void			 flyby_writeinit(struct state *);
 void			 flyby_writeseq(struct state *);
 void			 flyby_writepanel(int);
 void			 flyby_writeselnode(int);
-void			 flyby_writehljstate(int);
+void			 flyby_writehlsc(int);
+
+/* gl.c */
+void			 gl_idleh_default(void);
+void			 gl_idleh_govern(void);
+void			 gl_reshapeh(int, int);
+void			 gl_run(void (*)(void));
+void			 gl_setidleh(void);
+void			 gl_setup(void);
 
 /* hl.c */
 void			 hl_clearall(void);
@@ -630,15 +596,11 @@ void			 job_hl(struct job *);
 void			 prjobs(void);
 
 /* key.c */
-void			 gl_keyh_flyby(unsigned char, int, int);
 void			 gl_keyh_actflyby(unsigned char, int, int);
-void			 gl_keyh_uinput(unsigned char, int, int);
-void			 gl_keyh_panel(unsigned char, int, int);
-void			 gl_keyh_mode(unsigned char, int, int);
-void			 gl_keyh_vmode(unsigned char, int, int);
 void			 gl_keyh_default(unsigned char, int, int);
-void			 gl_spkeyh_default(int, int, int);
+void			 gl_keyh_uinput(unsigned char, int, int);
 void			 gl_spkeyh_actflyby(int, int, int);
+void			 gl_spkeyh_default(int, int, int);
 
 /* load_png.c */
 void 			*png_load(char *, unsigned int *, unsigned int *);
@@ -652,22 +614,14 @@ void			 restart(void);
 /* math.c */
 int			 negmod(int, int);
 
-/* gl.c */
-void			 gl_reshapeh(int, int);
-void			 gl_idleh_govern(void);
-void			 gl_idleh_default(void);
-void			 gl_setidleh(void);
-void			 gl_setup(void);
-
 /* mouse.c */
 void			 gl_motionh_default(int, int);
 void			 gl_motionh_null(int, int);
-void			 gl_motionh_free(int, int);
 void			 gl_motionh_panel(int, int);
-void			 gl_pasvmotionh_default(int, int);
-void			 gl_pasvmotionh_null(int, int);
 void			 gl_mouseh_default(int, int, int, int);
 void			 gl_mouseh_null(int, int, int, int);
+void			 gl_pasvmotionh_default(int, int);
+void			 gl_pasvmotionh_null(int, int);
 
 /* node.c */
 struct node		*node_neighbor(struct node *, int, int);
@@ -683,10 +637,8 @@ void			 obj_batch_start(struct objlist *);
 void			 obj_batch_end(struct objlist *);
 void			*getobj(const void *, struct objlist *);
 void			 getcol(int, size_t, size_t, struct fill *);
-void			 getcol_temp(size_t, struct fill *);
 int			 job_cmp(const void *, const void *);
-int			 fail_cmp(const void *, const void *);
-int			 temp_cmp(const void *, const void *);
+int			 yod_cmp(const void *, const void *);
 
 /* panel.c */
 void			 draw_panels(int);
@@ -699,14 +651,13 @@ struct panel		*panel_for_id(int);
 void			 panel_demobilize(struct panel *);
 
 /* parse.c */
-void			 parse_jobmap(struct datasrc *);
-void			 parse_physmap(struct datasrc *);
-void			 parse_failmap(struct datasrc *);
-void			 parse_tempmap(struct datasrc *);
-void			 parse_badmap(struct datasrc *);
-void			 parse_checkmap(struct datasrc *);
+void			 parse_job(struct datasrc *);
 void			 parse_mem(struct datasrc *);
-void			 parse_qstat(struct datasrc *);
+void			 parse_node(struct datasrc *);
+void			 parse_yod(struct datasrc *);
+
+/* parse-phys.y */
+void			 parse_physconf(void);
 
 /* select.c */
 void			 sel_begin(void);
@@ -718,13 +669,13 @@ void			 gscb_node(int);
 void			 gscb_panel(int);
 
 /* selnode.c */
-void			 sn_toggle(struct node *);
-void			 sn_clear(void);
 void			 sn_add(struct node *);
-void			 sn_insert(struct node *);
+void			 sn_clear(void);
 int			 sn_del(struct node *);
-void			 sn_set(struct node *);
+void			 sn_insert(struct node *);
 void			 sn_replace(struct selnode *, struct node *);
+void			 sn_set(struct node *);
+void			 sn_toggle(struct node *);
 
 /* server.c */
 void			 serv_init(void);
@@ -738,28 +689,29 @@ const char		*status_get(void);
 /* tex.c */
 void			 tex_load(void);
 void			 tex_init(void *, GLint, GLenum, GLuint, GLuint, GLuint);
-void			 tex_update(void);
-void			 tex_restore(void);
 void			 tex_remove(void);
 
+/* tex.c */
+void			 text_wrap(char *, size_t, size_t);
+
 /* tween.c */
-void			 tween_push(int);
-void			 tween_update(void);
 void			 tween_pop(int);
 void			 tween_probe(float *, float, float, float *, float *);
+void			 tween_push(int);
 void			 tween_recalc(float *, float, float, float);
+void			 tween_update(void);
 
 /* uinp.c */
 void			 uinpcb_cmd(void);
 void			 uinpcb_goto(void);
 
 /* vec.c */
-void			 vec_normalize(struct fvec *);
-void			 vec_crossprod(struct fvec *, struct fvec *, struct fvec *);
 void			 vec_cart2sphere(struct fvec *, struct fvec *);
 void			 vec_sphere2cart(struct fvec *, struct fvec *);
-void			 vec_set(struct fvec *, float, float, float);
+void			 vec_crossprod(struct fvec *, struct fvec *, struct fvec *);
+void			 vec_normalize(struct fvec *);
 float			 vec_mag(struct fvec *);
+void			 vec_set(struct fvec *, float, float, float);
 
 /* widget.c */
 void			 draw_box_outline(const struct fvec *, const struct fill *);
@@ -768,16 +720,22 @@ void			 draw_box_tex(const struct fvec *, const struct fill *, GLenum);
 void 			 rgb_contrast(struct fill *);
 void			 hsv_to_rgb(struct fill *);
 
+/* yod.c */
+struct yod		*yod_findbyid(int);
+
 extern struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 extern struct node	*invmap[];
 extern struct node	*wimap[WIDIM_WIDTH][WIDIM_HEIGHT][WIDIM_DEPTH];
 
-extern struct job_state	 jstates[];
+extern struct ivec	 widim;
 
-extern struct objlist	 job_list, temp_list, fail_list, glname_list;
+extern struct nodeclass	 statusclass[];
+extern struct nodeclass	 tempclass[14];		/* XXX */
+extern struct nodeclass	 failclass[6];		/* XXX */
 
-extern struct fail	 fail_notfound;
-extern struct temp	 temp_notfound;
+extern struct objlist	 job_list;
+extern struct objlist	 yod_list;
+extern struct objlist	 glname_list;
 
 extern int		 total_failures;		/* total among all nodes */
 
@@ -792,14 +750,12 @@ extern long		 fps, fps_cnt;
 extern struct panels	 panels;
 extern struct pinfo	 pinfo[];
 extern struct vmode	 vmodes[];
-extern struct dbh	 dbh;
 extern struct selnodes	 selnodes;
 extern size_t		 nselnodes;
 
 extern int		 mode_data_clean;
 extern int		 selnode_clean;
 extern struct fvec	 wivstart, wivdim;		/* repeat position & dim */
-extern struct temp_range temp_map[14]; /* XXX */
 
 extern struct fvec	 tv, tlv, tuv;			/* tween vectors */
 
@@ -823,12 +779,17 @@ extern void		(*gl_displayhp)(void);
 extern void		(*gl_displayhp_old)(void);
 extern struct panel	*panel_mobile;
 
-extern struct fill	 fill_black, fill_light_blue, fill_font, fill_borg;
+extern struct fill	 fill_black;
+extern struct fill	 fill_light_blue;
+extern struct fill	 fill_font;
+extern struct fill	 fill_borg;
+extern struct fill	 fill_nodata;
+
 extern int		 dsp;				/* Data source provider. */
 
 extern struct session	*ssp;
 
-extern int		 hl_jstate;
+extern int		 hlsc;
 extern int		 wid;
 extern struct ivec	 wioff;
 
