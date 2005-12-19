@@ -266,7 +266,7 @@ snap:
 			dsc_load(DS_YOD, ss.ss_sid);
 			break;
 		}
-		st.st_rf &= ~(RF_DATASRC | RF_SMODE);
+		st.st_rf &= ~RF_DATASRC;
 
 		if ((p = panel_for_id(PANEL_DATE)) != NULL)
 			p->p_opts |= POPT_USRDIRTY;
