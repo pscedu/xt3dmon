@@ -45,7 +45,7 @@ egg_borg(void)
 		/* refresh_state(opts); */
 	}
 	/* XXX: RF_INIT ? */
-	st.st_rf |= RF_TEX | RF_CLUSTER | RF_SELNODE;
+	st.st_rf |= RF_CLUSTER | RF_SELNODE;
 }
 
 void
