@@ -4,46 +4,52 @@
 #include "cdefs.h"
 
 #define JINCR		10
-#define FINCR		10
-#define TINCR		10
+#define YINCR		10
 #define GINCR		10
 
 int		 job_eq(const void *, const void *);
-int		 fail_eq(const void *, const void *);
-int		 temp_eq(const void *, const void *);
+int		 yod_eq(const void *, const void *);
 int		 glname_eq(const void *, const void *);
 
 int		 job_cmp(const void *, const void *);
+int		 yod_cmp(const void *, const void *);
 
-struct objlist	 job_list    = { { NULL }, 0, 0, 0, 0, JINCR, sizeof(struct job),  OLF_SORT, job_eq, job_cmp };
-struct objlist	 temp_list   = { { NULL }, 0, 0, 0, 0, TINCR, sizeof(struct temp), 0,	     fail_eq, NULL };
-struct objlist	 fail_list   = { { NULL }, 0, 0, 0, 0, FINCR, sizeof(struct fail), OLF_SORT, temp_eq, NULL };
+struct objlist	 job_list    = { { NULL }, 0, 0, 0, 0, JINCR, sizeof(struct job),    0, job_eq, job_cmp };
+struct objlist	 yod_list    = { { NULL }, 0, 0, 0, 0, YINCR, sizeof(struct yod),    0, yod_eq, yod_cmp };
+struct objlist	 glname_list = { { NULL }, 0, 0, 0, 0, GINCR, sizeof(struct glname), 0, glname_eq, NULL };
 
-struct objlist	 glname_list = { { NULL }, 0, 0, 0, 0, GINCR, sizeof(struct glname), 0,	     glname_eq, NULL };
-
-struct fail fail_notfound = {
-	{ 0 }, 0, FILL_INIT(0.33f, 0.66f, 0.99f), "0"
+struct nodeclass statusclass[] = {
+	{ "Free",		FILL_INIT(1.00f, 1.00f, 1.00f) },
+	{ "Disabled (PBS)",	FILL_INIT(1.00f, 0.00f, 0.00f) },
+	{ "Down (CPA)",		FILL_INIT(0.66f, 0.66f, 0.66f) },
+	{ NULL,			FILL_INIT(0.00f, 0.00f, 0.00f) },
+	{ "Service",		FILL_INIT(1.00f, 1.00f, 0.00f) }
 };
 
-struct temp temp_notfound = {
-	{ 0 }, 0, FILL_INIT(0.00f, 0.00f, 0.00f), "?"
+struct nodeclass tempclass[] = {
+	{ "18-22C",		FILL_INIT(0.0f, 0.0f, 0.4f) },
+	{ "22-26C",		FILL_INIT(0.8f, 0.0f, 0.4f) },
+	{ "26-31C",		FILL_INIT(0.6f, 0.0f, 0.6f) },
+	{ "31-35C",		FILL_INIT(0.4f, 0.0f, 0.8f) },
+	{ "35-40C",		FILL_INIT(0.2f, 0.2f, 1.0f) },
+	{ "40-44C",		FILL_INIT(0.0f, 0.0f, 1.0f) },
+	{ "44-49C",		FILL_INIT(0.0f, 0.6f, 0.6f) },
+	{ "49-53C",		FILL_INIT(0.0f, 0.8f, 0.0f) },
+	{ "53-57C",		FILL_INIT(0.4f, 1.0f, 0.0f) },
+	{ "57-62C",		FILL_INIT(1.0f, 1.0f, 0.0f) },
+	{ "62-66C",		FILL_INIT(1.0f, 0.8f, 0.2f) },
+	{ "66-71C",		FILL_INIT(1.0f, 0.6f, 0.0f) },
+	{ "71-75C",		FILL_INIT(1.0f, 0.0f, 0.0f) },
+	{ "75-80C",		FILL_INIT(1.0f, 0.6f, 0.6f) }
 };
 
-struct temp_range temp_map[] = {
-	{ FILL_INIT(0.0f, 0.0f, 0.4f), "18-22C" },
-	{ FILL_INIT(0.8f, 0.0f, 0.4f), "22-26C" },
-	{ FILL_INIT(0.6f, 0.0f, 0.6f), "26-31C" },
-	{ FILL_INIT(0.4f, 0.0f, 0.8f), "31-35C" },
-	{ FILL_INIT(0.2f, 0.2f, 1.0f), "35-40C" },
-	{ FILL_INIT(0.0f, 0.0f, 1.0f), "40-44C" },
-	{ FILL_INIT(0.0f, 0.6f, 0.6f), "44-49C" },
-	{ FILL_INIT(0.0f, 0.8f, 0.0f), "49-53C" },
-	{ FILL_INIT(0.4f, 1.0f, 0.0f), "53-57C" },
-	{ FILL_INIT(1.0f, 1.0f, 0.0f), "57-62C" },
-	{ FILL_INIT(1.0f, 0.8f, 0.2f), "62-66C" },
-	{ FILL_INIT(1.0f, 0.6f, 0.0f), "66-71C" },
-	{ FILL_INIT(1.0f, 0.0f, 0.0f), "71-75C" },
-	{ FILL_INIT(1.0f, 0.6f, 0.6f), "75-80C" }
+struct nodeclass failclass[] = {
+	{ "0",			FILL_INIT(0.0f, 0.2f, 0.4f) },
+	{ "1-5",		FILL_INIT(0.2f, 0.4f, 0.6f) },
+	{ "6-10",		FILL_INIT(0.4f, 0.6f, 0.8f) },
+	{ "11-15",		FILL_INIT(0.6f, 0.8f, 1.0f) },
+	{ "15-20",		FILL_INIT(0.8f, 1.0f, 1.0f) },
+	{ "20+",		FILL_INIT(1.0f, 1.0f, 1.0f) }
 };
 
 int
@@ -53,15 +59,9 @@ job_eq(const void *elem, const void *arg)
 }
 
 int
-temp_eq(const void *elem, const void *arg)
+yod_eq(const void *elem, const void *arg)
 {
-	return (((struct temp *)elem)->t_cel == *(int *)arg);
-}
-
-int
-fail_eq(const void *elem, const void *arg)
-{
-	return (((struct fail *)elem)->f_fails == *(int *)arg);
+	return (((struct yod *)elem)->y_id == *(int *)arg);
 }
 
 int
@@ -77,15 +77,9 @@ job_cmp(const void *a, const void *b)
 }
 
 int
-temp_cmp(const void *a, const void *b)
+yod_cmp(const void *a, const void *b)
 {
-	return (CMP((*(struct temp **)a)->t_cel, (*(struct temp **)b)->t_cel));
-}
-
-int
-fail_cmp(const void *a, const void *b)
-{
-	return (CMP((*(struct fail **)a)->f_fails, (*(struct fail **)b)->f_fails));
+	return (CMP((*(struct yod **)a)->y_id, (*(struct yod **)b)->y_id));
 }
 
 void
@@ -185,20 +179,4 @@ getcol(int old, size_t n, size_t total, struct fill *fillp)
 		fillp->f_a = 1.0;
 
 	hsv_to_rgb(fillp);
-}
-
-void
-getcol_temp(size_t n, struct fill *fillp)
-{
-	int cel = temp_list.ol_temps[n]->t_cel;
-	int idx;
-
-	if (cel < TEMP_MIN)
-		cel = TEMP_MIN;
-	else if (cel > TEMP_MAX)
-		cel = TEMP_MAX;
-
-	idx = (cel - TEMP_MIN) * TEMP_NTEMPS / (TEMP_MAX - TEMP_MIN);
-
-	*fillp = temp_map[idx].m_fill;
 }
