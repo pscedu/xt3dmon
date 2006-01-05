@@ -11,8 +11,7 @@
 #include <limits.h>
 
 #include "mon.h"
-
-#define MAXFAILS	200
+#include "ustream.h"
 
 struct ivec	 widim;
 int		 total_failures;
@@ -67,7 +66,6 @@ parse_node(struct datasrc *ds)
 	struct node *node;
 	struct fill *fillp;
 	size_t j;
-	FILE *fp;
 
 	fillp = &statusclass[SC_USED].nc_fill;
 	widim.iv_w = widim.iv_h = widim.iv_d = 0;
@@ -83,12 +81,8 @@ parse_node(struct datasrc *ds)
 						node->n_flags |= NF_HIDE;
 					}
 
-	if ((fp = fdopen(ds->ds_fd, "r")) == NULL) {
-		warn("fdopen");
-		return;
-	}
 	lineno = 0;
-	while (fgets(buf, sizeof(buf), fp) != NULL) {
+	while (us_gets(buf, sizeof(buf), ds->ds_us) != NULL) {
 		lineno++;
 		s = buf;
 		while (isspace(*s))
@@ -178,10 +172,8 @@ bad:
 		warnx("node:%d: malformed line [%s] [%s]", lineno,
 		    buf, s);
 	}
-	if (ferror(fp))
+	if (us_error(ds->ds_us))
 		warn("fgets");
-	fclose(fp);
-	ds->ds_fd = -1;
 	errno = 0;
 
 	qsort(job_list.ol_jobs, job_list.ol_tcur, sizeof(struct job *), job_cmp);
@@ -206,16 +198,11 @@ parse_mem(struct datasrc *ds)
 {
 	FILE *fp;
 
-	if ((fp = fdopen(ds->ds_fd, "r")) == NULL) {
-		warn("fdopen");
-		return;
-	}
+	fp = ds->ds_us->us_fp; /* XXXXXXX use us_scanf. */
 	fscanf(fp, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u "
 	    "%*u %*u %*d %*d %*d %*d %*d %*d %*u %lu %ld", &vmem, &rmem);
 	if (ferror(fp))
 		warn("fgets");
-	fclose(fp);
-	ds->ds_fd = -1;
 	errno = 0;
 }
 
@@ -229,14 +216,9 @@ parse_yod(struct datasrc *ds)
 	int lineno, yodid, partid, ncpus;
 	char *s, *p, buf[BUFSIZ];
 	struct yod *y;
-	FILE *fp;
 
-	if ((fp = fdopen(ds->ds_fd, "r")) == NULL) {
-		warn("fdopen");
-		return;
-	}
 	lineno = 0;
-	while (fgets(buf, sizeof(buf), fp) != NULL) {
+	while (us_gets(buf, sizeof(buf), ds->ds_us) != NULL) {
 		lineno++;
 		s = buf;
 		while (isspace(*s))
@@ -265,10 +247,8 @@ bad:
 		warnx("node:%d: malformed line [%s] [%s]", lineno,
 		    buf, s);
 	}
-	if (ferror(fp))
+	if (us_error(ds->ds_us))
 		warn("fgets");
-	fclose(fp);
-	ds->ds_fd = -1;
 	errno = 0;
 }
 
@@ -288,18 +268,13 @@ parse_job(struct datasrc *ds)
 	char state, *t, *s, *q, buf[BUFSIZ], *next;
 	struct job j_fake, *job;
 	int jobid;
-	FILE *fp;
 
 	s = NULL; /* gcc */
-	if ((fp = fdopen(ds->ds_fd, "r")) == NULL) {
-		warn("fdopen");
-		return;
-	}
 	jobid = 0;
 	state = '\0';
 	for (;;) {
-		next = fgets(buf, sizeof(buf), fp);
-		if (next == NULL && ferror(fp)) {
+		next = us_gets(buf, sizeof(buf), ds->ds_us);
+		if (next == NULL && us_error(ds->ds_us)) {
 			warn("%s", _PATH_JOB);
 			break;
 		}
@@ -330,7 +305,7 @@ parse_job(struct datasrc *ds)
 			j_fake.j_tmuse = 0;
 			j_fake.j_ncpus = 0;
 
-			if (feof(fp))
+			if (us_eof(ds->ds_us))
 				break;
 			else {
 				s += strlen(q);
@@ -397,6 +372,4 @@ parse_job(struct datasrc *ds)
 			j_fake.j_tmuse += strtoul(t, NULL, 10);
 		}
 	}
-	fclose(fp);
-	ds->ds_fd = -1;
 }

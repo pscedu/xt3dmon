@@ -9,6 +9,7 @@
 
 #include "cdefs.h"
 #include "mon.h"
+#include "ustream.h"
 
 #define _RPATH_NODE	"/xt3-data/node"
 #define _RPATH_JOB	"/xt3-data/job"
@@ -52,8 +53,8 @@ ds_close(struct datasrc *ds)
 	switch (ds->ds_dsp) {
 	case DSP_LOCAL:
 	case DSP_REMOTE:
-		if (ds->ds_fd != -1)
-			close(ds->ds_fd);
+		if (ds->ds_us->us_fd != -1)
+			us_close(ds->ds_us);
 		break;
 	}
 }
@@ -103,12 +104,12 @@ ds_refresh(int type, int flags)
 	ds = ds_open(type);
 	switch (ds->ds_dsp) {
 	case DSP_LOCAL:
-		if (ds->ds_fd == -1) {
+		if (ds->ds_us->us_fd == -1) {
 			readit = 0;
 			break;
 
 		}
-		if (fstat(ds->ds_fd, &st) == -1)
+		if (fstat(ds->ds_us->us_fd, &st) == -1)
 			err(1, "fstat %s", ds->ds_lpath);
 		/* XXX: no way to tell if it was modified with <1 second resolution. */
 		if (st.st_mtime <= ds->ds_mtime &&
@@ -132,7 +133,7 @@ ds_refresh(int type, int flags)
 		switch (ds->ds_dsp) {
 		case DSP_LOCAL:
 		case DSP_REMOTE:
-			if (ds->ds_fd == -1) {
+			if (ds->ds_us->us_fd == -1) {
 				if (flags & DSF_CRIT)
 					err(1, "datasrc (%s) open failed",
 					    ds->ds_name);
@@ -150,16 +151,20 @@ struct datasrc *
 ds_open(int type)
 {
 	struct datasrc *ds;
-	int mod;
+	int mod, fd;
 
 	mod = 0;
 	ds = ds_get(type);
 	switch (ds->ds_dsp) {
 	case DSP_LOCAL:
-		ds->ds_fd = open(ds->ds_lpath, O_RDONLY);
+		fd = open(ds->ds_lpath, O_RDONLY);
+		/* XXX: check for error */
+		ds->ds_us = us_init(fd, UST_FILE, "r");
 		break;
 	case DSP_REMOTE:
-		ds->ds_fd = ds_http(ds->ds_rpath);
+		fd = ds_http(ds->ds_rpath);
+		/* XXX: check for error */
+		ds->ds_us = us_init(fd, UST_SOCK, NULL);
 		break;
 	}
 	return (ds);
@@ -235,8 +240,9 @@ dsc_clone(int type, const char *sid)
 	switch (ds->ds_dsp) {
 	case DSP_LOCAL:
 	case DSP_REMOTE:
-		while ((n = read(ds->ds_fd, &buf, sizeof(buf))) != -1 &&
-		    n != 0)
+		/* XXXXXXXX: use us_read */
+		while ((n = read(ds->ds_us->us_fd, &buf,
+		    sizeof(buf))) != -1 && n != 0)
 			if (write(fd, buf, n) != n)
 				err(1, "write");
 		if (n == -1)
@@ -252,19 +258,21 @@ dsc_open(int type, const char *sid)
 {
 	struct datasrc *ds;
 	char fn[PATH_MAX];
+	int fd;
 
 	ds = ds_get(type);
 	snprintf(fn, sizeof(fn), "%s/%s/%s", _PATH_SESSIONS, sid,
 	    ds->ds_name);
-	if ((ds->ds_fd = open(fn, O_RDONLY, 0)) == -1)
+	if ((fd = open(fn, O_RDONLY, 0)) == -1)
 		return (NULL);
+	ds->ds_us = us_init(fd, UST_FILE, "r");
 	return (ds);
 }
 
 __inline void
 dsc_close(struct datasrc *ds)
 {
-	close(ds->ds_fd);
+	us_close(ds->ds_us);
 }
 
 void
