@@ -1,18 +1,5 @@
 /* $Id$ */
 
-#define UST_FILE 0
-#define UST_SOCK 1
-
-struct ustream {
-	int		 us_fd;
-	int		 us_type;
-	FILE		*us_fp;
-	ssize_t		 usi_lastread;
-	unsigned char	 usi_buf[BUFSIZ];
-	unsigned char	*usi_bufstart;
-	unsigned char	*usi_bufend;
-};
-
 struct us *
 us_init(int fd, int type)
 {
