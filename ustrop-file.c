@@ -1,22 +1,35 @@
 /* $Id$ */
 
-struct ustream {
-	int us_fd;
-	union {
-		FILE *us_fp;
-	};
-};
+/*
+ * This file is worthless.
+ *
+ * This universal stream interface was created so fgets()
+ * can be used on winsocks.  Since UNIX provides the same
+ * syscalls on all descriptors (not special ones for sockets),
+ * nothing is really needed here.
+ */
 
-struct us *
-us_init(int fd, const char *modes)
+#include <sys/types.h>
+
+#include <err.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include "ustream.h"
+
+struct ustream *
+us_init(int fd, int type, const char *modes)
 {
-	struct us *usp;
+	struct ustream *usp;
 
 	if ((usp = malloc(sizeof(*usp))) == NULL)
 		err(1, "malloc");
 	memset(usp, 0, sizeof(*usp));
 
 	usp->us_fd = fd;
+	usp->us_type = type;
 
 	if ((usp->us_fp = fdopen(fd, modes)) == NULL)
 		err(1, "fdopen");
@@ -41,7 +54,7 @@ us_close(struct ustream *usp)
 ssize_t
 us_write(struct ustream *usp, void *buf, size_t siz)
 {
-	return (write(usp->us_fp, buf, siz));
+	return (write(usp->us_fd, buf, siz));
 }
 
 char *
