@@ -44,7 +44,6 @@ int snprintf(char *, size_t, const char *, ...);
 int vsnprintf(char *, size_t, const char *, va_list);
 int gettimeofday(struct timeval *, void *);
 
-
 /* Taken from sys/time.h */
 # define timersub(a, b, result)                                             \
 do {                                                                        \
@@ -63,6 +62,7 @@ do {                                                                        \
 
 typedef UINT16 u_int16_t;
 typedef signed int ssize_t;
+typedef u_int16_t in_port_t;
 
 #define mkdir(path, mode) mkdir(path)
 
@@ -73,7 +73,6 @@ typedef signed int ssize_t;
 		_tm = localtime(clock);	\
 		*result = *_tm;		\
 	} while (0)
-
 
 #elif defined(__APPLE_CC__)
 
@@ -86,7 +85,7 @@ typedef signed int ssize_t;
 # include <unistd.h>
 # include <netdb.h>
 
-# define port_t tcpip_port_t
+// # define port_t tcpip_port_t
 
 #else /* UNIX */
 
