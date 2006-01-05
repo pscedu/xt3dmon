@@ -66,3 +66,4 @@ reminders:
 82. add recursive check to gl_run() to protect against that kind of
     invocation
 83. kill gl_run()
+84. provide if-modified-since in http headers
