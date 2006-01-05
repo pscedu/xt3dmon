@@ -493,7 +493,7 @@ struct datasrc {
 	void		(*ds_parsef)(struct datasrc *);
 	void		(*ds_initf)(struct datasrc *);
 	void		(*ds_finif)(struct datasrc *);
-	int		  ds_fd;
+	struct ustream	 *ds_us;
 };
 
 #define DSF_AUTO	(1<<0)
