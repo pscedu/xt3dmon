@@ -19,7 +19,6 @@ snprintf(char *buf, size_t sz, const char *fmt, ...)
 	return (len);
 }
 
-
 int
 vsnprintf(char *buf, size_t sz, const char *fmt, va_list ap)
 {

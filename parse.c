@@ -190,7 +190,6 @@ bad:
 	    ++widim.iv_h != WIDIM_HEIGHT ||
 	    ++widim.iv_d != WIDIM_DEPTH)
 		errx(1, "wired cluster dimensions have changed");
-
 }
 
 void
