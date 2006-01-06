@@ -18,7 +18,7 @@
 #define RDS_HOST	"mugatu.psc.edu"
 #define RDS_PORT	80
 
-int ds_http(const char *);
+struct ustream *ds_http(const char *);
 
 #ifndef _LIVE_DSP
 # define _LIVE_DSP DSP_REMOTE
@@ -53,8 +53,7 @@ ds_close(struct datasrc *ds)
 	switch (ds->ds_dsp) {
 	case DSP_LOCAL:
 	case DSP_REMOTE:
-		if (ds->ds_us->us_fd != -1)
-			us_close(ds->ds_us);
+		us_close(ds->ds_us);
 		break;
 	}
 }
@@ -130,10 +129,12 @@ ds_refresh(int type, int flags)
 		}
 		break;
 	}
+
 	if (readit) {
 		ds->ds_flags &= ~DSF_FORCE;
 		ds_read(ds);
 	}
+
 	ds_close(ds);
 }
 
@@ -152,15 +153,14 @@ ds_open(int type)
 		ds->ds_us = us_init(fd, UST_FILE, "r");
 		break;
 	case DSP_REMOTE:
-		if ((fd = ds_http(ds->ds_rpath)) == -1)
+		if ((ds->ds_us = ds_http(ds->ds_rpath)) == NULL)
 			return (NULL);
-		ds->ds_us = us_init(fd, UST_SOCK, "rw");
 		break;
 	}
 	return (ds);
 }
 
-int
+struct ustream *
 ds_http(const char *path)
 {
 	struct http_req r;
