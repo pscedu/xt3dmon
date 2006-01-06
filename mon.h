@@ -509,6 +509,9 @@ struct session {
 	char		 ss_sid[SID_LEN + 1];
 };
 
+/* arch.c */
+void			 arch_init(void);
+
 /* callout.c */
 void			 cocb_fps(int);
 void			 cocb_datasrc(int);
@@ -538,9 +541,9 @@ void			 gl_displayh_stereo(void);
 void			 gl_displayh_select(void);
 
 void			 draw_node(struct node *, int);
-void			 make_ground();
-void			 make_cluster();
-void			 make_select();
+void			 make_ground(void);
+void			 make_cluster(void);
+void			 make_select(void);
 float			 snap_to_grid(float, float, float);
 
 /* ds.c */
@@ -588,7 +591,7 @@ void			 hl_refresh(void);
 void			 hl_seljobs(void);
 
 /* http.c */
-int			 http_open(struct http_req *, struct http_res *);
+struct ustream	*http_open(struct http_req *, struct http_res *);
 
 /* job.c */
 struct job		*job_findbyid(int);
