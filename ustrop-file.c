@@ -55,7 +55,7 @@ us_close(struct ustream *usp)
  * Yes, this shouldn't be here, but it's needed for sockets.
  */
 ssize_t
-us_write(struct ustream *usp, void *buf, size_t siz)
+us_write(struct ustream *usp, const void *buf, size_t siz)
 {
 	return (write(usp->us_fd, buf, siz));
 }
