@@ -8,27 +8,23 @@
 
 #include "cdefs.h"
 #include "mon.h"
+#include "ustream.h"
 
 int
 net_connect(const char *host, in_port_t port)
 {
 	struct addrinfo hints, *ai, *res0;
-	int want, error, s;
+	int error, s;
 	char *sport, *cause;
 
-	want = snprintf(NULL, 0, "%d", port);
-	if (want == -1)
-		err(1, "snprintf");
-	want++;
-	if ((sport = malloc(want)) == NULL)
-		err(1, "malloc");
-	snprintf(sport, want, "%d", port);
+	if (asprintf(&sport, "%d", port) == -1)
+		err(1, "asprintf");
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = PF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 	if ((error = getaddrinfo(host, sport, &hints, &res0)) != 0)
-		err(1, "getaddrinfo %s", host);
+		errx(1, "getaddrinfo %s: %s", host, gai_strerror(error));
 	free(sport);
 
 	s = -1;
@@ -53,44 +49,43 @@ net_connect(const char *host, in_port_t port)
 	return (s);
 }
 
-int
+struct ustream *
 http_open(struct http_req *req, __unused struct http_res *res)
 {
+	struct ustream *us;
 	const char **hdr;
 	char buf[BUFSIZ];
-	int s, sdup;
-	FILE *fp;
+	int fd;
 
-	s = net_connect(req->htreq_server, req->htreq_port);
+	fd = net_connect(req->htreq_server, req->htreq_port);
+	if (fd == -1)
+		return (NULL);
+	us = us_init(fd, UST_SOCK, "rw");
+
 	snprintf(buf, sizeof(buf), "%s %s %s\r\n", req->htreq_method,
 	    req->htreq_url, req->htreq_version);
-	if (write(s, buf, strlen(buf)) != (int)strlen(buf))
-		err(1, "write");
+	if (us_write(us, buf, strlen(buf)) != (int)strlen(buf))
+		err(1, "us_write");
 	/* XXX: disgusting */
 	if (strcmp(req->htreq_version, "HTTP/1.1") == 0) {
 		snprintf(buf, sizeof(buf), "Host: %s\r\nConnection: close\r\n",
 		    req->htreq_server);
-		if (write(s, buf, strlen(buf)) != (int)strlen(buf))
-			err(1, "write");
+		if (us_write(us, buf, strlen(buf)) != (int)strlen(buf))
+			err(1, "us_write");
 	}
 	for (hdr = req->htreq_extra; hdr != NULL; hdr++)
-		if (write(s, *hdr, strlen(*hdr)) != (int)strlen(*hdr))
-			err(1, "write");
+		if (us_write(us, *hdr, strlen(*hdr)) != (int)strlen(*hdr))
+			err(1, "us_write");
 	snprintf(buf, sizeof(buf), "\r\n");
-	if (write(s, buf, strlen(buf)) != (int)strlen(buf))
-		err(1, "write");
-	if ((sdup = dup(s)) == -1)
-		err(1, "dup");
-	if ((fp = fdopen(sdup, "r")) == NULL)
-		err(1, "fdopen");
-	setbuf(fp, NULL);
-	/* XXX: check status */
-	while (fgets(buf, sizeof(buf), fp) != NULL)
+	if (us_write(us, buf, strlen(buf)) != (int)strlen(buf))
+		err(1, "us_write");
+
+	/* XXX: check http status */
+	while (us_gets(buf, sizeof(buf), us) != NULL)
 		if (strcmp(buf, "\r\n") == 0)
 			break;
-	if (ferror(fp))
-		err(1, "fgets");
-	fclose(fp);
+	if (us_error(us))
+		err(1, "us_gets");
 	errno = 0;
-	return (s);
+	return (us);
 }
