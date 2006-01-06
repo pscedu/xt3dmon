@@ -191,14 +191,8 @@ rebuild(int opts)
 	if (opts & RF_DATASRC) {
 		mode_data_clean = 0;
 		ds_refresh(DS_NODE, 0);
-		switch (st.st_mode) {
-		case SM_JOB:
-			ds_refresh(DS_JOB, 0);
-			break;
-		case SM_YOD:
-			ds_refresh(DS_YOD, 0);
-			break;
-		}
+		ds_refresh(DS_JOB, 0);
+		ds_refresh(DS_YOD, 0);
 		ds_refresh(DS_MEM, DSF_IGN);
 		hl_refresh();
 	}
