@@ -34,10 +34,10 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ws2_32.lib libpng.lib libmysql.lib glut32.lib"
+				AdditionalDependencies="ws2_32.lib libpng.lib glut32.lib opengl32.lib glu32.lib"
 				OutputFile="$(OutDir)/xt3dmon.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;C:\Program Files\MySQL\MySQL Server 4.1\lib\opt&quot;"
+				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/xt3dmon.pdb"
 				SubSystem="1"
@@ -118,6 +118,9 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
+				RelativePath="..\..\compat\arch.c">
+			</File>
+			<File
 				RelativePath="..\..\buf.c">
 			</File>
 			<File
@@ -128,9 +131,6 @@
 			</File>
 			<File
 				RelativePath="..\..\capture.c">
-			</File>
-			<File
-				RelativePath="..\..\db.c">
 			</File>
 			<File
 				RelativePath="..\..\dbg.c">
@@ -148,6 +148,9 @@
 				RelativePath="..\..\flyby.c">
 			</File>
 			<File
+				RelativePath="..\..\gl.c">
+			</File>
+			<File
 				RelativePath="..\..\hl.c">
 			</File>
 			<File
@@ -161,6 +164,9 @@
 			</File>
 			<File
 				RelativePath="..\..\main.c">
+			</File>
+			<File
+				RelativePath="..\..\math.c">
 			</File>
 			<File
 				RelativePath="..\..\mouse.c">
@@ -196,6 +202,9 @@
 				RelativePath="..\..\tex.c">
 			</File>
 			<File
+				RelativePath="..\..\text.c">
+			</File>
+			<File
 				RelativePath="..\..\tween.c">
 			</File>
 			<File
@@ -206,6 +215,9 @@
 			</File>
 			<File
 				RelativePath="..\..\widget.c">
+			</File>
+			<File
+				RelativePath="..\..\yod.c">
 			</File>
 			<Filter
 				Name="compat"
@@ -231,6 +243,9 @@
 				<File
 					RelativePath="..\..\compat\snprintf.c">
 				</File>
+				<File
+					RelativePath="..\..\compat\ustream.c">
+				</File>
 			</Filter>
 		</Filter>
 		<Filter
@@ -247,10 +262,16 @@
 				RelativePath="..\..\compat.h">
 			</File>
 			<File
+				RelativePath="..\..\math.h">
+			</File>
+			<File
 				RelativePath="..\..\mon.h">
 			</File>
 			<File
 				RelativePath="..\..\pathnames.h">
+			</File>
+			<File
+				RelativePath="..\..\phys.h">
 			</File>
 			<File
 				RelativePath="..\..\queue.h">
@@ -260,6 +281,9 @@
 						Name="VCCustomBuildTool"
 						CommandLine=""/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\ustream.h">
 			</File>
 		</Filter>
 		<Filter
