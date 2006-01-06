@@ -2,6 +2,8 @@
 
 #include "compat.h"
 
+#include <err.h>
+
 void
 arch_init(void)
 {
@@ -9,5 +11,5 @@ arch_init(void)
 	int error;
 
 	if ((error = WSAStartup(MAKEWORD(2, 2), &wsa)) != 0)
-		errx("WSAStartup: %d", error);
+		errx(1, "WSAStartup: %d", error);
 }
