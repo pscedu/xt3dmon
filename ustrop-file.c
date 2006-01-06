@@ -35,7 +35,6 @@ us_init(int fd, int type, const char *modes)
 		err(1, "fdopen");
 
 	return (usp);
-
 }
 
 int
