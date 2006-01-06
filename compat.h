@@ -39,10 +39,12 @@
 # define PATH_MAX BUFSIZ
 
 int asprintf(char **, const char *, ...);
-int ffs(int);
+int vasprintf(char **, const char *, va_list);
 int snprintf(char *, size_t, const char *, ...);
 int vsnprintf(char *, size_t, const char *, va_list);
+
 int gettimeofday(struct timeval *, void *);
+int ffs(int);
 
 /* Taken from sys/time.h */
 # define timersub(a, b, result)                                             \
