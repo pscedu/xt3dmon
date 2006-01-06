@@ -124,6 +124,7 @@
 #define DSP_REMOTE	1
 
 /* Data sources -- order impacts datasrc[] in ds.c. */
+#define DS_INV		(-1)
 #define DS_NODE		0
 #define DS_JOB		1
 #define DS_YOD		2

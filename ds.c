@@ -290,7 +290,7 @@ dsc_load(int type, const char *sid)
 int
 st_dsmode(void)
 {
-	int ds = -1;
+	int ds = DS_INV;
 
 	switch (st.st_mode) {
 	case SM_JOB:
