@@ -33,6 +33,10 @@ us_init(int fd, int type, const char *modes)
 
 	if ((usp->us_fp = fdopen(fd, modes)) == NULL)
 		err(1, "fdopen");
+	
+	/* Disable libc stream buffering to avoid blocking. */
+	if (type == UST_SOCK)
+		setbuf(usp->us_fp, NULL);
 
 	return (usp);
 }
