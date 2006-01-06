@@ -233,6 +233,9 @@ main(int argc, char *argv[])
 
 	progname = argv[0];
 	sav_argv = argv;
+
+	arch_init();
+
 	gl_displayhp = gl_displayh_default;
 
 	flags = GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE;
