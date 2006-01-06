@@ -100,15 +100,19 @@ ds_refresh(int type, int flags)
 	struct stat st;
 	int readit;
 
-	readit = 1;
 	ds = ds_open(type);
+
+	if (ds == NULL) {
+		if (flags & DSF_CRIT)
+			err(1, "datasrc (%s) open failed", ds->ds_name);
+		else if ((flags & DSF_IGN) == 0)
+			warn("datasrc (%s) open failed", ds->ds_name);
+		return;
+	}
+
+	readit = 1;
 	switch (ds->ds_dsp) {
 	case DSP_LOCAL:
-		if (ds->ds_us->us_fd == -1) {
-			readit = 0;
-			break;
-
-		}
 		if (fstat(ds->ds_us->us_fd, &st) == -1)
 			err(1, "fstat %s", ds->ds_lpath);
 		/* XXX: no way to tell if it was modified with <1 second resolution. */
@@ -129,20 +133,6 @@ ds_refresh(int type, int flags)
 	if (readit) {
 		ds->ds_flags &= ~DSF_FORCE;
 		ds_read(ds);
-	} else {
-		switch (ds->ds_dsp) {
-		case DSP_LOCAL:
-		case DSP_REMOTE:
-			if (ds->ds_us->us_fd == -1) {
-				if (flags & DSF_CRIT)
-					err(1, "datasrc (%s) open failed",
-					    ds->ds_name);
-				else if ((flags & DSF_IGN) == 0)
-					warn("datasrc (%s) open failed",
-					    ds->ds_name);
-			}
-			break;
-		}
 	}
 	ds_close(ds);
 }
@@ -157,14 +147,14 @@ ds_open(int type)
 	ds = ds_get(type);
 	switch (ds->ds_dsp) {
 	case DSP_LOCAL:
-		fd = open(ds->ds_lpath, O_RDONLY);
-		/* XXX: check for error */
+		if ((fd = open(ds->ds_lpath, O_RDONLY)) == -1)
+			return (NULL);
 		ds->ds_us = us_init(fd, UST_FILE, "r");
 		break;
 	case DSP_REMOTE:
-		fd = ds_http(ds->ds_rpath);
-		/* XXX: check for error */
-		ds->ds_us = us_init(fd, UST_SOCK, NULL);
+		if ((fd = ds_http(ds->ds_rpath)) == -1)
+			return (NULL);
+		ds->ds_us = us_init(fd, UST_SOCK, "rw");
 		break;
 	}
 	return (ds);
