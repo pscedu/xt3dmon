@@ -128,8 +128,8 @@ serv_init(void)
 	}
 
 	gl_displayhp = serv_displayh;
-	rebuild(RF_DATASRC | RF_CLUSTER);
-	st.st_rf &= ~(RF_DATASRC | RF_CLUSTER);
+//	rebuild(RF_DATASRC | RF_CLUSTER);
+//	st.st_rf &= ~(RF_DATASRC | RF_CLUSTER);
 
 	qsort(sv_cmds, sizeof(sv_cmds) / sizeof(sv_cmds[0]),
 	    sizeof(sv_cmds[0]), svc_cmp);
@@ -248,30 +248,24 @@ snap:
 
 	if (ss.ss_sid) {
 		struct panel *p;
-		int ds;
+		int dsm;
 
-		ds = st_dsmode();
 		if (!dsc_exists(ss.ss_sid)) {
 			nsessions++;
 			dsc_clone(DS_NODE, ss.ss_sid);
 			dsc_clone(DS_JOB, ss.ss_sid);
 			dsc_clone(DS_YOD, ss.ss_sid);
 		}
-		dsc_load(ds, ss.ss_sid);
-		switch (ds) {
-		case DS_JOB:
-			dsc_load(DS_JOB, ss.ss_sid);
-			break;
-		case DS_YOD:
-			dsc_load(DS_YOD, ss.ss_sid);
-			break;
-		}
+		dsc_load(DS_NODE, ss.ss_sid);
+
+		dsm = st_dsmode();
+		if (dsm != DS_INV)
+			dsc_load(dsm, ss.ss_sid);
 		st.st_rf &= ~RF_DATASRC;
 
 		if ((p = panel_for_id(PANEL_DATE)) != NULL)
 			p->p_opts |= POPT_USRDIRTY;
-	} else
-		st.st_rf |= RF_DATASRC; /* grab new data */
+	}
 	if (ss.ss_jobid) {
 		struct job *j;
 
