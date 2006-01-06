@@ -1,9 +1,19 @@
 /* $Id$ */
 
-struct us *
-us_init(int fd, int type)
+#include "compat.h"
+
+#include <err.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "cdefs.h"
+#include "ustream.h"
+
+struct ustream *
+us_init(int fd, int type, __unused const char *modes)
 {
-	struct us *usp;
+	struct ustream *usp;
 
 	if ((usp = malloc(sizeof(*usp))) == NULL)
 		err(1, "malloc");
@@ -18,26 +28,22 @@ us_init(int fd, int type)
 int
 us_close(struct ustream *usp)
 {
-	int fd, ret;
-	FILE *fp;
-
-	fp = usp->us_fp;
-	fd = usp->us_fd;
-	free(usp);
+	int ret;
 
 	switch (usp->us_type) {
 	case UST_FILE:
-		ret = fclose(fp);
+		ret = fclose(usp->us_fp);
 		break;
 	case UST_SOCK:
-		ret = closesock(fd);
+		ret = closesocket(usp->us_fd);
 		break;
 	}
+	free(usp);
 	return (ret);
 }
 
 ssize_t
-us_write(struct ustream *usp, void *buf, size_t siz)
+us_write(struct ustream *usp, const void *buf, size_t siz)
 {
 	ssize_t written;
 
@@ -48,7 +54,7 @@ errx(1, "unimplemented");
 //		written = write(usp->us_fd, buf, siz);
 		break;
 	case UST_SOCK:
-		written = send(usp->us_fd, buf, siz);
+		written = send(usp->us_fd, buf, siz, 0);
 		break;
 	}
 	return (written);
@@ -80,7 +86,7 @@ us_gets(char *s, int siz, struct ustream *usp)
 	ret = NULL; /* gcc */
 	switch (usp->us_type) {
 	case UST_FILE:
-		ret = fgets(s, siz, usp->usp_fp);
+		ret = fgets(s, siz, usp->us_fp);
 		break;
 	case UST_SOCK:
 		ret = s;
@@ -92,7 +98,7 @@ us_gets(char *s, int siz, struct ustream *usp)
 					endp = nl;
 				else
 					endp = usp->us_bufend;
-				chunksiz = MIN(endp - usp->us_startpos, remaining);
+				chunksiz = MIN(endp - usp->us_bufstart + 1, remaining);
 
 				/* Copy all data up to any newline. */
 				memcpy(s + total, usp->us_bufstart, chunksiz);
@@ -106,8 +112,8 @@ us_gets(char *s, int siz, struct ustream *usp)
 			}
 
 			/* Not found, read more. */
-			chunksiz = MIN(remaining, sizeof(buf));
-			nr = recv(usp->us_fd, buf, chunksiz);
+			chunksiz = MIN(remaining, sizeof(usp->us_buf));
+			nr = recv(usp->us_fd, usp->us_buf, chunksiz, 0);
 			usp->us_lastread = nr;
 
 			if (nr == -1 || nr == 0)
@@ -120,7 +126,7 @@ us_gets(char *s, int siz, struct ustream *usp)
 		 * This should be safe because total is
 		 * bound by siz - 1.
 		 */
-		s[total - 1] = '\0';
+		s[total] = '\0';
 		break;
 	}
 	return (ret);
