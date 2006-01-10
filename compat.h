@@ -43,8 +43,23 @@ int vasprintf(char **, const char *, va_list);
 int snprintf(char *, size_t, const char *, ...);
 int vsnprintf(char *, size_t, const char *, va_list);
 
+int execvp(const char *, const char *const *);
 int gettimeofday(struct timeval *, void *);
 int ffs(int);
+
+/* Window won't include can't "math.h" and <math.h>. */
+double asin(double);
+double acos(double);
+double atan(double);
+double sin(double);
+double cos(double);
+double tan(double);
+double sqrt(double);
+double pow(double, double);
+double floor(double);
+double fabs(double);
+double log(double);
+double fmod(double, double);
 
 /* Taken from sys/time.h */
 # define timersub(a, b, result)                                             \
