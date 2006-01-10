@@ -9,11 +9,13 @@
 int
 vasprintf(char **ptr, const char *fmt, va_list ap)
 {
+	va_list apdup;
 	int len;
 
-	len = vsnprintf(NULL, 0, fmt, ap);
-	va_end(ap);
+//	va_copy(apdup, ap);
+	apdup = ap;
 
+	len = vsnprintf(NULL, 0, fmt, ap);
 	if (len == -1)
 			return (-1);
 
@@ -21,8 +23,10 @@ vasprintf(char **ptr, const char *fmt, va_list ap)
 	if ((*ptr = malloc(len)) == NULL)
 		return (-1);
 
-	va_start(ap, fmt);
 	len = vsnprintf(*ptr, len, fmt, ap);
+//	if (len == -1)
+//			return (-1);
+	va_end(apdup);
 
 	return (0);
 }
