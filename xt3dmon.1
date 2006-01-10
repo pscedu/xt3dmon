@@ -1,5 +1,5 @@
 .\" $Id$
-.Dd November 1, 2005
+.Dd January 10, 2006
 .Dt XT3DMON 1
 .ds volume Pittsburgh Supercomputing Center
 .\" .ds vT Pittsburgh Supercomputing Center
@@ -9,15 +9,15 @@
 .Nd XT3 monitor
 .Sh SYNOPSIS
 .Nm xt3dmon
-.Op Fl adlp
+.Op Fl adpv
 .Sh DESCRIPTION
 .Nm
 is a 3D program that graphically displays various data sets of
 information about the BigBen Cray
 .Tn XT3
 cluster.
-At regular intervals, the data are re-read and the display is
-updated to reflect what is happening in reality.
+Data about the cluster nodes are read at startup and can be continually
+refreshed so that the display is reflects reality.
 .Pp
 The options are as follows:
 .Bl -tag -width Ds
@@ -35,49 +35,44 @@ mode \(em that is,
 will listen on TCP connections to accept requests from clients to
 generate screen captures and will send the resulting images as the
 response.
-.It Fl l
-Enable
-.Dq live
-mode \(em that is, establish a live connection to the
-.Li sdb
-database and query data in realtime.
-A connection is made to the local host to port 3306.
-It is assumed that this port is being SSH-forwarded to a host inside
-the XT3 network, with a command such as:
-.Pp
-.Dl $ ssh -NfL 3306:sdb:3306 phantom.psc.edu
 .It Fl p
 Enable passive stereo mode.
 In this mode, two windows are created and maintained individually,
 for use by a stereo projector overlaying the right side of the
 available screen space with the left.
+.It Fl v
+Enable verbose mode (server-mode debugging messages).
 .El
 .Pp
-There are three data modes available, which help visualize the state
-of the machine.
+There are four different data displays available: job, yod, temperature,
+and failure information (see the key assignments below for how to enable
+these modes).
+Each mode assigns every node a color corresponding to its status with
+respect to that display mode.
+.Pp
 In job mode, cluster nodes may be in any of the following states,
-differentiated by color and/or texture:
+differentiated by color/texture:
 .Pp
 .Bl -tag -width "Disabled (PBS)" -offset indent -compact
 .It Free
-The node is available.
+The node is available to run jobs.
 .It Disabled (PBS)
-The node is not accounted for by PBS.
-.It Disabled (HW)
-The node is disabled in the physical map (hardware).
+The node is not being used to run jobs via PBS.
+.It Down (CPA)
+The node is marked down by CPA.
 .It Used
-The node is in use by a job.
+A job is assigned to and is running on the node.
+These nodes are colored by their respective job.
 .It Service
 The node is a service node, not a compute node.
-.\" .It Unaccounted
-.\" The node is not accounted for in the physical map.
-.It Bad
-The node has failed required probe tests.
-.It Checking
-The node is currently being probe tested.
 .El
 .Pp
-The failure and temperature modes work similarly.
+The yod display similarily shows this information but instead shows
+yod information instead of job information about the used nodes.
+.Pp
+The failure and temperature modes color each node according to its 
+respective failure statistics or temperature.
+.Pp
 The legend panel may be activated (see the
 .Ic pl
 command) to display all possible node states in each
@@ -101,11 +96,10 @@ Click a node for extended information.
 Hold shift and click to add nodes to the selection.
 Hold control and click to remove nodes from the selection.
 .Pp
-While holding control, scroll the mouse to revolve around the cluster
-view.
+Click, hold, and drag the mouse to revolve around the cluster view.
 .Pp
-While holding shift, scroll the mouse to rotate the theta and phi of the
-camera view.
+While holding the shift key, click, hold, and drag the mouse to maneuver
+the camera angles.
 .It Ic ad
 Display only PBS-disabled nodes.
 .It Ic af
@@ -148,8 +142,10 @@ Switch to failure data mode.
 Switch to job data mode (default).
 .It Ic mt
 Switch to temperature data mode.
+.It Ic my
+Switch to yod data mode.
 .It Ic O
-Return the camera to the origin (0,0,0).
+Move the camera to a bird's eye view of the cluster.
 .It Ic oD
 Toggle drawing to the screen.
 .It Ic od
@@ -170,6 +166,8 @@ Toggle display of the ground and axes.
 Toggle the display of node labels.
 .It Ic oM
 Toggle the display of modules.
+.It Ic on
+Toggle node animation for when nodes move positions.
 .It Ic oP
 Toggle the display of pipes to the wired neighbors of any selected nodes.
 .It Ic op
@@ -220,7 +218,14 @@ Switch to the wired viewing mode with the cluster drawn continuously.
 .Ic ]x , ]y , ]z ,
 .Ic ]]
 .Xc
-Adjust the wired viewing mode node spacing factor.
+Adjust the wired cluster viewing mode node spacing factor.
+.It Xo
+.Ic {x , {y , {z ,
+.Ic {{ ,
+.Ic }x , }y , }z ,
+.Ic }}
+.Xc
+Adjust the wired cluster viewing mode node offset factor.
 .It Ic + , _
 Adjust job node translucency.
 .It Ic = , -
@@ -228,25 +233,18 @@ Adjust other node translucency.
 .El
 .Sh FILES
 .Bl -tag -width Pa -compact
-.It Pa data/texture Ns Em %d Ns Pa .png
+.It Pa img/texture Ns Em %d Ns Pa .png
 node state textures
-.It Pa data/font.png
+.It Pa img/font.png
 font texture used for node labels
-.It Pa data/rtrtrace
-physical mapping
-.It Pa data/nids_list_phantom
-job mapping
-.It Pa data/bad_list_phantom
-bad list
-.It Pa data/to_check_list_phantom
-check list
-.It Pa data/qstat.out
-.Xr qstat 1
-output with job infomation
-.It Pa data/temps
-node temperature data
-.It Pa data/fail
-node failure data
+.It Pa data/phys.conf
+cluster physical description file
+.It Pa data/node
+node information
+.It Pa data/job
+job information
+.It Pa data/yod
+yod information
 .It Pa data/flyby.data
 flyby data file
 .It Pa snaps/ Ns Em %08d Ns Pa .png
