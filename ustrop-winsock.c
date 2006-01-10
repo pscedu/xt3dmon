@@ -22,6 +22,10 @@ us_init(int fd, int type, __unused const char *modes)
 	usp->us_fd = fd;
 	usp->us_type = type;
 
+	if (type == UST_FILE)
+		if ((usp->us_fp = fdopen(fd, modes)) == NULL)
+			err(1, "fdopen");
+
 	return (usp);
 }
 
