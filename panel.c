@@ -954,7 +954,7 @@ panel_refresh_date(struct panel *p)
 			glutTimerFunc(1000 * (60 - tm.tm_sec),
 			    panel_date_invalidate, 0);
 		strftime(tmbuf, sizeof(tmbuf), "%b %e %y %H:%M", &tm);
-		panel_set_content(p, "(c) 2005 PSC\n%s", tmbuf);
+		panel_set_content(p, "(c) 2006 PSC\n%s", tmbuf);
 	}
 }
 
