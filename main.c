@@ -299,6 +299,6 @@ main(int argc, char *argv[])
 void
 usage(void)
 {
-	fprintf(stderr, "usage: %s [-adlpv]\n", progname);
+	fprintf(stderr, "usage: %s [-adpv]\n", progname);
 	exit(1);
 }
