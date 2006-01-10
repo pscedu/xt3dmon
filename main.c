@@ -195,6 +195,8 @@ rebuild(int opts)
 		ds_refresh(DS_YOD, 0);
 		ds_refresh(DS_MEM, DSF_IGN);
 		hl_refresh();
+
+		opts |= RF_SMODE;
 	}
 	if (opts & RF_SMODE)
 		smode_change();
