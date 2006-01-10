@@ -103,9 +103,9 @@ ds_refresh(int type, int flags)
 
 	if (ds == NULL) {
 		if (flags & DSF_CRIT)
-			err(1, "datasrc (%s) open failed", ds->ds_name);
+			err(1, "datasrc (%d) open failed", type);
 		else if ((flags & DSF_IGN) == 0)
-			warn("datasrc (%s) open failed", ds->ds_name);
+			warn("datasrc (%d) open failed", type);
 		return;
 	}
 
