@@ -1,12 +1,13 @@
 /* $Id$ */
 
+#include <math.h>
+
 #include "mon.h"
 
 #define SQUARE(x)	((x) * (x))
 #define SIGN(x)		((x) == 0 ? 1 : abs(x) / (x))
-#define PI		(3.14159265358979323)
 
-#define DEG_TO_RAD(x)	((x) * PI / 180)
+#define DEG_TO_RAD(x)	((x) * M_PI / 180)
 
 #define SIGNF(a) \
 	(a < 0.0f ? -1.0f : 1.0f)

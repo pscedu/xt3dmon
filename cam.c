@@ -85,11 +85,11 @@ cam_revolve(struct fvec *center, float d_theta, float d_phi)
 	t = acosf(diff.fv_x / r2);
 	p = asinf(diff.fv_y / r3);
 	if (st.st_z < center->fv_z)
-		t = 2.0f * PI - t;
+		t = 2.0f * M_PI - t;
 	t += 0.01f * d_theta;
 	p += 0.01f * d_phi;
 	while (t < 0)
-		t += PI * 2.0f;
+		t += M_PI * 2.0f;
 
 	st.st_x = r3 * cos(t) * cos(p);
 	st.st_y = r3 * sin(p);
@@ -115,10 +115,10 @@ cam_roll(float amt)
 	mag = vec_mag(&st.st_uv);
 	t = acosf(st.st_uy / mag);
 	if (st.st_uz < 0)
-		t = 2.0f * PI - t;
+		t = 2.0f * M_PI - t;
 	t += amt;
 	if (t < 0)
-		t += PI * 2.0f;
+		t += M_PI * 2.0f;
 	st.st_uy = cos(t) * mag;
 	st.st_uz = sin(t) * mag;
 }
@@ -132,18 +132,18 @@ cam_rotate(float d_theta, float d_phi)
 		mag = sqrt(SQUARE(st.st_lx) + SQUARE(st.st_lz));
 		t = acosf(st.st_lx / mag);
 		if (st.st_lz < 0)
-			t = 2.0f * PI - t;
+			t = 2.0f * M_PI - t;
 		t += 0.01f * d_theta;
 		if (t < 0)
-			t += PI * 2.0f;
+			t += M_PI * 2.0f;
 		st.st_lx = cos(t) * mag;
 		st.st_lz = sin(t) * mag;
 	}
 	if (d_phi) {
 		d_phi *= -0.005f;
 		t = asinf(st.st_ly); /* XXX:  wrong. */
-		if (t + d_phi < PI / 2.0f &&
-		    t + d_phi > -PI / 2.0f) {
+		if (t + d_phi < M_PI / 2.0f &&
+		    t + d_phi > -M_PI / 2.0f) {
 			st.st_ly = sin(t + d_phi);
 			vec_normalize(&st.st_lv);
 		}
