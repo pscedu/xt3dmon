@@ -69,3 +69,4 @@ reminders:
 84. provide if-modified-since in http headers
 85. change date panel time code to update a global time var when new
     data is read, not update the time in the panel refresh function
+87. check dir exists when mkdir(/tmp/xtsess/xxx) fails
