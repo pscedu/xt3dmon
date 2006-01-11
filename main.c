@@ -130,6 +130,7 @@ smode_change(void)
 	struct ivec iv;
 	struct node *n;
 
+	mode_data_clean = 0;
 	IVEC_FOREACH(&iv, &widim) {
 		n = wimap[iv.iv_x][iv.iv_y][iv.iv_z];
 		if (n == NULL)
@@ -189,7 +190,6 @@ rebuild(int opts)
 		}
 	}
 	if (opts & RF_DATASRC) {
-		mode_data_clean = 0;
 		ds_refresh(DS_NODE, 0);
 		ds_refresh(DS_JOB, 0);
 		ds_refresh(DS_YOD, 0);
