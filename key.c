@@ -197,7 +197,7 @@ gl_keyh_mode(unsigned char key, __unused int u, __unused int v)
 	default:
 		return;
 	}
-	st.st_rf |= RF_CLUSTER | RF_DATASRC | RF_SMODE | RF_SELNODE;
+	st.st_rf |= RF_CLUSTER | RF_SMODE | RF_SELNODE;
 	refresh_state(oldopts);
 }
 
