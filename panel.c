@@ -8,6 +8,26 @@
  *	    the panel.  Panels must determine on their on, in their
  *	    refresh function, when their information itself is
  *	    "dirty."
+ *
+ * Panels have the following drawn structure:
+ *
+ *      <--------------------- p_w --------------------->
+ *	+-----------------------------------------------+ / \
+ *	|						|  |
+ *	|   - - - - - - - - - - - - - - - - - - - - - 	|  |
+ *	|  |p_str		|		     |	|  |
+ *	|   PANEL_PADDING			      	|  |
+ *	|  |+---+		|+---+		     |	|  |
+ *	|   |   | pw_str	 |   | pw_str	      	|
+ *	|  |+---+		|+---+		     |	|  p_h
+ *	|   PANEL_PADDING			      	|
+ *	|  |+---+		|+---+		     |	|  |
+ *	|   |   | pw_str	 |   | pw_str	      	|  |
+ *	|  |+---+		|+---+		     |	|  |
+ *	|   - - - - - - - - - - - - - - - - - - - - - 	|  |
+ *	|						|  |
+ *	+-----------------------------------------------+ \ /
+ *
  */
 
 #include "compat.h"
@@ -30,11 +50,11 @@
 #define LETTER_HEIGHT	13
 #define LETTER_WIDTH	8
 #define PANEL_PADDING	3
-#define PANEL_BWIDTH	(2.0f)
-#define PWIDGET_LENGTH	15
+#define PANEL_BWIDTH	1
+#define PWIDGET_LENGTH	16
 #define PWIDGET_HEIGHT	LETTER_HEIGHT
-#define PWLABEL_LENGTH	(win_width / 4 / 2 - PWIDGET_PADDING)
-#define PWIDGET_PADDING	3
+#define PWLABEL_MAXLEN	((win_width - 1) / 3 / 2 - PWIDGET_PADDING)
+#define PWIDGET_PADDING	2
 
 void panel_refresh_fps(struct panel *);
 void panel_refresh_ninfo(struct panel *);
@@ -75,6 +95,8 @@ struct pinfo pinfo[] = {
 #define PVOFF_BR 3
 #define NPVOFF 4
 
+struct fill	 fill_panel	= FILL_INITA(0.4, 0.6, 0.8, 0.8);
+struct fill	 fill_panelbd	= FILL_INITA(0.2, 0.4, 0.6, 1.0);
 struct panels	 panels;
 int		 panel_offset[NPVOFF];
 int		 mode_data_clean;
@@ -166,6 +188,7 @@ draw_shadow_panels(void)
 void
 draw_panel(struct panel *p, int toff)
 {
+	struct fill *frame_fp;
 	int npw, uoff, voff;
 	struct pwidget *pw;
 	char *s;
@@ -186,7 +209,7 @@ draw_panel(struct panel *p, int toff)
 	glColor4f(p->p_fill.f_r, p->p_fill.f_g, p->p_fill.f_b, p->p_fill.f_a);
 
 	/* Panel content. */
-	voff = p->p_v - toff;
+	voff = p->p_v - toff + 3;
 	uoff = p->p_u + toff;
 	for (s = p->p_str; *s != '\0'; s++) {
 		if (*s == '\n' || s == p->p_str) {
@@ -201,42 +224,49 @@ draw_panel(struct panel *p, int toff)
 	}
 
 	npw = 0;
-	uoff += p->p_w / 2;
-	voff += PWIDGET_HEIGHT; /* first loop cuts into this */
+	uoff += p->p_w / 2 - toff;			/* First loop cuts */
+	voff += PWIDGET_HEIGHT - 1 - PWIDGET_PADDING;	/* into these. */
 	SLIST_FOREACH(pw, &p->p_widgets, pw_next) {
 		struct fill *fp = pw->pw_fillp;
 
-		uoff += p->p_w / 2 * (npw % 2 ? 1 : -1);
+		uoff += (p->p_w / 2 - toff) * (npw % 2 ? 1 : -1);
 		if (npw % 2 == 0)
 			voff -= PWIDGET_HEIGHT + PWIDGET_PADDING;
 		if (voff - PWIDGET_HEIGHT < p->p_v - p->p_h)
 			break;
 
-		/* Draw widget background. */
-		glBegin(GL_POLYGON);
-		glColor4f(fp->f_r, fp->f_g, fp->f_b, 1.0f /* XXX */);
-		glVertex2d(uoff + 1,			voff);
-		glVertex2d(uoff + PWIDGET_LENGTH,	voff);
-		glVertex2d(uoff + PWIDGET_LENGTH,	voff - PWIDGET_HEIGHT + 1);
-		glVertex2d(uoff + 1,			voff - PWIDGET_HEIGHT + 1);
-		glEnd();
+		if (fp->f_flags & FF_SKEL)
+			frame_fp = &fill_yellow;
+		else {
+			frame_fp = &fill_black;
+
+			/* Draw widget background. */
+			glBegin(GL_POLYGON);
+			glColor4f(fp->f_r, fp->f_g, fp->f_b, 1.0f /* XXX */);
+			glVertex2d(uoff + 1,			voff);
+			glVertex2d(uoff + PWIDGET_LENGTH - 1,	voff);
+			glVertex2d(uoff + PWIDGET_LENGTH - 1,	voff - PWIDGET_HEIGHT + 2);
+			glVertex2d(uoff + 1,			voff - PWIDGET_HEIGHT + 2);
+			glEnd();
+		}
 
 		/* Draw widget border. */
 		glLineWidth(1.0f);
 		glBegin(GL_LINE_LOOP);
-		glColor4f(0.00f, 0.00f, 0.00f, 1.00f);
+		glColor4f(frame_fp->f_r, frame_fp->f_g,
+		    frame_fp->f_b, 1.00f);
 		glVertex2d(uoff,			voff);
-		glVertex2d(uoff + PWIDGET_LENGTH + 1,	voff);
-		glVertex2d(uoff + PWIDGET_LENGTH,	voff - PWIDGET_HEIGHT);
-		glVertex2d(uoff,			voff - PWIDGET_HEIGHT);
+		glVertex2d(uoff + PWIDGET_LENGTH,	voff);
+		glVertex2d(uoff + PWIDGET_LENGTH - 1,	voff - PWIDGET_HEIGHT + 1);
+		glVertex2d(uoff,			voff - PWIDGET_HEIGHT + 1);
 		glEnd();
 
 		glColor4f(p->p_fill.f_r, p->p_fill.f_g, p->p_fill.f_b, p->p_fill.f_a);
 		glRasterPos2d(uoff + PWIDGET_LENGTH + PWIDGET_PADDING,
 		    voff - PWIDGET_HEIGHT + 3);
 		for (s = pw->pw_str; *s != '\0' &&
-		    (s - pw->pw_str) * LETTER_WIDTH + PWIDGET_LENGTH +
-		    PWIDGET_PADDING * 4 < p->p_w / 2; s++)
+		    (s - pw->pw_str + 1) * LETTER_WIDTH + PWIDGET_LENGTH +
+		    PWIDGET_PADDING < p->p_w / 2 - PANEL_PADDING - PANEL_BWIDTH; s++)
 			glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
 
 		/*
@@ -253,11 +283,12 @@ draw_panel(struct panel *p, int toff)
 
 		/* Draw background. */
 		glBegin(GL_POLYGON);
-		glColor4f(0.4, 0.6, 0.8, 0.8);
-		glVertex2d(p->p_u,		p->p_v);
-		glVertex2d(p->p_u + p->p_w,	p->p_v);
-		glVertex2d(p->p_u + p->p_w,	p->p_v - p->p_h);
-		glVertex2d(p->p_u,		p->p_v - p->p_h);
+		glColor4f(fill_panel.f_r, fill_panel.f_g,
+		    fill_panel.f_b, fill_panel.f_a);
+		glVertex2d(p->p_u + PANEL_BWIDTH,		p->p_v + 1 - PANEL_BWIDTH);
+		glVertex2d(p->p_u + p->p_w - PANEL_BWIDTH,	p->p_v + 1 - PANEL_BWIDTH);
+		glVertex2d(p->p_u + p->p_w - PANEL_BWIDTH,	p->p_v + 1 - p->p_h + PANEL_BWIDTH);
+		glVertex2d(p->p_u + PANEL_BWIDTH,		p->p_v + 1 - p->p_h + PANEL_BWIDTH);
 		glEnd();
 
 		glDisable(GL_BLEND);
@@ -265,11 +296,12 @@ draw_panel(struct panel *p, int toff)
 		/* Draw border. */
 		glLineWidth(PANEL_BWIDTH);
 		glBegin(GL_LINE_LOOP);
-		glColor4f(0.2, 0.4, 0.6, 1.0);
+		glColor4f(fill_panelbd.f_r, fill_panelbd.f_g,
+		    fill_panelbd.f_b, fill_panelbd.f_a);
 		glVertex2d(p->p_u,		p->p_v);
 		glVertex2d(p->p_u + p->p_w,	p->p_v);
-		glVertex2d(p->p_u + p->p_w,	p->p_v - p->p_h);
-		glVertex2d(p->p_u,		p->p_v - p->p_h);
+		glVertex2d(p->p_u + p->p_w - 1,	p->p_v - p->p_h + 1);
+		glVertex2d(p->p_u,		p->p_v - p->p_h + 1);
 		glEnd();
 	}
 
@@ -372,17 +404,20 @@ panel_draw(struct panel *p, int wid)
 		w = w * LETTER_WIDTH + 2 * toff;
 		h = lineno * LETTER_HEIGHT + 2 * toff;
 		if (p->p_nwidgets) {
+			int nr;
+
 			w = MAX(w, 2 * (LETTER_WIDTH * (int)p->p_maxwlen +
-			    PWIDGET_LENGTH + 2 * PWIDGET_PADDING) + PWIDGET_PADDING);
-			w = MIN(w, 2 * PWLABEL_LENGTH);
+			    PWIDGET_LENGTH + 2 * PWIDGET_PADDING) + 2 * toff);
+			w = MIN(w, 2 * PWLABEL_MAXLEN + 2 * toff);
+
 			/* p_nwidgets + 1 for truncation */
-			h += ((p->p_nwidgets + 1) / 2) * PWIDGET_HEIGHT +
-			    ((p->p_nwidgets + 1) / 2 - 1) * PWIDGET_PADDING;
+			nr = (p->p_nwidgets + 1) / 2;
+			h += nr * (PWIDGET_HEIGHT + PWIDGET_PADDING);
 		}
 		switch (p->p_stick) {
 		case PSTICK_TL:
 			u = 0;
-			v = win_height - panel_offset[PVOFF_TL];
+			v = (win_height - 1) - panel_offset[PVOFF_TL];
 			break;
 		case PSTICK_BL:
 			u = 0;
@@ -390,7 +425,7 @@ panel_draw(struct panel *p, int wid)
 			break;
 		case PSTICK_TR:
 			u = win_width - w;
-			v = win_height - panel_offset[PVOFF_TR];
+			v = (win_height - 1) - panel_offset[PVOFF_TR];
 			break;
 		case PSTICK_BR:
 			u = win_width - w;
@@ -447,16 +482,16 @@ done:
 	/* spacing */
 	switch (p->p_stick) {
 	case PSTICK_TL:
-		panel_offset[PVOFF_TL] += p->p_h + 3;
+		panel_offset[PVOFF_TL] += p->p_h + 1;
 		break;
 	case PSTICK_TR:
-		panel_offset[PVOFF_TR] += p->p_h + 3;
+		panel_offset[PVOFF_TR] += p->p_h + 1;
 		break;
 	case PSTICK_BL:
-		panel_offset[PVOFF_BL] += p->p_h + 3;
+		panel_offset[PVOFF_BL] += p->p_h + 1;
 		break;
 	case PSTICK_BR:
-		panel_offset[PVOFF_BR] += p->p_h + 3;
+		panel_offset[PVOFF_BR] += p->p_h + 1;
 		break;
 	}
 }
@@ -1059,7 +1094,7 @@ panel_toggle(int panel)
 	p->p_id = panel;
 	p->p_stick = PSTICK_TR;
 	p->p_u = win_width;
-	p->p_v = win_height - panel_offset[PVOFF_TR] - 1;
+	p->p_v = (win_height - 1) - panel_offset[PVOFF_TR];
 	p->p_fill.f_r = 1.0f;
 	p->p_fill.f_g = 1.0f;
 	p->p_fill.f_b = 1.0f;
