@@ -10,7 +10,7 @@ host=phantom.psc.edu
 
 set -e
 
-ssh -gNL 3306:$sdb:3306 $host &
+ssh -qgNL 3306:$sdb:3306 $host &
 pid=$(jobs -l | awk '{print $2}')
 
 sleep 2
