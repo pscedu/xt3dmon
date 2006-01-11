@@ -198,11 +198,17 @@ struct fill {
 
 #define FF_SKEL		(1<<0)
 
-#define FILL_INIT(r, g, b)		\
-	FILL_INITF((r), (g), (b), 0)
+#define FILL_INIT(r, g, b)				\
+	FILL_INITFA((r), (g), (b), 1.0, 0)
 
-#define FILL_INITF(r, g, b, flags)	\
-	{ r, g, b, 1.0, flags, { 0, 0 }, { 0, 0 } }
+#define FILL_INITA(r, g, b, a)				\
+	FILL_INITFA((r), (g), (b), (a), 0)
+
+#define FILL_INITF(r, g, b, flags)			\
+	FILL_INITFA((r), (g), (b), 1.0, (flags))
+
+#define FILL_INITFA(r, g, b, a, flags)			\
+	{ r, g, b, a, flags, { 0, 0 }, { 0, 0 } }
 
 struct objhdr {
 	int		 oh_flags;
@@ -349,6 +355,10 @@ struct pwidget {
 	char			 *pw_str;
 	struct fill		 *pw_fillp;
 	SLIST_ENTRY(pwidget)	  pw_next;
+	int			  pw_u;
+	int			  pw_v;
+	int			  pw_w;
+	int			  pw_h;
 };
 
 struct panel {
@@ -785,6 +795,7 @@ extern struct panel	*panel_mobile;
 
 extern struct fill	 fill_black;
 extern struct fill	 fill_light_blue;
+extern struct fill	 fill_yellow;
 extern struct fill	 fill_font;
 extern struct fill	 fill_borg;
 extern struct fill	 fill_nodata;
