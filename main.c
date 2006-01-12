@@ -163,6 +163,12 @@ smode_change(void)
 			else
 				n->n_fillp = &fill_nodata;
 			break;
+		case SM_BORG:
+			n->n_fillp = &fill_borg;
+			break;
+		case SM_MATRIX:
+			n->n_fillp = &fill_matrix;
+			break;
 		}
 	}
 }
@@ -212,7 +218,7 @@ rebuild(int opts)
 		}
 		cam_dirty = 1;
 	}
-	if (opts & RF_GROUND && st.st_opts & OP_GROUND)
+	if (opts & RF_GROUND)
 		gl_run(make_ground);
 	if (opts & RF_CLUSTER)
 		gl_run(make_cluster);
