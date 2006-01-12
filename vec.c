@@ -4,8 +4,8 @@
 
 #include <math.h>
 
-#include "math.h"
 #include "mon.h"
+#include "xmath.h"
 
 void
 vec_normalize(struct fvec *fvp)

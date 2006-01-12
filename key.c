@@ -5,8 +5,8 @@
 
 #include "buf.h"
 #include "cdefs.h"
-#include "math.h"
 #include "mon.h"
+#include "xmath.h"
 
 #define TRANS_INC	0.10
 

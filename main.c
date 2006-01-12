@@ -6,8 +6,8 @@
 #include <time.h>
 
 #include "cdefs.h"
-#include "math.h"
 #include "mon.h"
+#include "xmath.h"
 
 #define STARTX		(-30.0f)
 #define STARTY		(10.0f)

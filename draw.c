@@ -5,8 +5,8 @@
 #include <math.h>
 
 #include "cdefs.h"
-#include "math.h"
 #include "mon.h"
+#include "xmath.h"
 
 #define SELNODE_GAP	(0.1f)
 
