@@ -64,10 +64,8 @@ parse_node(struct datasrc *ds)
 	int enabled, jobid, temp, yodid, nfails;
 	char buf[BUFSIZ], *s;
 	struct node *node;
-	struct fill *fillp;
 	size_t j;
 
-	fillp = &statusclass[SC_USED].nc_fill;
 	widim.iv_w = widim.iv_h = widim.iv_d = 0;
 
 	/* Explicitly initialize all nodes. */
@@ -133,24 +131,12 @@ parse_node(struct datasrc *ds)
 			node->n_state = SC_USED;		/* don't set */
 			node->n_job = getobj(&jobid, &job_list);
 			node->n_job->j_id = jobid;
-
-			/* XXX: only slightly sloppy. */
-			node->n_job->j_fill.f_texid[WINID_LEFT]    = fillp->f_texid[WINID_LEFT];
-			node->n_job->j_fill.f_texid[WINID_RIGHT]   = fillp->f_texid[WINID_RIGHT];
-			node->n_job->j_fill.f_texid_a[WINID_LEFT]  = fillp->f_texid_a[WINID_LEFT];
-			node->n_job->j_fill.f_texid_a[WINID_RIGHT] = fillp->f_texid_a[WINID_RIGHT];
 		} else
 			node->n_job = NULL;
 
 		if (yodid) {
 			node->n_yod = getobj(&yodid, &yod_list);
 			node->n_yod->y_id = yodid;
-
-			/* XXX: only slightly sloppy. */
-			node->n_yod->y_fill.f_texid[WINID_LEFT]    = fillp->f_texid[WINID_LEFT];
-			node->n_yod->y_fill.f_texid[WINID_RIGHT]   = fillp->f_texid[WINID_RIGHT];
-			node->n_yod->y_fill.f_texid_a[WINID_LEFT]  = fillp->f_texid_a[WINID_LEFT];
-			node->n_yod->y_fill.f_texid_a[WINID_RIGHT] = fillp->f_texid_a[WINID_RIGHT];
 		} else
 			node->n_yod = NULL;
 
