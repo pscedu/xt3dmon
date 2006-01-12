@@ -45,7 +45,8 @@ struct fill fill_yellow		= FILL_INIT(1.0f, 1.0f, 0.0f);
 struct fill fill_selnode	= FILL_INIT(0.2f, 0.4f, 0.6f);
 struct fill fill_font		= FILL_INIT(0.0f, 0.0f, 0.0f);
 struct fill fill_borg		= FILL_INIT(0.0f, 0.0f, 0.0f);
-struct fill fill_nodata		= FILL_INITF(0.0f, 0.0f, 0.0f, FF_SKEL);
+struct fill fill_nodata		= FILL_INITF(1.0f, 1.0f, 0.0f, FF_SKEL);
+struct fill fill_matrix		= FILL_INITF(0.0f, 1.0f, 0.0f, FF_SKEL);
 
 struct fvec fvzero = { 0.0f, 0.0f, 0.0f };
 
@@ -386,7 +387,7 @@ draw_node(struct node *n, int flags)
 	}
 
 	if (n->n_fillp->f_flags & FF_SKEL)
-		fill_wireframe = &fill_yellow;
+		fill_wireframe = n->n_fillp;
 	else {
 		fill_wireframe = &fill_black;
 
