@@ -236,7 +236,7 @@ draw_panel(struct panel *p, int toff)
 			break;
 
 		if (fp->f_flags & FF_SKEL)
-			frame_fp = &fill_yellow;
+			frame_fp = fp;
 		else {
 			frame_fp = &fill_black;
 
