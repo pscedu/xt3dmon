@@ -8,7 +8,7 @@
 #define TWEEN_AMT	(0.05f)
 
 #define TWEEN_MAX_POS	(2.00f)
-#define TWEEN_MAX_LOOK	(0.02f)
+#define TWEEN_MAX_LOOK	(0.06f)
 #define TWEEN_MAX_ROLL	(0.10f)
 
 int cam_dirty = 1;
