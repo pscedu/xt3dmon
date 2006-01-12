@@ -331,6 +331,8 @@ struct state {
 #define SM_FAIL		1
 #define SM_TEMP		2
 #define SM_YOD		3
+#define SM_BORG		4
+#define SM_MATRIX	5
 
 #define VM_PHYSICAL	0
 #define VM_WIRED	1
@@ -799,6 +801,7 @@ extern struct fill	 fill_yellow;
 extern struct fill	 fill_font;
 extern struct fill	 fill_borg;
 extern struct fill	 fill_nodata;
+extern struct fill	 fill_matrix;
 
 extern int		 dsp;				/* Data source provider. */
 
