@@ -164,19 +164,27 @@ void
 getcol(int old, size_t n, size_t total, struct fill *fillp)
 {
 	float hinc, sinc, vinc;
+	struct fill *scfp;
 
 	/* Divide color wheel up evenly */
-	hinc = 360.0 / (float)(total);
+	hinc = 360.0 / (float)total;
 
 	/* These could be random ... */
-	sinc = (SAT_MAX - SAT_MIN) / (float)(total);
-	vinc = (VAL_MAX - VAL_MIN) / (float)(total);
+	sinc = (SAT_MAX - SAT_MIN) / (float)total;
+	vinc = (VAL_MAX - VAL_MIN) / (float)total;
 
 	fillp->f_h = hinc * n + HUE_MIN;
 	fillp->f_s = sinc * n + SAT_MIN;
 	fillp->f_v = vinc * n + VAL_MIN;
-	if (!old)
+	if (!old) {
 		fillp->f_a = 1.0;
+
+		scfp = &statusclass[SC_USED].nc_fill;	/* XXX */
+		fillp->f_texid[WINID_LEFT]    = scfp->f_texid[WINID_LEFT];
+		fillp->f_texid[WINID_RIGHT]   = scfp->f_texid[WINID_RIGHT];
+		fillp->f_texid_a[WINID_LEFT]  = scfp->f_texid_a[WINID_LEFT];
+		fillp->f_texid_a[WINID_RIGHT] = scfp->f_texid_a[WINID_RIGHT];
+	}
 
 	hsv_to_rgb(fillp);
 }
