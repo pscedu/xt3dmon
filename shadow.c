@@ -5,6 +5,7 @@
 #include <math.h>
 
 #include "mon.h"
+#include "xmath.h"
 
 /*
  * The "shadow" routines in this file draw simple objects
@@ -226,6 +227,14 @@ draw_shadow_wisect(struct wiselstep *ws, int cuts, int last)
 	nv.fv_x = offp->iv_x * st.st_winsp.iv_x;
 	nv.fv_y = offp->iv_y * st.st_winsp.iv_y;
 	nv.fv_z = offp->iv_z * st.st_winsp.iv_z;
+
+	if (st.st_winsp.iv_x < 0)
+		nv.fv_x += NODEWIDTH;
+	if (st.st_winsp.iv_y < 0)
+		nv.fv_y += NODEHEIGHT;
+	if (st.st_winsp.iv_z < 0)
+		nv.fv_z += NODEDEPTH;
+
 	onv = nv;
 
 	adj.fv_x = len.iv_x * st.st_winsp.iv_x;
@@ -239,7 +248,8 @@ draw_shadow_wisect(struct wiselstep *ws, int cuts, int last)
 			len.iv_w += mag.iv_x;
 			mag.iv_x = 0;
 		}
-		dim.fv_w = (len.iv_x - 1) * st.st_winsp.iv_x + NODEWIDTH;
+		dim.fv_w = (len.iv_x - 1) * st.st_winsp.iv_x + NODEWIDTH *
+		    SIGNF(st.st_winsp.iv_x);
 
 		/*
 		 * Restore magnitude/length as it may have been
@@ -255,7 +265,8 @@ draw_shadow_wisect(struct wiselstep *ws, int cuts, int last)
 				len.iv_h += mag.iv_y;
 				mag.iv_y = 0;
 			}
-			dim.fv_h = (len.iv_y - 1) * st.st_winsp.iv_y + NODEHEIGHT;
+			dim.fv_h = (len.iv_y - 1) * st.st_winsp.iv_y + NODEHEIGHT *
+			    SIGNF(st.st_winsp.iv_y);
 
 			mag.iv_z = ws->ws_mag.iv_z;
 			len.iv_z = mag.iv_z / cuts;
@@ -265,10 +276,12 @@ draw_shadow_wisect(struct wiselstep *ws, int cuts, int last)
 					len.iv_d += mag.iv_z;
 					mag.iv_z = 0;
 				}
-				dim.fv_d = (len.iv_z - 1) * st.st_winsp.iv_z + NODEDEPTH;
+				dim.fv_d = (len.iv_z - 1) * st.st_winsp.iv_z + NODEDEPTH *
+				    SIGNF(st.st_winsp.iv_z);
 
 				glPushMatrix();
-				glTranslatef(nv.fv_x + wioff.iv_x * st.st_winsp.iv_x,
+				glTranslatef(
+				    nv.fv_x + wioff.iv_x * st.st_winsp.iv_x,
 				    nv.fv_y + wioff.iv_y * st.st_winsp.iv_y,
 				    nv.fv_z + wioff.iv_z * st.st_winsp.iv_z);
 				glPushName(gsn_get(cubeno++, NULL, 0));
