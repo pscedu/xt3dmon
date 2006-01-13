@@ -165,8 +165,8 @@ draw_shadow_panels(void)
 		glBegin(GL_POLYGON);
 		glVertex2d(p->p_u,		p->p_v);
 		glVertex2d(p->p_u + p->p_w,	p->p_v);
-		glVertex2d(p->p_u + p->p_w,	p->p_v - p->p_h);
-		glVertex2d(p->p_u,		p->p_v - p->p_h);
+		glVertex2d(p->p_u + p->p_w - 1,	p->p_v - p->p_h + 1);
+		glVertex2d(p->p_u,		p->p_v - p->p_h + 1);
 		glEnd();
 		glPopName();
 		glPopMatrix();
