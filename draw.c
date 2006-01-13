@@ -38,6 +38,7 @@ struct fvec wivstart, wivdim;
 struct ivec wioff;
 float clip;
 
+struct fill fill_bg		= FILL_INIT(0.1f, 0.2f, 0.3f);
 struct fill fill_black		= FILL_INIT(0.0f, 0.0f, 0.0f);
 struct fill fill_grey		= FILL_INIT(0.2f, 0.2f, 0.2f);
 struct fill fill_light_blue	= FILL_INIT(0.2f, 0.4f, 0.6f);
@@ -134,7 +135,7 @@ gl_displayh_stereo(void)
 	draw_scene();
 
 	if (stereo_mode == STM_PASV) {
-		glClearColor(0.2, 0.2, 0.2, 1.0);
+		glClearColor(fill_bg.f_r, fill_bg.f_g, fill_bg.f_b, 1.0);
 		/* XXX: capture frame */
 		if (st.st_opts & OP_CAPTURE)
 			capture_frame(capture_mode);
@@ -169,7 +170,7 @@ gl_displayh_stereo(void)
 	cam_look();
 	draw_scene();
 
-	glClearColor(0.2, 0.2, 0.2, 1.0);
+	glClearColor(fill_bg.f_r, fill_bg.f_g, fill_bg.f_b, 1.0);
 	if (st.st_opts & OP_CAPTURE)
 		capture_frame(capture_mode);
 	if (st.st_opts & OP_DISPLAY)
@@ -209,7 +210,7 @@ gl_displayh_default(void)
 	draw_scene();
 	cam_dirty = 0;
 
-	glClearColor(0.0, 0.0, 0.0, 1.0);
+	glClearColor(fill_bg.f_r, fill_bg.f_g, fill_bg.f_b, 1.0);
 	if (st.st_opts & OP_CAPTURE)
 		capture_frame(capture_mode);
 	if (st.st_opts & OP_DISPLAY)
@@ -335,13 +336,13 @@ node_tween_dir(float *curpos, float *targetpos)
 	int rv = 0;
 
 	diff = *targetpos - *curpos;
-	if (fabs(diff) < .1)
+	if (diff < 0.1 && diff > -0.1)
 		*curpos = *targetpos;
 	else {
-		if (fabs(diff) > 2.0)
+		if (diff > 2.0 || diff < -2.0)
 			diff = 2 * SIGN(diff) * sqrt(fabs(diff));
 		else
-			diff /= 3 / 4.0f;
+			diff /= 5 / 7.0f;
 		*curpos += diff;
 		rv = 1;
 	}
