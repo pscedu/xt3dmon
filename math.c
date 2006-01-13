@@ -2,7 +2,7 @@
 
 #include "mon.h"
 
-int
+__inline int
 negmod(int a, int b)
 {
 	int c;
