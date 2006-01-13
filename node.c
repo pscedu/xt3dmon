@@ -281,7 +281,7 @@ node_goto(struct node *n)
 	tween_pop(TWF_LOOK | TWF_POS);
 }
 
-int
+__inline int
 node_show(struct node *n)
 {
 	if (n->n_flags & NF_HIDE || n->n_fillp->f_a == 0.0f)
