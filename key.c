@@ -446,6 +446,11 @@ gl_keyh_wioffdecr(unsigned char key, __unused int u, __unused int v)
 	case 'z':
 		wioff.iv_z--;
 		break;
+	case '0':
+		wioff.iv_x = 0;
+		wioff.iv_y = 0;
+		wioff.iv_z = 0;
+		break;
 	case '{':
 		wioff.iv_x--;
 		wioff.iv_y--;
@@ -471,6 +476,11 @@ gl_keyh_wioffincr(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 'z':
 		wioff.iv_z++;
+		break;
+	case '0':
+		wioff.iv_x = 0;
+		wioff.iv_y = 0;
+		wioff.iv_z = 0;
 		break;
 	case '}':
 		wioff.iv_x++;
@@ -674,8 +684,8 @@ gl_spkeyh_default(int key, __unused int u, __unused int v)
 		break;
 	case VM_WIRED:
 	case VM_WIREDONE:
-		amt *= pow(st.st_winsp.iv_x * st.st_winsp.iv_y *
-		    st.st_winsp.iv_z, 1/3.0);
+		amt *= pow(fabs(st.st_winsp.iv_x) * fabs(st.st_winsp.iv_y) *
+		    fabs(st.st_winsp.iv_z), 1/3.0);
 		break;
 	}
 
