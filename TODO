@@ -72,3 +72,5 @@ reminders:
 87. check dir exists when mkdir(/tmp/xtsess/xxx) fails
 88. pipes and wioff don't work
 89. add arg to getcol() to set the texids
+90. for tweening, calculate the % moved by one (e.g. move), then apply
+    that % to the others, instead of use MAX_{LOOK,TWEEN} values
