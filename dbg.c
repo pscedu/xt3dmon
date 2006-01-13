@@ -16,3 +16,9 @@ dbg_warn(const char *fmt, ...)
 	vwarnx(fmt, ap);
 	va_end(ap);
 }
+
+void
+crash(void)
+{
+	*(int *)NULL = 0;
+}
