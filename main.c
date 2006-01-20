@@ -9,9 +9,9 @@
 #include "mon.h"
 #include "xmath.h"
 
-#define STARTX		(-30.0f)
-#define STARTY		(10.0f)
-#define STARTZ		(25.0f)
+#define STARTX		(-30.0)
+#define STARTY		( 10.0)
+#define STARTZ		( 25.0)
 
 #define STARTLX		(0.99f)		/* Must form a unit vector. */
 #define STARTLY		(0.0f)
