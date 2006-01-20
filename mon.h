@@ -429,7 +429,7 @@ struct pinfo {
 
 #define TWF_LOOK	(1<<0)
 #define TWF_POS		(1<<1)
-#define TWF_ROLL	(1<<2)
+#define TWF_UP		(1<<2)
 
 #define NDF_DONTPUSH	(1<<0)
 #define NDF_NOOPTS	(1<<1)
@@ -533,7 +533,7 @@ void			 cocb_tourjob(int);
 /* cam.c */
 void			 cam_move(int, float);
 void			 cam_revolve(struct fvec *, float, float);
-void			 cam_rotate(float, float);
+void			 cam_rotate(const struct fvec *, const struct fvec *);
 void			 cam_roll(float);
 void			 cam_look(void);
 
@@ -630,6 +630,7 @@ void			 restart(void);
 
 /* math.c */
 int			 negmod(int, int);
+double			 negmodf(double, double);
 
 /* mouse.c */
 void			 gl_motionh_default(int, int);
@@ -723,12 +724,16 @@ void			 uinpcb_cmd(void);
 void			 uinpcb_goto(void);
 
 /* vec.c */
-void			 vec_cart2sphere(struct fvec *, struct fvec *);
-void			 vec_sphere2cart(struct fvec *, struct fvec *);
-void			 vec_crossprod(struct fvec *, struct fvec *, struct fvec *);
+void			 vec_cart2sphere(const struct fvec *, struct fvec *);
+void			 vec_sphere2cart(const struct fvec *, struct fvec *);
+void			 vec_crossprod(struct fvec *, const struct fvec *, const struct fvec *);
 void			 vec_normalize(struct fvec *);
-float			 vec_mag(struct fvec *);
+float			 vec_mag(const struct fvec *);
 void			 vec_set(struct fvec *, float, float, float);
+void			 vec_copyto(const struct fvec *, struct fvec *);
+void			 vec_addto(const struct fvec *, struct fvec *);
+void			 vec_sub(struct fvec *, const struct fvec *, const struct fvec *);
+void			 vec_rotate(struct fvec *, const struct fvec *, double deg);
 
 /* widget.c */
 void			 draw_box_outline(const struct fvec *, const struct fill *);
