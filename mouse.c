@@ -7,6 +7,7 @@
 
 #include "cdefs.h"
 #include "mon.h"
+#include "xmath.h"
 
 int	 	 spkey, lastu, lastv;
 struct panel	*panel_mobile;
@@ -18,25 +19,37 @@ gl_mouseh_null(__unused int button, __unused int state, __unused int u, __unused
 //	spkey = glutGetModifiers();
 }
 
+static __inline void
+selfv_calc(struct fvec *fvp, int u, int v)
+{
+	struct fvec sph;
+
+	vec_cart2sphere(&st.st_lv, &sph);
+	sph.fv_t += DEG_TO_RAD(FOVY) * ASPECT * (u - win_width / 2.0) / win_width;
+	sph.fv_p -= DEG_TO_RAD(FOVY) * (win_height / 2.0 - v) / win_height;
+	vec_sphere2cart(&sph, fvp);
+	vec_normalize(fvp);
+}
+
 void
 gl_mouseh_default(__unused int button, __unused int state, int u, int v)
 {
 	spkey = glutGetModifiers();
-	if (button == GLUT_LEFT_BUTTON &&
-	    state == GLUT_DOWN &&
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN &&
 	    gl_displayhp != gl_displayh_select) {
 		gl_displayhp_old = gl_displayhp;
 		gl_displayhp = gl_displayh_select;
 		glutDisplayFunc(gl_displayhp);
 	}
-	lastu = u;
-	lastv = v;
 
 	if (state == GLUT_UP && panel_mobile != NULL) {
 		panel_demobilize(panel_mobile);
 		panel_mobile = NULL;
 		glutMotionFunc(gl_motionh_default);
 	}
+
+	lastu = u;
+	lastv = v;
 }
 
 void
@@ -110,19 +123,24 @@ gl_motionh_default(int u, int v)
 
 	if (abs(du) + abs(dv) <= 1)
 		return;
-	lastu = u;
-	lastv = v;
 
-	tween_push(TWF_LOOK | TWF_POS);
-	if (spkey & GLUT_ACTIVE_SHIFT)
-		cam_rotate(du, dv);
-	else {
+	tween_push(TWF_LOOK | TWF_POS | TWF_UP);
+	if (spkey & GLUT_ACTIVE_SHIFT) {
+		struct fvec startfv, endfv;
+
+		selfv_calc(&startfv, lastu, lastv);
+		selfv_calc(&endfv, u, v);
+		cam_rotate(&startfv, &endfv);
+	} else {
 		struct fvec center;
 
 		(*revolve_centerf)(&center);
-		cam_revolve(&center, du, dv);
+		cam_revolve(&center, (double)du, (double)-dv);
 	}
-	tween_pop(TWF_LOOK | TWF_POS);
+	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
+
+	lastu = u;
+	lastv = v;
 }
 
 void
