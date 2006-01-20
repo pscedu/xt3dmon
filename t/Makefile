@@ -1,6 +1,6 @@
 # $Id$
 
-TESTS=		text
+TESTS=		text matrix
 CFLAGS+=	-I..
 LDFLAGS+=	../text.o
 
