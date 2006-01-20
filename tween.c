@@ -9,7 +9,7 @@
 
 #define TWEEN_MAX_POS	(2.00f)
 #define TWEEN_MAX_LOOK	(0.06f)
-#define TWEEN_MAX_ROLL	(0.10f)
+#define TWEEN_MAX_UP	(0.10f)
 
 int cam_dirty = 1;
 
@@ -66,9 +66,9 @@ tween_update(void)
 	tween_probe(&st.st_ly, tlv.fv_y, TWEEN_MAX_LOOK, &sc_l.fv_y, &want_l.fv_h);
 	tween_probe(&st.st_lz, tlv.fv_z, TWEEN_MAX_LOOK, &sc_l.fv_z, &want_l.fv_d);
 
-	tween_probe(&st.st_ux, tuv.fv_x, TWEEN_MAX_ROLL, &sc_u.fv_x, &want_u.fv_w);
-	tween_probe(&st.st_uy, tuv.fv_y, TWEEN_MAX_ROLL, &sc_u.fv_y, &want_u.fv_h);
-	tween_probe(&st.st_uz, tuv.fv_z, TWEEN_MAX_ROLL, &sc_u.fv_z, &want_u.fv_d);
+	tween_probe(&st.st_ux, tuv.fv_x, TWEEN_MAX_UP, &sc_u.fv_x, &want_u.fv_w);
+	tween_probe(&st.st_uy, tuv.fv_y, TWEEN_MAX_UP, &sc_u.fv_y, &want_u.fv_h);
+	tween_probe(&st.st_uz, tuv.fv_z, TWEEN_MAX_UP, &sc_u.fv_z, &want_u.fv_d);
 
 	scale = MIN3(sc.fv_x, sc.fv_y, sc.fv_z);
 	scale_l = MIN3(sc_l.fv_x, sc_l.fv_y, sc_l.fv_z);
@@ -108,7 +108,7 @@ tween_push(int opts)
 			slv.fv_y = st.st_ly;  st.st_ly = tlv.fv_y;
 			slv.fv_z = st.st_lz;  st.st_lz = tlv.fv_z;
 		}
-		if (opts & TWF_ROLL) {
+		if (opts & TWF_UP) {
 			suv.fv_x = st.st_ux;  st.st_ux = tuv.fv_x;
 			suv.fv_y = st.st_uy;  st.st_uy = tuv.fv_y;
 			suv.fv_z = st.st_uz;  st.st_uz = tuv.fv_z;
@@ -130,7 +130,7 @@ tween_pop(int opts)
 			tlv.fv_y = st.st_ly;  st.st_ly = slv.fv_y;
 			tlv.fv_z = st.st_lz;  st.st_lz = slv.fv_z;
 		}
-		if (opts & TWF_ROLL) {
+		if (opts & TWF_UP) {
 			tuv.fv_x = st.st_ux;  st.st_ux = suv.fv_x;
 			tuv.fv_y = st.st_uy;  st.st_uy = suv.fv_y;
 			tuv.fv_z = st.st_uz;  st.st_uz = suv.fv_z;
