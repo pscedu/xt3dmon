@@ -524,31 +524,13 @@ gl_keyh_default(unsigned char key, __unused int u, __unused int v)
 	case 'm':
 		glutKeyboardFunc(gl_keyh_mode);
 		break;
-	case 'O': {
-		tween_push(TWF_LOOK | TWF_POS | TWF_ROLL);
-		st.st_x = 0.0f;
-		st.st_y = 0.0f;
-		st.st_z = 0.0f;
-
-		st.st_lx = 1.0f;
-		st.st_ly = 0.0f;
-		st.st_lz = 0.0f;
-
-st.st_x = -14.0f;
-st.st_y =  33.3f;
-st.st_z =  65.0f;
-
-st.st_lx =  0.63f;
-st.st_ly = -0.31f;
-st.st_lz = -0.71f;
-
-
-		st.st_ux = 0.0f;
-		st.st_uy = 1.0f;
-		st.st_uz = 0.0f;
-		tween_pop(TWF_LOOK | TWF_POS | TWF_ROLL);
+	case 'O':
+		tween_push(TWF_LOOK | TWF_POS | TWF_UP);
+		vec_set(&st.st_v, -14.00, 33.30, 65.00);
+		vec_set(&st.st_lv,  0.63, -0.31, -0.71);
+		vec_set(&st.st_uv,  0.00,  1.00,  0.00);
+		tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
 		break;
-	    }
 	case 'o':
 		glutKeyboardFunc(gl_keyh_option);
 		break;
@@ -642,14 +624,14 @@ gl_spkeyh_default(int key, __unused int u, __unused int v)
 		restart();
 		/* NOTREACHED */
 	case GLUT_KEY_HOME:
-		tween_push(TWF_ROLL);
+		tween_push(TWF_UP);
 		cam_roll(0.1f);
-		tween_pop(TWF_ROLL);
+		tween_pop(TWF_UP);
 		return;
 	case GLUT_KEY_END:
-		tween_push(TWF_ROLL);
+		tween_push(TWF_UP);
 		cam_roll(-0.1f);
-		tween_pop(TWF_ROLL);
+		tween_pop(TWF_UP);
 		return;
 	case GLUT_KEY_LEFT:
 		dir = DIR_LEFT;
