@@ -14,6 +14,8 @@ vec_normalize(struct fvec *fvp)
 
 	mag = sqrt(SQUARE(fvp->fv_x) + SQUARE(fvp->fv_y) +
 	    SQUARE(fvp->fv_z));
+	if (mag == 0.0)
+		return;
 	fvp->fv_x /= mag;
 	fvp->fv_y /= mag;
 	fvp->fv_z /= mag;
@@ -71,7 +73,7 @@ vec_rotate(struct fvec *fv, const struct fvec *axis, double deg)
 	struct fvec cr;
 	double m[16];
 
-	
+
 
 /*
 	vec_crossprod(&cr, fv, axis);
