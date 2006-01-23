@@ -533,7 +533,7 @@ void			 cocb_tourjob(int);
 /* cam.c */
 void			 cam_move(int, float);
 void			 cam_revolve(struct fvec *, float, float);
-void			 cam_rotate(const struct fvec *, const struct fvec *);
+void			 cam_rotate(const struct fvec *, const struct fvec *, int, int);
 void			 cam_roll(float);
 void			 cam_look(void);
 
