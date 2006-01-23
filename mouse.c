@@ -120,23 +120,19 @@ void
 gl_motionh_default(int u, int v)
 {
 	int du = u - lastu, dv = v - lastv;
+	struct fvec center;
 
 	if (abs(du) + abs(dv) <= 1)
 		return;
 
 	tween_push(TWF_LOOK | TWF_POS | TWF_UP);
 	if (spkey & GLUT_ACTIVE_SHIFT) {
-		struct fvec startfv, endfv;
-
-		selfv_calc(&startfv, lastu, lastv);
-		selfv_calc(&endfv, u, v);
-		cam_rotate(&startfv, &endfv);
-	} else {
-		struct fvec center;
-
+		center.fv_x = st.st_v.fv_x + st.st_lv.fv_x;
+		center.fv_y = st.st_v.fv_y + st.st_lv.fv_y;
+		center.fv_z = st.st_v.fv_z + st.st_lv.fv_z;
+	} else
 		(*revolve_centerf)(&center);
-		cam_revolve(&center, (double)du, (double)-dv);
-	}
+	cam_revolve(&center, (double)du, (double)-dv);
 	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
 
 	lastu = u;
