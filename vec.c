@@ -70,19 +70,36 @@ vec_addto(const struct fvec *a, struct fvec *b)
 void
 vec_rotate(struct fvec *fv, const struct fvec *axis, double deg)
 {
-	struct fvec cr;
-	double m[16];
+	double m[3][3], rcos, rsin;
 
+	/*
+	 *    rcos + uu(1-rcos)	   w*rsin + vu(1-rcos)	 -v*rsin + wu(1-rcos)
+	 * -w*rsin + uv(1-rcos)	     rcos + vv(1-rcos)	  u*rsin + vw(1-rcos)
+	 *  v*rsin + uw(1-rcos)	  -u*rsin - vw(1-rcos)	    rcos + ww(1-rcos)
+	 */
 
+#define u axis->fv_x
+#define v axis->fv_y
+#define w axis->fv_z
+	rcos = cos(deg);
+	rsin = sin(deg);
+	m[0][0] =      rcos + u * u * (1 - rcos);
+	m[0][1] =  w * rsin + v * u * (1 - rcos);
+	m[0][2] = -v * rsin + w * u * (1 - rcos);
+	m[1][0] = -w * rsin + u * v * (1 - rcos);
+	m[1][1] =      rcos + v * v * (1 - rcos);
+	m[1][2] =  u * rsin + w * v * (1 - rcos);
+	m[2][0] =  v * rsin + u * w * (1 - rcos);
+	m[2][1] = -u * rsin + v * w * (1 - rcos);
+	m[2][2] =      rcos + w * w * (1 - rcos);
+#undef u
+#undef v
+#undef w
 
-/*
-	vec_crossprod(&cr, fv, axis);
-
-	(1-cos t)XX + cos t	(1-cos t)XY + (sin t)Z	(1-cos t)XZ - (sin t)Y	0
-	(1-cos t)XY-(sin t)Z	(1-cos t)YY + cos t	(1-cos t)YZ + (sin t)X	0
-	(1-cos t)XY + (sin t)Y	(1-cos t)YZ - (sin t)X	(1-cos t)ZZ + cos t	0
-	0			0			0			1
-*/
+	fv->fv_x = m[0][0] * fv->fv_x + m[0][1] * fv->fv_y + m[0][2] * fv->fv_z;
+	fv->fv_y = m[1][0] * fv->fv_x + m[1][1] * fv->fv_y + m[1][2] * fv->fv_z;
+	fv->fv_z = m[2][0] * fv->fv_x + m[2][1] * fv->fv_y + m[2][2] * fv->fv_z;
+	vec_normalize(fv);
 }
 
 #define x cart->fv_x
