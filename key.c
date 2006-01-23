@@ -625,12 +625,12 @@ gl_spkeyh_default(int key, __unused int u, __unused int v)
 		/* NOTREACHED */
 	case GLUT_KEY_HOME:
 		tween_push(TWF_UP);
-		cam_roll(0.1f);
+		cam_roll(0.1);
 		tween_pop(TWF_UP);
 		return;
 	case GLUT_KEY_END:
 		tween_push(TWF_UP);
-		cam_roll(-0.1f);
+		cam_roll(-0.1);
 		tween_pop(TWF_UP);
 		return;
 	case GLUT_KEY_LEFT:

@@ -97,7 +97,7 @@ cam_revolve(struct fvec *center, float d_theta, float d_phi)
 }
 
 void
-cam_roll(float amt)
+cam_roll(double amt)
 {
 	vec_rotate(&st.st_uv, &st.st_lv, amt);
 }
