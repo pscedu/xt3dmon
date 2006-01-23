@@ -74,3 +74,4 @@ reminders:
 89. add arg to getcol() to set the texids
 90. for tweening, calculate the % moved by one (e.g. move), then apply
     that % to the others, instead of use MAX_{LOOK,TWEEN} values
+91. bug when revolve position = st.st_v
