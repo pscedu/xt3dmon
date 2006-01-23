@@ -22,132 +22,202 @@
 void
 cam_move(int dir, float amt)
 {
+	if (dir == DIR_LEFT ||
+	    dir == DIR_BACK ||
+	    dir == DIR_DOWN)
+		amt *= -1;
+
+	/*
+	 * This needs to be rewritten to use st.st_uv.
+	 */
 	switch (dir) {
 	case DIR_LEFT:
-		st.st_x += st.st_lz * amt;
-		st.st_z -= st.st_lx * amt;
-		break;
 	case DIR_RIGHT:
 		st.st_x -= st.st_lz * amt;
 		st.st_z += st.st_lx * amt;
 		break;
 	case DIR_FORWARD:
+	case DIR_BACK:
 		st.st_x += st.st_lx * amt;
 		st.st_y += st.st_ly * amt;
 		st.st_z += st.st_lz * amt;
 		break;
-	case DIR_BACK:
-		st.st_x -= st.st_lx * amt;
-		st.st_y -= st.st_ly * amt;
-		st.st_z -= st.st_lz * amt;
-		break;
 	case DIR_UP:
-	case DIR_DOWN: {
-		struct fvec cross, a, b;
-
-		a.fv_x = st.st_lx;
-		a.fv_y = st.st_ly;
-		a.fv_z = st.st_lz;
-		vec_normalize(&a);
-
-		b.fv_x = st.st_lz;
-		b.fv_y = 0;
-		b.fv_z = -st.st_lx;
-		vec_normalize(&b);
-
-		/* Follow the normal to the look vector. */
-		if (dir == DIR_DOWN)
-			vec_crossprod(&cross, &b, &a);
-		else
-			vec_crossprod(&cross, &a, &b);
-
-		vec_normalize(&cross);
-		st.st_x += cross.fv_x * amt;
-		st.st_y += cross.fv_y * amt;
-		st.st_z += cross.fv_z * amt;
+	case DIR_DOWN:
+		st.st_x += st.st_uv.fv_x * amt;
+		st.st_y += st.st_uv.fv_y * amt;
+		st.st_z += st.st_uv.fv_z * amt;
 		break;
-	    }
 	}
 }
 
 void
 cam_revolve(struct fvec *center, float d_theta, float d_phi)
 {
-	struct fvec diff;
-	float r2, r3, t, p;
+	struct fvec diff, sph;
+	int upinv;
 
-	diff.fv_x = st.st_x - center->fv_x;
-	diff.fv_y = st.st_y - center->fv_y;
-	diff.fv_z = st.st_z - center->fv_z;
+	upinv = 0;
+	if (st.st_uv.fv_y < 0.0) {
+		upinv = !upinv;
+		d_phi *= -1;
+		d_theta *= -1;
+	}
 
-	r2 = sqrt(SQUARE(diff.fv_x) + SQUARE(diff.fv_z));
-	r3 = vec_mag(&diff);
-	t = acosf(diff.fv_x / r2);
-	p = asinf(diff.fv_y / r3);
-	if (st.st_z < center->fv_z)
-		t = 2.0f * M_PI - t;
-	t += 0.01f * d_theta;
-	p += 0.01f * d_phi;
-	while (t < 0)
-		t += M_PI * 2.0f;
+	vec_sub(&diff, &st.st_v, center);
+	vec_cart2sphere(&diff, &sph);
+	sph.fv_t += 0.01 * d_theta;
+	sph.fv_p += 0.01 * d_phi;
+//	sph.fv_p = negmodf(sph.fv_p, 2.0 * M_PI);
 
-	st.st_x = r3 * cos(t) * cos(p);
-	st.st_y = r3 * sin(p);
-	st.st_z = r3 * sin(t) * cos(p);
+	if (sph.fv_p < 0.0) {
+		sph.fv_t += M_PI;
+		sph.fv_p *= -1.0;
+		upinv = !upinv;
+	}
 
-	st.st_lx = -st.st_x;
-	st.st_ly = -st.st_y;
-	st.st_lz = -st.st_z;
+	sph.fv_t = negmodf(sph.fv_t, 2.0 * M_PI);
 
-	st.st_x += center->fv_x;
-	st.st_y += center->fv_y;
-	st.st_z += center->fv_z;
-
+	vec_sphere2cart(&sph, &st.st_v);
+	st.st_lv.fv_x = -st.st_v.fv_x;
+	st.st_lv.fv_y = -st.st_v.fv_y;
+	st.st_lv.fv_z = -st.st_v.fv_z;
 	vec_normalize(&st.st_lv);
+
+	sph.fv_p += M_PI / 2.0;
+	if (upinv)
+		sph.fv_p += M_PI;
+	vec_sphere2cart(&sph, &st.st_uv);
+	st.st_uv.fv_x *= -1.0;
+	st.st_uv.fv_y *= -1.0;
+	st.st_uv.fv_z *= -1.0;
+	vec_normalize(&st.st_uv);
+
+	vec_addto(center, &st.st_v);
 }
 
-/* XXX: amt only works when small - use fmod to get remainders of 2*PI. */
 void
 cam_roll(float amt)
 {
-	float t, mag;
-
-	mag = vec_mag(&st.st_uv);
-	t = acosf(st.st_uy / mag);
-	if (st.st_uz < 0)
-		t = 2.0f * M_PI - t;
-	t += amt;
-	if (t < 0)
-		t += M_PI * 2.0f;
-	st.st_uy = cos(t) * mag;
-	st.st_uz = sin(t) * mag;
+	vec_rotate(&st.st_uv, &st.st_lv, amt * 90.0);
 }
 
 void
-cam_rotate(float d_theta, float d_phi)
+cam_rotate(const struct fvec *begfv, const struct fvec *endfv,
+    int signu, int signv)
 {
-	float t, mag;
+	struct fvec sph, beg_sph, end_sph;
+	double dt, dp;
+	int upinv, flipt, invbeg, invend;
 
-	if (d_theta) {
-		mag = sqrt(SQUARE(st.st_lx) + SQUARE(st.st_lz));
-		t = acosf(st.st_lx / mag);
-		if (st.st_lz < 0)
-			t = 2.0f * M_PI - t;
-		t += 0.01f * d_theta;
-		if (t < 0)
-			t += M_PI * 2.0f;
-		st.st_lx = cos(t) * mag;
-		st.st_lz = sin(t) * mag;
+	flipt = upinv = 0;
+	if (st.st_uv.fv_y < 0)
+		upinv = !upinv;
+
+	vec_cart2sphere(begfv, &beg_sph);
+	vec_cart2sphere(endfv, &end_sph);
+	vec_cart2sphere(&st.st_lv, &sph);
+
+#if 0
+	if (end_sph.fv_t > M_PI) {
+		if (end_sph.fv_p < M_PI / 2.0)
+			dp = end_sph.fv_p + beg_sph.fv_p;
+		else
+			dp = (M_PI - end_sph.fv_p) +
+			     (M_PI - beg_sph.fv_p);
+	} else
+#endif
+	/*
+	 * inv(erted) | normal
+	 *           pi/2
+	 *         +--|--+
+	 *        /   |   \
+	 *       /    |    \
+	 *      |     |     | pi
+	 *    0 |   theta   |
+	 *      |     |     | -pi
+	 *       \    |    /
+	 *        \   |   /
+	 *         +--|--+
+	 *          -pi/2
+	 */
+	invbeg = invend = 0;
+	if (beg_sph.fv_t <  M_PI / 2.0 &&
+	    beg_sph.fv_t > -M_PI / 2.0)
+		invbeg = 1;
+	if (end_sph.fv_t <  M_PI / 2.0 &&
+	    end_sph.fv_t > -M_PI / 2.0)
+		invend = 1;
+	if (invbeg && !invend && signv < 0)
+//		printf("beg %g,%g,%d\n", end_sph.fv_p, beg_sph.fv_p, signv);
+		beg_sph.fv_p += M_PI;
+	else if (!invbeg && invend && signv > 0)
+	//	printf("end %g,%g,%d\n", end_sph.fv_p, beg_sph.fv_p, signv);
+		end_sph.fv_p += M_PI;
+	dp = end_sph.fv_p - beg_sph.fv_p;
+
+	if (end_sph.fv_t < beg_sph.fv_t && signu > 0)
+		end_sph.fv_t += 2.0 * M_PI;
+	else if (end_sph.fv_t > beg_sph.fv_t && signu < 0)
+		beg_sph.fv_t += 2.0 * M_PI;
+	dt = end_sph.fv_t - beg_sph.fv_t;
+printf("%.05f\t%.05f\n", dt, dp);
+
+	/*
+	 * The values/logic are somewhat misleading
+	 * since they are negative when one would
+	 * not expect them to be: when the cursor
+	 * moved up but the end_sph moved down, or
+	 * the cursor moved down but end_sph moved
+	 * up, we flipped.
+	 */
+	if (upinv) {
+//	|| (dp > 0.0 && signy < 0) ||
+//	    (dp < 0.0 && signy > 0)) {
+		dt *= -1.0;
+		dp *= -1.0;
+		/*
+		 * We shouldn't need to set upinv
+		 * since it will get set for the
+		 * (phi < 0) handling below.
+		 */
 	}
-	if (d_phi) {
-		d_phi *= -0.005f;
-		t = asinf(st.st_ly); /* XXX:  wrong. */
-		if (t + d_phi < M_PI / 2.0f &&
-		    t + d_phi > -M_PI / 2.0f) {
-			st.st_ly = sin(t + d_phi);
-			vec_normalize(&st.st_lv);
-		}
+
+	sph.fv_t += dt;
+	sph.fv_p += dp;
+// printf("dt: %g, dp: %g (%g,%g) =>%d\n", dt, dp, end_sph.fv_p, beg_sph.fv_p, signy);
+
+if (sph.fv_p > M_PI)
+ printf("  @@@@@ phi: %g > M_PI\n", sph.fv_p);
+//	if (sph.fv_p > M_PI)
+//		sph.fv_p = M_PI - sph.fv_p;
+	if (sph.fv_p < 0.0) {
+		sph.fv_t += M_PI;
+		sph.fv_p *= -1.0;
+		upinv = !upinv;
+flipt=1;
 	}
+
+	sph.fv_t = negmodf(sph.fv_t, 2.0 * M_PI);
+
+	vec_sphere2cart(&sph, &st.st_lv);
+	vec_normalize(&st.st_lv);
+
+#if 0
+if (flipt) {
+	sph.fv_t -= M_PI;
+	sph.fv_p *= -1.0;
+}
+#endif
+
+	sph.fv_p += M_PI / 2.0;
+	if (upinv)
+		sph.fv_p += M_PI;
+	vec_sphere2cart(&sph, &st.st_uv);
+	st.st_uv.fv_x *= -1.0;
+	st.st_uv.fv_y *= -1.0;
+	st.st_uv.fv_z *= -1.0;
+	vec_normalize(&st.st_uv);
 }
 
 __inline void
