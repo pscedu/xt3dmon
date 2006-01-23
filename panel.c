@@ -897,15 +897,22 @@ panel_refresh_mem(struct panel *p)
 void
 panel_refresh_pos(struct panel *p)
 {
+	struct fvec lsph, usph;
+
 	if (!cam_dirty && panel_ready(p))
 		return;
 
+	vec_cart2sphere(&st.st_lv, &lsph);
+	vec_cart2sphere(&st.st_uv, &usph);
+
 	panel_set_content(p, "Position (%.2f,%.2f,%.2f)\n"
-	    "Look (%.2f,%.2f,%.2f)\n"
-	    "Roll (%.2f,%.2f,%.2f)",
+	    "Look (%.2f,%.2f,%.2f) (t=%g,p=%g)\n"
+	    "Up (%.2f,%.2f,%.2f) (t=%g,p=%g)",
 	    st.st_x, st.st_y, st.st_z,
 	    st.st_lx, st.st_ly, st.st_lz,
-	    st.st_ux, st.st_uy, st.st_uz);
+	    lsph.fv_t, lsph.fv_p,
+	    st.st_ux, st.st_uy, st.st_uz,
+	    usph.fv_t, usph.fv_p);
 }
 
 void
