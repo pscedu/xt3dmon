@@ -289,44 +289,55 @@ draw_node_label(struct node *n)
  * only.
  */
 __inline void
-draw_node_pipes(struct fvec *dim)
+draw_node_pipes(struct node *np)
 {
-	float w = dim->fv_w, h = dim->fv_h, d = dim->fv_d;
+	struct fvec *ndim;
+	GLUquadric *q;
 
-	/* Antialiasing */
+	ndim = &vmodes[st.st_vmode].vm_ndim;
+
+	if ((q = gluNewQuadric()) == NULL)
+		err(1, "gluNewQuadric");
+	gluQuadricDrawStyle(q, GLU_FILL);
+
+	/* Anti-aliasing */
 	glEnable(GL_BLEND);
+	glEnable(GL_POLYGON_SMOOTH);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
 
-	glEnable(GL_LINE_SMOOTH);
-	glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
+	glColor3f(0.0f, 1.0f, 0.0f);					/* z - green */
+	glPushMatrix();
+	glTranslatef(
+	    np->n_v->fv_x + ndim->fv_w / 2.0,
+	    np->n_v->fv_y + ndim->fv_h / 2.0,
+	    np->n_v->fv_z + ndim->fv_d / 2.0 - st.st_winsp.iv_d);
+	gluCylinder(q, 0.1, 0.1, 2.0 * st.st_winsp.iv_d, 3, 1);
+	glPopMatrix();
 
-	glLineWidth(8.0);
-	glBegin(GL_LINES);
-	glColor3f(0.0f, 0.0f, 1.0f); 			/* x - blue */
-	glVertex3f(w - st.st_winsp.iv_x, h/2, d/2);
-	glVertex3f(st.st_winsp.iv_x, h/2, d/2);
+	glColor3f(1.0f, 0.0f, 0.0f);					/* y - red */
+	glPushMatrix();
+	glTranslatef(
+	    np->n_v->fv_x + ndim->fv_w / 2.0,
+	    np->n_v->fv_y + ndim->fv_h / 2.0 - st.st_winsp.iv_h,
+	    np->n_v->fv_z + ndim->fv_d / 2.0);
+	glRotatef(-90.0, 1.0, 0.0, 0.0);
+	gluCylinder(q, 0.1, 0.1, 2.0 * st.st_winsp.iv_h, 3, 1);
+	glPopMatrix();
 
-	glColor3f(1.0f, 0.0f, 0.0f);			/* y - red */
-	glVertex3f(w/2, h - st.st_winsp.iv_y, d/2);
-	glVertex3f(w/2, st.st_winsp.iv_y, d/2);
+	glColor3f(0.0f, 0.0f, 1.0f);					/* x - blue */
+	glPushMatrix();
+	glTranslatef(
+	    np->n_v->fv_x + ndim->fv_w / 2.0 - st.st_winsp.iv_w,
+	    np->n_v->fv_y + ndim->fv_h / 2.0,
+	    np->n_v->fv_z + ndim->fv_d / 2.0);
+	glRotatef(90.0, 0.0, 1.0, 0.0);
+	gluCylinder(q, 0.1, 0.1, 2.0 * st.st_winsp.iv_w, 3, 1);
+	glPopMatrix();
 
-	glColor3f(0.0f, 1.0f, 0.0f);			/* z - green */
-	glVertex3f(w/2, h/2, d - st.st_winsp.iv_z);
-	glVertex3f(w/2, h/2, st.st_winsp.iv_z);
-	glEnd();
-
-	glEnable(GL_POINT_SMOOTH);
-	glHint(GL_POINT_SMOOTH_HINT, GL_DONT_CARE);
-
-	glColor3f(0.0, 0.0, 0.0);
-	glPointSize(20.0);
-	glBegin(GL_POINTS);
-	glVertex3f(w/2.0, h/2.0, d/2.0);
-	glEnd();
-
-	glDisable(GL_POINT_SMOOTH);
-	glDisable(GL_LINE_SMOOTH);
+	glDisable(GL_POLYGON_SMOOTH);
 	glDisable(GL_BLEND);
+	gluDeleteQuadric(q);
 }
 
 __inline int
@@ -401,8 +412,14 @@ draw_node(struct node *n, int flags)
 	if (fp->f_a != 1.0f)
 		glDisable(GL_BLEND);
 
-	if (st.st_opts & OP_WIREFRAME)
+	if (st.st_opts & OP_WIREFRAME) {
+		float col;
+
+		col = fill_wireframe->f_a;
+		fill_wireframe->f_a = fp->f_a;
 		draw_box_outline(dimp, fill_wireframe);
+		fill_wireframe->f_a = col;
+	}
 	if (st.st_opts & OP_NLABELS)
 		draw_node_label(n);
 
@@ -443,7 +460,7 @@ make_ground(void)
 	ground_dl[wid] = glGenLists(1);
 	glNewList(ground_dl[wid], GL_COMPILE);
 
-	/* Antialiasing */
+	/* Anti-aliasing */
 	glEnable(GL_BLEND);
 	glEnable(GL_LINE_SMOOTH);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -609,51 +626,68 @@ draw_cluster_pipes(struct fvec *v)
 {
 	float x, y, z, spx, spy, spz;
 	float sx, sy, sz;
-	struct fvec *dimp;
-
-	dimp = &vmodes[st.st_vmode].vm_ndim;
-	spx = st.st_winsp.iv_x;
-	spy = st.st_winsp.iv_y;
-	spz = st.st_winsp.iv_z;
-	sx = dimp->fv_w / 2;
-	sy = dimp->fv_h / 2;
-	sz = dimp->fv_d / 2;
+	struct fvec cldim, *ndim;
+	GLUquadric *q;
 
 	glPushMatrix();
 	glTranslatef(v->fv_x, v->fv_y, v->fv_z);
 
-	/* Antialiasing */
+	ndim = &vmodes[st.st_vmode].vm_ndim;
+
+	spx = st.st_winsp.iv_x;
+	spy = st.st_winsp.iv_y;
+	spz = st.st_winsp.iv_z;
+
+	sx = ndim->fv_w / 2 + wioff.iv_x * spx;
+	sy = ndim->fv_h / 2 + wioff.iv_y * spy;
+	sz = ndim->fv_d / 2 + wioff.iv_z * spz;
+
+	cldim.fv_w = WIV_SWIDTH;
+	cldim.fv_h = WIV_SHEIGHT;
+	cldim.fv_d = WIV_SDEPTH;
+
+	if ((q = gluNewQuadric()) == NULL)
+		err(1, "gluNewQuadric");
+	gluQuadricDrawStyle(q, GLU_FILL);
+
+	/* Anti-aliasing */
 	glEnable(GL_BLEND);
-	glEnable(GL_LINE_SMOOTH);
+	glEnable(GL_POLYGON_SMOOTH);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
+	glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
 
-	glLineWidth(8.0);
-
-	glBegin(GL_LINES);
-	glColor3f(0.0f, 1.0f, 0.0f);
-	for (x = sx; x < WIV_SWIDTH; x += spx)			/* z - green */
-		for (y = sy; y < WIV_SHEIGHT; y += spy) {
-			glVertex3f(x, y, -dimp->fv_z / 2.0f);
-			glVertex3f(x, y, WIV_SDEPTH);
+	glColor3f(0.0f, 1.0f, 0.0f);					/* z - green */
+	for (x = sx; x - sx < cldim.fv_w; x += spx)
+		for (y = sy; y - sy < cldim.fv_h; y += spy) {
+			glPushMatrix();
+			glTranslatef(x, y, sz - spz);
+			gluCylinder(q, 0.1, 0.1, cldim.fv_d + spz, 3, 1);
+			glPopMatrix();
 		}
 
-	glColor3f(1.0f, 0.0f, 0.0f);
-	for (z = sz; z < WIV_SDEPTH; z += spz)			/* y - red */
-		for (x = sx; x < WIV_SWIDTH; x += spx) {
-			glVertex3f(x, -dimp->fv_y / 2.0f, z);
-			glVertex3f(x, WIV_SHEIGHT, z);
+	glColor3f(1.0f, 0.0f, 0.0f);					/* y - red */
+	for (z = sz; z - sz < cldim.fv_d; z += spz)
+		for (x = sx; x - sx < cldim.fv_w; x += spx) {
+			glPushMatrix();
+			glTranslatef(x, sy - spy, z);
+			glRotatef(-90.0, 1.0, 0.0, 0.0);
+			gluCylinder(q, 0.1, 0.1, cldim.fv_h + spy, 3, 1);
+			glPopMatrix();
 		}
 
-	glColor3f(0.0f, 0.0f, 1.0f);
-	for (y = sy; y < WIV_SHEIGHT; y += spy)
-		for (z = sz; z < WIV_SDEPTH; z += spz) {	/* x - blue */
-			glVertex3f(-dimp->fv_x / 2.0f, y, z);
-			glVertex3f(WIV_SWIDTH, y, z);
+	glColor3f(0.0f, 0.0f, 1.0f);					/* x - blue */
+	for (y = sy; y - sy < cldim.fv_h; y += spy)
+		for (z = sz; z - sz < cldim.fv_d; z += spz) {
+			glPushMatrix();
+			glTranslatef(sx - spx, y, z);
+			glRotatef(90.0, 0.0, 1.0, 0.0);
+			gluCylinder(q, 0.1, 0.1, cldim.fv_w + spx, 3, 1);
+			glPopMatrix();
 		}
-	glDisable(GL_LINE_SMOOTH);
+	glDisable(GL_POLYGON_SMOOTH);
 	glDisable(GL_BLEND);
-	glEnd();
+	gluDeleteQuadric(q);
+
 	glPopMatrix();
 }
 
@@ -753,8 +787,12 @@ __inline void
 draw_clusters_wired(void)
 {
 	int xnum, znum, col;
-	float x, y, z;
 	struct fvec v, dim;
+	float x, y, z;
+	int opts;
+
+	opts = st.st_opts;
+	st.st_opts &= ~OP_NODEANIM;
 
 	x = st.st_x - clip;
 	y = st.st_y - clip;
@@ -798,6 +836,8 @@ draw_clusters_wired(void)
 	wivdim.fv_w = v.fv_x - wivstart.fv_x;
 	wivdim.fv_h = v.fv_y - wivstart.fv_y;
 	wivdim.fv_d = v.fv_z - wivstart.fv_z;
+
+	st.st_opts = opts;
 }
 
 void
@@ -862,15 +902,15 @@ make_select(void)
 			for (v.fv_x = 0.0f; v.fv_x < wivdim.fv_w; v.fv_x += WIV_SWIDTH)
 				for (v.fv_y = 0.0f; v.fv_y < wivdim.fv_h; v.fv_y += WIV_SHEIGHT)
 					for (v.fv_z = 0.0f; v.fv_z < wivdim.fv_d; v.fv_z += WIV_SDEPTH) {
+						if (st.st_opts & OP_SELPIPES &&
+						    (st.st_opts & OP_PIPES) == 0)
+							draw_node_pipes(n);
+
 						glPushMatrix();
 						glTranslatef(
 						    pos.fv_x + v.fv_x,
 						    pos.fv_y + v.fv_y,
 						    pos.fv_z + v.fv_z);
-						if (st.st_opts & OP_SELPIPES &&
-						    (st.st_opts & OP_PIPES) == 0)
-							draw_node_pipes(&vmodes[st.st_vmode].vm_ndim);
-
 						draw_node(n, NDF_DONTPUSH | NDF_NOOPTS);
 						glPopMatrix();
 					}
@@ -880,12 +920,12 @@ make_select(void)
 			n->n_v->fv_y -= SELNODE_GAP;
 			n->n_v->fv_z -= SELNODE_GAP;
 
-			glPushMatrix();
-			glTranslatef(n->n_v->fv_x, n->n_v->fv_y, n->n_v->fv_z);
 			if (st.st_vmode != VM_PHYSICAL &&
 			    st.st_opts & OP_SELPIPES && (st.st_opts & OP_PIPES) == 0)
-				draw_node_pipes(&vmodes[st.st_vmode].vm_ndim);
+				draw_node_pipes(n);
 
+			glPushMatrix();
+			glTranslatef(n->n_v->fv_x, n->n_v->fv_y, n->n_v->fv_z);
 			draw_node(n, NDF_DONTPUSH | NDF_NOOPTS);
 			glPopMatrix();
 
