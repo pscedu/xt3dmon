@@ -60,3 +60,4 @@ maybe not:
     that % to the others, instead of use MAX_{LOOK,TWEEN} values
 91. bug when revolve position = st.st_v
 92. set st.st_mtime to HTTP response last-modified
+93. make select node glow/fade color?
