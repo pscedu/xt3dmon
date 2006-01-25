@@ -70,7 +70,7 @@ gl_motionh_panel(int u, int v)
 void
 revolve_center_cluster(struct fvec *cen)
 {
-	float dist;
+	double dist;
 
 	switch (st.st_vmode) {
 	case VM_PHYSICAL:
@@ -79,9 +79,7 @@ revolve_center_cluster(struct fvec *cen)
 		cen->fv_z = ZCENTER;
 		break;
 	case VM_WIRED:
-		dist = MAX3(WIV_SWIDTH, WIV_SHEIGHT, WIV_SDEPTH);
-		if (st.st_vmode == VM_WIRED)
-			dist /= 3.0f;
+		dist = MAX3(WIV_SWIDTH, WIV_SHEIGHT, WIV_SDEPTH) / 4.0;
 		cen->fv_x = st.st_x + st.st_lx * dist;
 		cen->fv_y = st.st_y + st.st_ly * dist;
 		cen->fv_z = st.st_z + st.st_lz * dist;
