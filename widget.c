@@ -57,7 +57,7 @@ draw_box_outline(const struct fvec *dim, const struct fill *fillp)
 	h += 2.0f * WFRAMEWIDTH;
 	d += 2.0f * WFRAMEWIDTH;
 
-	/* Antialiasing */
+	/* Anti-aliasing */
 	glEnable(GL_LINE_SMOOTH);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
