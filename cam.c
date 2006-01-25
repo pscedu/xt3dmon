@@ -9,15 +9,15 @@
 #include "xmath.h"
 
 /*
- *    z
- *   / Forward /|
- *  /   Back  |/
- * +------------------- x
- * |  Left <-  -> Right
- * |
- * |   Up /\
- * | Down \/
- * y
+ *	y
+ *	| Up/Down /\
+ *	|	  \/
+ *	|
+ *	| Left/Right < >
+ *	+--------------- x
+ *     /	     /\
+ *    / Back/Forward \/
+ *   z
  */
 void
 cam_move(int dir, float amt)
@@ -59,6 +59,10 @@ cam_revolve(struct fvec *center, float d_theta, float d_phi)
 
 	upinv = 0;
 	if (st.st_uv.fv_y < 0.0) {
+		/*
+		 * If we are already looking upside,
+		 * direction is reversed.
+		 */
 		upinv = !upinv;
 		d_phi *= -1;
 		d_theta *= -1;
@@ -71,6 +75,11 @@ cam_revolve(struct fvec *center, float d_theta, float d_phi)
 //	sph.fv_p = negmodf(sph.fv_p, 2.0 * M_PI);
 
 	if (sph.fv_p < 0.0) {
+		/*
+		 * We flipped upside (or back rightside up),
+		 * so move theta onto the other side but
+		 * use the same absolute value of phi.
+		 */
 		sph.fv_t += M_PI;
 		sph.fv_p *= -1.0;
 		upinv = !upinv;
@@ -78,6 +87,7 @@ cam_revolve(struct fvec *center, float d_theta, float d_phi)
 
 	sph.fv_t = negmodf(sph.fv_t, 2.0 * M_PI);
 
+	/* Point the look vector at the center of revolution. */
 	vec_sphere2cart(&sph, &st.st_v);
 	st.st_lv.fv_x = -st.st_v.fv_x;
 	st.st_lv.fv_y = -st.st_v.fv_y;
