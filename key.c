@@ -178,8 +178,6 @@ gl_keyh_panel(unsigned char key, __unused int u, __unused int v)
 void
 gl_keyh_mode(unsigned char key, __unused int u, __unused int v)
 {
-	int oldopts = st.st_opts;
-
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'j':
@@ -198,14 +196,11 @@ gl_keyh_mode(unsigned char key, __unused int u, __unused int v)
 		return;
 	}
 	st.st_rf |= RF_CLUSTER | RF_SMODE | RF_SELNODE;
-	refresh_state(oldopts);
 }
 
 void
 gl_keyh_vmode(unsigned char key, __unused int u, __unused int v)
 {
-	int oldopts = st.st_opts;
-
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'o':
@@ -221,7 +216,6 @@ gl_keyh_vmode(unsigned char key, __unused int u, __unused int v)
 		return;
 	}
 	st.st_rf |= RF_CLUSTER | RF_CAM | RF_GROUND | RF_SELNODE | RF_DATASRC;
-	refresh_state(oldopts);
 }
 
 void
@@ -294,8 +288,6 @@ gl_keyh_option(unsigned char key, __unused int u, __unused int v)
 void
 gl_keyh_decr(unsigned char key, __unused int u, __unused int v)
 {
-	int oldopts = st.st_opts;
-
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'x':
@@ -316,14 +308,11 @@ gl_keyh_decr(unsigned char key, __unused int u, __unused int v)
 		return;
 	}
 	st.st_rf |= RF_CLUSTER | RF_GROUND | RF_CAM | RF_SELNODE;
-	refresh_state(oldopts);
 }
 
 void
 gl_keyh_incr(unsigned char key, __unused int u, __unused int v)
 {
-	int oldopts = st.st_opts;
-
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'x':
@@ -344,7 +333,6 @@ gl_keyh_incr(unsigned char key, __unused int u, __unused int v)
 		return;
 	}
 	st.st_rf |= RF_CLUSTER | RF_GROUND | RF_CAM | RF_SELNODE;
-	refresh_state(oldopts);
 }
 
 void
@@ -404,8 +392,6 @@ gl_keyh_keyh(unsigned char key, __unused int u, __unused int v)
 void
 gl_keyh_alpha(unsigned char key, __unused int u, __unused int v)
 {
-	int oldopts = st.st_opts;
-
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'd':
@@ -427,14 +413,11 @@ gl_keyh_alpha(unsigned char key, __unused int u, __unused int v)
 		return;
 	}
 	st.st_rf |= RF_CLUSTER | RF_SELNODE;
-	refresh_state(oldopts);
 }
 
 void
 gl_keyh_wioffdecr(unsigned char key, __unused int u, __unused int v)
 {
-	int oldopts = st.st_opts;
-
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'x':
@@ -458,14 +441,11 @@ gl_keyh_wioffdecr(unsigned char key, __unused int u, __unused int v)
 		break;
 	}
 	st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND;
-	refresh_state(oldopts);
 }
 
 void
 gl_keyh_wioffincr(unsigned char key, __unused int u, __unused int v)
 {
-	int oldopts = st.st_opts;
-
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'x':
@@ -489,14 +469,11 @@ gl_keyh_wioffincr(unsigned char key, __unused int u, __unused int v)
 		break;
 	}
 	st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND;
-	refresh_state(oldopts);
 }
 
 void
 gl_keyh_default(unsigned char key, __unused int u, __unused int v)
 {
-	int oldopts = st.st_opts;
-
 	switch (key) {
 	case 'a':
 		glutKeyboardFunc(gl_keyh_alpha);
@@ -608,7 +585,6 @@ gl_keyh_default(unsigned char key, __unused int u, __unused int v)
 	default:
 		return;
 	}
-	refresh_state(oldopts);
 }
 
 void
