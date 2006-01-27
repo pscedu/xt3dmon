@@ -136,9 +136,10 @@ panel_free(struct panel *p)
 void
 draw_shadow_panels(void)
 {
+	unsigned int name;
+	struct pwidget *pw;
 	struct glname *gn;
 	struct panel *p;
-	unsigned int name;
 
 	glPushAttrib(GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
 
@@ -153,6 +154,28 @@ draw_shadow_panels(void)
 	gluOrtho2D(0.0, win_width, 0.0, win_height);
 
 	TAILQ_FOREACH(p, &panels, p_link) {
+		SLIST_FOREACH(pw, &p->p_widgets, pw_next) {
+			if (pw->pw_cb == NULL)
+				continue;
+			name = gsn_get(pw->pw_cbarg, pw->pw_cb, GNF_2D);
+			gn = getobj(&name, &glname_list);
+			gn->gn_u = pw->pw_u;
+			gn->gn_v = pw->pw_v;
+			gn->gn_h = pw->pw_h;
+			gn->gn_w = pw->pw_w;
+
+			glPushMatrix();
+			glPushName(name);
+			glBegin(GL_POLYGON);
+			glVertex2d(pw->pw_u,			pw->pw_v);
+			glVertex2d(pw->pw_u + pw->pw_w,		pw->pw_v);
+			glVertex2d(pw->pw_u + pw->pw_w - 1,	pw->pw_v - pw->pw_h + 1);
+			glVertex2d(pw->pw_u,			pw->pw_v - pw->pw_h + 1);
+			glEnd();
+			glPopName();
+			glPopMatrix();
+		}
+
 		name = gsn_get(p->p_id, gscb_panel, GNF_2D);
 		gn = getobj(&name, &glname_list);
 		gn->gn_u = p->p_u;
@@ -268,6 +291,12 @@ draw_panel(struct panel *p, int toff)
 		    (s - pw->pw_str + 1) * LETTER_WIDTH + PWIDGET_LENGTH +
 		    PWIDGET_PADDING < p->p_w / 2 - PANEL_PADDING - PANEL_BWIDTH; s++)
 			glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
+
+		pw->pw_u = uoff;
+		pw->pw_v = voff;
+		pw->pw_w = PWIDGET_LENGTH + PWIDGET_PADDING +
+		    (s - pw->pw_str - 1) * LETTER_WIDTH;
+		pw->pw_h = PWIDGET_HEIGHT;
 
 		/*
 		 * We may have to break early because of the way
@@ -568,9 +597,12 @@ panel_get_pwidget(struct panel *p, struct pwidget *pw, struct pwidget **nextp)
 }
 
 void
-pwidget_set(struct panel *p, struct pwidget *pw, struct fill *fp, char *s)
+pwidget_set(struct panel *p, struct pwidget *pw, struct fill *fp,
+    char *s, void (*cb)(int), int cbarg)
 {
 	pw->pw_fillp = fp;
+	pw->pw_cb = cb;
+	pw->pw_cbarg = cbarg;
 	pw->pw_str = s;
 	p->p_maxwlen = MAX(p->p_maxwlen, strlen(s));
 }
@@ -630,12 +662,13 @@ panel_refresh_legend(struct panel *p)
 				continue;
 			pw = panel_get_pwidget(p, pw, &nextp);
 			pwidget_set(p, pw, &statusclass[j].nc_fill,
-			    statusclass[j].nc_name);
+			    statusclass[j].nc_name, gscb_pwsc, j);
 		}
 		for (j = 0; j < job_list.ol_cur; j++, pw = nextp) {
 			pw = panel_get_pwidget(p, pw, &nextp);
 			pwidget_set(p, pw, &job_list.ol_jobs[j]->j_fill,
-			    job_list.ol_jobs[j]->j_jname);
+			    job_list.ol_jobs[j]->j_jname, gscb_pwjob,
+			    job_list.ol_jobs[j]->j_id);
 		}
 		break;
 	case SM_FAIL:
@@ -643,26 +676,26 @@ panel_refresh_legend(struct panel *p)
 		    total_failures);
 
 		pw = panel_get_pwidget(p, pw, &nextp);
-		pwidget_set(p, pw, &fill_nodata, "No data");
+		pwidget_set(p, pw, &fill_nodata, "No data", NULL, 0);
 
 		pw = nextp;
 		for (j = 0; j < FAIL_NFAILS; j++, pw = nextp) {
 			pw = panel_get_pwidget(p, pw, &nextp);
 			pwidget_set(p, pw, &failclass[j].nc_fill,
-			    failclass[j].nc_name);
+			    failclass[j].nc_name, NULL, 0);
 		}
 		break;
 	case SM_TEMP:
 		panel_set_content(p, "Temperature Legend");
 
 		pw = panel_get_pwidget(p, pw, &nextp);
-		pwidget_set(p, pw, &fill_nodata, "No data");
+		pwidget_set(p, pw, &fill_nodata, "No data", NULL, 0);
 
 		pw = nextp;
 		for (j = 0; j < TEMP_NTEMPS; j++, pw = nextp) {
 			pw = panel_get_pwidget(p, pw, &nextp);
 			pwidget_set(p, pw, &tempclass[j].nc_fill,
-			    tempclass[j].nc_name);
+			    tempclass[j].nc_name, NULL, 0);
 		}
 		break;
 	case SM_YOD:
@@ -673,12 +706,12 @@ panel_refresh_legend(struct panel *p)
 				continue;
 			pw = panel_get_pwidget(p, pw, &nextp);
 			pwidget_set(p, pw, &statusclass[j].nc_fill,
-			    statusclass[j].nc_name);
+			    statusclass[j].nc_name, NULL, 0);
 		}
 		for (j = 0; j < yod_list.ol_cur; j++, pw = nextp) {
 			pw = panel_get_pwidget(p, pw, &nextp);
 			pwidget_set(p, pw, &yod_list.ol_yods[j]->y_fill,
-			    yod_list.ol_yods[j]->y_cmd);
+			    yod_list.ol_yods[j]->y_cmd, NULL, 0);
 		}
 		break;
 	}
@@ -1005,7 +1038,7 @@ panel_refresh_status(struct panel *p)
 {
 	if (panel_ready(p))
 		return;
-	panel_set_content(p, "Status\n%s", status_get());
+	panel_set_content(p, "- Status - \n%s", status_get());
 }
 
 void
