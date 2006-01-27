@@ -167,7 +167,8 @@ smode_change(void)
 			n->n_fillp = &fill_borg;
 			break;
 		case SM_MATRIX:
-			n->n_fillp = &fill_matrix;
+			n->n_fillp = rand() % 2 ? &fill_matrix :
+			    &fill_matrix_reloaded;
 			break;
 		}
 	}
