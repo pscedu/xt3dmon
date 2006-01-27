@@ -357,6 +357,8 @@ struct pwidget {
 	char			 *pw_str;
 	struct fill		 *pw_fillp;
 	SLIST_ENTRY(pwidget)	  pw_next;
+	void			(*pw_cb)(int);
+	int			  pw_cbarg;
 	int			  pw_u;
 	int			  pw_v;
 	int			  pw_w;
@@ -685,6 +687,8 @@ int			 sel_process(int, int, int);
 unsigned int		 gsn_get(int, void (*)(int), int);
 void			 gscb_node(int);
 void			 gscb_panel(int);
+void			 gscb_pwsc(int);
+void			 gscb_pwjob(int);
 
 /* selnode.c */
 void			 sn_add(struct node *);
