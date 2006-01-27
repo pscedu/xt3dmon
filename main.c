@@ -106,9 +106,9 @@ refresh_state(int oldopts)
 
 	/* Restore tweening state. */
 	if (diff & OP_TWEEN) {
-		tv.fv_x = st.st_x;  tlv.fv_x = st.st_lx;
-		tv.fv_y = st.st_y;  tlv.fv_y = st.st_ly;
-		tv.fv_z = st.st_z;  tlv.fv_z = st.st_lz;
+		tv = st.st_v;
+		tlv = st.st_lv;
+		tuv = st.st_uv;
 	}
 	if (diff & OP_GOVERN)
 		gl_run(gl_setidleh);
