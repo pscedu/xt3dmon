@@ -48,6 +48,7 @@ struct fill fill_font		= FILL_INIT(0.0f, 0.0f, 0.0f);
 struct fill fill_borg		= FILL_INIT(0.0f, 0.0f, 0.0f);
 struct fill fill_nodata		= FILL_INITF(1.0f, 1.0f, 0.0f, FF_SKEL);
 struct fill fill_matrix		= FILL_INITF(0.0f, 1.0f, 0.0f, FF_SKEL);
+struct fill fill_matrix_reloaded= FILL_INITA(0.0f, 1.0f, 0.0f, 0.3);
 
 struct fvec fvzero = { 0.0f, 0.0f, 0.0f };
 
@@ -242,16 +243,16 @@ draw_node_label(struct node *n)
 {
 	float list[MAX_CHARS];
 	struct fill c;
-	int nid;
-	int i = 0;
+	int i, nid;
 
 	/*
 	 * Parse the node id for use with
 	 * NODE0123456789 (so 4 letter gap before 0)
 	 */
+	i = 0;
 	nid = n->n_nid;
 	while (nid >= 0 && i < MAX_CHARS) {
-		list[MAX_CHARS-i-1] = 4 + nid % 10;
+		list[MAX_CHARS - i - 1] = 4 + nid % 10;
 		nid /= 10;
 		i++;
 	}
@@ -263,7 +264,8 @@ draw_node_label(struct node *n)
 
 	/* Get a distinct contrast color */
 	c = *n->n_fillp;
-	rgb_contrast(&c);
+	if ((c.f_flags & FF_SKEL) == 0)
+		rgb_contrast(&c);
 	glColor4f(c.f_r, c.f_g, c.f_b, c.f_a);
 
 	glEnable(GL_BLEND);
