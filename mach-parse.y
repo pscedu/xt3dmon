@@ -10,6 +10,7 @@
 
 int yylex(void);
 int yyerror(const char *, ...);
+int yyparse(void);
 
 int lineno = 1;
 static int errors;
