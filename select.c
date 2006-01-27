@@ -98,6 +98,7 @@ sel_process(int nrecs, int rank, int flags)
 		gn = getobj(&sr->sr_name, &glname_list);
 
 		if (flags & SPF_2D) {
+			/* 2D records always come first. */
 			if ((gn->gn_flags & GNF_2D) == 0)
 				return (SP_MISS);
 			if (lastu < gn->gn_u ||
@@ -189,4 +190,26 @@ gscb_node(int nid)
 	else
 		panel_show(PANEL_NINFO);
 	return;
+}
+
+void
+gscb_pwsc(int sc)
+{
+	hl_state(sc);
+	st.st_rf |= RF_CLUSTER | RF_SELNODE;
+}
+
+void
+gscb_pwjob(int jobid)
+{
+	struct job *j;
+
+	if ((j = job_findbyid(jobid)) != NULL) {
+		hl_clearall();
+		job_hl(j);
+		hlsc = SC_HL_SELJOBS;
+		if (flyby_mode == FBM_REC)
+			flyby_writehlsc(hlsc);
+		st.st_rf |= RF_CLUSTER | RF_SELNODE;
+	}
 }
