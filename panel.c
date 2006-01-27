@@ -799,7 +799,7 @@ panel_refresh_ninfo(struct panel *p)
 	    "Node ID: %d\n"
 	    "Wired position: (%d,%d,%d)\n"
 	    "Physical position: (%d,%d,%d,%d,%d)\n"
-	    "Temperature: %d\n"
+	    "Temperature: %dC\n"
 	    "# Failures: %d",
 	    n->n_nid,
 	    iv->iv_x, iv->iv_y, iv->iv_z,
