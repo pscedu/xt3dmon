@@ -805,9 +805,11 @@ extern struct fill	 fill_black;
 extern struct fill	 fill_light_blue;
 extern struct fill	 fill_yellow;
 extern struct fill	 fill_font;
-extern struct fill	 fill_borg;
 extern struct fill	 fill_nodata;
+extern struct fill	 fill_bg;
+extern struct fill	 fill_borg;
 extern struct fill	 fill_matrix;
+extern struct fill	 fill_matrix_reloaded;
 
 extern int		 dsp;				/* Data source provider. */
 
