@@ -81,8 +81,7 @@ gl_keyh_flyby(unsigned char key, __unused int u, __unused int v)
 		}
 		break;
 	case 'l':
-		st.st_opts ^= OP_LOOPFLYBY;
-		refresh_state(st.st_opts ^ OP_LOOPFLYBY);
+		opt_flip(OP_LOOPFLYBY);
 		break;
 	}
 }
@@ -160,6 +159,9 @@ gl_keyh_panel(unsigned char key, __unused int u, __unused int v)
 	case 'n':
 		panel_toggle(PANEL_NINFO);
 		break;
+	case 'o':
+		panel_toggle(PANEL_OPTS);
+		break;
 	case 'p':
 		panel_toggle(PANEL_POS);
 		break;
@@ -221,68 +223,56 @@ gl_keyh_vmode(unsigned char key, __unused int u, __unused int v)
 void
 gl_keyh_option(unsigned char key, __unused int u, __unused int v)
 {
-	int oldopts = st.st_opts;
+	int opts = 0;
 
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'D':
-		st.st_opts ^= OP_DISPLAY;
+		opts |= OP_DISPLAY;
 		break;
 	case 'd':
-		st.st_opts ^= OP_CAPTURE;
-		if (st.st_opts & OP_CAPTURE)
-			capture_begin(capture_mode);
-		else
-			capture_end();
+		opts |= OP_CAPTURE;
 		break;
 	case 'e':
-		st.st_opts ^= OP_TWEEN;
+		opts |= OP_TWEEN;
 		break;
 	case 'f':
-		st.st_opts ^= OP_WIVMFRAME;
-		st.st_rf ^= RF_CLUSTER | RF_SELNODE;
+		opts |= OP_WIVMFRAME;
 		break;
 	case 'G':
-		st.st_opts ^= OP_GOVERN;
+		opts |= OP_GOVERN;
 		break;
 	case 'g':
-		st.st_opts ^= OP_GROUND;
+		opts |= OP_GROUND;
 		break;
 	case 'l':
-		st.st_opts ^= OP_NLABELS;
-		st.st_rf |= RF_CLUSTER | RF_SELNODE;
+		opts |= OP_NLABELS;
 		break;
 	case 'M':
-		st.st_opts ^= OP_SHOWMODS;
-		st.st_rf |= RF_CLUSTER;
+		opts |= OP_SHOWMODS;
 		break;
 	case 'n':
-		st.st_opts ^= OP_NODEANIM;
+		opts |= OP_NODEANIM;
 		break;
 	case 'P':
-		st.st_opts ^= OP_SELPIPES;
-		st.st_rf |= RF_CLUSTER | RF_SELNODE;		/* XXX:  wrong. */
+		opts |= OP_SELPIPES;
 		break;
 	case 'p':
-		st.st_opts ^= OP_PIPES;
-		st.st_rf |= RF_CLUSTER;
+		opts |= OP_PIPES;
 		break;
 	case 's':
-		st.st_opts ^= OP_SKEL;
-		st.st_rf |= RF_CLUSTER;
+		opts |= OP_SKEL;
 		break;
 	case 't':
-		st.st_opts ^= OP_TEX;
-		st.st_rf |= RF_CLUSTER | RF_SELNODE;
+		opts |= OP_TEX;
 		break;
 	case 'w':
-		st.st_opts ^= OP_WIREFRAME;
-		st.st_rf |= RF_CLUSTER | RF_SELNODE;
+		opts |= OP_WIREFRAME;
 		break;
 	default:
 		return;
 	}
-	refresh_state(oldopts);
+	opt_flip(opts);
 }
 
 void
