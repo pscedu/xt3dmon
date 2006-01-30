@@ -63,3 +63,4 @@ maybe not:
 93. make select node glow/fade color?
 94. use a different font.png for matrix egg
 95. move some stuff (like wioff) into 'struct state'
+96. rename FB*MASK to FB*IGNMASK
