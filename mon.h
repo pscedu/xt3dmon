@@ -546,6 +546,7 @@ void			 cam_revolve(struct fvec *, float, float);
 void			 cam_rotate(const struct fvec *, const struct fvec *, int, int);
 void			 cam_roll(double);
 void			 cam_look(void);
+void			 cam_getspecvec(struct fvec *, int, int);
 
 /* capture.c */
 void			 capture_frame(int);
@@ -652,8 +653,6 @@ void			 gl_mouseh_default(int, int, int, int);
 void			 gl_mouseh_null(int, int, int, int);
 void			 gl_pasvmotionh_default(int, int);
 void			 gl_pasvmotionh_null(int, int);
-
-void			 selfv_calc(struct fvec *, int, int);
 
 /* node.c */
 struct node		*node_neighbor(struct node *, int, int);

@@ -73,7 +73,7 @@ draw_compass(void)
 	struct fvec fv, upadj, normv;
 	GLUquadric *q;
 
-	selfv_calc(&fv, 150, win_height - 150);
+	cam_getspecvec(&fv, 150, win_height - 150);
 	fv.fv_x *= 2.0;
 	fv.fv_y *= 2.0;
 	fv.fv_z *= 2.0;
