@@ -316,16 +316,23 @@ struct state {
 #define OP_DISPLAY	(1<<5)
 #define OP_GOVERN	(1<<6)
 #define OP_LOOPFLYBY	(1<<7)
-#define OP_DEBUG	(1<<8)
-#define OP_NLABELS	(1<<9)
-#define OP_SHOWMODS	(1<<10)
-#define OP_WIVMFRAME	(1<<11)
-#define OP_PIPES	(1<<12)
-#define OP_SELPIPES	(1<<13)
-#define OP_STOP		(1<<14)
-#define OP_TOURJOB	(1<<15)
-#define OP_SKEL		(1<<16)
-#define OP_NODEANIM	(1<<17)
+#define OP_NLABELS	(1<<8)
+#define OP_SHOWMODS	(1<<9)
+#define OP_WIVMFRAME	(1<<10)
+#define OP_PIPES	(1<<11)
+#define OP_SELPIPES	(1<<12)
+#define OP_STOP		(1<<13)
+#define OP_TOURJOB	(1<<14)
+#define OP_SKEL		(1<<15)
+#define OP_NODEANIM	(1<<16)
+#define NOPS		17
+
+struct option {
+	const char	*opt_name;
+	int		 opt_flags;
+};
+
+#define OPF_HIDE	(1<<0)
 
 #define SM_JOB		0
 #define SM_FAIL		1
@@ -354,7 +361,7 @@ struct uinput {
 #define UINPO_DIRTY	(1<<1)
 
 struct pwidget {
-	char			 *pw_str;
+	const char		 *pw_str;
 	struct fill		 *pw_fillp;
 	SLIST_ENTRY(pwidget)	  pw_next;
 	void			(*pw_cb)(int);
@@ -396,7 +403,8 @@ struct panel {
 #define PANEL_MEM	(1<<9)
 #define PANEL_EGGS	(1<<10)
 #define PANEL_DATE	(1<<11)
-#define NPANELS		12
+#define PANEL_OPTS	(1<<12)
+#define NPANELS		13
 
 #define POPT_REMOVE	(1<<0)			/* being removed */
 #define POPT_DIRTY	(1<<1)			/* panel needs redrawn */
@@ -626,7 +634,9 @@ void 			*png_load(char *, unsigned int *, unsigned int *);
 void			 png_write(FILE *, unsigned char *, long, long);
 
 /* main.c */
-void			 refresh_state(int);
+void			 opt_flip(int);
+void			 opt_enable(int);
+void			 opt_disable(int);
 void			 rebuild(int);
 void			 restart(void);
 
@@ -642,6 +652,8 @@ void			 gl_mouseh_default(int, int, int, int);
 void			 gl_mouseh_null(int, int, int, int);
 void			 gl_pasvmotionh_default(int, int);
 void			 gl_pasvmotionh_null(int, int);
+
+void			 selfv_calc(struct fvec *, int, int);
 
 /* node.c */
 struct node		*node_neighbor(struct node *, int, int);
@@ -689,6 +701,7 @@ void			 gscb_node(int);
 void			 gscb_panel(int);
 void			 gscb_pwsc(int);
 void			 gscb_pwjob(int);
+void			 gscb_pwopt(int);
 
 /* selnode.c */
 void			 sn_add(struct node *);
@@ -772,6 +785,7 @@ extern struct uinput	 uinp;
 extern int		 spkey;
 
 extern struct state	 st;
+extern struct option	 opts[];
 extern long		 fps, fps_cnt;
 extern struct panels	 panels;
 extern struct pinfo	 pinfo[];
@@ -807,7 +821,9 @@ extern struct panel	*panel_mobile;
 
 extern struct fill	 fill_black;
 extern struct fill	 fill_light_blue;
+extern struct fill	 fill_white;
 extern struct fill	 fill_yellow;
+
 extern struct fill	 fill_font;
 extern struct fill	 fill_nodata;
 extern struct fill	 fill_bg;
