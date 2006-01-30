@@ -68,6 +68,7 @@ void panel_refresh_status(struct panel *);
 void panel_refresh_mem(struct panel *);
 void panel_refresh_eggs(struct panel *);
 void panel_refresh_date(struct panel *);
+void panel_refresh_opts(struct panel *);
 
 int  panel_blink(struct timeval *, char **, int, int *, long);
 
@@ -86,7 +87,8 @@ struct pinfo pinfo[] = {
 	{ panel_refresh_status,	0,	 0,		 NULL },
 	{ panel_refresh_mem,	0,	 0,		 NULL },
 	{ panel_refresh_eggs,	PF_UINP, 0,		 uinpcb_eggs },
-	{ panel_refresh_date,	PF_XPARENT, 0,		 NULL }
+	{ panel_refresh_date,	PF_XPARENT, 0,		 NULL },
+	{ panel_refresh_opts,	0,	 0,		 NULL }
 };
 
 #define PVOFF_TL 0
@@ -214,7 +216,7 @@ draw_panel(struct panel *p, int toff)
 	struct fill *frame_fp;
 	int npw, uoff, voff;
 	struct pwidget *pw;
-	char *s;
+	const char *s;
 
 	/* Save state and set things up for 2D. */
 	glPushAttrib(GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
@@ -598,7 +600,7 @@ panel_get_pwidget(struct panel *p, struct pwidget *pw, struct pwidget **nextp)
 
 void
 pwidget_set(struct panel *p, struct pwidget *pw, struct fill *fp,
-    char *s, void (*cb)(int), int cbarg)
+    const char *s, void (*cb)(int), int cbarg)
 {
 	pw->pw_fillp = fp;
 	pw->pw_cb = cb;
@@ -1030,6 +1032,32 @@ panel_refresh_date(struct panel *p)
 			    panel_date_invalidate, 0);
 		strftime(tmbuf, sizeof(tmbuf), "%b %e %y %H:%M", &tm);
 		panel_set_content(p, "(c) 2006 PSC\n%s", tmbuf);
+	}
+}
+
+void
+panel_refresh_opts(struct panel *p)
+{
+	static int sav_opts;
+	struct pwidget *pw, *nextp;
+	int i;
+
+	if (panel_ready(p) && sav_opts == st.st_opts)
+		return;
+	sav_opts = st.st_opts;
+
+	panel_set_content(p, "- Options - ");
+
+	p->p_nwidgets = 0;
+	p->p_maxwlen = 0;
+	pw = SLIST_FIRST(&p->p_widgets);
+	for (i = 0; i < NOPS; i++, pw = nextp) {
+		if (opts[i].opt_flags & OPF_HIDE)
+			continue;
+		pw = panel_get_pwidget(p, pw, &nextp);
+		pwidget_set(p, pw, st.st_opts & (1 << i) ?
+		    &fill_nodata : &fill_white, opts[i].opt_name,
+		    gscb_pwopt, i);
 	}
 }
 
