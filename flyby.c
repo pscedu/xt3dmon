@@ -9,6 +9,7 @@
 #include "mon.h"
 
 int		 flyby_mode;
+int		 sav_opts;
 static FILE	*flyby_fp;
 
 void		 init_panels(int);
@@ -63,6 +64,9 @@ flyby_begin(int mode)
 			err(1, "%s", _PATH_FLYBY);
 		}
 		flyby_mode = FBM_PLAY;
+
+		sav_opts = st.st_opts;
+		st.st_opts &= ~OP_TWEEN;
 
 		glutMotionFunc(gl_motionh_null);
 		glutPassiveMotionFunc(gl_pasvmotionh_null);
@@ -143,7 +147,7 @@ flyby_writehlsc(int sc)
 void
 flyby_read(void)
 {
-	int done, oldopts;
+	int done, oldopts, newopts;
 	struct fbhdr fbh;
 
 	oldopts = st.st_opts;
@@ -214,24 +218,10 @@ flyby_read(void)
 		}
 	} while (!done);
 
-#if 0
-	/*
-	 * A new message type should be created that
-	 * gets written to the file whenever (v,lv,uv)
-	 * changes.
-	 */
-	if (ost.st_v != ost.st_v ||
-	    ost.st_lv != ost.st_lv ||
-	    ost.st_uv != ost.st_uv)
-		cam_dirty = 1;
-#endif
+	newopts = st.st_opts;
+	st.st_opts = oldopts;
 
-	/* XXX:  is this right? */
-	if ((st.st_rf & OP_TWEEN) == 0)
-		cam_dirty = 1;
-
-	st.st_opts ^= ((st.st_opts ^ oldopts) & FB_OMASK);
-	refresh_state(oldopts);
+	opt_flip((oldopts ^ newopts) & ~FB_OMASK);
 }
 
 void
@@ -250,6 +240,7 @@ flyby_end(void)
 		glutPassiveMotionFunc(gl_pasvmotionh_default);
 		glutMouseFunc(gl_mouseh_default);
 		cam_dirty = 1;
+		opt_flip(st.st_opts ^ sav_opts);
 		/* rebuild(RF_INIT); */
 		break;
 	}
