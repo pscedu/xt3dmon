@@ -701,6 +701,7 @@ void			 gscb_panel(int);
 void			 gscb_pwsc(int);
 void			 gscb_pwjob(int);
 void			 gscb_pwopt(int);
+void			 gscb_pwall(int);
 
 /* selnode.c */
 void			 sn_add(struct node *);

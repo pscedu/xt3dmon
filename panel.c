@@ -685,6 +685,12 @@ panel_refresh_legend(struct panel *p)
 	case SM_JOB:
 		panel_set_content(p, "Job Legend\nTotal jobs: %lu",
 		    job_list.ol_cur);
+
+		pw = panel_get_pwidget(p, pw, &nextp);
+		pwidget_set(p, pw, &fill_nodata, "Show all",
+		    gscb_pwall, 0);
+		pw = nextp;
+
 		for (j = 0; j < NSC; j++, pw = nextp) {
 			if (j == SC_USED)
 				continue;
@@ -705,8 +711,8 @@ panel_refresh_legend(struct panel *p)
 
 		pw = panel_get_pwidget(p, pw, &nextp);
 		pwidget_set(p, pw, &fill_nodata, "No data", NULL, 0);
-
 		pw = nextp;
+
 		for (j = 0; j < FAIL_NFAILS; j++, pw = nextp) {
 			pw = panel_get_pwidget(p, pw, &nextp);
 			pwidget_set(p, pw, &failclass[j].nc_fill,
@@ -718,8 +724,8 @@ panel_refresh_legend(struct panel *p)
 
 		pw = panel_get_pwidget(p, pw, &nextp);
 		pwidget_set(p, pw, &fill_nodata, "No data", NULL, 0);
-
 		pw = nextp;
+
 		for (j = 0; j < TEMP_NTEMPS; j++, pw = nextp) {
 			pw = panel_get_pwidget(p, pw, &nextp);
 			pwidget_set(p, pw, &tempclass[j].nc_fill,

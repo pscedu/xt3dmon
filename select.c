@@ -215,6 +215,13 @@ gscb_pwjob(int jobid)
 }
 
 void
+gscb_pwall(__unused int a)
+{
+	hl_restoreall();
+	st.st_rf |= RF_CLUSTER | RF_SELNODE;
+}
+
+void
 gscb_pwopt(int opt)
 {
 	opt_flip(1 << opt);
