@@ -19,18 +19,6 @@ gl_mouseh_null(__unused int button, __unused int state, __unused int u, __unused
 //	spkey = glutGetModifiers();
 }
 
-static __inline void
-selfv_calc(struct fvec *fvp, int u, int v)
-{
-	struct fvec sph;
-
-	vec_cart2sphere(&st.st_lv, &sph);
-	sph.fv_t += DEG_TO_RAD(FOVY) * ASPECT * (u - win_width / 2.0) / win_width;
-	sph.fv_p -= DEG_TO_RAD(FOVY) * (win_height / 2.0 - v) / win_height;
-	vec_sphere2cart(&sph, fvp);
-	vec_normalize(fvp);
-}
-
 void
 gl_mouseh_default(__unused int button, __unused int state, int u, int v)
 {

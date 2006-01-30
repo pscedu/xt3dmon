@@ -230,6 +230,19 @@ if (flipt) {
 	vec_normalize(&st.st_uv);
 }
 
+void
+cam_getspecvec(struct fvec *fvp, int u, int v)
+{
+	struct fvec sph;
+
+	vec_cart2sphere(&st.st_lv, &sph);
+	/* XXX: st.st_uv.fv_y < 0 */
+	sph.fv_t += DEG_TO_RAD(FOVY) * ASPECT * (u - win_width  / 2.0) / win_width;
+	sph.fv_p += DEG_TO_RAD(FOVY) *          (v - win_height / 2.0) / win_height;
+	vec_sphere2cart(&sph, fvp);
+	vec_normalize(fvp);
+}
+
 __inline void
 cam_look(void)
 {
