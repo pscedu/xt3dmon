@@ -53,7 +53,7 @@
 #define PANEL_BWIDTH	1
 #define PWIDGET_LENGTH	16
 #define PWIDGET_HEIGHT	LETTER_HEIGHT
-#define PWLABEL_MAXLEN	((win_width - 1) / 3 / 2 - PWIDGET_PADDING)
+#define PWLABEL_MAXLEN	((win_width - 1) / 2 / 2 - PWIDGET_PADDING)
 #define PWIDGET_PADDING	2
 
 void panel_refresh_fps(struct panel *);
@@ -232,10 +232,9 @@ draw_panel(struct panel *p, int toff)
 	gluOrtho2D(0.0, win_width, 0.0, win_height);
 
 	glColor4f(p->p_fill.f_r, p->p_fill.f_g, p->p_fill.f_b, p->p_fill.f_a);
-
 	/* Panel content. */
-	voff = p->p_v - toff + 3;
 	uoff = p->p_u + toff;
+	voff = p->p_v - toff + 3;
 	for (s = p->p_str; *s != '\0'; s++) {
 		if (*s == '\n' || s == p->p_str) {
 			voff -= LETTER_HEIGHT;
@@ -247,6 +246,25 @@ draw_panel(struct panel *p, int toff)
 		}
 		glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
 	}
+
+	/* Shadow. */
+	glColor3f(0.0, 0.0, 0.2);
+	voff = p->p_v - toff + 3;
+	uoff++;
+	voff--;
+	for (s = p->p_str; *s != '\0'; s++) {
+		if (*s == '\n' || s == p->p_str) {
+			voff -= LETTER_HEIGHT;
+			if (voff < p->p_v - p->p_h)
+				break;
+			glRasterPos2d(uoff, voff);
+			if (*s == '\n')
+				continue;
+		}
+		glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
+	}
+	uoff--;
+	voff++;
 
 	npw = 0;
 	uoff += p->p_w / 2 - toff;			/* First loop cuts */
@@ -289,6 +307,14 @@ draw_panel(struct panel *p, int toff)
 		glColor4f(p->p_fill.f_r, p->p_fill.f_g, p->p_fill.f_b, p->p_fill.f_a);
 		glRasterPos2d(uoff + PWIDGET_LENGTH + PWIDGET_PADDING,
 		    voff - PWIDGET_HEIGHT + 3);
+		for (s = pw->pw_str; *s != '\0' &&
+		    (s - pw->pw_str + 1) * LETTER_WIDTH + PWIDGET_LENGTH +
+		    PWIDGET_PADDING < p->p_w / 2 - PANEL_PADDING - PANEL_BWIDTH; s++)
+			glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
+
+		glColor4f(0.0, 0.0, 0.2, 0.0);
+		glRasterPos2d(uoff + PWIDGET_LENGTH + PWIDGET_PADDING + 1,
+		    voff - PWIDGET_HEIGHT + 3 - 1);
 		for (s = pw->pw_str; *s != '\0' &&
 		    (s - pw->pw_str + 1) * LETTER_WIDTH + PWIDGET_LENGTH +
 		    PWIDGET_PADDING < p->p_w / 2 - PANEL_PADDING - PANEL_BWIDTH; s++)
