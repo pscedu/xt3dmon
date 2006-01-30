@@ -213,3 +213,9 @@ gscb_pwjob(int jobid)
 		st.st_rf |= RF_CLUSTER | RF_SELNODE;
 	}
 }
+
+void
+gscb_pwopt(int opt)
+{
+	opt_flip(1 << opt);
+}
