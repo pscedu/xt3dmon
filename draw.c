@@ -40,6 +40,7 @@ float clip;
 
 struct fill fill_bg		= FILL_INIT(0.1f, 0.2f, 0.3f);
 struct fill fill_black		= FILL_INIT(0.0f, 0.0f, 0.0f);
+struct fill fill_white		= FILL_INIT(1.0f, 1.0f, 1.0f);
 struct fill fill_grey		= FILL_INIT(0.2f, 0.2f, 0.2f);
 struct fill fill_light_blue	= FILL_INIT(0.2f, 0.4f, 0.6f);
 struct fill fill_yellow		= FILL_INIT(1.0f, 1.0f, 0.0f);
@@ -66,6 +67,91 @@ wired_update(void)
 	}
 }
 
+void
+draw_compass(void)
+{
+	struct fvec fv, upadj, normv;
+	GLUquadric *q;
+
+	selfv_calc(&fv, 150, win_height - 150);
+	fv.fv_x *= 2.0;
+	fv.fv_y *= 2.0;
+	fv.fv_z *= 2.0;
+	vec_addto(&st.st_v, &fv);
+
+	vec_set(&normv, 0.0, 1.0, 0.0);
+	vec_sub(&upadj, &normv, &st.st_uv);
+
+	glPushMatrix();
+//	glTranslatef(upadj.fv_x, 0.0, upadj.fv_z);
+
+	if ((q = gluNewQuadric()) == NULL)
+		err(1, "gluNewQuadric");
+	gluQuadricDrawStyle(q, GLU_FILL);
+
+	/* Anti-aliasing */
+	glEnable(GL_BLEND);
+	glEnable(GL_POLYGON_SMOOTH);
+	glEnable(GL_LINE_SMOOTH);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
+
+#define CMP_LLEN (0.25)
+#define CMP_ATHK (0.0125)
+#define CMP_ALEN (0.025)
+
+	glColor3f(0.0f, 1.0f, 0.0f);					/* z - green */
+	glPushMatrix();
+	glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z - CMP_LLEN / 2.0);
+	glBegin(GL_LINES);
+	glVertex3f(0.0, 0.0, 0.0);
+	glVertex3f(0.0, 0.0, CMP_LLEN);
+	glEnd();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z + CMP_LLEN / 2.0);
+	gluCylinder(q, CMP_ATHK, 0.0001, CMP_ALEN, 4, 1);
+	glPopMatrix();
+
+	glColor3f(1.0f, 0.0f, 0.0f);					/* y - red */
+	glPushMatrix();
+	glTranslatef(fv.fv_x, fv.fv_y - CMP_LLEN / 2.0, fv.fv_z);
+	glBegin(GL_LINES);
+	glVertex3f(0.0, 0.0, 0.0);
+	glVertex3f(0.0, CMP_LLEN, 0.0);
+	glEnd();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(fv.fv_x, fv.fv_y + CMP_LLEN / 2.0, fv.fv_z);
+	glRotatef(-90.0, 1.0, 0.0, 0.0);
+	gluCylinder(q, CMP_ATHK, 0.0001, CMP_ALEN, 4, 1);
+	glPopMatrix();
+
+	glColor3f(0.0f, 0.0f, 1.0f);					/* x - blue */
+	glPushMatrix();
+	glTranslatef(fv.fv_x - CMP_LLEN / 2.0, fv.fv_y, fv.fv_z);
+	glBegin(GL_LINES);
+	glVertex3f(0.0, 0.0, 0.0);
+	glVertex3f(CMP_LLEN, 0.0, 0.0);
+	glEnd();
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(fv.fv_x + CMP_LLEN / 2.0, fv.fv_y, fv.fv_z);
+	glRotatef(90.0, 0.0, 1.0, 0.0);
+	gluCylinder(q, CMP_ATHK, 0.0001, CMP_ALEN, 4, 1);
+	glPopMatrix();
+
+	glPopMatrix();
+
+	glDisable(GL_POLYGON_SMOOTH);
+	glDisable(GL_LINE_SMOOTH);
+	glDisable(GL_BLEND);
+	gluDeleteQuadric(q);
+}
+
 __inline void
 draw_scene(void)
 {
@@ -76,6 +162,7 @@ draw_scene(void)
 		glCallList(ground_dl[wid]);
 	if (!TAILQ_EMPTY(&panels))
 		draw_panels(wid);
+//draw_compass();
 }
 
 void
