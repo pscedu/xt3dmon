@@ -12,6 +12,7 @@ maybe not:
 (o) 'r' prefix keybinding to enable rebuild flags
 (o) move the id into ohp instead of maintaing separate vars
 (o) sigcatch USR1 and datasrc and pkill in cron
+(o) flyby_writecam() 'camera moved' frame -> set RF_CAM?
 
 3. default the logid goto user input buffer to selnode
 10. random flyby/cycle focus jobs
