@@ -1056,7 +1056,7 @@ panel_refresh_opts(struct panel *p)
 			continue;
 		pw = panel_get_pwidget(p, pw, &nextp);
 		pwidget_set(p, pw, st.st_opts & (1 << i) ?
-		    &fill_nodata : &fill_white, opts[i].opt_name,
+		    &fill_white : &fill_nodata, opts[i].opt_name,
 		    gscb_pwopt, i);
 	}
 }
