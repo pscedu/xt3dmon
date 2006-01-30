@@ -48,25 +48,24 @@ int			 wid = WINID_DEF;		/* current window */
 
 char **sav_argv;
 
-const char *opdesc[] = {
-	/*  0 */ "Texture mode",
-	/*  1 */ "Node wireframes",
-	/*  2 */ "Ground and axes",
-	/*  3 */ "Camera tweening",
-	/*  4 */ "Capture mode",
-	/*  5 */ "Display mode",
-	/*  6 */ "Govern mode",
-	/*  7 */ "Flyby loop mode",
-	/*  8 */ "Debug mode",
-	/*  9 */ "Node labels",
-	/* 10 */ "Module mode",
-	/* 11 */ "Wired cluster frames",
-	/* 12 */ "Pipe mode",
-	/* 13 */ "Selected node pipe mode",
-	/* 14 */ "Pause",
-	/* 15 */ "Job tour mode",
-	/* 16 */ "Skeletons",
-	/* 17 */ "Node animation"
+struct option opts[] = {
+	/*  0 */ { "Texture mapping",		0 },
+	/*  1 */ { "Node wireframes",		0 },
+	/*  2 */ { "Ground/axes",		0 },
+	/*  3 */ { "Camera tweening",		0 },
+	/*  4 */ { "Capture mode",		OPF_HIDE },
+	/*  5 */ { "Display mode",		OPF_HIDE },
+	/*  6 */ { "Govern mode",		0 },
+	/*  7 */ { "Flyby loop mode",		0 },
+	/*  9 */ { "Node labels",		0 },
+	/* 10 */ { "Module mode",		0 },
+	/* 11 */ { "Wired cluster frames",	0 },
+	/* 12 */ { "Pipe mode",			0 },
+	/* 13 */ { "Selected node pipe mode",	0 },
+	/* 14 */ { "Pause",			OPF_HIDE },
+	/* 15 */ { "Job tour mode",		0 },
+	/* 16 */ { "Skeletons",			0 },
+	/* 17 */ { "Node animation",		0 }
 };
 
 struct vmode vmodes[] = {
@@ -88,30 +87,90 @@ struct state st = {
 };
 
 /*
- * Serial entry point to special-case code for handling states changes.
+ * Enable options: remove all options already on then flip remaining
+ * one specified.  Disable works similarily.
  */
 void
-refresh_state(int oldopts)
+opt_enable(int ops)
 {
-	int diff = st.st_opts ^ oldopts;
-	int dup, i;
+	int i, v, fopts;
 
-	dup = diff;
-	while (dup) {
-		i = ffs(dup) - 1;
-		dup &= ~(1 << i);
-		status_add("%s %s", opdesc[i],
-		    (st.st_opts & (1 << i) ? "enabled\n" : "disabled\n"));
+	fopts = 0;
+	while (ops) {
+		i = ffs(ops) - 1;
+		v = 1 << i;
+		ops &= ~v;
+		if ((st.st_opts & v) == 0)
+			fopts |= v;
 	}
+	if (fopts)
+		opt_flip(fopts);
 
-	/* Restore tweening state. */
-	if (diff & OP_TWEEN) {
-		tv = st.st_v;
-		tlv = st.st_lv;
-		tuv = st.st_uv;
+}
+
+void
+opt_disable(int ops)
+{
+	int i, v, fopts;
+
+	fopts = 0;
+	while (ops) {
+		i = ffs(ops) - 1;
+		v = 1 << i;
+		ops &= ~v;
+		if (st.st_opts & v)
+			fopts |= v;
 	}
-	if (diff & OP_GOVERN)
-		gl_run(gl_setidleh);
+	if (fopts)
+		opt_flip(fopts);
+}
+
+/*
+ * Code needed for each option.
+ */
+void
+opt_flip(int fopts)
+{
+	int i, on;
+
+	st.st_opts ^= fopts;
+	while (fopts) {
+		i = ffs(fopts) - 1;
+		fopts &= ~(1 << i);
+
+		on = st.st_opts & (1 << i);
+		status_add("%s %s", opts[i].opt_name,
+		    on ? "enabled\n" : "disabled\n");
+
+		switch (1 << i) {
+		case OP_TWEEN:
+			tv = st.st_v;
+			tlv = st.st_lv;
+			tuv = st.st_uv;
+			break;
+		case OP_GOVERN:
+			gl_run(gl_setidleh);
+			break;
+		case OP_CAPTURE:
+			if (on)
+				capture_begin(capture_mode);
+			else
+				capture_end();
+			break;
+		case OP_WIREFRAME:
+		case OP_TEX:
+		case OP_WIVMFRAME:
+		case OP_SELPIPES:
+		case OP_NLABELS:
+			st.st_rf |= RF_CLUSTER | RF_SELNODE;
+			break;
+		case OP_SKEL:
+		case OP_SHOWMODS:
+		case OP_PIPES:
+			st.st_rf |= RF_CLUSTER;
+			break;
+		}
+	}
 }
 
 int
