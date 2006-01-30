@@ -5,8 +5,8 @@
 #define _PATH_YOD	"data/yod"
 
 #define _PATH_PHYSCONF	"data/phys.conf"
+#define _PATH_FLYBY	"data/flyby.data"
 
-#define _PATH_FLYBY	"img/flyby.data"
 #define _PATH_TEX	"img/texture%d.png"
 #define _PATH_BORG	"img/borg.png"
 #define _PATH_FONT	"img/font.png"
