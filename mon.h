@@ -557,7 +557,7 @@ void			 capture_snapfd(int, int);
 
 /* dbg.c */
 void			 dbg_warn(const char *, ...);
-void			 crash(void);
+void			 dbg_crash(void);
 
 /* draw.c */
 void			 gl_displayh_default(void);

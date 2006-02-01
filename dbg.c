@@ -18,7 +18,7 @@ dbg_warn(const char *fmt, ...)
 }
 
 void
-crash(void)
+dbg_crash(void)
 {
 	*(int *)NULL = 0;
 }
