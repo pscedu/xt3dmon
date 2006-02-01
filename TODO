@@ -55,7 +55,8 @@ maybe not:
 84. provide if-modified-since in http headers
 85. change date panel time code to update a global time var when new
     data is read, not update the time in the panel refresh function
-87. check/mkdir exists when touch(/tmp/xtsess/xxx) fails
+87. check/mkdir exists when access(/tmp/xtsess/xxx) fails
+88. disable ground, vo mode, enable ground
 89. add arg to getcol() to set the texids
 90. for tweening, calculate the % moved by one (e.g. move), then apply
     that % to the others, instead of use MAX_{LOOK,TWEEN} values
