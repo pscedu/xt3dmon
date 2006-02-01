@@ -262,9 +262,6 @@
 				RelativePath="..\..\compat.h">
 			</File>
 			<File
-				RelativePath="..\..\math.h">
-			</File>
-			<File
 				RelativePath="..\..\mon.h">
 			</File>
 			<File
@@ -284,6 +281,9 @@
 			</File>
 			<File
 				RelativePath="..\..\ustream.h">
+			</File>
+			<File
+				RelativePath="..\..\xmath.h">
 			</File>
 		</Filter>
 		<Filter
