@@ -1088,8 +1088,8 @@ panel_refresh_opts(struct panel *p)
 		if (opts[i].opt_flags & OPF_HIDE)
 			continue;
 		pw = panel_get_pwidget(p, pw, &nextp);
-		pwidget_set(p, pw, st.st_opts & (1 << i) ?
-		    &fill_white : &fill_nodata, opts[i].opt_name,
+		pwidget_set(p, pw, (st.st_opts & (1 << i) ?
+		    &fill_white : &fill_nodata), opts[i].opt_name,
 		    gscb_pwopt, i);
 	}
 }
