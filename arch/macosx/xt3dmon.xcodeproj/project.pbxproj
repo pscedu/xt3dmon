@@ -71,6 +71,7 @@
 /* End PBXBuildStyle section */
 
 /* Begin PBXFileReference section */
+		6D1A30320976C79A008279F3 /* xmath.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = xmath.h; path = ../../xmath.h; sourceTree = SOURCE_ROOT; };
 		6DBE1E0B09195F5800AFFCDC /* xt3dmon.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = xt3dmon.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6DBE1E250919605200AFFCDC /* buf.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = buf.c; path = ../../buf.c; sourceTree = SOURCE_ROOT; };
 		6DBE1E260919605200AFFCDC /* buf.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = buf.h; path = ../../buf.h; sourceTree = SOURCE_ROOT; };
@@ -107,7 +108,6 @@
 		6DBE1E460919605200AFFCDC /* tween.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = tween.c; path = ../../tween.c; sourceTree = SOURCE_ROOT; };
 		6DBE1E470919605200AFFCDC /* uinp.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = uinp.c; path = ../../uinp.c; sourceTree = SOURCE_ROOT; };
 		6DBE1E480919605200AFFCDC /* vec.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = vec.c; path = ../../vec.c; sourceTree = SOURCE_ROOT; };
-		6DFABA54096ECEC2001374A0 /* math.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = math.h; path = ../../math.h; sourceTree = SOURCE_ROOT; };
 		6DFABA57096ECEC2001374A0 /* phys.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = phys.h; path = ../../phys.h; sourceTree = SOURCE_ROOT; };
 		6DFABA5A096ECEC2001374A0 /* ustream.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = ustream.h; path = ../../ustream.h; sourceTree = SOURCE_ROOT; };
 		6DFABA66096ECF12001374A0 /* arch.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = arch.c; path = ../../arch.c; sourceTree = SOURCE_ROOT; };
@@ -143,16 +143,16 @@
 		D31796C808AD1BF60016A4BD /* Headers */ = {
 			isa = PBXGroup;
 			children = (
-				6DFABAA1096ED116001374A0 /* y.tab.h */,
-				6DFABA54096ECEC2001374A0 /* math.h */,
-				6DFABA57096ECEC2001374A0 /* phys.h */,
-				6DFABA5A096ECEC2001374A0 /* ustream.h */,
 				6DBE1E260919605200AFFCDC /* buf.h */,
 				6DBE1E2A0919605200AFFCDC /* cdefs.h */,
 				6DBE1E2B0919605200AFFCDC /* compat.h */,
 				6DBE1E370919605200AFFCDC /* mon.h */,
 				6DBE1E3D0919605200AFFCDC /* pathnames.h */,
+				6DFABA57096ECEC2001374A0 /* phys.h */,
 				6DBE1E3F0919605200AFFCDC /* queue.h */,
+				6DFABA5A096ECEC2001374A0 /* ustream.h */,
+				6D1A30320976C79A008279F3 /* xmath.h */,
+				6DFABAA1096ED116001374A0 /* y.tab.h */,
 			);
 			name = Headers;
 			sourceTree = "<group>";
