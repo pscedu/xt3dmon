@@ -163,6 +163,7 @@ draw_scene(void)
 	if (!TAILQ_EMPTY(&panels))
 		draw_panels(wid);
 //draw_compass();
+//job_drawlabels();
 }
 
 void
