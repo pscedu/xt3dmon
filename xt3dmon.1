@@ -1,5 +1,5 @@
 .\" $Id$
-.Dd January 10, 2006
+.Dd February 1, 2006
 .Dt XT3DMON 1
 .ds volume Pittsburgh Supercomputing Center
 .\" .ds vT Pittsburgh Supercomputing Center
@@ -70,7 +70,7 @@ The node is a service node, not a compute node.
 The yod display similarily shows this information but instead shows
 yod information instead of job information about the used nodes.
 .Pp
-The failure and temperature modes color each node according to its 
+The failure and temperature modes color each node according to its
 respective failure statistics or temperature.
 .Pp
 The legend panel may be activated (see the
@@ -81,16 +81,13 @@ mode.
 The following key bindings are available:
 .Bl -tag -width Ds -offset indent
 .It left, right, up, down
-Pan the camera along its
-.Em x Ns / Ns Em y Ns / Ns
-.Em z
-viewing lines (left, right, forward, and backward).
+Pan the camera to the left, right, forward, or backward along its
+view.
 .It home, end
 .Dq Barrel roll
 the camera to the left or right.
 .It pageup, pagedown
-Pan vertically (perpendicularly) along the camera viewing line
-(up and down).
+Pan the camera up and down along (perpendicular to) its view.
 .It left click
 Click a node for extended information.
 Hold shift and click to add nodes to the selection.
@@ -98,8 +95,8 @@ Hold control and click to remove nodes from the selection.
 .Pp
 Click, hold, and drag the mouse to revolve around the cluster view.
 .Pp
-While holding the shift key, click, hold, and drag the mouse to maneuver
-the camera angles.
+While holding the shift key, click, hold, and drag the mouse to freely
+adjust the camera view.
 .It Ic ad
 Display only PBS-disabled nodes.
 .It Ic af
@@ -179,7 +176,7 @@ Toggle texture mapping.
 .It Ic ow
 Toggle the display of wireframes around nodes.
 .It Ic pa
-Toggle all panels.
+Toggle all non-interactive panels.
 .\" .It Ic pc
 .\" Toggle the command panel.
 .It Ic pd
@@ -196,6 +193,8 @@ Toggle the legend panel.
 Toggle the memory usage panel.
 .It Ic pn
 Toggle the extended node information panel.
+.It Ic po
+Toggle the option panel.
 .It Ic pp
 Toggle the camera position panel.
 .It Ic pS
@@ -205,7 +204,7 @@ Toggle the screenshot panel.
 .It Ic q
 Quit.
 .It Ic R
-Manually refresh current data set.
+Refresh current data set.
 .It Ic vo
 Switch to the wired viewing mode with only one cluster drawn.
 .It Ic vp
@@ -221,11 +220,12 @@ Switch to the wired viewing mode with the cluster drawn continuously.
 Adjust the wired cluster viewing mode node spacing factor.
 .It Xo
 .Ic {x , {y , {z ,
-.Ic {{ ,
+.Ic {0 , {{ ,
 .Ic }x , }y , }z ,
-.Ic }}
+.Ic }0 , }}
 .Xc
 Adjust the wired cluster viewing mode node offset factor.
+The key sequences involving zero reset the offset.
 .It Ic + , _
 Adjust job node translucency.
 .It Ic = , -
