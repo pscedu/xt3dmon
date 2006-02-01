@@ -660,10 +660,10 @@ panel_refresh_cmd(struct panel *p)
 
 	if (SLIST_EMPTY(&selnodes))
 		panel_set_content(p,
-		    "Send Command To Node\nNo node(s) selected.");
+		    "- Send Command to Node -\nNo node(s) selected.");
 	else
 		panel_set_content(p,
-		    "Send Command To Node\n\nnid%d> %s",
+		    "- Send Command to Node -\n\nnid%d> %s",
 		    SLIST_FIRST(&selnodes)->sn_nodep->n_nid,
 		    buf_get(&uinp.uinp_buf));
 }
@@ -683,7 +683,7 @@ panel_refresh_legend(struct panel *p)
 	pw = SLIST_FIRST(&p->p_widgets);
 	switch (st.st_mode) {
 	case SM_JOB:
-		panel_set_content(p, "Job Legend\nTotal jobs: %lu",
+		panel_set_content(p, "- Job Legend -\nTotal jobs: %lu",
 		    job_list.ol_cur);
 
 		pw = panel_get_pwidget(p, pw, &nextp);
@@ -706,7 +706,7 @@ panel_refresh_legend(struct panel *p)
 		}
 		break;
 	case SM_FAIL:
-		panel_set_content(p, "Failure Legend\nTotal: %lu",
+		panel_set_content(p, "- Failure Legend - \nTotal: %lu",
 		    total_failures);
 
 		pw = panel_get_pwidget(p, pw, &nextp);
@@ -720,7 +720,7 @@ panel_refresh_legend(struct panel *p)
 		}
 		break;
 	case SM_TEMP:
-		panel_set_content(p, "Temperature Legend");
+		panel_set_content(p, "- Temperature Legend -");
 
 		pw = panel_get_pwidget(p, pw, &nextp);
 		pwidget_set(p, pw, &fill_nodata, "No data", NULL, 0);
@@ -733,7 +733,7 @@ panel_refresh_legend(struct panel *p)
 		}
 		break;
 	case SM_YOD:
-		panel_set_content(p, "Yod Legend\nTotal yods: %lu",
+		panel_set_content(p, "- Yod Legend -\nTotal yods: %lu",
 		    yod_list.ol_cur);
 		for (j = 0; j < NSC; j++, pw = nextp) {
 			if (j == SC_USED)
@@ -768,7 +768,7 @@ panel_refresh_ninfo(struct panel *p)
 	selnode_clean |= PANEL_NINFO;
 
 	if (SLIST_EMPTY(&selnodes)) {
-		panel_set_content(p, "Node Information\nNo node(s) selected");
+		panel_set_content(p, "- Node Information -\nNo node(s) selected");
 		return;
 	}
 
@@ -847,7 +847,7 @@ panel_refresh_ninfo(struct panel *p)
 		data[sizeof(data) - 1] = '\0';
 
 		panel_set_content(p,
-		    "Node Information\n"
+		    "- Node Information -\n"
 		    "%d node(s) selected\n"
 		    "Node ID(s): %s\n"
 		    "%s: %s",
@@ -862,7 +862,7 @@ panel_refresh_ninfo(struct panel *p)
 	iv = &n->n_wiv;
 
 	panel_set_content(p,
-	    "Node Information\n"
+	    "- Node Information -\n"
 	    "Node ID: %d\n"
 	    "Wired position: (%d,%d,%d)\n"
 	    "Physical position: (%d,%d,%d,%d,%d)\n"
@@ -874,7 +874,7 @@ panel_refresh_ninfo(struct panel *p)
 	    n->n_temp, n->n_fails);
 	if (n->n_job)
 		panel_add_content(p,
-		    "\n"
+		    "\n\n"
 		    "Job ID: %d\n"
 		    "Job owner: %s\n"
 		    "Job name: %s\n"
@@ -907,7 +907,7 @@ panel_refresh_ninfo(struct panel *p)
 		text_wrap(cmdbuf, sizeof(cmdbuf), 50);
 
 		panel_add_content(p,
-		    "\n"
+		    "\n\n"
 		    "Yod ID: %d\n"
 		    "Yod partition ID: %d\n"
 		    "Yod CPUs: %d\n"
@@ -948,7 +948,7 @@ panel_refresh_goto(struct panel *p)
 		return;
 	uinp.uinp_opts &= ~UINPO_DIRTY;
 
-	panel_set_content(p, "Go To Node\nNode ID: %s",
+	panel_set_content(p, "- Go To Node -\nNode ID: %s",
 	    buf_get(&uinp.uinp_buf));
 }
 
@@ -958,7 +958,7 @@ panel_refresh_mem(struct panel *p)
 	if ((mode_data_clean & PANEL_MEM) && panel_ready(p))
 		return;
 	mode_data_clean |= PANEL_MEM;
-	panel_set_content(p, "Memory Usage\nVSZ: %lu\nRSS: %ld\n", vmem, rmem);
+	panel_set_content(p, "- Memory Usage -\nVSZ: %lu\nRSS: %ld\n", vmem, rmem);
 }
 
 void
@@ -972,7 +972,8 @@ panel_refresh_pos(struct panel *p)
 	vec_cart2sphere(&st.st_lv, &lsph);
 	vec_cart2sphere(&st.st_uv, &usph);
 
-	panel_set_content(p, "Position (%.2f,%.2f,%.2f)\n"
+	panel_set_content(p, "- Camera -"
+	    "Position (%.2f,%.2f,%.2f)\n"
 	    "Look (%.2f,%.2f,%.2f) (t=%g,p=%g)\n"
 	    "Up (%.2f,%.2f,%.2f) (t=%g,p=%g)",
 	    st.st_x, st.st_y, st.st_z,
@@ -989,7 +990,7 @@ panel_refresh_ss(struct panel *p)
 		return;
 	uinp.uinp_opts &= ~UINPO_DIRTY;
 
-	panel_set_content(p, "Screenshot filename: %s",
+	panel_set_content(p, "- Record Screenshot -\nFile name: %s",
 	    buf_get(&uinp.uinp_buf));
 }
 
