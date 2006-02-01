@@ -66,3 +66,4 @@ maybe not:
 95. move some stuff (like wioff) into 'struct state'
 96. rename FB*MASK to FB*IGNMASK
 97. kill the stopv stuff in key.c after OP_TWEEN is disabled during flybys
+98. remove some size_t's (pointer sizes)
