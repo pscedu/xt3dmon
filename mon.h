@@ -327,7 +327,7 @@ struct state {
 #define OP_NODEANIM	(1<<16)
 #define NOPS		17
 
-struct option {
+struct xoption {
 	const char	*opt_name;
 	int		 opt_flags;
 };
@@ -785,7 +785,7 @@ extern struct uinput	 uinp;
 extern int		 spkey;
 
 extern struct state	 st;
-extern struct option	 opts[];
+extern struct xoption	 opts[];
 extern long		 fps, fps_cnt;
 extern struct panels	 panels;
 extern struct pinfo	 pinfo[];

@@ -48,7 +48,7 @@ int			 wid = WINID_DEF;		/* current window */
 
 char **sav_argv;
 
-struct option opts[] = {
+struct xoption opts[] = {
 	/*  0 */ { "Texture mapping",		0 },
 	/*  1 */ { "Node wireframes",		0 },
 	/*  2 */ { "Ground/axes",		0 },
