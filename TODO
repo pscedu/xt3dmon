@@ -70,3 +70,4 @@ maybe not:
 98. remove some size_t's (pointer sizes)
 99. goto job by id
 100. make hl_job() that takes care of flyby recs
+101. color interactive panels orange
