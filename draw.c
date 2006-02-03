@@ -180,8 +180,11 @@ gl_displayh_stereo(void)
 	if (st.st_vmode == VM_WIRED)
 		wired_update();
 	if (st.st_rf) {
-		rebuild(st.st_rf);
+		int rf;
+
+		rf = st.st_rf;
 		st.st_rf = 0;
+		rebuild(rf);
 	}
 
 	ratio = ASPECT;
