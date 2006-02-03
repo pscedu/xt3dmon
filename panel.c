@@ -61,7 +61,7 @@ void panel_refresh_ninfo(struct panel *);
 void panel_refresh_cmd(struct panel *);
 void panel_refresh_legend(struct panel *);
 void panel_refresh_flyby(struct panel *);
-void panel_refresh_goto(struct panel *);
+void panel_refresh_gotonode(struct panel *);
 void panel_refresh_pos(struct panel *);
 void panel_refresh_ss(struct panel *);
 void panel_refresh_status(struct panel *);
@@ -69,6 +69,7 @@ void panel_refresh_mem(struct panel *);
 void panel_refresh_eggs(struct panel *);
 void panel_refresh_date(struct panel *);
 void panel_refresh_opts(struct panel *);
+void panel_refresh_gotojob(struct panel *);
 
 int  panel_blink(struct timeval *, char **, int, int *, long);
 
@@ -76,19 +77,20 @@ void uinpcb_ss(void);
 void uinpcb_eggs(void);
 
 struct pinfo pinfo[] = {
-	{ panel_refresh_fps,	0,	 0,		 NULL },
-	{ panel_refresh_ninfo,	0,	 0,		 NULL },
-	{ panel_refresh_cmd,	PF_UINP, UINPO_LINGER,	 uinpcb_cmd },
-	{ panel_refresh_legend,	0,	 0,		 NULL },
-	{ panel_refresh_flyby,	0,	 0,		 NULL },
-	{ panel_refresh_goto,	PF_UINP, 0,		 uinpcb_goto },
-	{ panel_refresh_pos,	0,	 0,		 NULL },
-	{ panel_refresh_ss,	PF_UINP, 0,		 uinpcb_ss },
-	{ panel_refresh_status,	0,	 0,		 NULL },
-	{ panel_refresh_mem,	0,	 0,		 NULL },
-	{ panel_refresh_eggs,	PF_UINP, 0,		 uinpcb_eggs },
-	{ panel_refresh_date,	PF_XPARENT, 0,		 NULL },
-	{ panel_refresh_opts,	0,	 0,		 NULL }
+	{ panel_refresh_fps,		0,	 0,		 NULL },
+	{ panel_refresh_ninfo,		0,	 0,		 NULL },
+	{ panel_refresh_cmd,		PF_UINP, UINPO_LINGER,	 uinpcb_cmd },
+	{ panel_refresh_legend,		0,	 0,		 NULL },
+	{ panel_refresh_flyby,		0,	 0,		 NULL },
+	{ panel_refresh_gotonode,	PF_UINP, 0,		 uinpcb_gotonode },
+	{ panel_refresh_pos,		0,	 0,		 NULL },
+	{ panel_refresh_ss,		PF_UINP, 0,		 uinpcb_ss },
+	{ panel_refresh_status,		0,	 0,		 NULL },
+	{ panel_refresh_mem,		0,	 0,		 NULL },
+	{ panel_refresh_eggs,		PF_UINP, 0,		 uinpcb_eggs },
+	{ panel_refresh_date,		PF_XPARENT, 0,		 NULL },
+	{ panel_refresh_opts,		0,	 0,		 NULL },
+	{ panel_refresh_gotojob,	PF_UINP, 0,		 uinpcb_gotojob }
 };
 
 #define PVOFF_TL 0
@@ -942,13 +944,24 @@ panel_refresh_flyby(struct panel *p)
 }
 
 void
-panel_refresh_goto(struct panel *p)
+panel_refresh_gotonode(struct panel *p)
 {
 	if ((uinp.uinp_opts & UINPO_DIRTY) == 0 && panel_ready(p))
 		return;
 	uinp.uinp_opts &= ~UINPO_DIRTY;
 
-	panel_set_content(p, "- Go To Node -\nNode ID: %s",
+	panel_set_content(p, "- Go to Node -\nNode ID: %s",
+	    buf_get(&uinp.uinp_buf));
+}
+
+void
+panel_refresh_gotojob(struct panel *p)
+{
+	if ((uinp.uinp_opts & UINPO_DIRTY) == 0 && panel_ready(p))
+		return;
+	uinp.uinp_opts &= ~UINPO_DIRTY;
+
+	panel_set_content(p, "- Go to Job -\nJob ID: %s",
 	    buf_get(&uinp.uinp_buf));
 }
 

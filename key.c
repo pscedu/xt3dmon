@@ -148,7 +148,10 @@ gl_keyh_panel(unsigned char key, __unused int u, __unused int v)
 		panel_toggle(PANEL_FPS);
 		break;
 	case 'g':
-		panel_toggle(PANEL_GOTO);
+		panel_toggle(PANEL_GOTONODE);
+		break;
+	case 'j':
+		panel_toggle(PANEL_GOTOJOB);
 		break;
 	case 'l':
 		panel_toggle(PANEL_LEGEND);

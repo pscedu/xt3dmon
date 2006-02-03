@@ -20,7 +20,7 @@ uinpcb_ss(void)
 }
 
 void
-uinpcb_goto(void)
+uinpcb_gotonode(void)
 {
 	struct node *n;
 	char *s;
@@ -37,6 +37,31 @@ uinpcb_goto(void)
 		return;
 	sn_add(n);
 	node_goto(n);
+}
+
+void
+uinpcb_gotojob(void)
+{
+	struct job *j;
+	char *s;
+	int jid;
+	long l;
+
+	s = buf_get(&uinp.uinp_buf);
+	l = strtol(s, NULL, 10);
+	if (l <= 0 || !isdigit(*s))
+		return;
+	jid = (int)l;
+
+	if ((j = job_findbyid(jid)) == NULL)
+		return;
+	hl_clearall();
+	job_hl(j);
+
+	hlsc = SC_HL_SELJOBS;
+	if (flyby_mode == FBM_REC)
+		flyby_writehlsc(hlsc);
+	st.st_rf |= RF_CLUSTER | RF_SELNODE;
 }
 
 void

@@ -294,8 +294,10 @@ struct state {
 #define st_uz st_uv.fv_z
 };
 
-#define FB_OMASK	(OP_LOOPFLYBY | OP_CAPTURE | OP_DISPLAY | OP_STOP | OP_GOVERN)
-#define FB_PMASK	(PANEL_GOTO | PANEL_CMD | PANEL_FLYBY | PANEL_SS)
+#define FB_OMASK	(OP_LOOPFLYBY | OP_CAPTURE | OP_DISPLAY | \
+			 OP_STOP | OP_GOVERN)
+#define FB_PMASK	(PANEL_GOTONODE | PANEL_GOTOJOB | PANEL_CMD | \
+			 PANEL_FLYBY | PANEL_SS)
 
 #define RF_DATASRC	(1<<0)
 #define RF_CLUSTER	(1<<1)
@@ -303,7 +305,8 @@ struct state {
 #define RF_CAM		(1<<3)
 #define RF_GROUND	(1<<4)
 #define RF_SMODE	(1<<5)
-#define RF_INIT		(RF_DATASRC | RF_CLUSTER | RF_GROUND | RF_SELNODE | RF_CAM | RF_SMODE)
+#define RF_INIT		(RF_DATASRC | RF_CLUSTER | RF_GROUND | \
+			 RF_SELNODE | RF_CAM | RF_SMODE)
 
 #define EGG_BORG 	(1<<0)
 #define EGG_MATRIX 	(1<<1)
@@ -396,7 +399,7 @@ struct panel {
 #define PANEL_CMD	(1<<2)
 #define PANEL_LEGEND	(1<<3)
 #define PANEL_FLYBY	(1<<4)
-#define PANEL_GOTO	(1<<5)
+#define PANEL_GOTONODE	(1<<5)
 #define PANEL_POS	(1<<6)
 #define PANEL_SS	(1<<7)
 #define PANEL_STATUS	(1<<8)
@@ -404,7 +407,8 @@ struct panel {
 #define PANEL_EGGS	(1<<10)
 #define PANEL_DATE	(1<<11)
 #define PANEL_OPTS	(1<<12)
-#define NPANELS		13
+#define PANEL_GOTOJOB	(1<<13)
+#define NPANELS		14
 
 #define POPT_REMOVE	(1<<0)			/* being removed */
 #define POPT_DIRTY	(1<<1)			/* panel needs redrawn */
@@ -738,7 +742,8 @@ void			 tween_update(void);
 
 /* uinp.c */
 void			 uinpcb_cmd(void);
-void			 uinpcb_goto(void);
+void			 uinpcb_gotonode(void);
+void			 uinpcb_gotojob(void);
 
 /* vec.c */
 void			 vec_cart2sphere(const struct fvec *, struct fvec *);
