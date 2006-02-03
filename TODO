@@ -71,3 +71,5 @@ maybe not:
 99. goto job by id
 100. make hl_job() that takes care of flyby recs
 101. color interactive panels orange
+102. kill PF_XPARENT and just set fill differently
+103. disappearing interactive panels needs to cleanup uinp
