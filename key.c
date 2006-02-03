@@ -165,6 +165,9 @@ gl_keyh_panel(unsigned char key, __unused int u, __unused int v)
 	case 'o':
 		panel_toggle(PANEL_OPTS);
 		break;
+	case 'P':
+		panel_toggle(PANEL_PANELS);
+		break;
 	case 'p':
 		panel_toggle(PANEL_POS);
 		break;

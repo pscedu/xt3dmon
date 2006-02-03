@@ -226,3 +226,9 @@ gscb_pwopt(int opt)
 {
 	opt_flip(1 << opt);
 }
+
+void
+gscb_pwpanel(int pid)
+{
+	panel_toggle(1 << pid);
+}

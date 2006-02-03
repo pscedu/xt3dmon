@@ -408,7 +408,8 @@ struct panel {
 #define PANEL_DATE	(1<<11)
 #define PANEL_OPTS	(1<<12)
 #define PANEL_GOTOJOB	(1<<13)
-#define NPANELS		14
+#define PANEL_PANELS	(1<<14)
+#define NPANELS		15
 
 #define POPT_REMOVE	(1<<0)			/* being removed */
 #define POPT_DIRTY	(1<<1)			/* panel needs redrawn */
@@ -425,6 +426,7 @@ struct panel {
 TAILQ_HEAD(panels, panel);
 
 struct pinfo {
+	char		 *pi_name;
 	void		(*pi_refresh)(struct panel *);
 	int		  pi_opts;
 	int		  pi_uinpopts;
@@ -433,6 +435,7 @@ struct pinfo {
 
 #define PF_UINP		(1<<0)
 #define PF_XPARENT	(1<<1)			/* panel is transparent */
+#define PF_HIDE		(1<<2)
 
 #define DIR_LEFT	0
 #define DIR_RIGHT	1
@@ -706,6 +709,7 @@ void			 gscb_pwsc(int);
 void			 gscb_pwjob(int);
 void			 gscb_pwopt(int);
 void			 gscb_pwall(int);
+void			 gscb_pwpanel(int);
 
 /* selnode.c */
 void			 sn_add(struct node *);

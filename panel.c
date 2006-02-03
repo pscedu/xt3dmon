@@ -70,6 +70,7 @@ void panel_refresh_eggs(struct panel *);
 void panel_refresh_date(struct panel *);
 void panel_refresh_opts(struct panel *);
 void panel_refresh_gotojob(struct panel *);
+void panel_refresh_panels(struct panel *);
 
 int  panel_blink(struct timeval *, char **, int, int *, long);
 
@@ -77,20 +78,21 @@ void uinpcb_ss(void);
 void uinpcb_eggs(void);
 
 struct pinfo pinfo[] = {
-	{ panel_refresh_fps,		0,	 0,		 NULL },
-	{ panel_refresh_ninfo,		0,	 0,		 NULL },
-	{ panel_refresh_cmd,		PF_UINP, UINPO_LINGER,	 uinpcb_cmd },
-	{ panel_refresh_legend,		0,	 0,		 NULL },
-	{ panel_refresh_flyby,		0,	 0,		 NULL },
-	{ panel_refresh_gotonode,	PF_UINP, 0,		 uinpcb_gotonode },
-	{ panel_refresh_pos,		0,	 0,		 NULL },
-	{ panel_refresh_ss,		PF_UINP, 0,		 uinpcb_ss },
-	{ panel_refresh_status,		0,	 0,		 NULL },
-	{ panel_refresh_mem,		0,	 0,		 NULL },
-	{ panel_refresh_eggs,		PF_UINP, 0,		 uinpcb_eggs },
-	{ panel_refresh_date,		PF_XPARENT, 0,		 NULL },
-	{ panel_refresh_opts,		0,	 0,		 NULL },
-	{ panel_refresh_gotojob,	PF_UINP, 0,		 uinpcb_gotojob }
+	{ "FPS",		panel_refresh_fps,	0,	 	0,		 NULL },
+	{ "Node Info",		panel_refresh_ninfo,	0,	 	0,		 NULL },
+	{ "Command",		panel_refresh_cmd,	PF_UINP, 	UINPO_LINGER,	 uinpcb_cmd },
+	{ "Legend",		panel_refresh_legend,	0,	 	0,		 NULL },
+	{ "Flyby Status",	panel_refresh_flyby,	0,	 	0,		 NULL },
+	{ "Goto Node",		panel_refresh_gotonode,	PF_UINP, 	0,		 uinpcb_gotonode },
+	{ "Camera Position",	panel_refresh_pos,	0,	 	0,		 NULL },
+	{ "Screenshot",		panel_refresh_ss,	PF_UINP, 	0,		 uinpcb_ss },
+	{ "Status",		panel_refresh_status,	0,	 	0,		 NULL },
+	{ "Memory Usage",	panel_refresh_mem,	0,	 	0,		 NULL },
+	{ NULL,			panel_refresh_eggs,	PF_UINP | PF_HIDE, 0,		 uinpcb_eggs },
+	{ "Date",		panel_refresh_date,	PF_XPARENT,	0,		 NULL },
+	{ "Option",		panel_refresh_opts,	0,	 	0,		 NULL },
+	{ "Goto Job",		panel_refresh_gotojob,	PF_UINP, 	0,		 uinpcb_gotojob },
+	{ NULL,			panel_refresh_panels,	PF_HIDE, 	0,		 NULL }
 };
 
 #define PVOFF_TL 0
@@ -985,7 +987,7 @@ panel_refresh_pos(struct panel *p)
 	vec_cart2sphere(&st.st_lv, &lsph);
 	vec_cart2sphere(&st.st_uv, &usph);
 
-	panel_set_content(p, "- Camera -"
+	panel_set_content(p, "- Camera -\n"
 	    "Position (%.2f,%.2f,%.2f)\n"
 	    "Look (%.2f,%.2f,%.2f) (t=%g,p=%g)\n"
 	    "Up (%.2f,%.2f,%.2f) (t=%g,p=%g)",
@@ -1104,6 +1106,37 @@ panel_refresh_opts(struct panel *p)
 		pwidget_set(p, pw, (st.st_opts & (1 << i) ?
 		    &fill_white : &fill_nodata), opts[i].opt_name,
 		    gscb_pwopt, i);
+	}
+}
+
+void
+panel_refresh_panels(struct panel *p)
+{
+	static int sav_pids;
+	struct pwidget *pw, *nextp;
+	struct panel *pp;
+	int i, pids;
+
+	pids = 0;
+	TAILQ_FOREACH(pp, &panels, p_link)
+		pids |= pp->p_id;
+
+	if (panel_ready(p) && sav_pids == pids)
+		return;
+	sav_pids = pids;
+
+	panel_set_content(p, "- Panels - ");
+
+	p->p_nwidgets = 0;
+	p->p_maxwlen = 0;
+	pw = SLIST_FIRST(&p->p_widgets);
+	for (i = 0; i < NPANELS; i++, pw = nextp) {
+		if (pinfo[i].pi_opts & PF_HIDE)
+			continue;
+		pw = panel_get_pwidget(p, pw, &nextp);
+		pwidget_set(p, pw, (pids & (1 << i) ?
+		    &fill_white : &fill_nodata), pinfo[i].pi_name,
+		    gscb_pwpanel, i);
 	}
 }
 
