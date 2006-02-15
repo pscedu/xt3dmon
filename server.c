@@ -115,7 +115,7 @@ serv_init(void)
 	if (listen(sock, BACKLOG) == -1)
 		err(1, "listen");
 
-	st.st_opts &= ~(OP_TWEEN);
+	st.st_opts &= ~(OP_TWEEN | OP_NODEANIM);
 	st.st_opts |= OP_NLABELS;
 
 	panel_toggle(PANEL_DATE);
@@ -130,6 +130,9 @@ serv_init(void)
 	gl_displayhp = serv_displayh;
 //	rebuild(RF_DATASRC | RF_CLUSTER);
 //	st.st_rf &= ~(RF_DATASRC | RF_CLUSTER);
+	fill_bg.f_r = 0.0;
+	fill_bg.f_g = 0.0;
+	fill_bg.f_b = 0.0;
 
 	qsort(sv_cmds, sizeof(sv_cmds) / sizeof(sv_cmds[0]),
 	    sizeof(sv_cmds[0]), svc_cmp);
@@ -189,14 +192,14 @@ serv_displayh(void)
 	struct sockaddr_in sin;
 	struct session ss;
 	char buf[MSGSIZ];
+	int i, clifd, rf;
 	socklen_t sz;
-	int i, clifd;
 	ssize_t len;
 
 	serv_drawinfo();
 
 	/* Reset some things for the new session. */
-	st.st_opts &= ~(OP_SKEL | OP_NODEANIM);
+	st.st_opts &= ~(OP_SKEL);
 
 	sz = 0;
 	memset(&ss, 0, sizeof(ss));
@@ -208,7 +211,6 @@ serv_displayh(void)
 		usleep(USLEEP);
 		return;
 	}
-	fprintf(stderr, "\n");
 	dbg_warn("Servicing new connection");
 	nreqs++;
 	sn_clear();
@@ -244,8 +246,8 @@ snap:
 	glutReshapeWindow(win_width, win_height);
 //	glutReshapeFunc(gl_reshapeh);
 	gl_reshapeh(win_width, win_height);
-	st.st_rf |= RF_CAM | RF_DATASRC;
 
+	rf = st.st_rf | RF_CAM | RF_DATASRC | RF_CLUSTER | RF_SMODE;
 	if (ss.ss_sid) {
 		struct panel *p;
 		int dsm;
@@ -261,11 +263,24 @@ snap:
 		dsm = st_dsmode();
 		if (dsm != DS_INV)
 			dsc_load(dsm, ss.ss_sid);
-		st.st_rf &= ~RF_DATASRC;
+		rf &= ~RF_DATASRC;
 
 		if ((p = panel_for_id(PANEL_DATE)) != NULL)
 			p->p_opts |= POPT_USRDIRTY;
 	}
+
+	/* Have fresh data for (a) jobs and (b) node selection. */
+	st.st_rf = 0;
+	rebuild(rf);
+	if (rf & RF_CAM) {
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		gluPerspective(FOVY, ASPECT, NEARCLIP, clip);
+		glMatrixMode(GL_MODELVIEW);
+		cam_look();
+		rf &= ~RF_CAM;
+	}
+
 	if (ss.ss_jobid) {
 		struct job *j;
 
@@ -299,7 +314,7 @@ snap:
 
 	capture_snapfd(clifd, CM_PNG);
 drop:
-	dbg_warn("Closing connection");
+	dbg_warn("Closing connection\n");
 	close(clifd);
 }
 
