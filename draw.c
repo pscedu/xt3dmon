@@ -30,7 +30,6 @@
 
 #define SKEL_GAP (0.1f)
 
-#define NEARCLIP (1.0)
 #define FOCAL_POINT (2.0f) /* distance from cam to center of 3d focus */
 #define FOCAL_LENGTH (5.0f) /* length of 3d focus */
 
@@ -172,6 +171,7 @@ gl_displayh_stereo(void)
 	static double ratio, radians, wd2, ndfl, eyesep;
 	static float left, right, top, bottom;
 	static struct fvec stereo_fv;
+	int rf;
 
 	if (flyby_mode)
 		flyby_update();
@@ -179,10 +179,8 @@ gl_displayh_stereo(void)
 		tween_update();
 	if (st.st_vmode == VM_WIRED)
 		wired_update();
-	if (st.st_rf) {
-		int rf;
-
-		rf = st.st_rf;
+	rf = st.st_rf;
+	if (rf) {
 		st.st_rf = 0;
 		rebuild(rf);
 	}
@@ -277,22 +275,22 @@ gl_displayh_stereo(void)
 void
 gl_displayh_default(void)
 {
+	int rf;
+
 	if (flyby_mode)
 		flyby_update();
 	if (st.st_opts & OP_TWEEN)
 		tween_update();
 	if (st.st_vmode == VM_WIRED)
 		wired_update();
-	if (st.st_rf) {
-		int rf;
-
-		rf = st.st_rf;
+	rf = st.st_rf;
+	if (rf) {
 		st.st_rf = 0;
 		rebuild(rf);
 	}
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	if (cam_dirty) {
+	if (rf & RF_CAM) {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		gluPerspective(FOVY, ASPECT, NEARCLIP, clip);
@@ -300,7 +298,6 @@ gl_displayh_default(void)
 		cam_look();
 	}
 	draw_scene();
-	cam_dirty = 0;
 
 	glClearColor(fill_bg.f_r, fill_bg.f_g, fill_bg.f_b, 1.0);
 	if (st.st_opts & OP_CAPTURE)
