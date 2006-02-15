@@ -11,8 +11,6 @@
 #define TWEEN_MAX_LOOK	(0.06f)
 #define TWEEN_MAX_UP	(0.10f)
 
-int cam_dirty = 1;
-
 __inline void
 tween_probe(float *cur, float stop, float max, float *scale, float *want)
 {
@@ -89,7 +87,7 @@ tween_update(void)
 	if (want.fv_w || want.fv_h || want.fv_d ||
 	    want_l.fv_w || want_l.fv_h || want_l.fv_d ||
 	    want_u.fv_w || want_u.fv_h || want_u.fv_d)
-		cam_dirty = 1;
+		st.st_rf |= RF_CAM;
 }
 
 static struct fvec sv, slv, suv;
@@ -136,5 +134,5 @@ tween_pop(int opts)
 			tuv.fv_z = st.st_uz;  st.st_uz = suv.fv_z;
 		}
 	} else
-		cam_dirty = 1;
+		st.st_rf |= RF_CAM;
 }

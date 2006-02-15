@@ -981,7 +981,7 @@ panel_refresh_pos(struct panel *p)
 {
 	struct fvec lsph, usph;
 
-	if (!cam_dirty && panel_ready(p))
+	if ((st.st_rf & RF_CAM) == 0 && panel_ready(p))
 		return;
 
 	vec_cart2sphere(&st.st_lv, &lsph);
