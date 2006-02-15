@@ -236,6 +236,7 @@ smode_change(void)
 void
 rebuild(int opts)
 {
+#if 0
 	if (opts & RF_SMODE) {
 		struct datasrc *ds;
 		int dsmode;
@@ -250,11 +251,12 @@ rebuild(int opts)
 			break;
 		}
 		/* Force update when changing modes. */
-		if (dsmode != -1) {
-			ds = ds_get(dsmode);
-			ds->ds_flags |= DSF_FORCE;
-		}
+//		if (dsmode != -1) {
+//			ds = ds_get(dsmode);
+//			ds->ds_flags |= DSF_FORCE;
+//		}
 	}
+#endif
 	if (opts & RF_DATASRC) {
 		ds_refresh(DS_NODE, 0);
 		ds_refresh(DS_JOB, 0);
@@ -262,7 +264,7 @@ rebuild(int opts)
 		ds_refresh(DS_MEM, DSF_IGN);
 		hl_refresh();
 
-		opts |= RF_SMODE;
+		opts |= RF_SMODE | RF_CLUSTER;
 	}
 	if (opts & RF_SMODE)
 		smode_change();
@@ -276,7 +278,10 @@ rebuild(int opts)
 			clip = MIN3(WIV_CLIPX, WIV_CLIPY, WIV_CLIPZ);
 			break;
 		}
-		cam_dirty = 1;
+		/*
+		 * Resetting any viewing frustrums needs
+		 * to be done in the display handler.
+		 */
 	}
 	if (opts & RF_GROUND)
 		gl_run(make_ground);
