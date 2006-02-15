@@ -239,8 +239,8 @@ flyby_end(void)
 		glutMotionFunc(gl_motionh_default);
 		glutPassiveMotionFunc(gl_pasvmotionh_default);
 		glutMouseFunc(gl_mouseh_default);
-		cam_dirty = 1;
 		opt_flip(st.st_opts ^ sav_opts);
+		st.st_rf |= RF_CAM;
 		/* rebuild(RF_INIT); */
 		break;
 	}

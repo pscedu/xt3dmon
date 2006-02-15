@@ -22,7 +22,7 @@ gl_reshapeh(int w, int h)
 	glViewport(0, 0, win_width, win_height);
 	gluPerspective(FOVY, ASPECT, 1, clip);
 	glMatrixMode(GL_MODELVIEW);
-	cam_dirty = 1;
+	st.st_rf |= RF_CAM;
 
 	TAILQ_FOREACH(p, &panels, p_link)
 		p->p_opts |= POPT_DIRTY;
