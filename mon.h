@@ -58,6 +58,8 @@
 #define WIV_CLIPY	(st.st_winsp.iv_y * vmodes[st.st_vmode].vm_clip)
 #define WIV_CLIPZ	(st.st_winsp.iv_z * vmodes[st.st_vmode].vm_clip)
 
+#define NEARCLIP	(1.0)
+
 #define WFRAMEWIDTH	(0.001f)
 
 #define DV_NODATA	(-1)
@@ -788,7 +790,6 @@ extern struct objlist	 glname_list;
 extern int		 total_failures;		/* total among all nodes */
 
 extern int		 verbose;
-extern int		 cam_dirty;
 extern GLint		 cluster_dl[2], ground_dl[2], select_dl[2];
 extern struct uinput	 uinp;
 extern int		 spkey;
