@@ -10,8 +10,17 @@
 #include "cdefs.h"
 #include "ustream.h"
 
+struct ustrop ustrdtab_winsock[] = {
+	ustrop_winsock_init,
+	ustrop_winsock_close,
+	ustrop_winsock_write,
+	ustrop_winsock_gets,
+	ustrop_winsock_error,
+	ustrop_winsock_eof
+};
+
 struct ustream *
-us_init(int fd, int type, __unused const char *modes)
+us_winsock_init(int fd, int type, __unused const char *modes)
 {
 	struct ustream *usp;
 
@@ -29,21 +38,10 @@ us_init(int fd, int type, __unused const char *modes)
 	return (usp);
 }
 
-int
+__inline int
 us_close(struct ustream *usp)
 {
-	int ret;
-
-	switch (usp->us_type) {
-	case UST_FILE:
-		ret = fclose(usp->us_fp);
-		break;
-	case UST_SOCK:
-		ret = closesocket(usp->us_fd);
-		break;
-	}
-	free(usp);
-	return (ret);
+	return (closesocket(usp->us_fd));
 }
 
 ssize_t
