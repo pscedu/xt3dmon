@@ -411,13 +411,17 @@ struct panel {
 #define PANEL_OPTS	(1<<12)
 #define PANEL_GOTOJOB	(1<<13)
 #define PANEL_PANELS	(1<<14)
-#define NPANELS		15
+#define PANEL_LOGIN	(1<<15)
+#define NPANELS		16
 
 #define POPT_REMOVE	(1<<0)			/* being removed */
 #define POPT_DIRTY	(1<<1)			/* panel needs redrawn */
 #define POPT_USRDIRTY	(1<<2)			/* user-flag for the same */
 #define POPT_MOBILE	(1<<3)			/* being dragged */
 #define POPT_COMPILE	(1<<4)			/* stereo syncing */
+#define POPT_USR1	(1<<5)			/* panel-specific flag */
+
+#define POPT_LOGIN_ATPASS (POPT_USR1)
 
 #define PSTICK_TL	1
 #define PSTICK_TR	2
@@ -647,6 +651,7 @@ void			 png_write(FILE *, unsigned char *, long, long);
 void			 opt_flip(int);
 void			 opt_enable(int);
 void			 opt_disable(int);
+int			 baseconv(int);
 void			 rebuild(int);
 void			 restart(void);
 
@@ -750,6 +755,7 @@ void			 tween_update(void);
 void			 uinpcb_cmd(void);
 void			 uinpcb_gotonode(void);
 void			 uinpcb_gotojob(void);
+void			 uinpcb_login(void);
 
 /* vec.c */
 void			 vec_cart2sphere(const struct fvec *, struct fvec *);
@@ -850,5 +856,8 @@ extern int		 wid;
 extern struct ivec	 wioff;
 
 extern const char	*progname;
+
+extern char		 login_user[BUFSIZ]; /* XXX SPOT siz */
+extern char		 login_pass[BUFSIZ]; /* XXX SPOT siz */
 
 #endif	/* __MON_H */

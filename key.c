@@ -153,6 +153,9 @@ gl_keyh_panel(unsigned char key, __unused int u, __unused int v)
 	case 'j':
 		panel_toggle(PANEL_GOTOJOB);
 		break;
+	case 'L':
+		panel_toggle(PANEL_LOGIN);
+		break;
 	case 'l':
 		panel_toggle(PANEL_LEGEND);
 		break;

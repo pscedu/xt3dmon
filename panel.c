@@ -71,6 +71,7 @@ void panel_refresh_date(struct panel *);
 void panel_refresh_opts(struct panel *);
 void panel_refresh_gotojob(struct panel *);
 void panel_refresh_panels(struct panel *);
+void panel_refresh_login(struct panel *);
 
 int  panel_blink(struct timeval *, char **, int, int *, long);
 
@@ -78,21 +79,22 @@ void uinpcb_ss(void);
 void uinpcb_eggs(void);
 
 struct pinfo pinfo[] = {
-	{ "FPS",		panel_refresh_fps,	0,	 	0,		 NULL },
-	{ "Node Info",		panel_refresh_ninfo,	0,	 	0,		 NULL },
-	{ "Command",		panel_refresh_cmd,	PF_UINP, 	UINPO_LINGER,	 uinpcb_cmd },
-	{ "Legend",		panel_refresh_legend,	0,	 	0,		 NULL },
-	{ "Flyby Status",	panel_refresh_flyby,	0,	 	0,		 NULL },
-	{ "Goto Node",		panel_refresh_gotonode,	PF_UINP, 	0,		 uinpcb_gotonode },
-	{ "Camera Position",	panel_refresh_pos,	0,	 	0,		 NULL },
-	{ "Screenshot",		panel_refresh_ss,	PF_UINP, 	0,		 uinpcb_ss },
-	{ "Status",		panel_refresh_status,	0,	 	0,		 NULL },
-	{ "Memory Usage",	panel_refresh_mem,	0,	 	0,		 NULL },
-	{ NULL,			panel_refresh_eggs,	PF_UINP | PF_HIDE, 0,		 uinpcb_eggs },
-	{ "Date",		panel_refresh_date,	PF_XPARENT,	0,		 NULL },
-	{ "Option",		panel_refresh_opts,	0,	 	0,		 NULL },
-	{ "Goto Job",		panel_refresh_gotojob,	PF_UINP, 	0,		 uinpcb_gotojob },
-	{ NULL,			panel_refresh_panels,	PF_HIDE, 	0,		 NULL }
+/* 0 */ { "FPS",		panel_refresh_fps,	0,	 	0,		 NULL },
+/* 1 */	{ "Node Info",		panel_refresh_ninfo,	0,	 	0,		 NULL },
+/* 2 */ { "Command",		panel_refresh_cmd,	PF_UINP, 	UINPO_LINGER,	 uinpcb_cmd },
+/* 3 */ { "Legend",		panel_refresh_legend,	0,	 	0,		 NULL },
+/* 4 */	{ "Flyby Status",	panel_refresh_flyby,	0,	 	0,		 NULL },
+/* 5 */	{ "Goto Node",		panel_refresh_gotonode,	PF_UINP, 	0,		 uinpcb_gotonode },
+/* 6 */	{ "Camera Position",	panel_refresh_pos,	0,	 	0,		 NULL },
+/* 7 */	{ "Screenshot",		panel_refresh_ss,	PF_UINP, 	0,		 uinpcb_ss },
+/* 8 */	{ "Status",		panel_refresh_status,	0,	 	0,		 NULL },
+/* 9 */	{ "Memory Usage",	panel_refresh_mem,	0,	 	0,		 NULL },
+/*10 */	{ NULL,			panel_refresh_eggs,	PF_UINP | PF_HIDE, 0,		 uinpcb_eggs },
+/*11 */	{ "Date",		panel_refresh_date,	PF_XPARENT,	0,		 NULL },
+/*12 */	{ "Option",		panel_refresh_opts,	0,	 	0,		 NULL },
+/*13 */	{ "Goto Job",		panel_refresh_gotojob,	PF_UINP, 	0,		 uinpcb_gotojob },
+/*14 */	{ NULL,			panel_refresh_panels,	PF_HIDE, 	0,		 NULL },
+/*15 */	{ "Login",		panel_refresh_login,	PF_UINP, 	UINPO_LINGER,	 uinpcb_login }
 };
 
 #define PVOFF_TL 0
@@ -108,16 +110,8 @@ int		 panel_offset[NPVOFF];
 int		 mode_data_clean;
 int		 selnode_clean;
 
-int
-baseconv(int n)
-{
-	unsigned int i;
-
-	for (i = 0; i < sizeof(n) * 8; i++)
-		if (n & (1 << i))
-			return (i + 1);
-	return (0);
-}
+char		 login_user[BUFSIZ];
+char		 login_pass[BUFSIZ];
 
 void
 panel_free(struct panel *p)
@@ -1146,6 +1140,32 @@ panel_refresh_status(struct panel *p)
 	if (panel_ready(p))
 		return;
 	panel_set_content(p, "- Status - \n%s", status_get());
+}
+
+void
+panel_refresh_login(struct panel *p)
+{
+	static char passbuf[sizeof(login_pass)];
+	int atpass, len;
+	char *s;
+
+	if ((uinp.uinp_opts & UINPO_DIRTY) == 0 && panel_ready(p))
+		return;
+	uinp.uinp_opts &= ~UINPO_DIRTY;
+
+	atpass = (p->p_opts & POPT_LOGIN_ATPASS);
+
+	if (atpass) {
+		len = strlen(buf_get(&uinp.uinp_buf));
+		for (s = passbuf; s - passbuf < len; s++)
+			*s = '*';
+		*s = '\0';
+	}
+
+	panel_set_content(p, "- Login -\nUsername: %s%s%s",
+	    atpass ? login_user : buf_get(&uinp.uinp_buf),
+	    atpass ? "\nPassword: " : "",
+	    atpass ? passbuf : "");
 }
 
 void

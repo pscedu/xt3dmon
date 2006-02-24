@@ -80,3 +80,37 @@ uinpcb_eggs(void)
 		egg_matrix();
 	}
 }
+
+void
+uinpcb_login(void)
+{
+	struct pinfo *pi;
+	struct panel *p;
+	char *s, *tobuf;
+	size_t siz;
+
+	s = buf_get(&uinp.uinp_buf);
+
+	if ((p = panel_for_id(PANEL_LOGIN)) != NULL) {
+		if (p->p_opts & POPT_LOGIN_ATPASS) {
+			tobuf = login_pass;
+			siz = sizeof(login_pass);
+
+			panel_tremove(p);
+		} else {
+			tobuf = login_user;
+			siz = sizeof(login_user);
+
+			pi = &pinfo[baseconv(p->p_id) - 1];
+			p->p_opts |= POPT_LOGIN_ATPASS | POPT_DIRTY;
+			glutKeyboardFunc(gl_keyh_uinput);
+			uinp.uinp_panel = p;
+			uinp.uinp_opts = pi->pi_uinpopts;
+			uinp.uinp_callback = pi->pi_uinpcb;
+
+			login_pass[0] = '\0';
+		}
+		strncpy(tobuf, s, siz - 1);
+		tobuf[siz - 1] = '\0';
+	}
+}
