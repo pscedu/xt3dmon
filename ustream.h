@@ -1,17 +1,12 @@
 /* $Id$ */
 
+#include "compat.h"
+
+#include <stdio.h>
+
 #define UST_LOCAL	0
 #define UST_REMOTE	1
 #define UST_SSL		2
-
-struct ustream {
-	int		 us_fd;
-	FILE		*us_fp;
-	ssize_t		 us_lastread;
-	unsigned char	 us_buf[BUFSIZ];
-	unsigned char	*us_bufstart;
-	unsigned char	*us_bufend;
-};
 
 struct ustrdtab {
 	struct ustream	*(*ust_init)(int, int, const char *);
@@ -20,6 +15,16 @@ struct ustrdtab {
 	char		*(*ust_gets)(char *, int, const struct ustream *);
 	int		 (*ust_error)(const struct ustream *);
 	int		 (*ust_eof)(const struct ustream *);
+};
+
+struct ustream {
+	struct ustrdtab	*us_dtab;
+	int		 us_fd;
+	FILE		*us_fp;
+	ssize_t		 us_lastread;
+	unsigned char	 us_buf[BUFSIZ];
+	unsigned char	*us_bufstart;
+	unsigned char	*us_bufend;
 };
 
 struct ustream	*us_init(int, int, const char *);
