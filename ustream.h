@@ -7,6 +7,7 @@
 #define UST_LOCAL	0
 #define UST_REMOTE	1
 #define UST_SSL		2
+#define NUST		3
 
 struct ustrdtab {
 	struct ustream	*(*ust_init)(int, int, const char *);
@@ -33,3 +34,5 @@ ssize_t		 us_write(const struct ustream *, const void *, size_t);
 char		*us_gets(const struct ustream *, char *, int);
 int		 us_error(const struct ustream *);
 int		 us_eof(const struct ustream *);
+
+extern struct ustrdtab *ustrdtabs[NUST];
