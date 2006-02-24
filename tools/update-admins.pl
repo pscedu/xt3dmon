@@ -14,7 +14,7 @@ my %c_fn = (
 	admin => "admin",
 );
 
-my $outdir = dirname($0) . "/../data";
+my $outdir = "/var/www/html/xtwmon/data";
 my $tmpsufx = ".new";
 my $oldsufx = ".bak";
 
@@ -39,9 +39,10 @@ while (defined($line = <CONNFH>)) {
 close CONNFH;
 
 my $fh = "$outdir/$c_fn{admin}.local";
-open FH, "<", $fh;
-print { $fh{admin} } <FH>;
-close FH;
+if (open FH, "<", $fh) {
+	print { $fh{admin} } <FH>;
+	close FH;
+}
 
 foreach $t (keys %c_fn) {
 	close $fh{$t};
