@@ -121,10 +121,6 @@
 /* Selection processing return values. */
 #define SP_MISS		(-1)
 
-/* Data source providers. */
-#define DSP_LOCAL	0
-#define DSP_REMOTE	1
-
 /* Data sources -- order impacts datasrc[] in ds.c. */
 #define DS_INV		(-1)
 #define DS_NODE		0
@@ -512,7 +508,7 @@ struct http_req {
 	const char	*htreq_method;
 	const char	*htreq_version;
 	const char	*htreq_url;
-	const char	**htreq_extra;		/* NULL-terminate. */
+	char		**htreq_extra;		/* NULL-terminate. */
 };
 
 struct http_res {
@@ -522,19 +518,24 @@ struct http_res {
 struct datasrc {
 	const char	 *ds_name;
 	time_t		  ds_mtime;
-	int		  ds_flags;
 	int		  ds_dsp;
 	const char	 *ds_lpath;
 	const char	 *ds_rpath;
-	void		(*ds_parsef)(struct datasrc *);
-	void		(*ds_initf)(struct datasrc *);
-	void		(*ds_finif)(struct datasrc *);
+	void		(*ds_parsef)(const struct datasrc *);
+	int		  ds_flags;
+	void		(*ds_initf)(const struct datasrc *);
+	void		(*ds_finif)(const struct datasrc *);
 	struct ustream	 *ds_us;
 };
+
+/* Data source providers. */
+#define DSP_LOCAL	0
+#define DSP_REMOTE	1
 
 #define DSF_AUTO	(1<<0)
 #define DSF_FORCE	(1<<1)
 #define DSF_READY	(1<<2)
+#define DSF_USESSL	(1<<3)
 
 #define SID_LEN 12	/* excluding NUL */
 
@@ -592,8 +593,8 @@ int			 dsc_exists(const char *);
 void			 dsc_clone(int, const char *);
 void			 dsc_load(int, const char *);
 
-void			 dsfi_node(struct datasrc *);
-void			 dsff_node(struct datasrc *);
+void			 dsfi_node(const struct datasrc *);
+void			 dsff_node(const struct datasrc *);
 
 int			 st_dsmode(void);
 
@@ -651,7 +652,6 @@ void			 png_write(FILE *, unsigned char *, long, long);
 void			 opt_flip(int);
 void			 opt_enable(int);
 void			 opt_disable(int);
-int			 baseconv(int);
 void			 rebuild(int);
 void			 restart(void);
 
@@ -696,10 +696,10 @@ struct panel		*panel_for_id(int);
 void			 panel_demobilize(struct panel *);
 
 /* parse.c */
-void			 parse_job(struct datasrc *);
-void			 parse_mem(struct datasrc *);
-void			 parse_node(struct datasrc *);
-void			 parse_yod(struct datasrc *);
+void			 parse_job(const struct datasrc *);
+void			 parse_mem(const struct datasrc *);
+void			 parse_node(const struct datasrc *);
+void			 parse_yod(const struct datasrc *);
 
 /* parse-phys.y */
 void			 parse_physconf(void);
