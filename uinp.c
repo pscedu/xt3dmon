@@ -4,6 +4,7 @@
 
 #include "buf.h"
 #include "mon.h"
+#include "util.h"
 
 void
 uinpcb_cmd(void)
