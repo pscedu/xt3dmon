@@ -1,5 +1,10 @@
 /* $Id$ */
 
+#include <stdint.h>
+#include <stdio.h>
+
+#include "util.h"
+
 /* Special case of base 2 to base 10. */
 int
 baseconv(int n)
@@ -18,9 +23,9 @@ base64_encode(const char *buf, char *enc)
 {
 	static char pres[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	    "abcdefghijklmnopqrstuvwxyz0123456789+/";
-	char *p, t[3];
-	int i;
+	const char *p;
 	uint32_t val;
+	int i;
 
 	i = 0;
 	for (p = buf; *p != '\0'; p += 3) {
@@ -37,4 +42,18 @@ base64_encode(const char *buf, char *enc)
 	for (; i / 3 != 0; i++)
 		enc[i++] = '=';
 	enc[i] = '\0';
+}
+
+/* Like strchr, but bound before NUL. */
+char *
+strnchr(const char *s, char c, size_t len)
+{
+	size_t pos;
+
+	for (pos = 0; s[pos] != c && pos < len; pos++)
+		;
+
+	if (pos == len)
+		return (NULL);
+	return ((char *)(s + pos));
 }
