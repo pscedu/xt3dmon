@@ -188,6 +188,7 @@ ds_https(const char *path)
 struct datasrc *
 ds_open(int type)
 {
+	struct ustream *(*httpf)(const char *);
 	struct datasrc *ds;
 	int mod, fd;
 
@@ -200,7 +201,10 @@ ds_open(int type)
 		ds->ds_us = us_init(fd, UST_LOCAL, "r");
 		break;
 	case DSP_REMOTE:
-		if ((ds->ds_us = ds_http(ds->ds_rpath)) == NULL)
+		httpf = ds_http;
+		if (login_pass[0] != '\0')
+			httpf = ds_https;
+		if ((ds->ds_us = httpf(ds->ds_rpath)) == NULL)
 			return (NULL);
 		break;
 	}
