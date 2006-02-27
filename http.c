@@ -52,15 +52,14 @@ net_connect(const char *host, in_port_t port)
 struct ustream *
 http_open(struct http_req *req, __unused struct http_res *res)
 {
+	char **hdr, buf[BUFSIZ];
 	struct ustream *us;
-	const char **hdr;
-	char buf[BUFSIZ];
 	int fd;
 
 	fd = net_connect(req->htreq_server, req->htreq_port);
 	if (fd == -1)
 		return (NULL);
-	us = us_init(fd, UST_SOCK, "rw");
+	us = us_init(fd, UST_REMOTE, "rw");
 
 	snprintf(buf, sizeof(buf), "%s %s %s\r\n", req->htreq_method,
 	    req->htreq_url, req->htreq_version);
@@ -73,15 +72,17 @@ http_open(struct http_req *req, __unused struct http_res *res)
 		if (us_write(us, buf, strlen(buf)) != (int)strlen(buf))
 			err(1, "us_write");
 	}
-	for (hdr = req->htreq_extra; hdr != NULL; hdr++)
-		if (us_write(us, *hdr, strlen(*hdr)) != (int)strlen(*hdr))
-			err(1, "us_write");
+	if (req->htreq_extra != NULL)
+		for (hdr = req->htreq_extra; *hdr != NULL; hdr++)
+			if (us_write(us, *hdr, strlen(*hdr)) !=
+			    (int)strlen(*hdr))
+				err(1, "us_write");
 	snprintf(buf, sizeof(buf), "\r\n");
 	if (us_write(us, buf, strlen(buf)) != (int)strlen(buf))
 		err(1, "us_write");
 
 	/* XXX: check http status */
-	while (us_gets(buf, sizeof(buf), us) != NULL)
+	while (us_gets(us, buf, sizeof(buf)) != NULL)
 		if (strcmp(buf, "\r\n") == 0)
 			break;
 	if (us_error(us))
