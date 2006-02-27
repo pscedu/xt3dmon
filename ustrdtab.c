@@ -10,3 +10,5 @@ struct ustrdtab *ustrdtabs[] = {
 	&ustrdtab_file,	/* REMOTE */
 	&ustrdtab_ssl	/* SSL */
 };
+
+int (*socketclosef)(int) = close;
