@@ -1,8 +1,8 @@
 # $Id$
 
-TESTS=		text matrix
+TESTS=		text base64
 CFLAGS+=	-I..
-LDFLAGS+=	../text.o
+LDFLAGS+=	../text.o ../util.o
 
 all: ${TESTS} xt3dmon
 
