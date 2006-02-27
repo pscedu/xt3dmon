@@ -183,18 +183,6 @@ roundclass(int t, int min, int max, int nclasses)
 	return ((t - min) * nclasses / (max - min));
 }
 
-/* Special case of base 2 to base 10. */
-int
-baseconv(int n)
-{
-	unsigned int i;
-
-	for (i = 0; i < sizeof(n) * 8; i++)
-		if (n & (1 << i))
-			return (i + 1);
-	return (0);
-}
-
 void
 smode_change(void)
 {
