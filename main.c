@@ -8,6 +8,7 @@
 #include "cdefs.h"
 #include "mon.h"
 #include "xmath.h"
+#include "xssl.h"
 
 #define STARTX		(-30.0)
 #define STARTY		( 10.0)
@@ -308,6 +309,7 @@ main(int argc, char *argv[])
 	sav_argv = argv;
 
 	arch_init();
+	ssl_init();
 
 	gl_displayhp = gl_displayh_default;
 
