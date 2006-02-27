@@ -46,6 +46,7 @@
 #include "cdefs.h"
 #include "mon.h"
 #include "queue.h"
+#include "util.h"
 
 #define LETTER_HEIGHT	13
 #define LETTER_WIDTH	8
