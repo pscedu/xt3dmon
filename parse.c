@@ -58,7 +58,7 @@ long		 rmem;
  *	1848	0 7  0  1 6	7 0 9	c	1	6036	45	10434	0
  */
 void
-parse_node(struct datasrc *ds)
+parse_node(const struct datasrc *ds)
 {
 	int lineno, r, cb, cg, m, n, nid, x, y, z, stat;
 	int enabled, jobid, temp, yodid, nfails;
@@ -80,7 +80,7 @@ parse_node(struct datasrc *ds)
 					}
 
 	lineno = 0;
-	while (us_gets(buf, sizeof(buf), ds->ds_us) != NULL) {
+	while (us_gets(ds->ds_us, buf, sizeof(buf)) != NULL) {
 		lineno++;
 		s = buf;
 		while (isspace(*s))
@@ -159,7 +159,7 @@ bad:
 		    buf, s);
 	}
 	if (us_error(ds->ds_us))
-		warn("fgets");
+		warn("us_gets");
 	errno = 0;
 
 	qsort(job_list.ol_jobs, job_list.ol_tcur, sizeof(struct job *), job_cmp);
@@ -179,7 +179,7 @@ bad:
 }
 
 void
-parse_mem(struct datasrc *ds)
+parse_mem(const struct datasrc *ds)
 {
 	FILE *fp;
 
@@ -187,7 +187,7 @@ parse_mem(struct datasrc *ds)
 	fscanf(fp, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u "
 	    "%*u %*u %*d %*d %*d %*d %*d %*d %*u %lu %ld", &vmem, &rmem);
 	if (ferror(fp))
-		warn("fgets");
+		warn("fscanf");
 	errno = 0;
 }
 
@@ -196,14 +196,14 @@ parse_mem(struct datasrc *ds)
  *	12253	6864	128	yod /usr/
  */
 void
-parse_yod(struct datasrc *ds)
+parse_yod(const struct datasrc *ds)
 {
 	int lineno, yodid, partid, ncpus;
 	char *s, *p, buf[BUFSIZ];
 	struct yod *y;
 
 	lineno = 0;
-	while (us_gets(buf, sizeof(buf), ds->ds_us) != NULL) {
+	while (us_gets(ds->ds_us, buf, sizeof(buf)) != NULL) {
 		lineno++;
 		s = buf;
 		while (isspace(*s))
@@ -233,7 +233,7 @@ bad:
 		    buf, s);
 	}
 	if (us_error(ds->ds_us))
-		warn("fgets");
+		warn("us_gets");
 	errno = 0;
 }
 
@@ -248,7 +248,7 @@ bad:
  *   job_state = R
  */
 void
-parse_job(struct datasrc *ds)
+parse_job(const struct datasrc *ds)
 {
 	char state, *t, *s, *q, buf[BUFSIZ], *next;
 	struct job j_fake, *job;
@@ -258,7 +258,7 @@ parse_job(struct datasrc *ds)
 	jobid = 0;
 	state = '\0';
 	for (;;) {
-		next = us_gets(buf, sizeof(buf), ds->ds_us);
+		next = us_gets(ds->ds_us, buf, sizeof(buf));
 		if (next == NULL && us_error(ds->ds_us)) {
 			warn("%s", _PATH_JOB);
 			break;
