@@ -1,11 +1,12 @@
 /* $Id$ */
 
-#define USTROP_INIT	0
-#define USTROP_CLOSE	1
-#define USTROP_WRITE	2
-#define USTROP_GETS	3
-#define USTROP_ERROR	4
-#define USTROP_EOF	5
+#include <sys/types.h>
+
+#include <err.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "ustream.h"
 
 struct ustream *
 us_init(int fd, int type, const char *modes)
@@ -17,17 +18,22 @@ us_init(int fd, int type, const char *modes)
 	memset(usp, 0, sizeof(*usp));
 
 	usp->us_fd = fd;
-	usp->us_dtab = us_dtab[type];
+	usp->us_type = type;
+	usp->us_modes = modes;
+	usp->us_dtab = ustrdtabs[type];
 
-	return ((*usp->us_dtab[USTROP_INIT])(usp));
+	if (usp->us_dtab->ust_init(usp))
+		return (usp);
+	free(usp);			/* XXX: errno */
+	return (NULL);
 }
 
 int
 us_close(struct ustream *usp)
 {
-	int error;
+	int ret;
 
-	ret = (*usp->us_dtab[USTROP_CLOSE])(usp);
+	ret = usp->us_dtab->ust_close(usp);
 	free(usp);			/* XXX: errno */
 	return (ret);
 }
@@ -37,25 +43,25 @@ us_close(struct ustream *usp)
  * for socket communication.
  */
 __inline ssize_t
-us_write(struct ustream *usp, const void *buf, size_t siz)
+us_write(const struct ustream *usp, const void *buf, size_t siz)
 {
-	return ((*usp->us_dtab[USTROP_WRITE])(usp));
+	return (usp->us_dtab->ust_write(usp, buf, siz));
 }
 
 __inline char *
-us_gets(char *s, int siz, struct ustream *usp)
+us_gets(struct ustream *usp, char *s, int siz)
 {
-	return ((*usp->us_dtab[USTROP_GETS])(usp));
+	return (usp->us_dtab->ust_gets(usp, s, siz));
 }
 
 __inline int
-us_error(struct ustream *usp)
+us_error(const struct ustream *usp)
 {
-	return ((*usp->us_dtab[USTROP_ERROR])(usp));
+	return (usp->us_dtab->ust_error(usp));
 }
 
 __inline int
-us_eof(struct ustream *usp)
+us_eof(const struct ustream *usp)
 {
-	return ((*usp->us_dtab[USTROP_EOF])(usp));
+	return (usp->us_dtab->ust_eof(usp));
 }
