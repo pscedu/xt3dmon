@@ -11,17 +11,13 @@
 #define UST_SSL		2
 #define NUST		3
 
-struct ustrdtab {
-	struct ustream	*(*ust_init)(int, int, const char *);
-	int		 (*ust_close)(const struct ustream *);
-	ssize_t		 (*ust_write)(const struct ustream *, const void *, size_t);
-	char		*(*ust_gets)(char *, int, const struct ustream *);
-	int		 (*ust_error)(const struct ustream *);
-	int		 (*ust_eof)(const struct ustream *);
-};
+struct ustrdtab;
 
 struct ustream {
 	struct ustrdtab	*us_dtab;
+	int		 us_type;
+	const char	*us_modes;
+
 	int		 us_fd;
 	FILE		*us_fp;
 	ssize_t		 us_lastread;
@@ -30,6 +26,15 @@ struct ustream {
 	unsigned char	*us_bufend;
 	SSL_CTX		*us_ctx;
 	SSL		*us_ssl;
+};
+
+struct ustrdtab {
+	int		 (*ust_init)(const struct ustream *);
+	int		 (*ust_close)(const struct ustream *);
+	ssize_t		 (*ust_write)(const struct ustream *, const void *, size_t);
+	char		*(*ust_gets)(const struct ustream *, char *, int);
+	int		 (*ust_error)(const struct ustream *);
+	int		 (*ust_eof)(const struct ustream *);
 };
 
 struct ustream		*us_init(int, int, const char *);
