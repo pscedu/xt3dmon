@@ -1,15 +1,20 @@
 /* $Id$ */
 
+#include "compat.h"
+
 #include <sys/types.h>
 #include <sys/stat.h>
 
 #include <errno.h>
 #include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 
 #include "cdefs.h"
 #include "mon.h"
 #include "ustream.h"
+#include "util.h"
 
 #define _RPATH_NODE	"/xt3-data/node"
 #define _RPATH_JOB	"/xt3-data/job"
@@ -17,8 +22,7 @@
 
 #define RDS_HOST	"mugatu.psc.edu"
 #define RDS_PORT	80
-
-struct ustream *ds_http(const char *);
+#define RDS_PORTSSL	443
 
 #ifndef _LIVE_DSP
 # define _LIVE_DSP DSP_REMOTE
@@ -26,36 +30,31 @@ struct ustream *ds_http(const char *);
 
 /* Must match DS_* defines in mon.h. */
 struct datasrc datasrcs[] = {
-	{ "node", 0, DSF_AUTO, _LIVE_DSP, _PATH_NODE,  _RPATH_NODE, parse_node,	dsfi_node, dsff_node,	0 },
-	{ "job",  0, DSF_AUTO, _LIVE_DSP, _PATH_JOB,   _RPATH_JOB,  parse_job,	NULL,	   NULL,	0 },
-	{ "yod",  0, DSF_AUTO, _LIVE_DSP, _PATH_YOD,   _RPATH_YOD,  parse_yod,	NULL,	   NULL,	0 },
-	{ "mem",  0, DSF_AUTO, DSP_LOCAL, _PATH_STAT,  NULL,	    parse_mem,	NULL,	   NULL,	0 },
+	{ "node", 0, _LIVE_DSP, _PATH_NODE, _RPATH_NODE, parse_node, DSF_AUTO | DSF_USESSL, dsfi_node,	dsff_node, NULL },
+	{ "job",  0, _LIVE_DSP, _PATH_JOB,  _RPATH_JOB,  parse_job,  DSF_AUTO | DSF_USESSL, NULL,	NULL,	   NULL },
+	{ "yod",  0, _LIVE_DSP, _PATH_YOD,  _RPATH_YOD,  parse_yod,  DSF_AUTO | DSF_USESSL, NULL,	NULL,	   NULL },
+	{ "mem",  0, DSP_LOCAL, _PATH_STAT, NULL,	 parse_mem,  DSF_AUTO,		    NULL,	NULL,	   NULL },
 };
 #define NDATASRCS (sizeof(datasrcs) / sizeof(datasrcs[0]))
 
 void
-dsfi_node(__unused struct datasrc *ds)
+dsfi_node(__unused const struct datasrc *ds)
 {
 	obj_batch_start(&job_list);
 	obj_batch_start(&yod_list);
 }
 
 void
-dsff_node(__unused struct datasrc *ds)
+dsff_node(__unused const struct datasrc *ds)
 {
 	obj_batch_end(&job_list);
 	obj_batch_end(&yod_list);
 }
 
-void
+__inline void
 ds_close(struct datasrc *ds)
 {
-	switch (ds->ds_dsp) {
-	case DSP_LOCAL:
-	case DSP_REMOTE:
-		us_close(ds->ds_us);
-		break;
-	}
+	us_close(ds->ds_us);
 }
 
 void
@@ -63,12 +62,7 @@ ds_read(struct datasrc *ds)
 {
 	if (ds->ds_initf)
 		ds->ds_initf(ds);
-	switch (ds->ds_dsp) {
-	case DSP_LOCAL:
-	case DSP_REMOTE:
-		ds->ds_parsef(ds);
-		break;
-	}
+	ds->ds_parsef(ds);
 	if (ds->ds_finif)
 		ds->ds_finif(ds);
 }
@@ -134,30 +128,7 @@ ds_refresh(int type, int flags)
 		ds->ds_flags &= ~DSF_FORCE;
 		ds_read(ds);
 	}
-
 	ds_close(ds);
-}
-
-struct datasrc *
-ds_open(int type)
-{
-	struct datasrc *ds;
-	int mod, fd;
-
-	mod = 0;
-	ds = ds_get(type);
-	switch (ds->ds_dsp) {
-	case DSP_LOCAL:
-		if ((fd = open(ds->ds_lpath, O_RDONLY)) == -1)
-			return (NULL);
-		ds->ds_us = us_init(fd, UST_FILE, "r");
-		break;
-	case DSP_REMOTE:
-		if ((ds->ds_us = ds_http(ds->ds_rpath)) == NULL)
-			return (NULL);
-		break;
-	}
-	return (ds);
 }
 
 struct ustream *
@@ -175,6 +146,65 @@ ds_http(const char *path)
 	r.htreq_version = "HTTP/1.1";
 	r.htreq_url = path;
 	return (http_open(&r, NULL));
+}
+
+struct ustream *
+ds_https(const char *path)
+{
+	struct ustream *usp;
+	struct http_req r;
+	char *buf, *enc;
+	int len;
+
+	if (path == NULL)
+		errx(1, "no remote data available for datasrc type");
+	memset(&r, 0, sizeof(r));
+	r.htreq_server = RDS_HOST;
+	r.htreq_port = RDS_PORTSSL;
+
+	r.htreq_method = "GET";
+	r.htreq_version = "HTTP/1.1";
+	r.htreq_url = path;
+
+	if ((len = asprintf(&buf, "%s:%s", login_user, login_pass)) == -1)
+		err(1, "asprintf");
+	if ((enc = malloc(len * 3 + 1)) == NULL)
+		err(1, "malloc");
+	base64_encode(buf, enc);
+
+	r.htreq_extra = calloc(2, sizeof(char *));
+	if (asprintf(&r.htreq_extra[0], "Authorization: Basic %s\r\n",
+	    enc) == -1)
+		err(1, "asprintf");
+	usp = http_open(&r, NULL);
+
+	free(r.htreq_extra[0]);
+	free(r.htreq_extra);
+	free(enc);
+	free(buf);
+	return (usp);
+}
+
+struct datasrc *
+ds_open(int type)
+{
+	struct datasrc *ds;
+	int mod, fd;
+
+	mod = 0;
+	ds = ds_get(type);
+	switch (ds->ds_dsp) {
+	case DSP_LOCAL:
+		if ((fd = open(ds->ds_lpath, O_RDONLY)) == -1)
+			return (NULL);
+		ds->ds_us = us_init(fd, UST_LOCAL, "r");
+		break;
+	case DSP_REMOTE:
+		if ((ds->ds_us = ds_http(ds->ds_rpath)) == NULL)
+			return (NULL);
+		break;
+	}
+	return (ds);
 }
 
 __inline void
@@ -255,7 +285,7 @@ dsc_open(int type, const char *sid)
 	    ds->ds_name);
 	if ((fd = open(fn, O_RDONLY, 0)) == -1)
 		return (NULL);
-	ds->ds_us = us_init(fd, UST_FILE, "r");
+	ds->ds_us = us_init(fd, UST_LOCAL, "r");
 	return (ds);
 }
 
