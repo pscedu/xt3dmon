@@ -158,18 +158,50 @@ $sth->finish;
 
 $dbh->disconnect;
 
+my %j = (state => "");
 open CONNFH, "ssh $login_host qstat -f |" or err("ssh $login_host");
-while (defined($line = <CONNFH>)) {
-	print { $fh{job} } $line;
+for (;;) {
+	# XXX: clear $! ?
+	unless (defined($line = <CONNFH>)) {
+		err("read qstat") if $!;
+	}
+	if (eof CONNFH or $line =~ /^Job Id: (\d+)/) {
+		if ($j{state} eq "R") {
+			printf { $fh{job} } "%d\t%s\t%d\t%d\t%d\t%d\t%s\t%s\n",
+			    @j{qw(id owner tmdur tmuse mem ncpus queue name)};
+		}
+		last if eof CONNFH;
+
+		%j = (id => $1, state => "");
+	} elsif ($line =~ /\s*Job_Name = (.*)/) {
+		$j{name} = $1;
+	} elsif ($line =~ /\s*Job_Owner = (.*)/) {
+		($j{owner} = $1) =~ s/@.*//;
+	} elsif ($line =~ /\s*job_state = (.*)/) {
+		$j{state} = $1;
+	} elsif ($line =~ /\s*queue = (.*)/) {
+		$j{queue} = $1;
+	} elsif ($line =~ /\s*Resource_List\.size = (\d+)/) {
+		$j{ncpus} = $1;
+	} elsif ($line =~ /\s*Resource_List\.walltime = (\d+):(\d+):(\d+)/) {
+		$j{tmdur} = $1 * 60 + $2;
+	} elsif ($line =~ /\s*resources_used\.walltime = (\d+):(\d+):(\d+)/) {
+		$j{tmuse} = $1 * 60 + $2;
+	} elsif ($line =~ /\s*resources_used\.mem = (\d+)kb/) {
+		$j{mem} = $1;
+	}
 }
 close CONNFH;
 
 foreach $t (keys %c_fn) {
 	close $fh{$t};
 	unlink($o_fn{$t});			# delete old backup
+#	print "unlink $o_fn{$t}\n";
 	rename($f_fn{$t}, $o_fn{$t});		# move current files to backup
+#	print "mv $f_fn{$t} $o_fn{$t}\n";
 	rename($t_fn{$t}, $f_fn{$t})		# move new to current
 	    or err("rename $t_fn{$t} $f_fn{$t}");
+#	print "mv $t_fn{$t} $f_fn{$t}\n";
 }
 
 sub dberr {
