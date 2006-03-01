@@ -159,8 +159,10 @@ $sth->finish;
 $dbh->disconnect;
 
 my %j = (state => "");
-open CONNFH, "ssh $login_host \"perl -We '\\\$SIG{ALRM}=sub{exit}; " .
-    "alarm(5); system q{qstat -f}'\" |" or err("ssh $login_host");
+open CONNFH, "ssh $login_host \"perl -We 'my \\\$pid = fork; " .
+    "exit if \\\$pid == -1; if (\\\$pid) { " .
+    "\\\$SIG{ALRM}=sub{kill \\\$pid}; alarm(5); wait; " .
+    "} else { exec qw{qstat -f} }'\" |" or err("ssh $login_host");
 for (;;) {
 	# XXX: clear $! ?
 	unless (defined($line = <CONNFH>)) {
