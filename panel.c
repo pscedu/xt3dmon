@@ -322,7 +322,7 @@ draw_panel(struct panel *p, int toff)
 		pw->pw_u = uoff;
 		pw->pw_v = voff;
 		pw->pw_w = PWIDGET_LENGTH + PWIDGET_PADDING +
-		    (s - pw->pw_str - 1) * LETTER_WIDTH;
+		    (s - pw->pw_str) * LETTER_WIDTH;
 		pw->pw_h = PWIDGET_HEIGHT;
 
 		/*
