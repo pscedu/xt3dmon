@@ -161,7 +161,7 @@ $dbh->disconnect;
 my %j = (state => "");
 open CONNFH, "ssh $login_host \"perl -We 'my \\\$pid = fork; " .
     "exit if \\\$pid == -1; if (\\\$pid) { " .
-    "\\\$SIG{ALRM}=sub{kill \\\$pid}; alarm(5); wait; " .
+    "\\\$SIG{ALRM}=sub{kill 1, \\\$pid}; alarm(5); wait; " .
     "} else { exec qw{qstat -f} }'\" |" or err("ssh $login_host");
 for (;;) {
 	# XXX: clear $! ?
