@@ -231,6 +231,7 @@ struct job {
 	int		 j_tmdur;		/* minutes */
 	int		 j_tmuse;		/* minutes */
 	int		 j_ncpus;
+	int		 j_mem;			/* KB */
 };
 
 #define JOHF_TOURED	OHF_USR1

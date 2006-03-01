@@ -880,7 +880,8 @@ panel_refresh_ninfo(struct panel *p)
 		    "Job queue: %s\n"
 		    "Job duration: %d:%02d\n"
 		    "Job time used: %d:%02d (%d%%)\n"
-		    "Job CPUs: %d",
+		    "Job CPUs: %d\n"
+		    "Job Memory: %dKB",
 		    n->n_job->j_id,
 		    n->n_job->j_owner,
 		    n->n_job->j_jname,
@@ -892,7 +893,8 @@ panel_refresh_ninfo(struct panel *p)
 		    n->n_job->j_tmuse * 100 /
 		      (n->n_job->j_tmdur ?
 		       n->n_job->j_tmdur : 1),
-		    n->n_job->j_ncpus);
+		    n->n_job->j_ncpus,
+		    n->n_job->j_mem);
 	else
 		panel_add_content(p,
 		    "\n"
