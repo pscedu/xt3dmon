@@ -13,6 +13,8 @@
 #include "mon.h"
 #include "ustream.h"
 
+#define PS_ALLOWSPACE (1<<0)
+
 struct ivec	 widim;
 int		 total_failures;
 unsigned long	 vmem;
@@ -51,6 +53,43 @@ long		 rmem;
 		if (!isspace(*++(s)))				\
 			goto bad;				\
 	} while (0)
+
+int
+parsestr(char **sp, char *buf, size_t siz, int flags)
+{
+	char *s, *t;
+	int error;
+
+	error = 1;
+	s = *sp;
+	while (isspace(*s))
+		s++;
+	if (!isalpha(*s))
+		goto bad;
+	for (t = s; *t != '\0'; t++) {
+		/* Find terminating whitespace. */
+		for (; *t != '\0' && !isspace(*t); t++)
+			;
+		if (*t == '\0')
+			goto bad;
+
+		/*
+		 * Continue to look for EOL if space allowed and
+		 * EOL not found, else quit since normal space found.
+		 */
+		if ((flags & PS_ALLOWSPACE) == 0 || *t == '\n')
+			break;
+	}
+	*t++ = '\0';
+	strncpy(buf, s, siz - 1);
+	buf[siz - 1] = '\0';
+	s = t;
+
+	error = 0;
+bad:
+	*sp = s;
+	return (error);
+}
 
 /*
  * Example line:
@@ -198,9 +237,9 @@ parse_mem(const struct datasrc *ds)
 void
 parse_yod(const struct datasrc *ds)
 {
-	int lineno, yodid, partid, ncpus;
-	char *s, *p, buf[BUFSIZ];
-	struct yod *y;
+	struct yod *y, y_fake;
+	char *s, buf[BUFSIZ];
+	int lineno;
 
 	lineno = 0;
 	while (us_gets(ds->ds_us, buf, sizeof(buf)) != NULL) {
@@ -211,26 +250,23 @@ parse_yod(const struct datasrc *ds)
 		if (*s == '#')
 			continue;
 
-		PARSENUM(s, yodid, INT_MAX);
-		PARSENUM(s, partid, INT_MAX);
-		PARSENUM(s, ncpus, INT_MAX);
+		PARSENUM(s, y_fake.y_id, INT_MAX);
 
-		while (isspace(*s))
-			s++;
-		if ((p = strchr(s, '\n')) != NULL)
-			*p = '\0';
+		if ((y = yod_findbyid(y_fake.y_id)) == NULL)
+			continue;
+		else
+			y_fake = *y;
 
-		if ((y = yod_findbyid(yodid)) != NULL) {
-			y->y_partid = partid;
-			y->y_ncpus = ncpus;
-			strncpy(y->y_cmd, s, sizeof(y->y_cmd) - 1);
-			y->y_cmd[sizeof(y->y_cmd) - 1] = '\0';
-		}
+		PARSENUM(s, y_fake.y_partid, INT_MAX);
+		PARSENUM(s, y_fake.y_ncpus, INT_MAX);
+		if (parsestr(&s, y_fake.y_cmd, sizeof(y_fake.y_cmd),
+		    PS_ALLOWSPACE))
+			goto bad;
 
+		*y = y_fake;
 		continue;
 bad:
-		warnx("node:%d: malformed line [%s] [%s]", lineno,
-		    buf, s);
+		warnx("yod:%d: malformed line [%s] [%s]", lineno, buf, s);
 	}
 	if (us_error(ds->ds_us))
 		warn("us_gets");
@@ -238,123 +274,47 @@ bad:
 }
 
 /*
- * Job Id: 4864.phantom.psc.edu
- *   Job_Name = run.cpmd
- *   Job_Owner = stbrown@phantom.psc.edu
- *   resources_used.cput = 00:00:00
- *   resources_used.mem = 11156kb
- *   resources_used.vmem = 29448kb
- *   resources_used.walltime = 02:38:03
- *   job_state = R
+ * id      owner   tmdur   tmuse   mem     ncpus  queue name
+ * 20161   devivo  270     75      37868   320	  batch cmdname
  */
 void
 parse_job(const struct datasrc *ds)
 {
-	char state, *t, *s, *q, buf[BUFSIZ], *next;
-	struct job j_fake, *job;
-	int jobid;
+	struct job j_fake, *j;
+	char *s, buf[BUFSIZ];
+	int lineno;
 
-	s = NULL; /* gcc */
-	jobid = 0;
-	state = '\0';
-	for (;;) {
-		next = us_gets(ds->ds_us, buf, sizeof(buf));
-		if (next == NULL && us_error(ds->ds_us)) {
-			warn("%s", _PATH_JOB);
-			break;
-		}
+	lineno = 0;
+	while (us_gets(ds->ds_us, buf, sizeof(buf)) != NULL) {
+		lineno++;
+		s = buf;
+		while (isspace(*s))
+			s++;
+		if (*s == '#')
+			continue;
 
-		q = "Job Id: ";
-		if (next == NULL || (s = strstr(buf, q)) != NULL) {
-			/* Save last job info. */
-			if (state == 'R' &&
-			    (job = job_findbyid(jobid)) != NULL) {
-				job->j_ncpus = j_fake.j_ncpus;
-				job->j_tmdur = j_fake.j_tmdur;
-				job->j_tmuse = j_fake.j_tmuse;
-				memcpy(job->j_jname, j_fake.j_jname,
-				    sizeof(job->j_jname));
-				memcpy(job->j_owner, j_fake.j_owner,
-				    sizeof(job->j_owner));
-				memcpy(job->j_queue, j_fake.j_queue,
-				    sizeof(job->j_queue));
-			}
+		PARSENUM(s, j_fake.j_id, INT_MAX);
 
-			/* Setup next job. */
-			jobid = 0;
-			state = 0;
-			j_fake.j_jname[0] = '\0';
-			j_fake.j_owner[0] = '\0';
-			j_fake.j_queue[0] = '\0';
-			j_fake.j_tmdur = 0;
-			j_fake.j_tmuse = 0;
-			j_fake.j_ncpus = 0;
+		if ((j = job_findbyid(j_fake.j_id)) == NULL)
+			continue;
+		else
+			j_fake = *j;
 
-			if (us_eof(ds->ds_us))
-				break;
-			else {
-				s += strlen(q);
-				jobid = strtoul(s, NULL, 10);
-			}
-		}
-		/* buf should always be valid here. */
-		if ((t = strchr(buf, '\n')) != NULL)
-			*t = '\0';
+		if (parsestr(&s, j_fake.j_owner, sizeof(j_fake.j_owner), 0))
+			goto bad;
+		PARSENUM(s, j_fake.j_tmdur, INT_MAX);
+		PARSENUM(s, j_fake.j_tmuse, INT_MAX);
+		PARSENUM(s, j_fake.j_mem, INT_MAX);
+		PARSENUM(s, j_fake.j_ncpus, INT_MAX);
+		if (parsestr(&s, j_fake.j_queue, sizeof(j_fake.j_queue), 0))
+			goto bad;
+		if (parsestr(&s, j_fake.j_jname, sizeof(j_fake.j_jname),
+		    PS_ALLOWSPACE))
+			goto bad;
 
-		q = "Job_Name = ";
-		if ((s = strstr(buf, q)) != NULL) {
-			s += strlen(q);
-			strncpy(j_fake.j_jname, s,
-			    sizeof(j_fake.j_jname) - 1);
-			j_fake.j_jname[sizeof(j_fake.j_jname) - 1] = '\0';
-		}
-
-		q = "Job_Owner = ";
-		if ((s = strstr(buf, q)) != NULL) {
-			s += strlen(q);
-			if ((q = strchr(s, '@')) != NULL)
-				*q = '\0';
-			strncpy(j_fake.j_owner, s,
-			    sizeof(j_fake.j_owner) - 1);
-			j_fake.j_owner[sizeof(j_fake.j_owner) - 1] = '\0';
-		}
-
-		q = "job_state = ";
-		if ((s = strstr(buf, q)) != NULL) {
-			s += strlen(q);
-			state = *s;
-		}
-
-		q = "queue = ";
-		if ((s = strstr(buf, q)) != NULL) {
-			s += strlen(q);
-			strncpy(j_fake.j_queue, s,
-			    sizeof(j_fake.j_queue) - 1);
-			j_fake.j_queue[sizeof(j_fake.j_queue) - 1] = '\0';
-		}
-
-		q = "Resource_List.size = ";
-		if ((s = strstr(buf, q)) != NULL) {
-			s += strlen(q);
-			j_fake.j_ncpus = strtoul(s, NULL, 10);
-		}
-
-		q = "Resource_List.walltime = ";
-		if ((s = strstr(buf, q)) != NULL) {
-			s += strlen(q);
-			if ((t = strchr(s, ':')) != NULL)
-				*t++ = '\0';
-			j_fake.j_tmdur = 60 * strtoul(s, NULL, 10);
-			j_fake.j_tmdur += strtoul(t, NULL, 10);
-		}
-
-		q = "resources_used.walltime = ";
-		if ((s = strstr(buf, q)) != NULL) {
-			s += strlen(q);
-			if ((t = strchr(s, ':')) != NULL)
-				*t++ = '\0';
-			j_fake.j_tmuse = 60 * strtoul(s, NULL, 10);
-			j_fake.j_tmuse += strtoul(t, NULL, 10);
-		}
+		*j = j_fake;
+		continue;
+bad:
+		warnx("job:%d: malformed line [%s] [%s]", lineno, buf, s);
 	}
 }
