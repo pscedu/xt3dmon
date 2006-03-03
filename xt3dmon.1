@@ -17,7 +17,7 @@ information about the BigBen Cray
 .Tn XT3
 cluster.
 Data about the cluster nodes are read at startup and can be continually
-refreshed so that the display is reflects reality.
+refreshed so that the display reflects reality.
 .Pp
 The options are as follows:
 .Bl -tag -width Ds
@@ -33,8 +33,8 @@ Enable
 mode \(em that is,
 .Nm
 will listen on TCP connections to accept requests from clients to
-generate screen captures and will send the resulting images as the
-response.
+generate screen captures and send the resulting images as
+responses.
 .It Fl p
 Enable passive stereo mode.
 In this mode, two windows are created and maintained individually,
@@ -47,8 +47,8 @@ Enable verbose mode (server-mode debugging messages).
 There are four different data displays available: job, yod, temperature,
 and failure information (see the key assignments below for how to enable
 these modes).
-Each mode assigns every node a color corresponding to its status with
-respect to that display mode.
+Each mode assigns every cluster node a color corresponding to its
+status with respect to that display mode.
 .Pp
 In job mode, cluster nodes may be in any of the following states,
 differentiated by color/texture:
@@ -67,16 +67,23 @@ These nodes are colored by their respective job.
 The node is a service node, not a compute node.
 .El
 .Pp
-The yod display similarily shows this information but instead shows
-yod information instead of job information about the used nodes.
+The yod mode acts similarily but instead shows yod instead of job
+information about the used nodes.
 .Pp
-The failure and temperature modes color each node according to its
-respective failure statistics or temperature.
+The failure and temperature modes color each cluster node according to
+its respective failure statistics or temperature.
 .Pp
-The legend panel may be activated (see the
+Some modes gather and display information about user accounts on the
+XT3 system.
+As such, accessing this information requires authenticating with a
+valid PSC/Kerberos account, which can be set with the
+.Ic pL
+command.
+.Pp
+The legend panel (see the
 .Ic pl
-command) to display all possible node states in each
-mode.
+command) displays all possible node states for the currently selected
+data viewing mode.
 .Pp
 The following key bindings are available:
 .Bl -tag -width Ds -offset indent
@@ -187,6 +194,14 @@ Toggle the flyby overview panel.
 Toggle the frames-per-second panel.
 .It Ic pg
 Toggle the goto-node panel.
+Enter a node ID (nid) to move to that node.
+.It Ic pj
+Toggle the goto-job panel.
+Enter a job ID to view only that job.
+.It Ic pL
+Toggle the login panel.
+Prompts for a username/password combination to access account-specific
+information.
 .It Ic pl
 Toggle the legend panel.
 .It Ic pm
