@@ -23,7 +23,7 @@ ustrop_ssl_init(struct ustream *usp)
 	SSL_set_fd(usp->us_ssl, usp->us_fd);
 	if (SSL_connect(usp->us_ssl) != 1)
 		errx(1, "%s", ssl_error());
-	return (0);
+	return (1);
 }
 
 __inline int
@@ -31,7 +31,7 @@ ustrop_ssl_close(const struct ustream *usp)
 {
 	SSL_free(usp->us_ssl);
 	SSL_CTX_free(usp->us_ctx);
-	return (socketclosef(usp->us_fd));
+	return (SOCKETCLOSE(usp->us_fd));
 }
 
 ssize_t
@@ -55,7 +55,7 @@ ustrop_ssl_gets(struct ustream *usp, char *s, int siz)
 		/* Look for newline in current buffer. */
 		if (usp->us_bufstart) {
 			if ((nl = strnchr(usp->us_bufstart, '\n',
-			    usp->us_bufend - usp->us_bufstart)) != NULL)
+			    usp->us_bufend - usp->us_bufstart + 1)) != NULL)
 				endp = nl;
 			else
 				endp = usp->us_bufend;
