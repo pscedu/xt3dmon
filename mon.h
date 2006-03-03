@@ -128,10 +128,6 @@
 #define DS_YOD		2
 #define DS_MEM		3
 
-/* Data source fetching flags. */
-#define DSF_CRIT	(1<<0)
-#define DSF_IGN		(1<<1)
-
 /* GL window identifiers for passive stereo. */
 #define WINID_LEFT	0
 #define WINID_RIGHT	1
@@ -533,12 +529,18 @@ struct datasrc {
 #define DSP_LOCAL	0
 #define DSP_REMOTE	1
 
+/* Data source flags. */
 #define DSF_AUTO	(1<<0)
 #define DSF_FORCE	(1<<1)
 #define DSF_READY	(1<<2)
 #define DSF_USESSL	(1<<3)
 
-#define SID_LEN 12	/* excluding NUL */
+/* Data source fetching flags. */
+#define DSFF_CRIT	(1<<0)
+#define DSFF_IGN	(1<<1)
+#define DSFF_ALERT	(1<<2)
+
+#define SID_LEN		12		/* excluding NUL */
 
 struct session {
 	int		 ss_click;
