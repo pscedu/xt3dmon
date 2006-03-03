@@ -34,7 +34,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ws2_32.lib libpng.lib glut32.lib opengl32.lib glu32.lib"
+				AdditionalDependencies="ws2_32.lib glut32.lib opengl32.lib glu32.lib ssleay32.lib libeay32.lib"
 				OutputFile="$(OutDir)/xt3dmon.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
@@ -196,6 +196,9 @@
 				RelativePath="..\..\shadow.c">
 			</File>
 			<File
+				RelativePath="..\..\ssl.c">
+			</File>
+			<File
 				RelativePath="..\..\status.c">
 			</File>
 			<File
@@ -209,6 +212,21 @@
 			</File>
 			<File
 				RelativePath="..\..\uinp.c">
+			</File>
+			<File
+				RelativePath="..\..\ustream.c">
+			</File>
+			<File
+				RelativePath="..\..\ustrop-file.c">
+			</File>
+			<File
+				RelativePath="..\..\ustrop-ssl.c">
+			</File>
+			<File
+				RelativePath="..\..\ustrop-winsock.c">
+			</File>
+			<File
+				RelativePath="..\..\util.c">
 			</File>
 			<File
 				RelativePath="..\..\vec.c">
@@ -244,8 +262,155 @@
 					RelativePath="..\..\compat\snprintf.c">
 				</File>
 				<File
-					RelativePath="..\..\compat\ustream.c">
+					RelativePath="..\..\compat\ustrdtab.c">
 				</File>
+			</Filter>
+			<Filter
+				Name="contrib"
+				Filter="">
+				<Filter
+					Name="libpng"
+					Filter="">
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\png.c">
+						<FileConfiguration
+							Name="Debug|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32">
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\png.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngconf.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngerror.c">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pnggccrd.c">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngget.c">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngmem.c">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngpread.c">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngread.c">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngrio.c">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngrtran.c">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngrutil.c">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngset.c">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngtrans.c">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngvcrd.c">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngwio.c">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngwrite.c">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngwtran.c">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngwutil.c">
+					</File>
+				</Filter>
+				<Filter
+					Name="zlib"
+					Filter="">
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\zlib\adler32.c">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\zlib\compress.c">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\zlib\crc32.c">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\zlib\crc32.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\zlib\deflate.c">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\zlib\deflate.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\zlib\gzio.c">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\zlib\infback.c">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\zlib\inffast.c">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\zlib\inffast.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\zlib\inffixed.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\zlib\inflate.c">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\zlib\inflate.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\zlib\inftrees.c">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\zlib\inftrees.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\zlib\trees.c">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\zlib\trees.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\zlib\uncompr.c">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\zlib\zconf.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\zlib\zlib.h">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\zlib\zutil.c">
+					</File>
+					<File
+						RelativePath="..\..\..\..\Desktop\yanovich\zlib\zutil.h">
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 		<Filter
@@ -281,6 +446,9 @@
 			</File>
 			<File
 				RelativePath="..\..\ustream.h">
+			</File>
+			<File
+				RelativePath="..\..\util.h">
 			</File>
 			<File
 				RelativePath="..\..\xmath.h">
