@@ -46,7 +46,7 @@ egg_matrix(void)
 {
 	static struct fill ofill_bg;
 	static struct state ost;
-printf("hi\n");
+
 	tween_push(TWF_LOOK | TWF_POS | TWF_UP);
 	if (eggs & EGG_MATRIX) {
 		ost = st;
