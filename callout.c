@@ -27,7 +27,7 @@ void
 cocb_clearstatus(__unused int a)
 {
 	status_clear();
-	glutTimerFunc(10000, cocb_clearstatus, 0);
+	glutTimerFunc(30000, cocb_clearstatus, 0);
 }
 
 void
