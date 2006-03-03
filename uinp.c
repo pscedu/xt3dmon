@@ -98,6 +98,7 @@ uinpcb_login(void)
 			siz = sizeof(login_pass);
 
 			panel_tremove(p);
+			st.st_rf |= RF_DATASRC;
 		} else {
 			tobuf = login_user;
 			siz = sizeof(login_user);
