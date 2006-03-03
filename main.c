@@ -25,6 +25,7 @@ struct node		*invmap[NID_MAX];
 struct node		*wimap[WIDIM_WIDTH][WIDIM_HEIGHT][WIDIM_DEPTH];
 
 int			 dsp = DSP_LOCAL;
+int			 dsflags = DSFF_ALERT;
 
 int			 win_width = 800;
 int			 win_height = 600;
@@ -259,10 +260,10 @@ rebuild(int opts)
 	}
 #endif
 	if (opts & RF_DATASRC) {
-		ds_refresh(DS_NODE, 0);
-		ds_refresh(DS_JOB, 0);
-		ds_refresh(DS_YOD, 0);
-		ds_refresh(DS_MEM, DSF_IGN);
+		ds_refresh(DS_NODE, dsflags);
+		ds_refresh(DS_JOB, dsflags);
+		ds_refresh(DS_YOD, dsflags);
+		ds_refresh(DS_MEM, DSFF_IGN);
 		hl_refresh();
 
 		opts |= RF_SMODE | RF_CLUSTER;
