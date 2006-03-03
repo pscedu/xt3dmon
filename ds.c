@@ -16,9 +16,9 @@
 #include "ustream.h"
 #include "util.h"
 
-#define _RPATH_NODE	"/xt3-data/node"
-#define _RPATH_JOB	"/xt3-data/job"
-#define _RPATH_YOD	"/xt3-data/yod"
+#define _RPATH_NODE	"/xtwmon/www/arbiter-raw.pl?data=nodes"
+#define _RPATH_JOB	"/xtwmon/www/arbiter-raw.pl?data=jobs"
+#define _RPATH_YOD	"/xtwmon/www/arbiter-raw.pl?data=yods"
 
 #define RDS_HOST	"mugatu.psc.edu"
 #define RDS_PORT	80
@@ -96,9 +96,12 @@ ds_refresh(int type, int flags)
 	ds = ds_open(type);
 
 	if (ds == NULL) {
-		if (flags & DSF_CRIT)
+		if (flags & DSFF_CRIT)
 			err(1, "datasrc (%d) open failed", type);
-		else if ((flags & DSF_IGN) == 0)
+		else if (flags & DSFF_ALERT) {
+			status_add("Unable to retrieve data: %s\n", strerror(errno));
+			panel_show(PANEL_STATUS);
+		} else if ((flags & DSFF_IGN) == 0)
 			warn("datasrc (%d) open failed", type);
 		return;
 	}
@@ -132,54 +135,59 @@ ds_refresh(int type, int flags)
 }
 
 struct ustream *
-ds_http(const char *path)
+ds_http(const char *path, struct http_res *res)
 {
-	struct http_req r;
+	struct http_req req;
 
 	if (path == NULL)
 		errx(1, "no remote data available for datasrc type");
-	memset(&r, 0, sizeof(r));
-	r.htreq_server = RDS_HOST;
-	r.htreq_port = RDS_PORT;
+	memset(&req, 0, sizeof(req));
+	req.htreq_server = RDS_HOST;
+	req.htreq_port = RDS_PORT;
 
-	r.htreq_method = "GET";
-	r.htreq_version = "HTTP/1.1";
-	r.htreq_url = path;
-	return (http_open(&r, NULL));
+	req.htreq_method = "GET";
+	req.htreq_version = "HTTP/1.1";
+	req.htreq_url = path;
+	return (http_open(&req, res));
 }
 
 struct ustream *
-ds_https(const char *path)
+ds_https(const char *path, struct http_res *res)
 {
 	struct ustream *usp;
-	struct http_req r;
+	struct http_req req;
 	char *buf, *enc;
 	int len;
 
 	if (path == NULL)
 		errx(1, "no remote data available for datasrc type");
-	memset(&r, 0, sizeof(r));
-	r.htreq_server = RDS_HOST;
-	r.htreq_port = RDS_PORTSSL;
+	memset(&req, 0, sizeof(req));
+	req.htreq_server = RDS_HOST;
+	req.htreq_port = RDS_PORTSSL;
 
-	r.htreq_method = "GET";
-	r.htreq_version = "HTTP/1.1";
-	r.htreq_url = path;
+	req.htreq_method = "GET";
+	req.htreq_version = "HTTP/1.1";
+	req.htreq_url = path;
 
 	if ((len = asprintf(&buf, "%s:%s", login_user, login_pass)) == -1)
 		err(1, "asprintf");
-	if ((enc = malloc(len * 3 + 1)) == NULL)
+	if (len % 3)
+		len += 3 - len % 3;			/* Ceil to multiple of 3 for base64. */
+	len = 4 * len / 3;
+	if ((enc = malloc(len + 1)) == NULL)
 		err(1, "malloc");
 	base64_encode(buf, enc);
 
-	r.htreq_extra = calloc(2, sizeof(char *));
-	if (asprintf(&r.htreq_extra[0], "Authorization: Basic %s\r\n",
+	if ((req.htreq_extra = calloc(2, sizeof(char *))) == NULL)
+		err(1, "calloc");
+	if (asprintf(&req.htreq_extra[0], "Authorization: Basic %s\r\n",
 	    enc) == -1)
 		err(1, "asprintf");
-	usp = http_open(&r, NULL);
 
-	free(r.htreq_extra[0]);
-	free(r.htreq_extra);
+	usp = http_open(&req, res);
+
+	free(req.htreq_extra[0]);
+	free(req.htreq_extra);
 	free(enc);
 	free(buf);
 	return (usp);
@@ -188,7 +196,8 @@ ds_https(const char *path)
 struct datasrc *
 ds_open(int type)
 {
-	struct ustream *(*httpf)(const char *);
+	struct ustream *(*httpf)(const char *, struct http_res *);
+	struct http_res res;
 	struct datasrc *ds;
 	int mod, fd;
 
@@ -204,8 +213,25 @@ ds_open(int type)
 		httpf = ds_http;
 		if (login_pass[0] != '\0')
 			httpf = ds_https;
-		if ((ds->ds_us = httpf(ds->ds_rpath)) == NULL)
+
+		memset(&res, 0, sizeof(res));
+		if ((ds->ds_us = httpf(ds->ds_rpath, &res)) == NULL)
 			return (NULL);
+		if (res.htres_code != 200) {
+			us_close(ds->ds_us);
+			switch (res.htres_code) {
+			case 401:
+				errno = EACCES;
+				break;
+			case 404:
+				errno = ENOENT;
+				break;
+			default:
+				errno = EAGAIN;
+				break;
+			}
+			return (NULL);
+		}
 		break;
 	}
 	return (ds);
