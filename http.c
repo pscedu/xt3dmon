@@ -4,6 +4,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <stdio.h>
 
 #include "cdefs.h"
@@ -50,16 +51,19 @@ net_connect(const char *host, in_port_t port)
 }
 
 struct ustream *
-http_open(struct http_req *req, __unused struct http_res *res)
+http_open(struct http_req *req, struct http_res *res)
 {
-	char **hdr, buf[BUFSIZ];
+	char *s, *p, **hdr, buf[BUFSIZ];
 	struct ustream *us;
-	int fd;
+	int fd, ust, len;
+	long l;
 
 	fd = net_connect(req->htreq_server, req->htreq_port);
 	if (fd == -1)
 		return (NULL);
-	us = us_init(fd, UST_REMOTE, "rw");
+	ust = req->htreq_port == 443 ? UST_SSL : UST_REMOTE; /* XXX */
+	if ((us = us_init(fd, ust, "rw")) == NULL)
+			return (NULL);
 
 	snprintf(buf, sizeof(buf), "%s %s %s\r\n", req->htreq_method,
 	    req->htreq_url, req->htreq_version);
@@ -81,10 +85,23 @@ http_open(struct http_req *req, __unused struct http_res *res)
 	if (us_write(us, buf, strlen(buf)) != (int)strlen(buf))
 		err(1, "us_write");
 
-	/* XXX: check http status */
-	while (us_gets(us, buf, sizeof(buf)) != NULL)
+	while (us_gets(us, buf, sizeof(buf)) != NULL) {
 		if (strcmp(buf, "\r\n") == 0)
 			break;
+
+		s = "HTTP/1.1 ";
+		len = strlen(s);
+		if (strncmp(buf, s, len) == 0) {
+			s = p = buf + len;
+			while (isdigit(*p))
+				p++;
+			*p++ = '\0';
+
+			l = strtoul(s, NULL, 10);
+			if (l >= 0 && l <= INT_MAX)
+				res->htres_code = (int)l;
+		}
+	}
 	if (us_error(us))
 		err(1, "us_gets");
 	errno = 0;
