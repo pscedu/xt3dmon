@@ -37,7 +37,7 @@ long		 rmem;
 		if ((s) == _p || !isspace(*(s)))		\
 			goto bad;				\
 		*(s)++ = '\0';					\
-		if ((_l = strtoul(_p, NULL, 10)) < 0 ||		\
+		if ((_l = strtol(_p, NULL, 10)) < 0 ||		\
 		    _l >= (max))				\
 			goto bad;				\
 		(v) = (int)_l;					\
@@ -64,7 +64,7 @@ parsestr(char **sp, char *buf, size_t siz, int flags)
 	s = *sp;
 	while (isspace(*s))
 		s++;
-	if (!isalpha(*s))
+	if (!isalpha(*s) && !ispunct(*s))
 		goto bad;
 	for (t = s; *t != '\0'; t++) {
 		/* Find terminating whitespace. */
@@ -194,8 +194,7 @@ parse_node(const struct datasrc *ds)
 		node->n_flags &= ~NF_HIDE;
 		continue;
 bad:
-		warnx("node:%d: malformed line [%s] [%s]", lineno,
-		    buf, s);
+		warnx("node:%d: malformed line [%s] [%s]\n", lineno, buf, s);
 	}
 	if (us_error(ds->ds_us))
 		warn("us_gets");
@@ -214,7 +213,8 @@ bad:
 	if (++widim.iv_w != WIDIM_WIDTH ||
 	    ++widim.iv_h != WIDIM_HEIGHT ||
 	    ++widim.iv_d != WIDIM_DEPTH)
-		errx(1, "wired cluster dimensions have changed");
+		errx(1, "wired cluster dimensions have changed (%d,%d,%d)",
+		    widim.iv_w, widim.iv_y, widim.iv_z);
 }
 
 void
