@@ -65,10 +65,12 @@ do {                                                                        \
 #undef SLIST_ENTRY
 
 typedef UINT16 u_int16_t;
+typedef UINT32 u_int32_t;
 typedef signed int ssize_t;
 typedef u_int16_t in_port_t;
 
 #define mkdir(path, mode) mkdir(path)
+#define SOCKETCLOSE(s) closesocket(s)
 
 #define localtime_r(clock, result)	\
 	do {				\
@@ -91,6 +93,8 @@ typedef u_int16_t in_port_t;
 
 // # define port_t tcpip_port_t
 
+#define SOCKETCLOSE(s) close(s)
+
 #else /* UNIX */
 
 # if defined(__GNUC__) && !defined(_GNU_SOURCE)
@@ -106,6 +110,8 @@ typedef u_int16_t in_port_t;
 
 # include <unistd.h>
 # include <netdb.h>
+
+#define SOCKETCLOSE(s) close(s)
 
 #endif
 
