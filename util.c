@@ -1,6 +1,7 @@
 /* $Id$ */
 
-#include <stdint.h>
+#include "compat.h"
+
 #include <stdio.h>
 
 #include "util.h"
@@ -24,7 +25,7 @@ base64_encode(const char *buf, char *enc)
 	static char pres[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	    "abcdefghijklmnopqrstuvwxyz0123456789+/";
 	const char *p;
-	uint32_t val;
+	u_int32_t val;
 	int i;
 
 	i = 0;
@@ -32,14 +33,29 @@ base64_encode(const char *buf, char *enc)
 		/*
 		 * Convert 3 bytes of input (3*8 bits) into
 		 * 4 bytes of output (4*6 bits).
+		 *
+		 * If fewer than 3 bytes are available for this
+		 * round, use zeroes in their place.
 		 */
-		val = (p[0] << 16) | (p[1] << 8) | p[2];
+		val = p[0] << 16;
+		if (p[1] != '\0')
+			val |= p[1] << 8;
+		if (p[2] != '\0')
+			val |= p[2];
+
 		enc[i++] = pres[val >> 18];
 		enc[i++] = pres[(val >> 12) & 0x3f];
+		if (p[1] == '\0')
+				break;
 		enc[i++] = pres[(val >> 6) & 0x3f];
+		if (p[2] == '\0')
+			break;
 		enc[i++] = pres[val & 0x3f];
 	}
-	for (; i / 3 != 0; i++)
+	if (p[1] == '\0') {
+		enc[i++] = '=';
+		enc[i++] = '=';
+	} else if (p[2] == '\0')
 		enc[i++] = '=';
 	enc[i] = '\0';
 }
