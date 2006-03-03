@@ -45,4 +45,3 @@ int			 us_error(const struct ustream *);
 int			 us_eof(const struct ustream *);
 
 extern struct ustrdtab	*ustrdtabs[NUST];
-extern int		 (*socketclosef)(int);
