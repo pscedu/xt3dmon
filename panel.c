@@ -1095,7 +1095,7 @@ panel_refresh_opts(struct panel *p)
 
 	p->p_nwidgets = 0;
 	p->p_maxwlen = 0;
-	pw = SLIST_FIRST(&p->p_widgets);
+	pw = nextp = SLIST_FIRST(&p->p_widgets);
 	for (i = 0; i < NOPS; i++, pw = nextp) {
 		if (opts[i].opt_flags & OPF_HIDE)
 			continue;
@@ -1126,7 +1126,7 @@ panel_refresh_panels(struct panel *p)
 
 	p->p_nwidgets = 0;
 	p->p_maxwlen = 0;
-	pw = SLIST_FIRST(&p->p_widgets);
+	pw = nextp = SLIST_FIRST(&p->p_widgets);
 	for (i = 0; i < NPANELS; i++, pw = nextp) {
 		if (pinfo[i].pi_opts & PF_HIDE)
 			continue;
