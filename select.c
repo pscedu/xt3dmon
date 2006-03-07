@@ -58,8 +58,8 @@ selrec_cmp(const void *a, const void *b)
 int
 sel_process(int nrecs, int rank, int flags)
 {
+	struct glname *gn, *gn2d;
 	struct selrec *sr;
-	struct glname *gn;
 	int i, start;
 	GLuint *p;
 
@@ -93,28 +93,41 @@ sel_process(int nrecs, int rank, int flags)
 	/*
 	 * Find the selection record with the given rank.
 	 */
+	gn = NULL; /* gcc */
+	gn2d = NULL;
 	sr = &((struct selrec *)selbuf)[start];
 	for (i = start; i < nrecs; i++, sr++) {
 		gn = getobj(&sr->sr_name, &glname_list);
 
 		if (flags & SPF_2D) {
 			/* 2D records always come first. */
-			if ((gn->gn_flags & GNF_2D) == 0)
-				return (SP_MISS);
-			if (lastu < gn->gn_u ||
-			    lastu > gn->gn_u + gn->gn_w ||
-			    lastv < win_height - gn->gn_v ||
-			    lastv > win_height - gn->gn_v + gn->gn_h)
-				continue;
-		}
-		if (rank-- == 0)
-			break;
+			if ((gn->gn_flags & GNF_2D) == 0) {
+				if (gn2d == NULL)
+					/* We didn't find any 2D records. */
+					return (SP_MISS);
+				else
+					/* We found the best 2D record, so process it. */
+					break;
+			}
+			if (lastu >= gn->gn_u &&
+			    lastu <= gn->gn_u + gn->gn_w &&
+			    lastv >= win_height - gn->gn_v &&
+			    lastv <= win_height - gn->gn_v + gn->gn_h) {
+				if (gn2d == NULL || gn->gn_w * gn->gn_h < gn2d->gn_w * gn2d->gn_h)
+					/* Found a smaller (better) 2D record, save it. */
+					gn2d = gn;
+			}
+		} else if (rank-- == 0)
+				break;
 	}
 
-	if (i == nrecs) {
-//		warnx("requested selection record rank out of range");
+	if (flags & SPF_2D)
+		gn = gn2d;
+	else if (i == nrecs)
 		return (SP_MISS);
-	}
+
+	if (gn == NULL)
+		return (SP_MISS);
 
 	if (gn->gn_cb != NULL)
 		gn->gn_cb(gn->gn_id);
