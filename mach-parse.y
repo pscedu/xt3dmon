@@ -2,11 +2,15 @@
 
 %{
 
+#include "mon.h"
+
 #include <err.h>
 #include <stdarg.h>
+#include <string.h>
 
+#include "env.h"
 #include "phys.h"
-#include "mon.h"
+#include "pathnames.h"
 
 int yylex(void);
 int yyerror(const char *, ...);

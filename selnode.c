@@ -1,11 +1,15 @@
 /* $Id$ */
 
-#include "compat.h"
+#include "mon.h"
 
+#include <err.h>
 #include <stdlib.h>
 
-#include "mon.h"
 #include "queue.h"
+#include "node.h"
+#include "selnode.h"
+#include "flyby.h"
+#include "state.h"
 
 size_t nselnodes;
 struct selnodes selnodes;

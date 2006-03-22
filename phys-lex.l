@@ -2,10 +2,12 @@
 
 %{
 
+#include "mon.h"
+
 #include <errno.h>
 #include <stdarg.h>
+#include <string.h>
 
-#include "mon.h"
 #include "y.tab.h"
 
 int yyerror(const char *, ...);
