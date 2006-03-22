@@ -1,17 +1,37 @@
 /* $Id$ */
 
+#include "mon.h"
+
 #include <errno.h>
 #include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include "buf.h"
 #include "cdefs.h"
-#include "mon.h"
+#include "buf.h"
+#include "cam.h"
+#include "env.h"
+#include "flyby.h"
+#include "gl.h"
+#include "job.h"
+#include "node.h"
+#include "nodeclass.h"
+#include "panel.h"
+#include "pathnames.h"
+#include "route.h"
+#include "selnode.h"
+#include "state.h"
+#include "tween.h"
+#include "uinp.h"
 #include "xmath.h"
 
 #define TRANS_INC	0.10
 
 struct uinput uinp;
 struct fvec stopv, stoplv;
+
+int rt_portset = RPS_POS;
+int rt_type = RT_RECOVER;
 
 void
 gl_spkeyh_null(__unused int key, __unused int u, __unused int v)
@@ -53,7 +73,7 @@ gl_keyh_flyby(unsigned char key, __unused int u, __unused int v)
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'c':
-		unlink(_PATH_FLYBY);
+		unlink(_PATH_FLYBY); /* XXX remove()? */
 		errno = 0;
 		break;
 	case 'q':
@@ -89,24 +109,29 @@ gl_keyh_flyby(unsigned char key, __unused int u, __unused int v)
 void
 gl_keyh_uinput(unsigned char key, __unused int u, __unused int v)
 {
+	struct panel *p;
 	int opts;
 
+	p = uinp.uinp_panel;
 	uinp.uinp_opts |= UINPO_DIRTY;
 	switch (key) {
 	case 13: /* enter */
 		glutKeyboardFunc(gl_keyh_default);
+		uinp.uinp_panel = NULL;
+
 		opts = uinp.uinp_opts;
 		uinp.uinp_callback();
 		buf_reset(&uinp.uinp_buf);
 		buf_append(&uinp.uinp_buf, '\0');
 		if ((opts & UINPO_LINGER) == 0)
-			panel_tremove(uinp.uinp_panel);
+			panel_tremove(p);
 		break;
 	case 27: /* escape */
 		buf_reset(&uinp.uinp_buf);
 		buf_append(&uinp.uinp_buf, '\0');
 		glutKeyboardFunc(gl_keyh_default);
-		panel_tremove(uinp.uinp_panel);
+		uinp.uinp_panel = NULL;
+		panel_tremove(p);
 		break;
 	case 8: /* backspace */
 		if (strlen(buf_get(&uinp.uinp_buf)) > 0) {
@@ -192,21 +217,27 @@ gl_keyh_mode(unsigned char key, __unused int u, __unused int v)
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'j':
-		st.st_mode = SM_JOB;
+		st.st_dmode = DM_JOB;
 		break;
 	case 'f':
-		st.st_mode = SM_FAIL;
+		st.st_dmode = DM_FAIL;
+		break;
+	case 'n':
+		st.st_dmode = DM_NONE;
 		break;
 	case 't':
-		st.st_mode = SM_TEMP;
+		st.st_dmode = DM_TEMP;
 		break;
 	case 'y':
-		st.st_mode = SM_YOD;
+		st.st_dmode = DM_YOD;
+		break;
+	case 'r':
+		st.st_dmode = DM_RTUNK;
 		break;
 	default:
 		return;
 	}
-	st.st_rf |= RF_CLUSTER | RF_SMODE | RF_SELNODE;
+	st.st_rf |= RF_CLUSTER | RF_DMODE | RF_SELNODE;
 }
 
 void
@@ -420,23 +451,23 @@ gl_keyh_wioffdecr(unsigned char key, __unused int u, __unused int v)
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'x':
-		wioff.iv_x--;
+		st.st_wioff.iv_x--;
 		break;
 	case 'y':
-		wioff.iv_y--;
+		st.st_wioff.iv_y--;
 		break;
 	case 'z':
-		wioff.iv_z--;
+		st.st_wioff.iv_z--;
 		break;
 	case '0':
-		wioff.iv_x = 0;
-		wioff.iv_y = 0;
-		wioff.iv_z = 0;
+		st.st_wioff.iv_x = 0;
+		st.st_wioff.iv_y = 0;
+		st.st_wioff.iv_z = 0;
 		break;
 	case '{':
-		wioff.iv_x--;
-		wioff.iv_y--;
-		wioff.iv_z--;
+		st.st_wioff.iv_x--;
+		st.st_wioff.iv_y--;
+		st.st_wioff.iv_z--;
 		break;
 	}
 	st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND;
@@ -448,26 +479,68 @@ gl_keyh_wioffincr(unsigned char key, __unused int u, __unused int v)
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'x':
-		wioff.iv_x++;
+		st.st_wioff.iv_x++;
 		break;
 	case 'y':
-		wioff.iv_y++;
+		st.st_wioff.iv_y++;
 		break;
 	case 'z':
-		wioff.iv_z++;
+		st.st_wioff.iv_z++;
 		break;
 	case '0':
-		wioff.iv_x = 0;
-		wioff.iv_y = 0;
-		wioff.iv_z = 0;
+		st.st_wioff.iv_x = 0;
+		st.st_wioff.iv_y = 0;
+		st.st_wioff.iv_z = 0;
 		break;
 	case '}':
-		wioff.iv_x++;
-		wioff.iv_y++;
-		wioff.iv_z++;
+		st.st_wioff.iv_x++;
+		st.st_wioff.iv_y++;
+		st.st_wioff.iv_z++;
 		break;
 	}
 	st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND;
+}
+
+void
+gl_keyh_pipes(unsigned char key, __unused int u, __unused int v)
+{
+	glutKeyboardFunc(gl_keyh_default);
+	switch (key) {
+	case 'r': /* color by route info */
+		st.st_pipemode = PM_RT;
+		break;
+	case 'd': /* color by direction */
+		st.st_pipemode = PM_DIR;
+		break;
+	}
+	st.st_rf |= RF_CLUSTER;
+}
+
+void
+gl_keyh_route(unsigned char key, __unused int u, __unused int v)
+{
+	glutKeyboardFunc(gl_keyh_default);
+	switch (key) {
+	case '+':
+		rt_portset = RPS_POS;
+		break;
+	case '-':
+		rt_portset = RPS_NEG;
+		break;
+	case 'r': /* inc */
+		rt_portset = (rt_portset + 1) % NRPS;
+		break;
+	case 'R': /* recover */
+		rt_type = RT_RECOVER;
+		break;
+	case 'F': /* fatal */
+		rt_type = RT_FATAL;
+		break;
+	case 'T': /* router */
+		rt_type = RT_ROUTER;
+		break;
+	}
+	st.st_rf |= RF_CLUSTER;
 }
 
 void
@@ -510,6 +583,9 @@ gl_keyh_default(unsigned char key, __unused int u, __unused int v)
 	case 'o':
 		glutKeyboardFunc(gl_keyh_option);
 		break;
+	case 'P':
+		glutKeyboardFunc(gl_keyh_pipes);
+		break;
 	case 'p':
 		glutKeyboardFunc(gl_keyh_panel);
 		break;
@@ -519,15 +595,11 @@ gl_keyh_default(unsigned char key, __unused int u, __unused int v)
 	case 'R':
 		st.st_rf |= RF_DATASRC;
 		break;
+	case 'r':
+		glutKeyboardFunc(gl_keyh_route);
+		break;
 	case 'v':
 		glutKeyboardFunc(gl_keyh_vmode);
-		break;
-	case 'J':
-		prjobs();
-		break;
-	case 'Z':
-		gl_displayhp = gl_displayh_default;
-		glutDisplayFunc(gl_displayhp);
 		break;
 	case '{':
 		glutKeyboardFunc(gl_keyh_wioffdecr);
