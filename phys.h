@@ -1,13 +1,7 @@
 /* $Id$ */
 
-#include <sys/queue.h>
-
 #include "queue.h"
-#include "mon.h"
-
-#define DIM_X 0
-#define DIM_Y 1
-#define DIM_Z 2
+#include "xmath.h"
 
 struct physdim {
 	char			*pd_name;
