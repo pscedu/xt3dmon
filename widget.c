@@ -1,11 +1,14 @@
 /* $Id$ */
 
-#include "compat.h"
+#include "mon.h"
 
 #include <math.h>
 
 #include "cdefs.h"
-#include "mon.h"
+#include "draw.h"
+#include "env.h"
+#include "fill.h"
+#include "xmath.h"
 
 /*
  * Determines the texture coordinate by finding the ratio
@@ -15,6 +18,8 @@
  */
 #define NODE_TEXCOORD(x, max) (1 / (max / x))
 
+/* Wireframe width. */
+#define WFRAMEWIDTH	(0.001f)
 
 /*
  *	y			12
@@ -267,128 +272,4 @@ draw_box_tex(const struct fvec *dim, const struct fill *fillp, GLenum param)
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	glDisable(GL_TEXTURE_2D);
-}
-
-/*
- * The following two mathematical algorithms were created from
- * pseudocode found in "Fundamentals of Interactive Computer Graphics".
- */
-void
-rgb_to_hsv(struct fill *c)
-{
-	float r = c->f_r;
-	float g = c->f_g;
-	float b = c->f_b;
-	float max, min, ran;
-	float rc, gc, bc;
-
-	max = MAX3(r, g, b);
-	min = MIN3(r, g, b);
-	ran = max - min;
-
-	c->f_h = 0;
-	c->f_s = 0;
-
-	/* Value */
-	c->f_v = max;
-
-	/* Saturation */
-	if (max != 0)
-		c->f_s = ran / max;
-
-	/* Hue */
-	if (c->f_s != 0) {
-
-		/* Measure color distances */
-		rc = (max - r) / ran;
-		gc = (max - g) / ran;
-		bc = (max - b) / ran;
-
-		/* Between yellow and magenta */
-		if (r == max)
-			c->f_h = bc - gc;
-		/* Between cyan and yellow */
-		else if (g == max)
-			c->f_h = 2 + rc - bc;
-		/* Between magenta and cyan */
-		else if (b == max)
-			c->f_h = 4 + gc - rc;
-
-		/* Convert to degrees */
-		c->f_h *= 60;
-
-		if (c->f_h < 0)
-			c->f_h += 360;
-	}
-}
-
-void
-hsv_to_rgb(struct fill *c)
-{
-	float s = c->f_s;
-	float h = c->f_h;
-	float v = c->f_v;
-	float f, p, q, t;
-	int i;
-
-	if (s == 0) {
-		c->f_r = v;
-		c->f_g = v;
-		c->f_b = v;
-	} else {
-		if (h == 360)
-			h = 0;
-		h /= 60;
-
-		i = h;
-		f = h - i;
-		p = v * (1 - s);
-		q = v * (1 - (s * f));
-		t = v * (1 - (s * (1 - f)));
-
-		switch (i) {
-		case 0:	c->f_r = v; c->f_g = t; c->f_b = p; break;
-		case 1: c->f_r = q; c->f_g = v; c->f_b = p; break;
-		case 2: c->f_r = p; c->f_g = v; c->f_b = t; break;
-		case 3: c->f_r = p; c->f_g = q; c->f_b = v; break;
-		case 4:	c->f_r = t; c->f_g = p; c->f_b = v; break;
-		case 5: c->f_r = v; c->f_g = p; c->f_b = q; break;
-		}
-	}
-}
-
-#define CON_VAL_MAX (0.85 * VAL_MAX)
-#define CON_VAL_MIN (0.4 * VAL_MIN)
-
-/* Create a contrasting color */
-void
-rgb_contrast(struct fill *c)
-{
-	rgb_to_hsv(c);
-
-	/* Rotate 180 degrees */
-	c->f_h -= 180;
-
-	if (c->f_h < 0)
-		c->f_h += 360;
-
-#if 0
-	/* Sat should be [0.3-1.0] */
-	if (c->f_s < MID(SAT_MAX, SAT_MIN))
-		c->f_s = SAT_MAX;
-	else
-		c->f_s = SAT_MIN;
-
-	/* Val should be [0.5-1.0] */
-	if (c->f_v < MID(VAL_MAX, VAL_MIN))
-		c->f_v = VAL_MAX;
-	else
-		c->f_v = VAL_MIN;
-#endif
-	if (c->f_v < CON_VAL_MAX)
-		c->f_v = VAL_MAX;
-	else
-		c->f_v = CON_VAL_MIN;
-
-	hsv_to_rgb(c);
 }
