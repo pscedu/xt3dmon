@@ -1,3 +1,5 @@
+/* $Id$ */
+
 void
 cluster_getcenter(struct fvec *fv)
 {
