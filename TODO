@@ -73,3 +73,6 @@ maybe not:
 101. color interactive panels orange
 102. kill PF_XPARENT and just set fill differently
 103. disappearing interactive panels needs to cleanup uinp
+104. view panels (wired/physical) with widgets
+105. hardwire password into mem
+106. merge hlsc into state
