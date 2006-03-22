@@ -122,7 +122,18 @@ uinpcb_login(void)
 
 			if (strlen(authbuf) < 4 * sizeof(login_auth) / 3)
 				base64_encode(authbuf, login_auth);
+
+			memset(authbuf, 0, sizeof(authbuf));
 		} else {
+			memset(login_auth, 0, sizeof(login_auth));
+
+			/* For resetting login_auth. */
+			if (strcmp(s, "") == 0) {
+				panel_tremove(p);
+				st.st_rf |= RF_DATASRC;
+				return;
+			}
+
 			strncpy(authbuf, s, siz);
 			authbuf[siz] = '\0';
 
@@ -132,8 +143,6 @@ uinpcb_login(void)
 			uinp.uinp_panel = p;
 			uinp.uinp_opts = pi->pi_uinpopts;
 			uinp.uinp_callback = pi->pi_uinpcb;
-
-			memset(login_auth, 0, sizeof(login_auth));
 		}
 	}
 }
