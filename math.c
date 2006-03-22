@@ -1,8 +1,9 @@
 /* $Id$ */
 
-#include <math.h>
-
 #include "mon.h"
+
+#include <err.h>
+#include <math.h>
 
 __inline int
 negmod(int a, int b)

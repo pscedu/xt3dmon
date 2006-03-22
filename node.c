@@ -2,6 +2,15 @@
 
 #include "mon.h"
 
+#include <stdlib.h>
+
+#include "env.h"
+#include "fill.h"
+#include "node.h"
+#include "state.h"
+#include "tween.h"
+#include "xmath.h"
+
 /*
  * Determine row/column within module.
  *
