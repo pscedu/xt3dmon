@@ -1,20 +1,40 @@
 /* $Id$ */
 
-#include "compat.h"
+#include "mon.h"
 
+#include <err.h>
 #include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #include "cdefs.h"
-#include "mon.h"
+#include "buf.h"
+#include "capture.h"
+#include "draw.h"
+#include "ds.h"
+#include "env.h"
+#include "flyby.h"
+#include "gl.h"
+#include "job.h"
+#include "node.h"
+#include "nodeclass.h"
+#include "panel.h"
+#include "queue.h"
+#include "selnode.h"
+#include "server.h"
+#include "state.h"
+#include "uinp.h"
 #include "xmath.h"
 #include "xssl.h"
+#include "yod.h"
 
 #define STARTX		(-30.0)
 #define STARTY		( 10.0)
 #define STARTZ		( 25.0)
 
-#define STARTLX		(0.99f)		/* Must form a unit vector. */
+/* Must form a unit vector. */
+#define STARTLX		(0.99f)
 #define STARTLY		(0.0f)
 #define STARTLZ		(-0.12f)
 
@@ -27,8 +47,7 @@ struct node		*wimap[WIDIM_WIDTH][WIDIM_HEIGHT][WIDIM_DEPTH];
 int			 dsp = DSP_LOCAL;
 int			 dsflags = DSFF_ALERT;
 
-int			 win_width = 800;
-int			 win_height = 600;
+struct ivec		 winv = { 800, 600, 0 };
 
 int			 flyby_mode = FBM_OFF;
 int			 capture_mode = CM_PPM;
@@ -38,9 +57,9 @@ struct fvec		 tv = { STARTX, STARTY, STARTZ };
 struct fvec		 tlv = { STARTLX, STARTLY, STARTLZ };
 struct fvec		 tuv = { 0.0f, 1.0f, 0.0f };
 
-GLint			 cluster_dl[2], ground_dl[2], select_dl[2];
-
 void			(*gl_displayhp)(void);
+
+char			 login_auth[BUFSIZ];
 
 const char		*progname;
 int			 verbose;
@@ -51,23 +70,23 @@ int			 wid = WINID_DEF;		/* current window */
 char **sav_argv;
 
 struct xoption opts[] = {
-	/*  0 */ { "Texture mapping",		0 },
-	/*  1 */ { "Node wireframes",		0 },
-	/*  2 */ { "Ground/axes",		0 },
-	/*  3 */ { "Camera tweening",		0 },
-	/*  4 */ { "Capture mode",		OPF_HIDE },
-	/*  5 */ { "Display mode",		OPF_HIDE },
-	/*  6 */ { "Govern mode",		0 },
-	/*  7 */ { "Flyby loop mode",		0 },
-	/*  9 */ { "Node labels",		0 },
-	/* 10 */ { "Module mode",		0 },
-	/* 11 */ { "Wired cluster frames",	0 },
-	/* 12 */ { "Pipe mode",			0 },
-	/* 13 */ { "Selected node pipe mode",	0 },
-	/* 14 */ { "Pause",			OPF_HIDE },
-	/* 15 */ { "Job tour mode",		0 },
-	/* 16 */ { "Skeletons",			0 },
-	/* 17 */ { "Node animation",		0 }
+ /*  0 */ { "Texture mapping",		0 },
+ /*  1 */ { "Node wireframes",		0 },
+ /*  2 */ { "Ground/axes",		0 },
+ /*  3 */ { "Camera tweening",		OPF_FBIGN },
+ /*  4 */ { "Capture mode",		OPF_HIDE | OPF_FBIGN },
+ /*  5 */ { "Display mode",		OPF_HIDE | OPF_FBIGN },
+ /*  6 */ { "Govern mode",		OPF_FBIGN },
+ /*  7 */ { "Flyby loop mode",		OPF_FBIGN },
+ /*  9 */ { "Node labels",		0 },
+ /* 10 */ { "Module mode",		0 },
+ /* 11 */ { "Wired cluster frames",	0 },
+ /* 12 */ { "Pipe mode",		0 },
+ /* 13 */ { "Selected node pipe mode",	0 },
+ /* 14 */ { "Pause",			OPF_HIDE | OPF_FBIGN },
+ /* 15 */ { "Job tour mode",		OPF_FBIGN },
+ /* 16 */ { "Skeletons",		0 },
+ /* 17 */ { "Node animation",		0 }
 };
 
 struct vmode vmodes[] = {
@@ -77,15 +96,18 @@ struct vmode vmodes[] = {
 };
 
 struct state st = {
-	{ STARTX, STARTY, STARTZ },				/* (x,y,z) */
-	{ STARTLX, STARTLY, STARTLZ },				/* (lx,ly,lz) */
-	{ 0.0f, 1.0f, 0.0f },					/* (ux,uy,uz) */
-	OP_WIREFRAME | OP_TWEEN | OP_GROUND | OP_DISPLAY |
-	    OP_NODEANIM,					/* options */
-	SM_JOB,							/* which data to show */
-	VM_PHYSICAL,						/* viewing mode */
-	{ 4, 4, 4 },						/* wired node spacing */
-	0							/* rebuild flags (unused) */
+	{ STARTX, STARTY, STARTZ },			/* (x,y,z) */
+	{ STARTLX, STARTLY, STARTLZ },			/* (lx,ly,lz) */
+	{ 0.0f, 1.0f, 0.0f },				/* (ux,uy,uz) */
+	OP_WIREFRAME | OP_TWEEN | OP_GROUND | \
+	    OP_DISPLAY | OP_NODEANIM,			/* options */
+	DM_JOB,						/* which data to show */
+	VM_WIREDONE,					/* viewing mode */
+	PM_RT,						/* pipe mode */
+	0,
+	{ 0, 0, 0 },					/* wired mode offset */
+	{ 4, 4, 4 },					/* wired node spacing */
+	0						/* rebuild flags */
 };
 
 /*
@@ -186,50 +208,60 @@ roundclass(int t, int min, int max, int nclasses)
 }
 
 void
-smode_change(void)
+dmode_change(void)
 {
 	struct ivec iv;
 	struct node *n;
 
 	mode_data_clean = 0;
-	IVEC_FOREACH(&iv, &widim) {
-		n = wimap[iv.iv_x][iv.iv_y][iv.iv_z];
+	NODE_FOREACH(n, &iv) {
 		if (n == NULL)
 			continue;
 
-		switch (st.st_mode) {
-		case SM_JOB:
+		switch (st.st_dmode) {
+		case DM_JOB:
 			if (n->n_job)
 				n->n_fillp = &n->n_job->j_fill;
 			else
 				n->n_fillp = &statusclass[n->n_state].nc_fill;
 			break;
-		case SM_YOD:
+		case DM_YOD:
 			if (n->n_yod)
 				n->n_fillp = &n->n_yod->y_fill;
 			else
 				n->n_fillp = &statusclass[n->n_state].nc_fill;
 			break;
-		case SM_TEMP:
+		case DM_TEMP:
 			if (n->n_temp != DV_NODATA)
 				n->n_fillp = &tempclass[roundclass(n->n_temp,
 				    TEMP_MIN, TEMP_MAX, TEMP_NTEMPS)].nc_fill;
 			else
 				n->n_fillp = &fill_nodata;
 			break;
-		case SM_FAIL:
+		case DM_FAIL:
 			if (n->n_fails != DV_NODATA)
 				n->n_fillp = &failclass[roundclass(n->n_fails,
-			    FAIL_MIN, FAIL_MAX, FAIL_NFAILS)].nc_fill;
+				    FAIL_MIN, FAIL_MAX, FAIL_NFAILS)].nc_fill;
 			else
 				n->n_fillp = &fill_nodata;
 			break;
-		case SM_BORG:
+		case DM_BORG:
 			n->n_fillp = &fill_borg;
 			break;
-		case SM_MATRIX:
+		case DM_MATRIX:
 			n->n_fillp = rand() % 2 ? &fill_matrix :
 			    &fill_matrix_reloaded;
+			break;
+		case DM_NONE:
+			n->n_fillp = &fill_white;
+			break;
+		case DM_RTUNK:
+			if (n->n_route.rt_err[RP_UNK][rt_type] != DV_NODATA)
+				n->n_fillp = &rtclass[roundclass(
+				    n->n_route.rt_err[RP_UNK][rt_type], 0,
+				    rt_max.rt_err[RP_UNK][rt_type], RT_NRTS)].nc_fill;
+			else
+				n->n_fillp = &fill_xparent;
 			break;
 		}
 	}
@@ -238,38 +270,18 @@ smode_change(void)
 void
 rebuild(int opts)
 {
-#if 0
-	if (opts & RF_SMODE) {
-		struct datasrc *ds;
-		int dsmode;
-
-		dsmode = -1;
-		switch (st.st_mode) {
-		case SM_JOB:
-			dsmode = DS_JOB;
-			break;
-		case SM_YOD:
-			dsmode = DS_YOD;
-			break;
-		}
-		/* Force update when changing modes. */
-//		if (dsmode != -1) {
-//			ds = ds_get(dsmode);
-//			ds->ds_flags |= DSF_FORCE;
-//		}
-	}
-#endif
 	if (opts & RF_DATASRC) {
 		ds_refresh(DS_NODE, dsflags);
 		ds_refresh(DS_JOB, dsflags);
 		ds_refresh(DS_YOD, dsflags);
+		ds_refresh(DS_RT, dsflags);
 		ds_refresh(DS_MEM, DSFF_IGN);
 		hl_refresh();
 
-		opts |= RF_SMODE | RF_CLUSTER;
+		opts |= RF_DMODE | RF_CLUSTER;
 	}
-	if (opts & RF_SMODE)
-		smode_change();
+	if (opts & RF_DMODE)
+		dmode_change();
 	if (opts & RF_CAM) {
 		switch (st.st_vmode) {
 		case VM_PHYSICAL:
@@ -290,7 +302,7 @@ rebuild(int opts)
 	if (opts & RF_CLUSTER)
 		gl_run(make_cluster);
 	if (opts & RF_SELNODE)
-		gl_run(make_select);
+		gl_run(make_selnodes);
 }
 
 void
