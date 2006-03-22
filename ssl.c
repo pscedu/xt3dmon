@@ -1,9 +1,9 @@
 /* $Id$ */
 
-#include "xssl.h"
-
 #include <openssl/err.h>
 #include <openssl/ssl.h>
+
+#include "xssl.h"
 
 const char *
 ssl_error(void)

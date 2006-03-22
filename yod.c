@@ -2,6 +2,11 @@
 
 #include "mon.h"
 
+#include <stdio.h>
+
+#include "yod.h"
+#include "objlist.h"
+
 struct yod *
 yod_findbyid(int id)
 {

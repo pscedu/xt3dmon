@@ -5,6 +5,7 @@
 #include <math.h>
 
 #include "mon.h"
+
 #include "xmath.h"
 
 void
