@@ -1,5 +1,7 @@
 /* $Id$ */
 
+#include "mon.h"
+
 #include "ustream.h"
 
 extern struct ustrdtab ustrdtab_file;
