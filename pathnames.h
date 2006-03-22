@@ -8,9 +8,11 @@
 #define _PATH_PHYSCONF	"data/phys.conf"
 #define _PATH_FLYBY	"data/flyby.data"
 
-#define _PATH_TEX	"img/texture%d.png"
-#define _PATH_BORG	"img/borg.png"
+#define _PATH_TEX_SC	"img/tex-sc%d.png"
+#define _PATH_TEX_SN	"img/tex-selnode.png"
+#define _PATH_TEX_BORG	"img/borg.png"
 #define _PATH_FONT	"img/font.png"
+
 #define _PATH_SSDIR	"snaps"
 #define _PATH_STAT	"/proc/self/stat"
 
