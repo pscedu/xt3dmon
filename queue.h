@@ -1,5 +1,7 @@
 /* $Id$ */
 
+#include <sys/queue.h>
+
 #ifndef SLIST_ENTRY
 #define SLIST_ENTRY(type) 						\
 	struct {							\
