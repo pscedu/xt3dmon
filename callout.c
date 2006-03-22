@@ -1,12 +1,11 @@
 /* $Id$ */
 
-#include "compat.h"
-
-#include <sys/queue.h>
+#include "mon.h"
 
 #include "cdefs.h"
-#include "mon.h"
+#include "job.h"
 #include "queue.h"
+#include "state.h"
 
 void
 cocb_fps(__unused int a)

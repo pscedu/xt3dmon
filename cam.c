@@ -1,11 +1,11 @@
 /* $Id$ */
 
-#include "compat.h"
+#include "mon.h"
 
 #include <math.h>
 
-#include "cdefs.h"
-#include "mon.h"
+#include "env.h"
+#include "state.h"
 #include "xmath.h"
 
 /*
@@ -237,8 +237,8 @@ cam_getspecvec(struct fvec *fvp, int u, int v)
 
 	vec_cart2sphere(&st.st_lv, &sph);
 	/* XXX: st.st_uv.fv_y < 0 */
-	sph.fv_t += DEG_TO_RAD(FOVY) * ASPECT * (u - win_width  / 2.0) / win_width;
-	sph.fv_p += DEG_TO_RAD(FOVY) *          (v - win_height / 2.0) / win_height;
+	sph.fv_t += DEG_TO_RAD(FOVY) * ASPECT * (u - winv.iv_w / 2.0) / winv.iv_w;
+	sph.fv_p += DEG_TO_RAD(FOVY) *          (v - winv.iv_h / 2.0) / winv.iv_h;
 	vec_sphere2cart(&sph, fvp);
 	vec_normalize(fvp);
 }

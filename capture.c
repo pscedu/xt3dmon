@@ -1,15 +1,19 @@
 /* $Id$ */
 
-#include "compat.h"
+#include "mon.h"
 
 #include <err.h>
 #include <math.h>
-#include <png.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "mon.h"
+#include <png.h>
+
+#include "capture.h"
+#include "env.h"
+#include "pathnames.h"
+#include "xmath.h"
 
 #define NUM_FRAMES	200
 #define MAX_FRAMES	25000
@@ -61,7 +65,7 @@ capture_writeback(int mode)
 		if ((fp = fopen(fn, "wb")) == NULL)
 			err(1, "%s", fn);
 		capture_formats[mode].cf_writef(fp, fbuf[k],
-		    win_width, win_height);
+		    winv.iv_w, winv.iv_h);
 		fclose(fp);
 	}
 }
@@ -79,7 +83,7 @@ capture_begin(int mode)
 	 * XXX: make sure this gets called whenever
 	 * the output file format changes.
 	 */
-	size = win_width * win_height * capture_formats[mode].cf_size;
+	size = winv.iv_w * winv.iv_h * capture_formats[mode].cf_size;
 
 	for (i = 0; i < NUM_FRAMES; i++)
 		if ((fbuf[i] = malloc(size * sizeof(*fbuf[i]))) == NULL)
@@ -103,7 +107,7 @@ capture_copyfb(int mode, unsigned char *buf)
 	glMatrixMode(GL_PROJECTION);
 
 	/* Read data from the framebuffer. */
-	glReadPixels(0, 0, win_width, win_height,
+	glReadPixels(0, 0, winv.iv_w, winv.iv_h,
 	    capture_formats[mode].cf_glmode, GL_UNSIGNED_BYTE, buf);
 
 	glMatrixMode(GL_MODELVIEW);
@@ -138,7 +142,7 @@ capture_snap(const char *fn, int mode)
 	FILE *fp;
 
 	size = capture_formats[mode].cf_size *
-	    win_width * win_height;
+	    winv.iv_w * winv.iv_h;
 	if ((buf = realloc(buf, size * sizeof(*buf))) == NULL)
 		err(1, "realloc");
 	capture_copyfb(mode, buf);
@@ -146,7 +150,7 @@ capture_snap(const char *fn, int mode)
 	/* Write data to buffer. */
 	if ((fp = fopen(fn, "wb")) == NULL)
 		err(1, "%s", fn);
-	capture_formats[mode].cf_writef(fp, buf, win_width, win_height);
+	capture_formats[mode].cf_writef(fp, buf, winv.iv_w, winv.iv_h);
 	fclose(fp);
 }
 
@@ -158,7 +162,7 @@ capture_snapfd(int fd, int mode)
 	FILE *fp;
 
 	size = capture_formats[mode].cf_size *
-	    win_width * win_height;
+	    winv.iv_w * winv.iv_h;
 	if ((buf = realloc(buf, size * sizeof(*buf))) == NULL)
 		err(1, "realloc");
 	capture_copyfb(mode, buf);
@@ -166,6 +170,6 @@ capture_snapfd(int fd, int mode)
 	/* Write data to buffer. */
 	if ((fp = fdopen(fd, "wb")) == NULL)
 		err(1, "fd %d", fd);
-	capture_formats[mode].cf_writef(fp, buf, win_width, win_height);
+	capture_formats[mode].cf_writef(fp, buf, winv.iv_w, winv.iv_h);
 	fclose(fp);
 }
