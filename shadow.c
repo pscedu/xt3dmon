@@ -1,10 +1,18 @@
 /* $Id$ */
 
-#include "compat.h"
-
-#include <math.h>
-
 #include "mon.h"
+
+#include <err.h>
+#include <math.h>
+#include <stdlib.h>
+
+#include "draw.h"
+#include "env.h"
+#include "fill.h"
+#include "gl.h"
+#include "node.h"
+#include "select.h"
+#include "state.h"
 #include "xmath.h"
 
 /*
@@ -180,9 +188,9 @@ draw_shadow_winodes(struct wiselstep *ws, struct fvec *cloffp)
 	for (iv.iv_x = off->iv_x; iv.iv_x < off->iv_x + mag->iv_x; iv.iv_x++)
 		for (iv.iv_y = off->iv_y; iv.iv_y < off->iv_y + mag->iv_y; iv.iv_y++)
 			for (iv.iv_z = off->iv_z; iv.iv_z < off->iv_z + mag->iv_z; iv.iv_z++) {
-				adjv.iv_x = negmod(iv.iv_x + wioff.iv_x, WIDIM_WIDTH);
-				adjv.iv_y = negmod(iv.iv_y + wioff.iv_y, WIDIM_HEIGHT);
-				adjv.iv_z = negmod(iv.iv_z + wioff.iv_z, WIDIM_DEPTH);
+				adjv.iv_x = negmod(iv.iv_x + st.st_wioff.iv_x, WIDIM_WIDTH);
+				adjv.iv_y = negmod(iv.iv_y + st.st_wioff.iv_y, WIDIM_HEIGHT);
+				adjv.iv_z = negmod(iv.iv_z + st.st_wioff.iv_z, WIDIM_DEPTH);
 				node = wimap[adjv.iv_x][adjv.iv_y][adjv.iv_z];
 				if (node == NULL || !node_show(node))
 					continue;
@@ -282,9 +290,9 @@ draw_shadow_wisect(struct wiselstep *ws, int cuts, int last, struct fvec *cloffp
 
 				glPushMatrix();
 				glTranslatef(
-				    nv.fv_x + wioff.iv_x * st.st_winsp.iv_x + cloffp->fv_x,
-				    nv.fv_y + wioff.iv_y * st.st_winsp.iv_y + cloffp->fv_y,
-				    nv.fv_z + wioff.iv_z * st.st_winsp.iv_z + cloffp->fv_z);
+				    nv.fv_x + st.st_wioff.iv_x * st.st_winsp.iv_x + cloffp->fv_x,
+				    nv.fv_y + st.st_wioff.iv_y * st.st_winsp.iv_y + cloffp->fv_y,
+				    nv.fv_z + st.st_wioff.iv_z * st.st_winsp.iv_z + cloffp->fv_z);
 				glPushName(gsn_get(cubeno++, NULL, 0));
 				draw_box_filled(&dim, &fill_black);
 				glPopName();
@@ -462,16 +470,8 @@ gl_displayh_select(void)
 		phys_select();
 		break;
 	case VM_WIRED:
-		for (v.fv_x = wivstart.fv_x;
-		    v.fv_x < wivstart.fv_x + wivdim.fv_w;
-		    v.fv_x += WIV_SWIDTH)
-			for (v.fv_y = wivstart.fv_y;
-			    v.fv_y < wivstart.fv_y + wivdim.fv_h;
-			    v.fv_y += WIV_SHEIGHT)
-				for (v.fv_z = wivstart.fv_z;
-				    v.fv_z < wivstart.fv_z + wivdim.fv_d;
-				    v.fv_z += WIV_SDEPTH)
-					wi_select(&v);
+		WIREP_FOREACH(&v)
+			wi_select(&v);
 		break;
 	case VM_WIREDONE:
 		vec_set(&v, 0.0, 0.0, 0.0);
