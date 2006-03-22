@@ -3,6 +3,7 @@
 #define _PATH_NODE	"data/node"
 #define _PATH_JOB	"data/job"
 #define _PATH_YOD	"data/yod"
+#define _PATH_RT	"data/rt"
 
 #define _PATH_PHYSCONF	"data/phys.conf"
 #define _PATH_FLYBY	"data/flyby.data"
