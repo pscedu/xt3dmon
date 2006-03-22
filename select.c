@@ -1,9 +1,25 @@
 /* $Id$ */
 
 #include "mon.h"
-#include "cdefs.h"
 
-GLuint	 	 selbuf[1000];
+#include <err.h>
+#include <stdlib.h>
+
+#include "cdefs.h"
+#include "env.h"
+#include "gl.h"
+#include "job.h"
+#include "node.h"
+#include "nodeclass.h"
+#include "objlist.h"
+#include "panel.h"
+#include "flyby.h"
+#include "select.h"
+#include "selnode.h"
+#include "state.h"
+#include "util.h"
+
+GLuint	 selbuf[1000];
 
 void
 sel_begin(void)
@@ -17,9 +33,8 @@ sel_begin(void)
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
-	gluPickMatrix(lastu, win_height - lastv, 1, 1, viewport);
-	/* XXX wrong */
-	gluPerspective(FOVY, ASPECT, 0.1, clip);
+	gluPickMatrix(mousev.iv_x, winv.iv_h - mousev.iv_y, 1, 1, viewport);
+	gluPerspective(FOVY, ASPECT, NEARCLIP, clip); /* XXX wrong */
 	glMatrixMode(GL_MODELVIEW);
 
 	obj_batch_start(&glname_list);
@@ -83,7 +98,7 @@ sel_process(int nrecs, int rank, int flags)
 		/* Skip 2D records. */
 		for (i = 0, sr = (struct selrec *)selbuf; i < nrecs;
 		    i++, sr++) {
-			gn = getobj(&sr->sr_name, &glname_list);
+			gn = obj_get(&sr->sr_name, &glname_list);
 			if ((gn->gn_flags & GNF_2D) == 0)
 				break;
 		}
@@ -97,24 +112,28 @@ sel_process(int nrecs, int rank, int flags)
 	gn2d = NULL;
 	sr = &((struct selrec *)selbuf)[start];
 	for (i = start; i < nrecs; i++, sr++) {
-		gn = getobj(&sr->sr_name, &glname_list);
+		gn = obj_get(&sr->sr_name, &glname_list);
 
 		if (flags & SPF_2D) {
 			/* 2D records always come first. */
 			if ((gn->gn_flags & GNF_2D) == 0) {
+				/*
+				 * There are now no more 2D records left,
+				 * so if we didn't find one, return failure;
+				 * else, process the best found.
+				 */
 				if (gn2d == NULL)
-					/* We didn't find any 2D records. */
 					return (SP_MISS);
 				else
-					/* We found the best 2D record, so process it. */
 					break;
 			}
-			if (lastu >= gn->gn_u &&
-			    lastu <= gn->gn_u + gn->gn_w &&
-			    lastv >= win_height - gn->gn_v &&
-			    lastv <= win_height - gn->gn_v + gn->gn_h) {
-				if (gn2d == NULL || gn->gn_w * gn->gn_h < gn2d->gn_w * gn2d->gn_h)
-					/* Found a smaller (better) 2D record, save it. */
+			if (mousev.iv_x >= gn->gn_u &&
+			    mousev.iv_x <= gn->gn_u + gn->gn_w &&
+			    mousev.iv_y >= winv.iv_h - gn->gn_v &&
+			    mousev.iv_y <= winv.iv_h - gn->gn_v + gn->gn_h) {
+				/* Save if smaller (better). */
+				if (gn2d == NULL || gn->gn_w * gn->gn_h <
+				    gn2d->gn_w * gn2d->gn_h)
 					gn2d = gn;
 			}
 		} else if (rank-- == 0)
@@ -157,7 +176,7 @@ gsn_get(int id, void (*cb)(int), int flags)
 	struct glname *gn;
 	unsigned int cur = glname_list.ol_tcur + 100;
 
-	gn = getobj(&cur, &glname_list);
+	gn = obj_get(&cur, &glname_list);
 	gn->gn_name = cur;
 	gn->gn_id = id;
 	gn->gn_cb = cb;
