@@ -1,22 +1,30 @@
 /* $Id$ */
 
 #include "mon.h"
-#include "cdefs.h"
 
-#define JINCR		10
-#define YINCR		10
-#define GINCR		10
+#include <err.h>
+#include <stdlib.h>
+#include <string.h>
 
-int		 job_eq(const void *, const void *);
-int		 yod_eq(const void *, const void *);
-int		 glname_eq(const void *, const void *);
+#include "fill.h"
+#include "job.h"
+#include "nodeclass.h"
+#include "objlist.h"
+#include "util.h"
+#include "select.h"
+#include "yod.h"
 
-int		 job_cmp(const void *, const void *);
-int		 yod_cmp(const void *, const void *);
+#define JINCR	10
+#define YINCR	10
+#define GINCR	10
 
-struct objlist	 job_list    = { { NULL }, 0, 0, 0, 0, JINCR, sizeof(struct job),    0, job_eq, job_cmp };
-struct objlist	 yod_list    = { { NULL }, 0, 0, 0, 0, YINCR, sizeof(struct yod),    0, yod_eq, yod_cmp };
-struct objlist	 glname_list = { { NULL }, 0, 0, 0, 0, GINCR, sizeof(struct glname), 0, glname_eq, NULL };
+int job_eq(const void *, const void *);
+int yod_eq(const void *, const void *);
+int glname_eq(const void *, const void *);
+
+struct objlist	 job_list    = { { NULL }, 0, 0, 0, 0, JINCR, sizeof(struct job),    job_eq };
+struct objlist	 yod_list    = { { NULL }, 0, 0, 0, 0, YINCR, sizeof(struct yod),    yod_eq };
+struct objlist	 glname_list = { { NULL }, 0, 0, 0, 0, GINCR, sizeof(struct glname), glname_eq };
 
 struct nodeclass statusclass[] = {
 	{ "Free",		FILL_INIT(1.00f, 1.00f, 1.00f) },
@@ -116,7 +124,7 @@ obj_batch_end(struct objlist *ol)
  * zero; otherwise, they will match empty objects after memset().
  */
 void *
-getobj(const void *arg, struct objlist *ol)
+obj_get(const void *arg, struct objlist *ol)
 {
 	struct objhdr *ohp;
 	size_t n, max;
@@ -153,38 +161,4 @@ new:
 //	memset(ol->ol_data[ol->ol_tcur], 0, ol->ol_objlen);
 	ohp = ol->ol_data[ol->ol_tcur++];
 	return (ohp);
-}
-
-/*
- * For optimal colors, we would like to choose colors
- * in HSV mode where hue ranges from 0-360, saturation
- * ranges from 30%-100%, and value ranges from 50%-100%.
- */
-void
-getcol(int old, size_t n, size_t total, struct fill *fillp)
-{
-	float hinc, sinc, vinc;
-	struct fill *scfp;
-
-	/* Divide color wheel up evenly */
-	hinc = 360.0 / (float)total;
-
-	/* These could be random ... */
-	sinc = (SAT_MAX - SAT_MIN) / (float)total;
-	vinc = (VAL_MAX - VAL_MIN) / (float)total;
-
-	fillp->f_h = hinc * n + HUE_MIN;
-	fillp->f_s = sinc * n + SAT_MIN;
-	fillp->f_v = vinc * n + VAL_MIN;
-	if (!old) {
-		fillp->f_a = 1.0;
-
-		scfp = &statusclass[SC_USED].nc_fill;	/* XXX */
-		fillp->f_texid[WINID_LEFT]    = scfp->f_texid[WINID_LEFT];
-		fillp->f_texid[WINID_RIGHT]   = scfp->f_texid[WINID_RIGHT];
-		fillp->f_texid_a[WINID_LEFT]  = scfp->f_texid_a[WINID_LEFT];
-		fillp->f_texid_a[WINID_RIGHT] = scfp->f_texid_a[WINID_RIGHT];
-	}
-
-	hsv_to_rgb(fillp);
 }
