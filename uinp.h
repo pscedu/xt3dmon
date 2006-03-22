@@ -1,5 +1,7 @@
 /* $Id$ */
 
+#include "buf.h"
+
 struct uinput {
 	struct buf 	  uinp_buf;
 	void		(*uinp_callback)(void);
@@ -17,4 +19,4 @@ void	 uinpcb_login(void);
 
 extern struct uinput	 uinp;
 
-extern char authbuf[];
+extern char authbuf[BUFSIZ];
