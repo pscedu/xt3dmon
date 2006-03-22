@@ -1,24 +1,31 @@
 /* $Id$ */
 
-#include "compat.h"
+#include "mon.h"
 
-#include <sys/types.h>
 #include <sys/stat.h>
 
+#include <err.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #include "cdefs.h"
-#include "mon.h"
+#include "ds.h"
+#include "http.h"
+#include "objlist.h"
+#include "panel.h"
+#include "pathnames.h"
+#include "state.h"
 #include "ustream.h"
 #include "util.h"
 
 #define _RPATH_NODE	"/xtwmon/www/arbiter-raw.pl?data=nodes"
 #define _RPATH_JOB	"/xtwmon/www/arbiter-raw.pl?data=jobs"
 #define _RPATH_YOD	"/xtwmon/www/arbiter-raw.pl?data=yods"
+#define _RPATH_RT	"/xtwmon/www/arbiter-raw.pl?data=rt"
 
 #define RDS_HOST	"mugatu.psc.edu"
 #define RDS_PORT	80
@@ -28,14 +35,14 @@
 # define _LIVE_DSP DSP_REMOTE
 #endif
 
-/* Must match DS_* defines in mon.h. */
+/* Must match DS_* defines in ds.h. */
 struct datasrc datasrcs[] = {
-	{ "node", 0, _LIVE_DSP, _PATH_NODE, _RPATH_NODE, parse_node, DSF_AUTO | DSF_USESSL, dsfi_node,	dsff_node, NULL },
-	{ "job",  0, _LIVE_DSP, _PATH_JOB,  _RPATH_JOB,  parse_job,  DSF_AUTO | DSF_USESSL, NULL,	NULL,	   NULL },
-	{ "yod",  0, _LIVE_DSP, _PATH_YOD,  _RPATH_YOD,  parse_yod,  DSF_AUTO | DSF_USESSL, NULL,	NULL,	   NULL },
-	{ "mem",  0, DSP_LOCAL, _PATH_STAT, NULL,	 parse_mem,  DSF_AUTO,		    NULL,	NULL,	   NULL },
+	{ "node", 0, _LIVE_DSP, _PATH_NODE, _RPATH_NODE, parse_node, DSF_AUTO | DSF_USESSL, dsfi_node,	dsff_node,  NULL },
+	{ "job",  0, _LIVE_DSP, _PATH_JOB,  _RPATH_JOB,  parse_job,  DSF_AUTO | DSF_USESSL, NULL,	NULL,	    NULL },
+	{ "yod",  0, _LIVE_DSP, _PATH_YOD,  _RPATH_YOD,  parse_yod,  DSF_AUTO | DSF_USESSL, NULL,	NULL,	    NULL },
+	{ "rt",   0, _LIVE_DSP, _PATH_RT,   _RPATH_RT,   parse_rt,   DSF_AUTO | DSF_USESSL, NULL,	NULL,       NULL },
+	{ "mem",  0, DSP_LOCAL, _PATH_STAT, NULL,	 parse_mem,  DSF_AUTO,		    NULL,	NULL,	    NULL },
 };
-#define NDATASRCS (sizeof(datasrcs) / sizeof(datasrcs[0]))
 
 void
 dsfi_node(__unused const struct datasrc *ds)
@@ -156,8 +163,6 @@ ds_https(const char *path, struct http_res *res)
 {
 	struct ustream *usp;
 	struct http_req req;
-	char *buf, *enc;
-	int len;
 
 	if (path == NULL)
 		errx(1, "no remote data available for datasrc type");
@@ -169,27 +174,16 @@ ds_https(const char *path, struct http_res *res)
 	req.htreq_version = "HTTP/1.1";
 	req.htreq_url = path;
 
-	if ((len = asprintf(&buf, "%s:%s", login_user, login_pass)) == -1)
-		err(1, "asprintf");
-	if (len % 3)
-		len += 3 - len % 3;			/* Ceil to multiple of 3 for base64. */
-	len = 4 * len / 3;
-	if ((enc = malloc(len + 1)) == NULL)
-		err(1, "malloc");
-	base64_encode(buf, enc);
-
 	if ((req.htreq_extra = calloc(2, sizeof(char *))) == NULL)
 		err(1, "calloc");
 	if (asprintf(&req.htreq_extra[0], "Authorization: Basic %s\r\n",
-	    enc) == -1)
+	    login_auth) == -1)
 		err(1, "asprintf");
 
 	usp = http_open(&req, res);
 
 	free(req.htreq_extra[0]);
 	free(req.htreq_extra);
-	free(enc);
-	free(buf);
 	return (usp);
 }
 
@@ -211,7 +205,7 @@ ds_open(int type)
 		break;
 	case DSP_REMOTE:
 		httpf = ds_http;
-		if (login_pass[0] != '\0')
+		if (login_auth[0] != '\0')
 			httpf = ds_https;
 
 		memset(&res, 0, sizeof(res));
@@ -342,11 +336,11 @@ st_dsmode(void)
 {
 	int ds = DS_INV;
 
-	switch (st.st_mode) {
-	case SM_JOB:
+	switch (st.st_dmode) {
+	case DM_JOB:
 		ds = DS_JOB;
 		break;
-	case SM_YOD:
+	case DM_YOD:
 		ds = DS_YOD;
 		break;
 	}
