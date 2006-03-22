@@ -63,7 +63,7 @@ maybe not:
 91. bug when revolve position = st.st_v
 92. set st.st_mtime to HTTP response last-modified
 93. make select node glow/fade color?
-94. use a different font.png for matrix egg
+94. use a different font.png for matrix egg (katonese chars)
 95. move some stuff (like wioff) into 'struct state'
 96. rename FB*MASK to FB*IGNMASK
 97. kill the stopv stuff in key.c after OP_TWEEN is disabled during flybys
