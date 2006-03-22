@@ -1,14 +1,16 @@
 /* $Id$ */
 
-#include "compat.h"
+#include "mon.h"
 
+#include <err.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "cdefs.h"
-#include "mon.h"
+#include "http.h"
 #include "ustream.h"
 
 int

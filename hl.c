@@ -1,7 +1,14 @@
 /* $Id$ */
 
-#include "compat.h"
 #include "mon.h"
+
+#include "flyby.h"
+#include "job.h"
+#include "node.h"
+#include "nodeclass.h"
+#include "objlist.h"
+#include "queue.h"
+#include "selnode.h"
 
 int hlsc = SC_HL_ALL;
 

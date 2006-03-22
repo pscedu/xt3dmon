@@ -1,8 +1,9 @@
 /* $Id$ */
 
-#include <stdarg.h>
-
 #include "mon.h"
+
+#include <err.h>
+#include <stdarg.h>
 
 void
 dbg_warn(const char *fmt, ...)
