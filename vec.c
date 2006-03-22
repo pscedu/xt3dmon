@@ -1,10 +1,8 @@
 /* $Id$ */
 
-#include "compat.h"
+#include "mon.h"
 
 #include <math.h>
-
-#include "mon.h"
 
 #include "xmath.h"
 
