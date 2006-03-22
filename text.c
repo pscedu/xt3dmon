@@ -1,6 +1,6 @@
 /* $Id$ */
 
-#include <sys/types.h>
+#include "mon.h"
 
 #include <ctype.h>
 #include <string.h>

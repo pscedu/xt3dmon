@@ -7,12 +7,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <openssl/ssl.h>
+
 #include "cdefs.h"
 #include "ustream.h"
 #include "util.h"
 #include "xssl.h"
-
-#include <openssl/ssl.h>
 
 int
 ustrop_ssl_init(struct ustream *usp)

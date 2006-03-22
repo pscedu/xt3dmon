@@ -1,6 +1,6 @@
 /* $Id$ */
 
-#include "compat.h"
+#include "mon.h"
 
 #include <stdio.h>
 

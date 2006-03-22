@@ -1,8 +1,11 @@
 /* $Id$ */
 
-#include "compat.h"
-#include "cdefs.h"
 #include "mon.h"
+
+#include "cdefs.h"
+#include "state.h"
+#include "tween.h"
+#include "xmath.h"
 
 #define TWEEN_THRES	(0.001f)
 #define TWEEN_AMT	(0.05f)
