@@ -1,5 +1,7 @@
 /* $Id$ */
 
+#include "mon.h"
+
 #include <sys/socket.h>
 #include <netinet/in.h>
 
@@ -9,10 +11,22 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <string.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 #include "cdefs.h"
-#include "mon.h"
+#include "cam.h"
+#include "capture.h"
+#include "ds.h"
+#include "env.h"
+#include "gl.h"
+#include "job.h"
+#include "node.h"
+#include "nodeclass.h"
+#include "panel.h"
+#include "selnode.h"
+#include "server.h"
+#include "state.h"
 
 #define PORT	24242
 #define BACKLOG	128
@@ -35,7 +49,7 @@ int svc_hl(char *, int *, struct session *);
 int svc_clicku(char *, int *, struct session *);
 int svc_clickv(char *, int *, struct session *);
 int svc_vmode(char *, int *, struct session *);
-int svc_smode(char *, int *, struct session *);
+int svc_dmode(char *, int *, struct session *);
 int svc_sid(char *, int *, struct session *);
 
 struct sv_cmd {
@@ -55,7 +69,7 @@ struct sv_cmd {
 	{ "clicku",	svc_clicku },
 	{ "clickv",	svc_clickv },
 	{ "vmode",	svc_vmode },
-	{ "smode",	svc_smode },
+	{ "smode",	svc_dmode },
 	{ "sid",	svc_sid }
 };
 
@@ -164,7 +178,7 @@ serv_drawinfo(void)
 	glPushMatrix();
 	glLoadIdentity();
 
-	gluOrtho2D(0.0, win_width, 0.0, win_height);
+	gluOrtho2D(0.0, winv.iv_w, 0.0, winv.iv_h);
 
 	glColor3f(1.0f, 1.0f, 1.0f);
 
@@ -241,13 +255,13 @@ serv_displayh(void)
 		goto drop;
 snap:
 	dbg_warn("Writing snapshot");
-//	win_height += 20;		/* XXX: X title bar slack */
+//	winv.iv_h += 20;		/* XXX: X title bar slack */
 //	glutReshapeFunc(NULL);
-	glutReshapeWindow(win_width, win_height);
+	glutReshapeWindow(winv.iv_w, winv.iv_h);
 //	glutReshapeFunc(gl_reshapeh);
-	gl_reshapeh(win_width, win_height);
+	gl_reshapeh(winv.iv_w, winv.iv_h);
 
-	rf = st.st_rf | RF_CAM | RF_DATASRC | RF_CLUSTER | RF_SMODE;
+	rf = st.st_rf | RF_CAM | RF_DATASRC | RF_CLUSTER | RF_DMODE;
 	if (ss.ss_sid) {
 		struct panel *p;
 		int dsm;
@@ -374,7 +388,7 @@ svc_sw(char *t, int *used, __unused struct session *ss)
 		return (0);
 	if (new < 1 || new > MAXWIDTH)
 		return (0);
-	win_width = new;
+	winv.iv_w = new;
 	return (1);
 }
 
@@ -387,7 +401,7 @@ svc_sh(char *t, int *used, __unused struct session *ss)
 		return (0);
 	if (new < 1 || new > MAXHEIGHT)
 		return (0);
-	win_height = new;
+	winv.iv_h = new;
 	return (1);
 }
 
@@ -452,7 +466,7 @@ svc_job(char *t, int *used, struct session *ss)
 int
 svc_clicku(char *t, int *used, struct session *ss)
 {
-	if (sscanf(t, "%d%n", &lastu, used) != 1)
+	if (sscanf(t, "%d%n", &mousev.iv_x, used) != 1)
 		return (0);
 	ss->ss_click++;
 	return (1);
@@ -461,7 +475,7 @@ svc_clicku(char *t, int *used, struct session *ss)
 int
 svc_clickv(char *t, int *used, struct session *ss)
 {
-	if (sscanf(t, "%d%n", &lastv, used) != 1)
+	if (sscanf(t, "%d%n", &mousev.iv_y, used) != 1)
 		return (0);
 	ss->ss_click++;
 	return (1);
@@ -529,20 +543,20 @@ svc_vmode(char *t, int *used, __unused struct session *ss)
 }
 
 int
-svc_smode(char *t, int *used, __unused struct session *ss)
+svc_dmode(char *t, int *used, __unused struct session *ss)
 {
 	struct svc_enum *sve, tab[] = {
-		{ "temp",	SM_TEMP },
-		{ "jobs",	SM_JOB },
-		{ "yods",	SM_YOD },
-		{ "fail",	SM_FAIL },
+		{ "temp",	DM_TEMP },
+		{ "jobs",	DM_JOB },
+		{ "yods",	DM_YOD },
+		{ "fail",	DM_FAIL },
 		{ NULL,		0 }
 	};
 
 	if ((sve = sve_find(t, tab, used)) == NULL)
 		return (0);
-	st.st_mode = sve->sve_value;
-	st.st_rf |= RF_CLUSTER | RF_DATASRC | RF_SMODE;
+	st.st_dmode = sve->sve_value;
+	st.st_rf |= RF_CLUSTER | RF_DATASRC | RF_DMODE;
 	return (1);
 }
 
