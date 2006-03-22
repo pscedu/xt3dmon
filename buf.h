@@ -1,5 +1,8 @@
 /* $Id$ */
 
+#ifndef _BUF_H_
+#define _BUF_H_
+
 #define BUF_GROWAMT 30
 
 struct buf {
@@ -19,3 +22,5 @@ void	 buf_reset(struct buf *);
 void	 buf_chop(struct buf *);
 int	 buf_len(struct buf *);
 void	 buf_cat(struct buf *, struct buf *);
+
+#endif /* _BUF_H_ */
