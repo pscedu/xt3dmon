@@ -14,6 +14,7 @@
 #include "fill.h"
 #include "flyby.h"
 #include "node.h"
+#include "nodeclass.h"
 #include "panel.h"
 #include "queue.h"
 #include "route.h"
@@ -732,19 +733,6 @@ draw_cluster_physical(void)
 	}
 }
 
-struct fill rtclasses[] = {
- /*   0-10% */ FILL_INITA(1.0f, 1.0f, 0.4f, 0.5f),
- /*  10-20% */ FILL_INITA(1.0f, 0.9f, 0.4f, 0.5f),
- /*  20-30% */ FILL_INITA(1.0f, 0.8f, 0.4f, 0.5f),
- /*  30-40% */ FILL_INITA(1.0f, 0.7f, 0.4f, 0.5f),
- /*  40-50% */ FILL_INITA(1.0f, 0.6f, 0.4f, 0.5f),
- /*  50-60% */ FILL_INITA(1.0f, 0.5f, 0.4f, 0.6f),
- /*  60-70% */ FILL_INITA(1.0f, 0.4f, 0.4f, 0.7f),
- /*  70-80% */ FILL_INITA(1.0f, 0.3f, 0.4f, 0.8f),
- /*  80-90% */ FILL_INITA(1.0f, 0.2f, 0.4f, 0.9f),
- /* 90-100% */ FILL_INITA(1.0f, 0.1f, 0.4f, 1.0f),
-};
-
 void
 draw_cluster_pipe(GLUquadric *q, struct ivec *iv,
     struct fvec *sv, struct fvec *dimv)
@@ -842,7 +830,7 @@ draw_cluster_pipe(GLUquadric *q, struct ivec *iv,
 			else
 				class = 100;		/* 100% */
 
-			fp = &rtclasses[class / 10];
+			fp = &rtclass[class / 10].nc_fill;
 
 			glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
 			glPushMatrix();

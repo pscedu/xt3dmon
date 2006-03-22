@@ -17,6 +17,8 @@
 #define FAIL_MAX	20
 #define FAIL_NFAILS	(sizeof(failclass) / sizeof(failclass[0]))
 
+#define RT_NRTS		(sizeof(rtclass) / sizeof(rtclass[0]))
+
 /* Node highlighting. */
 #define SC_HL_ALL	(-1)
 #define SC_HL_NONE	(-2)
@@ -28,7 +30,8 @@ struct nodeclass {
 };
 
 extern struct nodeclass	 statusclass[];
-extern struct nodeclass	 tempclass[14];		/* XXX */
-extern struct nodeclass	 failclass[6];		/* XXX */
+extern struct nodeclass	 tempclass[14];		/* XXX SPOT */
+extern struct nodeclass	 failclass[6];		/* XXX SPOT */
+extern struct nodeclass	 rtclass[10];		/* XXX SPOT */
 
 extern int hlsc;
