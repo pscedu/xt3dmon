@@ -1,6 +1,6 @@
 /* $Id$ */
 
-#include "compat.h"
+#include "mon.h"
 
 #include <ctype.h>
 #include <err.h>
@@ -10,11 +10,17 @@
 #include <string.h>
 #include <limits.h>
 
-#include "mon.h"
+#include "ds.h"
+#include "fill.h"
+#include "job.h"
+#include "node.h"
+#include "nodeclass.h"
 #include "ustream.h"
+#include "yod.h"
 
 #define PS_ALLOWSPACE (1<<0)
 
+struct route	 rt_max;
 struct ivec	 widim;
 int		 total_failures;
 unsigned long	 vmem;
@@ -23,6 +29,7 @@ long		 rmem;
 /*
  *	s	points to start of number in a string
  *	v	variable obtaining numeric result
+ *	max	largest value (exclusive)
  */
 #define PARSENUM(s, v, max)					\
 	do {							\
@@ -92,6 +99,77 @@ bad:
 }
 
 /*
+ * c9-1c0s7s0
+ */
+int
+parsenid(char *nid, struct physcoord *pc)
+{
+	char *s, *t;
+	long l;
+
+	s = nid;
+	while (isspace(*s))
+		s++;
+	if (*s != 'c')
+		return (1);
+	t = s;
+	while (isdigit(*++t))
+		;
+	if (*t != '-')
+		return (1);
+	*t++ = '\0';
+	l = strtol(s, NULL, 10);
+	if (l < 0 || l >= NCABS)
+		return (1);
+	pc->pc_cb = l;
+
+	s = t;
+	while (isdigit(*++t))
+		;
+	if (*t != 'c')
+		return (1);
+	*t++ = '\0';
+	l = strtol(s, NULL, 10);
+	if (l < 0 || l >= NROWS)
+		return (1);
+	pc->pc_r = l;
+
+	s = t;
+	while (isdigit(*++t))
+		;
+	if (*t != 's')
+		return (1);
+	*t++ = '\0';
+	l = strtol(s, NULL, 10);
+	if (l < 0 || l >= NCAGES)
+		return (1);
+	pc->pc_cg = l;
+
+	s = t;
+	while (isdigit(*++t))
+		;
+	if (*t != 's')
+		return (1);
+	*t++ = '\0';
+	l = strtol(s, NULL, 10);
+	if (l < 0 || l >= NMODS)
+		return (1);
+	pc->pc_m = l;
+
+	s = t;
+	while (isdigit(*++t))
+		;
+	if (*t != '\0')
+		return (1);
+	l = strtol(s, NULL, 10);
+	if (l < 0 || l >= NNODES)
+		return (1);
+	pc->pc_n = l;
+
+	return (0);
+}
+
+/*
  * Example line:
  *	nid	r cb cb m n	x y z	stat	enabled	jobid	temp	yodid	nfails
  *	1848	0 7  0  1 6	7 0 9	c	1	6036	45	10434	0
@@ -108,7 +186,6 @@ parse_node(const struct datasrc *ds)
 	widim.iv_w = widim.iv_h = widim.iv_d = 0;
 
 	/* Explicitly initialize all nodes. */
-//	IVEC_FOREACH()
 	for (r = 0; r < NROWS; r++)
 		for (cb = 0; cb < NCABS; cb++)
 			for (cg = 0; cg < NCAGES; cg++)
@@ -168,13 +245,13 @@ parse_node(const struct datasrc *ds)
 
 		if (jobid) {
 			node->n_state = SC_USED;		/* don't set */
-			node->n_job = getobj(&jobid, &job_list);
+			node->n_job = obj_get(&jobid, &job_list);
 			node->n_job->j_id = jobid;
 		} else
 			node->n_job = NULL;
 
 		if (yodid) {
-			node->n_yod = getobj(&yodid, &yod_list);
+			node->n_yod = obj_get(&yodid, &yod_list);
 			node->n_yod->y_id = yodid;
 		} else
 			node->n_yod = NULL;
@@ -202,12 +279,12 @@ bad:
 
 	qsort(job_list.ol_jobs, job_list.ol_tcur, sizeof(struct job *), job_cmp);
 	for (j = 0; j < job_list.ol_tcur; j++)
-		getcol(job_list.ol_jobs[j]->j_oh.oh_flags & OHF_OLD,
+		col_get(job_list.ol_jobs[j]->j_oh.oh_flags & OHF_OLD,
 		    j, job_list.ol_tcur, &job_list.ol_jobs[j]->j_fill);
 
 	qsort(yod_list.ol_yods, yod_list.ol_tcur, sizeof(struct yod *), yod_cmp);
 	for (j = 0; j < yod_list.ol_tcur; j++)
-		getcol(yod_list.ol_yods[j]->y_oh.oh_flags & OHF_OLD,
+		col_get(yod_list.ol_yods[j]->y_oh.oh_flags & OHF_OLD,
 		    j, yod_list.ol_tcur, &yod_list.ol_yods[j]->y_fill);
 
 	if (++widim.iv_w != WIDIM_WIDTH ||
@@ -308,7 +385,7 @@ parse_job(const struct datasrc *ds)
 		PARSENUM(s, j_fake.j_ncpus, INT_MAX);
 		if (parsestr(&s, j_fake.j_queue, sizeof(j_fake.j_queue), 0))
 			goto bad;
-		if (parsestr(&s, j_fake.j_jname, sizeof(j_fake.j_jname),
+		if (parsestr(&s, j_fake.j_name, sizeof(j_fake.j_name),
 		    PS_ALLOWSPACE))
 			goto bad;
 
@@ -317,4 +394,61 @@ parse_job(const struct datasrc *ds)
 bad:
 		warnx("job:%d: malformed line [%s] [%s]", lineno, buf, s);
 	}
+	if (us_error(ds->ds_us))
+		warn("us_gets");
+	errno = 0;
+}
+
+/*
+ * nid        port recover fatal router
+ * c9-1c0s7s0 0    0       1     1
+ */
+void
+parse_rt(const struct datasrc *ds)
+{
+	int port, lineno, recover, fatal, router;
+	char *s, buf[BUFSIZ], nid[BUFSIZ];
+	struct physcoord pc;
+	struct node *n;
+	struct ivec iv;
+
+	NODE_FOREACH(n, &iv)
+		if (n)
+			memset(&n->n_route.rt_err, 0,
+			    sizeof(n->n_route.rt_err));
+	memset(&rt_max, 0, sizeof(rt_max));
+
+	lineno = 0;
+	while (us_gets(ds->ds_us, buf, sizeof(buf)) != NULL) {
+		lineno++;
+		s = buf;
+		while (isspace(*s))
+			s++;
+		if (*s == '#')
+			continue;
+
+		if (parsestr(&s, nid, sizeof(nid), 0) ||
+		    parsenid(nid, &pc))
+			goto bad;
+		n = &nodes[pc.pc_r][pc.pc_cb][pc.pc_cg][pc.pc_m][pc.pc_n];
+
+		PARSENUM(s, port, 7);
+		PARSENUM(s, recover, INT_MAX);
+		PARSENUM(s, fatal, INT_MAX);
+		PARSENUM(s, router, INT_MAX);
+
+		rt_max.rt_err[port][RT_RECOVER] += recover;
+		rt_max.rt_err[port][RT_FATAL]   += fatal;
+		rt_max.rt_err[port][RT_ROUTER]  += router;
+
+		n->n_route.rt_err[port][RT_RECOVER] = recover;
+		n->n_route.rt_err[port][RT_FATAL]   = fatal;
+		n->n_route.rt_err[port][RT_ROUTER]  = router;
+		continue;
+bad:
+		warnx("rt:%d: malformed line [%s] [%s]", lineno, buf, s);
+	}
+	if (us_error(ds->ds_us))
+		warn("us_gets");
+	errno = 0;
 }
