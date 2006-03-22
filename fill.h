@@ -50,6 +50,7 @@ extern struct fill	 fill_light_blue;
 extern struct fill	 fill_white;
 extern struct fill	 fill_yellow;
 extern struct fill	 fill_grey;
+extern struct fill	 fill_xparent;
 
 extern struct fill	 fill_font;
 extern struct fill	 fill_nodata;
