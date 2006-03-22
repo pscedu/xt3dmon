@@ -1,10 +1,26 @@
 /* $Id$ */
 
+#include "mon.h"
+
 #include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "buf.h"
-#include "mon.h"
+#include "capture.h"
+#include "flyby.h"
+#include "job.h"
+#include "node.h"
+#include "nodeclass.h"
+#include "panel.h"
+#include "queue.h"
+#include "selnode.h"
+#include "state.h"
+#include "uinp.h"
+#include "gl.h"
 #include "util.h"
+
+char authbuf[BUFSIZ];
 
 void
 uinpcb_cmd(void)
@@ -74,10 +90,10 @@ uinpcb_eggs(void)
 
 	/* Parse Easter egg keywords =) */
 	if (strcmp(cmd, "borg") == 0) {
-		eggs ^= EGG_BORG;
+		st.st_eggs ^= EGG_BORG;
 		egg_borg();
 	} else if (strcmp(cmd, "matrix") == 0) {
-		eggs ^= EGG_MATRIX;
+		st.st_eggs ^= EGG_MATRIX;
 		egg_matrix();
 	}
 }
@@ -87,21 +103,28 @@ uinpcb_login(void)
 {
 	struct pinfo *pi;
 	struct panel *p;
-	char *s, *tobuf;
 	size_t siz;
+	char *s;
 
 	s = buf_get(&uinp.uinp_buf);
 
 	if ((p = panel_for_id(PANEL_LOGIN)) != NULL) {
+		siz = sizeof(authbuf) - 1;
 		if (p->p_opts & POPT_LOGIN_ATPASS) {
-			tobuf = login_pass;
-			siz = sizeof(login_pass);
+			strncat(authbuf, ":", siz - strlen(authbuf));
+			authbuf[siz] = '\0';
+
+			strncat(authbuf, s, siz - strlen(authbuf));
+			authbuf[siz] = '\0';
 
 			panel_tremove(p);
 			st.st_rf |= RF_DATASRC;
+
+			if (strlen(authbuf) < 4 * sizeof(login_auth) / 3)
+				base64_encode(authbuf, login_auth);
 		} else {
-			tobuf = login_user;
-			siz = sizeof(login_user);
+			strncpy(authbuf, s, siz);
+			authbuf[siz] = '\0';
 
 			pi = &pinfo[baseconv(p->p_id) - 1];
 			p->p_opts |= POPT_LOGIN_ATPASS | POPT_DIRTY;
@@ -110,9 +133,7 @@ uinpcb_login(void)
 			uinp.uinp_opts = pi->pi_uinpopts;
 			uinp.uinp_callback = pi->pi_uinpcb;
 
-			login_pass[0] = '\0';
+			memset(login_auth, 0, sizeof(login_auth));
 		}
-		strncpy(tobuf, s, siz - 1);
-		tobuf[siz - 1] = '\0';
 	}
 }
