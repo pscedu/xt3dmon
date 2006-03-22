@@ -1,15 +1,23 @@
 /* $Id$ */
 
-#include "compat.h"
+#include "mon.h"
 
 #include <limits.h>
 #include <stdlib.h>
 
 #include "cdefs.h"
-#include "mon.h"
+#include "cam.h"
+#include "env.h"
+#include "gl.h"
+#include "node.h"
+#include "panel.h"
+#include "selnode.h"
+#include "state.h"
+#include "tween.h"
 #include "xmath.h"
 
-int	 	 spkey, lastu, lastv;
+struct ivec	 mousev;
+int	 	 spkey;
 struct panel	*panel_mobile;
 void		(*gl_displayhp_old)(void);
 
@@ -36,19 +44,19 @@ gl_mouseh_default(__unused int button, __unused int state, int u, int v)
 		glutMotionFunc(gl_motionh_default);
 	}
 
-	lastu = u;
-	lastv = v;
+	mousev.iv_x = u;
+	mousev.iv_y = v;
 }
 
 void
 gl_motionh_panel(int u, int v)
 {
-	int du = u - lastu, dv = v - lastv;
+	int du = u - mousev.iv_x, dv = v - mousev.iv_y;
 
 	if (abs(du) + abs(dv) <= 1)
 		return;
-	lastu = u;
-	lastv = v;
+	mousev.iv_x = u;
+	mousev.iv_y = v;
 
 	panel_mobile->p_u += du;
 	panel_mobile->p_v -= dv;
@@ -73,9 +81,9 @@ revolve_center_cluster(struct fvec *cen)
 		cen->fv_z = st.st_z + st.st_lz * dist;
 		break;
 	case VM_WIREDONE:
-		cen->fv_x = st.st_winsp.iv_x * (WIDIM_WIDTH  / 2.0f + wioff.iv_x);
-		cen->fv_y = st.st_winsp.iv_y * (WIDIM_HEIGHT / 2.0f + wioff.iv_y);
-		cen->fv_z = st.st_winsp.iv_z * (WIDIM_DEPTH  / 2.0f + wioff.iv_z);
+		cen->fv_x = st.st_winsp.iv_x * (WIDIM_WIDTH  / 2.0f + st.st_wioff.iv_x);
+		cen->fv_y = st.st_winsp.iv_y * (WIDIM_HEIGHT / 2.0f + st.st_wioff.iv_y);
+		cen->fv_z = st.st_winsp.iv_z * (WIDIM_DEPTH  / 2.0f + st.st_wioff.iv_z);
 		break;
 	}
 }
@@ -89,8 +97,13 @@ revolve_center_selnode(struct fvec *cen)
 		revolve_center_cluster(cen);
 		return;
 	}
-	cen->fv_x = cen->fv_y = cen->fv_z = 0.0f;
+	vec_set(cen, 0.0, 0.0, 0.0);
 	SLIST_FOREACH(sn, &selnodes, sn_next) {
+		switch (st.st_vmode) {
+		case VM_WIRED:
+			break;
+		}
+
 		cen->fv_x += sn->sn_nodep->n_v->fv_x + NODEWIDTH  / 2;
 		cen->fv_y += sn->sn_nodep->n_v->fv_y + NODEHEIGHT / 2;
 		cen->fv_z += sn->sn_nodep->n_v->fv_z + NODEDEPTH  / 2;
@@ -105,7 +118,7 @@ void (*revolve_centerf)(struct fvec *) = revolve_center_selnode;
 void
 gl_motionh_default(int u, int v)
 {
-	int du = u - lastu, dv = v - lastv;
+	int du = u - mousev.iv_x, dv = v - mousev.iv_y;
 	struct fvec center;
 
 	if (abs(du) + abs(dv) <= 1)
@@ -121,33 +134,27 @@ gl_motionh_default(int u, int v)
 	cam_revolve(&center, (double)du, (double)-dv);
 	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
 
-	lastu = u;
-	lastv = v;
+	mousev.iv_x = u;
+	mousev.iv_y = v;
 }
 
 void
 gl_pasvmotionh_default(int u, int v)
 {
-	lastu = u;
-	lastv = v;
-
-//	if (drawh != drawh_select) {
-//		drawh_old = drawh;
-//		drawh = drawh_select;
-//		glutDisplayFunc(drawh);
-//	}
+	mousev.iv_x = u;
+	mousev.iv_y = v;
 }
 
 void
 gl_pasvmotionh_null(int u, int v)
 {
-	lastu = u;
-	lastv = v;
+	mousev.iv_x = u;
+	mousev.iv_y = v;
 }
 
 void
 gl_motionh_null(int u, int v)
 {
-	lastu = u;
-	lastv = v;
+	mousev.iv_x = u;
+	mousev.iv_y = v;
 }
