@@ -1,25 +1,24 @@
 /* $Id$ */
 
-#include "compat.h"
 #include "mon.h"
 
-int eggs;
+#include "fill.h"
+#include "state.h"
+#include "tween.h"
 
-/*
- * Borg mode Easter egg
- */
+/* Borg mode Easter egg. */
 void
 egg_borg(void)
 {
 	static struct state ost;
 
 	tween_push(TWF_LOOK | TWF_POS | TWF_UP);
-	if (eggs & EGG_BORG) {
+	if (st.st_eggs & EGG_BORG) {
 		/* Save current state. */
 		ost = st;
 
 		st.st_vmode = VM_WIREDONE;
-		st.st_mode = SM_BORG;
+		st.st_dmode = DM_BORG;
 		opt_enable(OP_TEX);
 		opt_disable(OP_GROUND);
 
@@ -29,7 +28,7 @@ egg_borg(void)
 	} else {
 		opt_flip(st.st_opts ^ ost.st_opts);
 		st.st_vmode = ost.st_vmode;
-		st.st_mode = ost.st_mode;
+		st.st_dmode = ost.st_dmode;
 //		st = ost;
 
 		st.st_v = ost.st_v;
@@ -38,7 +37,7 @@ egg_borg(void)
 	}
 	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
 
-	st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_SMODE | RF_GROUND;	/* XXX: RF_INIT ? */
+	st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_DMODE | RF_GROUND;	/* XXX: RF_INIT ? */
 }
 
 void
@@ -48,11 +47,11 @@ egg_matrix(void)
 	static struct state ost;
 
 	tween_push(TWF_LOOK | TWF_POS | TWF_UP);
-	if (eggs & EGG_MATRIX) {
+	if (st.st_eggs & EGG_MATRIX) {
 		ost = st;
 
 		st.st_vmode = VM_PHYSICAL;
-		st.st_mode = SM_MATRIX;
+		st.st_dmode = DM_MATRIX;
 		opt_enable(OP_NLABELS);
 		opt_disable(OP_GROUND | OP_WIREFRAME);
 
@@ -67,8 +66,8 @@ egg_matrix(void)
 	} else {
 		opt_flip(st.st_opts ^ ost.st_opts);
 		/* Restore original mode unless it was changed. */
-		st.st_mode = st.st_mode == SM_MATRIX ?
-		    ost.st_mode : st.st_mode;
+		st.st_dmode = st.st_dmode == DM_MATRIX ?
+		    ost.st_dmode : st.st_dmode;
 
 		st.st_v = ost.st_v;
 		st.st_lv = ost.st_lv;
@@ -78,5 +77,5 @@ egg_matrix(void)
 	}
 	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
 
-	st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_SMODE | RF_GROUND;
+	st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_DMODE | RF_GROUND;
 }
