@@ -1,26 +1,31 @@
 /* $Id$ */
 
-#include "compat.h"
 #include "mon.h"
+
+#include "env.h"
+#include "gl.h"
+#include "panel.h"
+#include "queue.h"
+#include "state.h"
 
 #define FPS_TO_USEC(x)	(1e6 / x)	/* Convert FPS to microseconds. */
 #define GOVERN_FPS	30		/* FPS governor. */
 
-long			 fps = 50;	/* last fps sample */
-long			 fps_cnt = 0;	/* current fps counter */
+long	 fps = 50;	/* last fps sample */
+long	 fps_cnt = 0;	/* current fps counter */
 
 void
 gl_reshapeh(int w, int h)
 {
 	struct panel *p;
 
-	win_width = w;
-	win_height = h;
+	winv.iv_w = w;
+	winv.iv_h = h;
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glViewport(0, 0, win_width, win_height);
-	gluPerspective(FOVY, ASPECT, 1, clip);
+	glViewport(0, 0, winv.iv_w, winv.iv_h);
+	gluPerspective(FOVY, ASPECT, NEARCLIP, clip);
 	glMatrixMode(GL_MODELVIEW);
 	st.st_rf |= RF_CAM;
 
