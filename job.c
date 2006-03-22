@@ -1,7 +1,9 @@
 /* $Id$ */
 
 #include "mon.h"
+
 #include "cdefs.h"
+#include "job.h"
 
 struct job *
 job_findbyid(int id)
@@ -48,20 +50,6 @@ job_hl(struct job *j)
 void
 job_goto(__unused struct job *j)
 {
-}
-
-void
-prjobs(void)
-{
-	size_t i;
-
-	printf(" => JOBS [max %d]", job_list.ol_max);
-	for (i = 0; i < job_list.ol_tcur; i++)
-		printf(" %d", job_list.ol_jobs[i]->j_id);
-	printf(" ||");
-	for (; i < job_list.ol_max; i++)
-		printf(" %d", job_list.ol_jobs[i]->j_id);
-	printf("\n");
 }
 
 #if 0
