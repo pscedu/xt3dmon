@@ -1,9 +1,12 @@
 /* $Id$ */
 
+#include "mon.h"
+
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 
-#include "mon.h"
+#include "panel.h"
 
 static char status_buf[BUFSIZ];
 
