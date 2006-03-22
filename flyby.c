@@ -1,12 +1,21 @@
 /* $Id$ */
 
-#include "compat.h"
+#include "mon.h"
 
 #include <err.h>
 #include <errno.h>
 #include <stdio.h>
 
-#include "mon.h"
+#include "env.h"
+#include "flyby.h"
+#include "gl.h"
+#include "node.h"
+#include "nodeclass.h"
+#include "panel.h"
+#include "pathnames.h"
+#include "queue.h"
+#include "selnode.h"
+#include "state.h"
 
 int		 flyby_mode;
 int		 sav_opts;
@@ -100,12 +109,7 @@ flyby_writemsg(int type, const void *data, size_t len)
 void
 flyby_writeseq(struct state *st)
 {
-	int save;
-
-	save = st->st_opts;
-	st->st_opts &= ~FB_OMASK;
 	flyby_writemsg(FHT_SEQ, st, sizeof(*st));
-	st->st_opts = save;
 }
 
 void
@@ -121,7 +125,6 @@ flyby_writeinit(struct state *st)
 	TAILQ_FOREACH(p, &panels, p_link)
 		fbi.fbi_panels |= p->p_id;
 
-	fbi.fbi_state.st_opts &= ~FB_OMASK;
 	flyby_writemsg(FHT_INIT, &fbi, sizeof(fbi));
 }
 
@@ -147,7 +150,7 @@ flyby_writehlsc(int sc)
 void
 flyby_read(void)
 {
-	int done, oldopts, newopts;
+	int i, done, oldopts, optdiff;
 	struct fbhdr fbh;
 
 	oldopts = st.st_opts;
@@ -173,7 +176,7 @@ flyby_read(void)
 			    sizeof(fbi))
 				err(1, "flyby read init");
 			st = fbi.fbi_state;
-			st.st_rf |= RF_INIT | RF_SMODE;
+			st.st_rf |= RF_INIT;
 			init_panels(fbi.fbi_panels);
 			done = 1;
 			break;
@@ -218,10 +221,12 @@ flyby_read(void)
 		}
 	} while (!done);
 
-	newopts = st.st_opts;
-	st.st_opts = oldopts;
-
-	opt_flip((oldopts ^ newopts) & ~FB_OMASK);
+	optdiff = oldopts ^ st.st_opts;
+	for (i = 0; i < NOPS; i++)
+		if (optdiff & (1 << i) &&
+		    opts[i].opt_flags & OPF_FBIGN)
+			optdiff &= ~(1 << i);
+	opt_flip(optdiff);
 }
 
 void
