@@ -30,7 +30,7 @@
  *
  */
 
-#include "compat.h"
+#include "mon.h"
 
 #include <sys/stat.h>
 
@@ -42,11 +42,27 @@
 #include <string.h>
 #include <time.h>
 
-#include "buf.h"
 #include "cdefs.h"
-#include "mon.h"
+#include "buf.h"
+#include "ds.h"
+#include "env.h"
+#include "fill.h"
+#include "flyby.h"
+#include "gl.h"
+#include "job.h"
+#include "node.h"
+#include "nodeclass.h"
+#include "objlist.h"
+#include "panel.h"
+#include "pathnames.h"
 #include "queue.h"
+#include "select.h"
+#include "selnode.h"
+#include "server.h"
+#include "state.h"
+#include "uinp.h"
 #include "util.h"
+#include "yod.h"
 
 #define LETTER_HEIGHT	13
 #define LETTER_WIDTH	8
@@ -54,7 +70,7 @@
 #define PANEL_BWIDTH	1
 #define PWIDGET_LENGTH	16
 #define PWIDGET_HEIGHT	LETTER_HEIGHT
-#define PWLABEL_MAXLEN	((win_width - 1) / 2 / 2 - PWIDGET_PADDING)
+#define PWLABEL_MAXLEN	((winv.iv_w - 1) / 2 / 2 - PWIDGET_PADDING)
 #define PWIDGET_PADDING	2
 
 void panel_refresh_fps(struct panel *);
@@ -80,22 +96,22 @@ void uinpcb_ss(void);
 void uinpcb_eggs(void);
 
 struct pinfo pinfo[] = {
-/* 0 */ { "FPS",		panel_refresh_fps,	0,	 	0,		 NULL },
-/* 1 */	{ "Node Info",		panel_refresh_ninfo,	0,	 	0,		 NULL },
-/* 2 */ { "Command",		panel_refresh_cmd,	PF_UINP, 	UINPO_LINGER,	 uinpcb_cmd },
-/* 3 */ { "Legend",		panel_refresh_legend,	0,	 	0,		 NULL },
-/* 4 */	{ "Flyby Status",	panel_refresh_flyby,	0,	 	0,		 NULL },
-/* 5 */	{ "Goto Node",		panel_refresh_gotonode,	PF_UINP, 	0,		 uinpcb_gotonode },
-/* 6 */	{ "Camera Position",	panel_refresh_pos,	0,	 	0,		 NULL },
-/* 7 */	{ "Screenshot",		panel_refresh_ss,	PF_UINP, 	0,		 uinpcb_ss },
-/* 8 */	{ "Status",		panel_refresh_status,	0,	 	0,		 NULL },
-/* 9 */	{ "Memory Usage",	panel_refresh_mem,	0,	 	0,		 NULL },
-/*10 */	{ NULL,			panel_refresh_eggs,	PF_UINP | PF_HIDE, 0,		 uinpcb_eggs },
-/*11 */	{ "Date",		panel_refresh_date,	PF_XPARENT,	0,		 NULL },
-/*12 */	{ "Option",		panel_refresh_opts,	0,	 	0,		 NULL },
-/*13 */	{ "Goto Job",		panel_refresh_gotojob,	PF_UINP, 	0,		 uinpcb_gotojob },
-/*14 */	{ NULL,			panel_refresh_panels,	PF_HIDE, 	0,		 NULL },
-/*15 */	{ "Login",		panel_refresh_login,	PF_UINP, 	UINPO_LINGER,	 uinpcb_login }
+ /*  0 */ { "FPS",		panel_refresh_fps,	0,	 		0,		NULL },
+ /*  1 */ { "Node Info",	panel_refresh_ninfo,	0,	 		0,		NULL },
+ /*  2 */ { "Command",		panel_refresh_cmd,	PF_UINP | PF_HIDE,	UINPO_LINGER,	uinpcb_cmd },
+ /*  3 */ { "Legend",		panel_refresh_legend,	0,	 		0,		NULL },
+ /*  4 */ { "Flyby Status",	panel_refresh_flyby,	PF_FBIGN, 		0,		NULL },
+ /*  5 */ { "Goto Node",	panel_refresh_gotonode,	PF_UINP, 		0,		uinpcb_gotonode },
+ /*  6 */ { "Camera Position",	panel_refresh_pos,	0,	 		0,		NULL },
+ /*  7 */ { "Screenshot",	panel_refresh_ss,	PF_UINP, 		0,		uinpcb_ss },
+ /*  8 */ { "Status",		panel_refresh_status,	0,	 		0,		NULL },
+ /*  9 */ { "Memory Usage",	panel_refresh_mem,	PF_HIDE, 		0,		NULL },
+ /* 10 */ { NULL,		panel_refresh_eggs,	PF_UINP | PF_HIDE,	0,		uinpcb_eggs },
+ /* 11 */ { "Date",		panel_refresh_date,	PF_XPARENT,		0,		NULL },
+ /* 12 */ { "Option",		panel_refresh_opts,	PF_FBIGN, 		0,		NULL },
+ /* 13 */ { "Goto Job",		panel_refresh_gotojob,	PF_UINP, 		0,		uinpcb_gotojob },
+ /* 14 */ { NULL,		panel_refresh_panels,	PF_HIDE | PF_FBIGN, 	0,		NULL },
+ /* 15 */ { "Login",		panel_refresh_login,	PF_UINP, 		UINPO_LINGER,	uinpcb_login }
 };
 
 #define PVOFF_TL 0
@@ -105,14 +121,12 @@ struct pinfo pinfo[] = {
 #define NPVOFF 4
 
 struct fill	 fill_panel	= FILL_INITA(0.4, 0.6, 0.8, 0.8);
+struct fill	 fill_ipanel	= FILL_INITA(0.5, 0.7, 0.9, 0.9);
 struct fill	 fill_panelbd	= FILL_INITA(0.2, 0.4, 0.6, 1.0);
 struct panels	 panels;
 int		 panel_offset[NPVOFF];
 int		 mode_data_clean;
 int		 selnode_clean;
-
-char		 login_user[BUFSIZ];
-char		 login_pass[BUFSIZ];
 
 void
 panel_free(struct panel *p)
@@ -152,14 +166,14 @@ draw_shadow_panels(void)
 	glPushMatrix();
 	glLoadIdentity();
 
-	gluOrtho2D(0.0, win_width, 0.0, win_height);
+	gluOrtho2D(0.0, winv.iv_w, 0.0, winv.iv_h);
 
 	TAILQ_FOREACH(p, &panels, p_link) {
 		SLIST_FOREACH(pw, &p->p_widgets, pw_next) {
 			if (pw->pw_cb == NULL)
 				continue;
 			name = gsn_get(pw->pw_cbarg, pw->pw_cb, GNF_2D);
-			gn = getobj(&name, &glname_list);
+			gn = obj_get(&name, &glname_list);
 			gn->gn_u = pw->pw_u;
 			gn->gn_v = pw->pw_v;
 			gn->gn_h = pw->pw_h;
@@ -178,7 +192,7 @@ draw_shadow_panels(void)
 		}
 
 		name = gsn_get(p->p_id, gscb_panel, GNF_2D);
-		gn = getobj(&name, &glname_list);
+		gn = obj_get(&name, &glname_list);
 		gn->gn_u = p->p_u;
 		gn->gn_v = p->p_v;
 		gn->gn_h = p->p_h;
@@ -215,6 +229,7 @@ draw_panel(struct panel *p, int toff)
 	struct fill *frame_fp;
 	int npw, uoff, voff;
 	struct pwidget *pw;
+	struct pinfo *pi;
 	const char *s;
 
 	/* Save state and set things up for 2D. */
@@ -228,7 +243,7 @@ draw_panel(struct panel *p, int toff)
 	glPushMatrix();
 	glLoadIdentity();
 
-	gluOrtho2D(0.0, win_width, 0.0, win_height);
+	gluOrtho2D(0.0, winv.iv_w, 0.0, winv.iv_h);
 
 	glColor4f(p->p_fill.f_r, p->p_fill.f_g, p->p_fill.f_b, p->p_fill.f_a);
 	/* Panel content. */
@@ -246,7 +261,7 @@ draw_panel(struct panel *p, int toff)
 		glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
 	}
 
-	/* Shadow. */
+	/* Text shadow. */
 	glColor3f(0.0, 0.0, 0.2);
 	voff = p->p_v - toff + 3;
 	uoff++;
@@ -333,14 +348,19 @@ draw_panel(struct panel *p, int toff)
 			break;
 	}
 
-	if ((pinfo[baseconv(p->p_id) - 1].pi_opts & PF_XPARENT) == 0) {
+	pi = &pinfo[baseconv(p->p_id) - 1];
+
+	if ((pi->pi_opts & PF_XPARENT) == 0) {
+		struct fill *fp;
+
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+		fp = (pi->pi_opts & PF_UINP) ? &fill_ipanel : &fill_panel;
+
 		/* Draw background. */
 		glBegin(GL_POLYGON);
-		glColor4f(fill_panel.f_r, fill_panel.f_g,
-		    fill_panel.f_b, fill_panel.f_a);
+		glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
 		glVertex2d(p->p_u + PANEL_BWIDTH,		p->p_v + 1 - PANEL_BWIDTH);
 		glVertex2d(p->p_u + p->p_w - PANEL_BWIDTH,	p->p_v + 1 - PANEL_BWIDTH);
 		glVertex2d(p->p_u + p->p_w - PANEL_BWIDTH,	p->p_v + 1 - p->p_h + PANEL_BWIDTH);
@@ -425,18 +445,18 @@ panel_draw(struct panel *p, int wid)
 		switch (p->p_stick) {
 		case PSTICK_TL:
 			u = -p->p_w;
-			v = win_height - panel_offset[PVOFF_TL];
+			v = winv.iv_h - panel_offset[PVOFF_TL];
 			break;
 		case PSTICK_BL:
 			u = -p->p_w;
 			v = panel_offset[PVOFF_BL];
 			break;
 		case PSTICK_TR:
-			u = win_width;
-			v = win_height - panel_offset[PVOFF_TR];
+			u = winv.iv_w;
+			v = winv.iv_h - panel_offset[PVOFF_TR];
 			break;
 		case PSTICK_BR:
-			u = win_width;
+			u = winv.iv_w;
 			v = panel_offset[PVOFF_BR];
 			break;
 		default:
@@ -473,18 +493,18 @@ panel_draw(struct panel *p, int wid)
 		switch (p->p_stick) {
 		case PSTICK_TL:
 			u = 0;
-			v = (win_height - 1) - panel_offset[PVOFF_TL];
+			v = (winv.iv_h - 1) - panel_offset[PVOFF_TL];
 			break;
 		case PSTICK_BL:
 			u = 0;
 			v = panel_offset[PVOFF_BL] + p->p_h;
 			break;
 		case PSTICK_TR:
-			u = win_width - w;
-			v = (win_height - 1) - panel_offset[PVOFF_TR];
+			u = winv.iv_w - w;
+			v = (winv.iv_h - 1) - panel_offset[PVOFF_TR];
 			break;
 		case PSTICK_BR:
-			u = win_width - w;
+			u = winv.iv_w - w;
 			v = panel_offset[PVOFF_BR] + p->p_h;
 			break;
 		default:
@@ -525,8 +545,8 @@ panel_draw(struct panel *p, int wid)
 	if (p->p_opts & POPT_REMOVE) {
 		if ((p->p_stick == PSTICK_TL && p->p_u + p->p_w <= 0) ||
 		    (p->p_stick == PSTICK_BL && p->p_u + p->p_w <= 0) ||
-		    (p->p_stick == PSTICK_TR && p->p_u >= win_width) ||
-		    (p->p_stick == PSTICK_BR && p->p_u >= win_width)) {
+		    (p->p_stick == PSTICK_TR && p->p_u >= winv.iv_w) ||
+		    (p->p_stick == PSTICK_BR && p->p_u >= winv.iv_w)) {
 			panel_free(p);
 			return;
 		}
@@ -680,8 +700,8 @@ panel_refresh_legend(struct panel *p)
 	p->p_nwidgets = 0;
 	p->p_maxwlen = 0;
 	pw = SLIST_FIRST(&p->p_widgets);
-	switch (st.st_mode) {
-	case SM_JOB:
+	switch (st.st_dmode) {
+	case DM_JOB:
 		panel_set_content(p, "- Job Legend -\nTotal jobs: %lu",
 		    job_list.ol_cur);
 
@@ -700,11 +720,11 @@ panel_refresh_legend(struct panel *p)
 		for (j = 0; j < job_list.ol_cur; j++, pw = nextp) {
 			pw = panel_get_pwidget(p, pw, &nextp);
 			pwidget_set(p, pw, &job_list.ol_jobs[j]->j_fill,
-			    job_list.ol_jobs[j]->j_jname, gscb_pwjob,
+			    job_list.ol_jobs[j]->j_name, gscb_pwjob,
 			    job_list.ol_jobs[j]->j_id);
 		}
 		break;
-	case SM_FAIL:
+	case DM_FAIL:
 		panel_set_content(p, "- Failure Legend - \nTotal: %lu",
 		    total_failures);
 
@@ -718,7 +738,7 @@ panel_refresh_legend(struct panel *p)
 			    failclass[j].nc_name, NULL, 0);
 		}
 		break;
-	case SM_TEMP:
+	case DM_TEMP:
 		panel_set_content(p, "- Temperature Legend -");
 
 		pw = panel_get_pwidget(p, pw, &nextp);
@@ -731,7 +751,7 @@ panel_refresh_legend(struct panel *p)
 			    tempclass[j].nc_name, NULL, 0);
 		}
 		break;
-	case SM_YOD:
+	case DM_YOD:
 		panel_set_content(p, "- Yod Legend -\nTotal yods: %lu",
 		    yod_list.ol_cur);
 		for (j = 0; j < NSC; j++, pw = nextp) {
@@ -786,12 +806,12 @@ panel_refresh_ninfo(struct panel *p)
 
 			if (nids_pos >= sizeof(nids))
 				break;
-			switch (st.st_mode) {
-			case SM_JOB:
+			switch (st.st_dmode) {
+			case DM_JOB:
 				if (n->n_state == SC_USED)
 					n->n_job->j_oh.oh_flags |= OHF_TMP;
 				break;
-			case SM_YOD:
+			case DM_YOD:
 				if (n->n_yod)
 					n->n_yod->y_oh.oh_flags |= OHF_TMP;
 				break;
@@ -802,18 +822,18 @@ panel_refresh_ninfo(struct panel *p)
 
 		label = NULL; /* gcc */
 		ol = NULL; /* gcc */
-		switch (st.st_mode) {
-		case SM_JOB:
+		switch (st.st_dmode) {
+		case DM_JOB:
 			label = "Job ID(s)";
 			ol = &job_list;
 			break;
-		case SM_TEMP:
+		case DM_TEMP:
 			label = "Temperature(s)";
 			break;
-		case SM_FAIL:
+		case DM_FAIL:
 			label = "Failure(s)";
 			break;
-		case SM_YOD:
+		case DM_YOD:
 			label = "Yod ID(s)";
 			ol = &yod_list;
 			break;
@@ -823,13 +843,13 @@ panel_refresh_ninfo(struct panel *p)
 			ohp = ol->ol_data[j];
 			if (ohp->oh_flags & OHF_TMP) {
 				ohp->oh_flags &= ~OHF_TMP;
-				switch (st.st_mode) {
-				case SM_JOB:
+				switch (st.st_dmode) {
+				case DM_JOB:
 					data_pos += snprintf(data + data_pos,
 					    sizeof(data) - data_pos, ",%d",
 					    ((struct job *)ohp)->j_id);
 					break;
-				case SM_YOD:
+				case DM_YOD:
 					data_pos += snprintf(data + data_pos,
 					    sizeof(data) - data_pos, ",%d",
 					    ((struct yod *)ohp)->y_id);
@@ -884,7 +904,7 @@ panel_refresh_ninfo(struct panel *p)
 		    "Job Memory: %dKB",
 		    n->n_job->j_id,
 		    n->n_job->j_owner,
-		    n->n_job->j_jname,
+		    n->n_job->j_name,
 		    n->n_job->j_queue,
 		    n->n_job->j_tmdur / 60,
 		    n->n_job->j_tmdur % 60,
@@ -1148,7 +1168,7 @@ panel_refresh_status(struct panel *p)
 void
 panel_refresh_login(struct panel *p)
 {
-	static char passbuf[sizeof(login_pass)];
+	static char passbuf[BUFSIZ];
 	int atpass, len;
 	char *s;
 
@@ -1166,7 +1186,7 @@ panel_refresh_login(struct panel *p)
 	}
 
 	panel_set_content(p, "- Login -\nUsername: %s%s%s",
-	    atpass ? login_user : buf_get(&uinp.uinp_buf),
+	    atpass ? authbuf : buf_get(&uinp.uinp_buf),
 	    atpass ? "\nPassword: " : "",
 	    atpass ? passbuf : "");
 }
@@ -1231,7 +1251,16 @@ panel_hide(int id)
 void
 panel_tremove(struct panel *p)
 {
+	struct pinfo *pi;
 	struct panel *t;
+
+	pi = &pinfo[baseconv(p->p_id) - 1];
+	if (pi->pi_opts & PF_UINP && uinp.uinp_panel != NULL) {
+		buf_reset(&uinp.uinp_buf);
+		buf_append(&uinp.uinp_buf, '\0');
+		glutKeyboardFunc(gl_keyh_default);
+		uinp.uinp_panel = NULL;
+	}
 
 	/* XXX inspect POPT_REMOVE first? */
 	p->p_opts ^= POPT_REMOVE;
@@ -1263,8 +1292,8 @@ panel_toggle(int panel)
 	p->p_refresh = pi->pi_refresh;
 	p->p_id = panel;
 	p->p_stick = PSTICK_TR;
-	p->p_u = win_width;
-	p->p_v = (win_height - 1) - panel_offset[PVOFF_TR];
+	p->p_u = winv.iv_w;
+	p->p_v = (winv.iv_h - 1) - panel_offset[PVOFF_TR];
 	p->p_fill.f_r = 1.0f;
 	p->p_fill.f_g = 1.0f;
 	p->p_fill.f_b = 1.0f;
@@ -1272,6 +1301,16 @@ panel_toggle(int panel)
 	SLIST_INIT(&p->p_widgets);
 
 	if (pi->pi_opts & PF_UINP) {
+		if (uinp.uinp_panel != NULL) {
+			struct panel *oldp;
+
+			buf_reset(&uinp.uinp_buf);
+			buf_append(&uinp.uinp_buf, '\0');
+			oldp = uinp.uinp_panel;
+			uinp.uinp_panel = NULL;
+			panel_tremove(oldp);
+		}
+
 		glutKeyboardFunc(gl_keyh_uinput);
 		uinp.uinp_panel = p;
 		uinp.uinp_opts = pi->pi_uinpopts;
@@ -1287,13 +1326,13 @@ panel_demobilize(struct panel *p)
 {
 	p->p_opts &= ~POPT_MOBILE;
 	p->p_opts |= POPT_DIRTY;
-	if (p->p_u + p->p_w / 2 < win_width / 2) {
-		if (win_height - p->p_v + p->p_h / 2 < win_height / 2)
+	if (p->p_u + p->p_w / 2 < winv.iv_w / 2) {
+		if (winv.iv_h - p->p_v + p->p_h / 2 < winv.iv_h / 2)
 			p->p_stick = PSTICK_TL;
 		else
 			p->p_stick = PSTICK_BL;
 	} else {
-		if (win_height - p->p_v + p->p_h / 2 < win_height / 2)
+		if (winv.iv_h - p->p_v + p->p_h / 2 < winv.iv_h / 2)
 			p->p_stick = PSTICK_TR;
 		else
 			p->p_stick = PSTICK_BR;
@@ -1323,12 +1362,16 @@ init_panels(int start)
 
 	cur = 0;
 	TAILQ_FOREACH(p, &panels, p_link)
-		cur |= p->p_id;
-	flip_panels((cur ^ start) & ~FB_PMASK);
+		if (p->p_opts & PF_FBIGN)
+			start &= ~p->p_id;
+		else
+			cur |= p->p_id;
+	flip_panels(cur ^ start);
 }
 
 /* Blink panel text (swap between two strings during interval). */
-int panel_blink(struct timeval *pre, char **s, int size, int *i, long interval)
+int
+panel_blink(struct timeval *pre, char **s, int size, int *i, long interval)
 {
 	struct timeval tv, diff;
 	char *str = s[*i];
@@ -1338,7 +1381,7 @@ int panel_blink(struct timeval *pre, char **s, int size, int *i, long interval)
 	timersub(&tv, pre, &diff);
 
 	/* Make it blink once per second */
-	if(diff.tv_sec * 1e6 + diff.tv_usec > interval) {
+	if (diff.tv_sec * 1e6 + diff.tv_usec > interval) {
 		*pre = tv;
 
 		/* Swap */
