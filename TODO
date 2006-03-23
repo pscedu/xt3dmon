@@ -1,78 +1,81 @@
 $Id$
 
 reminders:
-(o) don't recompile things - do it once and only call the
-    display lists if they are enabled (struct node.n_dl[2])
-(o) add more info to the status panel
-(o) clean up includes in files that do not need them
-(o) remove some globals
-(o) remove/split up mon.h
+- don't recompile things - do it once and only call the
+  display lists if they are enabled (struct node.n_dl[2])
+- add more info to the status panel
+- clean up includes in files that do not need them
+- keep globals few
+- remove/split up mon.h
 
 maybe not:
-(o) 'r' prefix keybinding to enable rebuild flags
-(o) move the id into ohp instead of maintaing separate vars
-(o) sigcatch USR1 and datasrc and pkill in cron
-(o) flyby_writecam() 'camera moved' frame -> set RF_CAM?
+- 'R' prefix keybinding to enable rebuild flags
+- move the id into ohp instead of maintaing separate vars
+- sigcatch USR1 to reload datasrc and pkill in cron
+- flyby_writecam() 'camera moved' frame -> set RF_CAM?
 
-3. default the logid goto user input buffer to selnode
-10. random flyby/cycle focus jobs
-15. try #define __inline to see if it does anything
-29. poll data files for when to refresh instead of blind refresh
-34. function to do rebuild option diffs
-39. be more intelligent about swapping between frustums in drawing
-    stereo scenes (don't flip twice, just flip back and forth)
-41. move sticky to pinfo for persistence
-45. divide color wheel among all modes (free/down/disabled/etc)
-    and probably keep these the same always
-50. (server mode) use overlay display cleanup of damaged glut win in
-    generated screenshots
-51. kill nselnodes (if SLIST_EMPTY())
-52. cache the current selected stuff to check for short circuiting --
-    if it follows the cursor, this should save on small movements
-53. find some way to alloc wi sel steps once
-54. in wione, draw the cube outer planes first, then inner, so gl
-    tries to optimize
-55. handle SIGPIPES in server and client modes
-56. datasrc refresh code checks if the file is diff, so maybe the
-    cronjob should check too?
-57. dsc chdir to avoid races
-63. stereo selection mode
-64. make job searching bsearch again, since it is sorted
-66. show other things in the queue (other pbs queues)
-67. dynamic font widths
-69. make selnode drawing respect n_curv
-70. draw_node, if (hide) curv = *v
-72. cut physv setting each time VMODE_PHYS is set, to save fp calc
-77. introduce widim.iv_[whd] instead of WIDIM_WIDTH, etc.
-78. merge capture_copy*
-79. merge win_width blah into ivec
-80. merge hl_*all to hl_setall(1.0 vs. 0.0)
-81. check that the server dsc-copies fresh data in case data is no
-    longer automatically refreshing itself
-82. add recursive check to gl_run() to protect against that kind of
-    invocation
-83. kill gl_run() -- have glutDisplayHandler for each win
-84. provide if-modified-since in http headers
-85. change date panel time code to update a global time var when new
-    data is read, not update the time in the panel refresh function
-87. check/mkdir exists when access(/tmp/xtsess/xxx) fails
-88. disable ground, vo mode, enable ground
-89. add arg to getcol() to set the texids
-90. for tweening, calculate the % moved by one (e.g. move), then apply
-    that % to the others, instead of use MAX_{LOOK,TWEEN} values
-91. bug when revolve position = st.st_v
-92. set st.st_mtime to HTTP response last-modified
-93. make select node glow/fade color?
-94. use a different font.png for matrix egg (katonese chars)
-95. move some stuff (like wioff) into 'struct state'
-96. rename FB*MASK to FB*IGNMASK
-97. kill the stopv stuff in key.c after OP_TWEEN is disabled during flybys
-98. remove some size_t's (pointer sizes)
-99. goto job by id
-100. make hl_job() that takes care of flyby recs
-101. color interactive panels orange
-102. kill PF_XPARENT and just set fill differently
-103. disappearing interactive panels needs to cleanup uinp
-104. view panels (wired/physical) with widgets
-105. hardwire password into mem
-106. merge hlsc into state
+todo
+- default the logid goto user input buffer to selnode
+- random flyby/cycle focus jobs
+- try #define __inline to see if it does anything
+- poll data files for when to refresh instead of blind refresh
+- function to do rebuild option diffs
+- be more intelligent about swapping between frustums in drawing
+  stereo scenes (don't flip twice, just flip back and forth)
+- move sticky to pinfo for persistence
+- divide color wheel among all modes (free/down/disabled/etc)
+  and probably keep these the same always
+- (server mode) use overlay display cleanup of damaged glut win in
+  generated screenshots
+- kill nselnodes (if SLIST_EMPTY())
+- cache the current selected stuff to check for short circuiting --
+  if it follows the cursor, this should save on small movements
+- find some way to alloc wi sel steps once
+- in wione, draw the cube outer planes first, then inner, so gl
+  tries to optimize
+- handle SIGPIPES in server mode
+- datasrc refresh code checks if the file is diff, so maybe the
+  cronjob should check too?
+- dsc chdir to avoid races
+- stereo selection mode
+- make job searching bsearch again, since it is sorted
+- show other things in the queue (other pbs queues)
+- dynamic font widths
+- make selnode drawing respect n_curv
+- draw_node, if (hide) curv = *v
+- cut physv setting each time VMODE_PHYS is set, to save fp calc
+- introduce widim.iv_[whd] instead of WIDIM_WIDTH, etc.
+- merge capture_copy*
+- merge win_width blah into ivec
+- merge hl_*all to hl_setall(1.0 vs. 0.0)
+- check that the server dsc-copies fresh data in case data is no
+  longer automatically refreshing itself
+- add recursive check to gl_run() to protect against that kind of
+  invocation
+- kill gl_run() -- have glutDisplayHandler for each win
+- provide if-modified-since in http headers
+- change date panel time code to update a global time var when new
+  data is read, not update the time in the panel refresh function
+- check/mkdir exists when access(/tmp/xtsess/xxx) fails
+- disable ground, vo mode, enable ground
+- add arg to getcol() to set the texids
+- for tweening, calculate the % moved by one (e.g. move), then apply
+  that % to the others, instead of use MAX_{LOOK,TWEEN} values
+- bug when revolve position = st.st_v
+- set st.st_mtime to HTTP response last-modified
+- make select node glow/fade color?
+- use a different font.png for matrix egg (katonese chars)
+- move some stuff (like wioff) into 'struct state'
+- rename FB*MASK to FB*IGNMASK
+- kill the stopv stuff in key.c after OP_TWEEN is disabled during flybys
+- remove some size_t's (pointer sizes)
+- goto job by id
+- make hl_job() that takes care of flyby recs
+- color interactive panels orange
+- kill PF_XPARENT and just set fill differently
+- disappearing interactive panels needs to cleanup uinp
+- -pg should use all profiled libs, but no libGL.a
+- store pw in base64 in mem?
+- view panels (wired/physical) with widgets
+- hardwire password into mem
+- merge hlsc into state
