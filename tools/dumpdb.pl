@@ -175,7 +175,9 @@ for (;;) {
 		}
 		last if eof CONNFH;
 
-		%j = (id => $1, state => "");
+		%j = (id => $1, state => "", name => "?",
+		    owner => "?", queue => "?", ncpus => 0,
+		    tmdur => 0, tmuse => 0, mem => 0);
 	} elsif ($line =~ /\s*Job_Name = (.*)/) {
 		$j{name} = $1;
 	} elsif ($line =~ /\s*Job_Owner = (.*)/) {
