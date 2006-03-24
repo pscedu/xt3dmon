@@ -175,6 +175,7 @@ flyby_read(void)
 			if (fread(&st, 1, sizeof(st), flyby_fp) !=
 			    sizeof(st))
 				err(1, "flyby read seq");
+			st.st_rf |= RF_CAM;
 			done = 1;
 			break;
 		case FHT_PANEL: {
