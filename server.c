@@ -570,9 +570,7 @@ sid_valid(const char *sid)
 			return (0);
 	if (s - sid == SID_LEN)
 		return (1);
-	else
-		return (0);
-	/* NOTREACHED */
+	return (0);
 }
 
 int
