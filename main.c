@@ -259,20 +259,22 @@ dmode_change(void)
 			}
 			break;
 		case DM_TEMP:
-			if (n->n_temp != DV_NODATA) {
+			if (n->n_temp == DV_NODATA)
+				n->n_fillp = &fill_nodata;
+			else {
 				i = roundclass(n->n_temp, TEMP_MIN, TEMP_MAX, NTEMPC);
 				n->n_fillp = &tempclass[i].nc_fill;
 				tempclass[i].nc_nmemb++;
-			} else
-				n->n_fillp = &fill_nodata;
+			}
 			break;
 		case DM_FAIL:
-			if (n->n_fails != DV_NODATA) {
+			if (n->n_fails == DV_NODATA)
+				n->n_fillp = &fill_nodata;
+			else {
 				i = roundclass(n->n_fails, FAIL_MIN, FAIL_MAX, NFAILC);
 				n->n_fillp = &failclass[i].nc_fill;
 				failclass[i].nc_nmemb++;
-			} else
-				n->n_fillp = &fill_nodata;
+			}
 			break;
 		case DM_BORG:
 			n->n_fillp = &fill_borg;
@@ -285,13 +287,14 @@ dmode_change(void)
 			n->n_fillp = &fill_same;
 			break;
 		case DM_RTUNK:
-			if (n->n_route.rt_err[RP_UNK][rt_type] != DV_NODATA) {
-				i = roundclass( n->n_route.rt_err[RP_UNK][rt_type],
+			if (n->n_route.rt_err[RP_UNK][rt_type] == DV_NODATA)
+				n->n_fillp = &fill_xparent;
+			else {
+				i = roundclass(n->n_route.rt_err[RP_UNK][rt_type],
 				    0, rt_max.rt_err[RP_UNK][rt_type], NRTC);
 				n->n_fillp = &rtclass[i].nc_fill;
 				rtclass[i].nc_nmemb++;
-			} else
-				n->n_fillp = &fill_xparent;
+			}
 			break;
 		}
 	}
