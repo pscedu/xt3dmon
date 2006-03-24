@@ -1362,7 +1362,7 @@ init_panels(int start)
 
 	cur = 0;
 	TAILQ_FOREACH(p, &panels, p_link)
-		if (p->p_opts & PF_FBIGN)
+		if (pinfo[baseconv(p->p_id) - 1].pi_opts & PF_FBIGN)
 			start &= ~p->p_id;
 		else
 			cur |= p->p_id;
