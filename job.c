@@ -6,13 +6,18 @@
 #include "job.h"
 
 struct job *
-job_findbyid(int id)
+job_findbyid(int id, int *pos)
 {
 	size_t n;
 
 	for (n = 0; n < job_list.ol_cur; n++)
-		if (job_list.ol_jobs[n]->j_id == id)
+		if (job_list.ol_jobs[n]->j_id == id) {
+			if (pos)
+				*pos = n;
 			return (job_list.ol_jobs[n]);
+		}
+	if (pos)
+		*pos = -1;
 	return (NULL);
 }
 
