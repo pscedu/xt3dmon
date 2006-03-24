@@ -75,7 +75,6 @@ todo
 - kill PF_XPARENT and just set fill differently
 - disappearing interactive panels needs to cleanup uinp
 - -pg should use all profiled libs, but no libGL.a
-- store pw in base64 in mem?
-- view panels (wired/physical) with widgets
-- hardwire password into mem
+- view mode panels (wired/physical) with widgets
 - merge hlsc into state
+- watch out for server mode, dmode=temp then setting hlnc
