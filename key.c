@@ -222,8 +222,8 @@ gl_keyh_mode(unsigned char key, __unused int u, __unused int v)
 	case 'f':
 		st.st_dmode = DM_FAIL;
 		break;
-	case 'n':
-		st.st_dmode = DM_NONE;
+	case 's':
+		st.st_dmode = DM_SAME;
 		break;
 	case 't':
 		st.st_dmode = DM_TEMP;

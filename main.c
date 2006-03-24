@@ -252,8 +252,8 @@ dmode_change(void)
 			n->n_fillp = rand() % 2 ? &fill_matrix :
 			    &fill_matrix_reloaded;
 			break;
-		case DM_NONE:
-			n->n_fillp = &fill_white;
+		case DM_SAME:
+			n->n_fillp = &fill_same;
 			break;
 		case DM_RTUNK:
 			if (n->n_route.rt_err[RP_UNK][rt_type] != DV_NODATA)

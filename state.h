@@ -9,7 +9,7 @@
 #define DM_YOD		3
 #define DM_BORG		4
 #define DM_MATRIX	5
-#define DM_NONE		6
+#define DM_SAME		6
 #define DM_RTUNK	7
 
 /* View mode. */
