@@ -207,6 +207,7 @@ flyby_read(void)
 		if (optdiff & (1 << i) &&
 		    opts[i].opt_flags & OPF_FBIGN)
 			optdiff &= ~(1 << i);
+	st.st_opts = oldopts;
 	opt_flip(optdiff);
 }
 
