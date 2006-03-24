@@ -139,12 +139,13 @@ flyby_writeselnode(int nid)
 void
 flyby_read(void)
 {
-	int i, done, oldopts, optdiff;
+	int i, done, oldrf, oldopts, optdiff;
 	struct fbhdr fbh;
 	union fbun fbun;
 	struct node *n;
 
 	oldopts = st.st_opts;
+	oldrf = st.st_rf;
 
 	done = 0;
 	do {
@@ -202,6 +203,7 @@ flyby_read(void)
 		    opts[i].opt_flags & OPF_FBIGN)
 			optdiff &= ~(1 << i);
 	st.st_opts = oldopts;
+	st.st_rf |= oldrf;
 	opt_flip(optdiff);
 }
 
