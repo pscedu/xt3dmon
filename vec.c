@@ -6,6 +6,15 @@
 
 #include "xmath.h"
 
+int
+ivec_eq(const struct ivec *a, const struct ivec *b)
+{
+	return (
+	    a->iv_x == b->iv_x &&
+	    a->iv_y == b->iv_y &&
+	    a->iv_z == b->iv_z);
+}
+
 void
 vec_normalize(struct fvec *fvp)
 {
