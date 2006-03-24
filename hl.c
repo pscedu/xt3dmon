@@ -38,16 +38,6 @@ hl_setall(float val)
 		for (i = 0; i < NSC; i++)
 			statusclass[i].nc_fill.f_a = val;
 		break;
-	case DM_BORG:
-		fill_borg.f_a = val;
-		break;
-	case DM_MATRIX:
-		fill_matrix.f_a = val;
-		fill_matrix_reloaded.f_a = val;
-		break;
-	case DM_SAME:
-		fill_same.f_a = val;
-		break;
 	case DM_RTUNK:
 		for (i = 0; i < NRTC; i++)
 			rtclass[i].nc_fill.f_a = val;
