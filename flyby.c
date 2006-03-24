@@ -16,6 +16,7 @@
 #include "queue.h"
 #include "selnode.h"
 #include "state.h"
+#include "xmath.h"
 
 int		 flyby_mode;
 struct state	 sav_st;
@@ -140,6 +141,8 @@ flyby_read(void)
 {
 	int i, done, oldopts, optdiff;
 	struct fbhdr fbh;
+	union fbun fbun;
+	struct node *n;
 
 	oldopts = st.st_opts;
 
@@ -158,19 +161,16 @@ flyby_read(void)
 			err(1, "fread flyby header");
 		}
 		switch (fbh.fbh_type) {
-		case FHT_INIT: {
-			struct fbinit fbi;
-
-			if (fread(&fbi, 1, sizeof(fbi), flyby_fp) !=
-			    sizeof(fbi))
+		case FHT_INIT:
+			if (fread(&fbun, 1, sizeof(struct fbinit),
+			    flyby_fp) != sizeof(struct fbinit))
 				err(1, "flyby read init");
-			st = fbi.fbi_state;
+			st = fbun.fbu_init.fbi_state;
 			st.st_rf |= RF_INIT;
 			st.st_rf &= ~RF_DATASRC;
-			init_panels(fbi.fbi_panels);
+			init_panels(fbun.fbu_init.fbi_panels);
 			done = 1;
 			break;
-		    }
 		case FHT_SEQ:
 			if (fread(&st, 1, sizeof(st), flyby_fp) !=
 			    sizeof(st))
@@ -178,27 +178,21 @@ flyby_read(void)
 			st.st_rf |= RF_CAM;
 			done = 1;
 			break;
-		case FHT_PANEL: {
-			struct fbpanel fbp;
-
-			if (fread(&fbp, 1, sizeof(fbp), flyby_fp) !=
-			    sizeof(fbp))
+		case FHT_PANEL:
+			if (fread(&fbun, 1, sizeof(struct fbpanel),
+			    flyby_fp) != sizeof(struct fbpanel))
 				err(1, "flyby read panel");
-			if (fbp.fbp_panel >= 0 && fbp.fbp_panel < NPANELS)
-				panel_toggle(fbp.fbp_panel);
+			if (fbun.fbu_panel.fbp_panel >= 0 &&
+			    fbun.fbu_panel.fbp_panel < NPANELS)
+				panel_toggle(fbun.fbu_panel.fbp_panel);
 			break;
-		    }
-		case FHT_SELNODE: {
-			struct fbselnode fbsn;
-			struct node *n;
-
-			if (fread(&fbsn, 1, sizeof(fbsn), flyby_fp) !=
-			    sizeof(fbsn))
-				err(1, "flyby read panel");
-			if ((n = node_for_nid(fbsn.fbsn_nid)) != NULL)
+		case FHT_SELNODE:
+			if (fread(&fbun, 1, sizeof(struct fbselnode),
+			    flyby_fp) != sizeof(struct fbselnode))
+				err(1, "flyby read selnode");
+			if ((n = node_for_nid(fbun.fbu_sn.fbsn_nid)) != NULL)
 				sn_toggle(n);
 			break;
-		    }
 		}
 	} while (!done);
 
@@ -214,6 +208,8 @@ flyby_read(void)
 void
 flyby_end(void)
 {
+	int rf, opts;
+
 	if (flyby_fp != NULL) {
 		fclose(flyby_fp);
 		flyby_fp = NULL;
@@ -226,9 +222,26 @@ flyby_end(void)
 		glutMotionFunc(gl_motionh_default);
 		glutPassiveMotionFunc(gl_pasvmotionh_default);
 		glutMouseFunc(gl_mouseh_default);
-		opt_flip(st.st_opts ^ sav_opts);
-		st.st_rf |= RF_CAM;
-		/* rebuild(RF_INIT); */
+
+		rf = RF_CAM;
+		if (st.st_dmode != sav_st.st_dmode)
+			rf |= RF_DMODE;
+		if (st.st_vmode != sav_st.st_vmode ||
+		    st.st_pipemode != sav_st.st_pipemode ||
+		    !ivec_eq(&st.st_wioff, &sav_st.st_wioff) ||
+		    !ivec_eq(&st.st_winsp, &sav_st.st_winsp))
+			rf |= RF_CLUSTER;
+		if (st.st_hlnc != sav_st.st_hlnc)
+			rf |= RF_HLNC;
+		if (st.st_eggs != sav_st.st_eggs)
+			rf |= (RF_INIT & ~RF_DATASRC);
+
+		opts = st.st_opts;
+		st = sav_st;
+		st.st_opts = opts;
+		st.st_rf = rf;
+
+		opt_flip(st.st_opts ^ sav_st.st_opts);
 		break;
 	}
 
