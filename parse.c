@@ -329,7 +329,7 @@ parse_yod(const struct datasrc *ds)
 
 		PARSENUM(s, y_fake.y_id, INT_MAX);
 
-		if ((y = yod_findbyid(y_fake.y_id)) == NULL)
+		if ((y = yod_findbyid(y_fake.y_id, NULL)) == NULL)
 			continue;
 		else
 			y_fake = *y;
@@ -372,7 +372,7 @@ parse_job(const struct datasrc *ds)
 
 		PARSENUM(s, j_fake.j_id, INT_MAX);
 
-		if ((j = job_findbyid(j_fake.j_id)) == NULL)
+		if ((j = job_findbyid(j_fake.j_id, NULL)) == NULL)
 			continue;
 		else
 			j_fake = *j;
