@@ -556,7 +556,7 @@ svc_dmode(char *t, int *used, __unused struct session *ss)
 	if ((sve = sve_find(t, tab, used)) == NULL)
 		return (0);
 	st.st_dmode = sve->sve_value;
-	st.st_rf |= RF_CLUSTER | RF_DATASRC | RF_DMODE;
+	st.st_rf |= RF_DMODE;
 	return (1);
 }
 
