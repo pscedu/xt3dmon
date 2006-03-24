@@ -18,7 +18,7 @@
 #include "state.h"
 
 int		 flyby_mode;
-int		 sav_opts;
+struct state	 sav_st;
 static FILE	*flyby_fp;
 
 void		 init_panels(int);
@@ -68,7 +68,7 @@ flyby_begin(int mode)
 		}
 		flyby_mode = FBM_PLAY;
 
-		sav_opts = st.st_opts;
+		sav_st = st;
 		st.st_opts &= ~OP_TWEEN;
 
 		glutMotionFunc(gl_motionh_null);
