@@ -27,50 +27,50 @@ struct objlist	 yod_list    = { { NULL }, 0, 0, 0, 0, YINCR, sizeof(struct yod),
 struct objlist	 glname_list = { { NULL }, 0, 0, 0, 0, GINCR, sizeof(struct glname), glname_eq };
 
 struct nodeclass statusclass[] = {
-	{ "Free",		FILL_INIT(1.00f, 1.00f, 1.00f) },
-	{ "Disabled (PBS)",	FILL_INIT(1.00f, 0.00f, 0.00f) },
-	{ "Down (CPA)",		FILL_INIT(0.66f, 0.66f, 0.66f) },
-	{ NULL,			FILL_INIT(0.00f, 0.00f, 0.00f) },
-	{ "Service",		FILL_INIT(1.00f, 1.00f, 0.00f) }
+	{ "Free",		FILL_INIT(1.00f, 1.00f, 1.00f), 0 },
+	{ "Disabled (PBS)",	FILL_INIT(1.00f, 0.00f, 0.00f), 0 },
+	{ "Down (CPA)",		FILL_INIT(0.66f, 0.66f, 0.66f), 0 },
+	{ NULL,			FILL_INIT(0.00f, 0.00f, 0.00f), 0 },
+	{ "Service",		FILL_INIT(1.00f, 1.00f, 0.00f), 0 }
 };
 
 struct nodeclass tempclass[] = {
-	{ "18-22C",		FILL_INIT(0.0f, 0.0f, 0.4f) },
-	{ "22-26C",		FILL_INIT(0.8f, 0.0f, 0.4f) },
-	{ "26-31C",		FILL_INIT(0.6f, 0.0f, 0.6f) },
-	{ "31-35C",		FILL_INIT(0.4f, 0.0f, 0.8f) },
-	{ "35-40C",		FILL_INIT(0.2f, 0.2f, 1.0f) },
-	{ "40-44C",		FILL_INIT(0.0f, 0.0f, 1.0f) },
-	{ "44-49C",		FILL_INIT(0.0f, 0.6f, 0.6f) },
-	{ "49-53C",		FILL_INIT(0.0f, 0.8f, 0.0f) },
-	{ "53-57C",		FILL_INIT(0.4f, 1.0f, 0.0f) },
-	{ "57-62C",		FILL_INIT(1.0f, 1.0f, 0.0f) },
-	{ "62-66C",		FILL_INIT(1.0f, 0.8f, 0.2f) },
-	{ "66-71C",		FILL_INIT(1.0f, 0.6f, 0.0f) },
-	{ "71-75C",		FILL_INIT(1.0f, 0.0f, 0.0f) },
-	{ "75-80C",		FILL_INIT(1.0f, 0.6f, 0.6f) }
+	{ "18-22C",		FILL_INIT(0.0f, 0.0f, 0.4f), 0 },
+	{ "22-26C",		FILL_INIT(0.8f, 0.0f, 0.4f), 0 },
+	{ "26-31C",		FILL_INIT(0.6f, 0.0f, 0.6f), 0 },
+	{ "31-35C",		FILL_INIT(0.4f, 0.0f, 0.8f), 0 },
+	{ "35-40C",		FILL_INIT(0.2f, 0.2f, 1.0f), 0 },
+	{ "40-44C",		FILL_INIT(0.0f, 0.0f, 1.0f), 0 },
+	{ "44-49C",		FILL_INIT(0.0f, 0.6f, 0.6f), 0 },
+	{ "49-53C",		FILL_INIT(0.0f, 0.8f, 0.0f), 0 },
+	{ "53-57C",		FILL_INIT(0.4f, 1.0f, 0.0f), 0 },
+	{ "57-62C",		FILL_INIT(1.0f, 1.0f, 0.0f), 0 },
+	{ "62-66C",		FILL_INIT(1.0f, 0.8f, 0.2f), 0 },
+	{ "66-71C",		FILL_INIT(1.0f, 0.6f, 0.0f), 0 },
+	{ "71-75C",		FILL_INIT(1.0f, 0.0f, 0.0f), 0 },
+	{ "75-80C",		FILL_INIT(1.0f, 0.6f, 0.6f), 0 }
 };
 
 struct nodeclass failclass[] = {
-	{ "0",			FILL_INIT(0.0f, 0.2f, 0.4f) },
-	{ "1-5",		FILL_INIT(0.2f, 0.4f, 0.6f) },
-	{ "6-10",		FILL_INIT(0.4f, 0.6f, 0.8f) },
-	{ "11-15",		FILL_INIT(0.6f, 0.8f, 1.0f) },
-	{ "15-20",		FILL_INIT(0.8f, 1.0f, 1.0f) },
-	{ "20+",		FILL_INIT(1.0f, 1.0f, 1.0f) }
+	{ "0",			FILL_INIT(0.0f, 0.2f, 0.4f), 0 },
+	{ "1-5",		FILL_INIT(0.2f, 0.4f, 0.6f), 0 },
+	{ "6-10",		FILL_INIT(0.4f, 0.6f, 0.8f), 0 },
+	{ "11-15",		FILL_INIT(0.6f, 0.8f, 1.0f), 0 },
+	{ "15-20",		FILL_INIT(0.8f, 1.0f, 1.0f), 0 },
+	{ "20+",		FILL_INIT(1.0f, 1.0f, 1.0f), 0 }
 };
 
 struct nodeclass rtclass[] = {
-	{ "0-10%",		FILL_INITA(1.0f, 1.0f, 0.4f, 0.5f) },
-	{ "10-20%",		FILL_INITA(1.0f, 0.9f, 0.4f, 0.5f) },
-	{ "20-30%",		FILL_INITA(1.0f, 0.8f, 0.4f, 0.5f) },
-	{ "30-40%",		FILL_INITA(1.0f, 0.7f, 0.4f, 0.5f) },
-	{ "40-50%",		FILL_INITA(1.0f, 0.6f, 0.4f, 0.5f) },
-	{ "50-60%",		FILL_INITA(1.0f, 0.5f, 0.4f, 0.6f) },
-	{ "60-70%",		FILL_INITA(1.0f, 0.4f, 0.4f, 0.7f) },
-	{ "70-80%",		FILL_INITA(1.0f, 0.3f, 0.4f, 0.8f) },
-	{ "80-90%",		FILL_INITA(1.0f, 0.2f, 0.4f, 0.9f) },
-	{ "90-100%",		FILL_INITA(1.0f, 0.1f, 0.4f, 1.0f) }
+	{ "0-10%",		FILL_INITA(1.0f, 1.0f, 0.4f, 0.5f), 0 },
+	{ "10-20%",		FILL_INITA(1.0f, 0.9f, 0.4f, 0.5f), 0 },
+	{ "20-30%",		FILL_INITA(1.0f, 0.8f, 0.4f, 0.5f), 0 },
+	{ "30-40%",		FILL_INITA(1.0f, 0.7f, 0.4f, 0.5f), 0 },
+	{ "40-50%",		FILL_INITA(1.0f, 0.6f, 0.4f, 0.5f), 0 },
+	{ "50-60%",		FILL_INITA(1.0f, 0.5f, 0.4f, 0.6f), 0 },
+	{ "60-70%",		FILL_INITA(1.0f, 0.4f, 0.4f, 0.7f), 0 },
+	{ "70-80%",		FILL_INITA(1.0f, 0.3f, 0.4f, 0.8f), 0 },
+	{ "80-90%",		FILL_INITA(1.0f, 0.2f, 0.4f, 0.9f), 0 },
+	{ "90-100%",		FILL_INITA(1.0f, 0.1f, 0.4f, 1.0f), 0 }
 };
 
 int
