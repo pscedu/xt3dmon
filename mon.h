@@ -96,11 +96,8 @@ void		 egg_borg(void);
 void		 egg_matrix(void);
 
 /* hl.c */
-void		 hl_clearall(void);
-void		 hl_restoreall(void);
-void		 hl_state(int);
-void		 hl_refresh(void);
-void		 hl_seljobs(void);
+void		 hl_change(void);
+void		 hl_setall(float);
 
 /* png.c */
 void 		*png_load(char *, unsigned int *, unsigned int *);
@@ -112,6 +109,8 @@ void		 opt_enable(int);
 void		 opt_disable(int);
 
 void		 restart(void);
+
+int		 roundclass(int, int, int, int);
 
 /* parse-phys.y */
 void		 parse_physconf(void);

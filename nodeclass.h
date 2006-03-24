@@ -11,27 +11,21 @@
 
 #define TEMP_MIN	18
 #define TEMP_MAX	80
-#define TEMP_NTEMPS	(sizeof(tempclass) / sizeof(tempclass[0]))
+#define NTEMPC		14
 
 #define FAIL_MIN	0
 #define FAIL_MAX	20
-#define FAIL_NFAILS	(sizeof(failclass) / sizeof(failclass[0]))
+#define NFAILC		6
 
-#define RT_NRTS		(sizeof(rtclass) / sizeof(rtclass[0]))
-
-/* Node highlighting. */
-#define SC_HL_ALL	(-1)
-#define SC_HL_NONE	(-2)
-#define SC_HL_SELJOBS	(-3)
+#define NRTC		10
 
 struct nodeclass {
 	char		*nc_name;
 	struct fill	 nc_fill;
+	int		 nc_nmemb;
 };
 
 extern struct nodeclass	 statusclass[];
-extern struct nodeclass	 tempclass[14];		/* XXX SPOT */
-extern struct nodeclass	 failclass[6];		/* XXX SPOT */
-extern struct nodeclass	 rtclass[10];		/* XXX SPOT */
-
-extern int hlsc;
+extern struct nodeclass	 tempclass[NTEMPC];	/* XXX SPOT */
+extern struct nodeclass	 failclass[NFAILC];	/* XXX SPOT */
+extern struct nodeclass	 rtclass[NRTC];		/* XXX SPOT */

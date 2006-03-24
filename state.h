@@ -25,6 +25,7 @@ struct state {
 	int		 st_dmode;		/* data mode */
 	int		 st_vmode;		/* view mode */
 	int		 st_pipemode;		/* pipe mode */
+	int		 st_hlnc;		/* highlighted node class */
 	int		 st_eggs;
 	struct ivec	 st_wioff;		/* wired mode offsets */
 	struct ivec	 st_winsp;		/* wired node spacing */
@@ -46,6 +47,16 @@ struct state {
 #define PM_DIR		0
 #define PM_RT		1
 
+/*
+ * Node highlighting.
+ * If the value of st.st_hlnc is something other than
+ * these values, it is a value specific to the current
+ * dmode.
+ */
+#define HL_ALL		(-1)
+#define HL_NONE		(-2)
+#define HL_SELDM	(-3)
+
 /* Rebuild flags. */
 #define RF_DATASRC	(1<<0)
 #define RF_CLUSTER	(1<<1)
@@ -53,8 +64,9 @@ struct state {
 #define RF_CAM		(1<<3)
 #define RF_GROUND	(1<<4)
 #define RF_DMODE	(1<<5)
+#define RF_HLNC		(1<<6)
 #define RF_INIT		(RF_DATASRC | RF_CLUSTER | RF_GROUND | \
-			 RF_SELNODE | RF_CAM | RF_DMODE)
+			 RF_SELNODE | RF_CAM | RF_DMODE | RF_HLNC)
 
 #define EGG_BORG 	(1<<0)
 #define EGG_MATRIX 	(1<<1)

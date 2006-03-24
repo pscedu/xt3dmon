@@ -104,6 +104,7 @@ struct state st = {
 	DM_JOB,						/* which data to show */
 	VM_WIREDONE,					/* viewing mode */
 	PM_RT,						/* pipe mode */
+	HL_ALL,						/* node class to highlight */
 	0,
 	{ 0, 0, 0 },					/* wired mode offset */
 	{ 4, 4, 4 },					/* wired node spacing */
@@ -212,8 +213,30 @@ dmode_change(void)
 {
 	struct ivec iv;
 	struct node *n;
+	int i;
 
 	mode_data_clean = 0;
+
+	switch (st.st_dmode) {
+	case DM_JOB:
+	case DM_YOD:
+		for (i = 0; i < NSC; i++)
+			statusclass[i].nc_nmemb = 0;
+		break;
+	case DM_TEMP:
+		for (i = 0; i < NTEMPC; i++)
+			tempclass[i].nc_nmemb = 0;
+		break;
+	case DM_FAIL:
+		for (i = 0; i < NFAILC; i++)
+			failclass[i].nc_nmemb = 0;
+		break;
+	case DM_RTUNK:
+		for (i = 0; i < NRTC; i++)
+			rtclass[i].nc_nmemb = 0;
+		break;
+	}
+
 	NODE_FOREACH(n, &iv) {
 		if (n == NULL)
 			continue;
@@ -222,27 +245,33 @@ dmode_change(void)
 		case DM_JOB:
 			if (n->n_job)
 				n->n_fillp = &n->n_job->j_fill;
-			else
+			else {
 				n->n_fillp = &statusclass[n->n_state].nc_fill;
+				statusclass[n->n_state].nc_nmemb++;
+			}
 			break;
 		case DM_YOD:
 			if (n->n_yod)
 				n->n_fillp = &n->n_yod->y_fill;
-			else
+			else {
 				n->n_fillp = &statusclass[n->n_state].nc_fill;
+				statusclass[n->n_state].nc_nmemb++;
+			}
 			break;
 		case DM_TEMP:
-			if (n->n_temp != DV_NODATA)
-				n->n_fillp = &tempclass[roundclass(n->n_temp,
-				    TEMP_MIN, TEMP_MAX, TEMP_NTEMPS)].nc_fill;
-			else
+			if (n->n_temp != DV_NODATA) {
+				i = roundclass(n->n_temp, TEMP_MIN, TEMP_MAX, NTEMPC);
+				n->n_fillp = &tempclass[i].nc_fill;
+				tempclass[i].nc_nmemb++;
+			} else
 				n->n_fillp = &fill_nodata;
 			break;
 		case DM_FAIL:
-			if (n->n_fails != DV_NODATA)
-				n->n_fillp = &failclass[roundclass(n->n_fails,
-				    FAIL_MIN, FAIL_MAX, FAIL_NFAILS)].nc_fill;
-			else
+			if (n->n_fails != DV_NODATA) {
+				i = roundclass(n->n_fails, FAIL_MIN, FAIL_MAX, NFAILC);
+				n->n_fillp = &failclass[i].nc_fill;
+				failclass[i].nc_nmemb++;
+			} else
 				n->n_fillp = &fill_nodata;
 			break;
 		case DM_BORG:
@@ -256,11 +285,12 @@ dmode_change(void)
 			n->n_fillp = &fill_same;
 			break;
 		case DM_RTUNK:
-			if (n->n_route.rt_err[RP_UNK][rt_type] != DV_NODATA)
-				n->n_fillp = &rtclass[roundclass(
-				    n->n_route.rt_err[RP_UNK][rt_type], 0,
-				    rt_max.rt_err[RP_UNK][rt_type], RT_NRTS)].nc_fill;
-			else
+			if (n->n_route.rt_err[RP_UNK][rt_type] != DV_NODATA) {
+				i = roundclass( n->n_route.rt_err[RP_UNK][rt_type],
+				    0, rt_max.rt_err[RP_UNK][rt_type], NRTC);
+				n->n_fillp = &rtclass[i].nc_fill;
+				rtclass[i].nc_nmemb++;
+			} else
 				n->n_fillp = &fill_xparent;
 			break;
 		}
@@ -276,12 +306,17 @@ rebuild(int opts)
 		ds_refresh(DS_YOD, dsflags);
 		ds_refresh(DS_RT, dsflags);
 		ds_refresh(DS_MEM, DSFF_IGN);
-		hl_refresh();
 
-		opts |= RF_DMODE | RF_CLUSTER;
+		opts |= RF_DMODE | RF_CLUSTER | RF_HLNC;
 	}
-	if (opts & RF_DMODE)
+	if (opts & RF_DMODE) {
 		dmode_change();
+		opts |= RF_CLUSTER | RF_HLNC;
+	}
+	if (opts & RF_HLNC) {
+		hl_change();
+		opts |= RF_CLUSTER;
+	}
 	if (opts & RF_CAM) {
 		switch (st.st_vmode) {
 		case VM_PHYSICAL:

@@ -706,22 +706,21 @@ panel_refresh_legend(struct panel *p)
 		    job_list.ol_cur);
 
 		pw = panel_get_pwidget(p, pw, &nextp);
-		pwidget_set(p, pw, &fill_nodata, "Show all",
-		    gscb_pwall, 0);
+		pwidget_set(p, pw, &fill_nodata, "Show all", gscb_pw_hlall, 0);
 		pw = nextp;
 
 		for (j = 0; j < NSC; j++, pw = nextp) {
-			if (j == SC_USED)
+			if (j == SC_USED ||
+			    statusclass[j].nc_nmemb == 0)
 				continue;
 			pw = panel_get_pwidget(p, pw, &nextp);
 			pwidget_set(p, pw, &statusclass[j].nc_fill,
-			    statusclass[j].nc_name, gscb_pwsc, j);
+			    statusclass[j].nc_name, gscb_pw_hlnc, j);
 		}
 		for (j = 0; j < job_list.ol_cur; j++, pw = nextp) {
 			pw = panel_get_pwidget(p, pw, &nextp);
 			pwidget_set(p, pw, &job_list.ol_jobs[j]->j_fill,
-			    job_list.ol_jobs[j]->j_name, gscb_pwjob,
-			    job_list.ol_jobs[j]->j_id);
+			    job_list.ol_jobs[j]->j_name, gscb_pw_hlnc, NSC + j);
 		}
 		break;
 	case DM_FAIL:
@@ -729,42 +728,75 @@ panel_refresh_legend(struct panel *p)
 		    total_failures);
 
 		pw = panel_get_pwidget(p, pw, &nextp);
+		pwidget_set(p, pw, &fill_nodata, "Show all", gscb_pw_hlall, 0);
+		pw = nextp;
+
+		pw = panel_get_pwidget(p, pw, &nextp);
 		pwidget_set(p, pw, &fill_nodata, "No data", NULL, 0);
 		pw = nextp;
 
-		for (j = 0; j < FAIL_NFAILS; j++, pw = nextp) {
+		for (j = 0; j < NFAILC; j++, pw = nextp) {
+			if (failclass[j].nc_nmemb == 0)
+				continue;
 			pw = panel_get_pwidget(p, pw, &nextp);
 			pwidget_set(p, pw, &failclass[j].nc_fill,
-			    failclass[j].nc_name, NULL, 0);
+			    failclass[j].nc_name, gscb_pw_hlnc, j);
 		}
 		break;
 	case DM_TEMP:
 		panel_set_content(p, "- Temperature Legend -");
 
 		pw = panel_get_pwidget(p, pw, &nextp);
+		pwidget_set(p, pw, &fill_nodata, "Show all", gscb_pw_hlall, 0);
+		pw = nextp;
+
+		pw = panel_get_pwidget(p, pw, &nextp);
 		pwidget_set(p, pw, &fill_nodata, "No data", NULL, 0);
 		pw = nextp;
 
-		for (j = 0; j < TEMP_NTEMPS; j++, pw = nextp) {
+		for (j = 0; j < NTEMPC; j++, pw = nextp) {
+			if (tempclass[j].nc_nmemb == 0)
+				continue;
 			pw = panel_get_pwidget(p, pw, &nextp);
 			pwidget_set(p, pw, &tempclass[j].nc_fill,
-			    tempclass[j].nc_name, NULL, 0);
+			    tempclass[j].nc_name, gscb_pw_hlnc, j);
 		}
 		break;
 	case DM_YOD:
 		panel_set_content(p, "- Yod Legend -\nTotal yods: %lu",
 		    yod_list.ol_cur);
+
+		pw = panel_get_pwidget(p, pw, &nextp);
+		pwidget_set(p, pw, &fill_nodata, "Show all", gscb_pw_hlall, 0);
+		pw = nextp;
+
 		for (j = 0; j < NSC; j++, pw = nextp) {
-			if (j == SC_USED)
+			if (j == SC_USED ||
+			    statusclass[j].nc_nmemb == 0)
 				continue;
 			pw = panel_get_pwidget(p, pw, &nextp);
 			pwidget_set(p, pw, &statusclass[j].nc_fill,
-			    statusclass[j].nc_name, NULL, 0);
+			    statusclass[j].nc_name, gscb_pw_hlnc, j);
 		}
 		for (j = 0; j < yod_list.ol_cur; j++, pw = nextp) {
 			pw = panel_get_pwidget(p, pw, &nextp);
 			pwidget_set(p, pw, &yod_list.ol_yods[j]->y_fill,
-			    yod_list.ol_yods[j]->y_cmd, NULL, 0);
+			    yod_list.ol_yods[j]->y_cmd, gscb_pw_hlnc, NSC + j);
+		}
+		break;
+	case DM_RTUNK:
+		panel_set_content(p, "- Routing Legend -");
+
+		pw = panel_get_pwidget(p, pw, &nextp);
+		pwidget_set(p, pw, &fill_nodata, "Show all", gscb_pw_hlall, 0);
+		pw = nextp;
+
+		for (j = 0; j < NRTC; j++, pw = nextp) {
+			if (rtclass[j].nc_nmemb == 0)
+				continue;
+			pw = panel_get_pwidget(p, pw, &nextp);
+			pwidget_set(p, pw, &rtclass[j].nc_fill,
+			    rtclass[j].nc_name, gscb_pw_hlnc, j);
 		}
 		break;
 	}
@@ -1122,7 +1154,7 @@ panel_refresh_opts(struct panel *p)
 		pw = panel_get_pwidget(p, pw, &nextp);
 		pwidget_set(p, pw, (st.st_opts & (1 << i) ?
 		    &fill_white : &fill_nodata), opts[i].opt_name,
-		    gscb_pwopt, i);
+		    gscb_pw_opt, i);
 	}
 }
 
@@ -1153,7 +1185,7 @@ panel_refresh_panels(struct panel *p)
 		pw = panel_get_pwidget(p, pw, &nextp);
 		pwidget_set(p, pw, (pids & (1 << i) ?
 		    &fill_white : &fill_nodata), pinfo[i].pi_name,
-		    gscb_pwpanel, i);
+		    gscb_pw_panel, i);
 	}
 }
 

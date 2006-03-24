@@ -59,26 +59,20 @@ uinpcb_gotonode(void)
 void
 uinpcb_gotojob(void)
 {
-	struct job *j;
+	int jobid, pos;
 	char *s;
-	int jid;
 	long l;
 
 	s = buf_get(&uinp.uinp_buf);
 	l = strtol(s, NULL, 10);
 	if (l <= 0 || !isdigit(*s))
 		return;
-	jid = (int)l;
+	jobid = (int)l;
 
-	if ((j = job_findbyid(jid)) == NULL)
+	if (job_findbyid(jobid, &pos) == NULL)
 		return;
-	hl_clearall();
-	job_hl(j);
-
-	hlsc = SC_HL_SELJOBS;
-	if (flyby_mode == FBM_REC)
-		flyby_writehlsc(hlsc);
-	st.st_rf |= RF_CLUSTER | RF_SELNODE;
+	st.st_hlnc = NSC + pos;
+	st.st_rf |= RF_HLNC;
 }
 
 void

@@ -7,13 +7,12 @@
 
 #include "cdefs.h"
 #include "env.h"
+#include "flyby.h"
 #include "gl.h"
-#include "job.h"
 #include "node.h"
 #include "nodeclass.h"
 #include "objlist.h"
 #include "panel.h"
-#include "flyby.h"
 #include "select.h"
 #include "selnode.h"
 #include "state.h"
@@ -225,42 +224,27 @@ gscb_node(int nid)
 }
 
 void
-gscb_pwsc(int sc)
+gscb_pw_hlnc(int nc)
 {
-	hl_state(sc);
-	st.st_rf |= RF_CLUSTER | RF_SELNODE;
+	st.st_hlnc = nc;
+	st.st_rf |= RF_HLNC;
 }
 
 void
-gscb_pwjob(int jobid)
+gscb_pw_hlall(__unused int a)
 {
-	struct job *j;
-
-	if ((j = job_findbyid(jobid)) != NULL) {
-		hl_clearall();
-		job_hl(j);
-		hlsc = SC_HL_SELJOBS;
-		if (flyby_mode == FBM_REC)
-			flyby_writehlsc(hlsc);
-		st.st_rf |= RF_CLUSTER | RF_SELNODE;
-	}
+	st.st_hlnc = HL_ALL;
+	st.st_rf |= RF_HLNC;
 }
 
 void
-gscb_pwall(__unused int a)
-{
-	hl_restoreall();
-	st.st_rf |= RF_CLUSTER | RF_SELNODE;
-}
-
-void
-gscb_pwopt(int opt)
+gscb_pw_opt(int opt)
 {
 	opt_flip(1 << opt);
 }
 
 void
-gscb_pwpanel(int pid)
+gscb_pw_panel(int pid)
 {
 	panel_toggle(1 << pid);
 }

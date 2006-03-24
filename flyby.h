@@ -15,6 +15,5 @@ void	 flyby_writeinit(struct state *);
 void	 flyby_writeseq(struct state *);
 void	 flyby_writepanel(int);
 void	 flyby_writeselnode(int);
-void	 flyby_writehlsc(int);
 
 extern int flyby_mode;

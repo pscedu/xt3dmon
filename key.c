@@ -425,24 +425,24 @@ gl_keyh_alpha(unsigned char key, __unused int u, __unused int v)
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'd':
-		hl_state(SC_DISABLED);
+		st.st_hlnc = SC_DISABLED;
 		break;
 	case 'f':
-		hl_state(SC_FREE);
+		st.st_hlnc = SC_FREE;
 		break;
 	case 'j':
-		hl_seljobs();
+		st.st_hlnc = HL_SELDM;
 		break;
 	case 'r':
-		hl_restoreall();
+		st.st_hlnc = HL_ALL;
 		break;
 	case 's':
-		hl_clearall();
+		st.st_hlnc = HL_NONE;
 		break;
 	default:
 		return;
 	}
-	st.st_rf |= RF_CLUSTER | RF_SELNODE;
+	st.st_rf |= RF_HLNC;
 }
 
 void

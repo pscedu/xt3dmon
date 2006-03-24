@@ -228,7 +228,7 @@ serv_displayh(void)
 	dbg_warn("Servicing new connection");
 	nreqs++;
 	sn_clear();
-	hl_restoreall();
+	st.st_hlnc = HL_ALL;
 	for (i = 0; i < MAXTRIES; i++) {
 		usleep(TRYWAIT);
 		if ((len = read(clifd, buf, sizeof(buf) - 1)) == -1) {
@@ -261,7 +261,7 @@ snap:
 //	glutReshapeFunc(gl_reshapeh);
 	gl_reshapeh(winv.iv_w, winv.iv_h);
 
-	rf = st.st_rf | RF_CAM | RF_DATASRC | RF_CLUSTER | RF_DMODE;
+	rf = st.st_rf | RF_CAM | RF_DATASRC | RF_CLUSTER | RF_DMODE | RF_HLNC;
 	if (ss.ss_sid) {
 		struct panel *p;
 		int dsm;
@@ -296,14 +296,12 @@ snap:
 	}
 
 	if (ss.ss_jobid) {
-		struct job *j;
+		int pos;
 
-		if ((j = job_findbyid(ss.ss_jobid)) != NULL) {
+		if (job_findbyid(ss.ss_jobid, &pos) != NULL) {
 			st.st_opts |= OP_SKEL;
-			st.st_rf |= RF_CLUSTER;
-
-			hl_clearall();
-			job_hl(j);
+			st.st_hlnc = NSC + pos;
+			st.st_rf |= RF_HLNC;
 		}
 	}
 	memset(buf, 0, sizeof(buf));
@@ -519,9 +517,9 @@ svc_hl(char *t, int *used, __unused struct session *ss)
 
 	if ((sve = sve_find(t, tab, used)) == NULL)
 		return (0);
-	hl_state(sve->sve_value);
 	st.st_opts |= OP_SKEL;
-	st.st_rf |= RF_CLUSTER;
+	st.st_hlnc = sve->sve_value;
+	st.st_rf |= RF_HLNC;
 	return (1);
 }
 
