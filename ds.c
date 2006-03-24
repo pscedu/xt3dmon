@@ -244,8 +244,18 @@ dsc_create(const char *sid)
 	char fn[PATH_MAX];
 
 	snprintf(fn, sizeof(fn), "%s/%s", _PATH_SESSIONS, sid);
-	if (mkdir(fn, 0755) == -1)
+	if (mkdir(fn, 0755) == -1) {
+		/* Check that sessions directory exists. */
+		if (errno == ENOENT) {
+			if (mkdir(_PATH_SESSIONS, 01755) == -1)
+				err(1, "mkdir: %s", _PATH_SESSIONS);
+			if (mkdir(fn, 0755) != -1) {
+				errno = 0;
+				return;
+			}
+		}
 		err(1, "mkdir: %s", fn);
+	}
 }
 
 int
