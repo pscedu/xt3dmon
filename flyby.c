@@ -166,6 +166,7 @@ flyby_read(void)
 				err(1, "flyby read init");
 			st = fbi.fbi_state;
 			st.st_rf |= RF_INIT;
+			st.st_rf &= ~RF_DATASRC;
 			init_panels(fbi.fbi_panels);
 			done = 1;
 			break;
