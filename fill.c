@@ -6,17 +6,18 @@
 #include "nodeclass.h"
 #include "util.h"
 
-struct fill fill_bg		= FILL_INIT(0.1f, 0.2f, 0.3f);
 struct fill fill_black		= FILL_INIT(0.0f, 0.0f, 0.0f);
-struct fill fill_white		= FILL_INIT(1.0f, 1.0f, 1.0f);
 struct fill fill_grey		= FILL_INIT(0.2f, 0.2f, 0.2f);
 struct fill fill_light_blue	= FILL_INIT(0.2f, 0.4f, 0.6f);
-struct fill fill_yellow		= FILL_INIT(1.0f, 1.0f, 0.0f);
+struct fill fill_white		= FILL_INIT(1.0f, 1.0f, 1.0f);
 struct fill fill_xparent	= FILL_INITA(1.0f, 1.0f, 1.0f, 0.0f);
+struct fill fill_yellow		= FILL_INIT(1.0f, 1.0f, 0.0f);
 
-struct fill fill_selnode	= FILL_INIT(0.2f, 0.4f, 0.6f);
+struct fill fill_bg		= FILL_INIT(0.1f, 0.2f, 0.3f);
 struct fill fill_font		= FILL_INIT(0.0f, 0.0f, 0.0f);
 struct fill fill_nodata		= FILL_INITF(1.0f, 1.0f, 0.0f, FF_SKEL);
+struct fill fill_same		= FILL_INIT(1.0f, 1.0f, 1.0f);
+struct fill fill_selnode	= FILL_INIT(0.2f, 0.4f, 0.6f);
 
 struct fill fill_borg		= FILL_INIT(0.0f, 0.0f, 0.0f);
 struct fill fill_matrix		= FILL_INITF(0.0f, 1.0f, 0.0f, FF_SKEL);

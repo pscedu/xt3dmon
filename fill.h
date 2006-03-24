@@ -46,15 +46,16 @@ void	 col_hsv_to_rgb(struct fill *);
 void	 col_get(int, size_t, size_t, struct fill *);
 
 extern struct fill	 fill_black;
+extern struct fill	 fill_grey;
 extern struct fill	 fill_light_blue;
 extern struct fill	 fill_white;
-extern struct fill	 fill_yellow;
-extern struct fill	 fill_grey;
 extern struct fill	 fill_xparent;
+extern struct fill	 fill_yellow;
 
+extern struct fill	 fill_bg;
 extern struct fill	 fill_font;
 extern struct fill	 fill_nodata;
-extern struct fill	 fill_bg;
+extern struct fill	 fill_same;
 extern struct fill	 fill_selnode;
 
 extern struct fill	 fill_borg;
