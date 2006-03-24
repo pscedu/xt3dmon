@@ -182,7 +182,7 @@ flyby_read(void)
 			if (fread(&fbp, 1, sizeof(fbp), flyby_fp) !=
 			    sizeof(fbp))
 				err(1, "flyby read panel");
-			if (fbp.fbp_panel > 0 && fbp.fbp_panel < NPANELS)
+			if (fbp.fbp_panel >= 0 && fbp.fbp_panel < NPANELS)
 				panel_toggle(fbp.fbp_panel);
 			break;
 		    }
