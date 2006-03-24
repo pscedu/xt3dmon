@@ -212,7 +212,7 @@ gl_keyh_panel(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-gl_keyh_mode(unsigned char key, __unused int u, __unused int v)
+gl_keyh_dmode(unsigned char key, __unused int u, __unused int v)
 {
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
@@ -237,7 +237,7 @@ gl_keyh_mode(unsigned char key, __unused int u, __unused int v)
 	default:
 		return;
 	}
-	st.st_rf |= RF_CLUSTER | RF_DMODE | RF_SELNODE;
+	st.st_rf |= RF_DMODE;
 }
 
 void
@@ -571,7 +571,7 @@ gl_keyh_default(unsigned char key, __unused int u, __unused int v)
 		glutKeyboardFunc(gl_keyh_keyh);
 		break;
 	case 'm':
-		glutKeyboardFunc(gl_keyh_mode);
+		glutKeyboardFunc(gl_keyh_dmode);
 		break;
 	case 'O':
 		tween_push(TWF_LOOK | TWF_POS | TWF_UP);
