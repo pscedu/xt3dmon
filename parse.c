@@ -71,7 +71,7 @@ parsestr(char **sp, char *buf, size_t siz, int flags)
 	s = *sp;
 	while (isspace(*s))
 		s++;
-	if (!isalpha(*s) && !ispunct(*s))
+	if (!isalnum(*s) && !ispunct(*s))
 		goto bad;
 	for (t = s; *t != '\0'; t++) {
 		/* Find terminating whitespace. */
@@ -411,11 +411,13 @@ parse_rt(const struct datasrc *ds)
 	struct physcoord pc;
 	struct node *n;
 	struct ivec iv;
+	int j, k;
 
 	NODE_FOREACH(n, &iv)
 		if (n)
-			memset(&n->n_route.rt_err, 0,
-			    sizeof(n->n_route.rt_err));
+			for (j = 0; j < NRP; j++)
+				for (k = 0; k < NRT; k++)
+					n->n_route.rt_err[j][k] = DV_NODATA;
 	memset(&rt_max, 0, sizeof(rt_max));
 
 	lineno = 0;
