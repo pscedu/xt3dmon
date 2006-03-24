@@ -15,5 +15,5 @@ struct yod {
 	int		 y_ncpus;
 };
 
-struct yod	*yod_findbyid(int);
+struct yod	*yod_findbyid(int, int *);
 int		 yod_cmp(const void *, const void *);

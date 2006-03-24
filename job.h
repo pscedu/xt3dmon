@@ -23,7 +23,7 @@ struct job {
 
 #define JOHF_TOURED	OHF_USR1
 
-struct job	*job_findbyid(int);
+struct job	*job_findbyid(int, int *);
 void		 job_goto(struct job *);
 void		 job_hl(struct job *);
 int		 job_cmp(const void *, const void *);
