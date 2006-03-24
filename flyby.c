@@ -147,14 +147,15 @@ flyby_read(void)
 	do {
 		if (fread(&fbh, 1, sizeof(fbh), flyby_fp) != sizeof(fbh)) {
 			if (feof(flyby_fp)) {
-				if (st.st_opts & OP_LOOPFLYBY)
+				if (st.st_opts & OP_LOOPFLYBY) {
 					rewind(flyby_fp);
-				else {
+					continue;
+				} else {
 					flyby_end();
 					return;
 				}
-			} else
-				err(1, "fread flyby header");
+			}
+			err(1, "fread flyby header");
 		}
 		switch (fbh.fbh_type) {
 		case FHT_INIT: {
