@@ -279,3 +279,17 @@ gscb_pw_panel(int pid)
 {
 	panel_toggle(1 << pid);
 }
+
+void
+gscb_pw_vmode(int vm)
+{
+	st.st_vmode = vm;
+	st.st_rf |= RF_CLUSTER | RF_CAM | RF_GROUND | RF_SELNODE;
+}
+
+void
+gscb_pw_dmode(int dm)
+{
+	st.st_dmode = dm;
+	st.st_rf |= RF_DMODE;
+}

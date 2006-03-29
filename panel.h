@@ -20,7 +20,9 @@
 #define PANEL_PANELS	(1<<14)
 #define PANEL_LOGIN	(1<<15)
 #define PANEL_HELP	(1<<16)
-#define NPANELS		17
+#define PANEL_VMODE	(1<<17)
+#define PANEL_DMODE	(1<<18)
+#define NPANELS		19
 
 struct pwidget {
 	const char		 *pw_str;

@@ -38,5 +38,7 @@ void		 gscb_pw_hlnc(int);
 void		 gscb_pw_hlall(int);
 void		 gscb_pw_opt(int);
 void		 gscb_pw_panel(int);
+void		 gscb_pw_vmode(int);
+void		 gscb_pw_dmode(int);
 
 int gl_cursor;
