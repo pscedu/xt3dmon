@@ -78,3 +78,5 @@ todo
 - view mode panels (wired/physical) with widgets
 - merge hlsc into state
 - watch out for server mode, dmode=temp then setting hlnc
+- add table for service node hostnames to ssh/command
+- cut xtwmon turning/zooming in half for better granularity
