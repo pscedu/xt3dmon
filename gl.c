@@ -96,3 +96,22 @@ gl_setidleh(void)
 	glutIdleFunc(st.st_opts & OP_GOVERN ?
 	    gl_idleh_govern : gl_idleh_default);
 }
+
+/*
+ * Synchronize which window we are dealing with (via wid)
+ * with what GL is operating on, primarily used in window
+ * event handlers.
+ */
+void
+gl_wid_update(void)
+{
+	int i, win_id;
+
+	win_id = glutGetWindow();
+	for (i = 0; i < (int)(sizeof(window_ids) /
+	    sizeof(window_ids[0])); i++)
+		if (win_id == window_ids[i]) {
+			wid = i;
+			break;
+		}
+}
