@@ -5,11 +5,11 @@ MKDEP = `type -t mkdep >/dev/null 2>&1 && echo mkdep || echo makedepend -f.depen
 PROG = xt3dmon
 
 SRCS = arch.c buf.c callout.c cam.c capture.c dbg.c draw.c ds.c eggs.c
-SRCS+= fill.c flyby.c gl.c hl.c http.c job.c key.c main.c math.c mouse.c
-SRCS+= node.c objlist.c panel.c parse.c phys-lex.l phys-parse.y png.c
-SRCS+= select.c selnode.c server.c shadow.c ssl.c status.c tex.c text.c
-SRCS+= tween.c uinp.c ustrdtab.c ustream.c ustrop-file.c ustrop-ssl.c
-SRCS+= util.c vec.c widget.c yod.c
+SRCS+= env.c fill.c flyby.c gl.c hl.c http.c job.c key.c main.c math.c
+SRCS+= mouse.c node.c objlist.c panel.c parse.c phys-lex.l phys-parse.y
+SRCS+= png.c select.c selnode.c server.c shadow.c ssl.c status.c tex.c
+SRCS+= text.c tween.c uinp.c ustrdtab.c ustream.c ustrop-file.c
+SRCS+= ustrop-ssl.c util.c vec.c widget.c yod.c
 
 LIBS = -lGL -lglut -lGLU -lpng -lssl
 CFLAGS += -Wall -W -g -D_LIVE_DSP=DSP_LOCAL
