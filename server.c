@@ -300,7 +300,8 @@ snap:
 		if (job_findbyid(ss.ss_jobid, &pos) != NULL) {
 			st.st_opts |= OP_SKEL;
 			st.st_hlnc = NSC + pos;
-			st.st_rf |= RF_HLNC;
+//			st.st_rf |= RF_HLNC;
+			rebuild(RF_HLNC);
 		}
 	}
 	memset(buf, 0, sizeof(buf));
