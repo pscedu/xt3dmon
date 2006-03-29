@@ -413,6 +413,8 @@ main(int argc, char *argv[])
 
 	if (server)
 		serv_init();
+	else
+		panel_toggle(PANEL_HELP);
 
 	gl_run(gl_setup);
 	glutMainLoop();
