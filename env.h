@@ -28,6 +28,26 @@ struct vmode {
 	struct fvec	 vm_ndim;			/* node dimensions */
 };
 
+struct frustum {
+	double		 fr_ratio;
+	double		 fr_radians;
+	double		 fr_wd2;
+	double		 fr_ndfl;
+	double		 fr_eyesep;
+	struct fvec	 fr_stereov;
+
+	float		 fr_left;
+	float		 fr_right;
+	float		 fr_top;
+	float		 fr_bottom;
+};
+
+#define FRID_LEFT	0
+#define FRID_RIGHT	1
+
+void frustum_init(struct frustum *);
+void frustum_calc(int, struct frustum *);
+
 /* Loop through wired repetitions. */
 #define WIREP_FOREACH(fvp)							\
 	for ((fvp)->fv_x = wi_repstart.fv_x;					\
