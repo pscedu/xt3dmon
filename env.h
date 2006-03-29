@@ -24,8 +24,13 @@
 #define NDIM	3
 
 struct vmode {
+	const char	*vm_name;
 	int		 vm_clip;
 	struct fvec	 vm_ndim;			/* node dimensions */
+};
+
+struct dmode {
+	const char	*dm_name;
 };
 
 struct frustum {
@@ -61,6 +66,7 @@ void frustum_calc(int, struct frustum *);
 			    (fvp)->fv_z += WIV_SDEPTH)
 
 extern struct vmode	 vmodes[];
+extern struct dmode	 dmodes[];
 extern float		 clip;
 extern struct fvec	 wi_repstart, wi_repdim;	/* repeat position & dim */
 extern struct ivec	 widim;
