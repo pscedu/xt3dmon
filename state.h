@@ -11,11 +11,13 @@
 #define DM_MATRIX	5
 #define DM_SAME		6
 #define DM_RTUNK	7
+#define NDM		8
 
 /* View mode. */
 #define VM_PHYSICAL	0
 #define VM_WIRED	1
 #define VM_WIREDONE	2
+#define NVM		3
 
 struct state {
 	struct fvec	 st_v;			/* camera position */
