@@ -43,10 +43,7 @@
 #define MAX_CHARS 	4
 #define FONT_Z_OFFSET	((NODEHEIGHT - ((MAX_CHARS + 0) * FONT_DISPLACE_W)) / 2)
 
-#define SKEL_GAP (0.1f)
-
-#define FOCAL_POINT (2.0f) /* distance from cam to center of 3d focus */
-#define FOCAL_LENGTH (5.0f) /* length of 3d focus */
+#define SKEL_GAP	(0.1f)
 
 float	 snap_to_grid(float, float, float);
 
@@ -174,9 +171,7 @@ draw_scene(void)
 void
 gl_displayh_stereo(void)
 {
-	static double ratio, radians, wd2, ndfl, eyesep;
-	static float left, right, top, bottom;
-	static struct fvec stereo_fv;
+	static struct frustum fr;
 	int rf, newrf;
 
 	if (flyby_mode)
@@ -191,17 +186,7 @@ gl_displayh_stereo(void)
 		rebuild(rf);
 	}
 
-	ratio = ASPECT;
-	radians = DEG_TO_RAD(FOVY / 2);
-	wd2 = FOCAL_POINT * tan(radians);
-	ndfl = FOCAL_POINT / FOCAL_LENGTH;
-	eyesep = 0.30f;
-
-	vec_crossprod(&stereo_fv, &st.st_lv, &st.st_uv);
-	vec_normalize(&stereo_fv);
-	stereo_fv.fv_x *= eyesep / 2.0f;
-	stereo_fv.fv_y *= eyesep / 2.0f;
-	stereo_fv.fv_z *= eyesep / 2.0f;
+	frustum_init(&fr);
 
 	/* Draw right buffer. */
 	switch (stereo_mode) {
@@ -217,16 +202,12 @@ gl_displayh_stereo(void)
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	left = -ratio * wd2 - eyesep * ndfl / 2;
-	right = ratio * wd2 - eyesep * ndfl / 2;
-	top = wd2;
-	bottom = -wd2;
-	glFrustum(left, right, bottom, top, NEARCLIP, clip);
+	frustum_calc(FRID_RIGHT, &fr);
+	glFrustum(fr.fr_left, fr.fr_right, fr.fr_bottom,
+	    fr.fr_top, NEARCLIP, clip);
 
 	glMatrixMode(GL_MODELVIEW);
-	st.st_x += stereo_fv.fv_x;
-	st.st_y += stereo_fv.fv_y;
-	st.st_z += stereo_fv.fv_z;
+	vec_addto(&fr.fr_stereov, &st.st_v);
 	cam_look();
 
 	newrf = st.st_rf;
@@ -256,16 +237,14 @@ gl_displayh_stereo(void)
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	left = -ratio * wd2 + eyesep * ndfl / 2;
-	right = ratio * wd2 + eyesep * ndfl / 2;
-	top = wd2;
-	bottom = -wd2;
-	glFrustum(left, right, bottom, top, NEARCLIP, clip);
+	frustum_calc(FRID_LEFT, &fr);
+	glFrustum(fr.fr_left, fr.fr_right, fr.fr_bottom,
+	    fr.fr_top, NEARCLIP, clip);
 
 	glMatrixMode(GL_MODELVIEW);
-	st.st_x -= 2 * stereo_fv.fv_x;
-	st.st_y -= 2 * stereo_fv.fv_y;
-	st.st_z -= 2 * stereo_fv.fv_z;
+	st.st_x -= 2 * fr.fr_stereov.fv_x;
+	st.st_y -= 2 * fr.fr_stereov.fv_y;
+	st.st_z -= 2 * fr.fr_stereov.fv_z;
 	cam_look();
 
 	draw_scene();
@@ -278,9 +257,7 @@ gl_displayh_stereo(void)
 		glutSwapBuffers();
 
 	/* Restore camera position. */
-	st.st_x += stereo_fv.fv_x;
-	st.st_y += stereo_fv.fv_y;
-	st.st_z += stereo_fv.fv_z;
+	vec_addto(&fr.fr_stereov, &st.st_v);
 }
 
 void
