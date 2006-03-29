@@ -143,6 +143,12 @@ gl_pasvmotionh_default(int u, int v)
 {
 	mousev.iv_x = u;
 	mousev.iv_y = v;
+
+	if (gl_displayhp != gl_displayh_selectprobe) {
+		gl_displayhp_old = gl_displayhp;
+		gl_displayhp = gl_displayh_selectprobe;
+		glutDisplayFunc(gl_displayhp);
+	}
 }
 
 void
