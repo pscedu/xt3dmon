@@ -26,7 +26,9 @@ struct fill {
 #define f_v f_b
 };
 
-#define FF_SKEL		(1<<0)
+#define FF_SKEL		(1<<0)			/* Fill is outline, not solid. */
+#define FF_TEX		(1<<1)			/* Textured. */
+#define FF_ALPHA	(1<<2)			/* Respect alpha channel. */
 
 #define FILL_INIT(r, g, b)				\
 	FILL_INITFA((r), (g), (b), 1.0, 0)

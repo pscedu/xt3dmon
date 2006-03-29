@@ -10,7 +10,7 @@ struct fill fill_black		= FILL_INIT(0.0f, 0.0f, 0.0f);
 struct fill fill_grey		= FILL_INIT(0.2f, 0.2f, 0.2f);
 struct fill fill_light_blue	= FILL_INIT(0.2f, 0.4f, 0.6f);
 struct fill fill_white		= FILL_INIT(1.0f, 1.0f, 1.0f);
-struct fill fill_xparent	= FILL_INITA(1.0f, 1.0f, 1.0f, 0.0f);
+struct fill fill_xparent	= FILL_INITFA(1.0f, 1.0f, 1.0f, 0.0f, FF_ALPHA);
 struct fill fill_yellow		= FILL_INIT(1.0f, 1.0f, 0.0f);
 
 struct fill fill_bg		= FILL_INIT(0.1f, 0.2f, 0.3f);
