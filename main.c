@@ -90,9 +90,20 @@ struct xoption opts[] = {
 };
 
 struct vmode vmodes[] = {
-	{ 1000,	{ 0.2f, 1.2f, 1.2f } },
-	{ 5,	{ 0.5f, 0.5f, 0.5f } },
-	{ 1000,	{ 2.0f, 2.0f, 2.0f } }
+	{ "Physical",		1000,	{ 0.2f, 1.2f, 1.2f } },
+	{ "Wired (repeat)",	5,	{ 0.5f, 0.5f, 0.5f } },
+	{ "Wired",		1000,	{ 2.0f, 2.0f, 2.0f } }
+};
+
+struct dmode dmodes[] = {
+ /* 0 */ { "Job" },
+ /* 1 */ { "Fail" },
+ /* 2 */ { "Temperature" },
+ /* 3 */ { "Yod" },
+ /* 4 */ { NULL },
+ /* 5 */ { NULL },
+ /* 6 */ { "Same" },
+ /* 7 */ { "Routing Errors" },
 };
 
 struct state st = {
@@ -390,7 +401,7 @@ main(int argc, char *argv[])
 
 	glutInitDisplayMode(flags);
 	sw = glutGet(GLUT_SCREEN_WIDTH);
-	sh = glutGet(GLUT_SCREEN_HEIGHT);
+	sh = glutGet(GLUT_SCREEN_HEIGHT) - 30;
 	if (stereo_mode == STM_PASV)
 		sw /= 2;
 	glutInitWindowPosition(0, 0);
