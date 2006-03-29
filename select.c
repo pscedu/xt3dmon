@@ -19,21 +19,46 @@
 #include "util.h"
 
 GLuint	 selbuf[1000];
+int	 gl_cursor;
 
 void
 sel_begin(void)
 {
 	GLint viewport[4];
+	struct frustum fr;
+	int frid;
 
 	glSelectBuffer(sizeof(selbuf) / sizeof(selbuf[0]), selbuf);
 	glGetIntegerv(GL_VIEWPORT, viewport);
 	glRenderMode(GL_SELECT);
 	glInitNames();
+
 	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
 	glLoadIdentity();
 	gluPickMatrix(mousev.iv_x, winv.iv_h - mousev.iv_y, 1, 1, viewport);
-	gluPerspective(FOVY, ASPECT, NEARCLIP, clip); /* XXX wrong */
+
+	switch (stereo_mode) {
+	case STM_NONE:
+		gluPerspective(FOVY, ASPECT, NEARCLIP, clip); /* XXX wrong */
+		break;
+	case STM_PASV:
+	case STM_ACT:
+		frustum_init(&fr);
+
+//		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		if (stereo_mode == STM_PASV)
+			frid = (wid == WINID_LEFT) ? FRID_LEFT : FRID_RIGHT ;
+		else
+			frid = FRID_LEFT; /* XXX: assume last buffer drawn to? */
+
+		frustum_calc(frid, &fr);
+		glFrustum(fr.fr_left, fr.fr_right, fr.fr_bottom,
+		    fr.fr_top, NEARCLIP, clip);
+
+		//vec_addto(&fr.fr_stereov, &st.st_v);
+		break;
+	}
+
 	glMatrixMode(GL_MODELVIEW);
 
 	obj_batch_start(&glname_list);
@@ -147,7 +172,13 @@ sel_process(int nrecs, int rank, int flags)
 	if (gn == NULL)
 		return (SP_MISS);
 
-	if (gn->gn_cb != NULL)
+	if (flags & SPF_PROBE) {
+		if ((gn->gn_flags & GNF_NOCUR) == 0 &&
+		    gl_cursor != gn->gn_cursor) {
+			glutSetCursor(gn->gn_cursor);
+			gl_cursor = gn->gn_cursor;
+		}
+	} else if (gn->gn_cb != NULL)
 		gn->gn_cb(gn->gn_id);
 	return (gn->gn_id);
 }
@@ -158,7 +189,6 @@ sel_end(void)
 	obj_batch_end(&glname_list);
 
 	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
 	glFlush();
 
 	return (glRenderMode(GL_RENDER));
@@ -170,7 +200,7 @@ sel_end(void)
  * obj_batch_start/obj_batch_end combo.
  */
 unsigned int
-gsn_get(int id, void (*cb)(int), int flags)
+gsn_get(int id, void (*cb)(int), int flags, int cursor)
 {
 	struct glname *gn;
 	unsigned int cur = glname_list.ol_tcur + 100;
@@ -180,6 +210,7 @@ gsn_get(int id, void (*cb)(int), int flags)
 	gn->gn_id = id;
 	gn->gn_cb = cb;
 	gn->gn_flags = flags;
+	gn->gn_cursor = cursor;
 	return (cur);
 }
 
