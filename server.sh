@@ -6,4 +6,4 @@ if pgrep -u yanovich xt3dmon >/dev/null 2>&1; then
 	exit 1
 fi
 
-XAUTHORITY=/var/gdm/:0.Xauth sudo -u yanovich echo ~/code/proj/xt3dmon/xt3dmon -display :0 -d &
+XAUTHORITY=/var/gdm/:0.Xauth sudo -u yanovich ~/code/proj/xt3dmon/xt3dmon -display :0 -d &
