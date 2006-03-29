@@ -89,6 +89,7 @@ void panel_refresh_opts(struct panel *);
 void panel_refresh_gotojob(struct panel *);
 void panel_refresh_panels(struct panel *);
 void panel_refresh_login(struct panel *);
+void panel_refresh_help(struct panel *);
 
 int  panel_blink(struct timeval *, char **, int, int *, long);
 
@@ -96,22 +97,23 @@ void uinpcb_ss(void);
 void uinpcb_eggs(void);
 
 struct pinfo pinfo[] = {
- /*  0 */ { "FPS",		panel_refresh_fps,	0,	 		0,		NULL },
- /*  1 */ { "Node Info",	panel_refresh_ninfo,	0,	 		0,		NULL },
- /*  2 */ { "Command",		panel_refresh_cmd,	PF_UINP | PF_HIDE,	UINPO_LINGER,	uinpcb_cmd },
- /*  3 */ { "Legend",		panel_refresh_legend,	0,	 		0,		NULL },
- /*  4 */ { "Flyby Status",	panel_refresh_flyby,	PF_FBIGN, 		0,		NULL },
- /*  5 */ { "Goto Node",	panel_refresh_gotonode,	PF_UINP, 		0,		uinpcb_gotonode },
- /*  6 */ { "Camera Position",	panel_refresh_pos,	0,	 		0,		NULL },
- /*  7 */ { "Screenshot",	panel_refresh_ss,	PF_UINP, 		0,		uinpcb_ss },
- /*  8 */ { "Status",		panel_refresh_status,	0,	 		0,		NULL },
- /*  9 */ { "Memory Usage",	panel_refresh_mem,	PF_HIDE, 		0,		NULL },
- /* 10 */ { NULL,		panel_refresh_eggs,	PF_UINP | PF_HIDE,	0,		uinpcb_eggs },
- /* 11 */ { "Date",		panel_refresh_date,	PF_XPARENT,		0,		NULL },
- /* 12 */ { "Option",		panel_refresh_opts,	PF_FBIGN, 		0,		NULL },
- /* 13 */ { "Goto Job",		panel_refresh_gotojob,	PF_UINP, 		0,		uinpcb_gotojob },
- /* 14 */ { NULL,		panel_refresh_panels,	PF_HIDE | PF_FBIGN, 	0,		NULL },
- /* 15 */ { "Login",		panel_refresh_login,	PF_UINP, 		UINPO_LINGER,	uinpcb_login }
+ /*  0 */ { "FPS",		panel_refresh_fps,	PSTICK_TR, 0,	 		0,		NULL },
+ /*  1 */ { "Node Info",	panel_refresh_ninfo,	PSTICK_TR, 0,	 		0,		NULL },
+ /*  2 */ { "Command",		panel_refresh_cmd,	PSTICK_TR, PF_UINP | PF_HIDE,	UINPO_LINGER,	uinpcb_cmd },
+ /*  3 */ { "Legend",		panel_refresh_legend,	PSTICK_TR, 0,	 		0,		NULL },
+ /*  4 */ { "Flyby Status",	panel_refresh_flyby,	PSTICK_TR, PF_FBIGN, 		0,		NULL },
+ /*  5 */ { "Goto Node",	panel_refresh_gotonode,	PSTICK_TR, PF_UINP, 		0,		uinpcb_gotonode },
+ /*  6 */ { "Camera Position",	panel_refresh_pos,	PSTICK_TR, 0,	 		0,		NULL },
+ /*  7 */ { "Screenshot",	panel_refresh_ss,	PSTICK_TR, PF_UINP, 		0,		uinpcb_ss },
+ /*  8 */ { "Status",		panel_refresh_status,	PSTICK_TR, 0,	 		0,		NULL },
+ /*  9 */ { "Memory Usage",	panel_refresh_mem,	PSTICK_TR, PF_HIDE, 		0,		NULL },
+ /* 10 */ { NULL,		panel_refresh_eggs,	PSTICK_TR, PF_UINP | PF_HIDE,	0,		uinpcb_eggs },
+ /* 11 */ { "Date",		panel_refresh_date,	PSTICK_BL, PF_XPARENT,		0,		NULL },
+ /* 12 */ { "Option",		panel_refresh_opts,	PSTICK_TR, PF_FBIGN, 		0,		NULL },
+ /* 13 */ { "Goto Job",		panel_refresh_gotojob,	PSTICK_TR, PF_UINP, 		0,		uinpcb_gotojob },
+ /* 14 */ { NULL,		panel_refresh_panels,	PSTICK_TR, PF_HIDE | PF_FBIGN, 	0,		NULL },
+ /* 15 */ { "Login",		panel_refresh_login,	PSTICK_TR, PF_UINP, 		UINPO_LINGER,	uinpcb_login },
+ /* 16 */ { "Help",		panel_refresh_help,	PSTICK_BR, PF_HIDE | PF_XPARENT,	0,		NULL }
 };
 
 #define PVOFF_TL 0
@@ -172,7 +174,8 @@ draw_shadow_panels(void)
 		SLIST_FOREACH(pw, &p->p_widgets, pw_next) {
 			if (pw->pw_cb == NULL)
 				continue;
-			name = gsn_get(pw->pw_cbarg, pw->pw_cb, GNF_2D);
+			name = gsn_get(pw->pw_cbarg, pw->pw_cb, GNF_2D,
+			    GLUT_CURSOR_INFO);
 			gn = obj_get(&name, &glname_list);
 			gn->gn_u = pw->pw_u;
 			gn->gn_v = pw->pw_v;
@@ -191,7 +194,8 @@ draw_shadow_panels(void)
 			glPopMatrix();
 		}
 
-		name = gsn_get(p->p_id, gscb_panel, GNF_2D);
+		name = gsn_get(p->p_id, gscb_panel, GNF_2D,
+		    GLUT_CURSOR_RIGHT_ARROW);
 		gn = obj_get(&name, &glname_list);
 		gn->gn_u = p->p_u;
 		gn->gn_v = p->p_v;
@@ -297,14 +301,20 @@ draw_panel(struct panel *p, int toff)
 		else {
 			frame_fp = &fill_black;
 
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 			/* Draw widget background. */
 			glBegin(GL_POLYGON);
-			glColor4f(fp->f_r, fp->f_g, fp->f_b, 1.0f /* XXX */);
+			glColor4f(fp->f_r, fp->f_g, fp->f_b,
+			    fp->f_flags & FF_ALPHA ? fp->f_a : 1.0);
 			glVertex2d(uoff + 1,			voff);
 			glVertex2d(uoff + PWIDGET_LENGTH - 1,	voff);
 			glVertex2d(uoff + PWIDGET_LENGTH - 1,	voff - PWIDGET_HEIGHT + 2);
 			glVertex2d(uoff + 1,			voff - PWIDGET_HEIGHT + 2);
 			glEnd();
+
+			glDisable(GL_BLEND);
 		}
 
 		/* Draw widget border. */
@@ -414,9 +424,11 @@ panel_draw(struct panel *p, int wid)
 {
 	int compile, tweenadj, u, v, w, h;
 	int lineno, curlen;
+	struct pinfo *pi;
 	int toff;
 	char *s;
 
+	pi = &pinfo[baseconv(p->p_id) - 1];
 	toff = PANEL_PADDING + PANEL_BWIDTH;
 
 	/*
@@ -442,7 +454,7 @@ panel_draw(struct panel *p, int wid)
 	if (p->p_opts & POPT_REMOVE) {
 		w = 0;
 		h = 0;
-		switch (p->p_stick) {
+		switch (pi->pi_stick) {
 		case PSTICK_TL:
 			u = -p->p_w;
 			v = winv.iv_h - panel_offset[PVOFF_TL];
@@ -475,6 +487,9 @@ panel_draw(struct panel *p, int wid)
 				lineno++;
 			}
 		}
+		/* Let's hope there are some pwidgets... */
+		if (p->p_str[0] == '\0')
+			lineno = 0;
 		if (curlen > w)
 			w = curlen;
 		w = w * LETTER_WIDTH + 2 * toff;
@@ -490,7 +505,7 @@ panel_draw(struct panel *p, int wid)
 			nr = (p->p_nwidgets + 1) / 2;
 			h += nr * (PWIDGET_HEIGHT + PWIDGET_PADDING);
 		}
-		switch (p->p_stick) {
+		switch (pi->pi_stick) {
 		case PSTICK_TL:
 			u = 0;
 			v = (winv.iv_h - 1) - panel_offset[PVOFF_TL];
@@ -543,10 +558,10 @@ panel_draw(struct panel *p, int wid)
 		p->p_h -= (p->p_h - h) / tweenadj;
 
 	if (p->p_opts & POPT_REMOVE) {
-		if ((p->p_stick == PSTICK_TL && p->p_u + p->p_w <= 0) ||
-		    (p->p_stick == PSTICK_BL && p->p_u + p->p_w <= 0) ||
-		    (p->p_stick == PSTICK_TR && p->p_u >= winv.iv_w) ||
-		    (p->p_stick == PSTICK_BR && p->p_u >= winv.iv_w)) {
+		if ((pi->pi_stick == PSTICK_TL && p->p_u + p->p_w <= 0) ||
+		    (pi->pi_stick == PSTICK_BL && p->p_u + p->p_w <= 0) ||
+		    (pi->pi_stick == PSTICK_TR && p->p_u >= winv.iv_w) ||
+		    (pi->pi_stick == PSTICK_BR && p->p_u >= winv.iv_w)) {
 			panel_free(p);
 			return;
 		}
@@ -556,7 +571,7 @@ panel_draw(struct panel *p, int wid)
 
 done:
 	/* spacing */
-	switch (p->p_stick) {
+	switch (pi->pi_stick) {
 	case PSTICK_TL:
 		panel_offset[PVOFF_TL] += p->p_h + 1;
 		break;
@@ -1224,6 +1239,29 @@ panel_refresh_login(struct panel *p)
 }
 
 void
+panel_refresh_help(struct panel *p)
+{
+	struct pwidget *pw, *nextp;
+
+	if (panel_ready(p))
+		return;
+
+	panel_set_content(p, "");
+
+	p->p_nwidgets = 0;
+	p->p_maxwlen = 0;
+	pw = nextp = SLIST_FIRST(&p->p_widgets);
+	pw = panel_get_pwidget(p, pw, &nextp);
+	pwidget_set(p, pw, &fill_xparent, "Panels", gscb_pw_panel,
+	    baseconv(PANEL_PANELS) - 1);
+
+	pw = nextp;
+	pw = panel_get_pwidget(p, pw, &nextp);
+	pwidget_set(p, pw, &fill_xparent, "Options", gscb_pw_panel,
+	    baseconv(PANEL_OPTS) - 1);
+}
+
+void
 draw_panels(int wid)
 {
 	struct panel *p, *np;
@@ -1323,14 +1361,30 @@ panel_toggle(int panel)
 	p->p_str = NULL;
 	p->p_refresh = pi->pi_refresh;
 	p->p_id = panel;
-	p->p_stick = PSTICK_TR;
-	p->p_u = winv.iv_w;
-	p->p_v = (winv.iv_h - 1) - panel_offset[PVOFF_TR];
 	p->p_fill.f_r = 1.0f;
 	p->p_fill.f_g = 1.0f;
 	p->p_fill.f_b = 1.0f;
 	p->p_fill.f_a = 1.0f;
 	SLIST_INIT(&p->p_widgets);
+
+	switch (pi->pi_stick) {
+	case PSTICK_TL:
+		p->p_u = 0;
+		p->p_v = (winv.iv_h - 1) - panel_offset[PVOFF_TL];
+		break;
+	case PSTICK_TR:
+		p->p_u = winv.iv_w;
+		p->p_v = (winv.iv_h - 1) - panel_offset[PVOFF_TR];
+		break;
+	case PSTICK_BL:
+		p->p_u = 0;
+		p->p_v = panel_offset[PVOFF_BL];
+		break;
+	case PSTICK_BR:
+		p->p_u = winv.iv_w;
+		p->p_v = panel_offset[PVOFF_BR];
+		break;
+	}
 
 	if (pi->pi_opts & PF_UINP) {
 		if (uinp.uinp_panel != NULL) {
@@ -1356,18 +1410,21 @@ panel_toggle(int panel)
 void
 panel_demobilize(struct panel *p)
 {
+	struct pinfo *pi;
+
+	pi = &pinfo[baseconv(p->p_id) - 1];
 	p->p_opts &= ~POPT_MOBILE;
 	p->p_opts |= POPT_DIRTY;
 	if (p->p_u + p->p_w / 2 < winv.iv_w / 2) {
 		if (winv.iv_h - p->p_v + p->p_h / 2 < winv.iv_h / 2)
-			p->p_stick = PSTICK_TL;
+			pi->pi_stick = PSTICK_TL;
 		else
-			p->p_stick = PSTICK_BL;
+			pi->pi_stick = PSTICK_BL;
 	} else {
 		if (winv.iv_h - p->p_v + p->p_h / 2 < winv.iv_h / 2)
-			p->p_stick = PSTICK_TR;
+			pi->pi_stick = PSTICK_TR;
 		else
-			p->p_stick = PSTICK_BR;
+			pi->pi_stick = PSTICK_BR;
 	}
 }
 

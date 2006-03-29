@@ -19,7 +19,8 @@
 #define PANEL_GOTOJOB	(1<<13)
 #define PANEL_PANELS	(1<<14)
 #define PANEL_LOGIN	(1<<15)
-#define NPANELS		16
+#define PANEL_HELP	(1<<16)
+#define NPANELS		17
 
 struct pwidget {
 	const char		 *pw_str;
@@ -38,7 +39,6 @@ struct panel {
 	int			  p_dl[2];
 	char			 *p_str;
 	size_t			  p_strlen;
-	int			  p_stick;
 	int			  p_u;
 	int			  p_v;
 	int			  p_w;
@@ -51,12 +51,6 @@ struct panel {
 	int			  p_nwidgets;
 	size_t			  p_maxwlen;
 };
-
-#define PSTICK_TL	1
-#define PSTICK_TR	2
-#define PSTICK_BL	3
-#define PSTICK_BR	4
-#define PSTICK_FREE	5
 
 #define POPT_REMOVE	(1<<0)			/* being removed */
 #define POPT_DIRTY	(1<<1)			/* panel needs redrawn */
@@ -72,6 +66,7 @@ TAILQ_HEAD(panels, panel);
 struct pinfo {
 	char		 *pi_name;
 	void		(*pi_refresh)(struct panel *);
+	int		  pi_stick;
 	int		  pi_opts;
 	int		  pi_uinpopts;
 	void		(*pi_uinpcb)(void);
@@ -81,6 +76,11 @@ struct pinfo {
 #define PF_XPARENT	(1<<1)			/* panel is transparent */
 #define PF_HIDE		(1<<2)
 #define PF_FBIGN	(1<<3)			/* ignore in flybys */
+
+#define PSTICK_TL	1
+#define PSTICK_TR	2
+#define PSTICK_BL	3
+#define PSTICK_BR	4
 
 void			 panel_toggle(int);
 void			 panel_tremove(struct panel *);
