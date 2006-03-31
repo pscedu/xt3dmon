@@ -129,6 +129,7 @@ void		 text_wrap(char *, size_t, size_t);
 
 extern int		 mode_data_clean;
 extern int		 selnode_clean;
+extern int		 exthelp;
 
 /* Program-related variables. */
 extern const char	*progname;

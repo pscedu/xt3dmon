@@ -99,25 +99,25 @@ void uinpcb_ss(void);
 void uinpcb_eggs(void);
 
 struct pinfo pinfo[] = {
- /*  0 */ { "FPS",		panel_refresh_fps,	PSTICK_TR, 0,	 		 0,		NULL },
- /*  1 */ { "Node Info",	panel_refresh_ninfo,	PSTICK_TR, 0,	 		 0,		NULL },
- /*  2 */ { "Command",		panel_refresh_cmd,	PSTICK_TR, PF_UINP | PF_HIDE,	 UINPO_LINGER,	uinpcb_cmd },
- /*  3 */ { "Legend",		panel_refresh_legend,	PSTICK_TR, 0,	 		 0,		NULL },
- /*  4 */ { "Flyby Status",	panel_refresh_flyby,	PSTICK_TR, PF_FBIGN, 		 0,		NULL },
- /*  5 */ { "Goto Node",	panel_refresh_gotonode,	PSTICK_TR, PF_UINP, 		 0,		uinpcb_gotonode },
- /*  6 */ { "Camera Position",	panel_refresh_pos,	PSTICK_TR, 0,	 		 0,		NULL },
- /*  7 */ { "Screenshot",	panel_refresh_ss,	PSTICK_TR, PF_UINP, 		 0,		uinpcb_ss },
- /*  8 */ { "Status",		panel_refresh_status,	PSTICK_TR, 0,	 		 0,		NULL },
- /*  9 */ { "Memory Usage",	panel_refresh_mem,	PSTICK_TR, PF_HIDE, 		 0,		NULL },
- /* 10 */ { NULL,		panel_refresh_eggs,	PSTICK_TR, PF_UINP | PF_HIDE,	 0,		uinpcb_eggs },
- /* 11 */ { "Date",		panel_refresh_date,	PSTICK_BL, PF_XPARENT,		 0,		NULL },
- /* 12 */ { "Option",		panel_refresh_opts,	PSTICK_TL, PF_FBIGN, 		 0,		NULL },
- /* 13 */ { "Goto Job",		panel_refresh_gotojob,	PSTICK_TR, PF_UINP, 		 0,		uinpcb_gotojob },
- /* 14 */ { NULL,		panel_refresh_panels,	PSTICK_TL, PF_HIDE | PF_FBIGN, 	 0,		NULL },
- /* 15 */ { "Login",		panel_refresh_login,	PSTICK_TR, PF_UINP, 		 UINPO_LINGER,	uinpcb_login },
- /* 16 */ { "Help",		panel_refresh_help,	PSTICK_BR, PF_HIDE | PF_XPARENT, 0,		NULL },
- /* 17 */ { "View Mode",	panel_refresh_vmode,	PSTICK_TL, 0,			 0,		NULL },
- /* 18 */ { "Data Mode",	panel_refresh_dmode,	PSTICK_TL, 0,			 0,		NULL }
+ /*  0 */ { "FPS",		panel_refresh_fps,	PSTICK_TR, 0,	 		 		0,		NULL },
+ /*  1 */ { "Node Info",	panel_refresh_ninfo,	PSTICK_TR, 0,	 		 		0,		NULL },
+ /*  2 */ { "Command",		panel_refresh_cmd,	PSTICK_TR, PF_UINP | PF_HIDE,	 		UINPO_LINGER,	uinpcb_cmd },
+ /*  3 */ { "Legend",		panel_refresh_legend,	PSTICK_TR, 0,	 		 		0,		NULL },
+ /*  4 */ { "Flyby Status",	panel_refresh_flyby,	PSTICK_TR, PF_FBIGN, 		 		0,		NULL },
+ /*  5 */ { "Goto Node",	panel_refresh_gotonode,	PSTICK_TR, PF_UINP, 		 		0,		uinpcb_gotonode },
+ /*  6 */ { "Camera Position",	panel_refresh_pos,	PSTICK_TR, 0,	 		 		0,		NULL },
+ /*  7 */ { "Screenshot",	panel_refresh_ss,	PSTICK_TR, PF_UINP, 		 		0,		uinpcb_ss },
+ /*  8 */ { "Status",		panel_refresh_status,	PSTICK_TR, 0,	 		 		0,		NULL },
+ /*  9 */ { "Memory Usage",	panel_refresh_mem,	PSTICK_TR, PF_HIDE, 		 		0,		NULL },
+ /* 10 */ { NULL,		panel_refresh_eggs,	PSTICK_TR, PF_UINP | PF_HIDE,	 		0,		uinpcb_eggs },
+ /* 11 */ { "Date",		panel_refresh_date,	PSTICK_BL, PF_XPARENT,		 		0,		NULL },
+ /* 12 */ { "Option",		panel_refresh_opts,	PSTICK_TL, PF_FBIGN, 		 		0,		NULL },
+ /* 13 */ { "Goto Job",		panel_refresh_gotojob,	PSTICK_TR, PF_UINP, 		 		0,		uinpcb_gotojob },
+ /* 14 */ { NULL,		panel_refresh_panels,	PSTICK_TL, PF_HIDE | PF_FBIGN, 	 		0,		NULL },
+ /* 15 */ { "Login",		panel_refresh_login,	PSTICK_TR, PF_UINP, 		 		UINPO_LINGER,	uinpcb_login },
+ /* 16 */ { "Help",		panel_refresh_help,	PSTICK_BR, PF_HIDE | PF_FBIGN | PF_XPARENT,	0,		NULL },
+ /* 17 */ { "View Mode",	panel_refresh_vmode,	PSTICK_TL, 0,			 		0,		NULL },
+ /* 18 */ { "Data Mode",	panel_refresh_dmode,	PSTICK_TL, 0,			 		0,		NULL }
 };
 
 #define PVOFF_TL 0
@@ -133,6 +133,7 @@ struct panels	 panels;
 int		 panel_offset[NPVOFF];
 int		 mode_data_clean;
 int		 selnode_clean;
+int		 exthelp;
 
 void
 panel_free(struct panel *p)
@@ -1247,23 +1248,37 @@ void
 panel_refresh_help(struct panel *p)
 {
 	struct pwidget *pw, *nextp;
+	static int sav_exthelp;
 
-	if (panel_ready(p))
+	if (panel_ready(p) && sav_exthelp == exthelp)
 		return;
+	sav_exthelp = exthelp;
 
 	panel_set_content(p, "");
 
 	p->p_nwidgets = 0;
 	p->p_maxwlen = 0;
-	pw = nextp = SLIST_FIRST(&p->p_widgets);
-	pw = panel_get_pwidget(p, pw, &nextp);
-	pwidget_set(p, pw, &fill_xparent, "Panels", gscb_pw_panel,
-	    baseconv(PANEL_PANELS) - 1);
+	nextp = SLIST_FIRST(&p->p_widgets);
 
-	pw = nextp;
-	pw = panel_get_pwidget(p, pw, &nextp);
-	pwidget_set(p, pw, &fill_xparent, "Options", gscb_pw_panel,
-	    baseconv(PANEL_OPTS) - 1);
+	if (exthelp) {
+		pw = nextp;
+		pw = panel_get_pwidget(p, pw, &nextp);
+		pwidget_set(p, pw, &fill_xparent, "Hide", gscb_pw_help, 0);
+
+		pw = nextp;
+		pw = panel_get_pwidget(p, pw, &nextp);
+		pwidget_set(p, pw, &fill_xparent, "Panels", gscb_pw_panel,
+		    baseconv(PANEL_PANELS) - 1);
+
+		pw = nextp;
+		pw = panel_get_pwidget(p, pw, &nextp);
+		pwidget_set(p, pw, &fill_xparent, "Options", gscb_pw_panel,
+		    baseconv(PANEL_OPTS) - 1);
+	} else {
+		pw = nextp;
+		pw = panel_get_pwidget(p, pw, &nextp);
+		pwidget_set(p, pw, &fill_xparent, "Help", gscb_pw_help, 1);
+	}
 }
 
 void

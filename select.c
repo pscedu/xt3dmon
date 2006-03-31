@@ -288,6 +288,12 @@ gscb_pw_vmode(int vm)
 }
 
 void
+gscb_pw_help(int enable)
+{
+	exthelp = enable;
+}
+
+void
 gscb_pw_dmode(int dm)
 {
 	st.st_dmode = dm;
