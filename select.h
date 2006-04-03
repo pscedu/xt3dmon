@@ -27,6 +27,10 @@ struct glname {
 #define GNF_2D		(1<<0)
 #define GNF_NOCUR	(1<<1)
 
+#define HF_HIDEHELP	0
+#define HF_SHOWHELP	1
+#define HF_CLRSN	2
+
 void		 sel_begin(void);
 int		 sel_end(void);
 int		 sel_process(int, int, int);

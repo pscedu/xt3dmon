@@ -288,9 +288,19 @@ gscb_pw_vmode(int vm)
 }
 
 void
-gscb_pw_help(int enable)
+gscb_pw_help(int opt)
 {
-	exthelp = enable;
+	switch (opt) {
+	case HF_SHOWHELP:
+		exthelp = 1;
+		break;
+	case HF_HIDEHELP:
+		exthelp = 0;
+		break;
+	case HF_CLRSN:
+		sn_clear();
+		break;
+	}
 }
 
 void
