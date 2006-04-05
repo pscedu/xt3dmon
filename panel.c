@@ -236,7 +236,7 @@ void
 draw_panel(struct panel *p, int toff)
 {
 	struct fill *frame_fp;
-	int npw, uoff, voff;
+	int nc, npw, uoff, voff;
 	struct pwidget *pw;
 	struct pinfo *pi;
 	const char *s;
@@ -289,9 +289,14 @@ draw_panel(struct panel *p, int toff)
 	uoff--;
 	voff++;
 
+	pi = &pinfo[baseconv(p->p_id) - 1];
+
+	/* First loop cuts into these. */
+	uoff += p->p_w / 2 - toff;
+	voff += PWIDGET_HEIGHT - 1 - PWIDGET_PADDING;
+
+	nc = MIN(2, p->p_nwidgets);
 	npw = 0;
-	uoff += p->p_w / 2 - toff;			/* First loop cuts */
-	voff += PWIDGET_HEIGHT - 1 - PWIDGET_PADDING;	/* into these. */
 	SLIST_FOREACH(pw, &p->p_widgets, pw_next) {
 		struct fill *fp = pw->pw_fillp;
 
@@ -301,44 +306,46 @@ draw_panel(struct panel *p, int toff)
 		if (voff - PWIDGET_HEIGHT < p->p_v - p->p_h)
 			break;
 
-		if (fp->f_flags & FF_SKEL)
-			frame_fp = fp;
-		else {
-			frame_fp = &fill_black;
+		if ((pi->pi_opts & PF_XPARENT) == 0) {
+			if (fp->f_flags & FF_SKEL)
+				frame_fp = fp;
+			else {
+				frame_fp = &fill_black;
 
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+				glEnable(GL_BLEND);
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-			/* Draw widget background. */
-			glBegin(GL_POLYGON);
-			glColor4f(fp->f_r, fp->f_g, fp->f_b,
-			    fp->f_flags & FF_ALPHA ? fp->f_a : 1.0);
-			glVertex2d(uoff + 1,			voff);
-			glVertex2d(uoff + PWIDGET_LENGTH - 1,	voff);
-			glVertex2d(uoff + PWIDGET_LENGTH - 1,	voff - PWIDGET_HEIGHT + 2);
-			glVertex2d(uoff + 1,			voff - PWIDGET_HEIGHT + 2);
+				/* Draw widget background. */
+				glBegin(GL_POLYGON);
+				glColor4f(fp->f_r, fp->f_g, fp->f_b,
+				    fp->f_flags & FF_ALPHA ? fp->f_a : 1.0);
+				glVertex2d(uoff + 1,			voff);
+				glVertex2d(uoff + PWIDGET_LENGTH - 1,	voff);
+				glVertex2d(uoff + PWIDGET_LENGTH - 1,	voff - PWIDGET_HEIGHT + 2);
+				glVertex2d(uoff + 1,			voff - PWIDGET_HEIGHT + 2);
+				glEnd();
+
+				glDisable(GL_BLEND);
+			}
+
+			/* Draw widget border. */
+			glLineWidth(1.0f);
+			glBegin(GL_LINE_LOOP);
+			glColor4f(frame_fp->f_r, frame_fp->f_g,
+			    frame_fp->f_b, 1.00f);
+			glVertex2d(uoff,			voff);
+			glVertex2d(uoff + PWIDGET_LENGTH,	voff);
+			glVertex2d(uoff + PWIDGET_LENGTH - 1,	voff - PWIDGET_HEIGHT + 1);
+			glVertex2d(uoff,			voff - PWIDGET_HEIGHT + 1);
 			glEnd();
-
-			glDisable(GL_BLEND);
 		}
-
-		/* Draw widget border. */
-		glLineWidth(1.0f);
-		glBegin(GL_LINE_LOOP);
-		glColor4f(frame_fp->f_r, frame_fp->f_g,
-		    frame_fp->f_b, 1.00f);
-		glVertex2d(uoff,			voff);
-		glVertex2d(uoff + PWIDGET_LENGTH,	voff);
-		glVertex2d(uoff + PWIDGET_LENGTH - 1,	voff - PWIDGET_HEIGHT + 1);
-		glVertex2d(uoff,			voff - PWIDGET_HEIGHT + 1);
-		glEnd();
 
 		glColor4f(p->p_fill.f_r, p->p_fill.f_g, p->p_fill.f_b, p->p_fill.f_a);
 		glRasterPos2d(uoff + PWIDGET_LENGTH + PWIDGET_PADDING,
 		    voff - PWIDGET_HEIGHT + 3);
 		for (s = pw->pw_str; *s != '\0' &&
 		    (s - pw->pw_str + 1) * LETTER_WIDTH + PWIDGET_LENGTH +
-		    PWIDGET_PADDING < p->p_w / 2 - PANEL_PADDING - PANEL_BWIDTH; s++)
+		    PWIDGET_PADDING < p->p_w / nc - PANEL_PADDING - PANEL_BWIDTH; s++)
 			glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
 
 		glColor4f(0.0, 0.0, 0.2, 0.0);
@@ -346,7 +353,7 @@ draw_panel(struct panel *p, int toff)
 		    voff - PWIDGET_HEIGHT + 3 - 1);
 		for (s = pw->pw_str; *s != '\0' &&
 		    (s - pw->pw_str + 1) * LETTER_WIDTH + PWIDGET_LENGTH +
-		    PWIDGET_PADDING < p->p_w / 2 - PANEL_PADDING - PANEL_BWIDTH; s++)
+		    PWIDGET_PADDING < p->p_w / nc - PANEL_PADDING - PANEL_BWIDTH; s++)
 			glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
 
 		pw->pw_u = uoff;
@@ -362,8 +369,6 @@ draw_panel(struct panel *p, int toff)
 		if (++npw >= p->p_nwidgets)
 			break;
 	}
-
-	pi = &pinfo[baseconv(p->p_id) - 1];
 
 	if ((pi->pi_opts & PF_XPARENT) == 0) {
 		struct fill *fp;
@@ -500,13 +505,13 @@ panel_draw(struct panel *p, int wid)
 		w = w * LETTER_WIDTH + 2 * toff;
 		h = lineno * LETTER_HEIGHT + 2 * toff;
 		if (p->p_nwidgets) {
-			int nr;
+			int nr, nc;
 
-			w = MAX(w, 2 * (LETTER_WIDTH * (int)p->p_maxwlen +
-			    PWIDGET_LENGTH + 2 * PWIDGET_PADDING) + 2 * toff);
-			w = MIN(w, 2 * PWLABEL_MAXLEN + 2 * toff);
+			nc = MIN(2, p->p_nwidgets);
+			w = MAX(w, nc * (LETTER_WIDTH * (int)p->p_maxwlen +
+			    PWIDGET_LENGTH + 2 * PWIDGET_PADDING + toff));
+			w = MIN(w, nc * (PWLABEL_MAXLEN + toff));
 
-			/* p_nwidgets + 1 for truncation */
 			nr = (p->p_nwidgets + 1) / 2;
 			h += nr * (PWIDGET_HEIGHT + PWIDGET_PADDING);
 		}
@@ -937,13 +942,16 @@ panel_refresh_ninfo(struct panel *p)
 	    "Node ID: %d\n"
 	    "Wired position: (%d,%d,%d)\n"
 	    "Physical position: (%d,%d,%d,%d,%d)\n"
+	    "Status: %s\n"
 	    "Temperature: %dC\n"
 //	    "Routing errors: (%d recover, %d fatal, %d rtr)\n"
 	    "# Failures: %d",
 	    n->n_nid,
 	    iv->iv_x, iv->iv_y, iv->iv_z,
 	    pc.pc_r, pc.pc_cb, pc.pc_cg, pc.pc_m, pc.pc_n,
+	    statusclass[n->n_state].nc_name,
 	    n->n_temp, n->n_fails);
+
 	if (n->n_job)
 		panel_add_content(p,
 		    "\n\n"
@@ -968,11 +976,7 @@ panel_refresh_ninfo(struct panel *p)
 		       n->n_job->j_tmdur : 1),
 		    n->n_job->j_ncpus,
 		    n->n_job->j_mem);
-	else
-		panel_add_content(p,
-		    "\n"
-		    "Type: %s",
-		    statusclass[n->n_state].nc_name);
+
 	if (n->n_yod) {
 		char cmdbuf[YFL_CMD];
 
@@ -1263,7 +1267,8 @@ panel_refresh_help(struct panel *p)
 	if (exthelp) {
 		pw = nextp;
 		pw = panel_get_pwidget(p, pw, &nextp);
-		pwidget_set(p, pw, &fill_xparent, "Hide", gscb_pw_help, 0);
+		pwidget_set(p, pw, &fill_xparent, "Hide Help >>",
+		    gscb_pw_help, HF_HIDEHELP);
 
 		pw = nextp;
 		pw = panel_get_pwidget(p, pw, &nextp);
@@ -1274,10 +1279,16 @@ panel_refresh_help(struct panel *p)
 		pw = panel_get_pwidget(p, pw, &nextp);
 		pwidget_set(p, pw, &fill_xparent, "Options", gscb_pw_panel,
 		    baseconv(PANEL_OPTS) - 1);
+
+		pw = nextp;
+		pw = panel_get_pwidget(p, pw, &nextp);
+		pwidget_set(p, pw, &fill_xparent, "Clear Selnodes",
+		    gscb_pw_help, HF_CLRSN);
 	} else {
 		pw = nextp;
 		pw = panel_get_pwidget(p, pw, &nextp);
-		pwidget_set(p, pw, &fill_xparent, "Help", gscb_pw_help, 1);
+		pwidget_set(p, pw, &fill_xparent, "Help <<",
+		    gscb_pw_help, HF_SHOWHELP);
 	}
 }
 
