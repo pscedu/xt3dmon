@@ -107,12 +107,6 @@ serv_init(void)
 	    sizeof(optval)) == -1)
 		err(1, "setsockopt");
 
-/*
-	int fflags;
-	if (fcntl(sock, F_GETFL, &fflags) == -1)
-		err(1, "fcntl F_GETFL");
-	fflags |= O_NONBLOCK;
-*/
 	if (fcntl(sock, F_SETFL, O_NONBLOCK) == -1)
 		err(1, "fcntl F_SETFL");
 
@@ -141,8 +135,6 @@ serv_init(void)
 	}
 
 	gl_displayhp = serv_displayh;
-//	rebuild(RF_DATASRC | RF_CLUSTER);
-//	st.st_rf &= ~(RF_DATASRC | RF_CLUSTER);
 	fill_bg.f_r = 0.0;
 	fill_bg.f_g = 0.0;
 	fill_bg.f_b = 0.0;
@@ -157,8 +149,8 @@ serv_init(void)
 #define SERVP_CONT	1
 #define SERVP_ERR	2
 
-#define MAXTRIES 10
-#define TRYWAIT 10	/* microseconds */
+#define MAXTRIES	10
+#define TRYWAIT		10	/* microseconds */
 
 void
 serv_drawinfo(void)
@@ -306,7 +298,6 @@ snap:
 	}
 	memset(buf, 0, sizeof(buf));
 	if (ss.ss_click) {
-		gl_displayhp_old = serv_displayh;
 		gl_displayh_select();
 		panel_hide(PANEL_NINFO);
 
@@ -319,7 +310,6 @@ snap:
 	if (write(clifd, buf, sizeof(buf)) != sizeof(buf))
 		err(1, "write");
 
-	gl_displayhp_old = serv_displayh;
 	ssp = &ss;
 	gl_displayh_default();
 	ssp = NULL;

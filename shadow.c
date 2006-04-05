@@ -227,13 +227,6 @@ draw_shadow_wisect(struct wiselstep *ws, int cuts, int last, struct fvec *cloffp
 	len.iv_y = round(mag.iv_y / (double)cuts);
 	len.iv_z = round(mag.iv_z / (double)cuts);
 
-#if 0
-	if (len.iv_x == 0 ||
-	    len.iv_y == 0 ||
-	    len.iv_z == 0)
-		errx(1, "internal");
-#endif
-
 	nv.fv_x = offp->iv_x * st.st_winsp.iv_x;
 	nv.fv_y = offp->iv_y * st.st_winsp.iv_y;
 	nv.fv_z = offp->iv_z * st.st_winsp.iv_z;
@@ -440,12 +433,6 @@ wi_select(int flags, struct fvec *offp)
 		    	if (lasttry)
 				goto done;
 			cubeno_to_v(cubeno, ncuts, &ws[++pos]);
-#if 0
-			if (ws[pos].ws_mag.iv_x == 1 ||
-			    ws[pos].ws_mag.iv_y == 1 ||
-			    ws[pos].ws_mag.iv_z == 1)
-				break;
-#endif
 		} else {
 			ws[pos].ws_chance = 0;
 			if (--pos < 0)
@@ -495,7 +482,6 @@ gl_displayh_selectprobe(void)
 		break;
 	}
 end:
-	gl_displayhp = gl_displayhp_old;
 	glutDisplayFunc(gl_displayhp);
 	st.st_rf |= RF_CAM;
 
@@ -540,7 +526,6 @@ gl_displayh_select(void)
 		break;
 	}
 end:
-	gl_displayhp = gl_displayhp_old;
 	glutDisplayFunc(gl_displayhp);
 	st.st_rf |= RF_CAM;
 }

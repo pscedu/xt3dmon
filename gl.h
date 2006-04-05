@@ -32,4 +32,3 @@ void	 gl_displayh_select(void);
 void	 gl_displayh_selectprobe(void);
 
 extern void	(*gl_displayhp)(void);
-extern void	(*gl_displayhp_old)(void);
