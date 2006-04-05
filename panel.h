@@ -50,6 +50,7 @@ struct panel {
 	struct fill		  p_fill;
 	TAILQ_ENTRY(panel)	  p_link;
 	SLIST_HEAD(, pwidget)	  p_widgets;
+	struct pwidget		**p_nextwidget;
 	int			  p_nwidgets;
 	size_t			  p_maxwlen;
 };

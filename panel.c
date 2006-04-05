@@ -115,7 +115,7 @@ struct pinfo pinfo[] = {
  /* 13 */ { "Goto Job",		panel_refresh_gotojob,	PSTICK_TR, PF_UINP, 		 		0,		uinpcb_gotojob },
  /* 14 */ { NULL,		panel_refresh_panels,	PSTICK_TL, PF_HIDE | PF_FBIGN, 	 		0,		NULL },
  /* 15 */ { "Login",		panel_refresh_login,	PSTICK_TR, PF_UINP, 		 		UINPO_LINGER,	uinpcb_login },
- /* 16 */ { "Help",		panel_refresh_help,	PSTICK_BR, PF_HIDE | PF_FBIGN | PF_XPARENT,	0,		NULL },
+ /* 16 */ { "Help",		panel_refresh_help,	PSTICK_BR, PF_HIDE | PF_FBIGN ,	0,		NULL },
  /* 17 */ { "View Mode",	panel_refresh_vmode,	PSTICK_TL, 0,			 		0,		NULL },
  /* 18 */ { "Data Mode",	panel_refresh_dmode,	PSTICK_TL, 0,			 		0,		NULL }
 };
@@ -653,25 +653,50 @@ panel_ready(struct panel *p)
 	return ((p->p_opts & POPT_DIRTY) == 0 && p->p_str != NULL);
 }
 
-struct pwidget *
-panel_get_pwidget(struct panel *p, struct pwidget *pw, struct pwidget **nextp)
+void
+pwidget_startlist(struct panel *p)
 {
-	if (pw == NULL) {
-		if ((pw = malloc(sizeof(*pw))) == NULL)
-			err(1, "malloc");
-		SLIST_INSERT_HEAD(&p->p_widgets, pw, pw_next);
-//		memset(pw, 0, sizeof(pw));
-		*nextp = NULL;
-	} else
-		*nextp = SLIST_NEXT(pw, pw_next);
-	p->p_nwidgets++;
-	return (pw);
+	p->p_nwidgets = 0;
+	p->p_maxwlen = 0;
+	p->p_nextwidget = &SLIST_FIRST(&p->p_widgets);
 }
 
 void
-pwidget_set(struct panel *p, struct pwidget *pw, struct fill *fp,
-    const char *s, void (*cb)(int), int cbarg)
+pwidget_endlist(struct panel *p)
 {
+	struct pwidget *pw, *nextp;
+
+	if (p->p_nwidgets == 0)
+		SLIST_INIT(&p->p_widgets);
+
+	if (*p->p_nextwidget == NULL)
+		return;
+	pw = *p->p_nextwidget;
+	*p->p_nextwidget = NULL;
+
+	for (; pw; pw = nextp) {
+		nextp = SLIST_NEXT(pw, pw_next);
+		free(pw);
+	}
+}
+
+void
+pwidget_add(struct panel *p, struct fill *fp, const char *s,
+    void (*cb)(int), int cbarg)
+{
+	struct pwidget *pw;
+
+	p->p_nwidgets++;
+	if (*p->p_nextwidget == NULL) {
+		if ((pw = malloc(sizeof(*pw))) == NULL)
+			err(1, "malloc");
+		SLIST_NEXT(pw, pw_next) = NULL;
+		*p->p_nextwidget = pw;
+	} else
+		pw = *p->p_nextwidget;
+
+	p->p_nextwidget = &SLIST_NEXT(pw, pw_next);
+
 	pw->pw_fillp = fp;
 	pw->pw_cb = cb;
 	pw->pw_cbarg = cbarg;
@@ -715,75 +740,55 @@ panel_refresh_cmd(struct panel *p)
 void
 panel_refresh_legend(struct panel *p)
 {
-	struct pwidget *pw, *nextp;
 	size_t j;
 
 	if ((mode_data_clean & PANEL_LEGEND) && panel_ready(p))
 		return;
 	mode_data_clean |= PANEL_LEGEND;
 
-	p->p_nwidgets = 0;
-	p->p_maxwlen = 0;
-	pw = SLIST_FIRST(&p->p_widgets);
+	pwidget_startlist(p);
 	switch (st.st_dmode) {
 	case DM_JOB:
 		panel_set_content(p, "- Job Legend -\nTotal jobs: %lu",
 		    job_list.ol_cur);
 
-		pw = panel_get_pwidget(p, pw, &nextp);
-		pwidget_set(p, pw, &fill_nodata, "Show all", gscb_pw_hlall, 0);
-		pw = nextp;
+		pwidget_add(p, &fill_nodata, "Show all", gscb_pw_hlall, 0);
 
-		for (j = 0; j < NSC; j++, pw = nextp) {
+		for (j = 0; j < NSC; j++) {
 			if (j == SC_USED ||
 			    statusclass[j].nc_nmemb == 0)
 				continue;
-			pw = panel_get_pwidget(p, pw, &nextp);
-			pwidget_set(p, pw, &statusclass[j].nc_fill,
+			pwidget_add(p, &statusclass[j].nc_fill,
 			    statusclass[j].nc_name, gscb_pw_hlnc, j);
 		}
-		for (j = 0; j < job_list.ol_cur; j++, pw = nextp) {
-			pw = panel_get_pwidget(p, pw, &nextp);
-			pwidget_set(p, pw, &job_list.ol_jobs[j]->j_fill,
+		for (j = 0; j < job_list.ol_cur; j++)
+			pwidget_add(p, &job_list.ol_jobs[j]->j_fill,
 			    job_list.ol_jobs[j]->j_name, gscb_pw_hlnc, NSC + j);
-		}
 		break;
 	case DM_FAIL:
 		panel_set_content(p, "- Failure Legend - \nTotal: %lu",
 		    total_failures);
 
-		pw = panel_get_pwidget(p, pw, &nextp);
-		pwidget_set(p, pw, &fill_nodata, "Show all", gscb_pw_hlall, 0);
-		pw = nextp;
+		pwidget_add(p, &fill_nodata, "Show all", gscb_pw_hlall, 0);
+		pwidget_add(p, &fill_nodata, "No data", NULL, 0);
 
-		pw = panel_get_pwidget(p, pw, &nextp);
-		pwidget_set(p, pw, &fill_nodata, "No data", NULL, 0);
-		pw = nextp;
-
-		for (j = 0; j < NFAILC; j++, pw = nextp) {
+		for (j = 0; j < NFAILC; j++) {
 			if (failclass[j].nc_nmemb == 0)
 				continue;
-			pw = panel_get_pwidget(p, pw, &nextp);
-			pwidget_set(p, pw, &failclass[j].nc_fill,
+			pwidget_add(p, &failclass[j].nc_fill,
 			    failclass[j].nc_name, gscb_pw_hlnc, j);
 		}
 		break;
 	case DM_TEMP:
 		panel_set_content(p, "- Temperature Legend -");
 
-		pw = panel_get_pwidget(p, pw, &nextp);
-		pwidget_set(p, pw, &fill_nodata, "Show all", gscb_pw_hlall, 0);
-		pw = nextp;
+		pwidget_add(p, &fill_nodata, "Show all", gscb_pw_hlall, 0);
+		pwidget_add(p, &fill_nodata, "No data", NULL, 0);
 
-		pw = panel_get_pwidget(p, pw, &nextp);
-		pwidget_set(p, pw, &fill_nodata, "No data", NULL, 0);
-		pw = nextp;
-
-		for (j = 0; j < NTEMPC; j++, pw = nextp) {
+		for (j = 0; j < NTEMPC; j++) {
 			if (tempclass[j].nc_nmemb == 0)
 				continue;
-			pw = panel_get_pwidget(p, pw, &nextp);
-			pwidget_set(p, pw, &tempclass[j].nc_fill,
+			pwidget_add(p, &tempclass[j].nc_fill,
 			    tempclass[j].nc_name, gscb_pw_hlnc, j);
 		}
 		break;
@@ -791,40 +796,33 @@ panel_refresh_legend(struct panel *p)
 		panel_set_content(p, "- Yod Legend -\nTotal yods: %lu",
 		    yod_list.ol_cur);
 
-		pw = panel_get_pwidget(p, pw, &nextp);
-		pwidget_set(p, pw, &fill_nodata, "Show all", gscb_pw_hlall, 0);
-		pw = nextp;
+		pwidget_add(p, &fill_nodata, "Show all", gscb_pw_hlall, 0);
 
-		for (j = 0; j < NSC; j++, pw = nextp) {
+		for (j = 0; j < NSC; j++) {
 			if (j == SC_USED ||
 			    statusclass[j].nc_nmemb == 0)
 				continue;
-			pw = panel_get_pwidget(p, pw, &nextp);
-			pwidget_set(p, pw, &statusclass[j].nc_fill,
+			pwidget_add(p, &statusclass[j].nc_fill,
 			    statusclass[j].nc_name, gscb_pw_hlnc, j);
 		}
-		for (j = 0; j < yod_list.ol_cur; j++, pw = nextp) {
-			pw = panel_get_pwidget(p, pw, &nextp);
-			pwidget_set(p, pw, &yod_list.ol_yods[j]->y_fill,
+		for (j = 0; j < yod_list.ol_cur; j++)
+			pwidget_add(p, &yod_list.ol_yods[j]->y_fill,
 			    yod_list.ol_yods[j]->y_cmd, gscb_pw_hlnc, NSC + j);
-		}
 		break;
 	case DM_RTUNK:
 		panel_set_content(p, "- Routing Legend -");
 
-		pw = panel_get_pwidget(p, pw, &nextp);
-		pwidget_set(p, pw, &fill_nodata, "Show all", gscb_pw_hlall, 0);
-		pw = nextp;
+		pwidget_add(p, &fill_nodata, "Show all", gscb_pw_hlall, 0);
 
-		for (j = 0; j < NRTC; j++, pw = nextp) {
+		for (j = 0; j < NRTC; j++) {
 			if (rtclass[j].nc_nmemb == 0)
 				continue;
-			pw = panel_get_pwidget(p, pw, &nextp);
-			pwidget_set(p, pw, &rtclass[j].nc_fill,
+			pwidget_add(p, &rtclass[j].nc_fill,
 			    rtclass[j].nc_name, gscb_pw_hlnc, j);
 		}
 		break;
 	}
+	pwidget_endlist(p);
 }
 
 void
@@ -1161,7 +1159,6 @@ void
 panel_refresh_opts(struct panel *p)
 {
 	static int sav_opts;
-	struct pwidget *pw, *nextp;
 	int i;
 
 	if (panel_ready(p) && sav_opts == st.st_opts)
@@ -1170,24 +1167,21 @@ panel_refresh_opts(struct panel *p)
 
 	panel_set_content(p, "- Options - ");
 
-	p->p_nwidgets = 0;
-	p->p_maxwlen = 0;
-	pw = nextp = SLIST_FIRST(&p->p_widgets);
-	for (i = 0; i < NOPS; i++, pw = nextp) {
+	pwidget_startlist(p);
+	for (i = 0; i < NOPS; i++) {
 		if (opts[i].opt_flags & OPF_HIDE)
 			continue;
-		pw = panel_get_pwidget(p, pw, &nextp);
-		pwidget_set(p, pw, (st.st_opts & (1 << i) ?
+		pwidget_add(p, (st.st_opts & (1 << i) ?
 		    &fill_white : &fill_nodata), opts[i].opt_name,
 		    gscb_pw_opt, i);
 	}
+	pwidget_endlist(p);
 }
 
 void
 panel_refresh_panels(struct panel *p)
 {
 	static int sav_pids;
-	struct pwidget *pw, *nextp;
 	struct panel *pp;
 	int i, pids;
 
@@ -1201,17 +1195,15 @@ panel_refresh_panels(struct panel *p)
 
 	panel_set_content(p, "- Panels - ");
 
-	p->p_nwidgets = 0;
-	p->p_maxwlen = 0;
-	pw = nextp = SLIST_FIRST(&p->p_widgets);
-	for (i = 0; i < NPANELS; i++, pw = nextp) {
+	pwidget_startlist(p);
+	for (i = 0; i < NPANELS; i++) {
 		if (pinfo[i].pi_opts & PF_HIDE)
 			continue;
-		pw = panel_get_pwidget(p, pw, &nextp);
-		pwidget_set(p, pw, (pids & (1 << i) ?
+		pwidget_add(p, (pids & (1 << i) ?
 		    &fill_white : &fill_nodata), pinfo[i].pi_name,
 		    gscb_pw_panel, i);
 	}
+	pwidget_endlist(p);
 }
 
 void
@@ -1251,7 +1243,6 @@ panel_refresh_login(struct panel *p)
 void
 panel_refresh_help(struct panel *p)
 {
-	struct pwidget *pw, *nextp;
 	static int sav_exthelp;
 
 	if (panel_ready(p) && sav_exthelp == exthelp)
@@ -1259,44 +1250,23 @@ panel_refresh_help(struct panel *p)
 	sav_exthelp = exthelp;
 
 	panel_set_content(p, "");
-
-	p->p_nwidgets = 0;
-	p->p_maxwlen = 0;
-	nextp = SLIST_FIRST(&p->p_widgets);
-
+	pwidget_startlist(p);
 	if (exthelp) {
-		pw = nextp;
-		pw = panel_get_pwidget(p, pw, &nextp);
-		pwidget_set(p, pw, &fill_xparent, "Hide Help >>",
-		    gscb_pw_help, HF_HIDEHELP);
-
-		pw = nextp;
-		pw = panel_get_pwidget(p, pw, &nextp);
-		pwidget_set(p, pw, &fill_xparent, "Panels", gscb_pw_panel,
-		    baseconv(PANEL_PANELS) - 1);
-
-		pw = nextp;
-		pw = panel_get_pwidget(p, pw, &nextp);
-		pwidget_set(p, pw, &fill_xparent, "Options", gscb_pw_panel,
-		    baseconv(PANEL_OPTS) - 1);
-
-		pw = nextp;
-		pw = panel_get_pwidget(p, pw, &nextp);
-		pwidget_set(p, pw, &fill_xparent, "Clear Selnodes",
-		    gscb_pw_help, HF_CLRSN);
+		pwidget_add(p, &fill_xparent, "Hide Help >>", gscb_pw_help, HF_HIDEHELP);
+		pwidget_add(p, &fill_xparent, "Panels", gscb_pw_panel, baseconv(PANEL_PANELS) - 1);
+		pwidget_add(p, &fill_xparent, "Options", gscb_pw_panel, baseconv(PANEL_OPTS) - 1);
+		pwidget_add(p, &fill_xparent, "Clear Selnodes", gscb_pw_help, HF_CLRSN);
 	} else {
-		pw = nextp;
-		pw = panel_get_pwidget(p, pw, &nextp);
-		pwidget_set(p, pw, &fill_xparent, "Help <<",
+		pwidget_add(p, &fill_xparent, "Help <<",
 		    gscb_pw_help, HF_SHOWHELP);
 	}
+	pwidget_endlist(p);
 }
 
 void
 panel_refresh_vmode(struct panel *p)
 {
 	static int sav_vmode;
-	struct pwidget *pw, *nextp;
 	int i;
 
 	if (panel_ready(p) && sav_vmode == st.st_vmode)
@@ -1304,23 +1274,19 @@ panel_refresh_vmode(struct panel *p)
 	sav_vmode = st.st_vmode;
 
 	panel_set_content(p, "- View Mode - ");
-
-	p->p_nwidgets = 0;
-	p->p_maxwlen = 0;
-	pw = nextp = SLIST_FIRST(&p->p_widgets);
-	for (i = 0; i < NVM; i++, pw = nextp) {
-		pw = panel_get_pwidget(p, pw, &nextp);
-		pwidget_set(p, pw, (st.st_vmode == i ?
+	pwidget_startlist(p);
+	for (i = 0; i < NVM; i++) {
+		pwidget_add(p, (st.st_vmode == i ?
 		    &fill_white : &fill_nodata), vmodes[i].vm_name,
 		    gscb_pw_vmode, i);
 	}
+	pwidget_endlist(p);
 }
 
 void
 panel_refresh_dmode(struct panel *p)
 {
 	static int sav_dmode;
-	struct pwidget *pw, *nextp;
 	int i;
 
 	if (panel_ready(p) && sav_dmode == st.st_dmode)
@@ -1328,18 +1294,15 @@ panel_refresh_dmode(struct panel *p)
 	sav_dmode = st.st_dmode;
 
 	panel_set_content(p, "- Data Mode - ");
-
-	p->p_nwidgets = 0;
-	p->p_maxwlen = 0;
-	pw = nextp = SLIST_FIRST(&p->p_widgets);
-	for (i = 0; i < NDM; i++, pw = nextp) {
+	pwidget_startlist(p);
+	for (i = 0; i < NDM; i++) {
 		if (dmodes[i].dm_name == NULL)
 			continue;
-		pw = panel_get_pwidget(p, pw, &nextp);
-		pwidget_set(p, pw, (st.st_dmode == i ?
+		pwidget_add(p, (st.st_dmode == i ?
 		    &fill_white : &fill_nodata), dmodes[i].dm_name,
 		    gscb_pw_dmode, i);
 	}
+	pwidget_endlist(p);
 }
 
 void
