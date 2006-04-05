@@ -85,14 +85,34 @@ struct pinfo {
 #define PSTICK_BL	3
 #define PSTICK_BR	4
 
-void			 panel_toggle(int);
-void			 panel_tremove(struct panel *);
-void			 panel_show(int);
-void			 panel_hide(int);
-struct panel		*panel_for_id(int);
-void			 panel_demobilize(struct panel *);
+void		 panel_toggle(int);
+void		 panel_tremove(struct panel *);
+void		 panel_show(int);
+void		 panel_hide(int);
+struct panel	*panel_for_id(int);
+void		 panel_demobilize(struct panel *);
+
+
+void panel_refresh_fps(struct panel *);
+void panel_refresh_ninfo(struct panel *);
+void panel_refresh_cmd(struct panel *);
+void panel_refresh_legend(struct panel *);
+void panel_refresh_flyby(struct panel *);
+void panel_refresh_gotonode(struct panel *);
+void panel_refresh_pos(struct panel *);
+void panel_refresh_ss(struct panel *);
+void panel_refresh_status(struct panel *);
+void panel_refresh_mem(struct panel *);
+void panel_refresh_eggs(struct panel *);
+void panel_refresh_date(struct panel *);
+void panel_refresh_opts(struct panel *);
+void panel_refresh_gotojob(struct panel *);
+void panel_refresh_panels(struct panel *);
+void panel_refresh_login(struct panel *);
+void panel_refresh_help(struct panel *);
+void panel_refresh_vmode(struct panel *);
+void panel_refresh_dmode(struct panel *);
 
 extern struct panels	 panels;
 extern struct pinfo	 pinfo[];
 extern struct panel	*panel_mobile;
-
