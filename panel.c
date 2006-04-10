@@ -77,7 +77,7 @@ struct pinfo pinfo[] = {
  /* 13 */ { "Goto Job",		panel_refresh_gotojob,	PSTICK_TR, PF_UINP, 		 		0,		uinpcb_gotojob },
  /* 14 */ { NULL,		panel_refresh_panels,	PSTICK_TL, PF_HIDE | PF_FBIGN, 	 		0,		NULL },
  /* 15 */ { "Login",		panel_refresh_login,	PSTICK_TR, PF_UINP, 		 		UINPO_LINGER,	uinpcb_login },
- /* 16 */ { "Help",		panel_refresh_help,	PSTICK_BR, PF_HIDE | PF_FBIGN ,	0,		NULL },
+ /* 16 */ { "Help",		panel_refresh_help,	PSTICK_BR, PF_HIDE | PF_FBIGN | PF_XPARENT,	0,		NULL },
  /* 17 */ { "View Mode",	panel_refresh_vmode,	PSTICK_TL, 0,			 		0,		NULL },
  /* 18 */ { "Data Mode",	panel_refresh_dmode,	PSTICK_TL, 0,			 		0,		NULL }
 };
