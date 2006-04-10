@@ -22,19 +22,20 @@
 void
 cam_move(int dir, float amt)
 {
+	static struct fvec fv;
+
 	if (dir == DIR_LEFT ||
 	    dir == DIR_BACK ||
 	    dir == DIR_DOWN)
 		amt *= -1;
 
-	/*
-	 * This needs to be rewritten to use st.st_uv.
-	 */
 	switch (dir) {
 	case DIR_LEFT:
 	case DIR_RIGHT:
-		st.st_x -= st.st_lz * amt;
-		st.st_z += st.st_lx * amt;
+		vec_crossprod(&fv, &st.st_lv, &st.st_uv);
+		st.st_x += fv.fv_x * amt;
+		st.st_y += fv.fv_y * amt;
+		st.st_z += fv.fv_z * amt;
 		break;
 	case DIR_FORWARD:
 	case DIR_BACK:
