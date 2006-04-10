@@ -8,12 +8,10 @@
 #include "mon.h"
 
 #define SQUARE(x)	((x) * (x))
-#define SIGN(x)		((x) == 0 ? 1 : abs(x) / (x))
+#define SIGN(x)		(x < 0 ? -1 : 1)
+#define SIGNF(a)	(a < 0.0f ? -1.0f : 1.0f)
 
 #define DEG_TO_RAD(x)	((x) * M_PI / 180)
-
-#define SIGNF(a) \
-	(a < 0.0f ? -1.0f : 1.0f)
 
 #define IVEC_FOREACH(tiv, iv)				\
 	for ((tiv)->iv_x = 0;				\
