@@ -81,3 +81,4 @@ todo
 - add table for service node hostnames to ssh/command
 - cut xtwmon turning/zooming in half for better granularity
 - put textures in legend
+- only redraw panels in the same stick after one is moved
