@@ -428,6 +428,10 @@ main(int argc, char *argv[])
 		panel_toggle(PANEL_HELP);
 
 	gl_run(gl_setup);
+
+	if ((quadric = gluNewQuadric()) == NULL)
+		err(1, "gluNewQuadric");
+
 	glutMainLoop();
 	/* NOTREACHED */
 	exit(0);

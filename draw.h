@@ -25,3 +25,5 @@ void	 draw_box_tex(const struct fvec *, const struct fill *, GLenum);
 extern int dl_cluster[2];
 extern int dl_ground[2];
 extern int dl_selnodes[2];
+
+extern GLUquadric *quadric;

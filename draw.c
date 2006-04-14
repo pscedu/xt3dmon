@@ -73,7 +73,6 @@ void
 draw_compass(void)
 {
 	struct fvec fv, upadj, normv;
-	GLUquadric *q;
 
 	cam_getspecvec(&fv, 150, winv.iv_h - 150);
 	fv.fv_x *= 2.0;
@@ -87,9 +86,7 @@ draw_compass(void)
 	glPushMatrix();
 //	glTranslatef(upadj.fv_x, 0.0, upadj.fv_z);
 
-	if ((q = gluNewQuadric()) == NULL)
-		err(1, "gluNewQuadric");
-	gluQuadricDrawStyle(q, GLU_FILL);
+	gluQuadricDrawStyle(quadric, GLU_FILL);
 
 	/* Anti-aliasing */
 	glEnable(GL_BLEND);
@@ -113,7 +110,7 @@ draw_compass(void)
 
 	glPushMatrix();
 	glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z + CMP_LLEN / 2.0);
-	gluCylinder(q, CMP_ATHK, 0.0001, CMP_ALEN, 4, 1);
+	gluCylinder(quadric, CMP_ATHK, 0.0001, CMP_ALEN, 4, 1);
 	glPopMatrix();
 
 	glColor3f(1.0f, 0.0f, 0.0f);					/* y - red */
@@ -128,7 +125,7 @@ draw_compass(void)
 	glPushMatrix();
 	glTranslatef(fv.fv_x, fv.fv_y + CMP_LLEN / 2.0, fv.fv_z);
 	glRotatef(-90.0, 1.0, 0.0, 0.0);
-	gluCylinder(q, CMP_ATHK, 0.0001, CMP_ALEN, 4, 1);
+	gluCylinder(quadric, CMP_ATHK, 0.0001, CMP_ALEN, 4, 1);
 	glPopMatrix();
 
 	glColor3f(0.0f, 0.0f, 1.0f);					/* x - blue */
@@ -143,7 +140,7 @@ draw_compass(void)
 	glPushMatrix();
 	glTranslatef(fv.fv_x + CMP_LLEN / 2.0, fv.fv_y, fv.fv_z);
 	glRotatef(90.0, 0.0, 1.0, 0.0);
-	gluCylinder(q, CMP_ATHK, 0.0001, CMP_ALEN, 4, 1);
+	gluCylinder(quadric, CMP_ATHK, 0.0001, CMP_ALEN, 4, 1);
 	glPopMatrix();
 
 	glPopMatrix();
@@ -151,7 +148,6 @@ draw_compass(void)
 	glDisable(GL_POLYGON_SMOOTH);
 	glDisable(GL_LINE_SMOOTH);
 	glDisable(GL_BLEND);
-	gluDeleteQuadric(q);
 }
 
 __inline void
@@ -373,13 +369,10 @@ __inline void
 draw_node_pipes(struct node *np)
 {
 	struct fvec *ndim;
-	GLUquadric *q;
 
 	ndim = &vmodes[st.st_vmode].vm_ndim;
 
-	if ((q = gluNewQuadric()) == NULL)
-		err(1, "gluNewQuadric");
-	gluQuadricDrawStyle(q, GLU_FILL);
+	gluQuadricDrawStyle(quadric, GLU_FILL);
 
 	/* Anti-aliasing */
 	glEnable(GL_BLEND);
@@ -393,7 +386,7 @@ draw_node_pipes(struct node *np)
 	    np->n_v->fv_x + ndim->fv_w / 2.0,
 	    np->n_v->fv_y + ndim->fv_h / 2.0,
 	    np->n_v->fv_z + ndim->fv_d / 2.0 - st.st_winsp.iv_d);
-	gluCylinder(q, 0.1, 0.1, 2.0 * st.st_winsp.iv_d, 3, 1);
+	gluCylinder(quadric, 0.1, 0.1, 2.0 * st.st_winsp.iv_d, 3, 1);
 	glPopMatrix();
 
 	glColor4f(1.0f, 0.0f, 0.0f, 0.7f);				/* y - red */
@@ -403,7 +396,7 @@ draw_node_pipes(struct node *np)
 	    np->n_v->fv_y + ndim->fv_h / 2.0 - st.st_winsp.iv_h,
 	    np->n_v->fv_z + ndim->fv_d / 2.0);
 	glRotatef(-90.0, 1.0, 0.0, 0.0);
-	gluCylinder(q, 0.1, 0.1, 2.0 * st.st_winsp.iv_h, 3, 1);
+	gluCylinder(quadric, 0.1, 0.1, 2.0 * st.st_winsp.iv_h, 3, 1);
 	glPopMatrix();
 
 	glColor4f(0.0f, 0.0f, 1.0f, 0.7f);				/* x - blue */
@@ -413,12 +406,11 @@ draw_node_pipes(struct node *np)
 	    np->n_v->fv_y + ndim->fv_h / 2.0,
 	    np->n_v->fv_z + ndim->fv_d / 2.0);
 	glRotatef(90.0, 0.0, 1.0, 0.0);
-	gluCylinder(q, 0.1, 0.1, 2.0 * st.st_winsp.iv_w, 3, 1);
+	gluCylinder(quadric, 0.1, 0.1, 2.0 * st.st_winsp.iv_w, 3, 1);
 	glPopMatrix();
 
 	glDisable(GL_POLYGON_SMOOTH);
 	glDisable(GL_BLEND);
-	gluDeleteQuadric(q);
 }
 
 __inline int
@@ -711,8 +703,7 @@ draw_cluster_physical(void)
 }
 
 void
-draw_cluster_pipe(GLUquadric *q, struct ivec *iv,
-    struct fvec *sv, struct fvec *dimv)
+draw_cluster_pipe(struct ivec *iv, struct fvec *sv, struct fvec *dimv)
 {
 	struct fill *fp, dims[] = {
 		FILL_INITA(0.0f, 0.0f, 1.0f, 0.5f),	/* x - blue */
@@ -770,7 +761,7 @@ draw_cluster_pipe(GLUquadric *q, struct ivec *iv,
 			len = (widim.iv_d + 1) * st.st_winsp.iv_z;
 			break;
 		}
-		gluCylinder(q, 0.1, 0.1, len, 3, 1);
+		gluCylinder(quadric, 0.1, 0.1, len, 3, 1);
 		glPopMatrix();
 		break;
 	case PM_RT:
@@ -835,7 +826,7 @@ draw_cluster_pipe(GLUquadric *q, struct ivec *iv,
 				break;
 			}
 
-			gluCylinder(q, 0.1, 0.1, len, 3, 1);
+			gluCylinder(quadric, 0.1, 0.1, len, 3, 1);
 			glPopMatrix();
 		}
 		break;
@@ -849,7 +840,6 @@ draw_cluster_pipes(const struct fvec *v)
 {
 	struct fvec *ndim, sv, dim;
 	struct ivec iv;
-	GLUquadric *q;
 
 	glPushMatrix();
 	glTranslatef(v->fv_x, v->fv_y, v->fv_z);
@@ -860,26 +850,23 @@ draw_cluster_pipes(const struct fvec *v)
 	sv.fv_y = ndim->fv_h / 2 + st.st_wioff.iv_y * st.st_winsp.iv_y;
 	sv.fv_z = ndim->fv_d / 2 + st.st_wioff.iv_z * st.st_winsp.iv_z;
 
-	if ((q = gluNewQuadric()) == NULL)
-		err(1, "gluNewQuadric");
-	gluQuadricDrawStyle(q, GLU_FILL);
+	gluQuadricDrawStyle(quadric, GLU_FILL);
 
 	vec_set(&dim, 0.0f, 0.0f, WIV_SDEPTH);
 	for (iv.iv_x = 0; iv.iv_x < widim.iv_w; iv.iv_x++)
 		for (iv.iv_y = 0; iv.iv_y < widim.iv_h; iv.iv_y++)
-			draw_cluster_pipe(q, &iv, &sv, &dim);
+			draw_cluster_pipe(&iv, &sv, &dim);
 
 	vec_set(&dim, 0.0f, WIV_SHEIGHT, 0.0f);
 	for (iv.iv_z = 0; iv.iv_z < widim.iv_d; iv.iv_z++)
 		for (iv.iv_x = 0; iv.iv_x < widim.iv_w; iv.iv_x++)
-			draw_cluster_pipe(q, &iv, &sv, &dim);
+			draw_cluster_pipe(&iv, &sv, &dim);
 
 	vec_set(&dim, WIV_SWIDTH, 0.0f, 0.0f);
 	for (iv.iv_y = 0; iv.iv_y < widim.iv_h; iv.iv_y++)
 		for (iv.iv_z = 0; iv.iv_z < widim.iv_d; iv.iv_z++)
-			draw_cluster_pipe(q, &iv, &sv, &dim);
+			draw_cluster_pipe(&iv, &sv, &dim);
 
-	gluDeleteQuadric(q);
 	glPopMatrix();
 }
 
