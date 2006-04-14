@@ -82,3 +82,6 @@ todo
 - cut xtwmon turning/zooming in half for better granularity
 - put textures in legend
 - only redraw panels in the same stick after one is moved
+- ensure all fill get memset(0) now
+- compile 1 node and just use Translate and calllist in selection
+- merge gl and env files?
