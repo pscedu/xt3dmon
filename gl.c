@@ -14,8 +14,6 @@
 long	 fps = 50;	/* last fps sample */
 long	 fps_cnt = 0;	/* current fps counter */
 
-GLUquadric *quadric;
-
 void
 gl_reshapeh(int w, int h)
 {

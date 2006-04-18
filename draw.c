@@ -51,6 +51,8 @@ struct fvec wi_repstart;
 struct fvec wi_repdim;
 float clip;
 
+GLUquadric *quadric;
+
 int dl_cluster[2];
 int dl_ground[2];
 int dl_selnodes[2];
