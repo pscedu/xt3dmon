@@ -9,6 +9,7 @@ struct fill;
 #define NDF_NOOPTS	(1<<1)
 
 /* draw.c */
+void	 draw_scene(void);
 void	 draw_node(struct node *, int);
 void	 draw_panels(int);
 void	 draw_shadow_panels(void);
