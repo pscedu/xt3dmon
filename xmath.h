@@ -25,16 +25,18 @@
 			     (tiv)->iv_z++)
 
 struct fvec {
-	float	 fv_x;
-	float	 fv_y;
-	float	 fv_z;
-#define fv_w fv_x
-#define fv_h fv_y
-#define fv_d fv_z
+	float	fv_val[3];
+#define fv_x fv_val[0]
+#define fv_y fv_val[1]
+#define fv_z fv_val[2]
 
-#define fv_r fv_x
-#define fv_t fv_y
-#define fv_p fv_z
+#define fv_w fv_val[0]
+#define fv_h fv_val[1]
+#define fv_d fv_val[2]
+
+#define fv_r fv_val[0]
+#define fv_t fv_val[1]
+#define fv_p fv_val[2]
 };
 
 struct ivec {
