@@ -53,9 +53,9 @@ int			 flyby_mode = FBM_OFF;
 int			 capture_mode = CM_PPM;
 int			 stereo_mode;
 
-struct fvec		 tv = { STARTX, STARTY, STARTZ };
-struct fvec		 tlv = { STARTLX, STARTLY, STARTLZ };
-struct fvec		 tuv = { 0.0f, 1.0f, 0.0f };
+struct fvec		 tv = { { STARTX, STARTY, STARTZ } };
+struct fvec		 tlv = { { STARTLX, STARTLY, STARTLZ } };
+struct fvec		 tuv = { { 0.0f, 1.0f, 0.0f } };
 
 void			(*gl_displayhp)(void);
 
@@ -90,9 +90,9 @@ struct xoption opts[] = {
 };
 
 struct vmode vmodes[] = {
-	{ "Physical",		1000,	{ 0.2f, 1.2f, 1.2f } },
-	{ "Wired (repeat)",	5,	{ 0.5f, 0.5f, 0.5f } },
-	{ "Wired",		1000,	{ 2.0f, 2.0f, 2.0f } }
+	{ "Physical",		1000,	{ { 0.2f, 1.2f, 1.2f } } },
+	{ "Wired (repeat)",	5,	{ { 0.5f, 0.5f, 0.5f } } },
+	{ "Wired",		1000,	{ { 2.0f, 2.0f, 2.0f } } }
 };
 
 struct dmode dmodes[] = {
@@ -107,9 +107,9 @@ struct dmode dmodes[] = {
 };
 
 struct state st = {
-	{ STARTX, STARTY, STARTZ },			/* (x,y,z) */
-	{ STARTLX, STARTLY, STARTLZ },			/* (lx,ly,lz) */
-	{ 0.0f, 1.0f, 0.0f },				/* (ux,uy,uz) */
+	{ { STARTX, STARTY, STARTZ } },			/* (x,y,z) */
+	{ { STARTLX, STARTLY, STARTLZ } },		/* (lx,ly,lz) */
+	{ { 0.0f, 1.0f, 0.0f } },			/* (ux,uy,uz) */
 	OP_WIREFRAME | OP_TWEEN | OP_GROUND | \
 	    OP_DISPLAY | OP_NODEANIM,			/* options */
 	DM_JOB,						/* which data to show */
