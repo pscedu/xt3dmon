@@ -4,6 +4,7 @@
 
 #include "cam.h"
 #include "capture.h"
+#include "draw.h"
 #include "env.h"
 #include "flyby.h"
 #include "gl.h"
