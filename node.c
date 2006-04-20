@@ -42,10 +42,10 @@ node_adjmodpos(int n, struct fvec *fv)
 	fv->fv_z += col * (NODESPACE + NODEDEPTH) + row * NODESHIFT;
 }
 
-#if 0
-__inline void
+void
 node_setphyspos(struct node *n, struct fvec *fv)
 {
+#if 0
 	struct physdim *pd;
 	int i, pos;
 
@@ -68,8 +68,16 @@ node_setphyspos(struct node *n, struct fvec *fv)
 			break;
 		}
 	}
-}
 #endif
+	struct physcoord pc;
+
+	node_physpos(n, &pc);
+	fv->fv_x = pc.pc_cb * (CABWIDTH + CABSPACE) +
+	    pc.pc_m * (MODWIDTH + MODSPACE);
+	fv->fv_y = pc.pc_cg * (CAGEHEIGHT + CAGESPACE);
+	fv->fv_z = pc.pc_r * (ROWDEPTH + ROWSPACE);
+	node_adjmodpos(pc.pc_n, fv);
+}
 
 void
 node_physpos(struct node *node, struct physcoord *pc)
