@@ -34,23 +34,3 @@ negmodf(double a, double b)
 		c = fmod(a, b);
 	return (c);
 }
-
-void
-matrix_multiply(double *r, double *a, size_t anc, size_t anr,
-   double *b, size_t bnc, size_t bnr)
-{
-	size_t i, j, k, l;
-	double val;
-
-	if (anr != bnc)
-		errx(1, "matrix_multiply: a_nrows != b_ncols");
-
-	for (i = 0; i < anc; i++)
-		for (j = 0; j < bnr; j++) {
-			val = 0;
-			for (k = 0; k < anr; k++)
-				for (l = 0; l < bnc; l++)
-					val += a[i * anr + k] * b[j * bnr + l];
-			r[i * anr + j] = val;
-		}
-}
