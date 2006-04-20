@@ -19,6 +19,7 @@ struct fill {
 	float	 	f_b;
 	float	 	f_a;
 	int	 	f_flags;
+	int		f_blfunc;
 	unsigned int	f_texid[2];
 	unsigned int	f_texid_a[2];		/* alpha-loaded texid */
 #define f_h f_r
@@ -40,7 +41,7 @@ struct fill {
 	FILL_INITFA((r), (g), (b), 1.0, (flags))
 
 #define FILL_INITFA(r, g, b, a, flags)			\
-	{ r, g, b, a, flags, { 0, 0 }, { 0, 0 } }
+	{ r, g, b, a, flags, 0, { 0, 0 }, { 0, 0 } }
 
 void 	 fill_contrast(struct fill *);
 
