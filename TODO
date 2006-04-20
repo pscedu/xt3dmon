@@ -85,3 +85,5 @@ todo
 - ensure all fill get memset(0) now
 - compile 1 node and just use Translate and calllist in selection
 - merge gl and env files?
+- stereo display handler runs in each window yet updates both, so
+  remove to double performance
