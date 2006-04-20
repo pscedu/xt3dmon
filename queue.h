@@ -138,6 +138,11 @@
 #define TAILQ_END(tqh) NULL
 #endif
 
+#ifndef TAILQ_LAST
+#define TAILQ_LAST(tqh, headtype)					\
+	(*(tqh)->tqh_last)
+#endif
+
 #ifndef TAILQ_FIRST
 #define TAILQ_FIRST(tqh)						\
 	((tqh)->tqh_first)
