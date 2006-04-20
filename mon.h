@@ -28,7 +28,7 @@
 #define NODEDEPTH	(vmodes[st.st_vmode].vm_ndim.fv_d)
 #define NODESHIFT	(0.6f)
 
-#define MODWIDTH	(NODEWIDTH / 4.0f)
+#define MODWIDTH	(NODEWIDTH)
 #define MODHEIGHT	(NODEHEIGHT * (NNODES / 2) + NODESPACE * (NNODES / 2 - 1))
 #define MODDEPTH	(NODEDEPTH * (NNODES / 2) + NODESPACE * (NNODES / 2 - 1) + NODESHIFT)
 
