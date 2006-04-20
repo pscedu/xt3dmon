@@ -180,6 +180,10 @@ sel_process(int nrecs, int rank, int flags)
 		}
 	} else if (gn->gn_cb != NULL)
 		gn->gn_cb(gn->gn_id);
+
+	if (gn->gn_id == SP_MISS)
+		errx(1, "selected object uses reserved ID %d", SP_MISS);
+
 	return (gn->gn_id);
 }
 
@@ -258,13 +262,6 @@ void
 gscb_pw_hlnc(int nc)
 {
 	st.st_hlnc = nc;
-	st.st_rf |= RF_HLNC;
-}
-
-void
-gscb_pw_hlall(__unused int a)
-{
-	st.st_hlnc = HL_ALL;
 	st.st_rf |= RF_HLNC;
 }
 

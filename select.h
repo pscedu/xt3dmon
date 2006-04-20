@@ -7,7 +7,7 @@
 #define SPF_PROBE	(1<<1)
 
 /* Selection processing return values. */
-#define SP_MISS		(-1)
+#define SP_MISS		(INT_MIN)
 
 struct glname {
 	struct objhdr	  gn_oh;
@@ -39,7 +39,6 @@ unsigned int	 gsn_get(int, void (*)(int), int, int);
 void		 gscb_node(int);
 void		 gscb_panel(int);
 void		 gscb_pw_hlnc(int);
-void		 gscb_pw_hlall(int);
 void		 gscb_pw_opt(int);
 void		 gscb_pw_panel(int);
 void		 gscb_pw_vmode(int);

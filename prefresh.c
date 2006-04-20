@@ -210,7 +210,7 @@ panel_refresh_legend(struct panel *p)
 		panel_set_content(p, "- Job Legend -\nTotal jobs: %lu",
 		    job_list.ol_cur);
 
-		pwidget_add(p, &fill_nodata, "Show all", gscb_pw_hlall, 0);
+		pwidget_add(p, &fill_nodata, "Show all", gscb_pw_hlnc, HL_ALL);
 
 		for (j = 0; j < NSC; j++) {
 			if (j == SC_USED ||
@@ -227,7 +227,7 @@ panel_refresh_legend(struct panel *p)
 		panel_set_content(p, "- Failure Legend - \nTotal: %lu",
 		    total_failures);
 
-		pwidget_add(p, &fill_nodata, "Show all", gscb_pw_hlall, 0);
+		pwidget_add(p, &fill_nodata, "Show all", gscb_pw_hlnc, HL_ALL);
 		pwidget_add(p, &fill_nodata, "No data", NULL, 0);
 
 		for (j = 0; j < NFAILC; j++) {
@@ -240,7 +240,7 @@ panel_refresh_legend(struct panel *p)
 	case DM_TEMP:
 		panel_set_content(p, "- Temperature Legend -");
 
-		pwidget_add(p, &fill_nodata, "Show all", gscb_pw_hlall, 0);
+		pwidget_add(p, &fill_nodata, "Show all", gscb_pw_hlnc, HL_ALL);
 		pwidget_add(p, &fill_nodata, "No data", NULL, 0);
 
 		for (j = 0; j < NTEMPC; j++) {
@@ -254,7 +254,7 @@ panel_refresh_legend(struct panel *p)
 		panel_set_content(p, "- Yod Legend -\nTotal yods: %lu",
 		    yod_list.ol_cur);
 
-		pwidget_add(p, &fill_nodata, "Show all", gscb_pw_hlall, 0);
+		pwidget_add(p, &fill_nodata, "Show all", gscb_pw_hlnc, HL_ALL);
 
 		for (j = 0; j < NSC; j++) {
 			if (j == SC_USED ||
@@ -270,7 +270,7 @@ panel_refresh_legend(struct panel *p)
 	case DM_RTUNK:
 		panel_set_content(p, "- Routing Legend -");
 
-		pwidget_add(p, &fill_nodata, "Show all", gscb_pw_hlall, 0);
+		pwidget_add(p, &fill_nodata, "Show all", gscb_pw_hlnc, HL_ALL);
 
 		for (j = 0; j < NRTC; j++) {
 			if (rtclass[j].nc_nmemb == 0)
