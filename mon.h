@@ -113,7 +113,7 @@ void		 restart(void);
 int		 roundclass(int, int, int, int);
 
 /* parse-phys.y */
-void		 parse_physconf(void);
+void		 parse_physconf(const char *);
 
 /* status.c */
 void		 status_add(const char *, ...);

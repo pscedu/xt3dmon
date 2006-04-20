@@ -179,14 +179,14 @@ physdim_check(void)
 }
 
 void
-parse_physconf(void)
+parse_physconf(const char *fn)
 {
 	FILE *fp;
 	extern FILE *yyin;
 
 	LIST_INIT(&physdims);
-	if ((fp = fopen(_PATH_PHYSCONF, "r")) == NULL)
-		err(1, "%s", _PATH_PHYSCONF);
+	if ((fp = fopen(fn, "r")) == NULL)
+		err(1, "%s", fn);
 	yyin = fp;
 	yyparse();
 	fclose(fp);
@@ -195,7 +195,6 @@ parse_physconf(void)
 
 	if (errors)
 		errx(1, "%d error(s) encountered", errors);
-exit(0);
 }
 
 struct physdim *

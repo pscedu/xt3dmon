@@ -20,6 +20,7 @@
 #include "node.h"
 #include "nodeclass.h"
 #include "panel.h"
+#include "pathnames.h"
 #include "queue.h"
 #include "selnode.h"
 #include "server.h"
@@ -364,8 +365,8 @@ restart(void)
 int
 main(int argc, char *argv[])
 {
-	int flags, c, sw, sh;
-	int server = 0;
+	int server, flags, c, sw, sh;
+	const char *cfgfn;
 
 	progname = argv[0];
 	sav_argv = argv;
@@ -374,15 +375,20 @@ main(int argc, char *argv[])
 	ssl_init();
 
 	gl_displayhp = gl_displayh_default;
+	cfgfn = _PATH_PHYSCONF;
+	server = 0;
 
 	flags = GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE;
 	glutInit(&argc, argv);
-	while ((c = getopt(argc, argv, "adpv")) != -1)
+	while ((c = getopt(argc, argv, "ac:dpv")) != -1)
 		switch (c) {
 		case 'a':
 			flags |= GLUT_STEREO;
 			gl_displayhp = gl_displayh_stereo;
 			stereo_mode = STM_ACT;
+			break;
+		case 'c':
+			cfgfn = optarg;
 			break;
 		case 'd':
 			server = 1;
@@ -409,7 +415,6 @@ main(int argc, char *argv[])
 	if ((window_ids[0] = glutCreateWindow("XT3 Monitor")) == GL_FALSE)
 		errx(1, "glutCreateWindow");
 	if (stereo_mode == STM_PASV) {
-//		glutDisplayFunc(null)
 		glutInitWindowPosition(sw, 0);
 		if ((window_ids[WINID_RIGHT] =
 		    glutCreateWindow("XT3 Monitor")) == GL_FALSE)
@@ -421,6 +426,8 @@ main(int argc, char *argv[])
 	buf_init(&uinp.uinp_buf);
 	buf_append(&uinp.uinp_buf, '\0');
 	st.st_rf |= RF_INIT;
+
+	parse_physconf(cfgfn);
 
 	if (server)
 		serv_init();
