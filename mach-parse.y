@@ -20,7 +20,8 @@ int lineno = 1;
 static int errors;
 
 struct physdim *physdim;
-struct physdim_hd physdims;
+struct physdim *physdim_top;
+LIST_HEAD(, physdim) physdims;
 
 %}
 
@@ -32,9 +33,9 @@ struct physdim_hd physdims;
 %token <fnumber> FNUMBER
 
 %union {
-	char		*string;
-	int		 wnumber;
-	double		 fnumber;
+	char	*string;
+	int	 wnumber;
+	double	 fnumber;
 }
 
 %%
@@ -62,8 +63,10 @@ opts_l		: /* empty */
 opts		: MAG WNUMBER {
 			physdim->pd_mag = $2;
 		}
-		| OFFSET FNUMBER {
-			physdim->pd_offset = $2;
+		| OFFSET LANGLE FNUMBER COMMA FNUMBER COMMA FNUMBER RANGLE {
+			physdim->pd_offset.fv_x = $3;
+			physdim->pd_offset.fv_y = $5;
+			physdim->pd_offset.fv_z = $7;
 		}
 		| SPACE WNUMBER {
 			physdim->pd_space = $2;
@@ -72,11 +75,11 @@ opts		: MAG WNUMBER {
 			physdim->pd_space = $2;
 		}
 		| SPANS STRING {
-			if (strcmp($2, "x"))
+			if (strcmp($2, "x") == 0)
 				physdim->pd_spans = DIM_X;
-			else if (strcmp($2, "y"))
+			else if (strcmp($2, "y") == 0)
 				physdim->pd_spans = DIM_Y;
-			else if (strcmp($2, "z"))
+			else if (strcmp($2, "z") == 0)
 				physdim->pd_spans = DIM_Z;
 			else
 				yyerror("%s: invalid span", $2);
@@ -129,7 +132,6 @@ physdim_check(void)
 {
 	struct physdim *pd, *spd, *lpd;
 	struct fvec fv;
-	float *pv, *sv;
 
 	if (LIST_EMPTY(&physdims))
 		yyerror("no dimensions specified");
@@ -157,22 +159,12 @@ physdim_check(void)
 			    pd = spd) {
 				spd = pd->pd_containedby;
 				spd->pd_size = pd->pd_size;
-				switch (pd->pd_spans) {
-				case DIM_X:
-					pv = &pd->pd_size.fv_x;
-					sv = &spd->pd_size.fv_x;
-					break;
-				case DIM_Y:
-					pv = &pd->pd_size.fv_y;
-					sv = &spd->pd_size.fv_y;
-					break;
-				case DIM_Z:
-					pv = &pd->pd_size.fv_z;
-					sv = &spd->pd_size.fv_z;
-					break;
-				}
-				*sv = pd->pd_mag * (*pv + 2 * pd->pd_space) +
-				    pd->pd_offset * (spd->pd_mag - 1);
+				spd->pd_size.fv_val[pd->pd_spans] =
+				    pd->pd_size.fv_val[pd->pd_spans] * pd->pd_mag +
+				    pd->pd_space * (pd->pd_mag - 1);
+				spd->pd_size.fv_x += pd->pd_offset.fv_x * (pd->pd_mag - 1);
+				spd->pd_size.fv_y += pd->pd_offset.fv_y * (pd->pd_mag - 1);
+				spd->pd_size.fv_z += pd->pd_offset.fv_z * (pd->pd_mag - 1);
 			}
 		}
 	}
@@ -192,6 +184,7 @@ parse_physconf(const char *fn)
 	fclose(fp);
 
 	physdim_check();
+	physdim_top = LIST_FIRST(&physdims);
 
 	if (errors)
 		errx(1, "%d error(s) encountered", errors);

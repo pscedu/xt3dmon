@@ -10,14 +10,13 @@ struct physdim {
 	struct physdim		*pd_contains;
 	struct physdim		*pd_containedby;
 	int			 pd_spans;
-	double			 pd_offset;
+	struct fvec		 pd_offset;
 	struct fvec		 pd_size;
 	int			 pd_flags;
-	LIST_ENTRY(physdim)	 pd_link;
+
+	LIST_ENTRY(physdim)	 pd_link;	/* used only in construction */
 };
 
 #define PDF_SKEL (1<<0)
 
-LIST_HEAD(physdim_hd, physdim);
-
-extern struct physdim_hd physdims;
+struct physdim *physdim_top;
