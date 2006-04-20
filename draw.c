@@ -344,7 +344,7 @@ draw_node(struct node *n, int flags)
 	if (fp->f_a != 1.0f)
 		glDisable(GL_BLEND);
 
-	if (st.st_opts & OP_WIREFRAME) {
+	if (st.st_opts & OP_FRAMES) {
 		float col;
 
 		col = fill_wireframe->f_a;
@@ -376,7 +376,7 @@ draw_mod(struct fvec *vp, struct fvec *dim, struct fill *fillp)
 	draw_box_filled(dim, fillp);
 	glDisable(GL_BLEND);
 
-	if (st.st_opts & OP_WIREFRAME)
+	if (st.st_opts & OP_FRAMES)
 		draw_box_outline(dim, &fill_black);
 	glPopMatrix();
 }

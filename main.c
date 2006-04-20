@@ -110,7 +110,7 @@ struct state st = {
 	{ { STARTX, STARTY, STARTZ } },			/* (x,y,z) */
 	{ { STARTLX, STARTLY, STARTLZ } },		/* (lx,ly,lz) */
 	{ { 0.0f, 1.0f, 0.0f } },			/* (ux,uy,uz) */
-	OP_WIREFRAME | OP_TWEEN | OP_GROUND | \
+	OP_FRAMES | OP_TWEEN | OP_GROUND | \
 	    OP_DISPLAY | OP_NODEANIM,			/* options */
 	DM_JOB,						/* which data to show */
 	VM_WIREDONE,					/* viewing mode */
@@ -193,7 +193,7 @@ opt_flip(int fopts)
 			else
 				capture_end();
 			break;
-		case OP_WIREFRAME:
+		case OP_FRAMES:
 		case OP_TEX:
 		case OP_WIVMFRAME:
 		case OP_SELPIPES:

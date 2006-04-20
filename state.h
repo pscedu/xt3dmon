@@ -75,7 +75,7 @@ struct state {
 
 /* Options. */
 #define OP_TEX		(1<<0)
-#define OP_WIREFRAME	(1<<1)
+#define OP_FRAMES	(1<<1)
 #define OP_GROUND	(1<<2)
 #define OP_TWEEN	(1<<3)
 #define OP_CAPTURE	(1<<4)

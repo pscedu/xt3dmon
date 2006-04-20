@@ -307,7 +307,7 @@ gl_keyh_option(unsigned char key, __unused int u, __unused int v)
 		opts |= OP_TEX;
 		break;
 	case 'w':
-		opts |= OP_WIREFRAME;
+		opts |= OP_FRAMES;
 		break;
 	default:
 		return;

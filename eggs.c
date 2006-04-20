@@ -53,7 +53,7 @@ egg_matrix(void)
 		st.st_vmode = VM_PHYSICAL;
 		st.st_dmode = DM_MATRIX;
 		opt_enable(OP_NLABELS);
-		opt_disable(OP_GROUND | OP_WIREFRAME);
+		opt_disable(OP_GROUND | OP_FRAMES);
 
 		vec_set(&st.st_v, 128.0, 6.25, 8.0);
 		vec_set(&st.st_lv, -1.0, 0.0, 0.0);
