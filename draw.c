@@ -20,29 +20,11 @@
 #include "route.h"
 #include "selnode.h"
 #include "state.h"
+#include "string.h"
 #include "tween.h"
 #include "xmath.h"
 
 #define SELNODE_GAP	(0.1f)
-
-#define TEXTURE_SIZE	128.0
-
-#define FONT_WIDTH	12.0
-#define FONT_HEIGHT	12.0
-#define FONT_TEX_W 	256.0
-#define FONT_TEX_H 	16.0
-
-/* How many units of texture coordinates a character displaces */
-#define FONT_TEXCOORD_S (1 / (FONT_TEX_W / FONT_WIDTH))
-#define FONT_TEXCOORD_T (1 / (FONT_TEX_H / FONT_HEIGHT))
-
-/* How many pixels a character displaces on a 128x128 tile */
-#define FONT_DISPLACE_W ((FONT_WIDTH * NODEDEPTH) / TEXTURE_SIZE * 2)
-#define FONT_DISPLACE_H ((FONT_HEIGHT * NODEHEIGHT) / TEXTURE_SIZE * 2)
-
-#define MAX_CHARS 	4
-#define FONT_Z_OFFSET	((NODEHEIGHT - ((MAX_CHARS + 0) * FONT_DISPLACE_W)) / 2)
-
 #define SKEL_GAP	(0.1f)
 
 float	 snap_to_grid(float, float, float);
@@ -152,72 +134,90 @@ draw_scene(void)
 // job_drawlabels();
 }
 
-/* Render a character from the font texture. */
-__inline void
-draw_char(int ch, float x, float y, float z)
+#define FTX_TWIDTH	1598
+#define FTX_THEIGHT	34
+#define FTX_CWIDTH	17
+#define FTX_CHEIGHT	34
+#define FTX_CSTART	33
+#define FTX_CEND	126
+
+/*
+ * Texture map from font texture of size (FTX_TWIDTH,FTX_THEIGHT)
+ * with chars of size (FTX_CWIDTH,FTX_CHEIGHT) ranging between
+ * ASCII chars FTX_CSTART and FTX_CEND.
+ */
+void
+draw_text(const char *buf, struct fvec *dim, struct fill *fp)
 {
-	if (ch < 0)
-		return;
-
-	glTexCoord2f(FONT_TEXCOORD_S * ch, 0.0);
-	glVertex3f(x, y, z);
-
-	glTexCoord2f(FONT_TEXCOORD_S * ch, FONT_TEXCOORD_T);
-	glVertex3f(x, y + FONT_DISPLACE_H, z);
-
-	glTexCoord2f(FONT_TEXCOORD_S * (ch + 1), FONT_TEXCOORD_T);
-	glVertex3f(x, y + FONT_DISPLACE_H, z + FONT_DISPLACE_W);
-
-	glTexCoord2f(FONT_TEXCOORD_S * (ch + 1), 0.0);
-	glVertex3f(x, y, z + FONT_DISPLACE_W);
-}
-
-__inline void
-draw_node_label(struct node *n)
-{
-	float list[MAX_CHARS];
-	struct fill c;
-	int i, nid;
-
-	/*
-	 * Parse the node id for use with
-	 * NODE0123456789 (so 4 letter gap before 0)
-	 */
-	i = 0;
-	nid = n->n_nid;
-	while (nid >= 0 && i < MAX_CHARS) {
-		list[MAX_CHARS - i - 1] = 4 + nid % 10;
-		nid /= 10;
-		i++;
-	}
-
-	while (i < MAX_CHARS)
-		list[i++] = -1;
+	double uscale;
+	const char *s;
+	double z, d, h, y;
+	char c;
 
 	glEnable(GL_TEXTURE_2D);
-
-	/* Get a distinct contrast color */
-	c = *n->n_fillp;
-	if ((c.f_flags & FF_SKEL) == 0)
-		fill_contrast(&c);
-	glColor4f(c.f_r, c.f_g, c.f_b, c.f_a);
-
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glBindTexture(GL_TEXTURE_2D, fill_font.f_texid_a[wid]);
 
+	uscale = FTX_TWIDTH / (double)FTX_CWIDTH;
+
+	glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
 	glBegin(GL_QUADS);
 
-	for (i = 0; i < MAX_CHARS; i++) {
-		/* -0.001 to place slightly in front */
-		draw_char(list[i], -0.001, NODEDEPTH / 2.0,
-		    FONT_Z_OFFSET + FONT_DISPLACE_W * (float)i);
+	z = 0.0;
+	d = dim->fv_w / strlen(buf);
+
+	h = dim->fv_h / strlen(buf);//* FTX_CWIDTH * d / FTX_CHEIGHT;
+	y = dim->fv_h / 2.0 - h / 2.0;
+
+	for (s = buf; *s != '\0'; s++, z += d) {
+		if (*s < FTX_CSTART || *s > FTX_CEND)
+			/* XXX: draw '?'? */
+			continue;
+		c = *s - FTX_CSTART;
+
+		glTexCoord2d(c / uscale, 0.0);
+		glVertex3d(0.0, y, z);
+		glTexCoord2d(c / uscale, 1.0);
+		glVertex3d(0.0, y + h, z);
+		glTexCoord2d((c + 1) / uscale, 1.0);
+		glVertex3d(0.0, y + h, z + d);
+		glTexCoord2d((c + 1) / uscale, 0.0);
+		glVertex3d(0.0, y, z + d);
 	}
 
 	glEnd();
 	glDisable(GL_BLEND);
 	glDisable(GL_TEXTURE_2D);
+}
+
+__inline void
+draw_node_label(struct node *n)
+{
+	char buf[BUFSIZ];
+	struct fvec dim;
+	struct fill c;
+
+	c = *n->n_fillp;
+	if ((c.f_flags & FF_SKEL) == 0)
+		fill_contrast(&c);
+
+	dim.fv_w = NODEDEPTH;
+	dim.fv_h = NODEHEIGHT;
+
+	snprintf(buf, sizeof(buf), "%04d", n->n_nid);
+
+	glPushMatrix();
+	glTranslatef(-0.001, 0.0, 0.0);
+	draw_text(buf, &dim, &c);
+	glPopMatrix();
+
+	glPushMatrix();
+	glTranslatef(NODEWIDTH + 0.001, 0.0, NODEDEPTH);
+	dim.fv_w *= -1.0;
+	draw_text(buf, &dim, &c);
+	glPopMatrix();
 }
 
 /*
