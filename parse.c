@@ -112,9 +112,9 @@ parsenid(char *nid, struct physcoord *pc)
 		s++;
 	if (*s != 'c')
 		return (1);
-	t = s;
-	while (isdigit(*++t))
-		;
+	t = ++s;
+	while (isdigit(*t))
+		t++;
 	if (*t != '-')
 		return (1);
 	*t++ = '\0';
