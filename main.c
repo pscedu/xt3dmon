@@ -79,15 +79,15 @@ struct xoption opts[] = {
  /*  5 */ { "Display mode",		OPF_HIDE | OPF_FBIGN },
  /*  6 */ { "Govern mode",		OPF_FBIGN },
  /*  7 */ { "Flyby loop mode",		OPF_FBIGN },
- /*  9 */ { "Node labels",		0 },
- /* 10 */ { "Module mode",		0 },
- /* 11 */ { "Wired cluster frames",	0 },
- /* 12 */ { "Pipe mode",		0 },
- /* 13 */ { "Selected node pipe mode",	0 },
- /* 14 */ { "Pause",			OPF_HIDE | OPF_FBIGN },
- /* 15 */ { "Job tour mode",		OPF_FBIGN },
- /* 16 */ { "Skeletons",		0 },
- /* 17 */ { "Node animation",		0 }
+ /*  8 */ { "Node labels",		0 },
+ /*  9 */ { "Module mode",		0 },
+ /* 10 */ { "Wired cluster frames",	0 },
+ /* 11 */ { "Pipe mode",		0 },
+ /* 12 */ { "Selected node pipe mode",	0 },
+ /* 13 */ { "Pause",			OPF_HIDE | OPF_FBIGN },
+ /* 14 */ { "Job tour mode",		OPF_FBIGN },
+ /* 15 */ { "Skeletons",		0 },
+ /* 16 */ { "Node animation",		0 }
 };
 
 struct vmode vmodes[] = {
