@@ -88,3 +88,4 @@ todo
 - stereo display handler runs in each window yet updates both, so
   remove to double performance
 - make make_cluster just do NODE_FOREACH() draw, then in there do wireps
+- reduce tween amt when fps is high
