@@ -213,11 +213,14 @@ opt_flip(int fopts)
 int
 roundclass(int t, int min, int max, int nclasses)
 {
+	if (max - min == 0)
+		return (0);
+
 	if (t < min)
 		t = min;
 	else if (t > max)
 		t = max;
-	return ((t - min) * nclasses / (max - min));
+	return ((t - min) / ((max - min) / (nclasses - 1)));
 }
 
 void
