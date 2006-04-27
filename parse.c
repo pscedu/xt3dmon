@@ -169,6 +169,21 @@ parsenid(char *nid, struct physcoord *pc)
 	return (0);
 }
 
+void
+prerror(const char *fn, int lineno, const char *bufp, const char *s)
+{
+	char *t, buf[BUFSIZ];
+
+	strncpy(buf, bufp, sizeof(buf));
+	if ((t = strchr(buf, '\n')) != NULL)
+		*t = '\0';
+	for (t = buf; t != NULL; )
+		if ((t = strchr(t, '\r')) != NULL)
+			*t++ = '\0';
+	warnx("%s:%d: malformed line: %s [%s]", fn, lineno, buf,
+	    buf + (s - bufp));
+}
+
 /*
  * Example line:
  *	nid	r cb cb m n	x y z	stat	enabled	jobid	temp	yodid	nfails
@@ -201,7 +216,7 @@ parse_node(const struct datasrc *ds)
 		s = buf;
 		while (isspace(*s))
 			s++;
-		if (*s == '#')
+		if (*s == '#' || *s == '\0')
 			continue;
 
 		PARSENUM(s, nid, NID_MAX);
@@ -271,7 +286,7 @@ parse_node(const struct datasrc *ds)
 		node->n_flags &= ~NF_HIDE;
 		continue;
 bad:
-		warnx("node:%d: malformed line [%s] [%s]\n", lineno, buf, s);
+		prerror("node", lineno, buf, s);
 	}
 	if (us_error(ds->ds_us))
 		warn("us_gets");
@@ -324,7 +339,7 @@ parse_yod(const struct datasrc *ds)
 		s = buf;
 		while (isspace(*s))
 			s++;
-		if (*s == '#')
+		if (*s == '#' || *s == '\0')
 			continue;
 
 		PARSENUM(s, y_fake.y_id, INT_MAX);
@@ -343,7 +358,7 @@ parse_yod(const struct datasrc *ds)
 		*y = y_fake;
 		continue;
 bad:
-		warnx("yod:%d: malformed line [%s] [%s]", lineno, buf, s);
+		prerror("yod", lineno, buf, s);
 	}
 	if (us_error(ds->ds_us))
 		warn("us_gets");
@@ -367,7 +382,7 @@ parse_job(const struct datasrc *ds)
 		s = buf;
 		while (isspace(*s))
 			s++;
-		if (*s == '#')
+		if (*s == '#' || *s == '\0')
 			continue;
 
 		PARSENUM(s, j_fake.j_id, INT_MAX);
@@ -392,7 +407,7 @@ parse_job(const struct datasrc *ds)
 		*j = j_fake;
 		continue;
 bad:
-		warnx("job:%d: malformed line [%s] [%s]", lineno, buf, s);
+		prerror("job", lineno, buf, s);
 	}
 	if (us_error(ds->ds_us))
 		warn("us_gets");
@@ -426,7 +441,7 @@ parse_rt(const struct datasrc *ds)
 		s = buf;
 		while (isspace(*s))
 			s++;
-		if (*s == '#')
+		if (*s == '#' || *s == '\0')
 			continue;
 
 		if (parsestr(&s, nid, sizeof(nid), 0) ||
@@ -448,7 +463,7 @@ parse_rt(const struct datasrc *ds)
 		n->n_route.rt_err[port][RT_ROUTER]  = router;
 		continue;
 bad:
-		warnx("rt:%d: malformed line [%s] [%s]", lineno, buf, s);
+		prerror("rt", lineno, buf, s);
 	}
 	if (us_error(ds->ds_us))
 		warn("us_gets");
