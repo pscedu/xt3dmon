@@ -87,7 +87,8 @@ struct xoption opts[] = {
  /* 13 */ { "Pause",			OPF_HIDE | OPF_FBIGN },
  /* 14 */ { "Job tour mode",		OPF_FBIGN },
  /* 15 */ { "Skeletons",		0 },
- /* 16 */ { "Node animation",		0 }
+ /* 16 */ { "Node animation",		0 },
+ /* 17 */ { "Auto flyby mode",		OPF_FBIGN }
 };
 
 struct vmode vmodes[] = {
@@ -205,6 +206,12 @@ opt_flip(int fopts)
 		case OP_SHOWMODS:
 		case OP_PIPES:
 			st.st_rf |= RF_CLUSTER;
+			break;
+		case OP_AUTOFLYBY:
+			if (on) {
+				flyby_nautoto = 0;
+				flyby_rstautoto();
+			}
 			break;
 		}
 	}

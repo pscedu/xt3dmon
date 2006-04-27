@@ -19,6 +19,8 @@
 #include "xmath.h"
 
 int		 flyby_mode;
+int		 flyby_autoto = 2 * 60 * 60; /* 2 minutes */
+int		 flyby_nautoto;
 struct state	 sav_st;
 static FILE	*flyby_fp;
 
@@ -69,6 +71,10 @@ flyby_begin(int mode)
 		}
 		flyby_mode = FBM_PLAY;
 
+		/*
+		 * Backup current options and enable/disable
+		 * special options for the flyby duration.
+		 */
 		sav_st = st;
 		st.st_opts &= ~OP_TWEEN;
 
@@ -263,4 +269,28 @@ flyby_update(void)
 		flyby_writeseq(&st);
 		break;
 	}
+}
+
+/* Reset auto-flyby timeout. */
+void
+flyby_rstautoto(void)
+{
+	if (st.st_opts & OP_AUTOFLYBY &&
+	    flyby_mode == FBM_OFF) {
+		flyby_nautoto++;
+		glutTimerFunc(flyby_autoto, cocb_autoto, 0);
+	}
+}
+
+void
+flyby_beginauto(void)
+{
+	int ops;
+
+	ops = st.st_opts;
+
+	st.st_opts |= OP_LOOPFLYBY;
+	flyby_begin(FBM_PLAY);
+
+	sav_st.st_opts = ops;
 }

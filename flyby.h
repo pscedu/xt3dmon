@@ -8,6 +8,7 @@ struct state;
 #define FBM_REC		2
 
 void 	 flyby_begin(int);
+void 	 flyby_beginauto(void);
 void 	 flyby_end(void);
 void	 flyby_read(void);
 void	 flyby_update(void);
@@ -15,5 +16,7 @@ void	 flyby_writeinit(struct state *);
 void	 flyby_writeseq(struct state *);
 void	 flyby_writepanel(int);
 void	 flyby_writeselnode(int);
+void	 flyby_rstautoto(void);
 
 extern int flyby_mode;
+extern int flyby_nautoto;

@@ -36,6 +36,7 @@ int rt_type = RT_RECOVER;
 void
 gl_spkeyh_null(__unused int key, __unused int u, __unused int v)
 {
+	flyby_rstautoto();
 }
 
 void
@@ -70,6 +71,7 @@ gl_keyh_actflyby(__unused unsigned char key, __unused int u, __unused int v)
 void
 gl_keyh_flyby(unsigned char key, __unused int u, __unused int v)
 {
+	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'c':
@@ -112,6 +114,8 @@ gl_keyh_uinput(unsigned char key, __unused int u, __unused int v)
 	struct panel *p;
 	int opts;
 
+	flyby_rstautoto();
+
 	p = uinp.uinp_panel;
 	uinp.uinp_opts |= UINPO_DIRTY;
 	switch (key) {
@@ -153,6 +157,7 @@ gl_keyh_panel(unsigned char key, __unused int u, __unused int v)
 {
 	int j;
 
+	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'a':
@@ -214,6 +219,7 @@ gl_keyh_panel(unsigned char key, __unused int u, __unused int v)
 void
 gl_keyh_dmode(unsigned char key, __unused int u, __unused int v)
 {
+	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'j':
@@ -243,6 +249,7 @@ gl_keyh_dmode(unsigned char key, __unused int u, __unused int v)
 void
 gl_keyh_vmode(unsigned char key, __unused int u, __unused int v)
 {
+	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'o':
@@ -265,6 +272,7 @@ gl_keyh_option(unsigned char key, __unused int u, __unused int v)
 {
 	int opts = 0;
 
+	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'D':
@@ -318,6 +326,7 @@ gl_keyh_option(unsigned char key, __unused int u, __unused int v)
 void
 gl_keyh_decr(unsigned char key, __unused int u, __unused int v)
 {
+	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'x':
@@ -343,6 +352,7 @@ gl_keyh_decr(unsigned char key, __unused int u, __unused int v)
 void
 gl_keyh_incr(unsigned char key, __unused int u, __unused int v)
 {
+	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'x':
@@ -372,6 +382,7 @@ gl_spkeyh_node(int key, __unused int u, __unused int v)
 	struct node *n;
 	int dir;
 
+	flyby_rstautoto();
 	spkey = glutGetModifiers();
 	switch (key) {
 	case GLUT_KEY_PAGE_UP:
@@ -408,6 +419,7 @@ gl_spkeyh_node(int key, __unused int u, __unused int v)
 void
 gl_keyh_keyh(unsigned char key, __unused int u, __unused int v)
 {
+	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'n':
@@ -422,6 +434,7 @@ gl_keyh_keyh(unsigned char key, __unused int u, __unused int v)
 void
 gl_keyh_alpha(unsigned char key, __unused int u, __unused int v)
 {
+	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'd':
@@ -448,6 +461,7 @@ gl_keyh_alpha(unsigned char key, __unused int u, __unused int v)
 void
 gl_keyh_wioffdecr(unsigned char key, __unused int u, __unused int v)
 {
+	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'x':
@@ -476,6 +490,7 @@ gl_keyh_wioffdecr(unsigned char key, __unused int u, __unused int v)
 void
 gl_keyh_wioffincr(unsigned char key, __unused int u, __unused int v)
 {
+	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'x':
@@ -504,6 +519,7 @@ gl_keyh_wioffincr(unsigned char key, __unused int u, __unused int v)
 void
 gl_keyh_pipes(unsigned char key, __unused int u, __unused int v)
 {
+	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'r': /* color by route info */
@@ -519,6 +535,7 @@ gl_keyh_pipes(unsigned char key, __unused int u, __unused int v)
 void
 gl_keyh_route(unsigned char key, __unused int u, __unused int v)
 {
+	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case '+':
@@ -546,6 +563,7 @@ gl_keyh_route(unsigned char key, __unused int u, __unused int v)
 void
 gl_keyh_default(unsigned char key, __unused int u, __unused int v)
 {
+	flyby_rstautoto();
 	switch (key) {
 	case 'a':
 		glutKeyboardFunc(gl_keyh_alpha);
@@ -663,6 +681,8 @@ gl_spkeyh_default(int key, __unused int u, __unused int v)
 {
 	float r, adj, amt;
 	int dir;
+
+	flyby_rstautoto();
 
 	amt = 0.0f; /* gcc */
 	dir = 0; /* gcc */

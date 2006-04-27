@@ -3,6 +3,7 @@
 #include "mon.h"
 
 #include "cdefs.h"
+#include "flyby.h"
 #include "job.h"
 #include "queue.h"
 #include "state.h"
@@ -43,4 +44,13 @@ cocb_tourjob(__unused int a)
 			break;
 		}
 	glutTimerFunc(15000, cocb_tourjob, 0);
+}
+
+void
+cocb_autoto(__unused int a)
+{
+	if (st.st_opts & OP_AUTOFLYBY &&
+	    flyby_mode == FBM_OFF &&
+	    --flyby_nautoto == 0)
+		flyby_beginauto();
 }

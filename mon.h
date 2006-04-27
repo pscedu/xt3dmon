@@ -86,6 +86,7 @@ void		 cocb_fps(int);
 void		 cocb_datasrc(int);
 void		 cocb_clearstatus(int);
 void		 cocb_tourjob(int);
+void		 cocb_autoto(int);
 
 /* dbg.c */
 void		 dbg_warn(const char *, ...);

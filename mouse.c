@@ -8,6 +8,7 @@
 #include "cdefs.h"
 #include "cam.h"
 #include "env.h"
+#include "flyby.h"
 #include "gl.h"
 #include "node.h"
 #include "panel.h"
@@ -24,6 +25,7 @@ void
 gl_mouseh_null(__unused int button, __unused int state, __unused int u, __unused int v)
 {
 //	spkey = glutGetModifiers();
+//	flyby_rstautoto();
 }
 
 void
@@ -41,6 +43,8 @@ gl_mouseh_default(__unused int button, __unused int state, int u, int v)
 
 	mousev.iv_x = u;
 	mousev.iv_y = v;
+
+	flyby_rstautoto();
 }
 
 void
@@ -56,6 +60,8 @@ gl_motionh_panel(int u, int v)
 	panel_mobile->p_u += du;
 	panel_mobile->p_v -= dv;
 	panel_mobile->p_opts |= POPT_DIRTY;
+
+	flyby_rstautoto();
 }
 
 void
@@ -134,6 +140,8 @@ gl_motionh_default(int u, int v)
 
 	mousev.iv_x = u;
 	mousev.iv_y = v;
+
+	flyby_rstautoto();
 }
 
 void
@@ -143,6 +151,8 @@ gl_pasvmotionh_default(int u, int v)
 	mousev.iv_y = v;
 
 	glutDisplayFunc(gl_displayh_selectprobe);
+
+	flyby_rstautoto();
 }
 
 void
@@ -150,6 +160,8 @@ gl_pasvmotionh_null(int u, int v)
 {
 	mousev.iv_x = u;
 	mousev.iv_y = v;
+
+	flyby_rstautoto();
 }
 
 void
@@ -157,4 +169,6 @@ gl_motionh_null(int u, int v)
 {
 	mousev.iv_x = u;
 	mousev.iv_y = v;
+
+	flyby_rstautoto();
 }

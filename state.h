@@ -93,7 +93,8 @@ struct state {
 #define OP_TOURJOB	(1<<14)
 #define OP_SKEL		(1<<15)
 #define OP_NODEANIM	(1<<16)
-#define NOPS		17
+#define OP_AUTOFLYBY	(1<<17)
+#define NOPS		18
 
 struct xoption {
 	const char	*opt_name;
