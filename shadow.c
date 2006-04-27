@@ -42,8 +42,7 @@ draw_shadow_rows(void)
 	v.fv_y = NODESPACE;
 	v.fv_z = NODESPACE;
 
-	/* XXX Width is a little off add NODEWIDTH? */
-	dim.fv_w = ROWWIDTH; // + NODEWIDTH;
+	dim.fv_w = ROWWIDTH;
 	dim.fv_h = CABHEIGHT;
 	dim.fv_d = ROWDEPTH + NODESHIFT;
 
@@ -138,7 +137,7 @@ draw_shadow_mods(const struct physcoord *pc)
 void
 draw_shadow_nodes(const struct physcoord *pc)
 {
-	struct fvec dim, v, nv;
+	struct fvec v, nv;
 	struct node *node;
 	int n;
 
@@ -148,10 +147,6 @@ draw_shadow_nodes(const struct physcoord *pc)
 
 	/* Account for the module. */
 	v.fv_x += (MODWIDTH + MODSPACE) * pc->pc_m;
-
-	dim.fv_w = NODEWIDTH;
-	dim.fv_h = NODEHEIGHT;
-	dim.fv_d = NODEDEPTH;
 
 	/* row 1 is offset -> z, col 1 is offset z too */
 	for (n = 0; n < NNODES; n++) {
@@ -165,7 +160,7 @@ draw_shadow_nodes(const struct physcoord *pc)
 		glPushMatrix();
 		glTranslatef(nv.fv_x, nv.fv_y, nv.fv_z);
 		glPushName(gsn_get(node->n_nid, gscb_node, 0, GLUT_CURSOR_INFO));
-		draw_box_filled(&dim, &fill_black);
+		draw_box_filled(node->n_dimp, &fill_black);
 		glPopName();
 		glPopMatrix();
 	}
@@ -176,14 +171,9 @@ draw_shadow_winodes(struct wiselstep *ws, struct fvec *cloffp)
 {
 	struct ivec iv, *mag, *off, adjv;
 	struct node *node;
-	struct fvec dim;
 
 	mag = &ws->ws_mag;
 	off = &ws->ws_off;
-
-	dim.fv_x = NODEWIDTH;
-	dim.fv_y = NODEHEIGHT;
-	dim.fv_z = NODEDEPTH;
 
 	for (iv.iv_x = off->iv_x; iv.iv_x < off->iv_x + mag->iv_x; iv.iv_x++)
 		for (iv.iv_y = off->iv_y; iv.iv_y < off->iv_y + mag->iv_y; iv.iv_y++)
@@ -202,7 +192,7 @@ draw_shadow_winodes(struct wiselstep *ws, struct fvec *cloffp)
 				    node->n_v->fv_z + cloffp->fv_z);
 				glPushName(gsn_get(node->n_nid, gscb_node, 0,
 				    GLUT_CURSOR_INFO));
-				draw_box_filled(&dim, &fill_black);
+				draw_box_filled(node->n_dimp, &fill_black);
 				glPopName();
 				glPopMatrix();
 			}

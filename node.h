@@ -14,6 +14,7 @@ struct node {
 	struct fill	*n_fillp;
 	int		 n_flags;
 	int		 n_state;
+	int		 n_geom;
 
 	struct job	*n_job;
 	struct yod	*n_yod;
@@ -23,16 +24,15 @@ struct node {
 
 	struct ivec	 n_wiv;			/* wired view position */
 	struct fvec	 n_swiv;		/* scaled */
-	struct fvec	 n_physv;
-	struct fvec	 n_vcur;
-	struct fvec	*n_v;
+	struct fvec	 n_physv;		/* position in phys vmode */
+	struct fvec	 n_vcur;		/* node tweening */
+	struct fvec	*n_v;			/* points to any above */
+	struct fvec	*n_dimp;		/* dimensions */
 
 	int		 n_dl[2];		/* display list ID */
 };
 
-#define NF_HIDE		(1<<0)
-#define NF_SEL		(1<<1)
-#define NF_DIRTY	(1<<3)			/* node needs recompiled */
+#define NF_HIDE		(1<<0)			/* don't display */
 
 #define NODE_FOREACH(n, iv)						\
 	for ((iv)->iv_x = 0;						\
@@ -51,6 +51,7 @@ struct node	*node_neighbor(struct node *, int, int);
 void		 node_physpos(struct node *, struct physcoord *);
 void		 node_getmodpos(int, int *, int *);
 void		 node_adjmodpos(int, struct fvec *);
+void		 node_setphyspos(struct node *, struct fvec *);
 struct node	*node_for_nid(int);
 void		 node_goto(struct node *);
 int		 node_show(struct node *);

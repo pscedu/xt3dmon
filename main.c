@@ -91,9 +91,9 @@ struct xoption opts[] = {
 };
 
 struct vmode vmodes[] = {
-	{ "Physical",		1000,	{ { 0.2f, 1.2f, 1.2f } } },
-	{ "Wired (repeat)",	5,	{ { 0.5f, 0.5f, 0.5f } } },
-	{ "Wired",		1000,	{ { 2.0f, 2.0f, 2.0f } } }
+	{ "Physical",		1000,	{ { { 0.2f, 1.2f, 1.2f } }, { { .4f, 1.0f, 1.0f } } } },
+	{ "Wired (repeat)",	5,	{ { { 0.5f, 0.5f, 0.5f } }, { { .4f, 1.0f, 1.0f } } } },
+	{ "Wired (single)",	1000,	{ { { 2.0f, 2.0f, 2.0f } }, { { .4f, 1.0f, 1.0f } } } }
 };
 
 struct dmode dmodes[] = {
@@ -316,6 +316,29 @@ dmode_change(void)
 }
 
 void
+geom_setall(int mode)
+{
+	struct node *n;
+	struct ivec iv;
+
+	NODE_FOREACH(n, &iv)
+		if (n)
+			n->n_geom = mode;
+	// XXX: flyby
+}
+
+void
+dim_update(void)
+{
+	struct node *n;
+	struct ivec iv;
+
+	NODE_FOREACH(n, &iv)
+		if (n)
+			n->n_dimp = &vmodes[st.st_vmode].vm_ndim[n->n_geom];
+}
+
+void
 rebuild(int opts)
 {
 	if (opts & RF_DATASRC) {
@@ -352,6 +375,11 @@ rebuild(int opts)
 	}
 	if (opts & RF_GROUND)
 		gl_run(make_ground);
+	if (opts & RF_DIM) {
+		dim_update();
+
+		opts |= RF_CLUSTER | RF_SELNODE;
+	}
 	if (opts & RF_CLUSTER)
 		gl_run(make_cluster);
 	if (opts & RF_SELNODE)

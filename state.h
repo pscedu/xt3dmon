@@ -67,8 +67,10 @@ struct state {
 #define RF_GROUND	(1<<4)
 #define RF_DMODE	(1<<5)
 #define RF_HLNC		(1<<6)
+#define RF_DIM		(1<<7)
 #define RF_INIT		(RF_DATASRC | RF_CLUSTER | RF_GROUND | \
-			 RF_SELNODE | RF_CAM | RF_DMODE | RF_HLNC)
+			 RF_SELNODE | RF_CAM | RF_DMODE | RF_HLNC | \
+			 RF_DIM)
 
 #define EGG_BORG 	(1<<0)
 #define EGG_MATRIX 	(1<<1)

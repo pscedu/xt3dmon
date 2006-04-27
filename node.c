@@ -287,8 +287,8 @@ node_goto(struct node *n)
 	case VM_WIREDONE:
 		/* Set to the front where the label is. */
 		st.st_x -= GOTO_DIST_LOG;
-		st.st_y += 0.5 * NODEHEIGHT;
-		st.st_z += 0.5 * NODEWIDTH;
+		st.st_y += 0.5 * n->n_dimp->fv_h;
+		st.st_z += 0.5 * n->n_dimp->fv_w;
 
 		st.st_lx = 1.0f;
 		st.st_ly = 0.0f;

@@ -23,10 +23,14 @@
 #define DIM_Z	2
 #define NDIM	3
 
+#define GEOM_CUBE	0
+#define GEOM_SPHERE	1
+#define NGEOM		2
+
 struct vmode {
 	const char	*vm_name;
 	int		 vm_clip;
-	struct fvec	 vm_ndim;			/* node dimensions */
+	struct fvec	 vm_ndim[NGEOM];		/* node dimensions */
 };
 
 struct dmode {

@@ -87,6 +87,7 @@ void
 revolve_center_selnode(struct fvec *cen)
 {
 	struct selnode *sn;
+	struct node *n;
 
 	if (nselnodes == 0) {
 		revolve_center_cluster(cen);
@@ -94,14 +95,16 @@ revolve_center_selnode(struct fvec *cen)
 	}
 	vec_set(cen, 0.0, 0.0, 0.0);
 	SLIST_FOREACH(sn, &selnodes, sn_next) {
+		n = sn->sn_nodep;
+
 		switch (st.st_vmode) {
 		case VM_WIRED:
 			break;
 		}
 
-		cen->fv_x += sn->sn_nodep->n_v->fv_x + NODEWIDTH  / 2;
-		cen->fv_y += sn->sn_nodep->n_v->fv_y + NODEHEIGHT / 2;
-		cen->fv_z += sn->sn_nodep->n_v->fv_z + NODEDEPTH  / 2;
+		cen->fv_x += n->n_v->fv_x + n->n_dimp->fv_w / 2;
+		cen->fv_y += n->n_v->fv_y + n->n_dimp->fv_h / 2;
+		cen->fv_z += n->n_v->fv_z + n->n_dimp->fv_d / 2;
 	}
 	cen->fv_x /= nselnodes;
 	cen->fv_y /= nselnodes;

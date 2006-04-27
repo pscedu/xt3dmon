@@ -16,6 +16,7 @@
 #include "node.h"
 #include "nodeclass.h"
 #include "panel.h"
+#include "phys.h"
 #include "queue.h"
 #include "route.h"
 #include "selnode.h"
@@ -203,8 +204,8 @@ draw_node_label(struct node *n)
 	if ((c.f_flags & FF_SKEL) == 0)
 		fill_contrast(&c);
 
-	dim.fv_w = NODEDEPTH;
-	dim.fv_h = NODEHEIGHT;
+	dim.fv_w = n->n_dimp->fv_d;
+	dim.fv_h = n->n_dimp->fv_h;
 
 	snprintf(buf, sizeof(buf), "%04d", n->n_nid);
 
@@ -214,7 +215,7 @@ draw_node_label(struct node *n)
 	glPopMatrix();
 
 	glPushMatrix();
-	glTranslatef(NODEWIDTH + 0.001, 0.0, NODEDEPTH);
+	glTranslatef(n->n_dimp->fv_w + 0.001, 0.0, n->n_dimp->fv_d);
 	dim.fv_w *= -1.0;
 	draw_text(buf, &dim, &c);
 	glPopMatrix();
@@ -227,10 +228,6 @@ draw_node_label(struct node *n)
 __inline void
 draw_node_pipes(struct node *np)
 {
-	struct fvec *ndim;
-
-	ndim = &vmodes[st.st_vmode].vm_ndim;
-
 	gluQuadricDrawStyle(quadric, GLU_FILL);
 
 	/* Anti-aliasing */
@@ -242,18 +239,18 @@ draw_node_pipes(struct node *np)
 	glColor4f(0.0f, 1.0f, 0.0f, 0.7f);				/* z - green */
 	glPushMatrix();
 	glTranslatef(
-	    np->n_v->fv_x + ndim->fv_w / 2.0,
-	    np->n_v->fv_y + ndim->fv_h / 2.0,
-	    np->n_v->fv_z + ndim->fv_d / 2.0 - st.st_winsp.iv_d);
+	    np->n_v->fv_x + np->n_dimp->fv_w / 2.0,
+	    np->n_v->fv_y + np->n_dimp->fv_h / 2.0,
+	    np->n_v->fv_z + np->n_dimp->fv_d / 2.0 - st.st_winsp.iv_d);
 	gluCylinder(quadric, 0.1, 0.1, 2.0 * st.st_winsp.iv_d, 3, 1);
 	glPopMatrix();
 
 	glColor4f(1.0f, 0.0f, 0.0f, 0.7f);				/* y - red */
 	glPushMatrix();
 	glTranslatef(
-	    np->n_v->fv_x + ndim->fv_w / 2.0,
-	    np->n_v->fv_y + ndim->fv_h / 2.0 - st.st_winsp.iv_h,
-	    np->n_v->fv_z + ndim->fv_d / 2.0);
+	    np->n_v->fv_x + np->n_dimp->fv_w / 2.0,
+	    np->n_v->fv_y + np->n_dimp->fv_h / 2.0 - st.st_winsp.iv_h,
+	    np->n_v->fv_z + np->n_dimp->fv_d / 2.0);
 	glRotatef(-90.0, 1.0, 0.0, 0.0);
 	gluCylinder(quadric, 0.1, 0.1, 2.0 * st.st_winsp.iv_h, 3, 1);
 	glPopMatrix();
@@ -261,9 +258,9 @@ draw_node_pipes(struct node *np)
 	glColor4f(0.0f, 0.0f, 1.0f, 0.7f);				/* x - blue */
 	glPushMatrix();
 	glTranslatef(
-	    np->n_v->fv_x + ndim->fv_w / 2.0 - st.st_winsp.iv_w,
-	    np->n_v->fv_y + ndim->fv_h / 2.0,
-	    np->n_v->fv_z + ndim->fv_d / 2.0);
+	    np->n_v->fv_x + np->n_dimp->fv_w / 2.0 - st.st_winsp.iv_w,
+	    np->n_v->fv_y + np->n_dimp->fv_h / 2.0,
+	    np->n_v->fv_z + np->n_dimp->fv_d / 2.0);
 	glRotatef(90.0, 0.0, 1.0, 0.0);
 	gluCylinder(quadric, 0.1, 0.1, 2.0 * st.st_winsp.iv_w, 3, 1);
 	glPopMatrix();
@@ -296,7 +293,7 @@ __inline void
 draw_node(struct node *n, int flags)
 {
 	struct fill *fp, *fill_wireframe;
-	struct fvec *dimp, *fvp;
+	struct fvec *fvp;
 
 	GLenum param = GL_REPLACE;
 
@@ -304,7 +301,6 @@ draw_node(struct node *n, int flags)
 		return;
 
 	fp = n->n_fillp;
-	dimp = &vmodes[st.st_vmode].vm_ndim;
 
 	/*
 	 * We assume that the stack we are in otherwise
@@ -336,9 +332,9 @@ draw_node(struct node *n, int flags)
 		fill_wireframe = &fill_black;
 
 		if (st.st_opts & OP_TEX)
-			draw_box_tex(dimp, fp, param);
+			draw_box_tex(n->n_dimp, fp, param);
 		else
-			draw_box_filled(dimp, fp);
+			draw_box_filled(n->n_dimp, fp);
 	}
 
 	if (fp->f_a != 1.0f)
@@ -349,7 +345,7 @@ draw_node(struct node *n, int flags)
 
 		col = fill_wireframe->f_a;
 		fill_wireframe->f_a = fp->f_a;
-		draw_box_outline(dimp, fill_wireframe);
+		draw_box_outline(n->n_dimp, fill_wireframe);
 		fill_wireframe->f_a = col;
 	}
 	if (st.st_opts & OP_NLABELS)
@@ -445,9 +441,10 @@ make_ground(void)
 		fv.fv_y = -0.2f;
 		fv.fv_z = -5.0f;
 
-		fdim.fv_w = ROWWIDTH - 2 * fv.fv_x;
+		fdim.fv_w = physdim_top->pd_size.fv_w - 2 * fv.fv_x;
 		fdim.fv_h = -fv.fv_y / 2.0f;
-		fdim.fv_d = 2 * ROWDEPTH + ROWSPACE - 2 * fv.fv_z;
+		fdim.fv_d = 2 * physdim_top->pd_size.fv_d +
+		    physdim_top->pd_space - 2 * fv.fv_z;
 
 		glPushMatrix();
 		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
@@ -703,7 +700,7 @@ draw_cluster_pipes(const struct fvec *v)
 	glPushMatrix();
 	glTranslatef(v->fv_x, v->fv_y, v->fv_z);
 
-	ndim = &vmodes[st.st_vmode].vm_ndim;
+	ndim = &vmodes[st.st_vmode].vm_ndim[GEOM_CUBE];
 
 	sv.fv_x = ndim->fv_w / 2 + st.st_wioff.iv_x * st.st_winsp.iv_x;
 	sv.fv_y = ndim->fv_h / 2 + st.st_wioff.iv_y * st.st_winsp.iv_y;
@@ -936,10 +933,6 @@ make_selnodes(void)
 	dl_selnodes[wid] = glGenLists(1);
 	glNewList(dl_selnodes[wid], GL_COMPILE);
 
-	vmodes[st.st_vmode].vm_ndim.fv_w += SELNODE_GAP * 2;
-	vmodes[st.st_vmode].vm_ndim.fv_h += SELNODE_GAP * 2;
-	vmodes[st.st_vmode].vm_ndim.fv_d += SELNODE_GAP * 2;
-
 	SLIST_FOREACH(sn, &selnodes, sn_next) {
 		n = sn->sn_nodep;
 		ofp = n->n_fillp;
@@ -965,10 +958,6 @@ make_selnodes(void)
 			}
 			break;
 		default:
-			n->n_v->fv_x -= SELNODE_GAP;
-			n->n_v->fv_y -= SELNODE_GAP;
-			n->n_v->fv_z -= SELNODE_GAP;
-
 			glPushMatrix();
 			glTranslatef(n->n_v->fv_x, n->n_v->fv_y, n->n_v->fv_z);
 			draw_node(n, NDF_DONTPUSH | NDF_NOOPTS);
@@ -978,17 +967,10 @@ make_selnodes(void)
 			    st.st_opts & OP_SELPIPES &&
 			    (st.st_opts & OP_PIPES) == 0)
 				draw_node_pipes(n);
-
-			n->n_v->fv_x += SELNODE_GAP;
-			n->n_v->fv_y += SELNODE_GAP;
-			n->n_v->fv_z += SELNODE_GAP;
 			break;
 		}
 		n->n_fillp = ofp;
 	}
-	vmodes[st.st_vmode].vm_ndim.fv_w -= SELNODE_GAP * 2;
-	vmodes[st.st_vmode].vm_ndim.fv_h -= SELNODE_GAP * 2;
-	vmodes[st.st_vmode].vm_ndim.fv_d -= SELNODE_GAP * 2;
 
 	glEndList();
 }
