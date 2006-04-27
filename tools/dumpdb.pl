@@ -13,8 +13,8 @@ my $login_host = "tg-login.bigben.psc.teragrid.org";
 my $host = "kaminari";
 my $smwhost = "smw";
 my $port = 3306;
-my $user = "basic";
-my $pass = "basic";
+my $user = "sys_mgmt";
+my $pass = "sys_mgmt";
 my $db   = "XTAdmin";
 my $temp_path = "/home/crayadm/TempCheck/XT3CpuTemp*.txt"; # smw path to temperatures
 
