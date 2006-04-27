@@ -332,6 +332,7 @@ geom_setall(int mode)
 		if (n)
 			n->n_geom = mode;
 	// XXX: flyby
+	st.st_rf |= RF_DIM | RF_CLUSTER | RF_SELNODE;
 }
 
 void
@@ -365,6 +366,8 @@ rebuild(int opts)
 		hl_change();
 		opts |= RF_CLUSTER;
 	}
+	if (opts & RF_VMODE)
+		opts |= RF_CLUSTER | RF_CAM | RF_GROUND | RF_SELNODE | RF_DIM;
 	if (opts & RF_CAM) {
 		switch (st.st_vmode) {
 		case VM_PHYSICAL:

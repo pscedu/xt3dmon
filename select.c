@@ -281,7 +281,7 @@ void
 gscb_pw_vmode(int vm)
 {
 	st.st_vmode = vm;
-	st.st_rf |= RF_CLUSTER | RF_CAM | RF_GROUND | RF_SELNODE;
+	st.st_rf |= RF_VMODE;
 }
 
 void

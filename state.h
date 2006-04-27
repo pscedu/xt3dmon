@@ -28,7 +28,7 @@ struct state {
 	int		 st_vmode;		/* view mode */
 	int		 st_pipemode;		/* pipe mode */
 	int		 st_hlnc;		/* highlighted node class */
-	int		 st_eggs;
+	int		 st_eggs;		/* Easter eggs */
 	struct ivec	 st_wioff;		/* wired mode offsets */
 	struct ivec	 st_winsp;		/* wired node spacing */
 	int		 st_rf;			/* rebuild flags */
@@ -68,9 +68,12 @@ struct state {
 #define RF_DMODE	(1<<5)
 #define RF_HLNC		(1<<6)
 #define RF_DIM		(1<<7)
+#define RF_NODEPHYSV	(1<<8)
+#define RF_NODESWIV	(1<<9)
+#define RF_VMODE	(1<<10)
 #define RF_INIT		(RF_DATASRC | RF_CLUSTER | RF_GROUND | \
 			 RF_SELNODE | RF_CAM | RF_DMODE | RF_HLNC | \
-			 RF_DIM)
+			 RF_DIM | RF_NODEPHYSV | RF_NODESWIV | RF_VMODE)
 
 #define EGG_BORG 	(1<<0)
 #define EGG_MATRIX 	(1<<1)

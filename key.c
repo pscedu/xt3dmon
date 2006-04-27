@@ -264,7 +264,7 @@ gl_keyh_vmode(unsigned char key, __unused int u, __unused int v)
 	default:
 		return;
 	}
-	st.st_rf |= RF_CLUSTER | RF_CAM | RF_GROUND | RF_SELNODE;
+	st.st_rf |= RF_VMODE;
 }
 
 void
