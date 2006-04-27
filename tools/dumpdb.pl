@@ -99,25 +99,30 @@ $sth->finish;
 
 $sth = $dbh->prepare(<<SQL) or dberr("preparing sql");
 	SELECT
-		processor_id		AS nid,
-		processor_status	AS status,
-		processor_type		AS type,
-		cab_row			AS r,
-		cab_position		AS cb,
-		cage			AS cg,
-		slot			AS m,
-		cpu			AS n,
-		x_coord			AS x,
-		y_coord			AS y,
-		z_coord			AS z
+		p.processor_id		AS nid,
+		p.processor_status	AS status,
+		p.processor_type	AS type,
+		p.cab_row		AS r,
+		p.cab_position		AS cb,
+		p.cage			AS cg,
+		p.slot			AS m,
+		p.cpu			AS n,
+		p.x_coord		AS x,
+		p.y_coord		AS y,
+		p.z_coord		AS z,
+		l.recovery_status	AS lustat
 	FROM
-		processor
+		processor p,
+		lustre l
+	WHERE
+		p.processor_id = l.processor_id
 SQL
 
 $sth->execute();
 while ($row = $sth->fetchrow_hashref()) {
 	my $status = $row->{status} eq "down" ? "n" :
 	    ($row->{type} eq "service" ? "i" : "c");
+	my $lustat = substr $row->{lustat}, 0, 1;
 
 	my $temp = $temp[$row->{r}][$row->{cb}][$row->{cg}][$row->{m}][$row->{n}];
 	$temp = 0 unless $temp;
@@ -125,14 +130,15 @@ while ($row = $sth->fetchrow_hashref()) {
 	my $jobid = exists $jmap{$row->{nid}} ? $jmap{$row->{nid}} : 0;
 	my $yodid = exists $ymap{$row->{nid}} ? $ymap{$row->{nid}} : 0;
 
-	# 1	2  3 4  5 6	7 8 9	10	11	12	13	14	15
-	# nid	cb r cg m n	x y z	stat	enabled	jobid	temp	yodid	nfails
-	# 0	0  0 0  0 0	0 0 0	i	1	111	58	2	0
+	# 1	2  3 4  5 6	7 8 9	10	11	12	13	14	15	16
+	# nid	cb r cg m n	x y z	stat	enabled	jobid	temp	yodid	nfails	lustat
+	# 0	0  0 0  0 0	0 0 0	i	1	111	58	2	0	d
 
-	#                     1   2  3  4  5  6   7  8  9   10  11  12  13  14  15
-	printf { $fh{node} } "%d\t%d %d %d %d %d\t%d %d %d\t%s\t%d\t%d\t%d\t%d\t%d\n",
+	printf { $fh{node} }
+	#    1   2  3  4  5  6   7  8  9   10  11  12  13  14  15  16
+	    "%d\t%d %d %d %d %d\t%d %d %d\t%s\t%d\t%d\t%d\t%d\t%d\t%s\n",
 	    @$row{qw(nid r cb cg m n x y z)}, $status,
-	    1, $jobid, $temp, $yodid, 0;
+	    1, $jobid, $temp, $yodid, 0, $lustat;
 }
 $sth->finish;
 
