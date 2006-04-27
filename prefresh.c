@@ -399,14 +399,14 @@ panel_refresh_ninfo(struct panel *p)
 	    "Wired position: (%d,%d,%d)\n"
 	    "Physical position: (%d,%d,%d,%d,%d)\n"
 	    "Status: %s\n"
-	    "Temperature: %dC\n"
+	    "Temperature: %dC",
 //	    "Routing errors: (%d recover, %d fatal, %d rtr)\n"
-	    "# Failures: %d",
+//	    "# Failures: %d",
 	    n->n_nid,
 	    iv->iv_x, iv->iv_y, iv->iv_z,
 	    pc.pc_r, pc.pc_cb, pc.pc_cg, pc.pc_m, pc.pc_n,
 	    statusclass[n->n_state].nc_name,
-	    n->n_temp, n->n_fails);
+	    n->n_temp);
 
 	if (n->n_job)
 		panel_add_content(p,
@@ -601,7 +601,7 @@ panel_refresh_date(struct panel *p)
 				err(1, "stat %s", fn);
 			now = stb.st_mtime;
 		} else {
-			time(&now);					/* XXX: check for failure */
+			time(&now);		/* XXX: check for failure */
 		}
 		localtime_r(&now, &tm);
 
