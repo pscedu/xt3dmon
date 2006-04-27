@@ -463,26 +463,79 @@ make_ground(void)
 }
 
 #if 0
-void
-draw_skel(struct fvec *fv, struct fvec *dim)
+__inline void
+draw_pd_skel(struct physdim *pdp, struct physdim *targetpd,
+    struct fvec *fvp, struct fill *fp)
 {
-	for (pd = LIST_FIRST(&physdims); pd != NULL; pd = pd_contains) {
-		if (pd->pd_flags & PDF_SKEL) {
-			for () {
-				glPushMatrix();
-				glTranslatef(v.fv_x - SKEL_GAP,
-				    v.fv_y - SKEL_GAP, v.fv_z - SKEL_GAP);
-				glEnable(GL_BLEND);
-				glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
+	struct fvec fv;
+	size_t i;
 
-				fill_light_blue.f_a = 0.4f;
-				draw_box_outline(&skel, &fill_light_blue);
-				fill_light_blue.f_a = 1.0f;
+	fv = *fvp;
+	if (pdp == targetpd) {
+		for (i = 0; i < targetpd->pd_mag; i++) {
+			glPushMatrix();
+			glTranslatef(fv.fv_x,
+			    fv.fv_y, fv.fv_z);
+			draw_cube(&targetpd->pd_size, fp, 0);
+			glPopMatrix();
 
-				glDisable(GL_BLEND);
-				glPopMatrix();
-			}
+			fv.fv_val[pdp->pd_spans] +=
+			    pdp->pd_size.fv_val[pdp->pd_spans] +
+			    pdp->pd_space;
+			fv.fv_x += pdp->pd_offset.fv_x;
+			fv.fv_y += pdp->pd_offset.fv_y;
+			fv.fv_z += pdp->pd_offset.fv_z;
 		}
+	} else {
+		for (i = 0; i < pdp->pd_mag; i++) {
+			draw_pd_skel(pdp->pd_contains, targetpd, &fv, fp);
+			fv.fv_val[pdp->pd_spans] +=
+			    pdp->pd_size.fv_val[pdp->pd_spans] +
+			    pdp->pd_space;
+			fv.fv_x += pdp->pd_offset.fv_x;
+			fv.fv_y += pdp->pd_offset.fv_y;
+			fv.fv_z += pdp->pd_offset.fv_z;
+		}
+	}
+}
+
+void
+draw_skel(void)
+{
+	struct fvec cldim, fv, dim;
+	struct physdim *pd;
+	struct fill f;
+
+	f = fill_light_blue;
+	f.f_r = 1.0f;
+	f.f_g = 0.6f;
+	f.f_b = 0.6f;
+	f.f_a = 0.6f;
+	f.f_flags |= FF_SKEL;
+
+	switch (st.st_vmode) {
+	case VM_PHYSICAL:
+		for (pd = physdim_top; pd != NULL; pd = pd->pd_contains)
+			if (pd->pd_flags & PDF_SKEL) {
+				vec_set(&fv, 0.0, 0.0, 0.0);
+				draw_pd_skel(physdim_top, pd, &fv, &f);
+			}
+		break;
+	case VM_WIRED:
+	case VM_WIREDONE:
+		cldim.fv_w = (widim.iv_w - 1) * st.st_winsp.iv_x;
+		cldim.fv_h = (widim.iv_h - 1) * st.st_winsp.iv_y;
+		cldim.fv_d = (widim.iv_d - 1) * st.st_winsp.iv_z;
+
+		dim.fv_w = cldim.fv_w + NODEWIDTH  + 2 * SKEL_GAP;
+		dim.fv_h = cldim.fv_h + NODEHEIGHT + 2 * SKEL_GAP;
+		dim.fv_z = cldim.fv_d + NODEDEPTH  + 2 * SKEL_GAP;
+
+		glPushMatrix();
+		glTranslatef(-SKEL_GAP, -SKEL_GAP, -SKEL_GAP);
+		draw_cube(&dim, &f, 0);
+		glPopMatrix();
+		break;
 	}
 }
 #endif
