@@ -99,7 +99,7 @@ struct vmode vmodes[] = {
 
 struct dmode dmodes[] = {
  /* 0 */ { "Job" },
- /* 1 */ { "Fail" },
+ /* 1 */ { NULL },
  /* 2 */ { "Temperature" },
  /* 3 */ { "Yod" },
  /* 4 */ { NULL },
