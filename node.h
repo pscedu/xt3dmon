@@ -14,6 +14,7 @@ struct node {
 	struct fill	*n_fillp;
 	int		 n_flags;
 	int		 n_state;
+	int		 n_lustat;
 	int		 n_geom;
 
 	struct job	*n_job;
@@ -33,6 +34,10 @@ struct node {
 };
 
 #define NF_HIDE		(1<<0)			/* don't display */
+
+#define LS_CLEAN	0
+#define LS_DIRTY	1
+#define LS_RECOVER	2
 
 #define NODE_FOREACH(n, iv)						\
 	for ((iv)->iv_x = 0;						\

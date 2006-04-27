@@ -186,14 +186,14 @@ prerror(const char *fn, int lineno, const char *bufp, const char *s)
 
 /*
  * Example line:
- *	nid	r cb cb m n	x y z	stat	enabled	jobid	temp	yodid	nfails
- *	1848	0 7  0  1 6	7 0 9	c	1	6036	45	10434	0
+ *	nid	r cb cb m n	x y z	stat	enabled	jobid	temp	yodid	nfails	lustat
+ *	1848	0 7  0  1 6	7 0 9	c	1	6036	45	10434	0	c
  */
 void
 parse_node(const struct datasrc *ds)
 {
 	int lineno, r, cb, cg, m, n, nid, x, y, z, stat;
-	int enabled, jobid, temp, yodid, nfails;
+	int enabled, jobid, temp, yodid, nfails, lustat;
 	char buf[BUFSIZ], *s;
 	struct node *node;
 	size_t j;
@@ -208,6 +208,8 @@ parse_node(const struct datasrc *ds)
 					for (n = 0; n < NNODES; n++) {
 						node = &nodes[r][cb][cg][m][n];
 						node->n_flags |= NF_HIDE;
+						node->n_job = NULL;
+						node->n_yod = NULL;
 					}
 
 	lineno = 0;
@@ -234,6 +236,7 @@ parse_node(const struct datasrc *ds)
 		PARSENUM(s, temp, INT_MAX);
 		PARSENUM(s, yodid, INT_MAX);
 		PARSENUM(s, nfails, INT_MAX);
+		PARSECHAR(s, lustat);
 
 		node = &nodes[r][cb][cg][m][n];
 		node->n_nid = nid;
@@ -243,36 +246,16 @@ parse_node(const struct datasrc *ds)
 		node->n_wiv.iv_y = y;
 		node->n_wiv.iv_z = z;
 
-		if (x > widim.iv_w)
-			widim.iv_w = x;
-		if (y > widim.iv_h)
-			widim.iv_h = y;
-		if (z > widim.iv_d)
-			widim.iv_d = z;
-
-		node->n_state = SC_FREE;
-
-		if (enabled == 0)
-			node->n_state = SC_DISABLED;
-
-		node->n_temp = temp ? temp : DV_NODATA;
-		node->n_fails = nfails ? nfails : DV_NODATA;
-
-		if (jobid) {
-			node->n_state = SC_USED;		/* don't set */
-			node->n_job = obj_get(&jobid, &job_list);
-			node->n_job->j_id = jobid;
-		} else
-			node->n_job = NULL;
-
-		if (yodid) {
-			node->n_yod = obj_get(&yodid, &yod_list);
-			node->n_yod->y_id = yodid;
-		} else
-			node->n_yod = NULL;
+		widim.iv_w = MAX(x, widim.iv_w);
+		widim.iv_h = MAX(y, widim.iv_h);
+		widim.iv_d = MAX(z, widim.iv_d);
 
 		switch (stat) {
 		case 'c': /* compute */
+			node->n_state = SC_FREE;
+
+			if (enabled == 0)
+				node->n_state = SC_DISABLED;
 			break;
 		case 'n': /* down */
 			node->n_state = SC_DOWN;
@@ -283,6 +266,36 @@ parse_node(const struct datasrc *ds)
 		default:
 			goto bad;
 		}
+
+		switch (lustat) {
+		case 'c':
+			node->n_lustat = LS_CLEAN;
+			break;
+		case 'd':
+			node->n_lustat = LS_DIRTY;
+			break;
+		case 'r':
+			node->n_lustat = LS_RECOVER;
+			break;
+		default:
+			goto bad;
+		}
+
+		node->n_temp = temp ? temp : DV_NODATA;
+		node->n_fails = nfails ? nfails : DV_NODATA;
+
+		if (jobid) {
+			if (node->n_state == SC_USED)
+				node->n_state = SC_FREE;
+			node->n_job = obj_get(&jobid, &job_list);
+			node->n_job->j_id = jobid;
+		}
+
+		if (yodid) {
+			node->n_yod = obj_get(&yodid, &yod_list);
+			node->n_yod->y_id = yodid;
+		}
+
 		node->n_flags &= ~NF_HIDE;
 		continue;
 bad:
