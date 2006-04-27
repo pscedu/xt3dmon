@@ -12,6 +12,16 @@
 #include "state.h"
 #include "yod.h"
 
+#if 0
+
+// XXX: fill->f_flags |= FF_TEX;
+void
+tex_setall(void)
+{
+}
+
+#endif
+
 void
 hl_setall(float val)
 {
