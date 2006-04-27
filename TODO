@@ -90,4 +90,6 @@ todo
 - make make_cluster just do NODE_FOREACH() draw, then in there do wireps
 - dont use RF_INIT except in main.c
 - reduce tween amt when fps is high
+- cursors and flyby mode
 - bring back option for SEL_GAP things
+- st_hlnc must die, turn into flyby recs
