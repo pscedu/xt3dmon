@@ -5,10 +5,11 @@
 #include <err.h>
 #include <stdlib.h>
 
-#include "queue.h"
-#include "node.h"
-#include "selnode.h"
 #include "flyby.h"
+#include "node.h"
+#include "panel.h"
+#include "queue.h"
+#include "selnode.h"
 #include "state.h"
 
 size_t nselnodes;
@@ -90,6 +91,8 @@ sn_clear(void)
 	SLIST_INIT(&selnodes);
 	st.st_rf |= RF_SELNODE;
 	nselnodes = 0;
+
+	panel_hide(PANEL_NINFO);
 }
 
 int
