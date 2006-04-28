@@ -11,9 +11,10 @@ SRCS+= png.c prefresh.c select.c selnode.c server.c shadow.c ssl.c
 SRCS+= status.c tex.c text.c tween.c uinp.c ustrdtab.c ustream.c
 SRCS+= ustrop-file.c ustrop-ssl.c util.c vec.c widget.c yod.c
 
-LIBS = -lGL -lglut -lGLU -lpng -lssl
+LIBS = -lGL -lglut -lGLU -lpng -lssl -lm -lcrypto -lcom_err
 CFLAGS += -Wall -W -g -D_LIVE_DSP=DSP_LOCAL
 # CFLAGS += -O -Wuninitialized
+LDFLAGS =
 YFLAGS += -d
 INCS = $$(echo ${CFLAGS} | \
     awk '{for (n = 1; n <= NF; n++) if (match($$n, /^-I/)) printf "%s ", $$n }')
@@ -31,7 +32,7 @@ CLEAN+= phys-lex.c phys-parse.c y.tab.h gmon.out
 all: ${PROG}
 
 ${PROG}: ${OBJS}
-	${CC} ${LIBS} ${OBJS} -o $@
+	${CC} ${LDFLAGS} ${LIBS} ${OBJS} -o $@
 
 .c.o:
 	${CC} ${CFLAGS} -c $<
