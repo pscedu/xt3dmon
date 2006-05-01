@@ -93,3 +93,6 @@ todo
 - cursors and flyby mode
 - bring back option for SEL_GAP things
 - st_hlnc must die, turn into flyby recs
+- in server, protect png_write from EPIPE when client disconnects/timeouts
+- glTranslate won't stack, so fix wirep/make_selnode
+- gl_run the cursor changes
