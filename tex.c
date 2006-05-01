@@ -40,7 +40,7 @@ void
 tex_load(void)
 {
 	unsigned int i, w, h;
-	char path[NAME_MAX];
+	char path[PATH_MAX];
 	void *data;
 
 	/* Status class textures. */
