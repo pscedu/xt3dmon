@@ -4,6 +4,7 @@
 use DBI;
 use File::Basename;
 use Symbol;
+use POSIX;
 use strict;
 use warnings;
 
@@ -28,6 +29,10 @@ my %c_fn = (
 my $outdir = dirname($0) . "/../data";
 my $tmpsufx = ".new";
 my $oldsufx = ".bak";
+
+my @date = localtime(time);
+my $ardir = strftime("$outdir/archive/%Y-%m-%d/%H-%M", @date);
+my $lastdir = strftime("$outdir/archive/%Y-%m-%d/last", @date);
 
 # end config
 
@@ -213,6 +218,14 @@ foreach $t (keys %c_fn) {
 	rename($t_fn{$t}, $f_fn{$t})		# move new to current
 	    or err("rename $t_fn{$t} $f_fn{$t}");
 #	print "mv $t_fn{$t} $f_fn{$t}\n";
+}
+
+if (!-e $lastdir || `diff -qr $lastdir $outdir | grep -v ^Only`) {
+	my $files = join ",", keys %c_fn;
+	`mkdir -p $ardir`;
+	`cp -R $outdir/{$files} $ardir`;
+	`rm -f $lastdir`;
+	`ln -s \$(basename $ardir) $lastdir`;
 }
 
 sub dberr {
