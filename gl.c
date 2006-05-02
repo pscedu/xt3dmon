@@ -10,6 +10,7 @@
 #include "gl.h"
 #include "panel.h"
 #include "queue.h"
+#include "server.h"
 #include "state.h"
 #include "tween.h"
 
@@ -64,15 +65,22 @@ gl_setup(void)
 {
 	glShadeModel(GL_SMOOTH);
 	glEnable(GL_DEPTH_TEST);
+//	glEnable(GL_ALPHA_TEST);
+//	glDisable(GL_DITHER);
 
 	glutReshapeFunc(gl_reshapeh);
-	glutKeyboardFunc(gl_keyh_default);
-	glutSpecialFunc(gl_spkeyh_default);
 	glutDisplayFunc(gl_displayhp);
 	glutIdleFunc(gl_idleh_default);
-	glutMouseFunc(gl_mouseh_default);
-	glutMotionFunc(gl_motionh_default);
-	glutPassiveMotionFunc(gl_pasvmotionh_default);
+
+	if (gl_displayhp == serv_displayh) {
+		glutKeyboardFunc(gl_keyh_server);
+	} else {
+		glutKeyboardFunc(gl_keyh_default);
+		glutMotionFunc(gl_motionh_default);
+		glutMouseFunc(gl_mouseh_default);
+		glutPassiveMotionFunc(gl_pasvmotionh_default);
+		glutSpecialFunc(gl_spkeyh_default);
+	}
 
 	glutTimerFunc(1, cocb_fps, 0);
 	glutTimerFunc(1, cocb_clearstatus, 0); /* XXX: enable/disable when PANEL_STATUS? */
