@@ -254,7 +254,7 @@ roundclass(int t, int min, int max, int nclasses)
 		t = min;
 	else if (t > max)
 		t = max;
-	return ((t - min) / ((max - min) / (nclasses - 1)));
+	return ((t - min) / ((max - min) / (nclasses + 1e-10)));
 }
 
 void
