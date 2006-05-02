@@ -10,7 +10,7 @@
 #define NSC		5
 
 #define TEMP_MIN	18
-#define TEMP_MAX	74
+#define TEMP_MAX	73
 #define NTEMPC		14
 
 #define FAIL_MIN	0
