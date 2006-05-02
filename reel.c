@@ -10,19 +10,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "ds.h"
 #include "objlist.h"
 #include "pathnames.h"
 #include "reel.h"
-
-struct reel_ent {
-	struct objhdr	re_oh;
-	char		re_name[NAME_MAX];
-};
 
 int reelent_eq(const void *, const void *);
 
 char reel_fn[PATH_MAX];
 int  reel_len;
+size_t reel_pos;
 
 struct objlist reelent_list = { { NULL }, 0, 0, 0, 0, 10,
     sizeof(struct reel_ent), reelent_eq };
@@ -111,4 +108,64 @@ reel_load(void)
 
 	qsort(reelent_list.ol_reelents, reelent_list.ol_cur,
 	    sizeof(struct reel_ent *), reelent_cmp);
+}
+
+/* XXX: bad */
+int dsp_node;
+int dsp_job;
+int dsp_yod;
+
+char fn_node[PATH_MAX];
+char fn_job[PATH_MAX];
+char fn_yod[PATH_MAX];
+
+void
+reel_start(void)
+{
+	dsp_node = ds_get(DS_NODE)->ds_dsp;
+	dsp_job = ds_get(DS_JOB)->ds_dsp;
+	dsp_yod = ds_get(DS_YOD)->ds_dsp;
+
+	ds_get(DS_NODE)->ds_dsp = DSP_LOCAL;
+	ds_get(DS_JOB)->ds_dsp = DSP_LOCAL;
+	ds_get(DS_YOD)->ds_dsp = DSP_LOCAL;
+
+	ds_get(DS_NODE)->ds_lpath = fn_node;
+	ds_get(DS_JOB)->ds_lpath = fn_job;
+	ds_get(DS_YOD)->ds_lpath = fn_yod;
+
+	reel_pos = 0;
+	reel_advance();
+}
+
+void
+reel_advance(void)
+{
+	if (reel_pos >= reelent_list.ol_cur)
+		return;
+
+	snprintf(fn_node, sizeof(fn_node), "%s/%s/node",
+	    reel_fn, reelent_list.ol_reelents[reel_pos]->re_name);
+	snprintf(fn_job, sizeof(fn_job), "%s/%s/job",
+	    reel_fn, reelent_list.ol_reelents[reel_pos]->re_name);
+	snprintf(fn_yod, sizeof(fn_yod), "%s/%s/yod",
+	    reel_fn, reelent_list.ol_reelents[reel_pos]->re_name);
+
+	ds_get(DS_NODE)->ds_flags |= DSF_FORCE;
+	ds_get(DS_JOB)->ds_flags |= DSF_FORCE;
+	ds_get(DS_YOD)->ds_flags |= DSF_FORCE;
+
+	reel_pos++;
+}
+
+void
+reel_end(void)
+{
+	ds_get(DS_NODE)->ds_dsp = dsp_node;
+	ds_get(DS_JOB)->ds_dsp = dsp_job;
+	ds_get(DS_YOD)->ds_dsp = dsp_yod;
+
+	ds_get(DS_NODE)->ds_lpath = _PATH_NODE;
+	ds_get(DS_JOB)->ds_lpath = _PATH_JOB;
+	ds_get(DS_YOD)->ds_lpath = _PATH_YOD;
 }
