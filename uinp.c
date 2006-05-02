@@ -71,7 +71,7 @@ uinpcb_gotojob(void)
 
 	if (job_findbyid(jobid, &pos) == NULL)
 		return;
-	st.st_hlnc = NSC + pos;
+	st.st_hlnc = NSC + pos; /* XXX: check dmode for DM_JOBS */
 	st.st_rf |= RF_HLNC;
 }
 
