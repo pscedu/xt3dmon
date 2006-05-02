@@ -397,14 +397,14 @@ panel_refresh_ninfo(struct panel *p)
 	    "- Node Information -\n"
 	    "Node ID: %d\n"
 	    "Wired position: (%d,%d,%d)\n"
-	    "Physical position: (%d,%d,%d,%d,%d)\n"
+	    "Hardware name: c%d-%dc%ds%dn%d\n"
 	    "Status: %s\n"
 	    "Temperature: %dC",
 //	    "Routing errors: (%d recover, %d fatal, %d rtr)\n"
 //	    "# Failures: %d",
 	    n->n_nid,
 	    iv->iv_x, iv->iv_y, iv->iv_z,
-	    pc.pc_r, pc.pc_cb, pc.pc_cg, pc.pc_m, pc.pc_n,
+	    pc.pc_cb, pc.pc_r, pc.pc_cg, pc.pc_m, pc.pc_n,
 	    statusclass[n->n_state].nc_name,
 	    n->n_temp);
 
