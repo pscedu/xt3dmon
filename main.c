@@ -217,6 +217,33 @@ opt_flip(int fopts)
 	}
 }
 
+#if 0
+int
+roundclass_lg(uint64_t t, uint64_t min, uint64_t max, int nclasses)
+{
+	int i, bitspercl, nbits, mask;
+
+	if (max - min == 0)
+		return (0);
+
+	if (t < min)
+		t = min;
+	else if (t > max)
+		t = max;
+
+	nbits = sizeof(t) * 8;
+	bitspercl = nbits / nclasses;
+	mask = 0;
+	for (i = 0; i < bitspercl; i++)
+		mask |= (1 << i);
+
+	for (i = nclasses - 1; i >= 0; i--)
+		if (t & (mask << (i * bitspercl)))
+			return (i);
+	return (0);
+}
+#endif
+
 int
 roundclass(int t, int min, int max, int nclasses)
 {
