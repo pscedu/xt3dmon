@@ -692,7 +692,7 @@ draw_cluster_pipe(struct ivec *iv, struct fvec *sv, struct fvec *dimv)
 			break;
 		}
 
-		for (*j = 0; *j < jmax; *j++) {
+		for (*j = 0; *j < jmax; ++*j) {
 			if ((n = wimap[iv->iv_x][iv->iv_y][iv->iv_z]) == NULL ||
 			    !node_show(n))
 				continue;
