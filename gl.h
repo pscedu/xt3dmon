@@ -13,6 +13,7 @@ void	 gl_wid_update(void);
 void	 gl_keyh_actflyby(unsigned char, int, int);
 void	 gl_keyh_default(unsigned char, int, int);
 void	 gl_keyh_uinput(unsigned char, int, int);
+void	 gl_keyh_server(unsigned char, int, int);
 void	 gl_spkeyh_actflyby(int, int, int);
 void	 gl_spkeyh_default(int, int, int);
 

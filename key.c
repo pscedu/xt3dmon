@@ -561,6 +561,16 @@ gl_keyh_route(unsigned char key, __unused int u, __unused int v)
 }
 
 void
+gl_keyh_server(unsigned char key, __unused int u, __unused int v)
+{
+	switch (key) {
+	case 'q':
+		exit(0);
+		/* NOTREACHED */
+	}
+}
+
+void
 gl_keyh_default(unsigned char key, __unused int u, __unused int v)
 {
 	flyby_rstautoto();
