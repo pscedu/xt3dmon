@@ -698,7 +698,7 @@ draw_cluster_pipe(struct ivec *iv, struct fvec *sv, struct fvec *dimv)
 				continue;
 
 			port = DIM_TO_PORT(dim, rt_portset);
-			if (n->n_route.rt_err[port][rt_type] == 0)
+			if (n->n_route.rt_err[port][rt_type] == DV_NODATA)
 				continue;
 
 			if (rt_max.rt_err[port][rt_type])
