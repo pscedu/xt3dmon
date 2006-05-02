@@ -27,9 +27,9 @@
  * at that level and the dimensions of the sub cube.
  */
 struct wiselstep {
-	int			ws_chance;
-	struct ivec		ws_off;
-	struct ivec		ws_mag;
+	int		ws_chance;
+	struct ivec	ws_off;
+	struct ivec	ws_mag;
 };
 
 #if 0
