@@ -416,6 +416,18 @@ dim_update(void)
 }
 
 void
+vmode_change(void)
+{
+	struct node *n;
+	struct ivec iv;
+
+	NODE_FOREACH(n, &iv)
+		if (n)
+			n->n_v = (st.st_vmode == VM_PHYSICAL) ?
+			    &n->n_physv : &n->n_swiv;
+}
+
+void
 rebuild(int opts)
 {
 	if (opts & RF_DATASRC) {
@@ -435,8 +447,11 @@ rebuild(int opts)
 		hl_change();
 		opts |= RF_CLUSTER;
 	}
-	if (opts & RF_VMODE)
+	if (opts & RF_VMODE) {
+		vmode_change();
+
 		opts |= RF_CLUSTER | RF_CAM | RF_GROUND | RF_SELNODE | RF_DIM;
+	}
 	if (opts & RF_CAM) {
 		switch (st.st_vmode) {
 		case VM_PHYSICAL:
