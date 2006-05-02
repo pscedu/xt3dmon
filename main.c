@@ -322,6 +322,47 @@ dmode_change(void)
 	}
 }
 
+__inline void
+rebuild_nodephysv(void)
+{
+	struct node *n;
+	struct ivec iv;
+
+	NODE_FOREACH(n, &iv)
+		if (n)
+			node_setphyspos(n, &n->n_physv);
+}
+
+__inline void
+rebuild_nodeswiv(void)
+{
+	struct fvec spdim, wrapv;
+	struct ivec iv, adjv;
+	struct node *n;
+
+	/* Spaced cluster dimensions. */
+	spdim.fv_w = widim.iv_w * st.st_winsp.iv_x;
+	spdim.fv_h = widim.iv_h * st.st_winsp.iv_y;
+	spdim.fv_d = widim.iv_d * st.st_winsp.iv_z;
+
+	IVEC_FOREACH(&iv, &widim) {
+		adjv.iv_x = negmod(iv.iv_x + st.st_wioff.iv_x, widim.iv_w);
+		adjv.iv_y = negmod(iv.iv_y + st.st_wioff.iv_y, widim.iv_h);
+		adjv.iv_z = negmod(iv.iv_z + st.st_wioff.iv_z, widim.iv_d);
+		n = wimap[adjv.iv_x][adjv.iv_y][adjv.iv_z];
+		if (n == NULL)
+			continue;
+
+		wrapv.fv_x = floor((iv.iv_x + st.st_wioff.iv_x) / (double)widim.iv_w) * spdim.fv_w;
+		wrapv.fv_y = floor((iv.iv_y + st.st_wioff.iv_y) / (double)widim.iv_h) * spdim.fv_h;
+		wrapv.fv_z = floor((iv.iv_z + st.st_wioff.iv_z) / (double)widim.iv_d) * spdim.fv_d;
+
+		n->n_swiv.fv_x = n->n_wiv.iv_x * st.st_winsp.iv_x + wrapv.fv_x;
+		n->n_swiv.fv_y = n->n_wiv.iv_y * st.st_winsp.iv_y + wrapv.fv_y;
+		n->n_swiv.fv_z = n->n_wiv.iv_z * st.st_winsp.iv_z + wrapv.fv_z;
+	}
+}
+
 void
 geom_setall(int mode)
 {
@@ -390,6 +431,10 @@ rebuild(int opts)
 
 		opts |= RF_CLUSTER | RF_SELNODE;
 	}
+	if (opts & RF_NODEPHYSV)
+		rebuild_nodephysv();
+	if (opts & RF_NODESWIV)
+		rebuild_nodeswiv();
 	if (opts & RF_CLUSTER)
 		gl_run(make_cluster);
 	if (opts & RF_SELNODE)
