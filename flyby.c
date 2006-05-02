@@ -200,6 +200,10 @@ flyby_read(void)
 			if ((n = node_for_nid(fbun.fbu_sn.fbsn_nid)) != NULL)
 				sn_toggle(n);
 			break;
+		default:
+			if (fseek(flyby_fp, fbh.fbh_len, SEEK_CUR) == -1)
+				err(1, "flyby fseek");
+			break;
 		}
 	} while (!done);
 
