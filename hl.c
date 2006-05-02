@@ -13,6 +13,11 @@
 #include "yod.h"
 
 #if 0
+void
+hl_modall(float val)
+{
+
+}
 
 // XXX: fill->f_flags |= FF_TEX;
 void
