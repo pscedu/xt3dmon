@@ -82,4 +82,6 @@ extern int		 spkey;
 extern struct ivec	 mousev;
 extern struct ivec	 winv;
 
+void			(*revolve_centerf)(struct fvec *);
+
 #endif /* _ENV_H_ */

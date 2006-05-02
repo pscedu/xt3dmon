@@ -565,6 +565,24 @@ gl_keyh_default(unsigned char key, __unused int u, __unused int v)
 {
 	flyby_rstautoto();
 	switch (key) {
+	case '2': case '4':
+	case '6': case '8': {
+		struct fvec center;
+		int du, dv;
+
+		switch (key) {
+		case '2': du =  0; dv = -2; break;
+		case '4': du =  2; dv =  0; break;
+		case '6': du = -2; dv =  0; break;
+		case '8': du =  0; dv =  2; break;
+		}
+
+		tween_push(TWF_LOOK | TWF_POS | TWF_UP);
+		(*revolve_centerf)(&center);
+		cam_revolve(&center, (double)du, (double)-dv);
+		tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
+		break;
+	    }
 	case 'a':
 		glutKeyboardFunc(gl_keyh_alpha);
 		break;
