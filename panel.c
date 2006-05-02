@@ -484,7 +484,7 @@ panel_draw(struct panel *p, int wid)
 			break;
 		case PSTICK_BL:
 			u = 0;
-			v = panel_offset[PVOFF_BL] + p->p_h;
+			v = panel_offset[PVOFF_BL] + p->p_h - 1;
 			break;
 		case PSTICK_TR:
 			u = winv.iv_w - w;
@@ -492,7 +492,7 @@ panel_draw(struct panel *p, int wid)
 			break;
 		case PSTICK_BR:
 			u = winv.iv_w - w;
-			v = panel_offset[PVOFF_BR] + p->p_h;
+			v = panel_offset[PVOFF_BR] + p->p_h - 1;
 			break;
 		default:
 			u = p->p_u;
@@ -676,11 +676,11 @@ panel_toggle(int panel)
 		break;
 	case PSTICK_BL:
 		p->p_u = 0;
-		p->p_v = panel_offset[PVOFF_BL];
+		p->p_v = panel_offset[PVOFF_BL] - 1;
 		break;
 	case PSTICK_BR:
 		p->p_u = winv.iv_w;
-		p->p_v = panel_offset[PVOFF_BR];
+		p->p_v = panel_offset[PVOFF_BR] - 1;
 		break;
 	}
 
