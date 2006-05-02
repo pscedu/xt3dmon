@@ -18,10 +18,10 @@
 #define DIR_FORWARD	4
 #define DIR_BACK	5
 
-#define DIM_X	0
-#define DIM_Y	1
-#define DIM_Z	2
-#define NDIM	3
+#define DIM_X		0
+#define DIM_Y		1
+#define DIM_Z		2
+#define NDIM		3
 
 #define GEOM_CUBE	0
 #define GEOM_SPHERE	1
