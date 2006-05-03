@@ -208,8 +208,8 @@ flyby_read(void)
 			    flyby_fp) != sizeof(struct fbinit))
 				err(1, "flyby read init");
 			st = fbun.fbu_init.fbi_state;
-			st.st_rf |= RF_INIT; /* XXX no no */
-			st.st_rf &= ~RF_DATASRC;
+			st.st_rf |= RF_VMODE | RF_DMODE | RF_CAM |
+			    RF_SELNODE | RF_HLNC;
 			init_panels(fbun.fbu_init.fbi_panels);
 			done = 1;
 			break;
