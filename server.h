@@ -12,3 +12,4 @@ void	 serv_init(void);
 void	 serv_displayh(void);
 
 extern struct session	*ssp;
+extern int		 server_mode;

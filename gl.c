@@ -69,12 +69,16 @@ gl_setup(void)
 //	glDisable(GL_DITHER);
 
 	glutReshapeFunc(gl_reshapeh);
-	glutDisplayFunc(gl_displayhp);
 	glutIdleFunc(gl_idleh_default);
 
-	if (gl_displayhp == serv_displayh) {
+	if (server_mode) {
+		glutDisplayFunc(serv_displayh);
 		glutKeyboardFunc(gl_keyh_server);
 	} else {
+		if (stereo_mode)
+			glutDisplayFunc(gl_displayh_stereo);
+		else
+			glutDisplayFunc(gl_displayh_default);
 		glutKeyboardFunc(gl_keyh_default);
 		glutMotionFunc(gl_motionh_default);
 		glutMouseFunc(gl_mouseh_default);
@@ -271,4 +275,3 @@ gl_displayh_default(void)
 	if (st.st_opts & OP_DISPLAY)
 		glutSwapBuffers();
 }
-

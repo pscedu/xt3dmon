@@ -73,6 +73,7 @@ struct sv_cmd {
 	{ "sid",	svc_sid }
 };
 
+int server_mode;
 int sock;
 int nsessions, nreqs;
 struct session *ssp;
@@ -134,7 +135,6 @@ serv_init(void)
 		p->p_h = 40;
 	}
 
-	gl_displayhp = serv_displayh;
 	fill_bg.f_r = 0.0;
 	fill_bg.f_g = 0.0;
 	fill_bg.f_b = 0.0;

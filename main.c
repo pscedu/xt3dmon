@@ -59,8 +59,6 @@ struct fvec		 tv = { { STARTX, STARTY, STARTZ } };
 struct fvec		 tlv = { { STARTLX, STARTLY, STARTLZ } };
 struct fvec		 tuv = { { 0.0f, 1.0f, 0.0f } };
 
-void			(*gl_displayhp)(void);
-
 char			 login_auth[BUFSIZ];
 
 const char		*progname;
@@ -500,7 +498,7 @@ restart(void)
 int
 main(int argc, char *argv[])
 {
-	int server, flags, c, sw, sh;
+	int flags, c, sw, sh;
 	const char *cfgfn;
 
 	progname = argv[0];
@@ -509,9 +507,7 @@ main(int argc, char *argv[])
 	arch_init();
 	ssl_init();
 
-	gl_displayhp = gl_displayh_default;
 	cfgfn = _PATH_PHYSCONF;
-	server = 0;
 
 	flags = GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE;
 	glutInit(&argc, argv);
@@ -519,17 +515,15 @@ main(int argc, char *argv[])
 		switch (c) {
 		case 'a':
 			flags |= GLUT_STEREO;
-			gl_displayhp = gl_displayh_stereo;
 			stereo_mode = STM_ACT;
 			break;
 		case 'c':
 			cfgfn = optarg;
 			break;
 		case 'd':
-			server = 1;
+			server_mode = 1;
 			break;
 		case 'p':
-			gl_displayhp = gl_displayh_stereo;
 			stereo_mode = STM_PASV;
 			break;
 		case 'v':
@@ -564,7 +558,7 @@ main(int argc, char *argv[])
 
 	parse_physconf(cfgfn);
 
-	if (server)
+	if (server_mode)
 		serv_init();
 	else
 		panel_toggle(PANEL_HELP);

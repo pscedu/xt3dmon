@@ -537,7 +537,6 @@ gl_displayh_selectprobe(void)
 		break;
 	}
 end:
-	glutDisplayFunc(gl_displayhp);
 	st.st_rf |= RF_CAM;
 
 	if (ret == SP_MISS && gl_cursor != GLUT_CURSOR_CYCLE) {
@@ -581,6 +580,5 @@ gl_displayh_select(void)
 		break;
 	}
 end:
-	glutDisplayFunc(gl_displayhp);
 	st.st_rf |= RF_CAM;
 }

@@ -33,7 +33,7 @@ gl_mouseh_default(__unused int button, __unused int state, int u, int v)
 {
 	spkey = glutGetModifiers();
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
-		glutDisplayFunc(gl_displayh_select);
+		gl_displayh_select();
 
 	if (state == GLUT_UP && panel_mobile != NULL) {
 		panel_demobilize(panel_mobile);
@@ -150,7 +150,7 @@ gl_pasvmotionh_default(int u, int v)
 	mousev.iv_x = u;
 	mousev.iv_y = v;
 
-	glutDisplayFunc(gl_displayh_selectprobe);
+	gl_displayh_selectprobe();
 
 	flyby_rstautoto();
 }
