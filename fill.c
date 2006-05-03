@@ -198,3 +198,43 @@ fill_contrast(struct fill *c)
 
 	col_hsv_to_rgb(c);
 }
+
+void
+fill_setopaque(struct fill *fp)
+{
+	fp->f_a = 1.0;
+}
+
+void
+fill_setxparent(struct fill *fp)
+{
+	fp->f_a = 0.0;
+}
+
+void
+fill_alphainc(struct fill *fp)
+{
+	fp->f_a += 0.1;
+	if (fp->f_a > 1.0)
+		fp->f_a = 1.0;
+}
+
+void
+fill_alphadec(struct fill *fp)
+{
+	fp->f_a -= 0.1;
+	if (fp->f_a < 0.0)
+		fp->f_a = 0.0;
+}
+
+void
+fill_tex(struct fill *fp)
+{
+	fp->f_flags |= FF_TEX;
+}
+
+void
+fill_untex(struct fill *fp)
+{
+	fp->f_flags &= ~FF_TEX;
+}
