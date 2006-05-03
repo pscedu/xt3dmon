@@ -17,7 +17,7 @@
  * possible dimensions.  This gives a section of a texture
  * without stretching it.
  */
-#define NODE_TEXCOORD(x, max) (1 / (max / x))
+#define NODE_TEXCOORD(x, max) (1.0 / (max / x))
 
 #define SHIFT_OFFSET (0.001)
 
