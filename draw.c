@@ -20,7 +20,6 @@
 #include "route.h"
 #include "selnode.h"
 #include "state.h"
-#include "tween.h"
 #include "xmath.h"
 
 #define SELNODE_GAP	(0.1f)
