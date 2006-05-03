@@ -7,8 +7,8 @@ PROG = xt3dmon
 SRCS = arch.c buf.c callout.c cam.c capture.c dbg.c draw.c ds.c eggs.c
 SRCS+= env.c fill.c flyby.c gl.c hl.c http.c job.c key.c main.c math.c
 SRCS+= mouse.c node.c objlist.c panel.c parse.c phys-lex.l phys-parse.y
-SRCS+= png.c prefresh.c select.c selnode.c server.c shadow.c ssl.c
-SRCS+= status.c tex.c text.c tween.c uinp.c ustrdtab.c ustream.c
+SRCS+= png.c prefresh.c reel.c select.c selnode.c server.c shadow.c
+SRCS+= ssl.c status.c tex.c text.c tween.c uinp.c ustrdtab.c ustream.c
 SRCS+= ustrop-file.c ustrop-ssl.c util.c vec.c widget.c yod.c
 
 LIBS = -lGL -lglut -lGLU -lpng -lssl -lm -lcrypto -lcom_err

@@ -13,6 +13,7 @@
 #include "nodeclass.h"
 #include "objlist.h"
 #include "panel.h"
+#include "reel.h"
 #include "select.h"
 #include "selnode.h"
 #include "state.h"
@@ -304,4 +305,11 @@ gscb_pw_dmode(int dm)
 {
 	st.st_dmode = dm;
 	st.st_rf |= RF_DMODE;
+}
+
+void
+gscb_pw_reel(int i)
+{
+	snprintf(reel_fn, sizeof(reel_fn), "%s",
+	    reel_list.ol_reels[i]->rl_dirname);
 }

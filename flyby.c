@@ -14,6 +14,7 @@
 #include "panel.h"
 #include "pathnames.h"
 #include "queue.h"
+#include "reel.h"
 #include "selnode.h"
 #include "state.h"
 #include "xmath.h"
@@ -21,8 +22,10 @@
 int		 flyby_mode;
 int		 flyby_autoto = 2 * 60 * 60; /* 2 minutes */
 int		 flyby_nautoto;
-struct state	 sav_st;
+int		 flyby_len;
+int		 flyby_pos;
 static FILE	*flyby_fp;
+struct state	 sav_st;
 
 void		 init_panels(int);
 
@@ -55,6 +58,28 @@ union fbun {
 #define FHT_SELNODE	3
 #define FHT_PANEL	4
 
+void
+flyby_calclen(void)
+{
+	struct fbhdr fbh;
+
+	flyby_len = 0;
+
+	while (fread(&fbh, 1, sizeof(fbh), flyby_fp) == sizeof(fbh)) {
+		switch (fbh.fbh_type) {
+		case FHT_INIT:
+		case FHT_SEQ:
+			flyby_len++;
+			break;
+		}
+		if (fseek(flyby_fp, fbh.fbh_len, SEEK_CUR) == -1)
+			err(1, "flyby fseek");
+	}
+	if (ferror(flyby_fp))
+		err(1, "fread flyby header");
+	rewind(flyby_fp);
+}
+
 /* Open the flyby data file appropriately. */
 void
 flyby_begin(int mode)
@@ -77,6 +102,14 @@ flyby_begin(int mode)
 		 */
 		sav_st = st;
 		st.st_opts &= ~OP_TWEEN;
+
+//		panel_show(PANEL_FLYBY);
+		if (st.st_opts & OP_REEL) {
+			panel_show(PANEL_REEL);
+			flyby_calclen();
+			flyby_pos = 0;
+			reel_start();
+		}
 
 		glutMotionFunc(gl_motionh_null);
 		glutPassiveMotionFunc(gl_pasvmotionh_null);
@@ -159,6 +192,8 @@ flyby_read(void)
 			if (feof(flyby_fp)) {
 				if (st.st_opts & OP_LOOPFLYBY) {
 					rewind(flyby_fp);
+					flyby_pos = 0;
+					reel_pos = 0;
 					continue;
 				} else {
 					flyby_end();
@@ -216,6 +251,12 @@ flyby_read(void)
 	st.st_rf |= oldrf;
 	st.st_rf &= ~RF_DATASRC;
 	opt_flip(optdiff);
+
+	if (st.st_opts & OP_REEL &&
+	    flyby_pos++ % (flyby_len / reelent_list.ol_cur) == 0) {
+		reel_advance();
+		st.st_rf |= RF_DATASRC;
+	}
 }
 
 void
@@ -235,6 +276,9 @@ flyby_end(void)
 		glutMotionFunc(gl_motionh_default);
 		glutPassiveMotionFunc(gl_pasvmotionh_default);
 		glutMouseFunc(gl_mouseh_default);
+
+		if (st.st_opts & OP_REEL)
+			reel_end();
 
 		rf = RF_CAM;
 		if (st.st_dmode != sav_st.st_dmode)

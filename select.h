@@ -44,5 +44,6 @@ void		 gscb_pw_panel(int);
 void		 gscb_pw_vmode(int);
 void		 gscb_pw_dmode(int);
 void		 gscb_pw_help(int);
+void		 gscb_pw_reel(int);
 
 int gl_cursor;

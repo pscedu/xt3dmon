@@ -6,6 +6,8 @@
 struct job;
 struct yod;
 struct glname;
+struct reel;
+struct reelent;
 
 struct objhdr {
 	int	  oh_flags;
@@ -21,6 +23,8 @@ struct objlist {
 		struct job	**olu_jobs;
 		struct yod	**olu_yods;
 		struct glname	**olu_glnames;
+		struct reel	**olu_reels;
+		struct reel_ent	**olu_reelents;
 	}	 		  ol_udata;
 	size_t	 		  ol_cur;
 	size_t	 		  ol_tcur;
@@ -33,6 +37,8 @@ struct objlist {
 #define ol_jobs			  ol_udata.olu_jobs
 #define ol_yods			  ol_udata.olu_yods
 #define ol_glnames		  ol_udata.olu_glnames
+#define ol_reels		  ol_udata.olu_reels
+#define ol_reelents		  ol_udata.olu_reelents
 };
 
 void	 obj_batch_start(struct objlist *);
@@ -42,5 +48,6 @@ void	*obj_get(const void *, struct objlist *);
 extern struct objlist	 job_list;
 extern struct objlist	 yod_list;
 extern struct objlist	 glname_list;
+extern struct objlist	 reel_list;
 
 #endif /* _OBJLIST_H_ */

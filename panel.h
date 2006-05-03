@@ -22,7 +22,8 @@
 #define PANEL_HELP	(1<<16)
 #define PANEL_VMODE	(1<<17)
 #define PANEL_DMODE	(1<<18)
-#define NPANELS		19
+#define PANEL_REEL	(1<<19)
+#define NPANELS		20
 
 struct pwidget {
 	const char		 *pw_str;
@@ -112,6 +113,7 @@ void panel_refresh_login(struct panel *);
 void panel_refresh_help(struct panel *);
 void panel_refresh_vmode(struct panel *);
 void panel_refresh_dmode(struct panel *);
+void panel_refresh_reel(struct panel *);
 
 extern struct panels	 panels;
 extern struct pinfo	 pinfo[];

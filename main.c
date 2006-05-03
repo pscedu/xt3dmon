@@ -22,6 +22,7 @@
 #include "panel.h"
 #include "pathnames.h"
 #include "queue.h"
+#include "reel.h"
 #include "selnode.h"
 #include "server.h"
 #include "state.h"
@@ -88,7 +89,8 @@ struct xoption opts[] = {
  /* 14 */ { "Job tour mode",		OPF_FBIGN },
  /* 15 */ { "Skeletons",		0 },
  /* 16 */ { "Node animation",		0 },
- /* 17 */ { "Auto flyby mode",		OPF_FBIGN }
+ /* 17 */ { "Auto flyby mode",		OPF_FBIGN },
+ /* 18 */ { "Reel mode",		OPF_FBIGN }
 };
 
 struct vmode vmodes[] = {
@@ -212,6 +214,10 @@ opt_flip(int fopts)
 				flyby_nautoto = 0;
 				flyby_rstautoto();
 			}
+			break;
+		case OP_REEL:
+			if (on)
+				reel_load();
 			break;
 		}
 	}

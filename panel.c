@@ -79,7 +79,8 @@ struct pinfo pinfo[] = {
  /* 15 */ { "Login",		panel_refresh_login,	PSTICK_TR, PF_UINP, 		 		UINPO_LINGER,	uinpcb_login },
  /* 16 */ { "Help",		panel_refresh_help,	PSTICK_BR, PF_HIDE | PF_FBIGN | PF_XPARENT,	0,		NULL },
  /* 17 */ { "View Mode",	panel_refresh_vmode,	PSTICK_TL, 0,			 		0,		NULL },
- /* 18 */ { "Data Mode",	panel_refresh_dmode,	PSTICK_TL, 0,			 		0,		NULL }
+ /* 18 */ { "Data Mode",	panel_refresh_dmode,	PSTICK_TL, 0,			 		0,		NULL },
+ /* 19 */ { "Reel",		panel_refresh_reel,	PSTICK_TL, PF_FBIGN,			 	0,		NULL }
 };
 
 #define PVOFF_TL 0

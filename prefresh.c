@@ -4,6 +4,7 @@
 
 #include <sys/stat.h>
 
+#include <dirent.h>
 #include <err.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -22,6 +23,7 @@
 #include "panel.h"
 #include "pathnames.h"
 #include "queue.h"
+#include "reel.h"
 #include "select.h"
 #include "selnode.h"
 #include "server.h"
@@ -762,6 +764,65 @@ panel_refresh_dmode(struct panel *p)
 		pwidget_add(p, (st.st_dmode == i ?
 		    &fill_white : &fill_nodata), dmodes[i].dm_name,
 		    gscb_pw_dmode, i);
+	}
+	pwidget_endlist(p);
+}
+
+void
+panel_refresh_reel(struct panel *p)
+{
+	static char sav_reel_fn[PATH_MAX];
+	struct dirent *dent;
+	struct reel *rl;
+	char *fn;
+	size_t i;
+	DIR *dp;
+
+	if (panel_ready(p) && strcmp(reel_fn, sav_reel_fn) == 0)
+		return;
+
+	pwidget_startlist(p);
+	if (flyby_mode == FBM_PLAY &&
+	    st.st_opts & OP_REEL) {
+		/* basename(3) is too much work. */
+		if ((fn = strrchr(reel_fn, '/')) != NULL)
+			fn++;
+		else
+			fn = reel_fn;
+
+		panel_set_content(p, "- Reel - \n\nFrame %d/%d\n%s %s",
+		    reel_pos, reelent_list.ol_cur, fn,
+		    reelent_list.ol_reelents[reel_pos]->re_name);
+	} else {
+		panel_set_content(p, "- Reel - ");
+
+		if ((dp = opendir(_PATH_ARCHIVE)) == NULL)
+			err(1, "opendir %s", _PATH_ARCHIVE);
+		obj_batch_start(&reel_list);
+		while ((dent = readdir(dp)) != NULL) {
+			if (strcmp(dent->d_name, ".") == 0 ||
+			    strcmp(dent->d_name, "..") == 0)
+				continue;
+
+			rl = obj_get(dent->d_name, &reel_list);
+			snprintf(rl->rl_dirname, sizeof(rl->rl_dirname),
+			    "%s/%s", _PATH_ARCHIVE, dent->d_name);
+			snprintf(rl->rl_name, sizeof(rl->rl_name),
+			    "%s", dent->d_name);
+		}
+		obj_batch_end(&reel_list);
+		closedir(dp);
+
+		qsort(reel_list.ol_reels, reel_list.ol_cur,
+		    sizeof(struct reel *), reel_cmp);
+
+		for (i = 0; i < reel_list.ol_cur; i++) {
+			rl = reel_list.ol_reels[i];
+
+			pwidget_add(p, (strcmp(reel_fn, rl->rl_dirname) ?
+			    &fill_nodata : &fill_white), rl->rl_name,
+			    gscb_pw_reel, i);
+		}
 	}
 	pwidget_endlist(p);
 }
