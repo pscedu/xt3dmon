@@ -60,6 +60,7 @@ extern struct fill	 fill_font;
 extern struct fill	 fill_nodata;
 extern struct fill	 fill_same;
 extern struct fill	 fill_selnode;
+extern struct fill	 fill_clskel;
 
 extern struct fill	 fill_borg;
 extern struct fill	 fill_matrix;
