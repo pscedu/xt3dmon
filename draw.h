@@ -4,6 +4,8 @@ struct node;
 struct fvec;
 struct fill;
 
+#define DF_FRAME	(1<<0)		/* draw with frame */
+
 /* Node drawing flags. */
 #define NDF_ATORIGIN	(1<<0)
 

@@ -8,6 +8,7 @@
 #include "draw.h"
 #include "env.h"
 #include "fill.h"
+#include "state.h"
 #include "xmath.h"
 
 /*
@@ -18,8 +19,9 @@
  */
 #define NODE_TEXCOORD(x, max) (1 / (max / x))
 
-/* Wireframe width. */
-#define WFRAMEWIDTH	(0.001f)
+#define SHIFT_OFFSET (0.001)
+
+#define LDF_SHIFT (1<<0)
 
 /*
  *	y			12
@@ -55,12 +57,12 @@ draw_box_outline(const struct fvec *dim, const struct fill *fillp)
 	x = y = z = 0.0f;
 
 	/* Wireframe outline */
-	x -= WFRAMEWIDTH;
-	y -= WFRAMEWIDTH;
-	z -= WFRAMEWIDTH;
-	w += 2.0f * WFRAMEWIDTH;
-	h += 2.0f * WFRAMEWIDTH;
-	d += 2.0f * WFRAMEWIDTH;
+	x -= SHIFT_OFFSET;
+	y -= SHIFT_OFFSET;
+	z -= SHIFT_OFFSET;
+	w += 2.0f * SHIFT_OFFSET;
+	h += 2.0f * SHIFT_OFFSET;
+	d += 2.0f * SHIFT_OFFSET;
 
 	/* Anti-aliasing */
 	glEnable(GL_LINE_SMOOTH);
