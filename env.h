@@ -59,6 +59,8 @@ void frustum_calc(int, struct frustum *);
 
 void geom_setall(int);
 
+void cursor_set(int);
+
 /* Loop through wired repetitions. */
 #define WIREP_FOREACH(fvp)							\
 	for ((fvp)->fv_x = wi_repstart.fv_x;					\

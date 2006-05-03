@@ -8,6 +8,8 @@
 #define FOCAL_LENGTH	(5.00f) /* length of 3d focus */
 #define ST_EYESEP	(0.30f) /* distance between "eyes" */
 
+int gl_cursor;
+
 __inline void
 frustum_init(struct frustum *fr)
 {
@@ -40,5 +42,14 @@ frustum_calc(int frid, struct frustum *fr)
 		fr->fr_top = fr->fr_wd2;
 		fr->fr_bottom = -fr->fr_wd2;
 		break;
+	}
+}
+
+void
+cursor_set(int cursor)
+{
+	if (gl_cursor != cursor) {
+		glutSetCursor(cursor);
+		gl_cursor = cursor;
 	}
 }

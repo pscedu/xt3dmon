@@ -19,7 +19,6 @@
 #include "util.h"
 
 GLuint	 selbuf[1000];
-int	 gl_cursor;
 
 void
 sel_begin(void)
