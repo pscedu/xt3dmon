@@ -135,9 +135,14 @@ serv_init(void)
 		p->p_h = 40;
 	}
 
-	fill_bg.f_r = 0.0;
-	fill_bg.f_g = 0.0;
-	fill_bg.f_b = 0.0;
+	fill_bg.f_r = 0.0f;
+	fill_bg.f_g = 0.0f;
+	fill_bg.f_b = 0.0f;
+
+	fill_clskel.f_r = 0.6f;
+	fill_clskel.f_g = 1.0f;
+	fill_clskel.f_b = 0.6f;
+	fill_clskel.f_a = 0.8f;
 
 	qsort(sv_cmds, sizeof(sv_cmds) / sizeof(sv_cmds[0]),
 	    sizeof(sv_cmds[0]), svc_cmp);
