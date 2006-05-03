@@ -262,7 +262,6 @@ gscb_node(int flags, int nid)
 			panel_hide(PANEL_NINFO);
 		else
 			panel_show(PANEL_NINFO);
-		return;
 	}
 }
 
@@ -292,7 +291,7 @@ gscb_pw_panel(int flags, int pid)
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
 	else if (flags == 0)
-	panel_toggle(1 << pid);
+		panel_toggle(1 << pid);
 }
 
 void
