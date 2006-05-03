@@ -67,6 +67,8 @@ int			 verbose;
 int			 window_ids[2];
 int			 wid = WINID_DEF;		/* current window */
 
+const struct fvec	 fv_zero = { { 0.0, 0.0, 0.0 } };
+
 char **sav_argv;
 
 struct xoption opts[] = {
