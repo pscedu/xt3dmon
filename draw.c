@@ -306,7 +306,7 @@ draw_node(struct node *n, int flags)
 	 * We assume that the stack we are in otherwise
 	 * has done the translation itself.
 	 */
-	if ((flags & NDF_DONTPUSH) == 0) {
+	if ((flags & NDF_ATORIGIN) == 0) {
 		glPushMatrix();
 
 		if (st.st_opts & OP_NODEANIM &&
@@ -351,7 +351,7 @@ draw_node(struct node *n, int flags)
 	if (st.st_opts & OP_NLABELS)
 		draw_node_label(n);
 
-	if ((flags & NDF_DONTPUSH) == 0)
+	if ((flags & NDF_ATORIGIN) == 0)
 		glPopMatrix();
 }
 
@@ -1002,7 +1002,7 @@ make_selnodes(void)
 				    pos.fv_x + v.fv_x,
 				    pos.fv_y + v.fv_y,
 				    pos.fv_z + v.fv_z);
-				draw_node(n, NDF_DONTPUSH | NDF_NOOPTS);
+				draw_node(n, NDF_ATORIGIN);
 				glPopMatrix();
 
 				if (st.st_opts & OP_SELPIPES &&
@@ -1013,7 +1013,7 @@ make_selnodes(void)
 		default:
 			glPushMatrix();
 			glTranslatef(n->n_v->fv_x, n->n_v->fv_y, n->n_v->fv_z);
-			draw_node(n, NDF_DONTPUSH | NDF_NOOPTS);
+			draw_node(n, NDF_ATORIGIN);
 			glPopMatrix();
 
 			if (st.st_vmode != VM_PHYSICAL &&

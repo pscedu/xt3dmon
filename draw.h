@@ -5,8 +5,7 @@ struct fvec;
 struct fill;
 
 /* Node drawing flags. */
-#define NDF_DONTPUSH	(1<<0)
-#define NDF_NOOPTS	(1<<1)
+#define NDF_ATORIGIN	(1<<0)
 
 /* draw.c */
 void	 draw_scene(void);
