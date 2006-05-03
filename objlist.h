@@ -7,7 +7,7 @@ struct job;
 struct yod;
 struct glname;
 struct reel;
-struct reelent;
+struct reel_ent;
 
 struct objhdr {
 	int	  oh_flags;
