@@ -7,7 +7,7 @@ struct fill;
 #define DF_FRAME	(1<<0)		/* draw with frame */
 
 /* Node drawing flags. */
-#define NDF_ATORIGIN	(1<<0)
+#define NDF_ATORIGIN	(1<<0)		/* draw node at origin */
 
 /* draw.c */
 void	 draw_scene(void);
