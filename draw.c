@@ -5,14 +5,13 @@
 #include <err.h>
 #include <math.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "cdefs.h"
 #include "cam.h"
-#include "capture.h"
 #include "draw.h"
 #include "env.h"
 #include "fill.h"
-#include "flyby.h"
 #include "node.h"
 #include "nodeclass.h"
 #include "panel.h"
@@ -21,7 +20,6 @@
 #include "route.h"
 #include "selnode.h"
 #include "state.h"
-#include "string.h"
 #include "tween.h"
 #include "xmath.h"
 
