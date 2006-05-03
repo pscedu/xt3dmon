@@ -526,7 +526,7 @@ svc_vmode(char *t, int *used, __unused struct session *ss)
 	if ((sve = sve_find(t, tab, used)) == NULL)
 		return (0);
 	st.st_vmode = sve->sve_value;
-	st.st_rf |= RF_CLUSTER | RF_CAM | RF_GROUND | RF_SELNODE;
+	st.st_rf |= RF_VMODE;
 	return (1);
 }
 
