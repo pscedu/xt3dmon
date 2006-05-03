@@ -31,3 +31,5 @@ void	 gl_displayh_default(void);
 void	 gl_displayh_stereo(void);
 void	 gl_displayh_select(void);
 void	 gl_displayh_selectprobe(void);
+
+extern int	gl_cursor;
