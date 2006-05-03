@@ -524,8 +524,8 @@ panel_refresh_pos(struct panel *p)
 
 	panel_set_content(p, "- Camera -\n"
 	    "Position (%.2f,%.2f,%.2f)\n"
-	    "Look (%.2f,%.2f,%.2f) (t=%g,p=%g)\n"
-	    "Up (%.2f,%.2f,%.2f) (t=%g,p=%g)",
+	    "Look (%.2f,%.2f,%.2f) (t=%.3f,p=%.3f)\n"
+	    "Up (%.2f,%.2f,%.2f) (t=%.3f,p=%.3f)",
 	    st.st_x, st.st_y, st.st_z,
 	    st.st_lx, st.st_ly, st.st_lz,
 	    lsph.fv_t, lsph.fv_p,
