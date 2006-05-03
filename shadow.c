@@ -115,7 +115,7 @@ draw_shadow_rows(void)
 		glPushMatrix();
 		glTranslatef(v.fv_x, v.fv_y, v.fv_z);
 		glPushName(gsn_get(r, NULL, GNF_NOCUR, 0));
-		draw_box_filled(&dim, &fill_black);
+		draw_cube(&dim, &fill_black, 0);
 		glPopName();
 		glPopMatrix();
 	}
@@ -139,7 +139,7 @@ draw_shadow_cabs(const struct physcoord *pc)
 		glPushMatrix();
 		glTranslatef(v.fv_x, v.fv_y, v.fv_z);
 		glPushName(gsn_get(cb, NULL, GNF_NOCUR, 0));
-		draw_box_filled(&dim, &fill_black);
+		draw_cube(&dim, &fill_black, 0);
 		glPopName();
 		glPopMatrix();
 	}
@@ -163,7 +163,7 @@ draw_shadow_cages(const struct physcoord *pc)
 		glPushMatrix();
 		glTranslatef(v.fv_x, v.fv_y, v.fv_z);
 		glPushName(gsn_get(cg, NULL, GNF_NOCUR, 0));
-		draw_box_filled(&dim, &fill_black);
+		draw_cube(&dim, &fill_black, 0);
 		glPopName();
 		glPopMatrix();
 	}
@@ -190,9 +190,9 @@ draw_shadow_mods(const struct physcoord *pc)
 
 		/* Draw the rows individually. */
 		glTranslatef(v.fv_x, v.fv_y, v.fv_z);
-		draw_box_filled(&dim, &fill_black);
+		draw_cube(&dim, &fill_black, 0);
 		glTranslatef(0, NODESPACE + NODEHEIGHT, NODESHIFT);
-		draw_box_filled(&dim, &fill_black);
+		draw_cube(&dim, &fill_black, 0);
 
 		glPopName();
 		glPopMatrix();
@@ -225,7 +225,14 @@ draw_shadow_nodes(const struct physcoord *pc)
 		glPushMatrix();
 		glTranslatef(nv.fv_x, nv.fv_y, nv.fv_z);
 		glPushName(gsn_get(node->n_nid, gscb_node, 0, GLUT_CURSOR_INFO));
-		draw_box_filled(node->n_dimp, &fill_black);
+		switch (node->n_geom) {
+		case GEOM_CUBE:
+			draw_cube(node->n_dimp, &fill_black, 0);
+			break;
+		case GEOM_SPHERE:
+			draw_sphere(node->n_dimp, &fill_black, 0);
+			break;
+		}
 		glPopName();
 		glPopMatrix();
 	}
@@ -257,7 +264,14 @@ draw_shadow_winodes(struct wiselstep *ws, struct fvec *cloffp)
 				    node->n_v->fv_z + cloffp->fv_z);
 				glPushName(gsn_get(node->n_nid, gscb_node, 0,
 				    GLUT_CURSOR_INFO));
-				draw_box_filled(node->n_dimp, &fill_black);
+				switch (node->n_geom) {
+				case GEOM_CUBE:
+					draw_cube(node->n_dimp, &fill_black, 0);
+					break;
+				case GEOM_SPHERE:
+					draw_sphere(node->n_dimp, &fill_black, 0);
+					break;
+				}
 				glPopName();
 				glPopMatrix();
 			}
@@ -343,7 +357,7 @@ draw_shadow_wisect(struct wiselstep *ws, int cuts, int last, struct fvec *cloffp
 				    nv.fv_y + st.st_wioff.iv_y * st.st_winsp.iv_y + cloffp->fv_y,
 				    nv.fv_z + st.st_wioff.iv_z * st.st_winsp.iv_z + cloffp->fv_z);
 				glPushName(gsn_get(cubeno++, NULL, GNF_NOCUR, 0));
-				draw_box_filled(&dim, &fill_black);
+				draw_cube(&dim, &fill_black, 0);
 				glPopName();
 				glPopMatrix();
 			}

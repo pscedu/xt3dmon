@@ -2,6 +2,7 @@
 
 #include "mon.h"
 
+#include <err.h>
 #include <math.h>
 
 #include "cdefs.h"
@@ -23,257 +24,234 @@
 
 #define LDF_SHIFT (1<<0)
 
-/*
- *	y			12
- *     / \	    +-----------------------+ (x+w,y+h,z+d)
- *	|	   /			   /|
- *	|      10 / |		       11 / |
- *	|	 /  	    9		 /  |
- *	|	+-----------------------+   |
- *	|	|   			|   | 7
- *	|	|   | 8			|   |
- *	|	|   			|   |
- *	|	| 5 |			| 6 |
- *	|	|   		4	|   |
- *	|	|   + - - - - - - - - - | - + (x+w,y,z+d)
- *	|	|  /			|  /
- *	|	| / 2			| / 3
- *	|	|/			|/
- *	|	+-----------------------+
- *	|    (x,y,z)	   1	     (x,y,z+d)
- *	|
- *	+----------------------------------------------->z
- *     /
- *    /
- *  |_
- *  x
- */
-void
-draw_box_outline(const struct fvec *dim, const struct fill *fillp)
+__inline void
+draw_cube_filled(const struct fvec *dimp, int flags)
 {
-	float w = dim->fv_w, h = dim->fv_h, d = dim->fv_d;
-	float x, y, z;
+	double w = dimp->fv_w;
+	double h = dimp->fv_h;
+	double d = dimp->fv_d;
 
-	x = y = z = 0.0f;
+	double x = 0.0;
+	double y = 0.0;
+	double z = 0.0;
 
-	/* Wireframe outline */
-	x -= SHIFT_OFFSET;
-	y -= SHIFT_OFFSET;
-	z -= SHIFT_OFFSET;
-	w += 2.0f * SHIFT_OFFSET;
-	h += 2.0f * SHIFT_OFFSET;
-	d += 2.0f * SHIFT_OFFSET;
+	if (flags & LDF_SHIFT) {
+		x -= SHIFT_OFFSET;
+		y -= SHIFT_OFFSET;
+		z -= SHIFT_OFFSET;
 
-	/* Anti-aliasing */
-	glEnable(GL_LINE_SMOOTH);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
-
-	glLineWidth(1.0);
-	glColor4f(fillp->f_r, fillp->f_g, fillp->f_b, fillp->f_a);
-	glBegin(GL_LINES);
+		w += 2.0 * SHIFT_OFFSET;
+		h += 2.0 * SHIFT_OFFSET;
+		d += 2.0 * SHIFT_OFFSET;
+	}
 
 	/* Back */
-	glVertex3f(x, y, z);			/* 1 */
-	glVertex3f(x, y, z+d);
-
-	glVertex3f(x, y, z);			/* 2 */
-	glVertex3f(x+w, y, z);
-
-	glVertex3f(x, y, z+d);			/* 3 */
-	glVertex3f(x+w, y, z+d);
-
-	glVertex3f(x+w, y, z);			/* 4 */
-	glVertex3f(x+w, y, z+d);
-
-	glVertex3f(x, y, z);			/* 5 */
-	glVertex3f(x, y+h, z);
-
-	glVertex3f(x, y, z+d);			/* 6 */
-	glVertex3f(x, y+h, z+d);
-
-	glVertex3f(x+w, y, z+d);		/* 7 */
-	glVertex3f(x+w, y+h, z+d);
-
-	glVertex3f(x+w, y, z);			/* 8 */
-	glVertex3f(x+w, y+h, z);
-
-	glVertex3f(x, y+h, z);			/* 9 */
-	glVertex3f(x, y+h, z+d);
-
-	glVertex3f(x, y+h, z);			/* 10 */
-	glVertex3f(x+w, y+h, z);
-
-	glVertex3f(x, y+h, z+d);		/* 11 */
-	glVertex3f(x+w, y+h, z+d);
-
-	glVertex3f(x+w, y+h, z);		/* 12 */
-	glVertex3f(x+w, y+h, z+d);
-
-	glEnd();
-	glDisable(GL_LINE_SMOOTH);
-	glDisable(GL_BLEND);
-}
-
-void
-draw_box_filled(const struct fvec *dim, const struct fill *fillp)
-{
-	float w = dim->fv_w, h = dim->fv_h, d = dim->fv_d;
-	float x, y, z;
-
-	x = y = z = 0.0f;
-	glColor4f(fillp->f_r, fillp->f_g, fillp->f_b, fillp->f_a);
-	glBegin(GL_QUADS);
-
-	/* Back */
-	glVertex3f(x, y, z);
-	glVertex3f(x, y+h, z);
-	glVertex3f(x+w, y+h, z);
-	glVertex3f(x+w, y, z);
+	glVertex3d(x,     y,     z);
+	glVertex3d(x,     y + h, z);
+	glVertex3d(x + w, y + h, z);
+	glVertex3d(x + w, y,     z);
 
 	/* Front */
-	glVertex3f(x, y, z+d);
-	glVertex3f(x, y+h, z+d);
-	glVertex3f(x+w, y+h, z+d);
-	glVertex3f(x+w, y, z+d);
+	glVertex3d(x + w, y,     z + d);
+	glVertex3d(x + w, y + h, z + d);
+	glVertex3d(x,     y + h, z + d);
+	glVertex3d(x,     y,     z + d);
 
 	/* Right */
-	glVertex3f(x+w, y, z);
-	glVertex3f(x+w, y, z+d);
-	glVertex3f(x+w, y+h, z+d);
-	glVertex3f(x+w, y+h, z);
+	glVertex3d(x + w, y,     z + d);
+	glVertex3d(x + w, y + h, z + d);
+	glVertex3d(x + w, y + h, z);
+	glVertex3d(x + w, y,     z);
 
 	/* Left */
-	glVertex3f(x, y, z);
-	glVertex3f(x, y, z+d);
-	glVertex3f(x, y+h, z+d);
-	glVertex3f(x, y+h, z);
+	glVertex3d(x,     y,     z);
+	glVertex3d(x,     y,     z + d);
+	glVertex3d(x,     y + h, z + d);
+	glVertex3d(x,     y + h, z);
 
 	/* Top */
-	glVertex3f(x, y+h, z);
-	glVertex3f(x, y+h, z+d);
-	glVertex3f(x+w, y+h, z+d);
-	glVertex3f(x+w, y+h, z);
+	glVertex3d(x,     y + h, z + d);
+	glVertex3d(x + w, y + h, z + d);
+	glVertex3d(x + w, y + h, z);
+	glVertex3d(x,     y + h, z);
+
+#if 0
+	/* Bottom */
+	glVertex3d(x,     y,     z);
+	glVertex3d(x,     y,     z + d);
+	glVertex3d(x + w, y,     z + d);
+	glVertex3d(x + w, y,     z);
+#endif
+}
+
+__inline void
+draw_cube_tex(const struct fvec *dim, const struct fvec *texv)
+{
+	double tw = texv->fv_w;
+	double th = texv->fv_h;
+	double td = texv->fv_d;
+
+	double w = dim->fv_w;
+	double h = dim->fv_h;
+	double d = dim->fv_d;
+
+	/* Back */
+	glTexCoord2d(0.0, 0.0);
+	glVertex3d(0.0, 0.0, 0.0);
+	glTexCoord2d(0.0, th);
+	glVertex3d(0.0, h, 0.0);
+	glTexCoord2d(tw, th);
+	glVertex3d(w, h, 0.0);
+	glTexCoord2d(tw, 0.0);
+	glVertex3d(w, 0.0, 0.0);
+
+	/* Front */
+	glTexCoord2d(0.0, 0.0);
+	glVertex3d(0.0, 0.0, d);
+	glTexCoord2d(0.0, th);
+	glVertex3d(0.0, h, d);
+	glTexCoord2d(tw, th);
+	glVertex3d(w, h, d);
+	glTexCoord2d(tw, 0.0);
+	glVertex3d(w, 0.0, d);
+
+	/* Right */
+	glTexCoord2d(0.0, 0.0);
+	glVertex3d(w, 0.0, 0.0);
+	glTexCoord2d(0.0, td);
+	glVertex3d(w, 0.0, d);
+	glTexCoord2d(th, td);
+	glVertex3d(w, h, d);
+	glTexCoord2d(th, 0.0);
+	glVertex3d(w, h, 0.0);
+
+	/* Left */
+	glTexCoord2d(0.0, 0.0);
+	glVertex3d(0.0, 0.0, 0.0);
+	glTexCoord2d(0.0, td);
+	glVertex3d(0.0, 0.0, d);
+	glTexCoord2d(th, td);
+	glVertex3d(0.0, h, d);
+	glTexCoord2d(th, 0.0);
+	glVertex3d(0.0, h, 0.0);
+
+	/* Top */
+	glTexCoord2d(0.0, 0.0);
+	glVertex3d(0.0, h, 0.0);
+	glTexCoord2d(0.0, td);
+	glVertex3d(0.0, h, d);
+	glTexCoord2d(tw, td);
+	glVertex3d(w, h, d);
+	glTexCoord2d(tw, 0.0);
+	glVertex3d(w, h, 0.0);
 
 	/* Bottom */
-	glVertex3f(x, y, z);
-	glVertex3f(x, y, z+d);
-	glVertex3f(x+w, y, z+d);
-	glVertex3f(x+w, y, z);
-
-	glEnd();
+	glTexCoord2d(0.0, 0.0);
+	glVertex3d(0.0, 0.0, 0.0);
+	glTexCoord2d(0.0, td);
+	glVertex3d(0.0, 0.0, d);
+	glTexCoord2d(tw, td);
+	glVertex3d(w, 0.0, d);
+	glTexCoord2d(tw, 0.0);
+	glVertex3d(w, 0.0, 0.0);
 }
 
 void
-draw_box_tex(const struct fvec *dim, const struct fill *fillp, GLenum param)
+draw_cube(const struct fvec *dimp, const struct fill *fp, int flags)
 {
-	float w = dim->fv_w;
-	float h = dim->fv_h;
-	float d = dim->fv_d;
-	float max, tw, th, td;
+	struct fill f_frame;
+	struct fvec texv;
 	float color[4];
+	double max;
+	int ldflags;
 
-	glEnable(GL_TEXTURE_2D);
+	ldflags = 0;
+	f_frame = fill_black;
+	f_frame.f_a = fp->f_a;
 
-	if (fillp->f_a == 1.0f)
-		glBindTexture(GL_TEXTURE_2D, fillp->f_texid[wid]);
-	else
-		glBindTexture(GL_TEXTURE_2D, fillp->f_texid_a[wid]);
+	if (fp->f_flags & FF_SKEL) {
+		flags |= DF_FRAME;
+		f_frame = *fp;
+	} else {
+		if (st.st_opts & OP_FRAMES)
+			ldflags |= LDF_SHIFT;
+		else
+			flags &= ~DF_FRAME;
+	}
 
-	max = MAX3(w, h, d);
-	tw = NODE_TEXCOORD(w, max);
-	th = NODE_TEXCOORD(h, max);
-	td = NODE_TEXCOORD(d, max);
+	if (fp->f_a != 1.0f) {
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, fp->f_blfunc ?
+		    fp->f_blfunc : GL_DST_COLOR);
+	}
 
-	color[0] = fillp->f_r;
-	color[1] = fillp->f_g;
-	color[2] = fillp->f_b;
-	color[3] = fillp->f_a;
+	if (fp->f_flags & FF_TEX) {
+		glEnable(GL_TEXTURE_2D);
 
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, param);
+		if (fp->f_a == 1.0f)
+			glBindTexture(GL_TEXTURE_2D, fp->f_texid[wid]);
+		else
+			glBindTexture(GL_TEXTURE_2D, fp->f_texid_a[wid]);
 
-	if (fillp->f_a != 1.0f)
-		glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, color);
+		max = MAX3(dimp->fv_w, dimp->fv_h, dimp->fv_d);
+		texv.fv_w = NODE_TEXCOORD(dimp->fv_w, max);
+		texv.fv_h = NODE_TEXCOORD(dimp->fv_h, max);
+		texv.fv_d = NODE_TEXCOORD(dimp->fv_d, max);
 
-	/* Polygon Offset */
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	glEnable(GL_POLYGON_OFFSET_FILL);
-	glPolygonOffset(1.0, 3.0);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		color[0] = fp->f_r;
+		color[1] = fp->f_g;
+		color[2] = fp->f_b;
+		color[3] = fp->f_a;
 
-	glBegin(GL_QUADS);
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE,
+		    fp->f_a == 1.0f ? GL_REPLACE : GL_BLEND);
 
-	/* Back */
-	glTexCoord2f(0.0, 0.0);
-	glVertex3f(0.0, 0.0, 0.0);
-	glTexCoord2f(0.0, th);
-	glVertex3f(0.0, h, 0.0);
-	glTexCoord2f(tw, th);
-	glVertex3f(w, h, 0.0);
-	glTexCoord2f(tw, 0.0);
-	glVertex3f(w, 0.0, 0.0);
+		if (fp->f_a != 1.0f)
+			glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, color);
 
-	/* Front */
-	glTexCoord2f(0.0, 0.0);
-	glVertex3f(0.0, 0.0, d);
-	glTexCoord2f(0.0, th);
-	glVertex3f(0.0, h, d);
-	glTexCoord2f(tw, th);
-	glVertex3f(w, h, d);
-	glTexCoord2f(tw, 0.0);
-	glVertex3f(w, 0.0, d);
+		glEnable(GL_LIGHTING);
+		glEnable(GL_LIGHT0);
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		glPolygonOffset(1.0, 3.0);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-	/* Right */
-	glTexCoord2f(0.0, 0.0);
-	glVertex3f(w, 0.0, 0.0);
-	glTexCoord2f(0.0, td);
-	glVertex3f(w, 0.0, d);
-	glTexCoord2f(th, td);
-	glVertex3f(w, h, d);
-	glTexCoord2f(th, 0.0);
-	glVertex3f(w, h, 0.0);
+		glBegin(GL_QUADS);
+		draw_cube_tex(dimp, &texv);
+		glEnd();
 
-	/* Left */
-	glTexCoord2f(0.0, 0.0);
-	glVertex3f(0.0, 0.0, 0.0);
-	glTexCoord2f(0.0, td);
-	glVertex3f(0.0, 0.0, d);
-	glTexCoord2f(th, td);
-	glVertex3f(0.0, h, d);
-	glTexCoord2f(th, 0.0);
-	glVertex3f(0.0, h, 0.0);
+		glDisable(GL_LIGHTING);
+		glDisable(GL_LIGHT0);
+		glDisable(GL_POLYGON_OFFSET_FILL);
+	//	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-	/* Top */
-	glTexCoord2f(0.0, 0.0);
-	glVertex3f(0.0, h, 0.0);
-	glTexCoord2f(0.0, td);
-	glVertex3f(0.0, h, d);
-	glTexCoord2f(tw, td);
-	glVertex3f(w, h, d);
-	glTexCoord2f(tw, 0.0);
-	glVertex3f(w, h, 0.0);
+		glDisable(GL_TEXTURE_2D);
+	} else if ((fp->f_flags & DF_FRAME) == 0) {
+		glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
+		glBegin(GL_QUADS);
+		draw_cube_filled(dimp, 0);
+		glEnd();
+	}
 
-	/* Bottom */
-	glTexCoord2f(0.0, 0.0);
-	glVertex3f(0.0, 0.0, 0.0);
-	glTexCoord2f(0.0, td);
-	glVertex3f(0.0, 0.0, d);
-	glTexCoord2f(tw, td);
-	glVertex3f(w, 0.0, d);
-	glTexCoord2f(tw, 0.0);
-	glVertex3f(w, 0.0, 0.0);
+	if (fp->f_a != 1.0f)
+		glDisable(GL_BLEND);
 
-	glEnd();
+	if (flags & DF_FRAME) {
+		/* Anti-aliasing */
+		glEnable(GL_LINE_SMOOTH);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
 
-	/* Disable polygon offset */
-	glDisable(GL_LIGHTING);
-	glDisable(GL_LIGHT0);
-	glDisable(GL_POLYGON_OFFSET_FILL);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glLineWidth(0.1f);
+		glColor4f(f_frame.f_r, f_frame.f_g, f_frame.f_b,
+		    f_frame.f_a);
+		glBegin(GL_LINE_STRIP);
+		draw_cube_filled(dimp, ldflags);
+		glEnd();
 
-	glDisable(GL_TEXTURE_2D);
+		glDisable(GL_LINE_SMOOTH);
+		glDisable(GL_BLEND);
+	}
 }
 
 #define SPH_CUTS 7

@@ -289,23 +289,12 @@ node_tween_dir(float *curpos, float *targetpos)
 __inline void
 draw_node(struct node *n, int flags)
 {
-	struct fill *fp, *fill_wireframe;
 	struct fvec *fvp;
-
-	GLenum param = GL_REPLACE;
 
 //	if (!node_show(n))
 //		return;
 
-	fp = n->n_fillp;
-
-	/*
-	 * We assume that the stack we are in otherwise
-	 * has done the translation itself.
-	 */
 	if ((flags & NDF_ATORIGIN) == 0) {
-		glPushMatrix();
-
 		if (st.st_opts & OP_NODEANIM &&
 		    node_tween_dir(&n->n_vcur.fv_x, &n->n_v->fv_x) |
 		    node_tween_dir(&n->n_vcur.fv_y, &n->n_v->fv_y) |
@@ -314,37 +303,19 @@ draw_node(struct node *n, int flags)
 			fvp = &n->n_vcur;
 		} else
 			fvp = n->n_v;
+		glPushMatrix();
 		glTranslatef(fvp->fv_x, fvp->fv_y, fvp->fv_z);
 	}
 
-	if (fp->f_a != 1.0f) {
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
-		param = GL_BLEND;
+	switch (n->n_geom) {
+	case GEOM_CUBE:
+		draw_cube(n->n_dimp, n->n_fillp, DF_FRAME);
+		break;
+	case GEOM_SPHERE:
+		draw_sphere(n->n_dimp, n->n_fillp, DF_FRAME);
+		break;
 	}
 
-	if (n->n_fillp->f_flags & FF_SKEL)
-		fill_wireframe = n->n_fillp;
-	else {
-		fill_wireframe = &fill_black;
-
-		if (st.st_opts & OP_TEX)
-			draw_box_tex(n->n_dimp, fp, param);
-		else
-			draw_box_filled(n->n_dimp, fp);
-	}
-
-	if (fp->f_a != 1.0f)
-		glDisable(GL_BLEND);
-
-	if (st.st_opts & OP_FRAMES) {
-		float col;
-
-		col = fill_wireframe->f_a;
-		fill_wireframe->f_a = fp->f_a;
-		draw_box_outline(n->n_dimp, fill_wireframe);
-		fill_wireframe->f_a = col;
-	}
 	if (st.st_opts & OP_NLABELS)
 		draw_node_label(n);
 
@@ -366,11 +337,9 @@ draw_mod(struct fvec *vp, struct fvec *dim, struct fill *fillp)
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
-	draw_box_filled(dim, fillp);
+	draw_cube(dim, fillp, 0);
 	glDisable(GL_BLEND);
 
-	if (st.st_opts & OP_FRAMES)
-		draw_box_outline(dim, &fill_black);
 	glPopMatrix();
 }
 
@@ -419,13 +388,7 @@ draw_ground(void)
 
 		glPushMatrix();
 		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR);
-
-		draw_box_filled(&fdim, &fill);
-		draw_box_outline(&fdim, &fill_black);
-
-		glDisable(GL_BLEND);
+		draw_cube(&fdim, &fill, DF_FRAME);
 		glPopMatrix();
 		break;
 	case VM_PHYSICAL:
@@ -440,13 +403,7 @@ draw_ground(void)
 
 		glPushMatrix();
 		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_COLOR);
-
-		draw_box_filled(&fdim, &fill);
-		draw_box_outline(&fdim, &fill_black);
-
-		glDisable(GL_BLEND);
+		draw_cube(&fdim, &fill, DF_FRAME);
 		glPopMatrix();
 		break;
 	}
@@ -590,7 +547,7 @@ draw_cluster_physical(void)
 				glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
 
 				fill_light_blue.f_a = 0.4f;
-				draw_box_outline(&skel, &fill_light_blue);
+				draw_cube(&skel, &fill_light_blue, 0);
 				fill_light_blue.f_a = 1.0f;
 
 				glDisable(GL_BLEND);
@@ -817,14 +774,9 @@ draw_cluster_wired(const struct fvec *v)
 
 		glPushMatrix();
 		glTranslatef(-SKEL_GAP, -SKEL_GAP, -SKEL_GAP);
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
-
 		fill_light_blue.f_a = 0.4f;
-		draw_box_outline(&dim, &fill_light_blue);
+		draw_cube(&dim, &fill_light_blue, 0);
 		fill_light_blue.f_a = 1.0f;
-
-		glDisable(GL_BLEND);
 		glPopMatrix();
 	}
 
@@ -844,15 +796,12 @@ draw_wired_frame(struct fvec *vp, struct fvec *dimp, struct fill *fillp)
 	v.fv_y -= st.st_winsp.iv_y / 2.0f;
 	v.fv_z -= st.st_winsp.iv_z / 2.0f;
 
+	fill.f_a = 0.2;
+	fill.f_flags |= FF_SKEL;
+
 	glPushMatrix();
 	glTranslatef(v.fv_x, v.fv_y, v.fv_z);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
-
-	fill.f_a = 0.2;
-	draw_box_filled(dimp, &fill);
-
-	glDisable(GL_BLEND);
+	draw_cube(dimp, &fill, 0);
 	glPopMatrix();
 }
 

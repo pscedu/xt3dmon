@@ -20,9 +20,7 @@ void	 make_cluster(void);
 void	 make_selnodes(void);
 
 /* widget.c */
-void	 draw_box_outline(const struct fvec *, const struct fill *);
-void	 draw_box_filled(const struct fvec *, const struct fill *);
-void	 draw_box_tex(const struct fvec *, const struct fill *, GLenum);
+void	 draw_cube(const struct fvec *, const struct fill *, int);
 void	 draw_sphere(const struct fvec *, const struct fill *, int);
 
 extern int dl_cluster[2];
