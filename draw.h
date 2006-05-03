@@ -21,6 +21,7 @@ void	 make_selnodes(void);
 void	 draw_box_outline(const struct fvec *, const struct fill *);
 void	 draw_box_filled(const struct fvec *, const struct fill *);
 void	 draw_box_tex(const struct fvec *, const struct fill *, GLenum);
+void	 draw_sphere(const struct fvec *, const struct fill *, int);
 
 extern int dl_cluster[2];
 extern int dl_ground[2];

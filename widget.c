@@ -273,3 +273,62 @@ draw_box_tex(const struct fvec *dim, const struct fill *fillp, GLenum param)
 
 	glDisable(GL_TEXTURE_2D);
 }
+
+#define SPH_CUTS 7
+
+/*
+ * Draw a sphere at (x,y,z) with center at (x+r,y+r,z+r).
+ */
+void
+draw_sphere(const struct fvec *dimp, const struct fill *fp, int flags)
+{
+	struct fill f_frame;
+	int ldflags;
+	double r;
+
+	ldflags = 0;
+	f_frame = *fp;
+	r = dimp->fv_r;
+
+	glPushMatrix();
+	glTranslatef(dimp->fv_r, dimp->fv_r, dimp->fv_r);
+
+	if ((fp->f_flags & FF_SKEL) == 0) {
+//		glEnable(GL_POLYGON_SMOOTH);
+//		glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
+
+		gluQuadricDrawStyle(quadric, GLU_FILL);
+		glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
+		gluSphere(quadric, r, SPH_CUTS, SPH_CUTS);
+
+//		glDisable(GL_POLYGON_SMOOTH);
+
+		ldflags |= LDF_SHIFT;
+		f_frame = fill_black;
+		f_frame.f_a = 0.2f;
+	}
+
+	if (fp->f_flags & FF_SKEL ||
+	    (flags & DF_FRAME && st.st_opts & OP_FRAMES)) {
+		glEnable(GL_BLEND);
+		glEnable(GL_LINE_SMOOTH);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
+
+		if (ldflags & LDF_SHIFT) {
+			r += SHIFT_OFFSET;
+			glTranslatef(SHIFT_OFFSET, SHIFT_OFFSET, SHIFT_OFFSET);
+		}
+
+		glLineWidth(0.1f);
+		gluQuadricDrawStyle(quadric, GLU_SILHOUETTE);
+		glColor4f(f_frame.f_r, f_frame.f_g, f_frame.f_b,
+		    f_frame.f_a);
+		gluSphere(quadric, r, SPH_CUTS, SPH_CUTS);
+
+		glDisable(GL_LINE_SMOOTH);
+		glDisable(GL_BLEND);
+	}
+
+	glPopMatrix();
+}
