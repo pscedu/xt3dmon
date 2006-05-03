@@ -19,6 +19,7 @@ struct fill fill_nodata		= FILL_INITF(1.0f, 1.0f, 0.0f, FF_SKEL);
 struct fill fill_same		= FILL_INIT(1.0f, 1.0f, 1.0f);
 struct fill fill_selnode	= FILL_INIT(0.2f, 0.4f, 0.6f);
 struct fill fill_clskel		= FILL_INITFA(1.0f, 0.6f, 0.6f, 0.6f, FF_SKEL);
+struct fill fill_ground		= FILL_INITAB(0.3f, 0.3f, 0.3f, 0.1f, GL_ONE_MINUS_SRC_COLOR);
 
 struct fill fill_borg		= FILL_INIT(0.0f, 0.0f, 0.0f);
 struct fill fill_matrix		= FILL_INITF(0.0f, 1.0f, 0.0f, FF_SKEL);
@@ -33,10 +34,19 @@ fill_setrgb(struct fill *fp, float r, float g, float b)
 }
 
 #if 0
+/* Then remove fill arg to draw_*. */
 __inline void
 fill_apply(struct fill *fp, int flags)
 {
-	glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
+	flags |= fp->f_flags;
+
+	if (flags & FF_TEX) {
+	} else {
+		if (flags & FF_OPAQUE)
+			glColor3f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
+		else
+			glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
+	}
 }
 #endif
 

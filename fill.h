@@ -32,16 +32,22 @@ struct fill {
 #define FF_ALPHA	(1<<2)			/* Respect alpha channel. */
 
 #define FILL_INIT(r, g, b)				\
-	FILL_INITFA((r), (g), (b), 1.0, 0)
+	FILL_INITFAB((r), (g), (b), 1.0, 0, 0)
 
 #define FILL_INITA(r, g, b, a)				\
-	FILL_INITFA((r), (g), (b), (a), 0)
+	FILL_INITFAB((r), (g), (b), (a), 0, 0)
+
+#define FILL_INITAB(r, g, b, a, blf)			\
+	FILL_INITFAB((r), (g), (b), (a), 0, (blf))
 
 #define FILL_INITF(r, g, b, flags)			\
-	FILL_INITFA((r), (g), (b), 1.0, (flags))
+	FILL_INITFAB((r), (g), (b), 1.0, (flags), 0)
 
 #define FILL_INITFA(r, g, b, a, flags)			\
-	{ r, g, b, a, flags, 0, { 0, 0 }, { 0, 0 } }
+	FILL_INITFAB((r), (g), (b), (a), (flags), 0)
+
+#define FILL_INITFAB(r, g, b, a, flags, blf)		\
+	{ (r), (g), (b), (a), (flags), (blf), { 0, 0 }, { 0, 0 } }
 
 void 	 fill_contrast(struct fill *);
 
@@ -61,6 +67,7 @@ extern struct fill	 fill_nodata;
 extern struct fill	 fill_same;
 extern struct fill	 fill_selnode;
 extern struct fill	 fill_clskel;
+extern struct fill	 fill_ground;
 
 extern struct fill	 fill_borg;
 extern struct fill	 fill_matrix;
