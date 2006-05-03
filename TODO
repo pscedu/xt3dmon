@@ -98,3 +98,4 @@ todo
 - gl_run the cursor changes
 - add flag to NODE_FOREACH for wired/physical ordered traversal (fix phys alpha problem)
 - allow mouse wheel and +/- to adjust nc translucency
+- kill draw_wired_frame
