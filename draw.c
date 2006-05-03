@@ -294,8 +294,8 @@ draw_node(struct node *n, int flags)
 
 	GLenum param = GL_REPLACE;
 
-	if (!node_show(n))
-		return;
+//	if (!node_show(n))
+//		return;
 
 	fp = n->n_fillp;
 
