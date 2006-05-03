@@ -377,16 +377,11 @@ draw_mod(struct fvec *vp, struct fvec *dim, struct fill *fillp)
 	glPopMatrix();
 }
 
-void
-make_ground(void)
+__inline void
+draw_ground(void)
 {
 	struct fvec fv, fdim;
 	struct fill fill;
-
-	if (dl_ground[wid])
-		glDeleteLists(dl_ground[wid], 1);
-	dl_ground[wid] = glGenLists(1);
-	glNewList(dl_ground[wid], GL_COMPILE);
 
 	/* Anti-aliasing */
 	glEnable(GL_BLEND);
@@ -458,8 +453,6 @@ make_ground(void)
 		glPopMatrix();
 		break;
 	}
-
-	glEndList();
 }
 
 #if 0
@@ -941,15 +934,10 @@ draw_clusters_wired(void)
 	st.st_opts = opts;
 }
 
-void
-make_cluster(void)
+__inline void
+draw_cluster(void)
 {
 	struct fvec fv;
-
-	if (dl_cluster[wid])
-		glDeleteLists(dl_cluster[wid], 1);
-	dl_cluster[wid] = glGenLists(1);
-	glNewList(dl_cluster[wid], GL_COMPILE);
 
 	switch (st.st_vmode) {
 	case VM_PHYSICAL:
@@ -963,28 +951,15 @@ make_cluster(void)
 		draw_cluster_wired(&fv);
 		break;
 	}
-
-	glEndList();
 }
 
 void
-make_selnodes(void)
+draw_selnodes(void)
 {
 	struct fvec pos, v;
 	struct selnode *sn;
 	struct fill *ofp;
 	struct node *n;
-
-	selnode_clean = 0;
-	if (dl_selnodes[wid])
-		glDeleteLists(dl_selnodes[wid], 1);
-	if (SLIST_EMPTY(&selnodes)) {
-		dl_selnodes[wid] = 0;
-		return;
-	}
-
-	dl_selnodes[wid] = glGenLists(1);
-	glNewList(dl_selnodes[wid], GL_COMPILE);
 
 	SLIST_FOREACH(sn, &selnodes, sn_next) {
 		n = sn->sn_nodep;
@@ -1024,6 +999,43 @@ make_selnodes(void)
 		}
 		n->n_fillp = ofp;
 	}
+}
 
+void
+make_ground(void)
+{
+	if (dl_ground[wid])
+		glDeleteLists(dl_ground[wid], 1);
+	dl_ground[wid] = glGenLists(1);
+	glNewList(dl_ground[wid], GL_COMPILE);
+	draw_ground();
+	glEndList();
+}
+
+void
+make_cluster(void)
+{
+	if (dl_cluster[wid])
+		glDeleteLists(dl_cluster[wid], 1);
+	dl_cluster[wid] = glGenLists(1);
+	glNewList(dl_cluster[wid], GL_COMPILE);
+	draw_cluster();
+	glEndList();
+}
+
+void
+make_selnodes(void)
+{
+	selnode_clean = 0;
+	if (dl_selnodes[wid])
+		glDeleteLists(dl_selnodes[wid], 1);
+	if (SLIST_EMPTY(&selnodes)) {
+		dl_selnodes[wid] = 0;
+		return;
+	}
+
+	dl_selnodes[wid] = glGenLists(1);
+	glNewList(dl_selnodes[wid], GL_COMPILE);
+	draw_selnodes();
 	glEndList();
 }
