@@ -8,6 +8,9 @@ void	 gl_run(void (*)(void));
 void	 gl_setidleh(void);
 void	 gl_setup(void);
 void	 gl_wid_update(void);
+void	 gl_displayh_default(void);
+void	 gl_displayh_stereo(void);
+void	 gl_select(int);
 
 /* key.c */
 void	 gl_keyh_actflyby(unsigned char, int, int);
@@ -25,11 +28,5 @@ void	 gl_mouseh_default(int, int, int, int);
 void	 gl_mouseh_null(int, int, int, int);
 void	 gl_pasvmotionh_default(int, int);
 void	 gl_pasvmotionh_null(int, int);
-
-/* draw.c */
-void	 gl_displayh_default(void);
-void	 gl_displayh_stereo(void);
-void	 gl_displayh_select(void);
-void	 gl_displayh_selectprobe(void);
 
 extern int	gl_cursor;

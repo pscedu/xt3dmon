@@ -47,7 +47,7 @@ draw_shadow_physcubes(int n, struct fvec *fvp, struct fvec *dimp,
 	    fv.fv_z += inc->fv_z) {
 		glPushMatrix();
 		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
-		glPushName(gsn_get(i, NULL, GNF_NOCUR, 0));
+		glPushName(gsn_get(i, NULL, 0));
 		draw_cube(dimp, &fill_black, 0);
 		glPopName();
 		glPopMatrix();
@@ -83,7 +83,7 @@ draw_shadow_physcubes(int n, struct fvec *fvp, struct fvec *dimp,
 
 	for (m = 0; m < NMODS; m++, v.fv_x += MODWIDTH + MODSPACE) {
 		glPushMatrix();
-		glPushName(gsn_get(m, NULL, GNF_NOCUR, 0));
+		glPushName(gsn_get(m, NULL, 0));
 
 		/* Draw the rows individually. */
 		glTranslatef(v.fv_x, v.fv_y, v.fv_z);
@@ -114,7 +114,7 @@ draw_shadow_rows(void)
 	for (r = 0; r < NROWS; r++, v.fv_z += ROWSPACE + ROWDEPTH) {
 		glPushMatrix();
 		glTranslatef(v.fv_x, v.fv_y, v.fv_z);
-		glPushName(gsn_get(r, NULL, GNF_NOCUR, 0));
+		glPushName(gsn_get(r, NULL, 0));
 		draw_cube(&dim, &fill_black, 0);
 		glPopName();
 		glPopMatrix();
@@ -138,7 +138,7 @@ draw_shadow_cabs(const struct physcoord *pc)
 	for (cb = 0; cb < NCABS; cb++, v.fv_x += CABWIDTH + CABSPACE) {
 		glPushMatrix();
 		glTranslatef(v.fv_x, v.fv_y, v.fv_z);
-		glPushName(gsn_get(cb, NULL, GNF_NOCUR, 0));
+		glPushName(gsn_get(cb, NULL, 0));
 		draw_cube(&dim, &fill_black, 0);
 		glPopName();
 		glPopMatrix();
@@ -162,7 +162,7 @@ draw_shadow_cages(const struct physcoord *pc)
 	for (cg = 0; cg < NCAGES; cg++, v.fv_y += CAGEHEIGHT + CAGESPACE) {
 		glPushMatrix();
 		glTranslatef(v.fv_x, v.fv_y, v.fv_z);
-		glPushName(gsn_get(cg, NULL, GNF_NOCUR, 0));
+		glPushName(gsn_get(cg, NULL, 0));
 		draw_cube(&dim, &fill_black, 0);
 		glPopName();
 		glPopMatrix();
@@ -186,7 +186,7 @@ draw_shadow_mods(const struct physcoord *pc)
 
 	for (m = 0; m < NMODS; m++, v.fv_x += MODWIDTH + MODSPACE) {
 		glPushMatrix();
-		glPushName(gsn_get(m, NULL, GNF_NOCUR, 0));
+		glPushName(gsn_get(m, NULL, 0));
 
 		/* Draw the rows individually. */
 		glTranslatef(v.fv_x, v.fv_y, v.fv_z);
@@ -224,7 +224,7 @@ draw_shadow_nodes(const struct physcoord *pc)
 
 		glPushMatrix();
 		glTranslatef(nv.fv_x, nv.fv_y, nv.fv_z);
-		glPushName(gsn_get(node->n_nid, gscb_node, 0, GLUT_CURSOR_INFO));
+		glPushName(gsn_get(node->n_nid, gscb_node, 0));
 		switch (node->n_geom) {
 		case GEOM_CUBE:
 			draw_cube(node->n_dimp, &fill_black, 0);
@@ -239,7 +239,7 @@ draw_shadow_nodes(const struct physcoord *pc)
 }
 
 void
-draw_shadow_winodes(struct wiselstep *ws, struct fvec *cloffp)
+draw_shadow_winodes(struct wiselstep *ws, const struct fvec *cloffp)
 {
 	struct ivec iv, *mag, *off, adjv;
 	struct node *node;
@@ -262,8 +262,7 @@ draw_shadow_winodes(struct wiselstep *ws, struct fvec *cloffp)
 				    node->n_v->fv_x + cloffp->fv_x,
 				    node->n_v->fv_y + cloffp->fv_y,
 				    node->n_v->fv_z + cloffp->fv_z);
-				glPushName(gsn_get(node->n_nid, gscb_node, 0,
-				    GLUT_CURSOR_INFO));
+				glPushName(gsn_get(node->n_nid, gscb_node, 0));
 				switch (node->n_geom) {
 				case GEOM_CUBE:
 					draw_cube(node->n_dimp, &fill_black, 0);
@@ -278,7 +277,8 @@ draw_shadow_winodes(struct wiselstep *ws, struct fvec *cloffp)
 }
 
 void
-draw_shadow_wisect(struct wiselstep *ws, int cuts, int last, struct fvec *cloffp)
+draw_shadow_wisect(struct wiselstep *ws, int cuts, int last,
+    const struct fvec *cloffp)
 {
 	struct fvec onv, nv, dim, adj;
 	struct ivec mag, len, *offp;
@@ -356,7 +356,7 @@ draw_shadow_wisect(struct wiselstep *ws, int cuts, int last, struct fvec *cloffp
 				    nv.fv_x + st.st_wioff.iv_x * st.st_winsp.iv_x + cloffp->fv_x,
 				    nv.fv_y + st.st_wioff.iv_y * st.st_winsp.iv_y + cloffp->fv_y,
 				    nv.fv_z + st.st_wioff.iv_z * st.st_winsp.iv_z + cloffp->fv_z);
-				glPushName(gsn_get(cubeno++, NULL, GNF_NOCUR, 0));
+				glPushName(gsn_get(cubeno++, NULL, 0));
 				draw_cube(&dim, &fill_black, 0);
 				glPopName();
 				glPopMatrix();
@@ -468,7 +468,7 @@ phys_select(int flags)
 }
 
 __inline int
-wi_select(int flags, struct fvec *offp)
+wi_select(int flags, const struct fvec *offp)
 {
 	int nrecs, pos, lasttry, cubeno, nnodes, ncuts, tries;
 	struct wiselstep *ws;
@@ -515,11 +515,10 @@ done:
 }
 
 void
-gl_displayh_selectprobe(void)
+gl_select(int flags)
 {
+	int ret, nrecs;
 	struct fvec v;
-	int nrecs;
-	int ret;
 
 	switch (stereo_mode) {
 	case STM_PASV:
@@ -534,65 +533,24 @@ gl_displayh_selectprobe(void)
 	draw_shadow_panels();
 	nrecs = sel_end();
 	if (nrecs && (ret = sel_process(nrecs, 0,
-	    SPF_2D | SPF_PROBE)) != SP_MISS)
+	    SPF_2D | flags)) != SP_MISS)
 		goto end;
 
 	switch (st.st_vmode) {
 	case VM_PHYSICAL:
-		ret = phys_select(SPF_PROBE);
+		ret = phys_select(flags);
 		break;
 	case VM_WIRED:
 		WIREP_FOREACH(&v)
-			ret = wi_select(SPF_PROBE, &v);
+			ret = wi_select(flags, &v);
 		break;
 	case VM_WIREDONE:
-		vec_set(&v, 0.0, 0.0, 0.0);
-		ret = wi_select(SPF_PROBE, &v);
+		ret = wi_select(flags, &fv_zero);
 		break;
 	}
 end:
 	st.st_rf |= RF_CAM;
 
-	if (ret == SP_MISS && gl_cursor != GLUT_CURSOR_CYCLE) {
-		glutSetCursor(GLUT_CURSOR_CYCLE);
-		gl_cursor = GLUT_CURSOR_CYCLE;
-	}
-}
-
-void
-gl_displayh_select(void)
-{
-	struct fvec v;
-	int nrecs;
-
-	switch (stereo_mode) {
-	case STM_PASV:
-		gl_wid_update();
-		break;
-	case STM_ACT:
-		/* Assume last buffer drawn in. */
-		break;
-	}
-
-	sel_begin();
-	draw_shadow_panels();
-	nrecs = sel_end();
-	if (nrecs && sel_process(nrecs, 0, SPF_2D) != SP_MISS)
-		goto end;
-
-	switch (st.st_vmode) {
-	case VM_PHYSICAL:
-		phys_select(0);
-		break;
-	case VM_WIRED:
-		WIREP_FOREACH(&v)
-			wi_select(0, &v);
-		break;
-	case VM_WIREDONE:
-		vec_set(&v, 0.0, 0.0, 0.0);
-		wi_select(0, &v);
-		break;
-	}
-end:
-	st.st_rf |= RF_CAM;
+	if (ret == SP_MISS)
+		gscb_miss(flags, 0);
 }

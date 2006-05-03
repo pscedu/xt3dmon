@@ -12,6 +12,7 @@
 #include "gl.h"
 #include "node.h"
 #include "panel.h"
+#include "select.h"
 #include "selnode.h"
 #include "state.h"
 #include "tween.h"
@@ -33,7 +34,7 @@ gl_mouseh_default(__unused int button, __unused int state, int u, int v)
 {
 	spkey = glutGetModifiers();
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
-		gl_displayh_select();
+		gl_select(0);
 
 	if (state == GLUT_UP && panel_mobile != NULL) {
 		panel_demobilize(panel_mobile);
@@ -150,7 +151,7 @@ gl_pasvmotionh_default(int u, int v)
 	mousev.iv_x = u;
 	mousev.iv_y = v;
 
-	gl_displayh_selectprobe();
+	gl_select(SPF_PROBE);
 
 	flyby_rstautoto();
 }

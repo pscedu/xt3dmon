@@ -29,7 +29,7 @@ struct pwidget {
 	const char		 *pw_str;
 	struct fill		 *pw_fillp;
 	SLIST_ENTRY(pwidget)	  pw_next;
-	void			(*pw_cb)(int);
+	void			(*pw_cb)(int, int);
 	int			  pw_cbarg;
 	int			  pw_u;
 	int			  pw_v;

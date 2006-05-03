@@ -172,14 +172,8 @@ sel_process(int nrecs, int rank, int flags)
 	if (gn == NULL)
 		return (SP_MISS);
 
-	if (flags & SPF_PROBE) {
-		if ((gn->gn_flags & GNF_NOCUR) == 0 &&
-		    gl_cursor != gn->gn_cursor) {
-			glutSetCursor(gn->gn_cursor);
-			gl_cursor = gn->gn_cursor;
-		}
-	} else if (gn->gn_cb != NULL)
-		gn->gn_cb(gn->gn_id);
+	if (gn->gn_cb != NULL)
+		gn->gn_cb(flags, gn->gn_id);
 
 	if (gn->gn_id == SP_MISS)
 		errx(1, "selected object uses reserved ID %d", SP_MISS);
@@ -204,7 +198,7 @@ sel_end(void)
  * obj_batch_start/obj_batch_end combo.
  */
 unsigned int
-gsn_get(int id, void (*cb)(int), int flags, int cursor)
+gsn_get(int id, void (*cb)(int, int), int flags)
 {
 	struct glname *gn;
 	unsigned int cur = glname_list.ol_tcur + 100;
@@ -214,7 +208,6 @@ gsn_get(int id, void (*cb)(int), int flags, int cursor)
 	gn->gn_id = id;
 	gn->gn_cb = cb;
 	gn->gn_flags = flags;
-	gn->gn_cursor = cursor;
 	return (cur);
 }
 
@@ -222,94 +215,134 @@ gsn_get(int id, void (*cb)(int), int flags, int cursor)
  * GL selection callbacks.
  */
 void
-gscb_panel(int id)
+gscb_miss(int flags, __unused int a)
 {
-	/* GL giving us crap. */
-	if ((panel_mobile = panel_for_id(id)) != NULL) {
-		glutMotionFunc(gl_motionh_panel);
-		panel_mobile->p_opts |= POPT_MOBILE;
+	if (flags & SPF_PROBE)
+		cursor_set(GLUT_CURSOR_CYCLE);
+}
+
+void
+gscb_panel(int flags, int id)
+{
+	if (flags & SPF_PROBE)
+		cursor_set(GLUT_CURSOR_RIGHT_ARROW);
+	else if (flags == SPF_2D) {
+		/* GL giving us crap. */
+		if ((panel_mobile = panel_for_id(id)) != NULL) {
+			glutMotionFunc(gl_motionh_panel);
+			panel_mobile->p_opts |= POPT_MOBILE;
+		}
 	}
 }
 
 void
-gscb_node(int nid)
+gscb_node(int flags, int nid)
 {
 	struct node *n;
 
-	if ((n = node_for_nid(nid)) == NULL)
+	if (flags & SPF_PROBE)
+		cursor_set(GLUT_CURSOR_INFO);
+	else if (flags == 0) {
+		if ((n = node_for_nid(nid)) == NULL)
+			return;
+
+		/* spkey = glutGetModifiers(); */
+		switch (spkey) {
+		case GLUT_ACTIVE_SHIFT:
+			sn_add(n);
+			break;
+		case GLUT_ACTIVE_CTRL:
+			sn_del(n);
+			break;
+		case 0:
+			sn_set(n);
+			break;
+		}
+		if (SLIST_EMPTY(&selnodes))
+			panel_hide(PANEL_NINFO);
+		else
+			panel_show(PANEL_NINFO);
 		return;
-
-	/* spkey = glutGetModifiers(); */
-	switch (spkey) {
-	case GLUT_ACTIVE_SHIFT:
-		sn_add(n);
-		break;
-	case GLUT_ACTIVE_CTRL:
-		sn_del(n);
-		break;
-	case 0:
-		sn_set(n);
-		break;
 	}
-	if (SLIST_EMPTY(&selnodes))
-		panel_hide(PANEL_NINFO);
-	else
-		panel_show(PANEL_NINFO);
-	return;
 }
 
 void
-gscb_pw_hlnc(int nc)
+gscb_pw_hlnc(int flags, int nc)
 {
-	st.st_hlnc = nc;
-	st.st_rf |= RF_HLNC;
+	if (flags & SPF_PROBE)
+		cursor_set(GLUT_CURSOR_INFO);
+	else if (flags == 0) {
+		st.st_hlnc = nc;
+		st.st_rf |= RF_HLNC;
+	}
 }
 
 void
-gscb_pw_opt(int opt)
+gscb_pw_opt(int flags, int opt)
 {
-	opt_flip(1 << opt);
+	if (flags & SPF_PROBE)
+		cursor_set(GLUT_CURSOR_INFO);
+	else if (flags == 0)
+		opt_flip(1 << opt);
 }
 
 void
-gscb_pw_panel(int pid)
+gscb_pw_panel(int flags, int pid)
 {
+	if (flags & SPF_PROBE)
+		cursor_set(GLUT_CURSOR_INFO);
+	else if (flags == 0)
 	panel_toggle(1 << pid);
 }
 
 void
-gscb_pw_vmode(int vm)
+gscb_pw_vmode(int flags, int vm)
 {
-	st.st_vmode = vm;
-	st.st_rf |= RF_VMODE;
-}
-
-void
-gscb_pw_help(int opt)
-{
-	switch (opt) {
-	case HF_SHOWHELP:
-		exthelp = 1;
-		break;
-	case HF_HIDEHELP:
-		exthelp = 0;
-		break;
-	case HF_CLRSN:
-		sn_clear();
-		break;
+	if (flags & SPF_PROBE)
+		cursor_set(GLUT_CURSOR_INFO);
+	else if (flags == 0) {
+		st.st_vmode = vm;
+		st.st_rf |= RF_VMODE;
 	}
 }
 
 void
-gscb_pw_dmode(int dm)
+gscb_pw_help(int flags, int opt)
 {
-	st.st_dmode = dm;
-	st.st_rf |= RF_DMODE;
+	if (flags & SPF_PROBE)
+		cursor_set(GLUT_CURSOR_INFO);
+	else if (flags == 0) {
+		switch (opt) {
+		case HF_SHOWHELP:
+			exthelp = 1;
+			break;
+		case HF_HIDEHELP:
+			exthelp = 0;
+			break;
+		case HF_CLRSN:
+			sn_clear();
+			break;
+		}
+	}
 }
 
 void
-gscb_pw_reel(int i)
+gscb_pw_dmode(int flags, int dm)
 {
-	snprintf(reel_fn, sizeof(reel_fn), "%s",
-	    reel_list.ol_reels[i]->rl_dirname);
+	if (flags & SPF_PROBE)
+		cursor_set(GLUT_CURSOR_INFO);
+	else if (flags == 0) {
+		st.st_dmode = dm;
+		st.st_rf |= RF_DMODE;
+	}
+}
+
+void
+gscb_pw_reel(int flags, int i)
+{
+	if (flags & SPF_PROBE)
+		cursor_set(GLUT_CURSOR_INFO);
+	else if (flags == 0)
+		snprintf(reel_fn, sizeof(reel_fn), "%s",
+		    reel_list.ol_reels[i]->rl_dirname);
 }

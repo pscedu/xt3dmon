@@ -298,7 +298,7 @@ snap:
 	}
 	memset(buf, 0, sizeof(buf));
 	if (ss.ss_click) {
-		gl_displayh_select();
+		gl_select(0);
 		panel_hide(PANEL_NINFO);
 
 		if (!SLIST_EMPTY(&selnodes))
