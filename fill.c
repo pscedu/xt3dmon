@@ -36,9 +36,9 @@ fill_setrgb(struct fill *fp, float r, float g, float b)
 #if 0
 /* Then remove fill arg to draw_*. */
 __inline void
-fill_apply(struct fill *fp, int flags)
+fill_apply(struct fill *fp, int flags, int mask)
 {
-	flags |= fp->f_flags;
+	flags |= fp->f_flags & ~mask;
 
 	if (flags & FF_TEX) {
 	} else {
