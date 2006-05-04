@@ -23,7 +23,6 @@
 #include "state.h"
 #include "xmath.h"
 
-#define SELNODE_GAP	(0.1f)
 #define SKEL_GAP	(0.1f)
 
 float	 snap_to_grid(float, float, float);
