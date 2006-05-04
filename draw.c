@@ -350,7 +350,6 @@ __inline void
 draw_ground(void)
 {
 	struct fvec fv, fdim;
-	struct fill fill;
 
 	/* Anti-aliasing */
 	glEnable(GL_BLEND);
@@ -375,10 +374,6 @@ draw_ground(void)
 	glDisable(GL_LINE_SMOOTH);
 
 	/* Ground */
-	fill.f_r = 0.3f;
-	fill.f_g = 0.3f;
-	fill.f_b = 0.3f;
-	fill.f_a = 0.1f;
 	switch (st.st_vmode) {
 	case VM_WIREDONE:
 		fv.fv_x = st.st_winsp.iv_x * (-0.5f + st.st_wioff.iv_x);
@@ -391,7 +386,7 @@ draw_ground(void)
 
 		glPushMatrix();
 		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
-		draw_cube(&fdim, &fill, DF_FRAME);
+		draw_cube(&fdim, &fill_ground, DF_FRAME);
 		glPopMatrix();
 		break;
 	case VM_PHYSICAL:
@@ -406,7 +401,7 @@ draw_ground(void)
 
 		glPushMatrix();
 		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
-		draw_cube(&fdim, &fill, DF_FRAME);
+		draw_cube(&fdim, &fill_ground, DF_FRAME);
 		glPopMatrix();
 		break;
 	}
