@@ -410,7 +410,7 @@ draw_ground(void)
 #if 0
 __inline void
 draw_pd_skel(struct physdim *pdp, struct physdim *targetpd,
-    struct fvec *fvp, struct fill *fp)
+    struct fvec *fvp)
 {
 	struct fvec fv;
 	size_t i;
@@ -421,7 +421,8 @@ draw_pd_skel(struct physdim *pdp, struct physdim *targetpd,
 			glPushMatrix();
 			glTranslatef(fv.fv_x,
 			    fv.fv_y, fv.fv_z);
-			draw_cube(&targetpd->pd_size, fp, 0);
+			draw_cube(&targetpd->pd_size,
+			    &fill_clskel, 0);
 			glPopMatrix();
 
 			fv.fv_val[pdp->pd_spans] +=
@@ -433,7 +434,7 @@ draw_pd_skel(struct physdim *pdp, struct physdim *targetpd,
 		}
 	} else {
 		for (i = 0; i < pdp->pd_mag; i++) {
-			draw_pd_skel(pdp->pd_contains, targetpd, &fv, fp);
+			draw_pd_skel(pdp->pd_contains, targetpd, &fv);
 			fv.fv_val[pdp->pd_spans] +=
 			    pdp->pd_size.fv_val[pdp->pd_spans] +
 			    pdp->pd_space;
@@ -449,21 +450,13 @@ draw_skel(void)
 {
 	struct fvec cldim, fv, dim;
 	struct physdim *pd;
-	struct fill f;
-
-	f = fill_light_blue;
-	f.f_r = 1.0f;
-	f.f_g = 0.6f;
-	f.f_b = 0.6f;
-	f.f_a = 0.6f;
-	f.f_flags |= FF_SKEL;
 
 	switch (st.st_vmode) {
 	case VM_PHYSICAL:
 		for (pd = physdim_top; pd != NULL; pd = pd->pd_contains)
 			if (pd->pd_flags & PDF_SKEL) {
-				vec_set(&fv, 0.0, 0.0, 0.0);
-				draw_pd_skel(physdim_top, pd, &fv, &f);
+				vec_set(&fv, NODESPACE, NODESPACE, NODESPACE);
+				draw_pd_skel(physdim_top, pd, &fv);
 			}
 		break;
 	case VM_WIRED:
@@ -477,8 +470,11 @@ draw_skel(void)
 		dim.fv_z = cldim.fv_d + NODEDEPTH  + 2 * SKEL_GAP;
 
 		glPushMatrix();
-		glTranslatef(-SKEL_GAP, -SKEL_GAP, -SKEL_GAP);
-		draw_cube(&dim, &f, 0);
+		glTranslatef(
+		    st.st_winsp.iv_w * st.st_wioff.iv_x - SKEL_GAP,
+		    st.st_winsp.iv_h * st.st_wioff.iv_y - SKEL_GAP,
+		    st.st_winsp.iv_d * st.st_wioff.iv_z - SKEL_GAP);
+		draw_cube(&dim, &fill_clskel, 0);
 		glPopMatrix();
 		break;
 	}
