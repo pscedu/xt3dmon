@@ -173,7 +173,7 @@ sel_process(int nrecs, int rank, int flags)
 		return (SP_MISS);
 
 	if (gn->gn_cb != NULL)
-		gn->gn_cb(flags, gn->gn_id);
+		gn->gn_cb(flags & ~SPF_2D, gn->gn_id);
 
 	if (gn->gn_id == SP_MISS)
 		errx(1, "selected object uses reserved ID %d", SP_MISS);
@@ -226,7 +226,7 @@ gscb_panel(int flags, int id)
 {
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_RIGHT_ARROW);
-	else if (flags == SPF_2D) {
+	else if (flags == 0) {
 		/* GL giving us crap. */
 		if ((panel_mobile = panel_for_id(id)) != NULL) {
 			glutMotionFunc(gl_motionh_panel);
