@@ -348,6 +348,17 @@ gscb_pw_dmode(int flags, int dm)
 }
 
 void
+gscb_pw_pipe(int flags, int m)
+{
+	if (flags & SPF_PROBE)
+		cursor_set(GLUT_CURSOR_INFO);
+	else if (flags == 0) {
+		st.st_pipemode = m;
+		st.st_rf |= RF_CLUSTER;
+	}
+}
+
+void
 gscb_pw_reel(int flags, int i)
 {
 	if (flags & SPF_PROBE)

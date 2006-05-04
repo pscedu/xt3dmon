@@ -768,6 +768,31 @@ panel_refresh_dmode(struct panel *p)
 	pwidget_endlist(p);
 }
 
+char *pipemodelabels[] = {
+	"Torus directions",
+	"Routing errors"
+};
+
+void
+panel_refresh_pipe(struct panel *p)
+{
+	static int sav_pipemode;
+	int i;
+
+	if (panel_ready(p) && sav_pipemode == st.st_pipemode)
+		return;
+	sav_pipemode = st.st_pipemode;
+
+	panel_set_content(p, "- Pipe Mode - ");
+	pwidget_startlist(p);
+	for (i = 0; i < NPM; i++) {
+		pwidget_add(p, (st.st_pipemode == i ?
+		    &fill_white : &fill_nodata), pipemodelabels[i],
+		    gscb_pw_pipe, i);
+	}
+	pwidget_endlist(p);
+}
+
 void
 panel_refresh_reel(struct panel *p)
 {
