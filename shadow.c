@@ -172,69 +172,30 @@ draw_shadow_cages(const struct physcoord *pc)
 void
 draw_shadow_mods(const struct physcoord *pc)
 {
-	struct fvec dim, v;
-	int m;
-
-	/* Account for the cabinet. */
-	v.fv_x = NODESPACE + pc->pc_cb * (CABSPACE + CABWIDTH);
-	v.fv_y = NODESPACE + pc->pc_cg * (CAGESPACE + CAGEHEIGHT);
-	v.fv_z = NODESPACE + pc->pc_r * (ROWSPACE + ROWDEPTH);
-
-	dim.fv_w = MODWIDTH + NODEWIDTH;
-	dim.fv_h = NODEHEIGHT;
-	dim.fv_d = NODEDEPTH * 2 + NODESPACE;
-
-	for (m = 0; m < NMODS; m++, v.fv_x += MODWIDTH + MODSPACE) {
-		glPushMatrix();
-		glPushName(gsn_get(m, NULL, 0));
-
-		/* Draw the rows individually. */
-		glTranslatef(v.fv_x, v.fv_y, v.fv_z);
-		draw_cube(&dim, &fill_black, 0);
-		glTranslatef(0, NODESPACE + NODEHEIGHT, NODESHIFT);
-		draw_cube(&dim, &fill_black, 0);
-
-		glPopName();
-		glPopMatrix();
-	}
-}
-
-void
-draw_shadow_nodes(const struct physcoord *pc)
-{
-	struct fvec v, nv;
 	struct node *node;
-	int n;
+	int m, n;
 
-	v.fv_x = NODESPACE + pc->pc_cb * (CABSPACE + CABWIDTH);
-	v.fv_y = NODESPACE + pc->pc_cg * (CAGESPACE + CAGEHEIGHT);
-	v.fv_z = NODESPACE + pc->pc_r * (ROWSPACE + ROWDEPTH);
+	for (m = 0; m < NMODS; m++) {
+		for (n = 0; n < NNODES; n++) {
+			node = &nodes[pc->pc_r][pc->pc_cb][pc->pc_cg][m][n];
+			if (!node_show(node))
+				continue;
 
-	/* Account for the module. */
-	v.fv_x += (MODWIDTH + MODSPACE) * pc->pc_m;
-
-	/* row 1 is offset -> z, col 1 is offset z too */
-	for (n = 0; n < NNODES; n++) {
-		nv = v;
-		node_adjmodpos(n, &nv);
-
-		node = &nodes[pc->pc_r][pc->pc_cb][pc->pc_cg][pc->pc_m][n];
-		if (!node_show(node))
-			continue;
-
-		glPushMatrix();
-		glTranslatef(nv.fv_x, nv.fv_y, nv.fv_z);
-		glPushName(gsn_get(node->n_nid, gscb_node, 0));
-		switch (node->n_geom) {
-		case GEOM_CUBE:
-			draw_cube(node->n_dimp, &fill_black, 0);
-			break;
-		case GEOM_SPHERE:
-			draw_sphere(node->n_dimp, &fill_black, 0);
-			break;
+			glPushMatrix();
+			glTranslatef(node->n_v->fv_x,
+			    node->n_v->fv_y, node->n_v->fv_z);
+			glPushName(gsn_get(node->n_nid, gscb_node, 0));
+			switch (node->n_geom) {
+			case GEOM_SPHERE:
+				draw_sphere(node->n_dimp, &fill_black, 0);
+				break;
+			case GEOM_CUBE:
+				draw_cube(node->n_dimp, &fill_black, 0);
+				break;
+			}
+			glPopName();
+			glPopMatrix();
 		}
-		glPopName();
-		glPopMatrix();
 	}
 }
 
@@ -449,13 +410,6 @@ phys_select(int flags)
 				for (chance.pc_m = 0; chance.pc_m < NMODS; chance.pc_m++) {
 					sel_begin();
 					draw_shadow_mods(&pc);
-					nrecs = sel_end();
-					if (nrecs == 0 || (pc.pc_m =
-					    sel_process(nrecs, chance.pc_m, flags)) == SP_MISS)
-						break;
-
-					sel_begin();
-					draw_shadow_nodes(&pc);
 					nrecs = sel_end();
 					if (nrecs && (id =
 					    sel_process(nrecs, 0, flags)) != SP_MISS)
