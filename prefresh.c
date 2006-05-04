@@ -281,6 +281,11 @@ panel_refresh_legend(struct panel *p)
 			    rtclass[j].nc_name, gscb_pw_hlnc, j);
 		}
 		break;
+	case DM_SAME:
+		panel_set_content(p, "- Legend -");
+
+		pwidget_add(p, &fill_nodata, "All nodes", gscb_pw_hlnc, HL_ALL);
+		break;
 	default:
 		panel_set_content(p, "- Legend -\n\nNot available.");
 		break;
