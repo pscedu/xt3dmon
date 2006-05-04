@@ -376,13 +376,13 @@ draw_ground(void)
 	/* Ground */
 	switch (st.st_vmode) {
 	case VM_WIREDONE:
-		fv.fv_x = st.st_winsp.iv_x * (-0.5f + st.st_wioff.iv_x);
+		fv.fv_x = st.st_winsp.iv_x * (st.st_wioff.iv_x - 1);
 		fv.fv_y = -0.2f + st.st_wioff.iv_y * st.st_winsp.iv_y;
-		fv.fv_z = st.st_winsp.iv_z * (-0.5f + st.st_wioff.iv_z);
+		fv.fv_z = st.st_winsp.iv_z * (st.st_wioff.iv_z - 1);
 
-		fdim.fv_w = WIV_SWIDTH + st.st_winsp.iv_x / 2.0f;
+		fdim.fv_w = (widim.iv_w + 1) * st.st_winsp.iv_w + NODEWIDTH;
 		fdim.fv_y = -0.2f / 2.0f;
-		fdim.fv_d = WIV_SDEPTH + st.st_winsp.iv_z / 2.0f;
+		fdim.fv_d = (widim.iv_d + 1) * st.st_winsp.iv_d + NODEHEIGHT;
 
 		glPushMatrix();
 		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
