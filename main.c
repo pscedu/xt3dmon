@@ -17,6 +17,7 @@
 #include "flyby.h"
 #include "gl.h"
 #include "job.h"
+#include "mark.h"
 #include "node.h"
 #include "nodeclass.h"
 #include "panel.h"
@@ -68,6 +69,8 @@ int			 window_ids[2];
 int			 wid = WINID_DEF;		/* current window */
 
 const struct fvec	 fv_zero = { { 0.0, 0.0, 0.0 } };
+
+struct markhd		 marks;
 
 char **sav_argv;
 
@@ -563,6 +566,7 @@ main(int argc, char *argv[])
 
 	TAILQ_INIT(&panels);
 	SLIST_INIT(&selnodes);
+	SLIST_INIT(&marks);
 	buf_init(&uinp.uinp_buf);
 	buf_append(&uinp.uinp_buf, '\0');
 	st.st_rf |= RF_INIT;

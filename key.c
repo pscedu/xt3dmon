@@ -10,6 +10,7 @@
 #include "cdefs.h"
 #include "buf.h"
 #include "cam.h"
+#include "deusex.h"
 #include "env.h"
 #include "flyby.h"
 #include "gl.h"
@@ -594,6 +595,9 @@ gl_keyh_default(unsigned char key, int u, int v)
 		tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
 		break;
 	    }
+	case '5':
+		dx_cue();
+		break;
 	case 'a':
 		glutKeyboardFunc(gl_keyh_alpha);
 		break;

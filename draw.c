@@ -12,6 +12,7 @@
 #include "draw.h"
 #include "env.h"
 #include "fill.h"
+#include "mark.h"
 #include "node.h"
 #include "nodeclass.h"
 #include "panel.h"
@@ -128,6 +129,8 @@ draw_scene(void)
 		glCallList(dl_ground[wid]);
 	if (!TAILQ_EMPTY(&panels))
 		draw_panels(wid);
+	if (!SLIST_EMPTY(&marks))
+		mark_draw();
 // draw_compass();
 // job_drawlabels();
 }

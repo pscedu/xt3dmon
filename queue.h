@@ -99,6 +99,11 @@
 	} while (0)
 #endif
 
+#ifndef SLIST_REMOVE_HEAD
+#define SLIST_REMOVE_HEAD(slh, memb)					\
+	SLIST_FIRST(slh) = SLIST_NEXT(SLIST_FIRST(slh), memb)
+#endif
+
 #ifndef LIST_INSERT_BEFORE
 #define LIST_INSERT_BEFORE(elem, newelem, memb)				\
 	do {								\
