@@ -23,6 +23,7 @@
 #include "state.h"
 #include "xmath.h"
 
+#define SELNODE_GAP	0.2;
 #define SKEL_GAP	(0.1f)
 
 float	 snap_to_grid(float, float, float);
@@ -381,7 +382,7 @@ draw_ground(void)
 
 		fdim.fv_w = (widim.iv_w + 1) * st.st_winsp.iv_w + NODEWIDTH;
 		fdim.fv_y = -0.2f / 2.0f;
-		fdim.fv_d = (widim.iv_d + 1) * st.st_winsp.iv_d + NODEHEIGHT;
+		fdim.fv_d = (widim.iv_d + 1) * st.st_winsp.iv_d + NODEDEPTH;
 
 		glPushMatrix();
 		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
