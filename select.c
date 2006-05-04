@@ -268,9 +268,20 @@ gscb_node(int flags, int nid)
 void
 gscb_pw_hlnc(int flags, int nc)
 {
+	void (*f)(struct fill *);
+	struct fill *fp;
+
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
-	else if (flags == 0) {
+	else if (flags & (SPF_SQUIRE | SPF_DESQUIRE)) {
+		f = (flags & SPF_SQUIRE) ?
+		    fill_alphainc : fill_alphadec;
+		if (nc == HL_ALL)
+			nc_runall(f);
+		else if (nc >= 0 && (fp = nc_getfp(nc)) != NULL)
+			f(fp);
+		st.st_rf |= RF_CLUSTER;
+	} else if (flags == 0) {
 		st.st_hlnc = nc;
 		st.st_rf |= RF_HLNC;
 	}
