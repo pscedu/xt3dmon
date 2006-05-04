@@ -403,15 +403,18 @@ panel_refresh_ninfo(struct panel *p)
 	    "Node ID: %d\n"
 	    "Wired position: (%d,%d,%d)\n"
 	    "Hardware name: c%d-%dc%ds%dn%d\n"
-	    "Status: %s\n"
-	    "Temperature: %dC",
+	    "Status: %s",
 //	    "Routing errors: (%d recover, %d fatal, %d rtr)\n"
 //	    "# Failures: %d",
 	    n->n_nid,
 	    iv->iv_x, iv->iv_y, iv->iv_z,
 	    pc.pc_cb, pc.pc_r, pc.pc_cg, pc.pc_m, pc.pc_n,
-	    statusclass[n->n_state].nc_name,
-	    n->n_temp);
+	    statusclass[n->n_state].nc_name);
+
+	if (n->n_temp == DV_NODATA)
+		panel_add_content(p, "\nTemperature: N/A");
+	else
+		panel_add_content(p, "\nTemperature: %dC", n->n_temp);
 
 	if (n->n_job)
 		panel_add_content(p,
