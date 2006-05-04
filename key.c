@@ -347,7 +347,7 @@ gl_keyh_decr(unsigned char key, __unused int u, __unused int v)
 	default:
 		return;
 	}
-	st.st_rf |= RF_CLUSTER | RF_GROUND | RF_CAM | RF_SELNODE;
+	st.st_rf |= RF_CLUSTER | RF_GROUND | RF_CAM | RF_SELNODE | RF_NODESWIV;
 }
 
 void
@@ -373,7 +373,7 @@ gl_keyh_incr(unsigned char key, __unused int u, __unused int v)
 	default:
 		return;
 	}
-	st.st_rf |= RF_CLUSTER | RF_GROUND | RF_CAM | RF_SELNODE;
+	st.st_rf |= RF_CLUSTER | RF_GROUND | RF_CAM | RF_SELNODE | RF_NODESWIV;
 }
 
 void
@@ -485,7 +485,7 @@ gl_keyh_wioffdecr(unsigned char key, __unused int u, __unused int v)
 		st.st_wioff.iv_z--;
 		break;
 	}
-	st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND;
+	st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND | RF_NODESWIV;
 }
 
 void
@@ -514,7 +514,7 @@ gl_keyh_wioffincr(unsigned char key, __unused int u, __unused int v)
 		st.st_wioff.iv_z++;
 		break;
 	}
-	st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND;
+	st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND | RF_NODESWIV;
 }
 
 void
@@ -558,7 +558,7 @@ gl_keyh_route(unsigned char key, __unused int u, __unused int v)
 		rt_type = RT_ROUTER;
 		break;
 	}
-	st.st_rf |= RF_CLUSTER;
+	st.st_rf |= RF_CLUSTER | RF_DMODE;
 }
 
 void
