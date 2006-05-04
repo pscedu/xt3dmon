@@ -197,8 +197,17 @@ opt_flip(int fopts)
 			else
 				capture_end();
 			break;
-		case OP_FRAMES:
 		case OP_TEX:
+			if (on) {
+				nc_runall(fill_tex);
+				fill_selnode.f_flags |= FF_TEX;
+			} else {
+				nc_runall(fill_untex);
+				fill_selnode.f_flags &= ~FF_TEX;
+			}
+			st.st_rf |= RF_CLUSTER | RF_SELNODE;
+			break;
+		case OP_FRAMES:
 		case OP_WIVMFRAME:
 		case OP_SELPIPES:
 		case OP_NLABELS:
