@@ -12,172 +12,120 @@
 #include "state.h"
 #include "yod.h"
 
-#if 0
 void
-hl_modall(float val)
-{
-
-}
-
-// XXX: fill->f_flags |= FF_TEX;
-void
-tex_setall(void)
-{
-}
-
-#endif
-
-void
-hl_setall(float val)
+nc_runall(void (*f)(struct fill *))
 {
 	size_t i;
 
 	switch (st.st_dmode) {
 	case DM_JOB:
 		for (i = 0; i < job_list.ol_cur; i++)
-			job_list.ol_jobs[i]->j_fill.f_a = val;
+			f(&job_list.ol_jobs[i]->j_fill);
 		for (i = 0; i < NSC; i++)
-			statusclass[i].nc_fill.f_a = val;
+			f(&statusclass[i].nc_fill);
 		break;
 	case DM_FAIL:
 		for (i = 0; i < NFAILC; i++)
-			failclass[i].nc_fill.f_a = val;
+			f(&failclass[i].nc_fill);
 		break;
 	case DM_TEMP:
 		for (i = 0; i < NTEMPC; i++)
-			tempclass[i].nc_fill.f_a = val;
+			f(&tempclass[i].nc_fill);
 		break;
 	case DM_YOD:
 		for (i = 0; i < yod_list.ol_cur; i++)
-			yod_list.ol_yods[i]->y_fill.f_a = val;
+			f(&yod_list.ol_yods[i]->y_fill);
 		for (i = 0; i < NSC; i++)
-			statusclass[i].nc_fill.f_a = val;
+			f(&statusclass[i].nc_fill);
 		break;
 	case DM_RTUNK:
 		for (i = 0; i < NRTC; i++)
-			rtclass[i].nc_fill.f_a = val;
+			f(&rtclass[i].nc_fill);
 		break;
-	}
-}
-
-void
-hl_class(void)
-{
-	size_t nc;
-
-	if (st.st_hlnc < 0)
-		return;			/* XXX: fix it */
-	nc = (size_t)st.st_hlnc;
-
-	switch (st.st_dmode) {
-	case DM_BORG:
 	case DM_MATRIX:
+		f(&fill_matrix);
+		break;
 	case DM_SAME:
-		return;
-	case DM_JOB:
-		if (nc >= NSC + job_list.ol_cur)
-			return;
+		f(&fill_same);
 		break;
-	case DM_FAIL:
-		if (nc >= NFAILC)
-			return;
-		break;
-	case DM_TEMP:
-		if (nc >= NTEMPC)
-			return;
-		break;
-	case DM_YOD:
-		if (nc >= NSC + yod_list.ol_cur)
-			return;
-		break;
-	case DM_RTUNK:
-		if (nc >= NRTC)
-			return;
-		break;
-	}
-
-	hl_setall(0.0f);
-	switch (st.st_dmode) {
-	case DM_JOB:
-		if (nc < NSC)
-			statusclass[nc].nc_fill.f_a = 1.0f;
-		else
-			job_list.ol_jobs[nc - NSC]->j_fill.f_a = 1.0f;
-		break;
-	case DM_YOD:
-		if (nc < NSC)
-			statusclass[nc].nc_fill.f_a = 1.0f;
-		else
-			yod_list.ol_yods[nc - NSC]->y_fill.f_a = 1.0f;
-		break;
-	case DM_TEMP:
-		tempclass[nc].nc_fill.f_a = 1.0f;
-		break;
-	case DM_FAIL:
-		failclass[nc].nc_fill.f_a = 1.0f;
-		break;
-	case DM_RTUNK:
-		rtclass[nc].nc_fill.f_a = 1.0f;
+	case DM_BORG:
+		f(&fill_borg);
 		break;
 	}
 }
 
+struct fill *
+nc_getfp(size_t nc)
+{
+	switch (st.st_dmode) {
+	case DM_JOB:
+		if (nc < NSC)
+			return (&statusclass[nc].nc_fill);
+		else if (nc - NSC < job_list.ol_cur)
+			return (&job_list.ol_jobs[nc - NSC]->j_fill);
+		break;
+	case DM_FAIL:
+		if (nc < NFAILC)
+			return (&failclass[nc].nc_fill);
+		break;
+	case DM_TEMP:
+		if (nc < NTEMPC)
+			return (&tempclass[nc].nc_fill);
+		break;
+	case DM_YOD:
+		if (nc < NSC)
+			return (&statusclass[nc].nc_fill);
+		else if (nc - NSC < yod_list.ol_cur)
+			return (&yod_list.ol_yods[nc - NSC]->y_fill);
+		break;
+	case DM_RTUNK:
+		if (nc < NRTC)
+			return (&rtclass[nc].nc_fill);
+		break;
+	case DM_BORG:
+		return (&fill_borg);
+	case DM_MATRIX:
+		return (&fill_matrix);
+	case DM_SAME:
+		return (&fill_same);
+	}
+	return (NULL);
+}
+
 void
-hl_seldm(void)
+nc_runsn(void (*f)(struct fill *))
 {
 	struct selnode *sn;
 	struct node *n;
-	int found;
 
-	found = 0;
-	SLIST_FOREACH(sn, &selnodes, sn_next) {
-		switch (st.st_dmode) {
-		case DM_JOB:
-			if (sn->sn_nodep->n_job != NULL)
-				found = 1;
-			break;
-		case DM_FAIL:
-		case DM_TEMP:
-		case DM_RTUNK:
-			found = 1;
-			break;
-		case DM_YOD:
-			if (sn->sn_nodep->n_yod != NULL)
-				found = 1;
-			break;
-		}
-		if (found)
-			break;
-	}
-	if (!found)
-		return;
-
-	hl_setall(0.0f);
 	SLIST_FOREACH(sn, &selnodes, sn_next) {
 		n = sn->sn_nodep;
 
 		switch (st.st_dmode) {
 		case DM_JOB:
 			if (n->n_job != NULL)
-				n->n_job->j_fill.f_a = 1.0f;
+				f(&n->n_job->j_fill);
 			break;
 		case DM_FAIL:
 			if (n->n_fails != DV_NODATA)
-				failclass[roundclass(n->n_fails, FAIL_MIN,
-				    FAIL_MAX, NFAILC)].nc_fill.f_a = 1.0f;
+				f(n->n_fillp);
 			break;
 		case DM_TEMP:
 			if (n->n_temp != DV_NODATA)
-				tempclass[roundclass(n->n_temp, TEMP_MIN,
-				    TEMP_MAX, NTEMPC)].nc_fill.f_a = 1.0f;
+				f(n->n_fillp);
+			break;
 		case DM_RTUNK:
 			if (n->n_route.rt_err[RP_UNK][rt_type] != DV_NODATA)
-				rtclass[roundclass(n->n_route.rt_err[RP_UNK][rt_type],
-				    0, rt_max.rt_err[RP_UNK][rt_type], NRTC)].nc_fill.f_a = 1.0f;
+				f(n->n_fillp);
 			break;
 		case DM_YOD:
 			if (n->n_yod != NULL)
-				n->n_yod->y_fill.f_a = 1.0f;
+				f(&n->n_yod->y_fill);
+			break;
+		case DM_MATRIX:
+		case DM_SAME:
+		case DM_BORG:
+			f(n->n_fillp);
 			break;
 		}
 	}
@@ -186,18 +134,25 @@ hl_seldm(void)
 void
 hl_change(void)
 {
+	struct fill *fp;
+
 	switch (st.st_hlnc) {
 	case HL_ALL:
-		hl_setall(1.0f);
+		nc_runall(fill_setopaque);
 		break;
 	case HL_NONE:
-		hl_setall(0.0f);
+		nc_runall(fill_setxparent);
 		break;
 	case HL_SELDM:
-		hl_seldm();
+		nc_runall(fill_setxparent);
+		nc_runsn(fill_setopaque);
 		break;
 	default:
-		hl_class();
+		fp = nc_getfp(st.st_hlnc);
+		if (fp) {
+			nc_runall(fill_setxparent);
+			fill_setopaque(fp);
+		}
 		break;
 	}
 }

@@ -78,6 +78,8 @@ struct physcoord {				/* XXX: become just dynamic array */
 
 typedef int (*cmpf_t)(const void *, const void *);
 
+struct fill;
+
 /* arch.c */
 void		 arch_init(void);
 
@@ -98,7 +100,8 @@ void		 egg_matrix(void);
 
 /* hl.c */
 void		 hl_change(void);
-void		 hl_setall(float);
+void		 nc_runall(void (*)(struct fill *));
+struct fill	*nc_getfp(size_t);
 
 /* png.c */
 void 		*png_load(char *, unsigned int *, unsigned int *);
