@@ -5,6 +5,8 @@
 /* Selection processing flags. */
 #define SPF_2D		(1<<0)
 #define SPF_PROBE	(1<<1)
+#define SPF_SQUIRE	(1<<2)
+#define SPF_DESQUIRE	(1<<3)
 
 /* Selection processing return values. */
 #define SP_MISS		(INT_MIN)

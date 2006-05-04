@@ -84,6 +84,7 @@ gl_setup(void)
 		glutMouseFunc(gl_mouseh_default);
 		glutPassiveMotionFunc(gl_pasvmotionh_default);
 		glutSpecialFunc(gl_spkeyh_default);
+		glutMouseWheelFunc(gl_mwheel_default);
 	}
 
 	glutTimerFunc(1, cocb_fps, 0);

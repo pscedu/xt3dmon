@@ -19,6 +19,7 @@
 #include "panel.h"
 #include "pathnames.h"
 #include "route.h"
+#include "select.h"
 #include "selnode.h"
 #include "state.h"
 #include "tween.h"
@@ -571,7 +572,7 @@ gl_keyh_server(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-gl_keyh_default(unsigned char key, __unused int u, __unused int v)
+gl_keyh_default(unsigned char key, int u, int v)
 {
 	flyby_rstautoto();
 	switch (key) {
@@ -653,46 +654,13 @@ gl_keyh_default(unsigned char key, __unused int u, __unused int v)
 	case '}':
 		glutKeyboardFunc(gl_keyh_wioffincr);
 		break;
-	case '+':
-	case '_': {
-		float incr, *field;
-		size_t j;
-
-		incr = TRANS_INC;
-		if (key == '_')
-			incr *= -1;
-
-		for (j = 0; j < job_list.ol_cur; j++) {
-			field = &job_list.ol_jobs[j]->j_fill.f_a;
-			*field += incr;
-			if (*field > 1.0f)
-				*field = 1.0f;
-			else if (*field < 0.0f)
-				*field = 0.0f;
-		}
-		st.st_rf |= RF_CLUSTER | RF_SELNODE;
+	case '+': case '-':
+	case '=': case '_':
+		mousev.iv_u = u;
+		mousev.iv_v = v;
+		gl_select(key == '+' || key == '=' ?
+		    SPF_SQUIRE : SPF_DESQUIRE);
 		break;
-	    }
-	case '=':
-	case '-': {
-		float incr, *field;
-		size_t j;
-
-		incr = TRANS_INC;
-		if (key == '-')
-			incr *= -1;
-
-		for (j = 0; j < NSC; j++) {
-			field = &statusclass[j].nc_fill.f_a;
-			*field += incr;
-			if (*field > 1.0f)
-				*field = 1.0f;
-			else if (*field < 0.0f)
-				*field = 0.0f;
-		}
-		st.st_rf |= RF_CLUSTER | RF_SELNODE;
-		break;
-	    }
 	case '[':
 		glutKeyboardFunc(gl_keyh_decr);
 		break;

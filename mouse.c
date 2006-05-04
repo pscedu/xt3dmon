@@ -173,3 +173,14 @@ gl_motionh_null(int u, int v)
 
 	flyby_rstautoto();
 }
+
+void
+gl_mwheel_default(__unused int wheel, int dir, int u, int v)
+{
+	mousev.iv_x = u;
+	mousev.iv_y = v;
+
+	gl_select(dir > 0 ? SPF_SQUIRE : SPF_DESQUIRE);
+
+	flyby_rstautoto();
+}
