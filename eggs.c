@@ -47,7 +47,7 @@ egg_borg(void)
 	}
 	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
 
-	st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_DMODE | RF_GROUND;	/* XXX: RF_INIT ? */
+	st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_DMODE | RF_GROUND;
 }
 
 void
