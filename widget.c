@@ -12,14 +12,6 @@
 #include "state.h"
 #include "xmath.h"
 
-/*
- * Determines the texture coordinate by finding the ratio
- * between the pixel value given and the max of the three
- * possible dimensions.  This gives a section of a texture
- * without stretching it.
- */
-#define NODE_TEXCOORD(x, max) (1.0 / (max / x))
-
 #define SHIFT_OFFSET (0.001)
 
 #define LDF_SHIFT (1<<0)
@@ -194,9 +186,9 @@ draw_cube(const struct fvec *dimp, const struct fill *fp, int flags)
 			glBindTexture(GL_TEXTURE_2D, fp->f_texid_a[wid]);
 
 		max = MAX3(dimp->fv_w, dimp->fv_h, dimp->fv_d);
-		texv.fv_w = NODE_TEXCOORD(dimp->fv_w, max);
-		texv.fv_h = NODE_TEXCOORD(dimp->fv_h, max);
-		texv.fv_d = NODE_TEXCOORD(dimp->fv_d, max);
+		texv.fv_w = TEXCOORD(dimp->fv_w, max);
+		texv.fv_h = TEXCOORD(dimp->fv_h, max);
+		texv.fv_d = TEXCOORD(dimp->fv_d, max);
 
 		color[0] = fp->f_r;
 		color[1] = fp->f_g;

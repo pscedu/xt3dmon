@@ -4,6 +4,14 @@ struct node;
 struct fvec;
 struct fill;
 
+/*
+ * Determines the texture coordinate by finding the ratio
+ * between the pixel value given and the max of the three
+ * possible dimensions.  This gives a section of a texture
+ * without stretching it.
+ */
+#define TEXCOORD(x, max) (1.0 / (max / x))
+
 #define DF_FRAME	(1<<0)		/* draw with frame */
 
 /* Node drawing flags. */
