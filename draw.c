@@ -122,9 +122,23 @@ draw_compass(void)
 __inline void
 draw_scene(void)
 {
-	if (dl_selnodes[wid])
-		glCallList(dl_selnodes[wid]);
-	glCallList(dl_cluster[wid]);
+	switch (st.st_vmode) {
+	case VM_WIRED:
+		WIREP_FOREACH(&v) {
+			glPushMatrix();
+			glTranslatef(v.fv_x, v.fv_y, v.fv_z);
+			if (dl_selnodes[wid])
+				glCallList(dl_selnodes[wid]);
+			glCallList(dl_cluster[wid]);
+			glPopMatrix();
+		}
+		break;
+	default:
+		if (dl_selnodes[wid])
+			glCallList(dl_selnodes[wid]);
+		glCallList(dl_cluster[wid]);
+		break;
+	}
 	if (st.st_opts & OP_GROUND)
 		glCallList(dl_ground[wid]);
 	if (!TAILQ_EMPTY(&panels))
