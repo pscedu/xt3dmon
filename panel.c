@@ -189,6 +189,73 @@ draw_shadow_panels(void)
 	glPopAttrib();
 }
 
+__inline void
+draw_pwbg(struct fill *fp, int uoff, int voff)
+{
+	int max, blend;
+	float tl, th;
+
+	blend = (fp->f_a != 1.0 && (fp->f_flags & FF_OPAQUE) == 0);
+
+	if (blend) {
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
+
+	if (fp->f_flags & FF_TEX) {
+		glEnable(GL_TEXTURE_2D);
+
+		glBindTexture(GL_TEXTURE_2D, blend ?
+		    fp->f_texid_a[wid] : fp->f_texid[wid]);
+
+		/* -2 to account for border. */
+		max = MAX(PWIDGET_LENGTH - 2, PWIDGET_HEIGHT - 2);
+		tl = TEXCOORD(PWIDGET_LENGTH - 2, max);
+		th = TEXCOORD(PWIDGET_HEIGHT - 2, max);
+
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE,
+		    blend ? GL_BLEND : GL_REPLACE);
+
+		if (blend)
+			glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR,
+			    fp->f_rgba);
+
+		glEnable(GL_LIGHTING);
+		glEnable(GL_LIGHT0);
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		glPolygonOffset(1.0, 3.0);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+		glBegin(GL_POLYGON);
+		glTexCoord2d(0.0, 0.0);
+		glVertex2d(uoff + 1,			voff);
+		glTexCoord2d(tl, 0.0);
+		glVertex2d(uoff + PWIDGET_LENGTH - 1,	voff);
+		glTexCoord2d(tl, th);
+		glVertex2d(uoff + PWIDGET_LENGTH - 1,	voff - PWIDGET_HEIGHT + 2);
+		glTexCoord2d(0.0, th);
+		glVertex2d(uoff + 1,			voff - PWIDGET_HEIGHT + 2);
+		glEnd();
+
+		glDisable(GL_LIGHTING);
+		glDisable(GL_LIGHT0);
+		glDisable(GL_POLYGON_OFFSET_FILL);
+
+		glDisable(GL_TEXTURE_2D);
+	} else {
+		glBegin(GL_POLYGON);
+		glColor4f(fp->f_r, fp->f_g, fp->f_b, blend ? fp->f_a : 1.0);
+		glVertex2d(uoff + 1,			voff);
+		glVertex2d(uoff + PWIDGET_LENGTH - 1,	voff);
+		glVertex2d(uoff + PWIDGET_LENGTH - 1,	voff - PWIDGET_HEIGHT + 2);
+		glVertex2d(uoff + 1,			voff - PWIDGET_HEIGHT + 2);
+		glEnd();
+	}
+
+	if (blend)
+		glDisable(GL_BLEND);
+}
+
 /*
  * The panel drawing API naming is horrible but is consistent:
  * draw_panel is the low-level function that draws an actual panel.
@@ -272,20 +339,8 @@ draw_panel(struct panel *p, int toff)
 			else {
 				frame_fp = &fill_black;
 
-				glEnable(GL_BLEND);
-				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 				/* Draw widget background. */
-				glBegin(GL_POLYGON);
-				glColor4f(fp->f_r, fp->f_g, fp->f_b,
-				    fp->f_flags & FF_ALPHA ? fp->f_a : 1.0);
-				glVertex2d(uoff + 1,			voff);
-				glVertex2d(uoff + PWIDGET_LENGTH - 1,	voff);
-				glVertex2d(uoff + PWIDGET_LENGTH - 1,	voff - PWIDGET_HEIGHT + 2);
-				glVertex2d(uoff + 1,			voff - PWIDGET_HEIGHT + 2);
-				glEnd();
-
-				glDisable(GL_BLEND);
+				draw_pwbg(fp, uoff, voff);
 			}
 
 			/* Draw widget border. */
