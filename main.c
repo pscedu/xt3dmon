@@ -22,6 +22,7 @@
 #include "nodeclass.h"
 #include "panel.h"
 #include "pathnames.h"
+#include "phys.h"
 #include "queue.h"
 #include "reel.h"
 #include "selnode.h"
@@ -174,6 +175,8 @@ opt_disable(int ops)
 void
 opt_flip(int fopts)
 {
+	struct physdim *pd;
+	const char *s;
 	int i, on;
 
 	st.st_opts ^= fopts;
@@ -216,8 +219,20 @@ opt_flip(int fopts)
 		case OP_NLABELS:
 			st.st_rf |= RF_CLUSTER | RF_SELNODE;
 			break;
-		case OP_SKEL:
 		case OP_MODSKELS:
+		case OP_CABSKELS:
+			s = (1 << i) == OP_CABSKELS ? "cabinet" : "blade";
+			for (pd = physdim_top; pd; pd = pd->pd_contains)
+				if (strcmp(pd->pd_name, s) == 0) {
+					if (on)
+						pd->pd_flags |= PDF_SKEL;
+					else
+						pd->pd_flags &= ~PDF_SKEL;
+					break;
+				}
+			st.st_rf |= RF_CLUSTER;
+			break;
+		case OP_SKEL:
 		case OP_PIPES:
 			st.st_rf |= RF_CLUSTER;
 			break;
