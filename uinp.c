@@ -130,7 +130,7 @@ uinpcb_login(void)
 			authbuf[siz] = '\0';
 
 			pi = &pinfo[baseconv(p->p_id) - 1];
-			p->p_opts |= POPT_LOGIN_ATPASS | POPT_DIRTY;
+			p->p_opts |= POPT_LOGIN_ATPASS | POPT_REFRESH;
 			glutKeyboardFunc(gl_keyh_uinput);
 			uinp.uinp_panel = p;
 			uinp.uinp_opts = pi->pi_uinpopts;

@@ -21,7 +21,7 @@ status_set(const char *fmt, ...)
 	va_end(ap);
 
 	if ((p = panel_for_id(PANEL_STATUS)) != NULL)
-		p->p_opts |= POPT_DIRTY;
+		p->p_opts |= POPT_REFRESH;
 }
 
 void
@@ -31,7 +31,7 @@ status_clear(void)
 
 	status_buf[0] = '\0';
 	if ((p = panel_for_id(PANEL_STATUS)) != NULL)
-		p->p_opts |= POPT_DIRTY;
+		p->p_opts |= POPT_REFRESH;
 }
 
 void
@@ -48,7 +48,7 @@ status_add(const char *fmt, ...)
 	va_end(ap);
 
 	if ((p = panel_for_id(PANEL_STATUS)) != NULL)
-		p->p_opts |= POPT_DIRTY;
+		p->p_opts |= POPT_REFRESH;
 }
 
 __inline const char *

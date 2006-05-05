@@ -110,7 +110,7 @@ panel_add_content(struct panel *p, char *fmt, ...)
 __inline int
 panel_ready(struct panel *p)
 {
-	return ((p->p_opts & POPT_DIRTY) == 0 && p->p_str != NULL);
+	return ((p->p_opts & POPT_REFRESH) == 0 && p->p_str != NULL);
 }
 
 void
@@ -581,7 +581,7 @@ panel_date_invalidate(__unused int a)
 		return;
 //		errx(1, "internal error: date invalidate callback "
 //		    "called but no date panel present");
-	p->p_opts |= POPT_USRDIRTY;
+	p->p_opts |= POPT_REFRESH;
 }
 
 #define TMBUF_SIZ 30
@@ -593,37 +593,31 @@ panel_refresh_date(struct panel *p)
 	struct tm tm;
 	time_t now;
 
-	if ((p->p_opts & POPT_USRDIRTY) == 0 &&
-	    panel_ready(p))
+	if (panel_ready(p))
 		return;
-	if (p->p_str == NULL ||
-	    p->p_opts & POPT_USRDIRTY) {
-		p->p_opts &= ~POPT_USRDIRTY;
+	/*
+	 * If a session is live, (other than race
+	 * conditions) the directory should exit.
+	 */
+	if (ssp != NULL) {
+		char fn[PATH_MAX];
+		struct stat stb;
 
-		/*
-		 * If a session is live, (other than race
-		 * conditions) the directory should exit.
-		 */
-		if (ssp != NULL) {
-			char fn[PATH_MAX];
-			struct stat stb;
-
-			snprintf(fn, sizeof(fn), "%s/%s",
-			    _PATH_SESSIONS, ssp->ss_sid);
-			if (stat(fn, &stb) == -1)
-				err(1, "stat %s", fn);
-			now = stb.st_mtime;
-		} else {
-			time(&now);		/* XXX: check for failure */
-		}
-		localtime_r(&now, &tm);
-
-		if (ssp == NULL)
-			glutTimerFunc(1000 * (60 - tm.tm_sec),
-			    panel_date_invalidate, 0);
-		strftime(tmbuf, sizeof(tmbuf), "%b %e %y %H:%M", &tm);
-		panel_set_content(p, "(c) 2006 PSC\n%s", tmbuf);
+		snprintf(fn, sizeof(fn), "%s/%s",
+		    _PATH_SESSIONS, ssp->ss_sid);
+		if (stat(fn, &stb) == -1)
+			err(1, "stat %s", fn);
+		now = stb.st_mtime;
+	} else {
+		time(&now);		/* XXX: check for failure */
 	}
+	localtime_r(&now, &tm);
+
+	if (ssp == NULL)
+		glutTimerFunc(1000 * (60 - tm.tm_sec),
+		    panel_date_invalidate, 0);
+	strftime(tmbuf, sizeof(tmbuf), "%b %e %y %H:%M", &tm);
+	panel_set_content(p, "(c) 2006 PSC\n%s", tmbuf);
 }
 
 void

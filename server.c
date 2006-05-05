@@ -276,7 +276,7 @@ snap:
 		rf &= ~RF_DATASRC;
 
 		if ((p = panel_for_id(PANEL_DATE)) != NULL)
-			p->p_opts |= POPT_USRDIRTY;
+			p->p_opts |= POPT_REFRESH;
 	}
 
 	/* Have fresh data for (a) jobs and (b) node selection. */

@@ -61,8 +61,8 @@ struct panel {
 };
 
 #define POPT_REMOVE	(1<<0)			/* being removed */
-#define POPT_DIRTY	(1<<1)			/* panel needs redrawn */
-#define POPT_USRDIRTY	(1<<2)			/* user-flag for the same */
+#define POPT_DIRTY	(1<<1)			/* panel needs redrawn, but same contents */
+#define POPT_REFRESH	(1<<2)			/* panel needs contents rebuilt */
 #define POPT_MOBILE	(1<<3)			/* being dragged */
 #define POPT_COMPILE	(1<<4)			/* stereo syncing */
 #define POPT_USR1	(1<<5)			/* panel-specific flag */
