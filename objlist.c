@@ -86,6 +86,12 @@ struct nodeclass ssclass[] = {
 	{ ">90%",		FILL_INIT(0.0f, 1.0f, 0.0f), 0 }
 };
 
+struct nodeclass lustreclass[] = {
+	{ "Clean",		FILL_INIT(1.00f, 1.00f, 1.00f), 0 },
+	{ "Dirty",		FILL_INIT(0.80f, 0.60f, 0.00f), 0 },
+	{ "Recovering",		FILL_INIT(1.00f, 0.20f, 0.60f), 0 }
+};
+
 int
 job_eq(const void *elem, const void *arg)
 {

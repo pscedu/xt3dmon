@@ -55,6 +55,10 @@ nc_runall(void (*f)(struct fill *))
 	case DM_BORG:
 		f(&fill_borg);
 		break;
+	case DM_LUSTRE:
+		for (i = 0; i < NLUSTC; i++)
+			f(&lustreclass[i].nc_fill);
+		break;
 	}
 }
 
@@ -96,6 +100,10 @@ nc_getfp(size_t nc)
 		return (&fill_matrix);
 	case DM_SAME:
 		return (&fill_same);
+	case DM_LUSTRE:
+		if (nc < NLUSTC)
+			return (&lustreclass[nc].nc_fill);
+		break;
 	}
 	return (NULL);
 }
@@ -130,6 +138,8 @@ nc_runsn(void (*f)(struct fill *))
 			if (n->n_yod != NULL)
 				f(&n->n_yod->y_fill);
 			break;
+		case DM_SEASTAR:
+		case DM_LUSTRE:
 		case DM_MATRIX:
 		case DM_SAME:
 		case DM_BORG:

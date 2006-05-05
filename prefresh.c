@@ -298,6 +298,18 @@ panel_refresh_legend(struct panel *p)
 
 		pwidget_add(p, &fill_same, "All nodes", gscb_pw_hlnc, HL_ALL);
 		break;
+	case DM_LUSTRE:
+		panel_set_content(p, "- Lustre Legend -");
+
+		pwidget_add(p, &fill_nodata, "Show all", gscb_pw_hlnc, HL_ALL);
+
+		for (j = 0; j < NLUSTC; j++) {
+			if (lustreclass[j].nc_nmemb == 0)
+				continue;
+			pwidget_add(p, &lustreclass[j].nc_fill,
+			    lustreclass[j].nc_name, gscb_pw_hlnc, j);
+		}
+		break;
 	default:
 		panel_set_content(p, "- Legend -\n\nNot available.");
 		break;

@@ -21,6 +21,8 @@
 
 #define NSSC		10
 
+#define NLUSTC		3
+
 struct nodeclass {
 	char		*nc_name;
 	struct fill	 nc_fill;
@@ -32,3 +34,4 @@ extern struct nodeclass	 tempclass[NTEMPC];	/* XXX SPOT */
 extern struct nodeclass	 failclass[NFAILC];	/* XXX SPOT */
 extern struct nodeclass	 rtclass[NRTC];		/* XXX SPOT */
 extern struct nodeclass	 ssclass[NSSC];		/* XXX SPOT */
+extern struct nodeclass	 lustreclass[];

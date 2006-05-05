@@ -328,6 +328,10 @@ dmode_change(void)
 		for (i = 0; i < NSSC; i++)
 			ssclass[i].nc_nmemb = 0;
 		break;
+	case DM_LUSTRE:
+		for (i = 0; i < NLUSTC; i++)
+			lustreclass[i].nc_nmemb = 0;
+		break;
 	}
 
 	NODE_FOREACH(n, &iv) {
@@ -394,6 +398,10 @@ dmode_change(void)
 			    0, ss_max.ss_cnt[st.st_ssmode][st.st_ssvc], NSSC);
 			n->n_fillp = &ssclass[i].nc_fill;
 			ssclass[i].nc_nmemb++;
+			break;
+		case DM_LUSTRE:
+			n->n_fillp = &lustreclass[n->n_lustat].nc_fill;
+			lustreclass[n->n_lustat].nc_nmemb++;
 			break;
 //		default:
 //			n->n_fillp = &fill_xparent;
