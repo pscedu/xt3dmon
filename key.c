@@ -579,7 +579,6 @@ gl_keyh_default(unsigned char key, int u, int v)
 	switch (key) {
 	case '2': case '4':
 	case '6': case '8': {
-		struct fvec center;
 		int du, dv;
 
 		switch (key) {
@@ -590,8 +589,7 @@ gl_keyh_default(unsigned char key, int u, int v)
 		}
 
 		tween_push(TWF_LOOK | TWF_POS | TWF_UP);
-		(*revolve_centerf)(&center);
-		cam_revolve(&center, (double)du, (double)-dv);
+		cam_revolve(&focus, (double)du, (double)-dv);
 		tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
 		break;
 	    }

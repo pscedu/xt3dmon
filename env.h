@@ -61,6 +61,9 @@ void geom_setall(int);
 
 void cursor_set(int);
 
+void focus_cluster(struct fvec *);
+void focus_selnodes(struct fvec *);
+
 /* Loop through wired repetitions. */
 #define WIREP_FOREACH(fvp)							\
 	for ((fvp)->fv_x = wi_repstart.fv_x;					\
@@ -86,6 +89,6 @@ extern int		 spkey;
 extern struct ivec	 mousev;
 extern struct ivec	 winv;
 
-void			(*revolve_centerf)(struct fvec *);
+extern struct fvec	 focus;
 
 #endif /* _ENV_H_ */

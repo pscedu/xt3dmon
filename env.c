@@ -1,6 +1,10 @@
 /* $Id$ */
 
+#include "cdefs.h"
 #include "env.h"
+#include "node.h"
+#include "queue.h"
+#include "selnode.h"
 #include "state.h"
 #include "xmath.h"
 
@@ -9,6 +13,8 @@
 #define ST_EYESEP	(0.30f) /* distance between "eyes" */
 
 int gl_cursor;
+
+struct fvec focus;
 
 __inline void
 frustum_init(struct frustum *fr)
@@ -52,4 +58,53 @@ cursor_set(int cursor)
 		glutSetCursor(cursor);
 		gl_cursor = cursor;
 	}
+}
+
+void
+focus_cluster(struct fvec *cen)
+{
+	double dist;
+
+	switch (st.st_vmode) {
+	case VM_PHYSICAL:
+		cen->fv_x = XCENTER;
+		cen->fv_y = YCENTER;
+		cen->fv_z = ZCENTER;
+		break;
+	case VM_WIRED:
+		dist = MAX3(WIV_SWIDTH, WIV_SHEIGHT, WIV_SDEPTH) / 4.0;
+		cen->fv_x = st.st_x + st.st_lx * dist;
+		cen->fv_y = st.st_y + st.st_ly * dist;
+		cen->fv_z = st.st_z + st.st_lz * dist;
+		break;
+	case VM_WIREDONE:
+		cen->fv_x = st.st_winsp.iv_x * (WIDIM_WIDTH  / 2.0f + st.st_wioff.iv_x);
+		cen->fv_y = st.st_winsp.iv_y * (WIDIM_HEIGHT / 2.0f + st.st_wioff.iv_y);
+		cen->fv_z = st.st_winsp.iv_z * (WIDIM_DEPTH  / 2.0f + st.st_wioff.iv_z);
+		break;
+	}
+}
+
+void
+focus_selnodes(struct fvec *cen)
+{
+	struct selnode *sn;
+	struct node *n;
+
+	vec_set(cen, 0.0, 0.0, 0.0);
+	SLIST_FOREACH(sn, &selnodes, sn_next) {
+		n = sn->sn_nodep;
+
+		switch (st.st_vmode) {
+		case VM_WIRED:
+			break;
+		}
+
+		cen->fv_x += n->n_v->fv_x + n->n_dimp->fv_w / 2;
+		cen->fv_y += n->n_v->fv_y + n->n_dimp->fv_h / 2;
+		cen->fv_z += n->n_v->fv_z + n->n_dimp->fv_d / 2;
+	}
+	cen->fv_x /= nselnodes;
+	cen->fv_y /= nselnodes;
+	cen->fv_z /= nselnodes;
 }

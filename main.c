@@ -532,7 +532,7 @@ rebuild(int opts)
 		vmode_change();
 
 		opts |= RF_CLUSTER | RF_NODESWIV | RF_WIREP | RF_CAM | \
-		    RF_GROUND | RF_SELNODE | RF_DIM;
+		    RF_GROUND | RF_SELNODE | RF_DIM | RF_FOCUS;
 	}
 	if (opts & RF_CAM) {
 		switch (st.st_vmode) {
@@ -561,7 +561,7 @@ rebuild(int opts)
 	if (opts & RF_NODESWIV) {
 		rebuild_nodeswiv();
 
-		opts |= RF_WIREP;
+		opts |= RF_WIREP | RF_FOCUS;
 	}
 
 	if (opts & RF_WIREP)
@@ -573,8 +573,17 @@ rebuild(int opts)
 
 	if (opts & RF_CLUSTER)
 		gl_run(make_cluster);
-	if (opts & RF_SELNODE)
+	if (opts & RF_SELNODE) {
 		gl_run(make_selnodes);
+
+		opts |= RF_FOCUS;
+	}
+	if (opts & RF_FOCUS) {
+		if (SLIST_EMPTY(&selnodes))
+			focus_cluster(&focus);
+		else
+			focus_selnodes(&focus);
+	}
 }
 
 void
