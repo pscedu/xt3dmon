@@ -627,7 +627,8 @@ panel_tremove(struct panel *p)
 	/* XXX inspect POPT_REMOVE first? */
 	p->p_opts ^= POPT_REMOVE;
 	for (t = p; t != TAILQ_END(&panels); t = TAILQ_NEXT(t, p_link))
-		t->p_opts |= POPT_DIRTY;
+		if (t->p_info->pi_stick == p->p_info->pi_stick)
+			t->p_opts |= POPT_DIRTY;
 	if (flyby_mode == FBM_REC)
 		flyby_writepanel(p->p_id);
 }
