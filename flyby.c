@@ -211,6 +211,7 @@ flyby_read(void)
 			st.st_rf |= RF_VMODE | RF_DMODE | RF_CAM |
 			    RF_SELNODE | RF_HLNC;
 			init_panels(fbun.fbu_init.fbi_panels);
+//		egg_toggle(st.st_eggs ^ sav_st.st_eggs);
 			done = 1;
 			break;
 		case FHT_SEQ:
@@ -290,8 +291,7 @@ flyby_end(void)
 			rf |= RF_CLUSTER;
 		if (st.st_hlnc != sav_st.st_hlnc)
 			rf |= RF_HLNC;
-		if (st.st_eggs != sav_st.st_eggs)
-			rf |= (RF_INIT & ~RF_DATASRC);
+		egg_toggle(st.st_eggs ^ sav_st.st_eggs);
 
 		opts = st.st_opts;
 		st = sav_st;
