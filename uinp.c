@@ -46,7 +46,7 @@ uinpcb_gotonode(void)
 
 	s = buf_get(&uinp.uinp_buf);
 	l = strtol(s, NULL, 10);
-	if (l <= 0 || l > NID_MAX || !isdigit(*s))
+	if (l < 0 || l > NID_MAX || !isdigit(*s))
 		return;
 	nid = (int)l;
 
@@ -54,6 +54,7 @@ uinpcb_gotonode(void)
 		return;
 	sn_add(n);
 	node_goto(n);
+	panel_show(PANEL_NINFO);
 }
 
 void
