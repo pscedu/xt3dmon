@@ -327,26 +327,6 @@ draw_node(struct node *n, int flags)
 }
 
 __inline void
-draw_mod(struct fvec *vp, struct fvec *dim, struct fill *fillp)
-{
-	struct fvec v;
-
-	v = *vp;
-	v.fv_x -= 0.01;
-	v.fv_y -= 0.01;
-	v.fv_z -= 0.01;
-	glPushMatrix();
-	glTranslatef(v.fv_x, v.fv_y, v.fv_z);
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
-	draw_cube(dim, fillp, 0);
-	glDisable(GL_BLEND);
-
-	glPopMatrix();
-}
-
-__inline void
 draw_ground(void)
 {
 	struct fvec fv, fdim;
@@ -407,7 +387,6 @@ draw_ground(void)
 	}
 }
 
-#if 0
 __inline void
 draw_pd_skel(struct physdim *pdp, struct physdim *targetpd,
     struct fvec *fvp)
@@ -477,78 +456,6 @@ draw_skel(void)
 		draw_cube(&dim, &fill_clskel, 0);
 		glPopMatrix();
 		break;
-	}
-}
-#endif
-
-__inline void
-draw_cluster_physical(void)
-{
-	struct fvec v, mdim, skel;
-	int r, cb, cg, m, n;
-	struct node *node;
-	struct fill mf;
-
-	mdim.fv_w = MODWIDTH + 0.02;
-	mdim.fv_h = MODHEIGHT + 0.02;
-	mdim.fv_d = MODDEPTH + 0.02;
-
-	mf.f_r = 1.00;
-	mf.f_g = 1.00;
-	mf.f_b = 1.00;
-	mf.f_a = 0.20;
-
-	skel.fv_w = CABWIDTH  + 2 * SKEL_GAP;
-	skel.fv_h = CABHEIGHT + 2 * SKEL_GAP;
-	skel.fv_z = MODDEPTH  + 2 * SKEL_GAP;
-
-	v.fv_x = v.fv_y = v.fv_z = NODESPACE;
-#if 0
-	for (iv.iv_x = 0; iv.iv_x < WIDIM_WIDTH; iv.iv_x++)
-		for (iv.iv_y = 0; iv.iv_y < WIDIM_HEIGHT; iv.iv_y++)
-			for (iv.iv_z = 0; iv.iv_z < WIDIM_DEPTH; iv.iv_z++) {
-				n = &invmap[iv.iv_x][iv.iv_y][iv.iv_z];
-				n->n_v = &n->n_physv;
-				node_setphyspos(n, &node->n_physv);
-
-				node_adjmodpos(node->, &node->n_physv);
-				draw_node(node, 0);
-			}
-#endif
-
-	for (r = 0; r < NROWS; r++, v.fv_z += ROWDEPTH + ROWSPACE) {
-		for (cb = 0; cb < NCABS; cb++, v.fv_x += CABWIDTH + CABSPACE) {
-			for (cg = 0; cg < NCAGES; cg++, v.fv_y += CAGEHEIGHT + CAGESPACE) {
-				for (m = 0; m < NMODS; m++, v.fv_x += MODWIDTH + MODSPACE) {
-					for (n = 0; n < NNODES; n++) {
-						node = &nodes[r][cb][cg][m][n];
-						node->n_v = &node->n_physv;
-						node->n_physv = v;
-						node_adjmodpos(n, &node->n_physv);
-						draw_node(node, 0);
-					}
-					if (st.st_opts & OP_SHOWMODS)
-						draw_mod(&v, &mdim, &mf);
-				}
-				v.fv_x -= (MODWIDTH + MODSPACE) * NMODS;
-			}
-			v.fv_y -= (CAGEHEIGHT + CAGESPACE) * NCAGES;
-			if (st.st_opts & OP_SKEL) {
-				glPushMatrix();
-				glTranslatef(v.fv_x - SKEL_GAP,
-				    v.fv_y - SKEL_GAP, v.fv_z - SKEL_GAP);
-				glEnable(GL_BLEND);
-				glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
-
-				fill_light_blue.f_a = 0.4f;
-				draw_cube(&skel, &fill_light_blue, 0);
-				fill_light_blue.f_a = 1.0f;
-
-				glDisable(GL_BLEND);
-				glPopMatrix();
-			}
-		}
-		v.fv_x -= (CABWIDTH + CABSPACE) * NCABS;
 	}
 }
 
@@ -720,85 +627,6 @@ draw_cluster_pipes(const struct fvec *v)
 	glPopMatrix();
 }
 
-__inline void
-draw_cluster_wired(const struct fvec *v)
-{
-	struct fvec *nv, dim, cldim, wrapv, spdim;
-	struct ivec iv, adjv;
-	struct node *n;
-
-	/* Strict cluster dimensions. */
-	cldim.fv_w = (widim.iv_w - 1) * st.st_winsp.iv_x;
-	cldim.fv_h = (widim.iv_h - 1) * st.st_winsp.iv_y;
-	cldim.fv_d = (widim.iv_d - 1) * st.st_winsp.iv_z;
-
-	/* Spaced cluster dimensions. */
-	spdim.fv_w = widim.iv_w * st.st_winsp.iv_x;
-	spdim.fv_h = widim.iv_h * st.st_winsp.iv_y;
-	spdim.fv_d = widim.iv_d * st.st_winsp.iv_z;
-
-	if (st.st_opts & OP_PIPES &&
-	    st.st_pipemode == PM_RT)
-		draw_cluster_pipes(v);
-
-	IVEC_FOREACH(&iv, &widim) {
-		adjv.iv_x = negmod(iv.iv_x + st.st_wioff.iv_x, widim.iv_w);
-		adjv.iv_y = negmod(iv.iv_y + st.st_wioff.iv_y, widim.iv_h);
-		adjv.iv_z = negmod(iv.iv_z + st.st_wioff.iv_z, widim.iv_d);
-		n= wimap[adjv.iv_x][adjv.iv_y][adjv.iv_z];
-		if (n == NULL || !node_show(n))
-			continue;
-
-		wrapv.fv_x = floor((iv.iv_x + st.st_wioff.iv_x) / (double)widim.iv_w) * spdim.fv_w;
-		wrapv.fv_y = floor((iv.iv_y + st.st_wioff.iv_y) / (double)widim.iv_h) * spdim.fv_h;
-		wrapv.fv_z = floor((iv.iv_z + st.st_wioff.iv_z) / (double)widim.iv_d) * spdim.fv_d;
-
-		nv = &n->n_swiv;
-		nv->fv_x = n->n_wiv.iv_x * st.st_winsp.iv_x + v->fv_x + wrapv.fv_x;
-		nv->fv_y = n->n_wiv.iv_y * st.st_winsp.iv_y + v->fv_y + wrapv.fv_y;
-		nv->fv_z = n->n_wiv.iv_z * st.st_winsp.iv_z + v->fv_z + wrapv.fv_z;
-		n->n_v = nv;
-		draw_node(n, 0);
-	}
-
-	if (st.st_opts & OP_SKEL) {
-		dim.fv_w = cldim.fv_w + NODEWIDTH  + 2 * SKEL_GAP;
-		dim.fv_h = cldim.fv_h + NODEHEIGHT + 2 * SKEL_GAP;
-		dim.fv_z = cldim.fv_d + NODEDEPTH  + 2 * SKEL_GAP;
-
-		glPushMatrix();
-		glTranslatef(-SKEL_GAP, -SKEL_GAP, -SKEL_GAP);
-		fill_light_blue.f_a = 0.4f;
-		draw_cube(&dim, &fill_light_blue, 0);
-		fill_light_blue.f_a = 1.0f;
-		glPopMatrix();
-	}
-
-	if (st.st_opts & OP_PIPES &&
-	    st.st_pipemode != PM_RT)
-		draw_cluster_pipes(v);
-}
-
-__inline void
-draw_wired_frame(struct fvec *vp, struct fvec *dimp, struct fill *fillp)
-{
-	struct fill fill = *fillp;
-	struct fvec v;
-
-	v = *vp;
-	v.fv_x -= st.st_winsp.iv_x / 2.0f;
-	v.fv_y -= st.st_winsp.iv_y / 2.0f;
-	v.fv_z -= st.st_winsp.iv_z / 2.0f;
-
-	fill.f_a = 0.2;
-	fill.f_flags |= FF_SKEL;
-
-	glPushMatrix();
-	glTranslatef(v.fv_x, v.fv_y, v.fv_z);
-	draw_cube(dimp, &fill, 0);
-	glPopMatrix();
-}
-
 /* Snap to nearest grid */
 __inline float
 snap_to_grid(float n, float size, float clip)
@@ -812,85 +640,41 @@ snap_to_grid(float n, float size, float clip)
 	return (adj);
 }
 
-/*
- * Draw the cluster repeatedly till we reach the clipping plane.
- * Since we can see MIN(WIV_CLIP*) away, we must construct a 3D space
- * MIN(WIV_CLIP*)^3 large and draw the cluster multiple times inside.
- */
-__inline void
-draw_clusters_wired(void)
-{
-	int xnum, znum, col;
-	struct fvec v, dim;
-	float x, y, z;
-	int opts;
-
-	opts = st.st_opts;
-	st.st_opts &= ~OP_NODEANIM;
-
-	x = st.st_x - clip;
-	y = st.st_y - clip;
-	z = st.st_z - clip;
-
-	x -= snap_to_grid(x, WIV_SWIDTH, 0.0);
-	y -= snap_to_grid(y, WIV_SHEIGHT, 0.0);
-	z -= snap_to_grid(z, WIV_SDEPTH, 0.0);
-
-	wi_repstart.fv_x = x;
-	wi_repstart.fv_y = y;
-	wi_repstart.fv_z = z;
-
-	dim.fv_w = WIV_SWIDTH - 0.01;
-	dim.fv_h = WIV_SHEIGHT - 0.01;
-	dim.fv_d = WIV_SDEPTH - 0.01;
-
-	xnum = (st.st_x + clip - x + WIV_SWIDTH - 1) / WIV_SWIDTH;
-	znum = (st.st_z + clip - z + WIV_SDEPTH - 1) / WIV_SDEPTH;
-
-	col = 0;
-	v.fv_z = v.fv_x = 0.0f; /* gcc */
-	for (v.fv_y = y; v.fv_y < st.st_y + clip; v.fv_y += WIV_SHEIGHT) {
-		for (v.fv_z = z; v.fv_z < st.st_z + clip; v.fv_z += WIV_SDEPTH) {
-			for (v.fv_x = x; v.fv_x < st.st_x + clip; v.fv_x += WIV_SWIDTH) {
-				draw_cluster_wired(&v);
-				if (st.st_opts & OP_WIVMFRAME)
-					draw_wired_frame(&v, &dim,
-					    col ? &fill_grey : &fill_light_blue);
-				col = !col;
-			}
-			if (xnum % 2 == 0)
-				col = !col;
-		}
-		if (xnum % 2 == 0)
-			col = !col;
-		if ((((xnum % 2) ^ (znum % 2))))
-			col = !col;
-	}
-
-	wi_repdim.fv_w = v.fv_x - wi_repstart.fv_x;
-	wi_repdim.fv_h = v.fv_y - wi_repstart.fv_y;
-	wi_repdim.fv_d = v.fv_z - wi_repstart.fv_z;
-
-	st.st_opts = opts;
-}
-
 __inline void
 draw_cluster(void)
 {
-	struct fvec fv;
+	struct ivec iv;
+	struct node *n;
+	int ndf;
 
+	ndf = 0;
 	switch (st.st_vmode) {
-	case VM_PHYSICAL:
-		draw_cluster_physical();
-		break;
 	case VM_WIRED:
-		draw_clusters_wired();
-		break;
+		ndf |= NDF_ATORIGIN;
+		/* FALLTHROUGH */
 	case VM_WIREDONE:
-		vec_set(&fv, 0.0f, 0.0f, 0.0f);
-		draw_cluster_wired(&fv);
+		if (st.st_opts & OP_PIPES)
+			draw_cluster_pipes(&fv_zero);
+		/* FALLTHROUGH */
+	case VM_PHYSICAL:
+		NODE_FOREACH(n, &iv)
+			if (n && node_show(n)) {
+				if (ndf & NDF_ATORIGIN) {
+					glPushMatrix();
+					glTranslatef(
+					    n->n_v->fv_x,
+					    n->n_v->fv_y,
+					    n->n_v->fv_z);
+				}
+				draw_node(n, ndf);
+				if (ndf & NDF_ATORIGIN)
+					glPopMatrix();
+			}
 		break;
 	}
+
+	if (st.st_opts & OP_SKEL)
+		draw_skel();
 }
 
 void
