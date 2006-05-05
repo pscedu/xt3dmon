@@ -284,7 +284,7 @@ panel_refresh_legend(struct panel *p)
 	case DM_SAME:
 		panel_set_content(p, "- Legend -");
 
-		pwidget_add(p, &fill_nodata, "All nodes", gscb_pw_hlnc, HL_ALL);
+		pwidget_add(p, &fill_same, "All nodes", gscb_pw_hlnc, HL_ALL);
 		break;
 	default:
 		panel_set_content(p, "- Legend -\n\nNot available.");
