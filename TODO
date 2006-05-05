@@ -52,7 +52,8 @@ todo
 - kill gl_run() -- have glutDisplayHandler for each win
 - provide if-modified-since in http headers
 - change date panel time code to update a global time var when new
-  data is read, not update the time in the panel refresh function
+  data is read (RF_DATASRC handling), don't grab current time in panel
+  refresh function
 - check/mkdir exists when access(/tmp/xtsess/xxx) fails
 - add arg to getcol() to set the texids
 - for tweening, calculate the % moved by one (e.g. move), then apply
