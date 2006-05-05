@@ -667,7 +667,6 @@ draw_cluster(void)
 __inline void
 draw_selnodes(void)
 {
-	struct fvec pos, v;
 	struct selnode *sn;
 	struct fill *ofp;
 	struct node *n;
