@@ -101,7 +101,8 @@ struct state {
 #define OP_AUTOFLYBY	(1<<17)
 #define OP_REEL		(1<<18)
 #define OP_CABSKELS	(1<<19)
-#define NOPS		20
+#define OP_DEUSEX	(1<<20)
+#define NOPS		21
 
 struct xoption {
 	const char	*opt_name;

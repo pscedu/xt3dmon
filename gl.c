@@ -4,6 +4,7 @@
 
 #include "cam.h"
 #include "capture.h"
+#include "deusex.h"
 #include "draw.h"
 #include "env.h"
 #include "flyby.h"
@@ -154,6 +155,8 @@ gl_displayh_stereo(void)
 
 	if (flyby_mode)
 		flyby_update();
+	else if (st.st_opts & OP_DEUSEX)
+		dx_update();
 	if (st.st_opts & OP_TWEEN)
 		tween_update();
 	if (st.st_vmode == VM_WIRED)

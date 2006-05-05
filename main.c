@@ -85,7 +85,7 @@ struct xoption opts[] = {
  /*  6 */ { "Govern mode",		OPF_FBIGN },
  /*  7 */ { "Flyby loop mode",		OPF_FBIGN },
  /*  8 */ { "Node labels",		0 },
- /*  9 */ { "Module mode",		0 },
+ /*  9 */ { "Blade skeletons",		0 },
  /* 10 */ { "Wired cluster frames",	0 },
  /* 11 */ { "Pipe mode",		0 },
  /* 12 */ { "Selected node pipe mode",	0 },
@@ -94,7 +94,9 @@ struct xoption opts[] = {
  /* 15 */ { "Skeletons",		0 },
  /* 16 */ { "Node animation",		0 },
  /* 17 */ { "Auto flyby mode",		OPF_FBIGN },
- /* 18 */ { "Reel mode",		OPF_FBIGN }
+ /* 18 */ { "Reel mode",		OPF_FBIGN },
+ /* 19 */ { "Cabinet skeletons",	0 },
+ /* 20 */ { "Deus Ex mode",		0 }
 };
 
 struct vmode vmodes[] = {
