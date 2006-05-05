@@ -664,7 +664,7 @@ draw_cluster(void)
 		draw_skel();
 }
 
-void
+__inline void
 draw_selnodes(void)
 {
 	struct fvec pos, v;
@@ -677,37 +677,16 @@ draw_selnodes(void)
 		ofp = n->n_fillp;
 		n->n_fillp = &fill_selnode;
 
-		switch (st.st_vmode) {
-		case VM_WIRED:
-			pos.fv_x = n->n_wiv.iv_x * st.st_winsp.iv_x - SELNODE_GAP;
-			pos.fv_y = n->n_wiv.iv_y * st.st_winsp.iv_y - SELNODE_GAP;
-			pos.fv_z = n->n_wiv.iv_z * st.st_winsp.iv_z - SELNODE_GAP;
-			WIREP_FOREACH(&v) {
-				glPushMatrix();
-				glTranslatef(
-				    pos.fv_x + v.fv_x,
-				    pos.fv_y + v.fv_y,
-				    pos.fv_z + v.fv_z);
-				draw_node(n, NDF_ATORIGIN);
-				glPopMatrix();
+		glPushMatrix();
+		glTranslatef(n->n_v->fv_x, n->n_v->fv_y, n->n_v->fv_z);
+		draw_node(n, NDF_ATORIGIN);
+		glPopMatrix();
 
-				if (st.st_opts & OP_SELPIPES &&
-				    (st.st_opts & OP_PIPES) == 0)
-					draw_node_pipes(n);
-			}
-			break;
-		default:
-			glPushMatrix();
-			glTranslatef(n->n_v->fv_x, n->n_v->fv_y, n->n_v->fv_z);
-			draw_node(n, NDF_ATORIGIN);
-			glPopMatrix();
+		if (st.st_vmode != VM_PHYSICAL &&
+		    st.st_opts & OP_SELPIPES &&
+		    (st.st_opts & OP_PIPES) == 0)
+			draw_node_pipes(n);
 
-			if (st.st_vmode != VM_PHYSICAL &&
-			    st.st_opts & OP_SELPIPES &&
-			    (st.st_opts & OP_PIPES) == 0)
-				draw_node_pipes(n);
-			break;
-		}
 		n->n_fillp = ofp;
 	}
 }
