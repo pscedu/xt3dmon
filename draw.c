@@ -122,6 +122,8 @@ draw_compass(void)
 __inline void
 draw_scene(void)
 {
+	static struct fvec v;
+
 	switch (st.st_vmode) {
 	case VM_WIRED:
 		WIREP_FOREACH(&v) {
