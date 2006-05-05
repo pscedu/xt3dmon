@@ -37,6 +37,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "draw.h"
 #include "env.h"
 #include "fill.h"
 #include "flyby.h"
@@ -200,7 +201,6 @@ draw_panel(struct panel *p, int toff)
 	struct fill *frame_fp;
 	int nc, npw, uoff, voff;
 	struct pwidget *pw;
-	struct pinfo *pi;
 	const char *s;
 
 	/* Save state and set things up for 2D. */
@@ -251,8 +251,6 @@ draw_panel(struct panel *p, int toff)
 	uoff--;
 	voff++;
 
-	pi = &pinfo[baseconv(p->p_id) - 1];
-
 	/* First loop cuts into these. */
 	uoff += p->p_w / 2 - toff;
 	voff += PWIDGET_HEIGHT - 1 - PWIDGET_PADDING;
@@ -268,7 +266,7 @@ draw_panel(struct panel *p, int toff)
 		if (voff - PWIDGET_HEIGHT < p->p_v - p->p_h)
 			break;
 
-		if ((pi->pi_opts & PF_XPARENT) == 0) {
+		if ((p->p_info->pi_opts & PF_XPARENT) == 0) {
 			if (fp->f_flags & FF_SKEL)
 				frame_fp = fp;
 			else {
@@ -332,13 +330,13 @@ draw_panel(struct panel *p, int toff)
 			break;
 	}
 
-	if ((pi->pi_opts & PF_XPARENT) == 0) {
+	if ((p->p_info->pi_opts & PF_XPARENT) == 0) {
 		struct fill *fp;
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		fp = (pi->pi_opts & PF_UINP) ? &fill_ipanel : &fill_panel;
+		fp = (p->p_info->pi_opts & PF_UINP) ? &fill_ipanel : &fill_panel;
 
 		/* Draw background. */
 		glBegin(GL_POLYGON);
@@ -396,11 +394,9 @@ panel_draw(struct panel *p, int wid)
 {
 	int compile, tweenadj, u, v, w, h;
 	int lineno, curlen;
-	struct pinfo *pi;
 	int toff;
 	char *s;
 
-	pi = &pinfo[baseconv(p->p_id) - 1];
 	toff = PANEL_PADDING + PANEL_BWIDTH;
 
 	/*
@@ -426,7 +422,7 @@ panel_draw(struct panel *p, int wid)
 	if (p->p_opts & POPT_REMOVE) {
 		w = 0;
 		h = 0;
-		switch (pi->pi_stick) {
+		switch (p->p_info->pi_stick) {
 		case PSTICK_TL:
 			u = -p->p_w;
 			v = winv.iv_h - panel_offset[PVOFF_TL];
@@ -477,7 +473,7 @@ panel_draw(struct panel *p, int wid)
 			nr = (p->p_nwidgets + 1) / 2;
 			h += nr * (PWIDGET_HEIGHT + PWIDGET_PADDING);
 		}
-		switch (pi->pi_stick) {
+		switch (p->p_info->pi_stick) {
 		case PSTICK_TL:
 			u = 0;
 			v = (winv.iv_h - 1) - panel_offset[PVOFF_TL];
@@ -530,10 +526,10 @@ panel_draw(struct panel *p, int wid)
 		p->p_h -= (p->p_h - h) / tweenadj;
 
 	if (p->p_opts & POPT_REMOVE) {
-		if ((pi->pi_stick == PSTICK_TL && p->p_u + p->p_w <= 0) ||
-		    (pi->pi_stick == PSTICK_BL && p->p_u + p->p_w <= 0) ||
-		    (pi->pi_stick == PSTICK_TR && p->p_u >= winv.iv_w) ||
-		    (pi->pi_stick == PSTICK_BR && p->p_u >= winv.iv_w)) {
+		if ((p->p_info->pi_stick == PSTICK_TL && p->p_u + p->p_w <= 0) ||
+		    (p->p_info->pi_stick == PSTICK_BL && p->p_u + p->p_w <= 0) ||
+		    (p->p_info->pi_stick == PSTICK_TR && p->p_u >= winv.iv_w) ||
+		    (p->p_info->pi_stick == PSTICK_BR && p->p_u >= winv.iv_w)) {
 			panel_free(p);
 			return;
 		}
@@ -543,7 +539,7 @@ panel_draw(struct panel *p, int wid)
 
 done:
 	/* spacing */
-	switch (pi->pi_stick) {
+	switch (p->p_info->pi_stick) {
 	case PSTICK_TL:
 		panel_offset[PVOFF_TL] += p->p_h + 1;
 		break;
@@ -619,11 +615,9 @@ panel_hide(int id)
 void
 panel_tremove(struct panel *p)
 {
-	struct pinfo *pi;
 	struct panel *t;
 
-	pi = &pinfo[baseconv(p->p_id) - 1];
-	if (pi->pi_opts & PF_UINP && uinp.uinp_panel != NULL) {
+	if (p->p_info->pi_opts & PF_UINP && uinp.uinp_panel != NULL) {
 		buf_reset(&uinp.uinp_buf);
 		buf_append(&uinp.uinp_buf, '\0');
 		glutKeyboardFunc(gl_keyh_default);
@@ -641,7 +635,6 @@ panel_tremove(struct panel *p)
 void
 panel_toggle(int panel)
 {
-	struct pinfo *pi;
 	struct panel *p;
 
 	TAILQ_FOREACH(p, &panels, p_link)
@@ -654,10 +647,9 @@ panel_toggle(int panel)
 		err(1, "malloc");
 	memset(p, 0, sizeof(*p));
 
-	pi = &pinfo[baseconv(panel) - 1];
-
+	p->p_info = &pinfo[baseconv(panel) - 1];
 	p->p_str = NULL;
-	p->p_refresh = pi->pi_refresh;
+	p->p_refresh = p->p_info->pi_refresh;
 	p->p_id = panel;
 	p->p_fill.f_r = 1.0f;
 	p->p_fill.f_g = 1.0f;
@@ -665,7 +657,7 @@ panel_toggle(int panel)
 	p->p_fill.f_a = 1.0f;
 	SLIST_INIT(&p->p_widgets);
 
-	switch (pi->pi_stick) {
+	switch (p->p_info->pi_stick) {
 	case PSTICK_TL:
 		p->p_u = 0;
 		p->p_v = (winv.iv_h - 1) - panel_offset[PVOFF_TL];
@@ -684,7 +676,7 @@ panel_toggle(int panel)
 		break;
 	}
 
-	if (pi->pi_opts & PF_UINP) {
+	if (p->p_info->pi_opts & PF_UINP) {
 		if (uinp.uinp_panel != NULL) {
 			struct panel *oldp;
 
@@ -697,8 +689,8 @@ panel_toggle(int panel)
 
 		glutKeyboardFunc(gl_keyh_uinput);
 		uinp.uinp_panel = p;
-		uinp.uinp_opts = pi->pi_uinpopts;
-		uinp.uinp_callback = pi->pi_uinpcb;
+		uinp.uinp_opts = p->p_info->pi_uinpopts;
+		uinp.uinp_callback = p->p_info->pi_uinpcb;
 	}
 	TAILQ_INSERT_TAIL(&panels, p, p_link);
 	if (flyby_mode == FBM_REC)
@@ -708,21 +700,18 @@ panel_toggle(int panel)
 void
 panel_demobilize(struct panel *p)
 {
-	struct pinfo *pi;
-
-	pi = &pinfo[baseconv(p->p_id) - 1];
 	p->p_opts &= ~POPT_MOBILE;
 	p->p_opts |= POPT_DIRTY;
 	if (p->p_u + p->p_w / 2 < winv.iv_w / 2) {
 		if (winv.iv_h - p->p_v + p->p_h / 2 < winv.iv_h / 2)
-			pi->pi_stick = PSTICK_TL;
+			p->p_info->pi_stick = PSTICK_TL;
 		else
-			pi->pi_stick = PSTICK_BL;
+			p->p_info->pi_stick = PSTICK_BL;
 	} else {
 		if (winv.iv_h - p->p_v + p->p_h / 2 < winv.iv_h / 2)
-			pi->pi_stick = PSTICK_TR;
+			p->p_info->pi_stick = PSTICK_TR;
 		else
-			pi->pi_stick = PSTICK_BR;
+			p->p_info->pi_stick = PSTICK_BR;
 	}
 }
 
@@ -749,7 +738,7 @@ init_panels(int start)
 
 	cur = 0;
 	TAILQ_FOREACH(p, &panels, p_link)
-		if (pinfo[baseconv(p->p_id) - 1].pi_opts & PF_FBIGN)
+		if (p->p_info->pi_opts & PF_FBIGN)
 			start &= ~p->p_id;
 		else
 			cur |= p->p_id;

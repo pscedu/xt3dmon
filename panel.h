@@ -38,8 +38,11 @@ struct pwidget {
 	int			  pw_h;
 };
 
+struct pinfo;
+
 struct panel {
 	int			  p_id;
+	struct pinfo		 *p_info;
 	int			  p_dl[2];
 	char			 *p_str;
 	size_t			  p_strlen;
