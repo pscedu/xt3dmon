@@ -42,6 +42,10 @@ nc_runall(void (*f)(struct fill *))
 		for (i = 0; i < NRTC; i++)
 			f(&rtclass[i].nc_fill);
 		break;
+	case DM_SEASTAR:
+		for (i = 0; i < NSSC; i++)
+			f(&ssclass[i].nc_fill);
+		break;
 	case DM_MATRIX:
 		f(&fill_matrix);
 		break;
@@ -81,6 +85,10 @@ nc_getfp(size_t nc)
 	case DM_RTUNK:
 		if (nc < NRTC)
 			return (&rtclass[nc].nc_fill);
+		break;
+	case DM_SEASTAR:
+		if (nc < NSSC)
+			return (&ssclass[nc].nc_fill);
 		break;
 	case DM_BORG:
 		return (&fill_borg);

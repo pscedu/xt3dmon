@@ -35,6 +35,7 @@ struct datasrc {
 #define DS_YOD		2
 #define DS_RT		3
 #define DS_MEM		4
+#define DS_SS		5
 
 struct datasrc	*ds_open(int);
 struct datasrc	*ds_get(int);
@@ -57,5 +58,6 @@ void		 parse_mem(const struct datasrc *);
 void		 parse_node(const struct datasrc *);
 void		 parse_yod(const struct datasrc *);
 void		 parse_rt(const struct datasrc *);
+void		 parse_ss(const struct datasrc *);
 
 extern int	 dsp;				/* Data source provider. */

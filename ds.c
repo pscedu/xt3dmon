@@ -26,6 +26,7 @@
 #define _RPATH_JOB	"/xtwmon/www/arbiter-raw.pl?data=jobs"
 #define _RPATH_YOD	"/xtwmon/www/arbiter-raw.pl?data=yods"
 #define _RPATH_RT	"/xtwmon/www/arbiter-raw.pl?data=rt"
+#define _RPATH_SS	"/xtwmon/www/arbiter-raw.pl?data=ss"
 
 #define RDS_HOST	"mugatu.psc.edu"
 #define RDS_PORT	80
@@ -42,6 +43,7 @@ struct datasrc datasrcs[] = {
 	{ "yod",  0, _LIVE_DSP, _PATH_YOD,  _RPATH_YOD,  parse_yod,  DSF_AUTO | DSF_USESSL, NULL,	NULL,	    NULL },
 	{ "rt",   0, _LIVE_DSP, _PATH_RT,   _RPATH_RT,   parse_rt,   DSF_AUTO | DSF_USESSL, NULL,	NULL,       NULL },
 	{ "mem",  0, DSP_LOCAL, _PATH_STAT, NULL,	 parse_mem,  DSF_AUTO,		    NULL,	NULL,	    NULL },
+	{ "ss",   0, _LIVE_DSP, _PATH_SS,   _RPATH_SS,   parse_ss,   DSF_AUTO | DSF_USESSL, NULL,	NULL,       NULL }
 };
 
 void

@@ -82,7 +82,8 @@ struct pinfo pinfo[] = {
  /* 17 */ { "View Mode",	panel_refresh_vmode,	PSTICK_TL, 0,					0,		NULL },
  /* 18 */ { "Data Mode",	panel_refresh_dmode,	PSTICK_TL, 0,					0,		NULL },
  /* 19 */ { "Reel",		panel_refresh_reel,	PSTICK_TR, PF_FBIGN,				0,		NULL },
- /* 20 */ { "Pipe Mode",	panel_refresh_pipe,	PSTICK_TR, 0,					0,		NULL }
+ /* 20 */ { "Pipe Mode",	panel_refresh_pipe,	PSTICK_TR, 0,					0,		NULL },
+ /* 21 */ { "Seastar",		panel_refresh_sstar,	PSTICK_TR, 0,					0,		NULL }
 };
 
 #define PVOFF_TL 0
@@ -456,8 +457,8 @@ panel_draw(struct panel *p, int wid)
 
 	/*
 	 * The second window should see the same panel
-	 * as the right, so skip calculation (it would
-	 * actually be very bad).
+	 * as the right, so skip calculation (otherwise,
+	 * it would be slower and the contents may differ).
 	 */
 	if (stereo_mode == STM_PASV && wid == WINID_LEFT) {
 		/*

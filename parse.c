@@ -21,6 +21,7 @@
 #define PS_ALLOWSPACE (1<<0)
 
 struct route	 rt_max;
+struct seastar	 ss_max;
 struct ivec	 widim;
 int		 total_failures;
 unsigned long	 vmem;
@@ -48,6 +49,21 @@ long		 rmem;
 		    _l >= (max))				\
 			goto bad;				\
 		(v) = (int)_l;					\
+	} while (0)
+
+#define PARSEDBL(s, v)						\
+	do {							\
+		char *_p;					\
+								\
+		while (isspace(*(s)))				\
+			(s)++;					\
+		_p = (s);					\
+		(v) = strtod((s), &_p);				\
+								\
+		if ((s) == _p || !isspace(*_p))			\
+			goto bad;				\
+		(s) = _p;					\
+		*(s)++ = '\0';					\
 	} while (0)
 
 #define PARSECHAR(s, ch)					\
@@ -477,6 +493,61 @@ parse_rt(const struct datasrc *ds)
 		continue;
 bad:
 		prerror("rt", lineno, buf, s);
+	}
+	if (us_error(ds->ds_us))
+		warn("us_gets");
+	errno = 0;
+}
+
+/*
+ * nid       	nblk		nflt		npkt
+ * c9-1c0s7s0	0 0 0 0		0 0 0 0		0 0 0 0
+ */
+void
+parse_ss(const struct datasrc *ds)
+{
+	char *s, buf[BUFSIZ], nid[BUFSIZ];
+	int lineno, vc, cnt;
+	struct physcoord pc;
+	struct seastar ss;
+	struct node *n;
+	struct ivec iv;
+
+	NODE_FOREACH(n, &iv)
+		if (n)
+			memset(&n->n_sstar, 0, sizeof(n->n_sstar));
+	memset(&ss_max, 0, sizeof(ss_max));
+
+	lineno = 0;
+	while (us_gets(ds->ds_us, buf, sizeof(buf)) != NULL) {
+		lineno++;
+		s = buf;
+		while (isspace(*s))
+			s++;
+		if (*s == '#')
+			continue;
+
+		if (parsestr(&s, nid, sizeof(nid), 0) ||
+		    parsenid(nid, &pc))
+			goto bad;
+		n = &nodes[pc.pc_r][pc.pc_cb][pc.pc_cg][pc.pc_m][pc.pc_n];
+
+		for (vc = 0; vc < NVC; vc++)
+			PARSEDBL(s, ss.ss_cnt[SSCNT_NBLK][vc]);
+		for (vc = 0; vc < NVC; vc++)
+			PARSEDBL(s, ss.ss_cnt[SSCNT_NFLT][vc]);
+		for (vc = 0; vc < NVC; vc++)
+			PARSEDBL(s, ss.ss_cnt[SSCNT_NPKT][vc]);
+
+		for (vc = 0; vc < NVC; vc++)
+			for (cnt = 0; cnt < NSSCNT; cnt++)
+				if (ss.ss_cnt[cnt][vc] > ss_max.ss_cnt[cnt][vc])
+					ss_max.ss_cnt[cnt][vc] = ss.ss_cnt[cnt][vc];
+
+		memcpy(&n->n_sstar, &ss, sizeof(n->n_sstar));
+		continue;
+bad:
+		warnx("rt:%d: malformed line [%s] [%s]", lineno, buf, s);
 	}
 	if (us_error(ds->ds_us))
 		warn("us_gets");

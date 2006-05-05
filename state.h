@@ -11,7 +11,9 @@
 #define DM_MATRIX	5
 #define DM_SAME		6
 #define DM_RTUNK	7
-#define NDM		8
+#define DM_SEASTAR	8
+#define DM_LUSTRE	9
+#define NDM		10
 
 /* View mode. */
 #define VM_PHYSICAL	0
@@ -27,6 +29,8 @@ struct state {
 	int		 st_dmode;		/* data mode */
 	int		 st_vmode;		/* view mode */
 	int		 st_pipemode;		/* pipe mode */
+	int		 st_ssmode;		/* seastar mode */
+	int		 st_ssvc;		/* seastar vc */
 	int		 st_hlnc;		/* highlighted node class */
 	int		 st_eggs;		/* Easter eggs */
 	struct ivec	 st_wioff;		/* wired mode offsets */

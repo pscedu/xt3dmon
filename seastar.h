@@ -10,7 +10,7 @@
 #define NSSCNT		3
 
 struct seastar {
-	uint64_t ss_cnt[NSSCNT][NVC];
+	double ss_cnt[NSSCNT][NVC];
 };
 
 extern struct seastar ss_max;

@@ -19,6 +19,8 @@
 
 #define NRTC		10
 
+#define NSSC		10
+
 struct nodeclass {
 	char		*nc_name;
 	struct fill	 nc_fill;
@@ -29,3 +31,4 @@ extern struct nodeclass	 statusclass[];
 extern struct nodeclass	 tempclass[NTEMPC];	/* XXX SPOT */
 extern struct nodeclass	 failclass[NFAILC];	/* XXX SPOT */
 extern struct nodeclass	 rtclass[NRTC];		/* XXX SPOT */
+extern struct nodeclass	 ssclass[NSSC];		/* XXX SPOT */

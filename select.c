@@ -342,7 +342,34 @@ gscb_pw_dmode(int flags, int dm)
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
 	else if (flags == 0) {
+		if (dm == DM_SEASTAR ||
+		    st.st_dmode == DM_SEASTAR)
+			geom_setall(dm == DM_SEASTAR ?
+			    GEOM_SPHERE : GEOM_CUBE);
+
 		st.st_dmode = dm;
+		st.st_rf |= RF_DMODE;
+	}
+}
+
+void
+gscb_pw_ssvc(int flags, int vc)
+{
+	if (flags & SPF_PROBE)
+		cursor_set(GLUT_CURSOR_INFO);
+	else if (flags == 0) {
+		st.st_ssvc = vc;
+		st.st_rf |= RF_DMODE;
+	}
+}
+
+void
+gscb_pw_ssmode(int flags, int m)
+{
+	if (flags & SPF_PROBE)
+		cursor_set(GLUT_CURSOR_INFO);
+	else if (flags == 0) {
+		st.st_ssmode = m;
 		st.st_rf |= RF_DMODE;
 	}
 }

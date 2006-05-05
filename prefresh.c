@@ -281,6 +281,18 @@ panel_refresh_legend(struct panel *p)
 			    rtclass[j].nc_name, gscb_pw_hlnc, j);
 		}
 		break;
+	case DM_SEASTAR:
+		panel_set_content(p, "- Seastar Legend -");
+
+		pwidget_add(p, &fill_nodata, "Show all", gscb_pw_hlnc, HL_ALL);
+
+		for (j = 0; j < NSSC; j++) {
+			if (ssclass[j].nc_nmemb == 0)
+				continue;
+			pwidget_add(p, &ssclass[j].nc_fill,
+			    ssclass[j].nc_name, gscb_pw_hlnc, j);
+		}
+		break;
 	case DM_SAME:
 		panel_set_content(p, "- Legend -");
 
@@ -464,6 +476,26 @@ panel_refresh_ninfo(struct panel *p)
 		    n->n_yod->y_ncpus,
 		    cmdbuf);
 	}
+
+#if 0
+	panel_add_content(p,
+	    "\n\n"
+	    "nblk=%e %e %e %e\n"
+	    "nflt=%e %e %e %e\n"
+	    "npkt=%e %e %e %e",
+	    n->n_sstar.ss_cnt[SSCNT_NBLK][0],
+	    n->n_sstar.ss_cnt[SSCNT_NBLK][1],
+	    n->n_sstar.ss_cnt[SSCNT_NBLK][2],
+	    n->n_sstar.ss_cnt[SSCNT_NBLK][3],
+	    n->n_sstar.ss_cnt[SSCNT_NFLT][0],
+	    n->n_sstar.ss_cnt[SSCNT_NFLT][1],
+	    n->n_sstar.ss_cnt[SSCNT_NFLT][2],
+	    n->n_sstar.ss_cnt[SSCNT_NFLT][3],
+	    n->n_sstar.ss_cnt[SSCNT_NPKT][0],
+	    n->n_sstar.ss_cnt[SSCNT_NPKT][1],
+	    n->n_sstar.ss_cnt[SSCNT_NPKT][2],
+	    n->n_sstar.ss_cnt[SSCNT_NPKT][3]);
+#endif
 }
 
 void
@@ -766,6 +798,46 @@ panel_refresh_dmode(struct panel *p)
 		pwidget_add(p, (st.st_dmode == i ?
 		    &fill_white : &fill_nodata), dmodes[i].dm_name,
 		    gscb_pw_dmode, i);
+	}
+	pwidget_endlist(p);
+}
+
+char *ssvclabels[] = {
+	"VC0",
+	"VC1",
+	"VC2",
+	"VC3"
+};
+
+char *ssmodelabels[] = {
+	"# Blocked cycles",
+	"# Flits",
+	"# Packets"
+};
+
+void
+panel_refresh_sstar(struct panel *p)
+{
+	static int sav_mode, sav_vc;
+	int i;
+
+	if (panel_ready(p) && sav_mode == st.st_ssmode &&
+	    sav_vc == st.st_ssvc)
+		return;
+	sav_mode = st.st_ssmode;
+	sav_vc = st.st_ssvc;
+
+	panel_set_content(p, "- Seastar - ");
+	pwidget_startlist(p);
+	for (i = 0; i < NVC; i++) {
+		pwidget_add(p, (st.st_ssvc == i ?
+		    &fill_white : &fill_nodata), ssvclabels[i],
+		    gscb_pw_ssvc, i);
+	}
+	for (i = 0; i < NSSCNT; i++) {
+		pwidget_add(p, (st.st_ssmode == i ?
+		    &fill_white : &fill_nodata), ssmodelabels[i],
+		    gscb_pw_ssmode, i);
 	}
 	pwidget_endlist(p);
 }

@@ -114,6 +114,8 @@ struct dmode dmodes[] = {
  /* 5 */ { NULL },
  /* 6 */ { "Same" },
  /* 7 */ { "Routing Errors" },
+ /* 8 */ { "Seastar" },
+ /* 9 */ { "Lustre Status" }
 };
 
 struct state st = {
@@ -123,10 +125,12 @@ struct state st = {
 	OP_FRAMES | OP_TWEEN | OP_GROUND | \
 	    OP_DISPLAY | OP_NODEANIM,			/* options */
 	DM_JOB,						/* which data to show */
-	VM_WIREDONE,					/* viewing mode */
+	VM_PHYSICAL,					/* viewing mode */
 	PM_RT,						/* pipe mode */
+	SSCNT_NBLK,					/* seastar mode */
+	0,						/* seastar vc */
 	HL_ALL,						/* node class to highlight */
-	0,
+	0,						/* eggs */
 	{ 0, 0, 0 },					/* wired mode offset */
 	{ 4, 4, 4 },					/* wired node spacing */
 	0						/* rebuild flags */
@@ -280,7 +284,7 @@ roundclass_lg(uint64_t t, uint64_t min, uint64_t max, int nclasses)
 #endif
 
 int
-roundclass(int t, int min, int max, int nclasses)
+roundclass(double t, double min, double max, int nclasses)
 {
 	if (max - min == 0)
 		return (0);
@@ -319,6 +323,10 @@ dmode_change(void)
 	case DM_RTUNK:
 		for (i = 0; i < NRTC; i++)
 			rtclass[i].nc_nmemb = 0;
+		break;
+	case DM_SEASTAR:
+		for (i = 0; i < NSSC; i++)
+			ssclass[i].nc_nmemb = 0;
 		break;
 	}
 
@@ -381,6 +389,15 @@ dmode_change(void)
 				rtclass[i].nc_nmemb++;
 			}
 			break;
+		case DM_SEASTAR:
+			i = roundclass(n->n_sstar.ss_cnt[st.st_ssmode][st.st_ssvc],
+			    0, ss_max.ss_cnt[st.st_ssmode][st.st_ssvc], NSSC);
+			n->n_fillp = &ssclass[i].nc_fill;
+			ssclass[i].nc_nmemb++;
+			break;
+//		default:
+//			n->n_fillp = &fill_xparent;
+//			break;
 		}
 	}
 }
@@ -516,6 +533,7 @@ rebuild(int opts)
 		ds_refresh(DS_JOB, dsflags);
 		ds_refresh(DS_YOD, dsflags);
 		ds_refresh(DS_RT, dsflags);
+		ds_refresh(DS_SS, dsflags);
 		ds_refresh(DS_MEM, DSFF_IGN);
 
 		opts |= RF_DMODE | RF_CLUSTER | RF_HLNC;
@@ -554,7 +572,7 @@ rebuild(int opts)
 	if (opts & RF_DIM) {
 		dim_update();
 
-		opts |= RF_CLUSTER | RF_SELNODE;
+		opts |= RF_CLUSTER | RF_SELNODE; /* RF_WIREP */
 	}
 	if (opts & RF_NODEPHYSV)
 		rebuild_nodephysv();

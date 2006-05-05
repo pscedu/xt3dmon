@@ -115,7 +115,7 @@ void		 opt_disable(int);
 
 void		 restart(void);
 
-int		 roundclass(int, int, int, int);
+int		 roundclass(double, double, double, int);
 
 /* parse-phys.y */
 void		 parse_physconf(const char *);
@@ -148,6 +148,5 @@ extern long		 rmem;
 extern char		 login_auth[BUFSIZ];
 
 extern const struct fvec fv_zero;
-
 
 #endif	/* _XT3DMON_H_ */

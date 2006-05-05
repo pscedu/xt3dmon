@@ -1,6 +1,7 @@
 /* $Id$ */
 
 #include "route.h"
+#include "seastar.h"
 #include "xmath.h"
 
 struct fill;
@@ -22,6 +23,7 @@ struct node {
 	int		 n_temp;
 	int		 n_fails;
 	struct route	 n_route;
+	struct seastar	 n_sstar;
 
 	struct ivec	 n_wiv;			/* wired view position */
 	struct fvec	 n_swiv;		/* scaled */
