@@ -95,6 +95,7 @@ void		 dbg_warn(const char *, ...);
 void		 dbg_crash(void);
 
 /* eggs.c */
+void		 egg_toggle(int);
 void		 egg_borg(void);
 void		 egg_matrix(void);
 

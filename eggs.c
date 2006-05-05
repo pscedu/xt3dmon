@@ -6,6 +6,16 @@
 #include "state.h"
 #include "tween.h"
 
+void
+egg_toggle(int diff)
+{
+	st.st_eggs ^= diff;
+	if (diff & EGG_BORG)
+		egg_borg();
+	if (diff & EGG_MATRIX)
+		egg_matrix();
+}
+
 /* Borg mode Easter egg. */
 void
 egg_borg(void)
