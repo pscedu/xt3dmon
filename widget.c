@@ -153,7 +153,6 @@ draw_cube(const struct fvec *dimp, const struct fill *fp, int flags)
 {
 	struct fill f_frame;
 	struct fvec texv;
-	float color[4];
 	double max;
 	int ldflags;
 
@@ -190,16 +189,12 @@ draw_cube(const struct fvec *dimp, const struct fill *fp, int flags)
 		texv.fv_h = TEXCOORD(dimp->fv_h, max);
 		texv.fv_d = TEXCOORD(dimp->fv_d, max);
 
-		color[0] = fp->f_r;
-		color[1] = fp->f_g;
-		color[2] = fp->f_b;
-		color[3] = fp->f_a;
-
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE,
 		    fp->f_a == 1.0f ? GL_REPLACE : GL_BLEND);
 
 		if (fp->f_a != 1.0f)
-			glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, color);
+			glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR,
+			    fp->f_rgba);
 
 		glEnable(GL_LIGHTING);
 		glEnable(GL_LIGHT0);
