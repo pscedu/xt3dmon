@@ -355,6 +355,7 @@ gscb_pw_pipe(int flags, int m)
 	else if (flags == 0) {
 		st.st_pipemode = m;
 		st.st_rf |= RF_CLUSTER;
+		opt_enable(OP_PIPES);
 	}
 }
 
