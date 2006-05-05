@@ -89,7 +89,7 @@ struct state {
 #define OP_GOVERN	(1<<6)
 #define OP_LOOPFLYBY	(1<<7)
 #define OP_NLABELS	(1<<8)
-#define OP_SHOWMODS	(1<<9)
+#define OP_MODSKELS	(1<<9)
 #define OP_WIVMFRAME	(1<<10)
 #define OP_PIPES	(1<<11)
 #define OP_SELPIPES	(1<<12)

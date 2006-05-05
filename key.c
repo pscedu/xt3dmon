@@ -299,7 +299,7 @@ gl_keyh_option(unsigned char key, __unused int u, __unused int v)
 		opts |= OP_NLABELS;
 		break;
 	case 'M':
-		opts |= OP_SHOWMODS;
+		opts |= OP_MODSKELS;
 		break;
 	case 'n':
 		opts |= OP_NODEANIM;

@@ -217,7 +217,7 @@ opt_flip(int fopts)
 			st.st_rf |= RF_CLUSTER | RF_SELNODE;
 			break;
 		case OP_SKEL:
-		case OP_SHOWMODS:
+		case OP_MODSKELS:
 		case OP_PIPES:
 			st.st_rf |= RF_CLUSTER;
 			break;
