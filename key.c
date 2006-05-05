@@ -602,7 +602,7 @@ gl_keyh_default(unsigned char key, int u, int v)
 		glutKeyboardFunc(gl_keyh_alpha);
 		break;
 	case 'C':
-		st.st_rf |= RF_CLUSTER;
+		st.st_rf |= RF_CLUSTER | RF_WIREP;
 		break;
 	case 'c':
 		sn_clear();

@@ -627,19 +627,6 @@ draw_cluster_pipes(const struct fvec *v)
 	glPopMatrix();
 }
 
-/* Snap to nearest grid */
-__inline float
-snap_to_grid(float n, float size, float clip)
-{
-	float adj;
-
-	adj = fmod(n - clip, size);
-//	while (adj < 0)
-	if (adj < 0)
-		adj += size;
-	return (adj);
-}
-
 __inline void
 draw_cluster(void)
 {

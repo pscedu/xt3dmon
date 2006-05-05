@@ -142,10 +142,8 @@ wired_update(void)
 	    st.st_y + clip > wi_repstart.fv_y + wi_repdim.fv_h ||
 	    st.st_y - clip < wi_repstart.fv_y ||
 	    st.st_z + clip > wi_repstart.fv_z + wi_repdim.fv_d ||
-	    st.st_z - clip < wi_repstart.fv_z) {
-//		status_add("Rebuild triggered\n");
-		st.st_rf |= RF_CLUSTER;
-	}
+	    st.st_z - clip < wi_repstart.fv_z)
+		st.st_rf |= RF_WIREP;
 }
 
 void

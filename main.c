@@ -445,9 +445,55 @@ vmode_change(void)
 			    &n->n_physv : &n->n_swiv;
 }
 
+/* Snap to nearest space on grid. */
+__inline float
+snap(float n, float size, float clip)
+{
+	float adj;
+
+	adj = fmod(n - clip, size);
+//	while (adj < 0)
+	if (adj < 0)
+		adj += size;
+	return (adj);
+}
+
+__inline void
+wirep_update(void)
+{
+	struct fvec dim;
+	float x, y, z;
+
+	x = st.st_x - clip;
+	y = st.st_y - clip;
+	z = st.st_z - clip;
+
+	/*
+	 * Snapping too close is okay because they nodes
+	 * will seem to just "appear" regardless.
+	 */
+	x -= snap(x, WIV_SWIDTH, 0.0);
+	y -= snap(y, WIV_SHEIGHT, 0.0);
+	z -= snap(z, WIV_SDEPTH, 0.0);
+
+	wi_repstart.fv_x = x;
+	wi_repstart.fv_y = y;
+	wi_repstart.fv_z = z;
+
+	dim.fv_w = WIV_SWIDTH;
+	dim.fv_h = WIV_SHEIGHT;
+	dim.fv_d = WIV_SDEPTH;
+
+	wi_repdim.fv_w = dim.fv_w * (int)howmany(st.st_x + clip - x, dim.fv_w);
+	wi_repdim.fv_h = dim.fv_h * (int)howmany(st.st_y + clip - y, dim.fv_h);
+	wi_repdim.fv_d = dim.fv_d * (int)howmany(st.st_z + clip - z, dim.fv_d);
+}
+
 void
 rebuild(int opts)
 {
+	static int rebuild_wirep;
+
 	if (opts & RF_DATASRC) {
 		ds_refresh(DS_NODE, dsflags);
 		ds_refresh(DS_JOB, dsflags);
@@ -468,7 +514,8 @@ rebuild(int opts)
 	if (opts & RF_VMODE) {
 		vmode_change();
 
-		opts |= RF_CLUSTER | RF_CAM | RF_GROUND | RF_SELNODE | RF_DIM;
+		opts |= RF_CLUSTER | RF_NODESWIV | RF_WIREP | RF_CAM | \
+		    RF_GROUND | RF_SELNODE | RF_DIM;
 	}
 	if (opts & RF_CAM) {
 		switch (st.st_vmode) {
@@ -494,8 +541,19 @@ rebuild(int opts)
 	}
 	if (opts & RF_NODEPHYSV)
 		rebuild_nodephysv();
-	if (opts & RF_NODESWIV)
+	if (opts & RF_NODESWIV) {
 		rebuild_nodeswiv();
+
+		opts |= RF_WIREP;
+	}
+
+	if (opts & RF_WIREP)
+		rebuild_wirep = 1;
+	if (st.st_vmode == VM_WIRED && rebuild_wirep) {
+		wirep_update();
+		rebuild_wirep = 0;
+	}
+
 	if (opts & RF_CLUSTER)
 		gl_run(make_cluster);
 	if (opts & RF_SELNODE)
