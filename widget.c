@@ -261,6 +261,12 @@ draw_sphere(const struct fvec *dimp, const struct fill *fp, int flags)
 	glTranslatef(dimp->fv_r, dimp->fv_r, dimp->fv_r);
 
 	if ((fp->f_flags & FF_SKEL) == 0) {
+		if (fp->f_a != 1.0) {
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, fp->f_blfunc ?
+			    fp->f_blfunc : GL_DST_COLOR);
+		}
+
 //		glEnable(GL_POLYGON_SMOOTH);
 //		glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
 
@@ -269,6 +275,9 @@ draw_sphere(const struct fvec *dimp, const struct fill *fp, int flags)
 		gluSphere(quadric, r, SPH_CUTS, SPH_CUTS);
 
 //		glDisable(GL_POLYGON_SMOOTH);
+
+		if (fp->f_a != 1.0)
+			glDisable(GL_BLEND);
 
 		ldflags |= LDF_SHIFT;
 		f_frame = fill_black;
