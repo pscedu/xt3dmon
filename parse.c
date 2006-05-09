@@ -254,6 +254,14 @@ parse_node(const struct datasrc *ds)
 		PARSENUM(s, nfails, INT_MAX);
 		PARSECHAR(s, lustat);
 
+		if (x < 0 || x >= WIDIM_WIDTH ||
+		    y < 0 || y >= WIDIM_HEIGHT ||
+		    z < 0 || z >= WIDIM_DEPTH) {
+			warnx("node %d: bad coords <%d,%d,%d>",
+			    nid, x, y, z);
+			goto bad;
+		}
+
 		node = &nodes[r][cb][cg][m][n];
 		node->n_nid = nid;
 		invmap[nid] = node;
@@ -280,6 +288,8 @@ parse_node(const struct datasrc *ds)
 			node->n_state = SC_SVC;
 			break;
 		default:
+			warnx("node %d: bad state %c",
+			    nid, stat);
 			goto bad;
 		}
 
@@ -294,6 +304,8 @@ parse_node(const struct datasrc *ds)
 			node->n_lustat = LS_RECOVER;
 			break;
 		default:
+			warnx("node %d: bad lustat %c",
+			    nid, lustat);
 			goto bad;
 		}
 
@@ -333,9 +345,13 @@ bad:
 
 	if (++widim.iv_w != WIDIM_WIDTH ||
 	    ++widim.iv_h != WIDIM_HEIGHT ||
-	    ++widim.iv_d != WIDIM_DEPTH)
-		errx(1, "wired cluster dimensions have changed (%d,%d,%d)",
+	    ++widim.iv_d != WIDIM_DEPTH) {
+		warnx("wired cluster dimensions have changed (%d,%d,%d)",
 		    widim.iv_w, widim.iv_y, widim.iv_z);
+		widim.iv_w = WIDIM_WIDTH;
+		widim.iv_h = WIDIM_HEIGHT;
+		widim.iv_d = WIDIM_DEPTH;
+	}
 }
 
 void
