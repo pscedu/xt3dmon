@@ -75,6 +75,14 @@ vec_addto(const struct fvec *a, struct fvec *b)
 	b->fv_z += a->fv_z;
 }
 
+__inline void
+vec_subfrom(const struct fvec *a, struct fvec *b)
+{
+	b->fv_x -= a->fv_x;
+	b->fv_y -= a->fv_y;
+	b->fv_z -= a->fv_z;
+}
+
 void
 vec_rotate(struct fvec *fv, const struct fvec *axis, double deg)
 {

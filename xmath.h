@@ -66,6 +66,7 @@ float	 vec_mag(const struct fvec *);
 void	 vec_set(struct fvec *, float, float, float);
 void	 vec_copyto(const struct fvec *, struct fvec *);
 void	 vec_addto(const struct fvec *, struct fvec *);
+void	 vec_subfrom(const struct fvec *, struct fvec *);
 void	 vec_sub(struct fvec *, const struct fvec *, const struct fvec *);
 void	 vec_rotate(struct fvec *, const struct fvec *, double deg);
 
