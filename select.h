@@ -30,6 +30,7 @@ struct glname {
 #define HF_HIDEHELP	0
 #define HF_SHOWHELP	1
 #define HF_CLRSN	2
+#define HF_UPDATE	3
 
 void		 sel_begin(void);
 int		 sel_end(void);

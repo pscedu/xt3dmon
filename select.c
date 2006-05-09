@@ -332,6 +332,9 @@ gscb_pw_help(int flags, int opt)
 		case HF_CLRSN:
 			sn_clear();
 			break;
+		case HF_UPDATE:
+			st.st_rf |= RF_DATASRC;
+			break;
 		}
 	}
 }

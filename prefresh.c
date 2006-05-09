@@ -765,6 +765,7 @@ panel_refresh_help(struct panel *p)
 		pwidget_add(p, &fill_xparent, "Panels", gscb_pw_panel, baseconv(PANEL_PANELS) - 1);
 		pwidget_add(p, &fill_xparent, "Options", gscb_pw_panel, baseconv(PANEL_OPTS) - 1);
 		pwidget_add(p, &fill_xparent, "Clear Selnodes", gscb_pw_help, HF_CLRSN);
+		pwidget_add(p, &fill_xparent, "Update Data", gscb_pw_help, HF_UPDATE);
 	} else {
 		pwidget_add(p, &fill_xparent, "Help <<",
 		    gscb_pw_help, HF_SHOWHELP);
