@@ -343,3 +343,10 @@ flyby_beginauto(void)
 
 	sav_st.st_opts = ops;
 }
+
+void
+flyby_clear(void)
+{
+	unlink(_PATH_FLYBY); /* XXX remove()? */
+	errno = 0;
+}

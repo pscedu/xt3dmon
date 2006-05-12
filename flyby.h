@@ -17,6 +17,7 @@ void	 flyby_writeseq(struct state *);
 void	 flyby_writepanel(int);
 void	 flyby_writeselnode(int);
 void	 flyby_rstautoto(void);
+void	 flyby_clear(void);
 
 extern int flyby_mode;
 extern int flyby_nautoto;

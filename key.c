@@ -52,19 +52,6 @@ gl_keyh_actflyby(__unused unsigned char key, __unused int u, __unused int v)
 {
 	if (key == ' ') {
 		st.st_opts ^= OP_STOP;
-		if (st.st_opts & OP_STOP) {
-			stopv.fv_x = tv.fv_x;  stoplv.fv_x = tlv.fv_x;
-			stopv.fv_y = tv.fv_y;  stoplv.fv_y = tlv.fv_y;
-			stopv.fv_z = tv.fv_z;  stoplv.fv_z = tlv.fv_z;
-
-			tv.fv_x = st.st_x;  tlv.fv_x = st.st_lx;
-			tv.fv_y = st.st_y;  tlv.fv_y = st.st_ly;
-			tv.fv_z = st.st_z;  tlv.fv_z = st.st_lz;
-		} else {
-			tv.fv_x = stopv.fv_x;  tlv.fv_x = stoplv.fv_x;
-			tv.fv_y = stopv.fv_y;  tlv.fv_y = stoplv.fv_y;
-			tv.fv_z = stopv.fv_z;  tlv.fv_z = stoplv.fv_z;
-		}
 		return;
 	}
 	flyby_end();
@@ -77,8 +64,7 @@ gl_keyh_flyby(unsigned char key, __unused int u, __unused int v)
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'c':
-		unlink(_PATH_FLYBY); /* XXX remove()? */
-		errno = 0;
+		flyby_clear();
 		break;
 	case 'q':
 		switch (flyby_mode) {
