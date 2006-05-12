@@ -638,6 +638,7 @@ main(int argc, char *argv[])
 	while ((c = getopt(argc, argv, "ac:dpv")) != -1)
 		switch (c) {
 		case 'a':
+errx(1, "broken");
 			flags |= GLUT_STEREO;
 			stereo_mode = STM_ACT;
 			break;
@@ -701,6 +702,6 @@ main(int argc, char *argv[])
 void
 usage(void)
 {
-	fprintf(stderr, "usage: %s [-adpv]\n", progname);
+	fprintf(stderr, "usage: %s [-dp] [-c physconf]\n", progname);
 	exit(1);
 }

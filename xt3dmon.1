@@ -9,7 +9,8 @@
 .Nd XT3 monitor
 .Sh SYNOPSIS
 .Nm xt3dmon
-.Op Fl adpv
+.Op Fl dp
+.Op Fl c Ar physconf
 .Sh DESCRIPTION
 .Nm
 is a 3D program that graphically displays various data sets of
@@ -21,12 +22,18 @@ refreshed so that the display reflects reality.
 .Pp
 The options are as follows:
 .Bl -tag -width Ds
-.It Fl a
-Enable active stereo mode.
-In this mode, if the video hardware supports it,
-.Nm
-will manage buffers for both the left and right eyes to be
-overlaid on the same window.
+.\" .It Fl a
+.\" Enable active stereo mode.
+.\" In this mode, if the video hardware supports it,
+.\" .Nm
+.\" will manage buffers for both the left and right eyes to be
+.\" overlaid on the same window.
+.It Fl c Ar physconf
+Specify an alternative
+.Pa phys.conf
+machine physical layout description file.
+Default is
+.Pa data/phys.conf .
 .It Fl d
 Enable
 .Dq daemon
@@ -40,8 +47,6 @@ Enable passive stereo mode.
 In this mode, two windows are created and maintained individually,
 for use by a stereo projector overlaying the right side of the
 available screen space with the left.
-.It Fl v
-Enable verbose mode (server-mode debugging messages).
 .El
 .Pp
 There are four different data displays available: job, yod, temperature,
