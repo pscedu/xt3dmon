@@ -22,13 +22,13 @@
 #include "ustream.h"
 #include "util.h"
 
-#define _RPATH_NODE	"/xtwmon/www/arbiter-raw.pl?data=nodes"
-#define _RPATH_JOB	"/xtwmon/www/arbiter-raw.pl?data=jobs"
-#define _RPATH_YOD	"/xtwmon/www/arbiter-raw.pl?data=yods"
-#define _RPATH_RT	"/xtwmon/www/arbiter-raw.pl?data=rt"
-#define _RPATH_SS	"/xtwmon/www/arbiter-raw.pl?data=ss"
+#define _RPATH_NODE	"/arbiter-raw.pl?data=nodes"
+#define _RPATH_JOB	"/arbiter-raw.pl?data=jobs"
+#define _RPATH_YOD	"/arbiter-raw.pl?data=yods"
+#define _RPATH_RT	"/arbiter-raw.pl?data=rt"
+#define _RPATH_SS	"/arbiter-raw.pl?data=ss"
 
-#define RDS_HOST	"mugatu.psc.edu"
+#define RDS_HOST	"bigben-monitor.psc.edu"
 #define RDS_PORT	80
 #define RDS_PORTSSL	443
 
