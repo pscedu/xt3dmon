@@ -2,6 +2,7 @@
 
 #include "cdefs.h"
 #include "env.h"
+#include "gl.h"
 #include "node.h"
 #include "queue.h"
 #include "selnode.h"
@@ -12,7 +13,8 @@
 #define FOCAL_LENGTH	(5.00f) /* length of 3d focus */
 #define ST_EYESEP	(0.30f) /* distance between "eyes" */
 
-int gl_cursor;
+int cursor;
+int gl_cursor[2];
 
 struct fvec focus;
 
@@ -52,12 +54,19 @@ frustum_calc(int frid, struct frustum *fr)
 }
 
 void
-cursor_set(int cursor)
+cursor_update(void)
 {
-	if (gl_cursor != cursor) {
+	if (gl_cursor[wid] != cursor) {
 		glutSetCursor(cursor);
-		gl_cursor = cursor;
+		gl_cursor[wid] = cursor;
 	}
+}
+
+void
+cursor_set(int curs)
+{
+	cursor = curs;
+	gl_run(cursor_update);
 }
 
 void
