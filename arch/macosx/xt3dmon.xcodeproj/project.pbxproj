@@ -50,6 +50,12 @@
 		D25936D409BE11DE00961C5E /* ustrop-file.c in Sources */ = {isa = PBXBuildFile; fileRef = D25936CD09BE11DE00961C5E /* ustrop-file.c */; };
 		D25936D509BE11DE00961C5E /* ustrop-ssl.c in Sources */ = {isa = PBXBuildFile; fileRef = D25936CE09BE11DE00961C5E /* ustrop-ssl.c */; };
 		D25936D609BE11DE00961C5E /* util.c in Sources */ = {isa = PBXBuildFile; fileRef = D25936CF09BE11DE00961C5E /* util.c */; };
+		D2ABB86B0A18E01C005762AF /* prefresh.c in Sources */ = {isa = PBXBuildFile; fileRef = D2ABB8690A18E01C005762AF /* prefresh.c */; };
+		D2ABB86C0A18E01C005762AF /* reel.c in Sources */ = {isa = PBXBuildFile; fileRef = D2ABB86A0A18E01C005762AF /* reel.c */; };
+		D2ABB87E0A18E10F005762AF /* deusex.c in Sources */ = {isa = PBXBuildFile; fileRef = D2ABB87A0A18E10F005762AF /* deusex.c */; };
+		D2ABB87F0A18E10F005762AF /* env.c in Sources */ = {isa = PBXBuildFile; fileRef = D2ABB87B0A18E10F005762AF /* env.c */; };
+		D2ABB8800A18E10F005762AF /* fill.c in Sources */ = {isa = PBXBuildFile; fileRef = D2ABB87C0A18E10F005762AF /* fill.c */; };
+		D2ABB8810A18E10F005762AF /* mark.c in Sources */ = {isa = PBXBuildFile; fileRef = D2ABB87D0A18E10F005762AF /* mark.c */; };
 		D37C16960833BF5400B1AA74 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D37C16930833BF5400B1AA74 /* Cocoa.framework */; };
 		D37C16970833BF5400B1AA74 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D37C16940833BF5400B1AA74 /* GLUT.framework */; };
 		D37C16980833BF5400B1AA74 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D37C16950833BF5400B1AA74 /* OpenGL.framework */; };
@@ -132,6 +138,38 @@
 		D25936CF09BE11DE00961C5E /* util.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = util.c; path = ../../util.c; sourceTree = SOURCE_ROOT; };
 		D25936D009BE11DE00961C5E /* util.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = util.h; path = ../../util.h; sourceTree = SOURCE_ROOT; };
 		D25936D109BE11DE00961C5E /* xssl.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = xssl.h; path = ../../xssl.h; sourceTree = SOURCE_ROOT; };
+		D2ABB84F0A18DFF0005762AF /* cam.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = cam.h; path = ../../cam.h; sourceTree = SOURCE_ROOT; };
+		D2ABB8500A18DFF0005762AF /* capture.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = capture.h; path = ../../capture.h; sourceTree = SOURCE_ROOT; };
+		D2ABB8510A18DFF0005762AF /* deusex.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = deusex.h; path = ../../deusex.h; sourceTree = SOURCE_ROOT; };
+		D2ABB8520A18DFF0005762AF /* draw.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = draw.h; path = ../../draw.h; sourceTree = SOURCE_ROOT; };
+		D2ABB8530A18DFF0005762AF /* ds.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = ds.h; path = ../../ds.h; sourceTree = SOURCE_ROOT; };
+		D2ABB8540A18DFF0005762AF /* env.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = env.h; path = ../../env.h; sourceTree = SOURCE_ROOT; };
+		D2ABB8550A18DFF0005762AF /* fill.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = fill.h; path = ../../fill.h; sourceTree = SOURCE_ROOT; };
+		D2ABB8560A18DFF0005762AF /* flyby.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = flyby.h; path = ../../flyby.h; sourceTree = SOURCE_ROOT; };
+		D2ABB8570A18DFF0005762AF /* gl.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = gl.h; path = ../../gl.h; sourceTree = SOURCE_ROOT; };
+		D2ABB8580A18DFF0005762AF /* http.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = http.h; path = ../../http.h; sourceTree = SOURCE_ROOT; };
+		D2ABB8590A18DFF0005762AF /* job.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = job.h; path = ../../job.h; sourceTree = SOURCE_ROOT; };
+		D2ABB85A0A18DFF0005762AF /* mark.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = mark.h; path = ../../mark.h; sourceTree = SOURCE_ROOT; };
+		D2ABB85B0A18DFF0005762AF /* node.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = node.h; path = ../../node.h; sourceTree = SOURCE_ROOT; };
+		D2ABB85C0A18DFF0005762AF /* nodeclass.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = nodeclass.h; path = ../../nodeclass.h; sourceTree = SOURCE_ROOT; };
+		D2ABB85D0A18DFF0005762AF /* objlist.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = objlist.h; path = ../../objlist.h; sourceTree = SOURCE_ROOT; };
+		D2ABB85E0A18DFF0005762AF /* panel.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = panel.h; path = ../../panel.h; sourceTree = SOURCE_ROOT; };
+		D2ABB85F0A18DFF0005762AF /* reel.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = reel.h; path = ../../reel.h; sourceTree = SOURCE_ROOT; };
+		D2ABB8600A18DFF0005762AF /* route.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = route.h; path = ../../route.h; sourceTree = SOURCE_ROOT; };
+		D2ABB8610A18DFF0005762AF /* seastar.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = seastar.h; path = ../../seastar.h; sourceTree = SOURCE_ROOT; };
+		D2ABB8620A18DFF0005762AF /* select.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = select.h; path = ../../select.h; sourceTree = SOURCE_ROOT; };
+		D2ABB8630A18DFF0005762AF /* selnode.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = selnode.h; path = ../../selnode.h; sourceTree = SOURCE_ROOT; };
+		D2ABB8640A18DFF0005762AF /* server.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = server.h; path = ../../server.h; sourceTree = SOURCE_ROOT; };
+		D2ABB8650A18DFF0005762AF /* state.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = state.h; path = ../../state.h; sourceTree = SOURCE_ROOT; };
+		D2ABB8660A18DFF0005762AF /* tween.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = tween.h; path = ../../tween.h; sourceTree = SOURCE_ROOT; };
+		D2ABB8670A18DFF0005762AF /* uinp.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = uinp.h; path = ../../uinp.h; sourceTree = SOURCE_ROOT; };
+		D2ABB8680A18DFF0005762AF /* yod.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = yod.h; path = ../../yod.h; sourceTree = SOURCE_ROOT; };
+		D2ABB8690A18E01C005762AF /* prefresh.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = prefresh.c; path = ../../prefresh.c; sourceTree = SOURCE_ROOT; };
+		D2ABB86A0A18E01C005762AF /* reel.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = reel.c; path = ../../reel.c; sourceTree = SOURCE_ROOT; };
+		D2ABB87A0A18E10F005762AF /* deusex.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = deusex.c; path = ../../deusex.c; sourceTree = SOURCE_ROOT; };
+		D2ABB87B0A18E10F005762AF /* env.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = env.c; path = ../../env.c; sourceTree = SOURCE_ROOT; };
+		D2ABB87C0A18E10F005762AF /* fill.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = fill.c; path = ../../fill.c; sourceTree = SOURCE_ROOT; };
+		D2ABB87D0A18E10F005762AF /* mark.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = mark.c; path = ../../mark.c; sourceTree = SOURCE_ROOT; };
 		D37C16930833BF5400B1AA74 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		D37C16940833BF5400B1AA74 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = /System/Library/Frameworks/GLUT.framework; sourceTree = "<absolute>"; };
 		D37C16950833BF5400B1AA74 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
@@ -155,6 +193,32 @@
 		D31796C808AD1BF60016A4BD /* Headers */ = {
 			isa = PBXGroup;
 			children = (
+				D2ABB84F0A18DFF0005762AF /* cam.h */,
+				D2ABB8500A18DFF0005762AF /* capture.h */,
+				D2ABB8510A18DFF0005762AF /* deusex.h */,
+				D2ABB8520A18DFF0005762AF /* draw.h */,
+				D2ABB8530A18DFF0005762AF /* ds.h */,
+				D2ABB8540A18DFF0005762AF /* env.h */,
+				D2ABB8550A18DFF0005762AF /* fill.h */,
+				D2ABB8560A18DFF0005762AF /* flyby.h */,
+				D2ABB8570A18DFF0005762AF /* gl.h */,
+				D2ABB8580A18DFF0005762AF /* http.h */,
+				D2ABB8590A18DFF0005762AF /* job.h */,
+				D2ABB85A0A18DFF0005762AF /* mark.h */,
+				D2ABB85B0A18DFF0005762AF /* node.h */,
+				D2ABB85C0A18DFF0005762AF /* nodeclass.h */,
+				D2ABB85D0A18DFF0005762AF /* objlist.h */,
+				D2ABB85E0A18DFF0005762AF /* panel.h */,
+				D2ABB85F0A18DFF0005762AF /* reel.h */,
+				D2ABB8600A18DFF0005762AF /* route.h */,
+				D2ABB8610A18DFF0005762AF /* seastar.h */,
+				D2ABB8620A18DFF0005762AF /* select.h */,
+				D2ABB8630A18DFF0005762AF /* selnode.h */,
+				D2ABB8640A18DFF0005762AF /* server.h */,
+				D2ABB8650A18DFF0005762AF /* state.h */,
+				D2ABB8660A18DFF0005762AF /* tween.h */,
+				D2ABB8670A18DFF0005762AF /* uinp.h */,
+				D2ABB8680A18DFF0005762AF /* yod.h */,
 				6DBE1E260919605200AFFCDC /* buf.h */,
 				6DBE1E2A0919605200AFFCDC /* cdefs.h */,
 				6DBE1E2B0919605200AFFCDC /* compat.h */,
@@ -211,6 +275,12 @@
 		D37C16CA0833BF9400B1AA74 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				D2ABB87A0A18E10F005762AF /* deusex.c */,
+				D2ABB87B0A18E10F005762AF /* env.c */,
+				D2ABB87C0A18E10F005762AF /* fill.c */,
+				D2ABB87D0A18E10F005762AF /* mark.c */,
+				D2ABB8690A18E01C005762AF /* prefresh.c */,
+				D2ABB86A0A18E01C005762AF /* reel.c */,
 				D25936CB09BE11DE00961C5E /* ssl.c */,
 				D25936CC09BE11DE00961C5E /* ustrdtab.c */,
 				D25936CD09BE11DE00961C5E /* ustrop-file.c */,
@@ -410,6 +480,12 @@
 				D25936D409BE11DE00961C5E /* ustrop-file.c in Sources */,
 				D25936D509BE11DE00961C5E /* ustrop-ssl.c in Sources */,
 				D25936D609BE11DE00961C5E /* util.c in Sources */,
+				D2ABB86B0A18E01C005762AF /* prefresh.c in Sources */,
+				D2ABB86C0A18E01C005762AF /* reel.c in Sources */,
+				D2ABB87E0A18E10F005762AF /* deusex.c in Sources */,
+				D2ABB87F0A18E10F005762AF /* env.c in Sources */,
+				D2ABB8800A18E10F005762AF /* fill.c in Sources */,
+				D2ABB8810A18E10F005762AF /* mark.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
