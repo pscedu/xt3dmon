@@ -21,6 +21,22 @@
 long	 fps = 50;	/* last fps sample */
 long	 fps_cnt = 0;	/* current fps counter */
 
+__inline void
+gl_run(void (*f)(void))
+{
+	if (stereo_mode == STM_PASV) {
+		wid = WINID_LEFT;
+		glutSetWindow(window_ids[wid]);
+		(*f)();
+
+		wid = WINID_RIGHT;
+		glutSetWindow(window_ids[wid]);
+		(*f)();
+	} else
+		(*f)();
+}
+
+
 void
 gl_reshapeh(int w, int h)
 {
@@ -92,21 +108,6 @@ gl_setup(void)
 	glutTimerFunc(1, cocb_clearstatus, 0); /* XXX: enable/disable when PANEL_STATUS? */
 
 	tex_load();
-}
-
-__inline void
-gl_run(void (*f)(void))
-{
-	if (stereo_mode == STM_PASV) {
-		wid = WINID_LEFT;
-		glutSetWindow(window_ids[wid]);
-		(*f)();
-
-		wid = WINID_RIGHT;
-		glutSetWindow(window_ids[wid]);
-		(*f)();
-	} else
-		(*f)();
 }
 
 __inline void
