@@ -32,6 +32,11 @@ struct glname {
 #define HF_CLRSN	2
 #define HF_UPDATE	3
 
+#define PWFF_STOPREC	0
+#define PWFF_PLAY	1
+#define PWFF_REC	2
+#define PWFF_CLR	3
+
 void		 sel_begin(void);
 int		 sel_end(void);
 int		 sel_process(int, int, int);
@@ -50,3 +55,4 @@ void		 gscb_pw_ssmode(int, int);
 void		 gscb_pw_ssvc(int, int);
 void		 gscb_pw_pipe(int, int);
 void		 gscb_pw_reel(int, int);
+void		 gscb_pw_fb(int, int);

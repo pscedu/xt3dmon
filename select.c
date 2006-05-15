@@ -394,7 +394,32 @@ gscb_pw_reel(int flags, int i)
 {
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
-	else if (flags == 0)
+	else if (flags == 0) {
 		snprintf(reel_fn, sizeof(reel_fn), "%s",
 		    reel_list.ol_reels[i]->rl_dirname);
+		st.st_rf |= RF_REEL;
+	}
+}
+
+void
+gscb_pw_fb(int flags, int i)
+{
+	if (flags & SPF_PROBE)
+		cursor_set(GLUT_CURSOR_INFO);
+	else if (flags == 0) {
+		switch (i) {
+		case PWFF_STOPREC:
+			flyby_end();
+			break;
+		case PWFF_PLAY:
+			flyby_begin(FBM_PLAY);
+			break;
+		case PWFF_REC:
+			flyby_begin(FBM_REC);
+			break;
+		case PWFF_CLR:
+			flyby_clear();
+			break;
+		}
+	}
 }
