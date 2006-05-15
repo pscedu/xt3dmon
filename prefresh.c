@@ -932,7 +932,8 @@ panel_refresh_reel(struct panel *p)
 		panel_set_content(p, "- Reel -\n"
 		    "Frame %d/%d\n%s %s", reel_pos,
 		    reelent_list.ol_cur, fn,
-		    reelent_list.ol_reelents[reel_pos]->re_name);
+		    reelent_list.ol_cur > 0 ?
+			    reelent_list.ol_reelents[reel_pos]->re_name : "N/A");
 	} else {
 		panel_set_content(p, "- Reel -");
 
@@ -963,6 +964,9 @@ panel_refresh_reel(struct panel *p)
 			    &fill_nodata : &fill_white), rl->rl_name,
 			    gscb_pw_reel, i);
 		}
+		
+		if (i == 0)
+			panel_add_content(p, "\nNone available.");
 	}
 	pwidget_endlist(p);
 }
