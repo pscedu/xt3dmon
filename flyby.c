@@ -303,6 +303,8 @@ flyby_end(void)
 	}
 
 	flyby_mode = FBM_OFF;
+		
+	flyby_rstautoto();
 }
 
 __inline void
