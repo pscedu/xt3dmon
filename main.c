@@ -250,7 +250,7 @@ opt_flip(int fopts)
 			break;
 		case OP_REEL:
 			if (on)
-				reel_load();
+				st.st_rf |= RF_REEL;
 			break;
 		}
 	}
@@ -610,6 +610,8 @@ rebuild(int opts)
 		else
 			focus_selnodes(&focus);
 	}
+	if (opts & RF_REEL)
+		reel_load();
 }
 
 void
