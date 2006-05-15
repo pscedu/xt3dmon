@@ -189,10 +189,12 @@ panel_refresh_cmd(struct panel *p)
 
 	if (SLIST_EMPTY(&selnodes))
 		panel_set_content(p,
-		    "- Send Command to Node -\nNo node(s) selected.");
+		    "- Send Command to Node -\n"
+		    "No node(s) selected.");
 	else
 		panel_set_content(p,
-		    "- Send Command to Node -\n\nnid%d> %s",
+		    "- Send Command to Node -\n"
+		    "nid%d> %s",
 		    SLIST_FIRST(&selnodes)->sn_nodep->n_nid,
 		    buf_get(&uinp.uinp_buf));
 }
@@ -209,8 +211,8 @@ panel_refresh_legend(struct panel *p)
 	pwidget_startlist(p);
 	switch (st.st_dmode) {
 	case DM_JOB:
-		panel_set_content(p, "- Job Legend -\nTotal jobs: %lu",
-		    job_list.ol_cur);
+		panel_set_content(p, "- Job Legend -\n"
+		    "Total jobs: %lu", job_list.ol_cur);
 
 		pwidget_add(p, &fill_nodata, "Show all", gscb_pw_hlnc, HL_ALL);
 
@@ -226,8 +228,8 @@ panel_refresh_legend(struct panel *p)
 			    job_list.ol_jobs[j]->j_name, gscb_pw_hlnc, NSC + j);
 		break;
 	case DM_FAIL:
-		panel_set_content(p, "- Failure Legend - \nTotal: %lu",
-		    total_failures);
+		panel_set_content(p, "- Failure Legend -\n"
+		    "Total: %lu", total_failures);
 
 		pwidget_add(p, &fill_nodata, "Show all", gscb_pw_hlnc, HL_ALL);
 		pwidget_add(p, &fill_nodata, "No data", NULL, 0);
@@ -253,8 +255,8 @@ panel_refresh_legend(struct panel *p)
 		}
 		break;
 	case DM_YOD:
-		panel_set_content(p, "- Yod Legend -\nTotal yods: %lu",
-		    yod_list.ol_cur);
+		panel_set_content(p, "- Yod Legend -\n"
+		    "Total yods: %lu", yod_list.ol_cur);
 
 		pwidget_add(p, &fill_nodata, "Show all", gscb_pw_hlnc, HL_ALL);
 
@@ -311,7 +313,8 @@ panel_refresh_legend(struct panel *p)
 		}
 		break;
 	default:
-		panel_set_content(p, "- Legend -\n\nNot available.");
+		panel_set_content(p, "- Legend -\n"
+		    "Not available.");
 		break;
 	}
 	pwidget_endlist(p);
@@ -334,7 +337,8 @@ panel_refresh_ninfo(struct panel *p)
 	selnode_clean |= PANEL_NINFO;
 
 	if (SLIST_EMPTY(&selnodes)) {
-		panel_set_content(p, "- Node Information -\nNo node(s) selected");
+		panel_set_content(p, "- Node Information -\n"
+		    "No node(s) selected");
 		return;
 	}
 
@@ -519,17 +523,30 @@ panel_refresh_flyby(struct panel *p)
 		return;
 	sav_mode = flyby_mode;
 
+	pwidget_startlist(p);
+	panel_set_content(p, "- Flyby -");
 	switch (flyby_mode) {
 	case FBM_PLAY:
-		panel_set_content(p, "Playing flyby");
+		panel_add_content(p, "\nPlaying back flyby");
 		break;
 	case FBM_REC:
-		panel_set_content(p, "Recording flyby");
+		panel_add_content(p, "\nRecording new flyby");
+
+		pwidget_add(p, &fill_nodata, "Stop recording",
+		    gscb_pw_fb, PWFF_STOPREC);
 		break;
 	default:
-		panel_set_content(p, "Flyby mode disabled");
+		panel_add_content(p, "\nFlyby mode disabled");
+
+		pwidget_add(p, &fill_nodata, "Play",
+		    gscb_pw_fb, PWFF_PLAY);
+		pwidget_add(p, &fill_nodata, "Record",
+		    gscb_pw_fb, PWFF_REC);
+		pwidget_add(p, &fill_nodata, "Delete",
+		    gscb_pw_fb, PWFF_CLR);
 		break;
 	}
+	pwidget_endlist(p);
 }
 
 void
@@ -539,8 +556,8 @@ panel_refresh_gotonode(struct panel *p)
 		return;
 	uinp.uinp_opts &= ~UINPO_DIRTY;
 
-	panel_set_content(p, "- Go to Node -\nNode ID: %s",
-	    buf_get(&uinp.uinp_buf));
+	panel_set_content(p, "- Go to Node -\n"
+	    "Node ID: %s", buf_get(&uinp.uinp_buf));
 }
 
 void
@@ -550,8 +567,8 @@ panel_refresh_gotojob(struct panel *p)
 		return;
 	uinp.uinp_opts &= ~UINPO_DIRTY;
 
-	panel_set_content(p, "- Go to Job -\nJob ID: %s",
-	    buf_get(&uinp.uinp_buf));
+	panel_set_content(p, "- Go to Job -\n"
+	    "Job ID: %s", buf_get(&uinp.uinp_buf));
 }
 
 void
@@ -560,7 +577,10 @@ panel_refresh_mem(struct panel *p)
 	if ((mode_data_clean & PANEL_MEM) && panel_ready(p))
 		return;
 	mode_data_clean |= PANEL_MEM;
-	panel_set_content(p, "- Memory Usage -\nVSZ: %lu\nRSS: %ld\n", vmem, rmem);
+	panel_set_content(p, "- Memory Usage -\n"
+	    "VSZ: %lu\n"
+	    "RSS: %ld",
+	    vmem, rmem);
 }
 
 void
@@ -592,8 +612,8 @@ panel_refresh_ss(struct panel *p)
 		return;
 	uinp.uinp_opts &= ~UINPO_DIRTY;
 
-	panel_set_content(p, "- Record Screenshot -\nFile name: %s",
-	    buf_get(&uinp.uinp_buf));
+	panel_set_content(p, "- Record Screenshot -\n"
+	    "File name: %s", buf_get(&uinp.uinp_buf));
 }
 
 #define BLINK_INTERVAL 1000000
@@ -674,7 +694,7 @@ panel_refresh_opts(struct panel *p)
 		return;
 	sav_opts = st.st_opts;
 
-	panel_set_content(p, "- Options - ");
+	panel_set_content(p, "- Options -");
 
 	pwidget_startlist(p);
 	for (i = 0; i < NOPS; i++) {
@@ -702,7 +722,7 @@ panel_refresh_panels(struct panel *p)
 		return;
 	sav_pids = pids;
 
-	panel_set_content(p, "- Panels - ");
+	panel_set_content(p, "- Panels -");
 
 	pwidget_startlist(p);
 	for (i = 0; i < NPANELS; i++) {
@@ -718,9 +738,15 @@ panel_refresh_panels(struct panel *p)
 void
 panel_refresh_status(struct panel *p)
 {
+	const char *s;
+
 	if (panel_ready(p))
 		return;
-	panel_set_content(p, "- Status - \n%s", status_get());
+
+	s = status_get();
+	if (s[0] == '\0')
+		s = "(empty)";
+	panel_set_content(p, "- Status -\n%s", s);
 }
 
 void
@@ -743,7 +769,8 @@ panel_refresh_login(struct panel *p)
 		*s = '\0';
 	}
 
-	panel_set_content(p, "- Login -\nUsername: %s%s%s",
+	panel_set_content(p, "- Login -\n"
+	    "Username: %s%s%s",
 	    atpass ? authbuf : buf_get(&uinp.uinp_buf),
 	    atpass ? "\nPassword: " : "",
 	    atpass ? passbuf : "");
@@ -783,7 +810,7 @@ panel_refresh_vmode(struct panel *p)
 		return;
 	sav_vmode = st.st_vmode;
 
-	panel_set_content(p, "- View Mode - ");
+	panel_set_content(p, "- View Mode -");
 	pwidget_startlist(p);
 	for (i = 0; i < NVM; i++) {
 		pwidget_add(p, (st.st_vmode == i ?
@@ -803,7 +830,7 @@ panel_refresh_dmode(struct panel *p)
 		return;
 	sav_dmode = st.st_dmode;
 
-	panel_set_content(p, "- Data Mode - ");
+	panel_set_content(p, "- Data Mode -");
 	pwidget_startlist(p);
 	for (i = 0; i < NDM; i++) {
 		if (dmodes[i].dm_name == NULL)
@@ -840,7 +867,7 @@ panel_refresh_sstar(struct panel *p)
 	sav_mode = st.st_ssmode;
 	sav_vc = st.st_ssvc;
 
-	panel_set_content(p, "- Seastar - ");
+	panel_set_content(p, "- Seastar -");
 	pwidget_startlist(p);
 	for (i = 0; i < NVC; i++) {
 		pwidget_add(p, (st.st_ssvc == i ?
@@ -870,7 +897,7 @@ panel_refresh_pipe(struct panel *p)
 		return;
 	sav_pipemode = st.st_pipemode;
 
-	panel_set_content(p, "- Pipe Mode - ");
+	panel_set_content(p, "- Pipe Mode -");
 	pwidget_startlist(p);
 	for (i = 0; i < NPM; i++) {
 		pwidget_add(p, (st.st_pipemode == i ?
@@ -902,11 +929,12 @@ panel_refresh_reel(struct panel *p)
 		else
 			fn = reel_fn;
 
-		panel_set_content(p, "- Reel - \n\nFrame %d/%d\n%s %s",
-		    reel_pos, reelent_list.ol_cur, fn,
+		panel_set_content(p, "- Reel -\n"
+		    "Frame %d/%d\n%s %s", reel_pos,
+		    reelent_list.ol_cur, fn,
 		    reelent_list.ol_reelents[reel_pos]->re_name);
 	} else {
-		panel_set_content(p, "- Reel - ");
+		panel_set_content(p, "- Reel -");
 
 		if ((dp = opendir(_PATH_ARCHIVE)) == NULL)
 			err(1, "opendir %s", _PATH_ARCHIVE);
