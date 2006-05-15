@@ -12,6 +12,7 @@
 #include "draw.h"
 #include "env.h"
 #include "fill.h"
+#include "lnseg.h"
 #include "mark.h"
 #include "node.h"
 #include "nodeclass.h"
@@ -146,6 +147,8 @@ draw_scene(void)
 		draw_panels(wid);
 	if (!SLIST_EMPTY(&marks))
 		mark_draw();
+	if (!SLIST_EMPTY(&lnsegs))
+		lnseg_draw();
 // draw_compass();
 // job_drawlabels();
 }

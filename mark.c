@@ -9,6 +9,8 @@
 #include "mark.h"
 #include "xmath.h"
 
+struct markhd marks;
+
 void
 mark_add(struct fvec *fvp)
 {

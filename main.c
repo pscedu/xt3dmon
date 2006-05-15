@@ -71,8 +71,6 @@ int			 wid = WINID_DEF;		/* current window */
 
 const struct fvec	 fv_zero = { { 0.0, 0.0, 0.0 } };
 
-struct markhd		 marks;
-
 char **sav_argv;
 
 struct xoption opts[] = {
