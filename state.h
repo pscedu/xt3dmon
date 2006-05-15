@@ -78,10 +78,11 @@ struct state {
 #define RF_VMODE	(1<<10)
 #define RF_WIREP	(1<<11)
 #define RF_FOCUS	(1<<12)
+#define RF_REEL		(1<<13)
 #define RF_INIT		(RF_DATASRC | RF_CLUSTER | RF_GROUND | \
 			 RF_SELNODE | RF_CAM | RF_DMODE | RF_HLNC | \
 			 RF_DIM | RF_NODEPHYSV | RF_NODESWIV | \
-			 RF_VMODE | RF_FOCUS)
+			 RF_VMODE | RF_FOCUS | RF_REEL)
 
 #define EGG_BORG 	(1<<0)
 #define EGG_MATRIX 	(1<<1)
