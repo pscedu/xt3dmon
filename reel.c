@@ -71,6 +71,7 @@ reel_load(void)
 	reel_len = 0;
 	if ((dp = opendir(reel_fn)) == NULL) {
 		if (errno == ENOENT) {
+			reel_fn[0] = '\0';
 			/* User hasn't specified, so grab newest reel. */
 			if ((dp = opendir(_PATH_ARCHIVE)) == NULL)
 				err(1, "opendir %s", _PATH_ARCHIVE);
@@ -87,6 +88,9 @@ reel_load(void)
 			closedir(dp);
 		} else
 			err(1, "opendir %s", reel_fn);
+
+		if (reel_fn[0] == '\0')
+			return;
 
 		if ((dp = opendir(reel_fn)) == NULL)
 			err(1, "opendir %s", reel_fn);
