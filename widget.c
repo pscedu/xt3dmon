@@ -229,7 +229,7 @@ draw_cube(const struct fvec *dimp, const struct fill *fp, int flags)
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
 
-		glLineWidth(0.1f);
+		glLineWidth(0.6f);
 		glColor4f(f_frame.f_r, f_frame.f_g, f_frame.f_b,
 		    f_frame.f_a);
 		glBegin(GL_LINE_STRIP);
@@ -296,7 +296,7 @@ draw_sphere(const struct fvec *dimp, const struct fill *fp, int flags)
 			glTranslatef(SHIFT_OFFSET, SHIFT_OFFSET, SHIFT_OFFSET);
 		}
 
-		glLineWidth(0.1f);
+		glLineWidth(0.6f);
 		gluQuadricDrawStyle(quadric, GLU_SILHOUETTE);
 		glColor4f(f_frame.f_r, f_frame.f_g, f_frame.f_b,
 		    f_frame.f_a);
