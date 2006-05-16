@@ -30,15 +30,15 @@ int
 dx_cue(double d)
 {
 	static double t;
-	static int dim;
-	double a, b, max;
+	static int dim = 1;
+	double roll, a, b, max;
 	struct fvec sv, uv, lv, xv;
 	int ret;
 
 	ret = 0;
 	if (t > 4 * M_PI) {
 		t = 0;
-		dim++;
+//		dim++;
 
 		if (dim >= NDIM) {
 			ret = 1;
@@ -48,8 +48,8 @@ dx_cue(double d)
 
 	switch (dim) {
 	case DIM_X:
-		a = CABHEIGHT/2.0;
-		b = ROWDEPTH/2.0;
+		a = CABHEIGHT/4.0;
+		b = ROWDEPTH/4.0;
 		break;
 	case DIM_Y:
 		a = ROWWIDTH/4.0 - CABWIDTH;
@@ -72,8 +72,8 @@ dx_cue(double d)
 		sv.fv_x = -a * sin(t - M_PI/2) - max;
 		sv.fv_y = b * cos(t - M_PI/2);
 
-		uv.fv_x = -sin(t - M_PI/2);
-		uv.fv_y = cos(t - M_PI/2);
+		uv.fv_x = sin(t - M_PI/2);
+		uv.fv_y = -cos(t - M_PI/2);
 	}
 	sv.fv_z = 0.0;
 	uv.fv_z = 0.0;
@@ -130,6 +130,19 @@ dx_cue(double d)
 //st.st_ly = -st.st_y;
 //st.st_lz = -st.st_z;
 //vec_normalize(&st.st_lv);
+
+	roll = 0.0;
+	if (t > M_PI / 2.0 && t < 3 * M_PI / 2.0)
+		roll = t - M_PI / 2.0;
+	else if (t > 3 * M_PI / 2.0 && t < 5 * M_PI/2.0)
+		roll = M_PI;
+	else if (t > 5 * M_PI / 2.0 && t < 7 * M_PI / 2.0)
+		roll = M_PI + t - 5 * M_PI / 2.0;
+
+	while (roll > 0.1) {
+		cam_roll(0.1);
+		roll -= 0.1;
+	}
 
 	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
 
