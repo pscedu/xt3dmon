@@ -48,13 +48,6 @@ struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 struct node		*invmap[NID_MAX];
 struct node		*wimap[WIDIM_WIDTH][WIDIM_HEIGHT][WIDIM_DEPTH];
 
-int			 dsp = DSP_LOCAL;
-int			 dsflags = DSFF_ALERT;
-
-struct ivec		 winv = { 800, 600, 0 };
-
-int			 flyby_mode = FBM_OFF;
-int			 capture_mode = CM_PPM;
 int			 stereo_mode;
 
 struct fvec		 tv = { { STARTX, STARTY, STARTZ } };
@@ -66,10 +59,10 @@ char			 login_auth[BUFSIZ];
 const char		*progname;
 int			 verbose;
 
-int			 window_ids[2];
-int			 wid = WINID_DEF;		/* current window */
-
 const struct fvec	 fv_zero = { { 0.0, 0.0, 0.0 } };
+
+int			 rt_portset = RPS_POS;
+int			 rt_type = RT_RECOVER;
 
 char **sav_argv;
 

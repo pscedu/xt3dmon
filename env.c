@@ -18,6 +18,11 @@ int gl_cursor[2];
 
 struct fvec focus;
 
+struct ivec	 winv = { 800, 600, 0 };
+
+int	 window_ids[2];
+int	 wid = WINID_DEF;		/* current window */
+
 __inline void
 frustum_init(struct frustum *fr)
 {

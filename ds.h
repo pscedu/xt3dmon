@@ -61,3 +61,4 @@ void		 parse_rt(const struct datasrc *);
 void		 parse_ss(const struct datasrc *);
 
 extern int	 dsp;				/* Data source provider. */
+extern int	 dsflags;

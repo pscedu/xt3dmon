@@ -31,10 +31,11 @@ struct capture_format {
 	{ "ppm", 3, ppm_write, GL_RGB },
 };
 
-static unsigned char *fbuf[NUM_FRAMES];
-static int stereo_left;
-static int fbuf_pos;
-static int capture_pos;
+int		 capture_mode = CM_PPM;
+unsigned char	*fbuf[NUM_FRAMES];
+int		 stereo_left;
+int		 fbuf_pos;
+int		 capture_pos;
 
 /* Save buffer as PPM. */
 void

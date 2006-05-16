@@ -46,6 +46,9 @@ struct datasrc datasrcs[] = {
 	{ "ss",   0, _LIVE_DSP, _PATH_SS,   _RPATH_SS,   parse_ss,   DSF_AUTO | DSF_USESSL, NULL,	NULL,       NULL }
 };
 
+int	 dsp = DSP_LOCAL;
+int	 dsflags = DSFF_ALERT;
+
 void
 dsfi_node(__unused const struct datasrc *ds)
 {

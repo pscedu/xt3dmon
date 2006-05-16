@@ -19,15 +19,10 @@
 #include "state.h"
 #include "xmath.h"
 
-int		 flyby_mode;
-int		 flyby_autoto = 2 * 60 * 60; /* 2 minutes */
-int		 flyby_nautoto;
-int		 flyby_len;
-int		 flyby_pos;
-static FILE	*flyby_fp;
-struct state	 sav_st;
-
-void		 init_panels(int);
+#define FHT_INIT	1
+#define FHT_SEQ		2
+#define FHT_SELNODE	3
+#define FHT_PANEL	4
 
 struct fbhdr {
 	int		fbh_type;
@@ -53,10 +48,15 @@ union fbun {
 	struct fbselnode	fbu_sn;
 };
 
-#define FHT_INIT	1
-#define FHT_SEQ		2
-#define FHT_SELNODE	3
-#define FHT_PANEL	4
+void		 init_panels(int);
+
+int		 flyby_mode = FBM_OFF;
+int		 flyby_autoto = 2 * 60 * 60; /* 20 seconds? */
+int		 flyby_nautoto;
+int		 flyby_len;
+int		 flyby_pos;
+static FILE	*flyby_fp;
+struct state	 sav_st;
 
 void
 flyby_calclen(void)
@@ -303,7 +303,7 @@ flyby_end(void)
 	}
 
 	flyby_mode = FBM_OFF;
-		
+
 	flyby_rstautoto();
 }
 

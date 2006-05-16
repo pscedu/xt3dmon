@@ -30,10 +30,6 @@
 #define TRANS_INC	0.10
 
 struct uinput uinp;
-struct fvec stopv, stoplv;
-
-int rt_portset = RPS_POS;
-int rt_type = RT_RECOVER;
 
 void
 gl_spkeyh_null(__unused int key, __unused int u, __unused int v)
