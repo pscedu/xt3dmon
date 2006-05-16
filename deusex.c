@@ -35,6 +35,7 @@ dx_cue(double d)
 	struct fvec sv, uv, lv, xv;
 	int ret;
 
+	ret = 0;
 	if (t > 4 * M_PI) {
 		t = 0;
 		dim++;
