@@ -68,31 +68,24 @@ todo
 - goto job by id
 - make hl_job() that takes care of flyby recs
 - kill PF_XPARENT and just set fill differently
-- disappearing interactive panels needs to cleanup uinp
-- view mode panels (wired/physical) with widgets
 - remove hlsc from state, replace with flyby recs
 - fix rebuild() st.st_rf mess
-- change FF_ALPHA to FF_OPAQUE
+- implement FF_OPAQUE everywhere
 - put ss file in double/flat format
 - watch out for server mode, dmode=temp then setting hlnc
 - add table for service node hostnames to ssh/command
-- only redraw panels in the same stick after one is moved
-- compile 1 node and just use Translate and calllist in selection
 - merge gl and env files?
 - stereo display handler runs in each window yet updates both, so
   remove to double performance
-- make make_cluster just do NODE_FOREACH() draw, then in there do wireps
 - dont use RF_INIT except in main.c
-- reduce tween amt when fps is high
+- increase tween limit when fps is high
 - cursors and flyby mode
 - bring back option for SEL_GAP things
 - in server, protect png_write from EPIPE when client disconnects/timeouts
 - glTranslate won't stack, so fix wirep/make_selnode
-- gl_run the cursor changes
 - add flag to NODE_FOREACH for wired/physical ordered traversal (fix phys alpha problem)
-- allow mouse wheel and +/- to adjust nc translucency
-- kill draw_wired_frame
 - bring back wired cluster frames? (VM_WIRED)
 - if job fields are 0 in ninfo, don't print
 - add panel reporting when new data is available
 - fix textures in legend: draw above panel background
+- make status panels contents queue, remove in due time
