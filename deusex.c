@@ -196,7 +196,7 @@ dx_cubanoid(int dim)
 
 	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
 
-	t += 0.05;
+	t += 0.025;
 	if (t > 4 * M_PI) {
 		t = 0;
 		ret = 1;
