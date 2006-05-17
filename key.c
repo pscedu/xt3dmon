@@ -576,7 +576,7 @@ gl_keyh_default(unsigned char key, int u, int v)
 		break;
 	    }
 	case '5':
-		dx_cue();
+		dx_update();
 		break;
 	case 'a':
 		glutKeyboardFunc(gl_keyh_alpha);

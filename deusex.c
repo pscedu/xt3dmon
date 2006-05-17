@@ -3,34 +3,94 @@
 #include "mon.h"
 
 #include <float.h>
+#include <stdio.h>
+#include <stdlib.h>
 
+#include "cam.h"
 #include "env.h"
 #include "lnseg.h"
 #include "mark.h"
+#include "deusex.h"
 #include "state.h"
 #include "tween.h"
 
-/*
+int dx_orbit_u(void);
+int dx_orbit_v(void);
+int dx_cubanoid_x(void);
+int dx_cubanoid_y(void);
+int dx_cubanoid_z(void);
 
--sin(x*3.14159/2*3/4)*3/4
-(1-1/4x^2)^(1/2)
-
-*/
-
-#define DST(x1, y1, x2, y2) 				\
-	sqrt(((x2) - (x1)) * ((x2) - (x1)) +		\
-	     ((y2) - (y1)) * ((y2) - (y1)))
+int (*dxtab[])(void) = {
+	dx_orbit_u,
+	dx_orbit_v,
+	dx_cubanoid_x,
+	dx_cubanoid_y,
+	dx_cubanoid_z
+};
+#define NENTRIES(t) (sizeof((t)) / sizeof((t)[0]))
 
 void
 dx_update(void)
 {
+	static int (*f)(void);
+
+	if (f == NULL)
+		f = dxtab[rand() % NENTRIES(dxtab)];
+
+	if (f())
+		f = NULL;
 }
 
 int
-dx_cue(double d)
+dx_orbit(int dim)
 {
 	static double t;
-	static int dim = 1;
+	double du, dv;
+	int ret;
+
+	ret = 0;
+	du = dv = 0.0;
+	switch (dim) {
+	case DIM_X:
+		du = 1.0;
+		break;
+	case DIM_Y:
+		dv = -1.0;
+		break;
+	}
+
+	tween_push(TWF_LOOK | TWF_POS | TWF_UP);
+	if (t == 0) {
+		st.st_v = focus;
+		st.st_x -= ROWWIDTH / 2.0;
+	}
+	cam_revolve(&focus, du, dv);
+	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
+
+	t += M_PI / 314;
+	if (t >= 2.0 * M_PI) {
+		t = 0;
+		ret = 1;
+	}
+	return (ret);
+}
+
+int
+dx_orbit_u(void)
+{
+	return (dx_orbit(DIM_X));
+}
+
+int
+dx_orbit_v(void)
+{
+	return (dx_orbit(DIM_Y));
+}
+
+int
+dx_cubanoid(int dim)
+{
+	static double t;
 	double roll, a, b, max;
 	struct fvec sv, uv, lv, xv;
 	int ret;
@@ -38,12 +98,7 @@ dx_cue(double d)
 	ret = 0;
 	if (t > 4 * M_PI) {
 		t = 0;
-//		dim++;
-
-		if (dim >= NDIM) {
-			ret = 1;
-			dim = 0;
-		}
+		ret = 1;
 	}
 
 	switch (dim) {
@@ -52,12 +107,12 @@ dx_cue(double d)
 		b = ROWDEPTH/4.0;
 		break;
 	case DIM_Y:
-		a = ROWWIDTH/4.0 - CABWIDTH;
+		a = ROWWIDTH/4.0;
 		b = CABHEIGHT/2.0;
 		break;
 	case DIM_Z:
 		a = ROWWIDTH/4.0 - CABWIDTH;
-		b = CABHEIGHT/2.0;
+		b = CABHEIGHT/4.0;
 		break;
 	}
 	max = MAX(a, b);
@@ -126,11 +181,6 @@ dx_cue(double d)
 		break;
 	}
 
-//st.st_lx = -st.st_x;
-//st.st_ly = -st.st_y;
-//st.st_lz = -st.st_z;
-//vec_normalize(&st.st_lv);
-
 	roll = 0.0;
 	if (t > M_PI / 2.0 && t < 3 * M_PI / 2.0)
 		roll = t - M_PI / 2.0;
@@ -140,7 +190,7 @@ dx_cue(double d)
 		roll = M_PI + t - 5 * M_PI / 2.0;
 
 	while (roll > 0.1) {
-		cam_roll(0.1);
+		vec_rotate(&st.st_uv, &st.st_lv, 0.1);
 		roll -= 0.1;
 	}
 
@@ -149,4 +199,22 @@ dx_cue(double d)
 	t += 0.05;
 
 	return (ret);
+}
+
+int
+dx_cubanoid_x(void)
+{
+	return (dx_cubanoid(DIM_X));
+}
+
+int
+dx_cubanoid_y(void)
+{
+	return (dx_cubanoid(DIM_Y));
+}
+
+int
+dx_cubanoid_z(void)
+{
+	return (dx_cubanoid(DIM_Z));
 }
