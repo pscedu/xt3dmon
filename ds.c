@@ -92,12 +92,6 @@ ds_chdsp(int type, int dsp)
 	ds->ds_flags = 0;
 }
 
-__inline struct datasrc *
-ds_get(int type)
-{
-	return (&datasrcs[type]);
-}
-
 void
 ds_refresh(int type, int flags)
 {
@@ -106,7 +100,6 @@ ds_refresh(int type, int flags)
 	int readit;
 
 	ds = ds_open(type);
-
 	if (ds == NULL) {
 		if (flags & DSFF_CRIT)
 			err(1, "datasrc (%d) open failed", type);
@@ -201,7 +194,7 @@ ds_open(int type)
 	int mod, fd;
 
 	mod = 0;
-	ds = ds_get(type);
+	ds = &datasrcs[type];
 	switch (ds->ds_dsp) {
 	case DSP_LOCAL:
 		if ((fd = open(ds->ds_lpath, O_RDONLY)) == -1)
@@ -319,7 +312,7 @@ dsc_open(int type, const char *sid)
 	char fn[PATH_MAX];
 	int fd;
 
-	ds = ds_get(type);
+	ds = &datasrcs[type];
 	snprintf(fn, sizeof(fn), "%s/%s/%s", _PATH_SESSIONS, sid,
 	    ds->ds_name);
 	if ((fd = open(fn, O_RDONLY, 0)) == -1)

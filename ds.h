@@ -38,7 +38,6 @@ struct datasrc {
 #define DS_SS		5
 
 struct datasrc	*ds_open(int);
-struct datasrc	*ds_get(int);
 void		 ds_refresh(int, int);
 
 /* Data source cloning. */
@@ -60,5 +59,6 @@ void		 parse_yod(const struct datasrc *);
 void		 parse_rt(const struct datasrc *);
 void		 parse_ss(const struct datasrc *);
 
-extern int	 dsp;				/* Data source provider. */
-extern int	 dsflags;
+extern int	 	dsp;			/* Data source provider. */
+extern int	 	dsflags;
+extern struct datasrc	datasrcs[];
