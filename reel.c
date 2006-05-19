@@ -126,17 +126,17 @@ char fn_yod[PATH_MAX];
 void
 reel_start(void)
 {
-	dsp_node = ds_get(DS_NODE)->ds_dsp;
-	dsp_job = ds_get(DS_JOB)->ds_dsp;
-	dsp_yod = ds_get(DS_YOD)->ds_dsp;
+	dsp_node = datasrcs[DS_NODE].ds_dsp;
+	dsp_job = datasrcs[DS_JOB].ds_dsp;
+	dsp_yod = datasrcs[DS_YOD].ds_dsp;
 
-	ds_get(DS_NODE)->ds_dsp = DSP_LOCAL;
-	ds_get(DS_JOB)->ds_dsp = DSP_LOCAL;
-	ds_get(DS_YOD)->ds_dsp = DSP_LOCAL;
+	datasrcs[DS_NODE].ds_dsp = DSP_LOCAL;
+	datasrcs[DS_JOB].ds_dsp = DSP_LOCAL;
+	datasrcs[DS_YOD].ds_dsp = DSP_LOCAL;
 
-	ds_get(DS_NODE)->ds_lpath = fn_node;
-	ds_get(DS_JOB)->ds_lpath = fn_job;
-	ds_get(DS_YOD)->ds_lpath = fn_yod;
+	datasrcs[DS_NODE].ds_lpath = fn_node;
+	datasrcs[DS_JOB].ds_lpath = fn_job;
+	datasrcs[DS_YOD].ds_lpath = fn_yod;
 
 	reel_pos = 0;
 	reel_advance();
@@ -155,9 +155,9 @@ reel_advance(void)
 	snprintf(fn_yod, sizeof(fn_yod), "%s/%s/yod",
 	    reel_fn, reelent_list.ol_reelents[reel_pos]->re_name);
 
-	ds_get(DS_NODE)->ds_flags |= DSF_FORCE;
-	ds_get(DS_JOB)->ds_flags |= DSF_FORCE;
-	ds_get(DS_YOD)->ds_flags |= DSF_FORCE;
+	datasrcs[DS_NODE].ds_flags |= DSF_FORCE;
+	datasrcs[DS_JOB].ds_flags |= DSF_FORCE;
+	datasrcs[DS_YOD].ds_flags |= DSF_FORCE;
 
 	reel_pos++;
 }
@@ -165,11 +165,15 @@ reel_advance(void)
 void
 reel_end(void)
 {
-	ds_get(DS_NODE)->ds_dsp = dsp_node;
-	ds_get(DS_JOB)->ds_dsp = dsp_job;
-	ds_get(DS_YOD)->ds_dsp = dsp_yod;
+	datasrcs[DS_NODE].ds_dsp = dsp_node;
+	datasrcs[DS_JOB].ds_dsp = dsp_job;
+	datasrcs[DS_YOD].ds_dsp = dsp_yod;
 
-	ds_get(DS_NODE)->ds_lpath = _PATH_NODE;
-	ds_get(DS_JOB)->ds_lpath = _PATH_JOB;
-	ds_get(DS_YOD)->ds_lpath = _PATH_YOD;
+	datasrcs[DS_NODE].ds_lpath = _PATH_NODE;
+	datasrcs[DS_JOB].ds_lpath = _PATH_JOB;
+	datasrcs[DS_YOD].ds_lpath = _PATH_YOD;
+
+	datasrcs[DS_NODE].ds_flags |= DSF_FORCE;
+	datasrcs[DS_JOB].ds_flags |= DSF_FORCE;
+	datasrcs[DS_YOD].ds_flags |= DSF_FORCE;
 }
