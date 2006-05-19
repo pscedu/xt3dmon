@@ -61,6 +61,7 @@ void	 fill_untex(struct fill *);
 
 void	 col_hsv_to_rgb(struct fill *);
 void	 col_get(int, size_t, size_t, struct fill *);
+void	 col_get_intv(int *, struct fill *);
 
 extern struct fill	 fill_black;
 extern struct fill	 fill_grey;

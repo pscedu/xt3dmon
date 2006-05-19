@@ -90,6 +90,27 @@ col_get(int old, size_t n, size_t total, struct fill *fillp)
 	col_hsv_to_rgb(fillp);
 }
 
+void
+col_get_intv(int *posp, struct fill *fp)
+{
+	struct fill *scfp;
+
+	*posp = (*posp + 23) % 360;
+
+	fp->f_h = (*posp / 360.0) * HUE_MAX + HUE_MIN;
+	fp->f_s = (*posp / 360.0) * SAT_MAX + SAT_MIN;
+	fp->f_v = (*posp / 360.0) * VAL_MAX + VAL_MIN;
+	col_hsv_to_rgb(fp);
+
+	fp->f_a = 1.0;
+
+	scfp = &statusclass[SC_USED].nc_fill;	/* XXX */
+	fp->f_texid[WINID_LEFT]    = scfp->f_texid[WINID_LEFT];
+	fp->f_texid[WINID_RIGHT]   = scfp->f_texid[WINID_RIGHT];
+	fp->f_texid_a[WINID_LEFT]  = scfp->f_texid_a[WINID_LEFT];
+	fp->f_texid_a[WINID_RIGHT] = scfp->f_texid_a[WINID_RIGHT];
+}
+
 /*
  * The following two mathematical algorithms were created from
  * pseudocode found in "Fundamentals of Interactive Computer Graphics".
