@@ -278,10 +278,12 @@ flyby_end(void)
 		glutPassiveMotionFunc(gl_pasvmotionh_default);
 		glutMouseFunc(gl_mouseh_default);
 
-		if (st.st_opts & OP_REEL)
-			reel_end();
-
 		rf = RF_CAM;
+		if (st.st_opts & OP_REEL) {
+			reel_end();
+			rf |= RF_DATASRC;
+		}
+
 		if (st.st_dmode != sav_st.st_dmode)
 			rf |= RF_DMODE;
 		if (st.st_vmode != sav_st.st_vmode ||
