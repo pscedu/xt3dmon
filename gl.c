@@ -16,10 +16,10 @@
 #include "tween.h"
 
 #define FPS_TO_USEC(x)	(1e6 / x)	/* Convert FPS to microseconds. */
-#define GOVERN_FPS	30		/* FPS governor. */
+#define GOVERN_FPS	30		/* FPS to govern at. */
 
-long	 fps = 50;	/* last fps sample */
-long	 fps_cnt = 0;	/* current fps counter */
+long	 fps = 50;	/* Last FPS sample. */
+long	 fps_cnt = 0;	/* Current FPS counter. */
 
 __inline void
 gl_run(void (*f)(void))
@@ -35,7 +35,6 @@ gl_run(void (*f)(void))
 	} else
 		(*f)();
 }
-
 
 void
 gl_reshapeh(int w, int h)
@@ -66,7 +65,7 @@ gl_idleh_govern(void)
 	if (diff.tv_sec * 1e6 + diff.tv_usec >= FPS_TO_USEC(GOVERN_FPS)) {
 		fps_cnt++;
 		gov_tv = tv;
-		glutPostRedisplay();
+		gl_run(glutPostRedisplay);
 	}
 }
 
@@ -74,7 +73,7 @@ void
 gl_idleh_default(void)
 {
 	fps_cnt++;
-	glutPostRedisplay();
+	gl_run(glutPostRedisplay);
 }
 
 void
@@ -82,7 +81,7 @@ gl_setup(void)
 {
 	glShadeModel(GL_SMOOTH);
 	glEnable(GL_DEPTH_TEST);
-//	glEnable(GL_ALPHA_TEST);
+	glEnable(GL_ALPHA_TEST);
 //	glDisable(GL_DITHER);
 
 	glutReshapeFunc(gl_reshapeh);
@@ -103,6 +102,10 @@ gl_setup(void)
 		glutSpecialFunc(gl_spkeyh_default);
 		glutMouseWheelFunc(gl_mwheel_default);
 	}
+
+	glClearColor(fill_bg.f_r, fill_bg.f_g, fill_bg.f_b, 1.0);
+//	glClearDepth(1.0f);
+//	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
 	glutTimerFunc(1, cocb_fps, 0);
 	glutTimerFunc(1, cocb_clearstatus, 0); /* XXX: enable/disable when PANEL_STATUS? */
@@ -152,7 +155,8 @@ void
 gl_displayh_stereo(void)
 {
 	static struct frustum fr;
-	int rf, newrf;
+	static struct fvec oldfv;
+	int frid, rf, newrf;
 
 	if (flyby_mode)
 		flyby_update();
@@ -170,76 +174,49 @@ gl_displayh_stereo(void)
 
 	frustum_init(&fr);
 
-	/* Draw right buffer. */
 	switch (stereo_mode) {
 	case STM_ACT:
-		glDrawBuffer(GL_BACK_RIGHT);
+//		glDrawBuffer(GL_BACK_RIGHT);
 		break;
 	case STM_PASV:
-		wid = WINID_RIGHT;
-		glutSetWindow(window_ids[wid]);
+		gl_wid_update();
+		frid = (wid == WINID_LEFT) ? FRID_LEFT : FRID_RIGHT;
 		break;
 	}
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	frustum_calc(FRID_RIGHT, &fr);
+	frustum_calc(frid, &fr);
 	glFrustum(fr.fr_left, fr.fr_right, fr.fr_bottom,
 	    fr.fr_top, NEARCLIP, clip);
 
 	glMatrixMode(GL_MODELVIEW);
-	vec_addto(&fr.fr_stereov, &st.st_v);
+	oldfv = st.st_v;
+	switch (frid) {
+	case WINID_LEFT:
+		vec_subfrom(&fr.fr_stereov, &st.st_v);
+		break;
+	case WINID_RIGHT:
+		vec_addto(&fr.fr_stereov, &st.st_v);
+		break;
+	}
 	cam_look();
 
 	newrf = st.st_rf;
 	st.st_rf = rf;
 	draw_scene();
-
-	if (stereo_mode == STM_PASV) {
-		glClearColor(fill_bg.f_r, fill_bg.f_g, fill_bg.f_b, 1.0);
-		/* XXX: capture frame */
-		if (st.st_opts & OP_CAPTURE)
-			capture_frame(capture_mode);
-		if (st.st_opts & OP_DISPLAY)
-			glutSwapBuffers();
-	}
-
-	/* Draw left buffer. */
-	switch (stereo_mode) {
-	case STM_ACT:
-		glDrawBuffer(GL_BACK_LEFT);
-		break;
-	case STM_PASV:
-		wid = WINID_LEFT;
-		glutSetWindow(window_ids[wid]);
-		break;
-	}
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	frustum_calc(FRID_LEFT, &fr);
-	glFrustum(fr.fr_left, fr.fr_right, fr.fr_bottom,
-	    fr.fr_top, NEARCLIP, clip);
-
-	glMatrixMode(GL_MODELVIEW);
-	st.st_x -= 2 * fr.fr_stereov.fv_x;
-	st.st_y -= 2 * fr.fr_stereov.fv_y;
-	st.st_z -= 2 * fr.fr_stereov.fv_z;
-	cam_look();
-
-	draw_scene();
 	st.st_rf = newrf;
 
-	glClearColor(fill_bg.f_r, fill_bg.f_g, fill_bg.f_b, 1.0);
+	/* XXX: capture frame */
 	if (st.st_opts & OP_CAPTURE)
 		capture_frame(capture_mode);
 	if (st.st_opts & OP_DISPLAY)
 		glutSwapBuffers();
 
-	/* Restore camera position. */
-	vec_addto(&fr.fr_stereov, &st.st_v);
+	/* Restore camera position after stereo adjustment. */
+	st.st_v = oldfv;
 }
 
 void
@@ -274,7 +251,6 @@ gl_displayh_default(void)
 	draw_scene();
 	st.st_rf = newrf;
 
-	glClearColor(fill_bg.f_r, fill_bg.f_g, fill_bg.f_b, 1.0);
 	if (st.st_opts & OP_CAPTURE)
 		capture_frame(capture_mode);
 	if (st.st_opts & OP_DISPLAY)
