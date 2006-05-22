@@ -571,7 +571,7 @@ gl_keyh_default(unsigned char key, int u, int v)
 		}
 
 		tween_push(TWF_LOOK | TWF_POS | TWF_UP);
-		cam_revolve(&focus, (double)du, (double)-dv);
+		cam_revolvefocus((double)du, (double)-dv);
 		tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
 		break;
 	    }
