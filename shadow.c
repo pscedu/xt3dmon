@@ -63,10 +63,9 @@ draw_shadow_rows(void)
 
 	dim.fv_w = ROWWIDTH;
 	dim.fv_h = CABHEIGHT;
-	dim.fv_d = ROWDEPTH + NODESHIFT;
+	dim.fv_d = ROWDEPTH;
 
-	for (r = 0; r < NROWS; r++,
-	    v.fv_z += ROWSPACE + NODESHIFT + ROWDEPTH) {
+	for (r = 0; r < NROWS; r++, v.fv_z += ROWSPACE + ROWDEPTH) {
 		glPushMatrix();
 		glTranslatef(v.fv_x, v.fv_y, v.fv_z);
 		glPushName(gsn_get(r, NULL, 0));
@@ -84,11 +83,11 @@ draw_shadow_cabs(const struct physcoord *pc)
 
 	v.fv_x = NODESPACE;
 	v.fv_y = NODESPACE;
-	v.fv_z = NODESPACE + pc->pc_r * (ROWSPACE + NODESHIFT + ROWDEPTH);
+	v.fv_z = NODESPACE + pc->pc_r * (ROWSPACE + ROWDEPTH);
 
-	dim.fv_w = CABWIDTH + NODEWIDTH;
+	dim.fv_w = CABWIDTH;
 	dim.fv_h = CABHEIGHT;
-	dim.fv_d = ROWDEPTH + NODESHIFT;
+	dim.fv_d = ROWDEPTH;
 
 	for (cb = 0; cb < NCABS; cb++, v.fv_x += CABWIDTH + CABSPACE) {
 		glPushMatrix();
@@ -108,11 +107,11 @@ draw_shadow_cages(const struct physcoord *pc)
 
 	v.fv_x = NODESPACE + pc->pc_cb * (CABSPACE + CABWIDTH);
 	v.fv_y = NODESPACE;
-	v.fv_z = NODESPACE + pc->pc_r * (ROWSPACE + NODESHIFT + ROWDEPTH);
+	v.fv_z = NODESPACE + pc->pc_r * (ROWSPACE + ROWDEPTH);
 
-	dim.fv_w = CABWIDTH + NODEWIDTH;
+	dim.fv_w = CABWIDTH;
 	dim.fv_h = CAGEHEIGHT;
-	dim.fv_d = ROWDEPTH + NODESHIFT;
+	dim.fv_d = ROWDEPTH;
 
 	for (cg = 0; cg < NCAGES; cg++, v.fv_y += CAGEHEIGHT + CAGESPACE) {
 		glPushMatrix();
