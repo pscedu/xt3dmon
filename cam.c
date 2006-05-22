@@ -4,7 +4,9 @@
 
 #include <math.h>
 
+#include "cdefs.h"
 #include "env.h"
+#include "selnode.h"
 #include "state.h"
 #include "xmath.h"
 
@@ -105,6 +107,26 @@ cam_revolve(struct fvec *center, float d_theta, float d_phi)
 	vec_normalize(&st.st_uv);
 
 	vec_addto(center, &st.st_v);
+}
+
+__inline void
+cam_revolvefocus(float dt, float dp)
+{
+	struct fvec *fvp;
+	struct fvec fv;
+	double dst;
+
+	fvp = &focus;
+	if (st.st_vmode == VM_WIRED &&
+	    nselnodes == 0) {
+		dst = MAX3(WIV_SWIDTH, WIV_SHEIGHT, WIV_SDEPTH) / 4.0;
+		fv.fv_x = st.st_x + st.st_lx * dst;
+		fv.fv_y = st.st_y + st.st_ly * dst;
+		fv.fv_z = st.st_z + st.st_lz * dst;
+		fvp = &fv;
+	}
+
+	cam_revolve(fvp, dt, dp);
 }
 
 void
