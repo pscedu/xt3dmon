@@ -38,60 +38,13 @@ void
 draw_shadow_physcubes(int n, struct fvec *fvp, struct fvec *dimp,
     struct fvec *inc)
 {
-	struct fvec fv;
-	int i;
+	struct physdim *pd;
 
-	fv = *fvp;
-	for (i = 0; i < n; i++,
-	    fv.fv_x += inc->fv_x,
-	    fv.fv_y += inc->fv_y,
-	    fv.fv_z += inc->fv_z) {
+	for (pd = physdim_top; pd != NULL; pd = pd->contains) {
 		glPushMatrix();
 		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
 		glPushName(gsn_get(i, NULL, 0));
 		draw_cube(dimp, &fill_black, 0);
-		glPopName();
-		glPopMatrix();
-	}
-}
-
-	NROWS
-	vec_set(&r_fv, NODESPACE, NODESPACE, NODESPACE);
-	vec_set(&r_dim, ROWWIDTH, CABHEIGHT, ROWDEPTH + NODESHIFT);
-	vec_set(&r_inc, 0.0, 0.0, ROWSPACE + ROWDEPTH);
-
-	NCABS
-	vec_set(&cb_fv, NODESPACE, NODESPACE,
-	    NODESPACE + pc->pc_r * (ROWSPACE + ROWDEPTH;))
-	vec_set(&cb_dim, CABWIDTH + NODEWIDTH, CABHEIGHT,
-	    ROWDEPTH + NODESHIFT);
-	vec_set(&cb_inc, CABWIDTH + CABSPACE, 0.0, 0.0);
-
-	NCAGES
-	vec_set(&cg_fv, NODESPACE + pc->pc_cb * (CABSPACE + CABWIDTH),
-	    NODESPACE, NODESPACE + pc->pc_r * (ROWSPACE + ROWDEPTH));
-	vec_set(&cg_dim, CABWIDTH + NODEWIDTH, CAGEHEIGHT,
-	    ROWDEPTH + NODESHIFT);
-	vec_set(&cg_inc, 0.0, CAGEHEIGHT + CAGESPACE, 0.0);
-
-	NMODS
-	vec_set(&m_fv,
-	    NODESPACE + pc->pc_cb * (CABSPACE + CABWIDTH),
-	    NODESPACE + pc->pc_cg * (CAGESPACE + CAGEHEIGHT),
-	    NODESPACE + pc->pc_r * (ROWSPACE + ROWDEPTH));
-	vec_set(&m_dim, MODWIDTH + NODEWIDTH, NODEHEIGHT,
-	    NODEDEPTH * 2 + NODESPACE);
-
-	for (m = 0; m < NMODS; m++, v.fv_x += MODWIDTH + MODSPACE) {
-		glPushMatrix();
-		glPushName(gsn_get(m, NULL, 0));
-
-		/* Draw the rows individually. */
-		glTranslatef(v.fv_x, v.fv_y, v.fv_z);
-		draw_cube(&dim, &fill_black);
-		glTranslatef(0, NODESPACE + NODEHEIGHT, NODESHIFT);
-		draw_cube(&dim, &fill_black);
-
 		glPopName();
 		glPopMatrix();
 	}
