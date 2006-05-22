@@ -69,21 +69,20 @@ void
 gl_motionh_default(int u, int v)
 {
 	int du = u - mousev.iv_x, dv = v - mousev.iv_y;
-	struct fvec *fvp, center;
 
 	if (abs(du) + abs(dv) <= 1)
 		return;
 
-	fvp = &focus;
-
 	tween_push(TWF_LOOK | TWF_POS | TWF_UP);
 	if (spkey & GLUT_ACTIVE_SHIFT) {
-		fvp = &center;
+		struct fvec center;
+
 		center.fv_x = st.st_v.fv_x + st.st_lv.fv_x;
 		center.fv_y = st.st_v.fv_y + st.st_lv.fv_y;
 		center.fv_z = st.st_v.fv_z + st.st_lv.fv_z;
-	}
-	cam_revolve(fvp, (double)du, (double)-dv);
+		cam_revolve(&center, (double)du, (double)-dv);
+	} else
+		cam_revolvefocus((double)du, (double)-dv);
 	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
 
 	mousev.iv_x = u;
