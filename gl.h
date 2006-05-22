@@ -7,6 +7,7 @@ void	 gl_reshapeh(int, int);
 void	 gl_run(void (*)(void));
 void	 gl_setidleh(void);
 void	 gl_setup(void);
+void	 gl_setup_core(void);
 void	 gl_wid_update(void);
 void	 gl_displayh_default(void);
 void	 gl_displayh_stereo(void);

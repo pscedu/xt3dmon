@@ -683,6 +683,7 @@ errx(1, "broken");
 		panel_toggle(PANEL_HELP);
 
 	gl_run(gl_setup);
+	gl_setup_core();
 
 	if ((quadric = gluNewQuadric()) == NULL)
 		err(1, "gluNewQuadric");
