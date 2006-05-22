@@ -180,7 +180,7 @@ draw_shadow_node(int *dl, struct node *n)
 	}
 
 	dl[n->n_geom] = glGenLists(1);
-	glNewList(dl[n->n_geom], GL_COMPILE);
+	glNewList(dl[n->n_geom], GL_COMPILE_AND_EXECUTE);
 	switch (n->n_geom) {
 	case GEOM_SPHERE:
 		draw_sphere(n->n_dimp, &fill_black, 0);
