@@ -8,6 +8,7 @@ reminders:
 - keep globals few
 - remove/split up mon.h
 - ensure all fill get memset(0) now
+- don't use continue/break/etc. in WIREP/NODE_FOREACH
 
 maybe not:
 - 'R' prefix keybinding to enable rebuild flags
