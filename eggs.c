@@ -53,7 +53,6 @@ egg_borg(void)
 void
 egg_matrix(void)
 {
-	static struct fill ofill_bg;
 	static struct state ost;
 
 	tween_push(TWF_LOOK | TWF_POS | TWF_UP);
@@ -69,10 +68,7 @@ egg_matrix(void)
 		vec_set(&st.st_lv, -1.0, 0.0, 0.0);
 		vec_set(&st.st_uv, 0.0, 1.0, 0.0);
 
-		ofill_bg = fill_bg;
-		fill_bg.f_r = 0.0;
-		fill_bg.f_g = 0.2;
-		fill_bg.f_b = 0.0;
+		glClearColor(0.0, 0.2, 0.0, 1.0);
 	} else {
 		opt_flip(st.st_opts ^ ost.st_opts);
 		/* Restore original mode unless it was changed. */
@@ -83,7 +79,7 @@ egg_matrix(void)
 		st.st_lv = ost.st_lv;
 		st.st_uv = ost.st_uv;
 
-		fill_bg = ofill_bg;
+		glClearColor(fill_bg.f_r, fill_bg.f_g, fill_bg.f_b, 1.0);
 	}
 	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
 
