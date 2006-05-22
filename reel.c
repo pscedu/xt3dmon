@@ -73,8 +73,15 @@ reel_load(void)
 		if (errno == ENOENT) {
 			reel_fn[0] = '\0';
 			/* User hasn't specified, so grab newest reel. */
-			if ((dp = opendir(_PATH_ARCHIVE)) == NULL)
-				err(1, "opendir %s", _PATH_ARCHIVE);
+			if ((dp = opendir(_PATH_ARCHIVE)) == NULL) {
+				/*
+				 * It's OK if archive dir
+				 * doesn't exist at all.
+				 */
+				if (errno != ENOENT)
+					warn("opendir %s", _PATH_ARCHIVE);
+				return;
+			}
 			while ((dent = readdir(dp)) != NULL) {
 				if (strcmp(dent->d_name, ".") == 0 ||
 				    strcmp(dent->d_name, "..") == 0)

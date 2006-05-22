@@ -920,6 +920,7 @@ panel_refresh_reel(struct panel *p)
 	if (panel_ready(p) && strcmp(reel_fn, sav_reel_fn) == 0)
 		return;
 
+	panel_set_content(p, "- Reel -");
 	pwidget_startlist(p);
 	if (flyby_mode == FBM_PLAY &&
 	    st.st_opts & OP_REEL) {
@@ -929,16 +930,13 @@ panel_refresh_reel(struct panel *p)
 		else
 			fn = reel_fn;
 
-		panel_set_content(p, "- Reel -\n"
-		    "Frame %d/%d\n%s %s", reel_pos,
-		    reelent_list.ol_cur, fn,
+		panel_add_content(p, "\nFrame %d/%d\n%s %s",
+		    reel_pos, reelent_list.ol_cur, fn,
 		    reelent_list.ol_cur > 0 ?
-			    reelent_list.ol_reelents[reel_pos]->re_name : "N/A");
+		    reelent_list.ol_reelents[reel_pos]->re_name : "N/A");
+	} else if ((dp = opendir(_PATH_ARCHIVE)) == NULL) {
+		panel_add_content(p, "\nNo archive reels available.");
 	} else {
-		panel_set_content(p, "- Reel -");
-
-		if ((dp = opendir(_PATH_ARCHIVE)) == NULL)
-			err(1, "opendir %s", _PATH_ARCHIVE);
 		obj_batch_start(&reel_list);
 		while ((dent = readdir(dp)) != NULL) {
 			if (strcmp(dent->d_name, ".") == 0 ||
@@ -964,7 +962,7 @@ panel_refresh_reel(struct panel *p)
 			    &fill_nodata : &fill_white), rl->rl_name,
 			    gscb_pw_reel, i);
 		}
-		
+
 		if (i == 0)
 			panel_add_content(p, "\nNone available.");
 	}
