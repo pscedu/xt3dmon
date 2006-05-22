@@ -20,8 +20,7 @@ int dx_cubanoid_x(void);
 int dx_cubanoid_y(void);
 int dx_cubanoid_z(void);
 int dx_corkscrew_x(void);
-
-int dx_corkscrew(int);
+int dx_orbit3(void);
 
 int (*dxtab[])(void) = {
 	dx_orbit_u,
@@ -30,6 +29,7 @@ int (*dxtab[])(void) = {
 	dx_cubanoid_y,
 //	dx_cubanoid_z,
 	dx_corkscrew_x
+//	dx_orbit3
 };
 #define NENTRIES(t) (sizeof((t)) / sizeof((t)[0]))
 
@@ -89,6 +89,23 @@ int
 dx_orbit_v(void)
 {
 	return (dx_orbit(DIM_Y));
+}
+
+int
+dx_orbit3(void)
+{
+	static int n = 0;
+	int ret;
+
+	if (dx_orbit(DIM_Y))
+		n++;
+
+	ret = 0;
+	if (n >= 3) {
+		n = 0;
+		ret = 1;
+	}
+	return (ret);
 }
 
 int
@@ -234,8 +251,7 @@ dx_corkscrew(int dim)
 	switch (dim) {
 	case DIM_X:
 		a = CABHEIGHT / 4.0;
-		b = ((NROWS * (ROWDEPTH + NODESHIFT) +
-		    (NROWS - 1) * ROWSPACE)) / 4.0;
+		b = ((NROWS * ROWDEPTH + (NROWS - 1) * ROWSPACE)) / 4.0;
 		c = ROWWIDTH;
 		break;
 	case DIM_Y:
@@ -289,7 +305,7 @@ dx_corkscrew(int dim)
 		break;
 	}
 
-	vec_rotate(&st.st_uv, &st.st_lv, 4.0 * M_PI / c);
+	vec_rotate(&st.st_uv, &st.st_lv, 2.0 * M_PI / c);
 	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
 
 	t += 0.5;
