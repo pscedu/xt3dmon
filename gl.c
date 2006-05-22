@@ -77,6 +77,13 @@ gl_idleh_default(void)
 }
 
 void
+gl_setup_core(void)
+{
+	glutTimerFunc(1, cocb_fps, 0);
+	glutTimerFunc(1, cocb_clearstatus, 0); /* XXX: enable/disable when PANEL_STATUS? */
+}
+
+void
 gl_setup(void)
 {
 	glShadeModel(GL_SMOOTH);
@@ -106,9 +113,6 @@ gl_setup(void)
 	glClearColor(fill_bg.f_r, fill_bg.f_g, fill_bg.f_b, 1.0);
 //	glClearDepth(1.0f);
 //	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-
-	glutTimerFunc(1, cocb_fps, 0);
-	glutTimerFunc(1, cocb_clearstatus, 0); /* XXX: enable/disable when PANEL_STATUS? */
 
 	tex_load();
 }
