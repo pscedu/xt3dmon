@@ -1,5 +1,7 @@
 /* $Id$ */
 
+#include "queue.h"
+
 struct selnode {
 	struct node		 *sn_nodep;
 	SLIST_ENTRY(selnode)	  sn_next;
