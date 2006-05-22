@@ -368,14 +368,11 @@ phys_select(int *dl, int flags)
 				if (nrecs == 0 || (pc.pc_cg =
 				    sel_process(nrecs, chance.pc_cg, flags)) == SP_MISS)
 					break;
-				for (chance.pc_m = 0; chance.pc_m < NMODS; chance.pc_m++) {
-					sel_begin();
-					draw_shadow_mods(&pc, dl);
-					nrecs = sel_end();
-					if (nrecs && (id =
-					    sel_process(nrecs, 0, flags)) != SP_MISS)
-						return (id);
-				}
+				sel_begin();
+				draw_shadow_mods(&pc, dl);
+				nrecs = sel_end();
+				if (nrecs && (id = sel_process(nrecs, 0, flags)) != SP_MISS)
+					return (id);
 			}
 		}
 	}
