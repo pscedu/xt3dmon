@@ -508,7 +508,8 @@ gl_select(int flags)
 		break;
 	case VM_WIRED:
 		WIREP_FOREACH(&v)
-			ret = wi_select(dl, flags, &v);
+			if ((ret = wi_select(dl, flags, &v)) != SP_MISS)
+				goto end;
 		break;
 	case VM_WIREDONE:
 		ret = wi_select(dl, flags, &fv_zero);
