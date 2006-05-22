@@ -460,13 +460,14 @@ panel_draw(struct panel *p, int wid)
 	 * as the right, so skip calculation (otherwise,
 	 * it would be slower and the contents may differ).
 	 */
-	if (stereo_mode == STM_PASV && wid == WINID_LEFT) {
+	if (stereo_mode == STM_PASV &&
+	    p->p_opts & POPT_CANSYNC) {
 		/*
 		 * make_panel() on the first window
 		 * will have cleared the dirty bit.
 		 */
 		make_panel(p, wid, p->p_opts & POPT_COMPILE, toff);
-		p->p_opts &= ~POPT_COMPILE;
+		p->p_opts &= ~(POPT_COMPILE | POPT_CANSYNC);
 		return;
 	}
 
@@ -474,6 +475,7 @@ panel_draw(struct panel *p, int wid)
 		glCallList(p->p_dl[wid]);
 		goto done;
 	}
+	p->p_opts |= POPT_CANSYNC;
 
 	if (p->p_opts & POPT_REMOVE) {
 		w = 0;
@@ -624,7 +626,7 @@ draw_panels(int wid)
 	for (p = TAILQ_FIRST(&panels); p != TAILQ_END(&panels); p = np) {
 		np = TAILQ_NEXT(p, p_link);
 		if (stereo_mode != STM_PASV ||
-		   wid == WINID_RIGHT)
+		   (p->p_opts & POPT_CANSYNC) == 0)
 			p->p_refresh(p);
 		panel_draw(p, wid);
 	}

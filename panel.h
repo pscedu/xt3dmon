@@ -65,8 +65,9 @@ struct panel {
 #define POPT_DIRTY	(1<<1)			/* panel needs redrawn, but same contents */
 #define POPT_REFRESH	(1<<2)			/* panel needs contents rebuilt */
 #define POPT_MOBILE	(1<<3)			/* being dragged */
-#define POPT_COMPILE	(1<<4)			/* stereo syncing */
+#define POPT_COMPILE	(1<<4)			/* stereo: panel was compiled */
 #define POPT_USR1	(1<<5)			/* panel-specific flag */
+#define POPT_CANSYNC	(1<<6)			/* stereo: just sync draw */
 
 #define POPT_LOGIN_ATPASS (POPT_USR1)
 
