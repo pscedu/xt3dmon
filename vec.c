@@ -32,9 +32,11 @@ vec_normalize(struct fvec *fvp)
 void
 vec_crossprod(struct fvec *cross, const struct fvec *a, const struct fvec *b)
 {
-	cross->fv_x = a->fv_y * b->fv_z - b->fv_y * a->fv_z;
-	cross->fv_y = b->fv_x * a->fv_z - a->fv_x * b->fv_z;
-	cross->fv_z = a->fv_x * b->fv_y - b->fv_x * a->fv_y;
+	struct fvec va = *a, vb = *b;
+
+	cross->fv_x = va.fv_y * vb.fv_z - vb.fv_y * va.fv_z;
+	cross->fv_y = vb.fv_x * va.fv_z - va.fv_x * vb.fv_z;
+	cross->fv_z = va.fv_x * vb.fv_y - vb.fv_x * va.fv_y;
 }
 
 __inline void
@@ -84,9 +86,10 @@ vec_subfrom(const struct fvec *a, struct fvec *b)
 }
 
 void
-vec_rotate(struct fvec *fv, const struct fvec *axis, double deg)
+vec_rotate(struct fvec *fvp, const struct fvec *axis, double deg)
 {
 	double m[3][3], rcos, rsin;
+	struct fvec fv;
 
 	/*
 	 *    rcos + uu(1-rcos)	   w*rsin + vu(1-rcos)	 -v*rsin + wu(1-rcos)
@@ -112,10 +115,11 @@ vec_rotate(struct fvec *fv, const struct fvec *axis, double deg)
 #undef v
 #undef w
 
-	fv->fv_x = m[0][0] * fv->fv_x + m[0][1] * fv->fv_y + m[0][2] * fv->fv_z;
-	fv->fv_y = m[1][0] * fv->fv_x + m[1][1] * fv->fv_y + m[1][2] * fv->fv_z;
-	fv->fv_z = m[2][0] * fv->fv_x + m[2][1] * fv->fv_y + m[2][2] * fv->fv_z;
-	vec_normalize(fv);
+	fv.fv_x = m[0][0] * fvp->fv_x + m[0][1] * fvp->fv_y + m[0][2] * fvp->fv_z;
+	fv.fv_y = m[1][0] * fvp->fv_x + m[1][1] * fvp->fv_y + m[1][2] * fvp->fv_z;
+	fv.fv_z = m[2][0] * fvp->fv_x + m[2][1] * fvp->fv_y + m[2][2] * fvp->fv_z;
+	*fvp = fv;
+	vec_normalize(fvp);
 }
 
 #define x cart->fv_x
