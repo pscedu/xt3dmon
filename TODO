@@ -91,4 +91,3 @@ todo
 - fix textures in legend: draw above panel background
 - make status panels contents queue, remove in due time
 - vec_rotate() is busted for large amounts
-- focus position for revolving in VM_WIRED flyby playbacks
