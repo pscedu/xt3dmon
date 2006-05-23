@@ -161,6 +161,7 @@ capture_snapfd(int fd, int mode)
 	static unsigned char *buf;
 	long size;
 	FILE *fp;
+	int nfd;
 
 	size = capture_formats[mode].cf_size *
 	    winv.iv_w * winv.iv_h;
@@ -168,8 +169,11 @@ capture_snapfd(int fd, int mode)
 		err(1, "realloc");
 	capture_copyfb(mode, buf);
 
+	if ((nfd = dup(fd)) == -1)
+		err(1, "dup");
+
 	/* Write data to buffer. */
-	if ((fp = fdopen(fd, "wb")) == NULL)
+	if ((fp = fdopen(nfd, "wb")) == NULL)
 		err(1, "fd %d", fd);
 	capture_formats[mode].cf_writef(fp, buf, winv.iv_w, winv.iv_h);
 	fclose(fp);
