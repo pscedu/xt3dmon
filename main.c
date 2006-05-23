@@ -522,7 +522,7 @@ wirep_update(void)
 	wi_repdim.fv_d = dim.fv_d * (int)howmany(st.st_z + clip - z, dim.fv_d);
 }
 
-void
+int
 rebuild(int opts)
 {
 	static int rebuild_wirep;
@@ -603,6 +603,7 @@ rebuild(int opts)
 	}
 	if (opts & RF_REEL)
 		reel_load();
+	return (opts);
 }
 
 void

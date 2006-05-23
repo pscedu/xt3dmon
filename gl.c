@@ -173,7 +173,7 @@ gl_displayh_stereo(void)
 	rf = st.st_rf;
 	if (rf) {
 		st.st_rf = 0;
-		rebuild(rf);
+		rf = rebuild(rf);
 	}
 
 	frustum_init(&fr);
@@ -239,7 +239,7 @@ gl_displayh_default(void)
 	rf = st.st_rf;
 	if (rf) {
 		st.st_rf = 0;
-		rebuild(rf);
+		rf = rebuild(rf);
 	}
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

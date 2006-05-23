@@ -119,7 +119,7 @@ struct xoption {
 #define OPF_HIDE	(1<<0)		/* hide in panels panel */
 #define OPF_FBIGN	(1<<1)		/* ignore in flybys */
 
-void	 rebuild(int);
+int	 rebuild(int);
 
 extern struct state	 st;
 extern struct xoption	 opts[];
