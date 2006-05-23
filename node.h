@@ -31,8 +31,6 @@ struct node {
 	struct fvec	 n_vcur;		/* node tweening */
 	struct fvec	*n_v;			/* points to any above */
 	struct fvec	*n_dimp;		/* dimensions */
-
-	int		 n_dl[2];		/* display list ID */
 };
 
 #define NF_HIDE		(1<<0)			/* don't display */
