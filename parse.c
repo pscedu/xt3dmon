@@ -12,9 +12,11 @@
 
 #include "ds.h"
 #include "fill.h"
+#include "flyby.h"
 #include "job.h"
 #include "node.h"
 #include "nodeclass.h"
+#include "state.h"
 #include "ustream.h"
 #include "yod.h"
 
@@ -26,6 +28,9 @@ struct ivec	 widim;
 int		 total_failures;
 unsigned long	 vmem;
 long		 rmem;
+
+int		 job_ca_cookie;
+int		 yod_ca_cookie;
 
 /*
  *	s	points to start of number in a string
@@ -333,15 +338,35 @@ bad:
 		warn("us_gets");
 	errno = 0;
 
-	qsort(job_list.ol_jobs, job_list.ol_tcur, sizeof(struct job *), job_cmp);
-	for (j = 0; j < job_list.ol_tcur; j++)
-		col_get(job_list.ol_jobs[j]->j_oh.oh_flags & OHF_OLD,
-		    j, job_list.ol_tcur, &job_list.ol_jobs[j]->j_fill);
+	/*
+	 * XXXX: Disgusting special case hack for reel mode:
+	 * jobs in reel mode should have the same color
+	 * for their duration, so use a separate color
+	 * allocation algorithm for them.
+	 */
+	if (st.st_opts & OP_REEL &&
+	    flyby_mode == FBM_PLAY) {
+		for (j = 0; j < job_list.ol_tcur; j++)
+			if ((job_list.ol_jobs[j]->j_oh.oh_flags & OHF_OLD) == 0)
+				col_get_intv(&job_ca_cookie,
+				    &job_list.ol_jobs[j]->j_fill);
+		for (j = 0; j < yod_list.ol_tcur; j++)
+			if ((yod_list.ol_yods[j]->y_oh.oh_flags & OHF_OLD) == 0)
+				col_get_intv(&yod_ca_cookie,
+				    &yod_list.ol_yods[j]->y_fill);
+	} else {
+		qsort(job_list.ol_jobs, job_list.ol_tcur,
+		    sizeof(struct job *), job_cmp);
+		for (j = 0; j < job_list.ol_tcur; j++)
+			col_get(job_list.ol_jobs[j]->j_oh.oh_flags & OHF_OLD,
+			    j, job_list.ol_tcur, &job_list.ol_jobs[j]->j_fill);
 
-	qsort(yod_list.ol_yods, yod_list.ol_tcur, sizeof(struct yod *), yod_cmp);
-	for (j = 0; j < yod_list.ol_tcur; j++)
-		col_get(yod_list.ol_yods[j]->y_oh.oh_flags & OHF_OLD,
-		    j, yod_list.ol_tcur, &yod_list.ol_yods[j]->y_fill);
+		qsort(yod_list.ol_yods, yod_list.ol_tcur,
+		    sizeof(struct yod *), yod_cmp);
+		for (j = 0; j < yod_list.ol_tcur; j++)
+			col_get(yod_list.ol_yods[j]->y_oh.oh_flags & OHF_OLD,
+			    j, yod_list.ol_tcur, &yod_list.ol_yods[j]->y_fill);
+	}
 
 	if (++widim.iv_w != WIDIM_WIDTH ||
 	    ++widim.iv_h != WIDIM_HEIGHT ||
