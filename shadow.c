@@ -43,7 +43,7 @@ draw_shadow_physcubes(int n, struct fvec *fvp, struct fvec *dimp,
 	for (pd = physdim_top; pd != NULL; pd = pd->contains) {
 		glPushMatrix();
 		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
-		glPushName(gsn_get(i, NULL, 0));
+		glPushName(gsn_get(i, NULL, 0, &fv_zero));
 		draw_cube(dimp, &fill_black, 0);
 		glPopName();
 		glPopMatrix();
@@ -68,7 +68,7 @@ draw_shadow_rows(void)
 	for (r = 0; r < NROWS; r++, v.fv_z += ROWSPACE + ROWDEPTH) {
 		glPushMatrix();
 		glTranslatef(v.fv_x, v.fv_y, v.fv_z);
-		glPushName(gsn_get(r, NULL, 0));
+		glPushName(gsn_get(r, NULL, 0, &fv_zero));
 		draw_cube(&dim, &fill_black, 0);
 		glPopName();
 		glPopMatrix();
@@ -92,7 +92,7 @@ draw_shadow_cabs(const struct physcoord *pc)
 	for (cb = 0; cb < NCABS; cb++, v.fv_x += CABWIDTH + CABSPACE) {
 		glPushMatrix();
 		glTranslatef(v.fv_x, v.fv_y, v.fv_z);
-		glPushName(gsn_get(cb, NULL, 0));
+		glPushName(gsn_get(cb, NULL, 0, &fv_zero));
 		draw_cube(&dim, &fill_black, 0);
 		glPopName();
 		glPopMatrix();
@@ -116,7 +116,7 @@ draw_shadow_cages(const struct physcoord *pc)
 	for (cg = 0; cg < NCAGES; cg++, v.fv_y += CAGEHEIGHT + CAGESPACE) {
 		glPushMatrix();
 		glTranslatef(v.fv_x, v.fv_y, v.fv_z);
-		glPushName(gsn_get(cg, NULL, 0));
+		glPushName(gsn_get(cg, NULL, 0, &fv_zero));
 		draw_cube(&dim, &fill_black, 0);
 		glPopName();
 		glPopMatrix();
@@ -159,7 +159,7 @@ draw_shadow_mods(const struct physcoord *pc, int *dl)
 			glPushMatrix();
 			glTranslatef(node->n_v->fv_x,
 			    node->n_v->fv_y, node->n_v->fv_z);
-			glPushName(gsn_get(node->n_nid, gscb_node, 0));
+			glPushName(gsn_get(node->n_nid, gscb_node, 0, &fv_zero));
 			draw_shadow_node(dl, node);
 			glPopName();
 			glPopMatrix();
@@ -191,7 +191,7 @@ draw_shadow_winodes(int *dl, struct wiselstep *ws, const struct fvec *cloffp)
 				    node->n_v->fv_x + cloffp->fv_x,
 				    node->n_v->fv_y + cloffp->fv_y,
 				    node->n_v->fv_z + cloffp->fv_z);
-				glPushName(gsn_get(node->n_nid, gscb_node, 0));
+				glPushName(gsn_get(node->n_nid, gscb_node, 0, cloffp));
 				draw_shadow_node(dl, node);
 				glPopName();
 				glPopMatrix();
@@ -278,7 +278,7 @@ draw_shadow_wisect(int *dl, struct wiselstep *ws, int cuts, int last,
 				    nv.fv_x + st.st_wioff.iv_x * st.st_winsp.iv_x + cloffp->fv_x,
 				    nv.fv_y + st.st_wioff.iv_y * st.st_winsp.iv_y + cloffp->fv_y,
 				    nv.fv_z + st.st_wioff.iv_z * st.st_winsp.iv_z + cloffp->fv_z);
-				glPushName(gsn_get(cubeno++, NULL, 0));
+				glPushName(gsn_get(cubeno++, NULL, 0, &fv_zero));
 				draw_cube(&dim, &fill_black, 0);
 				glPopName();
 				glPopMatrix();
@@ -473,5 +473,5 @@ end:
 	st.st_rf |= RF_CAM;
 
 	if (ret == SP_MISS)
-		gscb_miss(flags, 0);
+		gscb_miss(NULL, flags);
 }

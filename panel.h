@@ -27,11 +27,13 @@
 #define PANEL_SSTAR	(1<<21)
 #define NPANELS		22
 
+struct glname;
+
 struct pwidget {
 	const char		 *pw_str;
 	struct fill		 *pw_fillp;
 	SLIST_ENTRY(pwidget)	  pw_next;
-	void			(*pw_cb)(int, int);
+	void			(*pw_cb)(struct glname *, int);
 	int			  pw_cbarg;
 	int			  pw_u;
 	int			  pw_v;

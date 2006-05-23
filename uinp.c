@@ -52,7 +52,7 @@ uinpcb_gotonode(void)
 
 	if ((n = node_for_nid(nid)) == NULL)
 		return;
-	sn_add(n);
+	sn_add(n, &fv_zero);
 	node_goto(n);
 	panel_show(PANEL_NINFO);
 }

@@ -142,7 +142,7 @@ pwidget_endlist(struct panel *p)
 
 void
 pwidget_add(struct panel *p, struct fill *fp, const char *s,
-    void (*cb)(int, int), int cbarg)
+    void (*cb)(struct glname *, int), int cbarg)
 {
 	struct pwidget *pw;
 

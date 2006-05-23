@@ -145,7 +145,7 @@ draw_shadow_panels(void)
 		SLIST_FOREACH(pw, &p->p_widgets, pw_next) {
 			if (pw->pw_cb == NULL)
 				continue;
-			name = gsn_get(pw->pw_cbarg, pw->pw_cb, GNF_2D);
+			name = gsn_get(pw->pw_cbarg, pw->pw_cb, GNF_2D, &fv_zero);
 			gn = obj_get(&name, &glname_list);
 			gn->gn_u = pw->pw_u;
 			gn->gn_v = pw->pw_v;
@@ -164,7 +164,7 @@ draw_shadow_panels(void)
 			glPopMatrix();
 		}
 
-		name = gsn_get(p->p_id, gscb_panel, GNF_2D);
+		name = gsn_get(p->p_id, gscb_panel, GNF_2D, &fv_zero);
 		gn = obj_get(&name, &glname_list);
 		gn->gn_u = p->p_u;
 		gn->gn_v = p->p_v;

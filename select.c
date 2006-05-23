@@ -4,6 +4,7 @@
 
 #include <err.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "cdefs.h"
 #include "env.h"
@@ -173,7 +174,7 @@ sel_process(int nrecs, int rank, int flags)
 		return (SP_MISS);
 
 	if (gn->gn_cb != NULL)
-		gn->gn_cb(flags & ~SPF_2D, gn->gn_id);
+		gn->gn_cb(gn, flags & ~SPF_2D);
 
 	if (gn->gn_id == SP_MISS)
 		errx(1, "selected object uses reserved ID %d", SP_MISS);
@@ -198,7 +199,8 @@ sel_end(void)
  * obj_batch_start/obj_batch_end combo.
  */
 unsigned int
-gsn_get(int id, void (*cb)(int, int), int flags)
+gsn_get(int id, void (*cb)(struct glname *, int), int flags,
+    const struct fvec *offv)
 {
 	struct glname *gn;
 	unsigned int cur = glname_list.ol_tcur + 100;
@@ -208,6 +210,7 @@ gsn_get(int id, void (*cb)(int, int), int flags)
 	gn->gn_id = id;
 	gn->gn_cb = cb;
 	gn->gn_flags = flags;
+	gn->gn_offv = *offv;
 	return (cur);
 }
 
@@ -215,15 +218,17 @@ gsn_get(int id, void (*cb)(int, int), int flags)
  * GL selection callbacks.
  */
 void
-gscb_miss(int flags, __unused int a)
+gscb_miss(__unused struct glname *gn, int flags)
 {
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_CYCLE);
 }
 
 void
-gscb_panel(int flags, int id)
+gscb_panel(struct glname *gn, int flags)
 {
+	int id = gn->gn_id;
+
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_RIGHT_ARROW);
 	else if (flags == 0) {
@@ -236,8 +241,9 @@ gscb_panel(int flags, int id)
 }
 
 void
-gscb_node(int flags, int nid)
+gscb_node(struct glname *gn, int flags)
 {
+	int nid = gn->gn_id;
 	struct node *n;
 
 	if (flags & SPF_PROBE)
@@ -249,13 +255,13 @@ gscb_node(int flags, int nid)
 		/* spkey = glutGetModifiers(); */
 		switch (spkey) {
 		case GLUT_ACTIVE_SHIFT:
-			sn_add(n);
+			sn_add(n, &gn->gn_offv);
 			break;
 		case GLUT_ACTIVE_CTRL:
 			sn_del(n);
 			break;
 		case 0:
-			sn_set(n);
+			sn_set(n, &gn->gn_offv);
 			break;
 		}
 		if (SLIST_EMPTY(&selnodes))
@@ -266,8 +272,9 @@ gscb_node(int flags, int nid)
 }
 
 void
-gscb_pw_hlnc(int flags, int nc)
+gscb_pw_hlnc(struct glname *gn, int flags)
 {
+	int nc = gn->gn_id;
 	void (*f)(struct fill *);
 	struct fill *fp;
 
@@ -288,8 +295,10 @@ gscb_pw_hlnc(int flags, int nc)
 }
 
 void
-gscb_pw_opt(int flags, int opt)
+gscb_pw_opt(struct glname *gn, int flags)
 {
+	int opt = gn->gn_id;
+
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
 	else if (flags == 0)
@@ -297,8 +306,10 @@ gscb_pw_opt(int flags, int opt)
 }
 
 void
-gscb_pw_panel(int flags, int pid)
+gscb_pw_panel(struct glname *gn, int flags)
 {
+	int pid = gn->gn_id;
+
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
 	else if (flags == 0)
@@ -306,8 +317,10 @@ gscb_pw_panel(int flags, int pid)
 }
 
 void
-gscb_pw_vmode(int flags, int vm)
+gscb_pw_vmode(struct glname *gn, int flags)
 {
+	int vm = gn->gn_id;
+
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
 	else if (flags == 0) {
@@ -317,8 +330,10 @@ gscb_pw_vmode(int flags, int vm)
 }
 
 void
-gscb_pw_help(int flags, int opt)
+gscb_pw_help(struct glname *gn, int flags)
 {
+	int opt = gn->gn_id;
+
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
 	else if (flags == 0) {
@@ -340,8 +355,10 @@ gscb_pw_help(int flags, int opt)
 }
 
 void
-gscb_pw_dmode(int flags, int dm)
+gscb_pw_dmode(struct glname *gn, int flags)
 {
+	int dm = gn->gn_id;
+
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
 	else if (flags == 0) {
@@ -356,8 +373,10 @@ gscb_pw_dmode(int flags, int dm)
 }
 
 void
-gscb_pw_ssvc(int flags, int vc)
+gscb_pw_ssvc(struct glname *gn, int flags)
 {
+	int vc = gn->gn_id;
+
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
 	else if (flags == 0) {
@@ -367,8 +386,10 @@ gscb_pw_ssvc(int flags, int vc)
 }
 
 void
-gscb_pw_ssmode(int flags, int m)
+gscb_pw_ssmode(struct glname *gn, int flags)
 {
+	int m = gn->gn_id;
+
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
 	else if (flags == 0) {
@@ -378,8 +399,10 @@ gscb_pw_ssmode(int flags, int m)
 }
 
 void
-gscb_pw_pipe(int flags, int m)
+gscb_pw_pipe(struct glname *gn, int flags)
 {
+	int m = gn->gn_id;
+
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
 	else if (flags == 0) {
@@ -390,8 +413,10 @@ gscb_pw_pipe(int flags, int m)
 }
 
 void
-gscb_pw_reel(int flags, int i)
+gscb_pw_reel(struct glname *gn, int flags)
 {
+	int i = gn->gn_id;
+
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
 	else if (flags == 0) {
@@ -402,8 +427,10 @@ gscb_pw_reel(int flags, int i)
 }
 
 void
-gscb_pw_fb(int flags, int i)
+gscb_pw_fb(struct glname *gn, int flags)
 {
+	int i = gn->gn_id;
+
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
 	else if (flags == 0) {

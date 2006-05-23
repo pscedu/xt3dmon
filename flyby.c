@@ -5,6 +5,7 @@
 #include <err.h>
 #include <errno.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "env.h"
 #include "flyby.h"
@@ -40,6 +41,7 @@ struct fbpanel {
 
 struct fbselnode {
 	int		fbsn_nid;
+	struct fvec	fbsn_offv;
 };
 
 union fbun {
@@ -169,9 +171,13 @@ flyby_writepanel(int panel)
 }
 
 __inline void
-flyby_writeselnode(int nid)
+flyby_writeselnode(int nid, const struct fvec *offv)
 {
-	flyby_writemsg(FHT_SELNODE, &nid, sizeof(nid));
+	struct fbselnode fbsn;
+
+	fbsn.fbsn_nid = nid;
+	fbsn.fbsn_offv = *offv;
+	flyby_writemsg(FHT_SELNODE, &fbsn, sizeof(fbsn));
 }
 
 /* Read a set of flyby data. */
@@ -234,7 +240,7 @@ flyby_read(void)
 			    flyby_fp) != sizeof(struct fbselnode))
 				err(1, "flyby read selnode");
 			if ((n = node_for_nid(fbun.fbu_sn.fbsn_nid)) != NULL)
-				sn_toggle(n);
+				sn_toggle(n, &fbun.fbu_sn.fbsn_offv);
 			break;
 		default:
 			if (fseek(flyby_fp, fbh.fbh_len, SEEK_CUR) == -1)

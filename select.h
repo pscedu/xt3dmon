@@ -1,6 +1,7 @@
 /* $Id$ */
 
 #include "objlist.h"
+#include "xmath.h"
 
 /* Selection processing flags. */
 #define SPF_2D		(1<<0)
@@ -16,7 +17,8 @@ struct glname {
 	int		  gn_id;	/* Underlying object ID. */
 	unsigned int 	  gn_name;	/* GL name. */
 	int		  gn_flags;
-	void		(*gn_cb)(int, int);
+	struct fvec	  gn_offv;
+	void		(*gn_cb)(struct glname *, int);
 
 	/* Hack around GL's unwillingness to do 2D selection. */
 	int		  gn_u;
@@ -41,18 +43,18 @@ void		 sel_begin(void);
 int		 sel_end(void);
 int		 sel_process(int, int, int);
 
-unsigned int	 gsn_get(int, void (*)(int, int), int);
-void		 gscb_miss(int, int);
-void		 gscb_node(int, int);
-void		 gscb_panel(int, int);
-void		 gscb_pw_hlnc(int, int);
-void		 gscb_pw_opt(int, int);
-void		 gscb_pw_panel(int, int);
-void		 gscb_pw_vmode(int, int);
-void		 gscb_pw_dmode(int, int);
-void		 gscb_pw_help(int, int);
-void		 gscb_pw_ssmode(int, int);
-void		 gscb_pw_ssvc(int, int);
-void		 gscb_pw_pipe(int, int);
-void		 gscb_pw_reel(int, int);
-void		 gscb_pw_fb(int, int);
+unsigned int	 gsn_get(int, void (*)(struct glname *, int), int, const struct fvec *);
+void		 gscb_miss(struct glname *, int);
+void		 gscb_node(struct glname *, int);
+void		 gscb_panel(struct glname *, int);
+void		 gscb_pw_hlnc(struct glname *, int);
+void		 gscb_pw_opt(struct glname *, int);
+void		 gscb_pw_panel(struct glname *, int);
+void		 gscb_pw_vmode(struct glname *, int);
+void		 gscb_pw_dmode(struct glname *, int);
+void		 gscb_pw_help(struct glname *, int);
+void		 gscb_pw_ssmode(struct glname *, int);
+void		 gscb_pw_ssvc(struct glname *, int);
+void		 gscb_pw_pipe(struct glname *, int);
+void		 gscb_pw_reel(struct glname *, int);
+void		 gscb_pw_fb(struct glname *, int);
