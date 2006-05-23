@@ -1,30 +1,28 @@
 $Id$
 
 reminders:
-- don't recompile things - do it once and only call the
-  display lists if they are enabled (struct node.n_dl[2])
+- recompile GL lists as minimally as possible
 - add more info to the status panel
 - clean up includes in files that do not need them
 - keep globals few
 - remove/split up mon.h
-- ensure all fill get memset(0) now
+- ensure all 'struct fill' locals get memset(0) now
 - don't use continue/break/etc. in WIREP/NODE_FOREACH
+- dont use RF_INIT except in main.c
 
 maybe not:
-- 'R' prefix keybinding to enable rebuild flags
+- keybinding to enable rebuild flags
 - move the id into ohp instead of maintaing separate vars
 - sigcatch USR1 to reload datasrc and pkill in cron
 - flyby_writecam() 'camera moved' frame -> set RF_CAM?
+- compile node/nodeclass draw lists?
+- default the logid goto user input buffer to selnode
 
 todo
-- default the logid goto user input buffer to selnode
-- random flyby/cycle focus jobs
+- tourjob mode
 - try #define __inline to see if it does anything
 - poll data files for when to refresh instead of blind refresh
 - function to do rebuild option diffs
-- be more intelligent about swapping between frustums in drawing
-  stereo scenes (don't flip twice, just flip back and forth)
-- move sticky to pinfo for persistence
 - divide color wheel among all modes (free/down/disabled/etc)
   and probably keep these the same always
 - (server mode) use overlay display cleanup of damaged glut win in
@@ -45,12 +43,10 @@ todo
 - make selnode drawing respect n_curv
 - draw_node, if (hide) curv = *v
 - introduce widim.iv_[whd] instead of WIDIM_WIDTH, etc.
-- merge capture_copy*
 - check that the server dsc-copies fresh data in case data is no
   longer automatically refreshing itself
 - add recursive check to gl_run() to protect against that kind of
   invocation
-- kill gl_run() -- have glutDisplayHandler for each win
 - provide if-modified-since in http headers
 - change date panel time code to update a global time var when new
   data is read (RF_DATASRC handling), don't grab current time in panel
@@ -59,31 +55,22 @@ todo
 - add arg to getcol() to set the texids
 - for tweening, calculate the % moved by one (e.g. move), then apply
   that % to the others, instead of use MAX_{LOOK,TWEEN} values
-- bug when revolve position = st.st_v
+- fix crash when revolve position = st.st_v
 - set st.st_mtime to HTTP response last-modified
 - make select node glow/fade color?
 - use a different font.png for matrix egg (katonese chars)
-- move some stuff (like wioff) into 'struct state'
-- kill the stopv stuff in key.c after OP_TWEEN is disabled during flybys
 - remove some size_t's (pointer sizes)
-- goto job by id
 - make hl_job() that takes care of flyby recs
 - kill PF_XPARENT and just set fill differently
-- remove hlsc from state, replace with flyby recs
-- fix rebuild() st.st_rf mess
+- add highlight flyby recs
 - implement FF_OPAQUE everywhere
-- put ss file in double/flat format
 - watch out for server mode, dmode=temp then setting hlnc
 - add table for service node hostnames to ssh/command
 - merge gl and env files?
-- stereo display handler runs in each window yet updates both, so
-  remove to double performance
-- dont use RF_INIT except in main.c
 - increase tween limit when fps is high
 - cursors and flyby mode
 - bring back option for SEL_GAP things
 - in server, protect png_write from EPIPE when client disconnects/timeouts
-- glTranslate won't stack, so fix wirep/make_selnode
 - add flag to NODE_FOREACH for wired/physical ordered traversal (fix phys alpha problem)
 - bring back wired cluster frames? (VM_WIRED)
 - if job fields are 0 in ninfo, don't print
