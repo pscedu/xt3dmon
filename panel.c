@@ -684,7 +684,7 @@ panel_tremove(struct panel *p)
 
 	/* XXX inspect POPT_REMOVE first? */
 	p->p_opts ^= POPT_REMOVE;
-	for (t = p; t != TAILQ_END(&panels); t = TAILQ_NEXT(t, p_link))
+	TAILQ_FOREACH(t, &panels, p_link)
 		if (t->p_info->pi_stick == p->p_info->pi_stick)
 			t->p_opts |= POPT_DIRTY;
 	if (flyby_mode == FBM_REC)
@@ -759,6 +759,12 @@ panel_toggle(int panel)
 void
 panel_demobilize(struct panel *p)
 {
+	struct panel *t;
+
+	TAILQ_FOREACH(t, &panels, p_link)
+		if (t->p_info->pi_stick == p->p_info->pi_stick)
+			t->p_opts |= POPT_DIRTY;
+
 	p->p_opts &= ~POPT_MOBILE;
 	p->p_opts |= POPT_DIRTY;
 	if (p->p_u + p->p_w / 2 < winv.iv_w / 2) {
@@ -772,6 +778,10 @@ panel_demobilize(struct panel *p)
 		else
 			p->p_info->pi_stick = PSTICK_BR;
 	}
+
+	TAILQ_FOREACH(t, &panels, p_link)
+		if (t->p_info->pi_stick == p->p_info->pi_stick)
+			t->p_opts |= POPT_DIRTY;
 }
 
 void
