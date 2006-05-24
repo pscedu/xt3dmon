@@ -259,14 +259,6 @@ parse_node(const struct datasrc *ds)
 		PARSENUM(s, nfails, INT_MAX);
 		PARSECHAR(s, lustat);
 
-		if (x < 0 || x >= WIDIM_WIDTH ||
-		    y < 0 || y >= WIDIM_HEIGHT ||
-		    z < 0 || z >= WIDIM_DEPTH) {
-			warnx("node %d: bad coords <%d,%d,%d>",
-			    nid, x, y, z);
-			goto bad;
-		}
-
 		node = &nodes[r][cb][cg][m][n];
 		node->n_nid = nid;
 		invmap[nid] = node;
