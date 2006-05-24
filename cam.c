@@ -55,7 +55,7 @@ cam_move(int dir, float amt)
 }
 
 void
-cam_revolve(struct fvec *center, float d_theta, float d_phi)
+cam_revolve(struct fvec *center, double d_theta, double d_phi)
 {
 	struct fvec diff, sph;
 	int upinv;
@@ -110,7 +110,7 @@ cam_revolve(struct fvec *center, float d_theta, float d_phi)
 }
 
 __inline void
-cam_revolvefocus(float dt, float dp)
+cam_revolvefocus(double dt, double dp)
 {
 	struct fvec *fvp;
 	struct fvec fv;
