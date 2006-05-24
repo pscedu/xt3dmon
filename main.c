@@ -211,7 +211,6 @@ opt_flip(int fopts)
 			st.st_rf |= RF_CLUSTER | RF_SELNODE;
 			break;
 		case OP_FRAMES:
-		case OP_WIVMFRAME:
 		case OP_SELPIPES:
 		case OP_NLABELS:
 			st.st_rf |= RF_CLUSTER | RF_SELNODE;

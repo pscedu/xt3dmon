@@ -268,9 +268,6 @@ gl_keyh_option(unsigned char key, __unused int u, __unused int v)
 	case 'e':
 		opts |= OP_TWEEN;
 		break;
-	case 'f':
-		opts |= OP_WIVMFRAME;
-		break;
 	case 'G':
 		opts |= OP_GOVERN;
 		break;
@@ -561,17 +558,17 @@ gl_keyh_default(unsigned char key, int u, int v)
 	switch (key) {
 	case '2': case '4':
 	case '6': case '8': {
-		int du, dv;
+		double du, dv;
 
 		switch (key) {
-		case '2': du =  0; dv = -2; break;
-		case '4': du =  2; dv =  0; break;
-		case '6': du = -2; dv =  0; break;
-		case '8': du =  0; dv =  2; break;
+		case '2': du =  0.0; dv = -2.0; break;
+		case '4': du =  2.0; dv =  0.0; break;
+		case '6': du = -2.0; dv =  0.0; break;
+		case '8': du =  0.0; dv =  2.0; break;
 		}
 
 		tween_push(TWF_LOOK | TWF_POS | TWF_UP);
-		cam_revolvefocus((double)du, (double)-dv);
+		cam_revolvefocus(du, -dv);
 		tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
 		break;
 	    }
