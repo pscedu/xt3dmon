@@ -57,17 +57,6 @@
 /* Defined values. */
 #define DV_NODATA	(-1)
 
-/* Stereo display mode types. */
-#define STM_NONE	0
-#define STM_ACT		1
-#define STM_PASV	2
-
-/* GL window identifiers for passive stereo. */
-#define WINID_LEFT	0
-#define WINID_RIGHT	1
-
-#define WINID_DEF	0
-
 struct physcoord {				/* XXX: become just dynamic array */
 	int	 pc_r;
 	int	 pc_cb;

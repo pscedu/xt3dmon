@@ -18,14 +18,27 @@
 #define DIR_FORWARD	4
 #define DIR_BACK	5
 
+/* Dimensions. */
 #define DIM_X		0
 #define DIM_Y		1
 #define DIM_Z		2
 #define NDIM		3
 
+/* Geometries. */
 #define GEOM_CUBE	0
 #define GEOM_SPHERE	1
 #define NGEOM		2
+
+/* Stereo display mode types. */
+#define STM_NONE	0
+#define STM_ACT		1
+#define STM_PASV	2
+
+/* GL window identifiers for passive stereo. */
+#define WINID_LEFT	0
+#define WINID_RIGHT	1
+
+#define WINID_DEF	0
 
 struct vmode {
 	const char	*vm_name;
