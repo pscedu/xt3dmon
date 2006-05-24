@@ -7,6 +7,7 @@
 #include "node.h"
 #include "nodeclass.h"
 #include "objlist.h"
+#include "panel.h"
 #include "queue.h"
 #include "selnode.h"
 #include "state.h"
@@ -15,6 +16,7 @@
 void
 nc_runall(void (*f)(struct fill *))
 {
+	struct panel *p;
 	size_t i;
 
 	switch (st.st_dmode) {
@@ -60,11 +62,20 @@ nc_runall(void (*f)(struct fill *))
 			f(&lustreclass[i].nc_fill);
 		break;
 	}
+
+	if ((p = panel_for_id(PANEL_LEGEND)) != NULL)
+		p->p_opts |= POPT_REFRESH;
 }
 
 struct fill *
 nc_getfp(size_t nc)
 {
+	struct panel *p;
+
+	/* Assume a nodeclass will be modified. */
+	if ((p = panel_for_id(PANEL_LEGEND)) != NULL)
+		p->p_opts |= POPT_REFRESH;
+
 	switch (st.st_dmode) {
 	case DM_JOB:
 		if (nc < NSC)
@@ -112,6 +123,7 @@ void
 nc_runsn(void (*f)(struct fill *))
 {
 	struct selnode *sn;
+	struct panel *p;
 	struct node *n;
 
 	SLIST_FOREACH(sn, &selnodes, sn_next) {
@@ -147,12 +159,16 @@ nc_runsn(void (*f)(struct fill *))
 			break;
 		}
 	}
+
+	if ((p = panel_for_id(PANEL_LEGEND)) != NULL)
+		p->p_opts |= POPT_REFRESH;
 }
 
 void
 hl_change(void)
 {
 	struct fill *fp;
+	struct panel *p;
 
 	switch (st.st_hlnc) {
 	case HL_ALL:
@@ -173,4 +189,7 @@ hl_change(void)
 		}
 		break;
 	}
+
+	if ((p = panel_for_id(PANEL_LEGEND)) != NULL)
+		p->p_opts |= POPT_REFRESH;
 }
