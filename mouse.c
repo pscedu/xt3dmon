@@ -68,7 +68,10 @@ gl_motionh_panel(int u, int v)
 void
 gl_motionh_default(int u, int v)
 {
-	int du = u - mousev.iv_x, dv = v - mousev.iv_y;
+	double du, dv;
+
+	du = u - mousev.iv_x;
+	dv = v - mousev.iv_y;
 
 	if (abs(du) + abs(dv) <= 1)
 		return;
@@ -80,9 +83,9 @@ gl_motionh_default(int u, int v)
 		center.fv_x = st.st_v.fv_x + st.st_lv.fv_x;
 		center.fv_y = st.st_v.fv_y + st.st_lv.fv_y;
 		center.fv_z = st.st_v.fv_z + st.st_lv.fv_z;
-		cam_revolve(&center, (double)du, (double)-dv);
+		cam_revolve(&center, du, -dv);
 	} else
-		cam_revolvefocus((double)du, (double)-dv);
+		cam_revolvefocus(du, -dv);
 	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
 
 	mousev.iv_x = u;
