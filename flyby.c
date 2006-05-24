@@ -118,6 +118,7 @@ flyby_begin(int mode)
 		glutKeyboardFunc(gl_keyh_actflyby);
 		glutSpecialFunc(gl_spkeyh_actflyby);
 		glutMouseFunc(gl_mouseh_null);
+		cursor_set(GLUT_CURSOR_WAIT);
 		break;
 	case FBM_REC:
 		if ((flyby_fp = fopen(_PATH_FLYBY, "ab")) == NULL)
@@ -283,6 +284,7 @@ flyby_end(void)
 		glutMotionFunc(gl_motionh_default);
 		glutPassiveMotionFunc(gl_pasvmotionh_default);
 		glutMouseFunc(gl_mouseh_default);
+		cursor_set(GLUT_CURSOR_INHERIT);
 
 		rf = RF_CAM;
 		if (st.st_opts & OP_REEL) {
