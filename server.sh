@@ -6,4 +6,10 @@ if pgrep -u yanovich xt3dmon >/dev/null 2>&1; then
 	exit 1
 fi
 
-XAUTHORITY=/var/gdm/:0.Xauth sudo -u yanovich ~/code/proj/xt3dmon/xt3dmon -display :0 -d &
+if [ X$(id -un) != X"yanovich" ]; then
+	echo "run as user yanovich"
+	exit 1
+fi
+
+cd /home/yanovich/code/proj/xt3dmon
+XAUTHORITY=/var/gdm/:0.Xauth ./xt3dmon -display :0 -d 2>&1 | mail -s "xt3dmon down" yanovich@psc.edu
