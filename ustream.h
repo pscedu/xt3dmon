@@ -1,5 +1,7 @@
 /* $Id$ */
 
+#include "mon.h"
+
 #include <stdio.h>
 
 #include <openssl/ssl.h>
