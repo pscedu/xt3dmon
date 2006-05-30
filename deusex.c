@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "cdefs.h"
 #include "cam.h"
 #include "env.h"
 #include "lnseg.h"
