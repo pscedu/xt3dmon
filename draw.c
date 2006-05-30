@@ -123,7 +123,7 @@ __inline void
 draw_scene(void)
 {
 	static struct fvec v;
-	
+
 	switch (st.st_vmode) {
 	case VM_WIRED:
 		WIREP_FOREACH(&v) {
@@ -153,8 +153,8 @@ draw_scene(void)
 // job_drawlabels();
 }
 
-#define FTX_TWIDTH	2048
-#define FTX_THEIGHT	64
+#define FTX_TWIDTH	2048	/* Must be power of 2. */
+#define FTX_THEIGHT	64	/* Must be power of 2. */
 #define FTX_CWIDTH	17
 #define FTX_CHEIGHT	34
 #define FTX_CSTART	33
@@ -173,19 +173,15 @@ draw_text(const char *buf, struct fvec *dim, struct fill *fp)
 	double z, d, h, y;
 	char c;
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_DST_COLOR);
-	
 	glEnable(GL_TEXTURE_2D);
-	glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
 	glEnable(GL_BLEND);
-	
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glBindTexture(GL_TEXTURE_2D, fill_font.f_texid_a[wid]);
 
 	uscale = FTX_TWIDTH / (double)FTX_CWIDTH;
 
+	glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
 	glBegin(GL_QUADS);
 
 	z = 0.0;
