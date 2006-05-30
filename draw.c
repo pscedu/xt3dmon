@@ -168,9 +168,9 @@ draw_scene(void)
 void
 draw_text(const char *buf, struct fvec *dim, struct fill *fp)
 {
-	double uscale;
-	const char *s;
+	double uscale, vscale;
 	double z, d, h, y;
+	const char *s;
 	char c;
 
 	glEnable(GL_TEXTURE_2D);
@@ -180,6 +180,7 @@ draw_text(const char *buf, struct fvec *dim, struct fill *fp)
 	glBindTexture(GL_TEXTURE_2D, fill_font.f_texid_a[wid]);
 
 	uscale = FTX_TWIDTH / (double)FTX_CWIDTH;
+	vscale = FTX_THEIGHT / (double)FTX_CHEIGHT;
 
 	glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
 	glBegin(GL_QUADS);
@@ -196,13 +197,13 @@ draw_text(const char *buf, struct fvec *dim, struct fill *fp)
 			continue;
 		c = *s - FTX_CSTART;
 
-		glTexCoord2d(c / uscale, 0.0);
+		glTexCoord2d(c / uscale, 1.0 / vscale);
 		glVertex3d(0.0, y, z);
 		glTexCoord2d(c / uscale, 1.0);
 		glVertex3d(0.0, y + h, z);
 		glTexCoord2d((c + 1) / uscale, 1.0);
 		glVertex3d(0.0, y + h, z + d);
-		glTexCoord2d((c + 1) / uscale, 0.0);
+		glTexCoord2d((c + 1) / uscale, 1.0 / vscale);
 		glVertex3d(0.0, y, z + d);
 	}
 
