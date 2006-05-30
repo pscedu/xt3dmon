@@ -16,6 +16,8 @@ int yylex(void);
 int yyerror(const char *, ...);
 int yyparse(void);
 
+struct physdim *physdim_get(const char *name);
+
 int lineno = 1;
 static int errors;
 
