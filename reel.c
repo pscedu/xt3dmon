@@ -70,7 +70,8 @@ reel_load(void)
 
 	reel_len = 0;
 	if ((dp = opendir(reel_fn)) == NULL) {
-		if (errno == ENOENT) {
+		if (errno == ENOENT ||
+		    errno == EINVAL) {
 			reel_fn[0] = '\0';
 			/* User hasn't specified, so grab newest reel. */
 			if ((dp = opendir(_PATH_ARCHIVE)) == NULL) {
