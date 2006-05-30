@@ -136,6 +136,9 @@
 				RelativePath="..\..\dbg.c">
 			</File>
 			<File
+				RelativePath="..\..\deusex.c">
+			</File>
+			<File
 				RelativePath="..\..\draw.c">
 			</File>
 			<File
@@ -143,6 +146,12 @@
 			</File>
 			<File
 				RelativePath="..\..\eggs.c">
+			</File>
+			<File
+				RelativePath="..\..\env.c">
+			</File>
+			<File
+				RelativePath="..\..\fill.c">
 			</File>
 			<File
 				RelativePath="..\..\flyby.c">
@@ -163,7 +172,13 @@
 				RelativePath="..\..\key.c">
 			</File>
 			<File
+				RelativePath="..\..\lnseg.c">
+			</File>
+			<File
 				RelativePath="..\..\main.c">
+			</File>
+			<File
+				RelativePath="..\..\mark.c">
 			</File>
 			<File
 				RelativePath="..\..\math.c">
@@ -184,7 +199,19 @@
 				RelativePath="..\..\parse.c">
 			</File>
 			<File
+				RelativePath="..\..\phys-lex.c">
+			</File>
+			<File
+				RelativePath="..\..\phys-parse.c">
+			</File>
+			<File
 				RelativePath="..\..\png.c">
+			</File>
+			<File
+				RelativePath="..\..\prefresh.c">
+			</File>
+			<File
+				RelativePath="..\..\reel.c">
 			</File>
 			<File
 				RelativePath="..\..\select.c">
@@ -244,6 +271,9 @@
 					RelativePath="..\..\compat\asprintf.c">
 				</File>
 				<File
+					RelativePath="..\..\compat\dirent.c">
+				</File>
+				<File
 					RelativePath="..\..\compat\err.c">
 				</File>
 				<File
@@ -254,6 +284,9 @@
 				</File>
 				<File
 					RelativePath="..\..\compat\gettimeofday.c">
+				</File>
+				<File
+					RelativePath="..\..\compat\redisplay.c">
 				</File>
 				<File
 					RelativePath="..\..\compat\server.c">
@@ -425,6 +458,9 @@
 			</File>
 			<File
 				RelativePath="..\..\compat.h">
+			</File>
+			<File
+				RelativePath="..\..\lnseg.h">
 			</File>
 			<File
 				RelativePath="..\..\mon.h">
