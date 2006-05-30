@@ -1,5 +1,7 @@
 /* $Id$ */
 
+#include <limits.h>
+
 #include "objlist.h"
 #include "xmath.h"
 
