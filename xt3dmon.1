@@ -276,10 +276,14 @@ Switch to the wired viewing mode with the cluster drawn continuously.
 .El
 .Sh FILES
 .Bl -tag -width Pa -compact
-.It Pa img/texture Ns Em %d Ns Pa .png
+.It Pa img/tex-sc Ns Em %d Ns Pa .png
+node state textures
+.It Pa img/tex-selnode.png
 node state textures
 .It Pa img/font.png
 font texture used for node labels
+.It Pa data/archive
+top-level reel directory
 .It Pa data/phys.conf
 cluster physical description file
 .It Pa data/node
@@ -288,6 +292,10 @@ node information
 job information
 .It Pa data/yod
 yod information
+.It Pa data/ss
+seastar data
+.It Pa data/rt
+routing data
 .It Pa data/flyby.data
 flyby data file
 .It Pa snaps/ Ns Em %08d Ns Pa .png
