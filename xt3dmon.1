@@ -1,5 +1,5 @@
 .\" $Id$
-.Dd February 1, 2006
+.Dd May 30, 2006
 .Dt XT3DMON 1
 .ds volume Pittsburgh Supercomputing Center
 .\" .ds vT Pittsburgh Supercomputing Center
@@ -49,14 +49,15 @@ for use by a stereo projector overlaying the right side of the
 available screen space with the left.
 .El
 .Pp
-There are four different data displays available: job, yod, temperature,
-and failure information (see the key assignments below for how to enable
-these modes).
+There are a number of different data displays available:
+job, yod, temperature, seastar counters, lustre status,
+and various routing statistics
+(see the key assignments below for how to enable these modes).
 Each mode assigns every cluster node a color corresponding to its
 status with respect to that display mode.
 .Pp
-In job mode, cluster nodes may be in any of the following states,
-differentiated by color/texture:
+In the job and yod modes, cluster nodes may be in any of the following
+states, differentiated by color/texture:
 .Pp
 .Bl -tag -width "Disabled (PBS)" -offset indent -compact
 .It Free
@@ -72,14 +73,14 @@ These nodes are colored by their respective job.
 The node is a service node, not a compute node.
 .El
 .Pp
-The yod mode acts similarily but instead shows yod instead of job
-information about the used nodes.
+The temperature mode colors each cluster node according to its nearest
+temperature class range.
 .Pp
-The failure and temperature modes color each cluster node according to
-its respective failure statistics or temperature.
+The seastar and routing error modes color the nodes based upon the
+relative performance of each node to the rest of the nodes.
 .Pp
-Some modes gather and display information about user accounts on the
-XT3 system.
+Some modes, such as job mode, provide information about user accounts
+on the XT3 system.
 As such, accessing this information requires authenticating with a
 valid PSC/Kerberos account, which can be set with the
 .Ic pL
@@ -87,10 +88,17 @@ command.
 .Pp
 The legend panel (see the
 .Ic pl
-command) displays all possible node states for the currently selected
-data viewing mode.
+command) displays all possible node states for the current data
+viewing mode.
+Each state is accompanied by a color box representing the color in
+which nodes of that state will be drawn.
+Using the
+.Ic + , - , = ,
+and
+.Ic _
+keys over the label will modify the transluceny of that node class.
 .Pp
-The following key bindings are available:
+The following is a quick reference of the most common key bindings:
 .Bl -tag -width Ds -offset indent
 .It left, right, up, down
 Pan the camera to the left, right, forward, or backward along its
@@ -105,16 +113,47 @@ Click a node for extended information.
 Hold shift and click to add nodes to the selection.
 Hold control and click to remove nodes from the selection.
 .Pp
-Click, hold, and drag the mouse to revolve around the cluster view.
+Click, hold, and drag the mouse to revolve around the point of focus,
+normally the cluster view.
 .Pp
 While holding the shift key, click, hold, and drag the mouse to freely
 adjust the camera view.
+.It Ic 2 , 4, 6, 8
+Revolve around the point of focus.
+.It Ic aj
+Display only nodes in jobs of any selected nodes.
+.It Ic O
+Move the camera to a bird's eye view of the cluster.
+.It Ic pa
+Toggle all non-interactive panels.
+.It Ic q
+Quit.
+.It Xo
+.Ic [x , [y , [z ,
+.Ic [[ ,
+.Ic ]x , ]y , ]z ,
+.Ic ]]
+.Xc
+Adjust the wired cluster viewing mode node spacing factor.
+.It Xo
+.Ic {x , {y , {z ,
+.Ic {0 , {{ ,
+.Ic }x , }y , }z ,
+.Ic }0 , }}
+.Xc
+Adjust the wired cluster viewing mode node offset factor.
+The key sequences involving zero reset the offset.
+.It Ic + , _ , = , -
+Adjust translucency for the node class under the cursor of the
+legend panel.
+.El
+.Pp
+The following extended/advanced key bindings are available:
+.Bl -tag -width Ds -offset indent
 .It Ic ad
 Display only PBS-disabled nodes.
 .It Ic af
 Display only free (i.e., no job running) nodes.
-.It Ic aj
-Display only nodes in jobs of any selected nodes.
 .It Ic ar
 Restore display of all nodes.
 .It Ic as
@@ -145,16 +184,12 @@ Remap the arrow keys to move about the neighbors of any selected nodes.
 While holding shift, neighbors in the direction of the key pressed will
 be selected additionally instead of in place of the currently selected
 nodes.
-.It Ic mf
-Switch to failure data mode.
 .It Ic mj
 Switch to job data mode (default).
 .It Ic mt
 Switch to temperature data mode.
 .It Ic my
 Switch to yod data mode.
-.It Ic O
-Move the camera to a bird's eye view of the cluster.
 .It Ic oD
 Toggle drawing to the screen.
 .It Ic od
@@ -165,8 +200,6 @@ directory.
 .It Ic oe
 Toggle movement interpolation
 .Pq Dq tweening .
-.It Ic of
-Toggle the display of cluster frames in wired view.
 .It Ic oG
 Toggle the frame rate governor.
 .It Ic og
@@ -187,8 +220,10 @@ Toggle skeleton mode.
 Toggle texture mapping.
 .It Ic ow
 Toggle the display of wireframes around nodes.
-.It Ic pa
-Toggle all non-interactive panels.
+.It Ic Pr
+Color node pipes according to interconnection router errors.
+.It Ic Pd
+Color node pipes according to interconnection torus.
 .\" .It Ic pc
 .\" Toggle the command panel.
 .It Ic pd
@@ -215,41 +250,29 @@ Toggle the memory usage panel.
 Toggle the extended node information panel.
 .It Ic po
 Toggle the option panel.
+.It Ic pP
+Toggle the
+.Dq panels
+panel \(em one panel to rule them all.
 .It Ic pp
 Toggle the camera position panel.
 .It Ic pS
 Toggle the status panel.
 .It Ic ps
 Toggle the screenshot panel.
-.It Ic q
-Quit.
 .It Ic R
 Refresh current data set.
+.It Ic r+ , r- , rr
+Cycle through the port sets in the routing error data mode.
+.It Ic rR , rF , rT
+Change the routing error data mode to display recoverable, fatal,
+or router errors.
 .It Ic vo
 Switch to the wired viewing mode with only one cluster drawn.
 .It Ic vp
 Switch to the physical viewing mode (default).
 .It Ic vw
 Switch to the wired viewing mode with the cluster drawn continuously.
-.It Xo
-.Ic [x , [y , [z ,
-.Ic [[ ,
-.Ic ]x , ]y , ]z ,
-.Ic ]]
-.Xc
-Adjust the wired cluster viewing mode node spacing factor.
-.It Xo
-.Ic {x , {y , {z ,
-.Ic {0 , {{ ,
-.Ic }x , }y , }z ,
-.Ic }0 , }}
-.Xc
-Adjust the wired cluster viewing mode node offset factor.
-The key sequences involving zero reset the offset.
-.It Ic + , _
-Adjust job node translucency.
-.It Ic = , -
-Adjust other node translucency.
 .El
 .Sh FILES
 .Bl -tag -width Pa -compact
