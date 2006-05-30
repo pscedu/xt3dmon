@@ -21,6 +21,7 @@
 # include <GL/glut.h>
 
 # include "getopt.h"
+# include "dirent.h"
 
 # define atanf atan
 # define acosf acos
@@ -88,6 +89,7 @@ typedef u_int16_t in_port_t;
 # include <OpenGL/gl.h>
 # include <GLUT/glut.h>
 
+# include <dirent.h>
 # include <unistd.h>
 # include <netdb.h>
 
@@ -108,6 +110,7 @@ typedef u_int16_t in_port_t;
 # include <GL/gl.h>
 # include <GL/freeglut.h>
 
+# include <dirent.h>
 # include <unistd.h>
 # include <netdb.h>
 
