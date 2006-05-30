@@ -81,6 +81,9 @@ typedef u_int16_t in_port_t;
 		*result = *_tm;		\
 	} while (0)
 
+#define glutPostRedisplay post_redisplay
+void post_redisplay(void);
+
 #elif defined(__APPLE_CC__)
 
 # include <sys/param.h>
