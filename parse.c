@@ -10,6 +10,7 @@
 #include <string.h>
 #include <limits.h>
 
+#include "cdefs.h"
 #include "ds.h"
 #include "fill.h"
 #include "flyby.h"

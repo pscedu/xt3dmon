@@ -37,6 +37,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "cdefs.h"
 #include "draw.h"
 #include "env.h"
 #include "fill.h"
