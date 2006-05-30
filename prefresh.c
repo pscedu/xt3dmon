@@ -4,7 +4,6 @@
 
 #include <sys/stat.h>
 
-#include <dirent.h>
 #include <err.h>
 #include <stdarg.h>
 #include <stdlib.h>
