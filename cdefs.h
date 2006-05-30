@@ -24,6 +24,10 @@
 #define MAX3(a, b, c) MAX(MAX((a), (b)), (c))
 #endif
 
+#ifndef howmany
+#define howmany(x, y) (((x) + ((y) + 1)) / (y))
+#endif
+
 #if defined(__FLT_MAX__) && !defined(FLT_MAX)
 #define FLT_MAX __FLT_MAX__
 #endif
