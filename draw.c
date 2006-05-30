@@ -317,10 +317,10 @@ draw_node(struct node *n, int flags)
 
 	if ((flags & NDF_ATORIGIN) == 0) {
 		if (st.st_opts & OP_NODEANIM &&
-		    node_tween_dir(&n->n_vcur.fv_x, &n->n_v->fv_x) |
+		    (node_tween_dir(&n->n_vcur.fv_x, &n->n_v->fv_x) |
 		    node_tween_dir(&n->n_vcur.fv_y, &n->n_v->fv_y) |
-		    node_tween_dir(&n->n_vcur.fv_z, &n->n_v->fv_z)) {
-			st.st_rf |= RF_CLUSTER;
+		    node_tween_dir(&n->n_vcur.fv_z, &n->n_v->fv_z))) {
+			st.st_rf |= RF_CLUSTER | RF_SELNODE;
 			fvp = &n->n_vcur;
 		} else
 			fvp = n->n_v;
@@ -686,6 +686,7 @@ __inline void
 draw_selnodes(void)
 {
 	struct selnode *sn;
+	struct fvec *fvp;
 	struct fill *ofp;
 	struct node *n;
 
@@ -694,8 +695,13 @@ draw_selnodes(void)
 		ofp = n->n_fillp;
 		n->n_fillp = &fill_selnode;
 
+		if (st.st_opts & OP_NODEANIM)
+			fvp = &n->n_vcur;
+		else
+			fvp = n->n_v;
+
 		glPushMatrix();
-		glTranslatef(n->n_v->fv_x, n->n_v->fv_y, n->n_v->fv_z);
+		glTranslatef(fvp->fv_x, fvp->fv_y, fvp->fv_z);
 		draw_node(n, NDF_ATORIGIN);
 		glPopMatrix();
 
