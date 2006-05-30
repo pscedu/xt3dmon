@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "cdefs.h"
 #include "fill.h"
 #include "job.h"
 #include "nodeclass.h"
