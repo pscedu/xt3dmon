@@ -1,5 +1,9 @@
 /* $Id$ */
 
+#include "mon.h"
+
+#include <math.h>
+
 #include "cdefs.h"
 #include "env.h"
 #include "gl.h"
