@@ -76,3 +76,4 @@ todo
 - fix textures in legend: draw above panel background
 - make status panels contents queue, remove in due time
 - vec_rotate() is busted for large amounts
+- on mac/win32, fix node labels on solid node colors
