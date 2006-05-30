@@ -45,6 +45,7 @@
 		6DFABA95096ED0AB001374A0 /* phys-lex.c in Sources */ = {isa = PBXBuildFile; fileRef = 6DFABA92096ED0AB001374A0 /* phys-lex.c */; };
 		6DFABA96096ED0AB001374A0 /* phys-parse.c in Sources */ = {isa = PBXBuildFile; fileRef = 6DFABA93096ED0AB001374A0 /* phys-parse.c */; };
 		6DFABAA0096ED102001374A0 /* widget.c in Sources */ = {isa = PBXBuildFile; fileRef = 6DFABA9F096ED102001374A0 /* widget.c */; };
+		9BD64E5A0A1A10E600A0CDA7 /* lnseg.c in Sources */ = {isa = PBXBuildFile; fileRef = 9BD64E580A1A10E600A0CDA7 /* lnseg.c */; };
 		D25936D209BE11DE00961C5E /* ssl.c in Sources */ = {isa = PBXBuildFile; fileRef = D25936CB09BE11DE00961C5E /* ssl.c */; };
 		D25936D309BE11DE00961C5E /* ustrdtab.c in Sources */ = {isa = PBXBuildFile; fileRef = D25936CC09BE11DE00961C5E /* ustrdtab.c */; };
 		D25936D409BE11DE00961C5E /* ustrop-file.c in Sources */ = {isa = PBXBuildFile; fileRef = D25936CD09BE11DE00961C5E /* ustrop-file.c */; };
@@ -131,6 +132,8 @@
 		6DFABA93096ED0AB001374A0 /* phys-parse.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = "phys-parse.c"; path = "../../phys-parse.c"; sourceTree = SOURCE_ROOT; };
 		6DFABA9F096ED102001374A0 /* widget.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = widget.c; path = ../../widget.c; sourceTree = SOURCE_ROOT; };
 		6DFABAA1096ED116001374A0 /* y.tab.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = y.tab.h; path = ../../y.tab.h; sourceTree = SOURCE_ROOT; };
+		9BD64E580A1A10E600A0CDA7 /* lnseg.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = lnseg.c; path = ../../lnseg.c; sourceTree = SOURCE_ROOT; };
+		9BD64E590A1A10E600A0CDA7 /* lnseg.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = lnseg.h; path = ../../lnseg.h; sourceTree = SOURCE_ROOT; };
 		D25936CB09BE11DE00961C5E /* ssl.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = ssl.c; path = ../../ssl.c; sourceTree = SOURCE_ROOT; };
 		D25936CC09BE11DE00961C5E /* ustrdtab.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = ustrdtab.c; path = ../../ustrdtab.c; sourceTree = SOURCE_ROOT; };
 		D25936CD09BE11DE00961C5E /* ustrop-file.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = "ustrop-file.c"; path = "../../ustrop-file.c"; sourceTree = SOURCE_ROOT; };
@@ -193,6 +196,7 @@
 		D31796C808AD1BF60016A4BD /* Headers */ = {
 			isa = PBXGroup;
 			children = (
+				9BD64E590A1A10E600A0CDA7 /* lnseg.h */,
 				D2ABB84F0A18DFF0005762AF /* cam.h */,
 				D2ABB8500A18DFF0005762AF /* capture.h */,
 				D2ABB8510A18DFF0005762AF /* deusex.h */,
@@ -275,6 +279,7 @@
 		D37C16CA0833BF9400B1AA74 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				9BD64E580A1A10E600A0CDA7 /* lnseg.c */,
 				D2ABB87A0A18E10F005762AF /* deusex.c */,
 				D2ABB87B0A18E10F005762AF /* env.c */,
 				D2ABB87C0A18E10F005762AF /* fill.c */,
@@ -486,6 +491,7 @@
 				D2ABB87F0A18E10F005762AF /* env.c in Sources */,
 				D2ABB8800A18E10F005762AF /* fill.c in Sources */,
 				D2ABB8810A18E10F005762AF /* mark.c in Sources */,
+				9BD64E5A0A1A10E600A0CDA7 /* lnseg.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
