@@ -12,4 +12,5 @@ if [ X$(id -un) != X"yanovich" ]; then
 fi
 
 cd /home/yanovich/code/proj/xt3dmon
-XAUTHORITY=/var/gdm/:0.Xauth ./xt3dmon -display :0 -d 2>&1 | mail -s "xt3dmon down" yanovich@psc.edu
+msg=$(XAUTHORITY=/var/gdm/:0.Xauth ./xt3dmon -display :0 -d 2>&1)
+echo $msg | mail -s "xt3dmon down" yanovich@psc.edu
