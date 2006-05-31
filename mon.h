@@ -23,9 +23,9 @@
 #define MODSPACE	(0.8f)
 #define NODESPACE	(0.2f)
 
-#define NODEWIDTH	(vmodes[st.st_vmode].vm_ndim[GEOM_CUBE].fv_w)
-#define NODEHEIGHT	(vmodes[st.st_vmode].vm_ndim[GEOM_CUBE].fv_h)
-#define NODEDEPTH	(vmodes[st.st_vmode].vm_ndim[GEOM_CUBE].fv_d)
+#define NODEWIDTH	(vmodes[VM_PHYSICAL].vm_ndim[GEOM_CUBE].fv_w)
+#define NODEHEIGHT	(vmodes[VM_PHYSICAL].vm_ndim[GEOM_CUBE].fv_h)
+#define NODEDEPTH	(vmodes[VM_PHYSICAL].vm_ndim[GEOM_CUBE].fv_d)
 #define NODESHIFT	(0.6f)
 
 #define MODWIDTH	(NODEWIDTH)
