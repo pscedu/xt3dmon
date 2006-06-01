@@ -36,12 +36,12 @@ my $lastdir = strftime("$outdir/archive/%Y-%m-%d/last", @date);
 
 my $fn = dirname($0) . "/cfg-loginhost";
 open F, "<", $fn or die "$fn: $!\n";
-my $login_host = <F>;
+chomp(my $login_host = <F>);
 close F;
 
 $fn = dirname($0) . "/cfg-sqlhost";
 open F, "<", $fn or die "$fn: $!\n";
-my $host = <F>;
+chomp(my $host = <F>);
 close F;
 
 my $dbh = DBI->connect("DBI:mysql:database=$db;host=$host;port=$port", $user, $pass)
