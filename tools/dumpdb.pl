@@ -10,8 +10,6 @@ use warnings;
 
 # start config
 
-my $login_host = "tg-login.bigben.psc.teragrid.org";
-my $host = "kaminari";
 my $smwhost = "smw";
 my $port = 3306;
 my $user = "sys_mgmt";
@@ -35,6 +33,16 @@ my $ardir = strftime("$outdir/archive/%Y-%m-%d/%H-%M", @date);
 my $lastdir = strftime("$outdir/archive/%Y-%m-%d/last", @date);
 
 # end config
+
+my $fn = dirname($0) . "/cfg-loginhost";
+open F, "<", $fn or die "$fn: $!\n";
+my $login_host = <F>;
+close F;
+
+$fn = dirname($0) . "/cfg-sqlhost";
+open F, "<", $fn or die "$fn: $!\n";
+my $host = <F>;
+close F;
 
 my $dbh = DBI->connect("DBI:mysql:database=$db;host=$host;port=$port", $user, $pass)
     or dberr("connect $host:$port");
