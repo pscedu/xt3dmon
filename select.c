@@ -450,3 +450,68 @@ gscb_pw_fb(struct glname *gn, int flags)
 		}
 	}
 }
+
+void
+gscb_pw_wiadj(struct glname *gn, int flags)
+{
+	int swf = gn->gn_id;
+	int adj = 1;
+
+	if (flags & SPF_PROBE)
+		cursor_set(GLUT_CURSOR_INFO);
+	else if ((flags & (SPF_SQUIRE | SPF_DESQUIRE))) {
+		if (flags & SPF_DESQUIRE)
+			adj *= -1;
+		switch (swf) {
+		case SWF_NSPX:
+			st.st_winsp.iv_x += adj;
+			break;
+		case SWF_NSPY:
+			st.st_winsp.iv_y += adj;
+			break;
+		case SWF_NSPZ:
+			st.st_winsp.iv_z += adj;
+			break;
+		case SWF_OFFX:
+			st.st_wioff.iv_x += adj;
+			break;
+		case SWF_OFFY:
+			st.st_wioff.iv_y += adj;
+			break;
+		case SWF_OFFZ:
+			st.st_wioff.iv_z += adj;
+			break;
+		}
+		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_CAM |
+		    RF_SELNODE | RF_NODESWIV;
+	}
+}
+
+void
+gscb_pw_rt(struct glname *gn, int flags)
+{
+	int srf = gn->gn_id;
+
+	if (flags & SPF_PROBE)
+		cursor_set(GLUT_CURSOR_INFO);
+	else if (flags == 0) {
+		switch (srf) {
+		case SRF_POS:
+			st.st_rtepset = RPS_POS;
+			break;
+		case SRF_NEG:
+			st.st_rtepset = RPS_NEG;
+			break;
+		case SRF_RECOVER:
+			st.st_rtetype = RT_RECOVER;
+			break;
+		case SRF_FATAL:
+			st.st_rtetype = RT_FATAL;
+			break;
+		case SRF_ROUTER:
+			st.st_rtetype = RT_ROUTER;
+			break;
+		}
+		st.st_rf |= RF_CLUSTER | RF_DMODE;
+	}
+}

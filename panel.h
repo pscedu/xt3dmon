@@ -25,7 +25,9 @@
 #define PANEL_REEL	(1<<19)
 #define PANEL_PIPE	(1<<20)
 #define PANEL_SSTAR	(1<<21)
-#define NPANELS		22
+#define PANEL_WIADJ	(1<<22)
+#define PANEL_RT	(1<<23)
+#define NPANELS		24
 
 struct glname;
 
@@ -124,6 +126,8 @@ void panel_refresh_dmode(struct panel *);
 void panel_refresh_reel(struct panel *);
 void panel_refresh_pipe(struct panel *);
 void panel_refresh_sstar(struct panel *);
+void panel_refresh_wiadj(struct panel *);
+void panel_refresh_rt(struct panel *);
 
 extern struct panels	 panels;
 extern struct pinfo	 pinfo[];

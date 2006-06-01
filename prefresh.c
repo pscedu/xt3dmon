@@ -866,7 +866,7 @@ panel_refresh_sstar(struct panel *p)
 	sav_mode = st.st_ssmode;
 	sav_vc = st.st_ssvc;
 
-	panel_set_content(p, "- Seastar -");
+	panel_set_content(p, "- Seastar Controls -");
 	pwidget_startlist(p);
 	for (i = 0; i < NVC; i++) {
 		pwidget_add(p, (st.st_ssvc == i ?
@@ -965,5 +965,77 @@ panel_refresh_reel(struct panel *p)
 		if (i == 0)
 			panel_add_content(p, "\nNone available.");
 	}
+	pwidget_endlist(p);
+}
+
+void
+panel_refresh_wiadj(struct panel *p)
+{
+	static struct ivec sav_wioff, sav_winsp;
+
+	if (panel_ready(p) &&
+	    memcmp(&sav_wioff, &st.st_wioff, sizeof(sav_wioff)) == 0 &&
+	    memcmp(&sav_winsp, &st.st_winsp, sizeof(sav_winsp)) == 0)
+		return;
+	sav_wioff = st.st_wioff;
+	sav_winsp = st.st_winsp;
+
+	panel_set_content(p,
+	    "- Wired Mode Controls -\n"
+	    "Space: <%d,%d,%d>\n"
+	    "Offset: <%d,%d,%d>",
+	    st.st_winsp.iv_x,
+	    st.st_winsp.iv_y,
+	    st.st_winsp.iv_z,
+	    st.st_wioff.iv_x,
+	    st.st_wioff.iv_y,
+	    st.st_wioff.iv_z);
+
+	pwidget_startlist(p);
+	pwidget_add(p, &fill_nodata, "x Space",  gscb_pw_wiadj, SWF_NSPX);
+	pwidget_add(p, &fill_nodata, "x Offset", gscb_pw_wiadj, SWF_OFFX);
+	pwidget_add(p, &fill_nodata, "y Space",  gscb_pw_wiadj, SWF_NSPY);
+	pwidget_add(p, &fill_nodata, "y Offset", gscb_pw_wiadj, SWF_OFFY);
+	pwidget_add(p, &fill_nodata, "z Space",  gscb_pw_wiadj, SWF_NSPZ);
+	pwidget_add(p, &fill_nodata, "z Offset", gscb_pw_wiadj, SWF_OFFZ);
+	pwidget_endlist(p);
+}
+
+char *rtetypelabels[] = {
+	"Recoverable",
+	"Fatal",
+	"Router"
+};
+
+void
+panel_refresh_rt(struct panel *p)
+{
+	static int sav_rtepset, sav_rtetype;
+
+	if (panel_ready(p) &&
+	    sav_rtepset == st.st_rtepset &&
+	    sav_rtetype == st.st_rtetype)
+		return;
+	sav_rtepset = st.st_rtepset;
+	sav_rtetype = st.st_rtetype;
+
+	panel_set_content(p,
+	    "- Routing Error Controls -\n"
+	    "Port set: %s\n"
+	    "Error type: %s",
+	    st.st_rtepset ? "Positive" : "Negative",
+	    rtetypelabels[st.st_rtetype]);
+
+	pwidget_startlist(p);
+	pwidget_add(p, (st.st_rtepset == RPS_NEG ?  &fill_white :
+	    &fill_nodata), "Negative", gscb_pw_rt, SRF_NEG);
+	pwidget_add(p, (st.st_rtepset == RPS_POS ?  &fill_white :
+	    &fill_nodata), "Positive",  gscb_pw_rt, SRF_POS);
+	pwidget_add(p, (st.st_rtetype == RT_RECOVER ? &fill_white :
+	    &fill_nodata), "Recoverable", gscb_pw_rt, SRF_RECOVER);
+	pwidget_add(p, (st.st_rtetype == RT_FATAL ? &fill_white :
+	    &fill_nodata), "Fatal",  gscb_pw_rt, SRF_FATAL);
+	pwidget_add(p, (st.st_rtetype == RT_ROUTER ? &fill_white :
+	    &fill_nodata), "Router", gscb_pw_rt, SRF_ROUTER);
 	pwidget_endlist(p);
 }

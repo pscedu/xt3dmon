@@ -84,7 +84,9 @@ struct pinfo pinfo[] = {
  /* 18 */ { "Data Mode",	panel_refresh_dmode,	PSTICK_TL, 0,					0,		NULL },
  /* 19 */ { "Reel",		panel_refresh_reel,	PSTICK_TR, PF_FBIGN,				0,		NULL },
  /* 20 */ { "Pipe Mode",	panel_refresh_pipe,	PSTICK_TR, 0,					0,		NULL },
- /* 21 */ { "Seastar",		panel_refresh_sstar,	PSTICK_TR, 0,					0,		NULL }
+ /* 21 */ { "Seastar",		panel_refresh_sstar,	PSTICK_TR, 0,					0,		NULL },
+ /* 22 */ { "Wired Controls",	panel_refresh_wiadj,	PSTICK_TR, 0,					0,		NULL },
+ /* 23 */ { "Route Controls",	panel_refresh_rt,	PSTICK_TR, 0,					0,		NULL }
 };
 
 #define PVOFF_TL 0

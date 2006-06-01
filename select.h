@@ -36,6 +36,19 @@ struct glname {
 #define HF_CLRSN	2
 #define HF_UPDATE	3
 
+#define SWF_NSPX	0
+#define SWF_NSPY	1
+#define SWF_NSPZ	2
+#define SWF_OFFX	3
+#define SWF_OFFY	4
+#define SWF_OFFZ	5
+
+#define SRF_POS		0
+#define SRF_NEG		1
+#define SRF_RECOVER	2
+#define SRF_FATAL	3
+#define SRF_ROUTER	4
+
 #define PWFF_STOPREC	0
 #define PWFF_PLAY	1
 #define PWFF_REC	2
@@ -60,3 +73,5 @@ void		 gscb_pw_ssvc(struct glname *, int);
 void		 gscb_pw_pipe(struct glname *, int);
 void		 gscb_pw_reel(struct glname *, int);
 void		 gscb_pw_fb(struct glname *, int);
+void		 gscb_pw_wiadj(struct glname *, int);
+void		 gscb_pw_rt(struct glname *, int);
