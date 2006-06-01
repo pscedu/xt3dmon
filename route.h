@@ -42,7 +42,4 @@ struct route {
 
 extern struct route rt_max;
 
-extern int rt_portset;
-extern int rt_type;
-
 #endif /* _ROUTE_H_ */

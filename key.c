@@ -520,22 +520,22 @@ gl_keyh_route(unsigned char key, __unused int u, __unused int v)
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case '+':
-		rt_portset = RPS_POS;
+		st.st_rtepset = RPS_POS;
 		break;
 	case '-':
-		rt_portset = RPS_NEG;
+		st.st_rtepset = RPS_NEG;
 		break;
 	case 'r': /* inc */
-		rt_portset = (rt_portset + 1) % NRPS;
+		st.st_rtepset = (st.st_rtepset + 1) % NRPS;
 		break;
 	case 'R': /* recover */
-		rt_type = RT_RECOVER;
+		st.st_rtetype = RT_RECOVER;
 		break;
 	case 'F': /* fatal */
-		rt_type = RT_FATAL;
+		st.st_rtetype = RT_FATAL;
 		break;
 	case 'T': /* router */
-		rt_type = RT_ROUTER;
+		st.st_rtetype = RT_ROUTER;
 		break;
 	}
 	st.st_rf |= RF_CLUSTER | RF_DMODE;

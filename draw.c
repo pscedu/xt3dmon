@@ -564,13 +564,13 @@ draw_cluster_pipe(struct ivec *iv, struct fvec *sv, struct fvec *dimv)
 			    !node_show(n))
 				continue;
 
-			port = DIM_TO_PORT(dim, rt_portset);
-			if (n->n_route.rt_err[port][rt_type] == DV_NODATA)
+			port = DIM_TO_PORT(dim, st.st_rtepset);
+			if (n->n_route.rt_err[port][st.st_rtetype] == DV_NODATA)
 				continue;
 
-			if (rt_max.rt_err[port][rt_type])
-				class = 100 * n->n_route.rt_err[port][rt_type] /
-				    rt_max.rt_err[port][rt_type];
+			if (rt_max.rt_err[port][st.st_rtetype])
+				class = 100 * n->n_route.rt_err[port][st.st_rtetype] /
+				    rt_max.rt_err[port][st.st_rtetype];
 			else
 				class = 100;		/* 100% */
 

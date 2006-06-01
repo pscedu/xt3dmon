@@ -143,7 +143,7 @@ nc_runsn(void (*f)(struct fill *))
 				f(n->n_fillp);
 			break;
 		case DM_RTUNK:
-			if (n->n_route.rt_err[RP_UNK][rt_type] != DV_NODATA)
+			if (n->n_route.rt_err[RP_UNK][st.st_rtetype] != DV_NODATA)
 				f(n->n_fillp);
 			break;
 		case DM_YOD:

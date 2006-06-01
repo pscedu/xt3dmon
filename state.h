@@ -31,6 +31,8 @@ struct state {
 	int		 st_pipemode;		/* pipe mode */
 	int		 st_ssmode;		/* seastar mode */
 	int		 st_ssvc;		/* seastar vc */
+	int		 st_rtepset;		/* route error port set */
+	int		 st_rtetype;		/* route error type */
 	int		 st_hlnc;		/* highlighted node class */
 	int		 st_eggs;		/* Easter eggs */
 	struct ivec	 st_wioff;		/* wired mode offsets */

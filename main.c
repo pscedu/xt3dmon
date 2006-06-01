@@ -119,6 +119,8 @@ struct state st = {
 	PM_RT,						/* pipe mode */
 	SSCNT_NBLK,					/* seastar mode */
 	0,						/* seastar vc */
+	RPS_NEG,					/* rterr port set */
+	RT_RECOVER,					/* rterr type */
 	HL_ALL,						/* node class to highlight */
 	0,						/* eggs */
 	{ 0, 0, 0 },					/* wired mode offset */
