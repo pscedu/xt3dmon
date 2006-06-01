@@ -225,16 +225,16 @@ node_neighbor(struct node *node, int amt, int dir)
 		case VM_WIREDONE:
 			switch (dir) {
 			case DIR_RIGHT:
-				iv.iv_x += adj + WIDIM_WIDTH;
-				iv.iv_x %= WIDIM_WIDTH;
+				iv.iv_x += adj + widim.iv_w;
+				iv.iv_x %= widim.iv_w;
 				break;
 			case DIR_UP:
-				iv.iv_y += adj + WIDIM_HEIGHT;
-				iv.iv_y %= WIDIM_HEIGHT;
+				iv.iv_y += adj + widim.iv_h;
+				iv.iv_y %= widim.iv_h;
 				break;
 			case DIR_FORWARD:
-				iv.iv_z += adj + WIDIM_DEPTH;
-				iv.iv_z %= WIDIM_DEPTH;
+				iv.iv_z += adj + widim.iv_d;
+				iv.iv_z %= widim.iv_d;
 				break;
 			}
 			rn = wimap[iv.iv_x][iv.iv_y][iv.iv_z];

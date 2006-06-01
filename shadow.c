@@ -179,9 +179,9 @@ draw_shadow_winodes(int *dl, struct wiselstep *ws, const struct fvec *cloffp)
 	for (iv.iv_x = off->iv_x; iv.iv_x < off->iv_x + mag->iv_x; iv.iv_x++)
 		for (iv.iv_y = off->iv_y; iv.iv_y < off->iv_y + mag->iv_y; iv.iv_y++)
 			for (iv.iv_z = off->iv_z; iv.iv_z < off->iv_z + mag->iv_z; iv.iv_z++) {
-				adjv.iv_x = negmod(iv.iv_x + st.st_wioff.iv_x, WIDIM_WIDTH);
-				adjv.iv_y = negmod(iv.iv_y + st.st_wioff.iv_y, WIDIM_HEIGHT);
-				adjv.iv_z = negmod(iv.iv_z + st.st_wioff.iv_z, WIDIM_DEPTH);
+				adjv.iv_x = negmod(iv.iv_x + st.st_wioff.iv_x, widim.iv_w);
+				adjv.iv_y = negmod(iv.iv_y + st.st_wioff.iv_y, widim.iv_h);
+				adjv.iv_z = negmod(iv.iv_z + st.st_wioff.iv_z, widim.iv_d);
 				node = wimap[adjv.iv_x][adjv.iv_y][adjv.iv_z];
 				if (node == NULL || !node_show(node))
 					continue;
@@ -385,7 +385,7 @@ wi_select(int *dl, int flags, const struct fvec *offp)
 	int nrecs, pos, lasttry, cubeno, nnodes, ncuts, tries;
 	struct wiselstep *ws;
 
-	nnodes = WIDIM_WIDTH * WIDIM_HEIGHT * WIDIM_DEPTH;
+	nnodes = widim.iv_w * widim.iv_h * widim.iv_d;
 	ncuts = 3; /* number of cuts of each dimension */
 	tries = log(nnodes) / log(ncuts * ncuts * ncuts);
 
@@ -394,9 +394,9 @@ wi_select(int *dl, int flags, const struct fvec *offp)
 
 	ws[0].ws_chance = 0;
 
-	ws[0].ws_mag.iv_w = WIDIM_WIDTH;
-	ws[0].ws_mag.iv_h = WIDIM_HEIGHT;
-	ws[0].ws_mag.iv_d = WIDIM_DEPTH;
+	ws[0].ws_mag.iv_w = widim.iv_w;
+	ws[0].ws_mag.iv_h = widim.iv_h;
+	ws[0].ws_mag.iv_d = widim.iv_d;
 
 	ws[0].ws_off.iv_x = 0;
 	ws[0].ws_off.iv_y = 0;
