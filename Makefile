@@ -48,4 +48,8 @@ clean:
 obj:
 	mkdir obj
 
+lines:
+	@shopt -s extglob && eval \
+	    'wc -l !(y.tab).h !(phys-parse|phys-lex).c *.y *.l' | tail -1
+
 -include .depend
