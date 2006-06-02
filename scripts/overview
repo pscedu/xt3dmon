@@ -1,0 +1,24 @@
+# $Id$
+
+start in O
+	phys, temp
+	panel: legend, vmode, data
+	options: labels
+select node
+hilite temp class
+options: skels
+clrsn
+options: -skels
+vmode: wiredone
+dmode: jobs
+options: pipes
+panel: pipe
+select node
+hilite job
+clrsn
+options: -pipes
+snake mode
+reset wioff to 0
+vmode: phys
+dmode: temp
+O
