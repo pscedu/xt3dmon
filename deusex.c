@@ -27,13 +27,16 @@ int dx_orbit3_u(void);
 int dx_orbit3_urev(void);
 int dx_orbit3_v(void);
 int dx_orbit3_vrev(void);
+int dx_curlyq(void);
 
 void dxi_orbit(void);
+void dxi_curlyq(void);
 
 struct dxte {
 	void (*de_init)(void);
 	int  (*de_update)(void);
 } dxtab[] = {
+	{ dxi_curlyq, dx_curlyq },
 	{ dxi_orbit, dx_orbit_u },
 	{ dxi_orbit, dx_orbit_urev },
 	{ dxi_orbit, dx_orbit_v },
@@ -48,6 +51,8 @@ struct dxte {
 	{ NULL, dx_corkscrew_x }
 };
 #define NENTRIES(t) (sizeof((t)) / sizeof((t)[0]))
+
+double curlyq_adj;
 
 void
 dx_update(void)
@@ -64,7 +69,7 @@ dx_update(void)
 		de = NULL;
 }
 
-#define DST(a, b)						\
+#define DST(a, b)					\
 	(sqrt(						\
 	    SQUARE((a)->fv_x - (b)->fv_x) +		\
 	    SQUARE((a)->fv_y - (b)->fv_y) +		\
@@ -85,14 +90,14 @@ dxi_orbit(void)
 		st.st_x += rx;
 		st.st_y += ry;
 		st.st_z += rz;
-	} while (DST(&focus, &st.st_v) < ROWDEPTH);
+	} while (DST(&focus, &st.st_v) < ROWDEPTH * NROWS + ROWSPACE * (NROWS - 1));
 	tween_pop(TWF_POS);
 }
 
 int
 dx_orbit(int dim, int sign)
 {
-	static double t;
+	static int t;
 	double du, dv;
 	int ret;
 
@@ -100,19 +105,19 @@ dx_orbit(int dim, int sign)
 	du = dv = 0.0;
 	switch (dim) {
 	case DIM_X:
-		du = sign * 2.0;
+		du = sign * (2 * M_PI / 360 / .01);
 		break;
 	case DIM_Y:
-		dv = sign * -2.0;
+		dv = sign * -(2 * M_PI / 360 / .01);
 		break;
 	}
 
 	tween_push(TWF_LOOK | TWF_POS | TWF_UP);
-	cam_revolve(&focus, du, dv);
+	cam_revolvefocus(du, dv);
 	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
 
-	t += M_PI / 167;
-	if (t >= 2.0 * M_PI) {
+	t += 1;
+	if (t >= 360) {
 		t = 0;
 		ret = 1;
 	}
@@ -149,7 +154,7 @@ dx_orbit3(int dim, int sign)
 	static int n = 0;
 	int ret;
 
-	if (dx_orbit(DIM_Y, sign))
+	if (dx_orbit(dim, sign))
 		n++;
 
 	ret = 0;
@@ -182,6 +187,22 @@ int
 dx_orbit3_vrev(void)
 {
 	return (dx_orbit3(DIM_Y, -1));
+}
+
+void
+dxi_curlyq(void)
+{
+	dxi_orbit();
+	curlyq_adj = DST(&st.st_v, &focus) / (180 * 3 + 90);
+}
+
+int
+dx_curlyq(void)
+{
+	tween_push(TWF_POS);
+	cam_move(DIR_FORWARD, curlyq_adj);
+	tween_pop(TWF_POS);
+	return (dx_orbit3(DIM_X, 1));
 }
 
 int
