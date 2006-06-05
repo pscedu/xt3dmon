@@ -16,38 +16,73 @@
 #include "tween.h"
 
 int dx_orbit_u(void);
+int dx_orbit_urev(void);
 int dx_orbit_v(void);
+int dx_orbit_vrev(void);
 int dx_cubanoid_x(void);
 int dx_cubanoid_y(void);
 int dx_cubanoid_z(void);
 int dx_corkscrew_x(void);
-int dx_orbit3(void);
+int dx_orbit3_u(void);
+int dx_orbit3_urev(void);
+int dx_orbit3_v(void);
+int dx_orbit3_vrev(void);
 
-int (*dxtab[])(void) = {
-	dx_orbit_u,
-	dx_orbit_v,
-//	dx_cubanoid_x,
-	dx_cubanoid_y,
-//	dx_cubanoid_z,
-	dx_corkscrew_x
-//	dx_orbit3
+void dxi_orbit_u(void);
+void dxi_orbit_v(void);
+
+struct dxte {
+	void (*de_init)(void);
+	int  (*de_update)(void);
+} dxtab[] = {
+	{ dxi_orbit_u, dx_orbit_u },
+	{ dxi_orbit_u, dx_orbit_urev },
+	{ dxi_orbit_v, dx_orbit_v },
+	{ dxi_orbit_v, dx_orbit_vrev },
+//	{ NULL, dx_cubanoid_x },
+	{ NULL, dx_cubanoid_y },
+//	{ NULL, dx_cubanoid_z },
+//	{ dxi_orbit_u, dx_orbit3_u },
+//	{ dxi_orbit_u, dx_orbit3_urev },
+//	{ dxi_orbit_v, dx_orbit3_v },
+//	{ dxi_orbit_v, dx_orbit3_vrev },
+	{ NULL, dx_corkscrew_x }
 };
 #define NENTRIES(t) (sizeof((t)) / sizeof((t)[0]))
 
 void
 dx_update(void)
 {
-	static int (*f)(void);
+	static struct dxte *de;
 
-	if (f == NULL)
-		f = dxtab[rand() % NENTRIES(dxtab)];
+	if (de == NULL) {
+		de = &dxtab[rand() % NENTRIES(dxtab)];
+		if (de == 0 && de->de_init != NULL)
+			de->de_init();
+	}
 
-	if (f())
-		f = NULL;
+	if (de->de_update())
+		de = NULL;
+}
+
+void
+dxi_orbit_u(void)
+{
+	st.st_v = focus;
+	st.st_x = focus.fv_x - ROWWIDTH / 2.0;
+	st.st_y = ROWWIDTH / 2.0 + focus.fv_y / 2.0;
+}
+
+void
+dxi_orbit_v(void)
+{
+	st.st_v = focus;
+	st.st_x = ROWWIDTH / 2.0 + focus.fv_x / 2.0;
+	st.st_z = ROWWIDTH / 2.0 + focus.fv_y / 2.0;
 }
 
 int
-dx_orbit(int dim)
+dx_orbit(int dim, int sign)
 {
 	static double t;
 	double du, dv;
@@ -57,18 +92,14 @@ dx_orbit(int dim)
 	du = dv = 0.0;
 	switch (dim) {
 	case DIM_X:
-		du = 1.0;
+		du = sign * 1.0;
 		break;
 	case DIM_Y:
-		dv = -1.0;
+		dv = sign * -1.0;
 		break;
 	}
 
 	tween_push(TWF_LOOK | TWF_POS | TWF_UP);
-	if (t == 0) {
-		st.st_v = focus;
-		st.st_x -= ROWWIDTH / 2.0;
-	}
 	cam_revolve(&focus, du, dv);
 	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
 
@@ -83,22 +114,34 @@ dx_orbit(int dim)
 int
 dx_orbit_u(void)
 {
-	return (dx_orbit(DIM_X));
+	return (dx_orbit(DIM_X, 1));
+}
+
+int
+dx_orbit_urev(void)
+{
+	return (dx_orbit(DIM_X, -1));
 }
 
 int
 dx_orbit_v(void)
 {
-	return (dx_orbit(DIM_Y));
+	return (dx_orbit(DIM_Y, 1));
 }
 
 int
-dx_orbit3(void)
+dx_orbit_vrev(void)
+{
+	return (dx_orbit(DIM_Y, -1));
+}
+
+int
+dx_orbit3(int dim, int sign)
 {
 	static int n = 0;
 	int ret;
 
-	if (dx_orbit(DIM_Y))
+	if (dx_orbit(DIM_Y, sign))
 		n++;
 
 	ret = 0;
@@ -107,6 +150,30 @@ dx_orbit3(void)
 		ret = 1;
 	}
 	return (ret);
+}
+
+int
+dx_orbit3_u(void)
+{
+	return (dx_orbit3(DIM_X, 1));
+}
+
+int
+dx_orbit3_urev(void)
+{
+	return (dx_orbit3(DIM_X, -1));
+}
+
+int
+dx_orbit3_v(void)
+{
+	return (dx_orbit3(DIM_Y, 1));
+}
+
+int
+dx_orbit3_vrev(void)
+{
+	return (dx_orbit3(DIM_Y, -1));
 }
 
 int
