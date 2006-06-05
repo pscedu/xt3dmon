@@ -28,24 +28,23 @@ int dx_orbit3_urev(void);
 int dx_orbit3_v(void);
 int dx_orbit3_vrev(void);
 
-void dxi_orbit_u(void);
-void dxi_orbit_v(void);
+void dxi_orbit(void);
 
 struct dxte {
 	void (*de_init)(void);
 	int  (*de_update)(void);
 } dxtab[] = {
-	{ dxi_orbit_u, dx_orbit_u },
-	{ dxi_orbit_u, dx_orbit_urev },
-	{ dxi_orbit_v, dx_orbit_v },
-	{ dxi_orbit_v, dx_orbit_vrev },
+	{ dxi_orbit, dx_orbit_u },
+	{ dxi_orbit, dx_orbit_urev },
+	{ dxi_orbit, dx_orbit_v },
+	{ dxi_orbit, dx_orbit_vrev },
 //	{ NULL, dx_cubanoid_x },
 	{ NULL, dx_cubanoid_y },
 //	{ NULL, dx_cubanoid_z },
-//	{ dxi_orbit_u, dx_orbit3_u },
-//	{ dxi_orbit_u, dx_orbit3_urev },
-//	{ dxi_orbit_v, dx_orbit3_v },
-//	{ dxi_orbit_v, dx_orbit3_vrev },
+//	{ dxi_orbit, dx_orbit3_u },
+//	{ dxi_orbit, dx_orbit3_urev },
+//	{ dxi_orbit, dx_orbit3_v },
+//	{ dxi_orbit, dx_orbit3_vrev },
 	{ NULL, dx_corkscrew_x }
 };
 #define NENTRIES(t) (sizeof((t)) / sizeof((t)[0]))
@@ -57,7 +56,7 @@ dx_update(void)
 
 	if (de == NULL) {
 		de = &dxtab[rand() % NENTRIES(dxtab)];
-		if (de == 0 && de->de_init != NULL)
+		if (de->de_init != NULL)
 			de->de_init();
 	}
 
@@ -65,20 +64,29 @@ dx_update(void)
 		de = NULL;
 }
 
-void
-dxi_orbit_u(void)
-{
-	st.st_v = focus;
-	st.st_x = focus.fv_x - ROWWIDTH / 2.0;
-	st.st_y = ROWWIDTH / 2.0 + focus.fv_y / 2.0;
-}
+#define DST(a, b)						\
+	(sqrt(						\
+	    SQUARE((a)->fv_x - (b)->fv_x) +		\
+	    SQUARE((a)->fv_y - (b)->fv_y) +		\
+	    SQUARE((a)->fv_z - (b)->fv_z)))
 
 void
-dxi_orbit_v(void)
+dxi_orbit(void)
 {
-	st.st_v = focus;
-	st.st_x = ROWWIDTH / 2.0 + focus.fv_x / 2.0;
-	st.st_z = ROWWIDTH / 2.0 + focus.fv_y / 2.0;
+	double rx, ry, rz;
+
+	tween_push(TWF_POS);
+	do {
+		rx = (rand() % 2 ? 1 : -1) * fmod(rand() / 100.0, ROWWIDTH);
+		ry = (rand() % 2 ? 1 : -1) * fmod(rand() / 100.0, ROWWIDTH);
+		rz = (rand() % 2 ? 1 : -1) * fmod(rand() / 100.0, ROWWIDTH);
+
+		st.st_v = focus;
+		st.st_x += rx;
+		st.st_y += ry;
+		st.st_z += rz;
+	} while (DST(&focus, &st.st_v) < ROWDEPTH);
+	tween_pop(TWF_POS);
 }
 
 int
@@ -92,10 +100,10 @@ dx_orbit(int dim, int sign)
 	du = dv = 0.0;
 	switch (dim) {
 	case DIM_X:
-		du = sign * 1.0;
+		du = sign * 2.0;
 		break;
 	case DIM_Y:
-		dv = sign * -1.0;
+		dv = sign * -2.0;
 		break;
 	}
 
@@ -103,7 +111,7 @@ dx_orbit(int dim, int sign)
 	cam_revolve(&focus, du, dv);
 	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
 
-	t += M_PI / 314;
+	t += M_PI / 167;
 	if (t >= 2.0 * M_PI) {
 		t = 0;
 		ret = 1;
