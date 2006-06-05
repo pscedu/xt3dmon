@@ -36,19 +36,19 @@ struct dxte {
 	void (*de_init)(void);
 	int  (*de_update)(void);
 } dxtab[] = {
+#if 0
 	{ dxi_curlyq, dx_curlyq },
 	{ dxi_orbit, dx_orbit_u },
 	{ dxi_orbit, dx_orbit_urev },
 	{ dxi_orbit, dx_orbit_v },
 	{ dxi_orbit, dx_orbit_vrev },
-//	{ NULL, dx_cubanoid_x },
+#endif
 	{ NULL, dx_cubanoid_y },
-//	{ NULL, dx_cubanoid_z },
 //	{ dxi_orbit, dx_orbit3_u },
 //	{ dxi_orbit, dx_orbit3_urev },
 //	{ dxi_orbit, dx_orbit3_v },
 //	{ dxi_orbit, dx_orbit3_vrev },
-	{ NULL, dx_corkscrew_x }
+//	{ NULL, dx_corkscrew_x }
 };
 #define NENTRIES(t) (sizeof((t)) / sizeof((t)[0]))
 
@@ -209,8 +209,9 @@ int
 dx_cubanoid(int dim)
 {
 	static double t;
+	struct fvec sv, uv, lv, xv, axis;
 	double roll, a, b, max;
-	struct fvec sv, uv, lv, xv;
+	float mag;
 	int ret;
 
 	ret = 0;
@@ -255,9 +256,9 @@ dx_cubanoid(int dim)
 
 	switch (dim) {
 	case DIM_X:
-		st.st_x = XCENTER;
-		st.st_y = YCENTER + sv.fv_x;
-		st.st_z = ZCENTER + sv.fv_y;
+		st.st_x = 0;
+		st.st_y = sv.fv_x;
+		st.st_z = sv.fv_y;
 
 		st.st_ux = 0.0;
 		st.st_uy = uv.fv_x;
@@ -268,9 +269,9 @@ dx_cubanoid(int dim)
 		st.st_lz = lv.fv_y;
 		break;
 	case DIM_Y:
-		st.st_x = XCENTER + sv.fv_x;
-		st.st_y = YCENTER;
-		st.st_z = ZCENTER + sv.fv_y;
+		st.st_x = sv.fv_x;
+		st.st_y = 0;
+		st.st_z = sv.fv_y;
 
 		st.st_ux = uv.fv_x;
 		st.st_uy = 0.0;
@@ -281,9 +282,9 @@ dx_cubanoid(int dim)
 		st.st_lz = lv.fv_y;
 		break;
 	case DIM_Z:
-		st.st_x = XCENTER + sv.fv_x;
-		st.st_y = YCENTER + sv.fv_y;
-		st.st_z = ZCENTER;
+		st.st_x = sv.fv_x;
+		st.st_y = sv.fv_y;
+		st.st_z = 0;
 
 		st.st_ux = uv.fv_x;
 		st.st_uy = uv.fv_y;
@@ -294,6 +295,17 @@ dx_cubanoid(int dim)
 		st.st_lz = 0.0;
 		break;
 	}
+
+	mag = vec_mag(&st.st_v);
+	vec_set(&axis, 0.0, 1.0, 0.0);
+	vec_rotate(&st.st_v, &axis,
+	    90 - 180 * tan(ROWWIDTH / (double)(ROWDEPTH * NROWS + ROWSPACE * (NROWS-1))));
+	st.st_x = st.st_x * mag;
+	st.st_y = st.st_y * mag;
+	st.st_z = st.st_z * mag;
+	st.st_x += XCENTER;
+	st.st_y += YCENTER;
+	st.st_z += ZCENTER;
 
 	roll = 0.0;
 	if (t > M_PI / 2.0 && t < 3 * M_PI / 2.0)
@@ -327,6 +339,7 @@ dx_cubanoid_x(void)
 int
 dx_cubanoid_y(void)
 {
+mark_add(&st.st_v);
 	return (dx_cubanoid(DIM_Y));
 }
 
