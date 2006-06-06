@@ -603,9 +603,7 @@ gl_keyh_default(unsigned char key, int u, int v)
 		break;
 	case 'O':
 		tween_push(TWF_LOOK | TWF_POS | TWF_UP);
-		vec_set(&st.st_v, -14.00, 33.30, 65.00);
-		vec_set(&st.st_lv,  0.63, -0.31, -0.71);
-		vec_set(&st.st_uv,  0.00,  1.00,  0.00);
+		cam_bird();
 		tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
 		break;
 	case 'o':

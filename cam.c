@@ -266,6 +266,24 @@ cam_getspecvec(struct fvec *fvp, int u, int v)
 	vec_normalize(fvp);
 }
 
+void
+cam_bird(void)
+{
+	switch (st.st_vmode) {
+	case VM_PHYSICAL:
+		vec_set(&st.st_v, -14.00, 33.30, 65.00);
+		vec_set(&st.st_lv,  0.63, -0.31, -0.71);
+		vec_set(&st.st_uv,  0.00,  1.00,  0.00);
+		break;
+	case VM_WIRED:
+	case VM_WIREDONE:
+		vec_set(&st.st_v, -74.00, 100.00, 122.50);
+		vec_set(&st.st_lv,  0.64,  -0.50,  -0.60);
+		vec_set(&st.st_uv,  0.36,   0.87,  -0.34);
+		break;
+	}
+}
+
 __inline void
 cam_look(void)
 {
