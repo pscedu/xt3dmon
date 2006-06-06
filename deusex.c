@@ -602,12 +602,7 @@ dxp_npanel_pipe(void)
 int
 dxp_camsync(void)
 {
-	if (memcmp(&st.st_v, &tv, sizeof(tv)) == 0 &&
-	    memcmp(&st.st_lv, &tlv, sizeof(tlv)) == 0 &&
-	    memcmp(&st.st_uv, &tuv, sizeof(tuv)) == 0)
-		return (1);
-	else
-		return (0);
+	return (memcmp(&st.st_v, &tv, sizeof(tv)) == 0);
 }
 
 int
@@ -665,43 +660,48 @@ struct dxte {
 	{ NULL, dxp_start },
 	{ NULL, dxp_camsync },
 	{ NULL, dx_orbit_urev },
-	{ NULL, dxp_stall },
+	{ NULL, dxp_camsync },
 	{ NULL, dxp_selnode },
 	{ NULL, dxp_hlseldm },
-	{ NULL, dxp_sstall },
-	{ NULL, dxp_refocus },
-	{ NULL, dxp_sstall },
-	{ NULL, dxp_forw },
-	{ NULL, dxp_sstall },
 	{ NULL, dxp_op_skel },
 	{ NULL, dxp_sstall },
-	{ NULL, dx_orbit_u },
-	{ NULL, dxp_sstall },
-	{ NULL, dxp_hlall },
 	{ NULL, dxp_refocus },
-	{ NULL, dxp_clrsn },
+	{ NULL, dxp_camsync },
 	{ NULL, dxp_sstall },
+	{ NULL, dxp_forw },
+	{ NULL, dxp_camsync },
+	{ NULL, dx_orbit_u },
+	{ NULL, dxp_camsync },
+	{ NULL, dxp_clrsn },
+	{ NULL, dxp_bird },
+	{ NULL, dxp_hlall },
+	{ NULL, dxp_camsync },
 	{ NULL, dxp_nop_skel },
 	{ NULL, dxp_vm_wione },
 	{ NULL, dxp_bird },
-	{ NULL, dxp_stall },
+	{ NULL, dxp_camsync },
 	{ NULL, dxp_dm_job },
 	{ NULL, dxp_panel_pipe },
 	{ NULL, dxp_stall },
 	{ NULL, dx_orbit_urev },
 	{ NULL, dxp_op_pipes },
-	{ NULL, dxp_stall },
+	{ NULL, dxp_camsync },
 	{ NULL, dxp_seljob },
+	{ NULL, dxp_sstall },
+	{ NULL, dxp_refocus },
+	{ NULL, dxp_camsync },
 	{ NULL, dx_orbit_u },
 	{ NULL, dxp_hlall },
 	{ NULL, dxp_clrsn },
+	{ NULL, dxp_refocus },
+	{ NULL, dxp_camsync },
 	{ NULL, dxp_nop_pipes },
 	{ NULL, dxp_npanel_pipe },
+	{ NULL, dxp_sstall },
 	{ NULL, dxp_wisnake },
+	{ NULL, dxp_sstall },
 	{ NULL, dxp_vm_phys },
-	{ NULL, dxp_dm_temp },
 	{ NULL, dxp_bird },
-//	{ NULL, dxp_end }
 #if 0
 	{ dxi_curlyq, dx_curlyq },
 	{ dxi_orbit, dx_orbit_u },
