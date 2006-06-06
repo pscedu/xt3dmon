@@ -479,7 +479,7 @@ draw_skel(void)
 }
 
 void
-draw_cluster_pipe(struct ivec *iv, struct fvec *sv, struct fvec *dimv)
+draw_cluster_pipe(struct ivec *iv, struct fvec *dimv)
 {
 	struct fill *fp, dims[] = {
 		FILL_INITA(0.0f, 0.0f, 1.0f, 0.5f),	/* x - blue */
@@ -487,7 +487,8 @@ draw_cluster_pipe(struct ivec *iv, struct fvec *sv, struct fvec *dimv)
 		FILL_INITA(0.0f, 1.0f, 0.0f, 0.5f)	/* z - green */
 	};
 	int *j, jmax, dim, port, class;
-	struct ivec *spv;
+	struct ivec adjv, *spv;
+	struct fvec sv, *np;
 	struct node *n;
 	float len;
 
@@ -506,8 +507,16 @@ draw_cluster_pipe(struct ivec *iv, struct fvec *sv, struct fvec *dimv)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
 
+	sv.fv_x = vmodes[st.st_vmode].vm_ndim[GEOM_CUBE].fv_w / 2;
+	sv.fv_y = vmodes[st.st_vmode].vm_ndim[GEOM_CUBE].fv_h / 2;
+	sv.fv_z = vmodes[st.st_vmode].vm_ndim[GEOM_CUBE].fv_d / 2;
+
 	switch (st.st_pipemode) {
 	case PM_DIR:
+		sv.fv_x += st.st_wioff.iv_x * st.st_winsp.iv_x;
+		sv.fv_y += st.st_wioff.iv_y * st.st_winsp.iv_y;
+		sv.fv_z += st.st_wioff.iv_z * st.st_winsp.iv_z;
+
 		fp = &dims[dim];
 		glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
 		glPushMatrix();
@@ -515,25 +524,25 @@ draw_cluster_pipe(struct ivec *iv, struct fvec *sv, struct fvec *dimv)
 		switch (dim) {
 		case DIM_X:
 			glTranslatef(
-			    sv->fv_x - spv->iv_x,
-			    sv->fv_y + iv->iv_y * spv->iv_y,
-			    sv->fv_z + iv->iv_z * spv->iv_z);
+			    sv.fv_x - spv->iv_x,
+			    sv.fv_y + iv->iv_y * spv->iv_y,
+			    sv.fv_z + iv->iv_z * spv->iv_z);
 			glRotatef(90.0, 0.0, 1.0, 0.0);
 			len = (widim.iv_w + 1) * st.st_winsp.iv_x;
 			break;
 		case DIM_Y:
 			glTranslatef(
-			    sv->fv_x + iv->iv_x * spv->iv_x,
-			    sv->fv_y - spv->iv_y,
-			    sv->fv_z + iv->iv_z * spv->iv_z);
+			    sv.fv_x + iv->iv_x * spv->iv_x,
+			    sv.fv_y - spv->iv_y,
+			    sv.fv_z + iv->iv_z * spv->iv_z);
 			glRotatef(-90.0, 1.0, 0.0, 0.0);
 			len = (widim.iv_h + 1) * st.st_winsp.iv_y;
 			break;
 		case DIM_Z:
 			glTranslatef(
-			    sv->fv_x + iv->iv_x * spv->iv_x,
-			    sv->fv_y + iv->iv_y * spv->iv_y,
-			    sv->fv_z - spv->iv_z);
+			    sv.fv_x + iv->iv_x * spv->iv_x,
+			    sv.fv_y + iv->iv_y * spv->iv_y,
+			    sv.fv_z - spv->iv_z);
 			len = (widim.iv_d + 1) * st.st_winsp.iv_z;
 			break;
 		}
@@ -560,8 +569,11 @@ draw_cluster_pipe(struct ivec *iv, struct fvec *sv, struct fvec *dimv)
 		}
 
 		for (*j = 0; *j < jmax; ++*j) {
-			if ((n = wimap[iv->iv_x][iv->iv_y][iv->iv_z]) == NULL ||
-			    !node_show(n))
+			adjv.iv_x = negmod(iv->iv_x + st.st_wioff.iv_x, widim.iv_w);
+			adjv.iv_y = negmod(iv->iv_y + st.st_wioff.iv_y, widim.iv_h);
+			adjv.iv_z = negmod(iv->iv_z + st.st_wioff.iv_z, widim.iv_d);
+			n = wimap[adjv.iv_x][adjv.iv_y][adjv.iv_z];
+			if (n == NULL || !node_show(n))
 				continue;
 
 			port = DIM_TO_PORT(dim, st.st_rtepset);
@@ -579,26 +591,31 @@ draw_cluster_pipe(struct ivec *iv, struct fvec *sv, struct fvec *dimv)
 			glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
 			glPushMatrix();
 
+			if (st.st_opts & OP_NODEANIM)
+				np = &n->n_vcur;
+			else
+				np = n->n_v;
+
 			switch (dim) {
 			case DIM_X:
 				glTranslatef(
-				    sv->fv_x + (iv->iv_x - 1) * spv->iv_x,
-				    sv->fv_y + iv->iv_y * spv->iv_y,
-				    sv->fv_z + iv->iv_z * spv->iv_z);
+				    sv.fv_x + np->fv_x - spv->iv_x,
+				    sv.fv_y + np->fv_y,
+				    sv.fv_z + np->fv_z);
 				glRotatef(90.0, 0.0, 1.0, 0.0);
 				break;
 			case DIM_Y:
 				glTranslatef(
-				    sv->fv_x + iv->iv_x * spv->iv_x,
-				    sv->fv_y + (iv->iv_y - 1) * spv->iv_y,
-				    sv->fv_z + iv->iv_z * spv->iv_z);
+				    sv.fv_x + np->fv_x,
+				    sv.fv_y + np->fv_y - spv->iv_y,
+				    sv.fv_z + np->fv_z);
 				glRotatef(-90.0, 1.0, 0.0, 0.0);
 				break;
 			case DIM_Z:
 				glTranslatef(
-				    sv->fv_x + iv->iv_x * spv->iv_x,
-				    sv->fv_y + iv->iv_y * spv->iv_y,
-				    sv->fv_z + (iv->iv_z - 1) * spv->iv_z);
+				    sv.fv_x + np->fv_x,
+				    sv.fv_y + np->fv_y,
+				    sv.fv_z + np->fv_z - spv->iv_z);
 				break;
 			}
 
@@ -614,34 +631,27 @@ draw_cluster_pipe(struct ivec *iv, struct fvec *sv, struct fvec *dimv)
 __inline void
 draw_cluster_pipes(const struct fvec *v)
 {
-	struct fvec *ndim, sv, dim;
+	struct fvec dim;
 	struct ivec iv;
 
 	glPushMatrix();
 	glTranslatef(v->fv_x, v->fv_y, v->fv_z);
-
-	ndim = &vmodes[st.st_vmode].vm_ndim[GEOM_CUBE];
-
-	sv.fv_x = ndim->fv_w / 2 + st.st_wioff.iv_x * st.st_winsp.iv_x;
-	sv.fv_y = ndim->fv_h / 2 + st.st_wioff.iv_y * st.st_winsp.iv_y;
-	sv.fv_z = ndim->fv_d / 2 + st.st_wioff.iv_z * st.st_winsp.iv_z;
-
 	gluQuadricDrawStyle(quadric, GLU_FILL);
 
 	vec_set(&dim, 0.0f, 0.0f, WIV_SDEPTH);
 	for (iv.iv_x = 0; iv.iv_x < widim.iv_w; iv.iv_x++)
 		for (iv.iv_y = 0; iv.iv_y < widim.iv_h; iv.iv_y++)
-			draw_cluster_pipe(&iv, &sv, &dim);
+			draw_cluster_pipe(&iv, &dim);
 
 	vec_set(&dim, 0.0f, WIV_SHEIGHT, 0.0f);
 	for (iv.iv_z = 0; iv.iv_z < widim.iv_d; iv.iv_z++)
 		for (iv.iv_x = 0; iv.iv_x < widim.iv_w; iv.iv_x++)
-			draw_cluster_pipe(&iv, &sv, &dim);
+			draw_cluster_pipe(&iv, &dim);
 
 	vec_set(&dim, WIV_SWIDTH, 0.0f, 0.0f);
 	for (iv.iv_y = 0; iv.iv_y < widim.iv_h; iv.iv_y++)
 		for (iv.iv_z = 0; iv.iv_z < widim.iv_d; iv.iv_z++)
-			draw_cluster_pipe(&iv, &sv, &dim);
+			draw_cluster_pipe(&iv, &dim);
 
 	glPopMatrix();
 }
