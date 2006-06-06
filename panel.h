@@ -102,7 +102,7 @@ void		 panel_show(int);
 void		 panel_hide(int);
 struct panel	*panel_for_id(int);
 void		 panel_demobilize(struct panel *);
-
+void		 panels_flip(int);
 
 void panel_refresh_fps(struct panel *);
 void panel_refresh_ninfo(struct panel *);

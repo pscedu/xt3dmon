@@ -788,7 +788,7 @@ panel_demobilize(struct panel *p)
 }
 
 void
-flip_panels(int panels)
+panels_flip(int panels)
 {
 	int b;
 
@@ -814,5 +814,5 @@ init_panels(int start)
 			start &= ~p->p_id;
 		else
 			cur |= p->p_id;
-	flip_panels(cur ^ start);
+	panels_flip(cur ^ start);
 }
