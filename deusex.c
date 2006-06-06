@@ -8,66 +8,19 @@
 
 #include "cdefs.h"
 #include "cam.h"
+#include "deusex.h"
 #include "env.h"
 #include "lnseg.h"
 #include "mark.h"
-#include "deusex.h"
+#include "node.h"
+#include "objlist.h"
+#include "panel.h"
+#include "queue.h"
+#include "selnode.h"
 #include "state.h"
 #include "tween.h"
 
-int dx_orbit_u(void);
-int dx_orbit_urev(void);
-int dx_orbit_v(void);
-int dx_orbit_vrev(void);
-int dx_cubanoid_x(void);
-int dx_cubanoid_y(void);
-int dx_cubanoid_z(void);
-int dx_corkscrew_x(void);
-int dx_orbit3_u(void);
-int dx_orbit3_urev(void);
-int dx_orbit3_v(void);
-int dx_orbit3_vrev(void);
-int dx_curlyq(void);
-
-void dxi_orbit(void);
-void dxi_curlyq(void);
-
-struct dxte {
-	void (*de_init)(void);
-	int  (*de_update)(void);
-} dxtab[] = {
-#if 0
-	{ dxi_curlyq, dx_curlyq },
-	{ dxi_orbit, dx_orbit_u },
-	{ dxi_orbit, dx_orbit_urev },
-	{ dxi_orbit, dx_orbit_v },
-	{ dxi_orbit, dx_orbit_vrev },
-#endif
-	{ NULL, dx_cubanoid_y },
-//	{ dxi_orbit, dx_orbit3_u },
-//	{ dxi_orbit, dx_orbit3_urev },
-//	{ dxi_orbit, dx_orbit3_v },
-//	{ dxi_orbit, dx_orbit3_vrev },
-//	{ NULL, dx_corkscrew_x }
-};
-#define NENTRIES(t) (sizeof((t)) / sizeof((t)[0]))
-
 double curlyq_adj;
-
-void
-dx_update(void)
-{
-	static struct dxte *de;
-
-	if (de == NULL) {
-		de = &dxtab[rand() % NENTRIES(dxtab)];
-		if (de->de_init != NULL)
-			de->de_init();
-	}
-
-	if (de->de_update())
-		de = NULL;
-}
 
 #define DST(a, b)					\
 	(sqrt(						\
@@ -296,10 +249,14 @@ dx_cubanoid(int dim)
 		break;
 	}
 
+#if 0
+	vec_rotate(&st.st_v, &axis, atan2(
+	    (ROWDEPTH * NROWS + ROWSPACE * (NROWS - 1)) / 2.0, ROWWIDTH));
+#endif
+
 	mag = vec_mag(&st.st_v);
-	vec_set(&axis, 0.0, 1.0, 0.0);
-	vec_rotate(&st.st_v, &axis,
-	    90 - 180 * tan(ROWWIDTH / (double)(ROWDEPTH * NROWS + ROWSPACE * (NROWS-1))));
+	vec_set(&axis, 1.0, 0.0, 0.0);
+	vec_rotate(&st.st_v, &axis, M_PI / 4.0);
 	st.st_x = st.st_x * mag;
 	st.st_y = st.st_y * mag;
 	st.st_z = st.st_z * mag;
@@ -322,7 +279,7 @@ dx_cubanoid(int dim)
 
 	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
 
-	t += 0.025;
+	t += 0.010;
 	if (t > 4 * M_PI) {
 		t = 0;
 		ret = 1;
@@ -442,4 +399,284 @@ int
 dx_corkscrew_z(void)
 {
 	return (dx_corkscrew(DIM_Z));
+}
+
+int
+dxp_bird(void)
+{
+	tween_push(TWF_LOOK | TWF_POS | TWF_UP);
+	cam_bird();
+	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
+	return (1);
+}
+
+int
+dxp_start(void)
+{
+	struct panel *p;
+	int b;
+
+	st.st_vmode = VM_PHYSICAL;
+	st.st_dmode = DM_TEMP;
+	st.st_rf |= RF_VMODE | RF_DMODE;
+
+	b = OP_FRAMES | OP_TWEEN | OP_DISPLAY | OP_NODEANIM | OP_NLABELS;
+	opt_disable(~b);
+	opt_enable(b);
+
+	b = PANEL_LEGEND | PANEL_VMODE | PANEL_DMODE;
+	TAILQ_FOREACH(p, &panels, p_link)
+		if (b & p->p_id)
+			b &= ~p->p_id;
+		else
+			b |= p->p_id;
+	panels_flip(b);
+	dxp_bird();
+	return (1);
+}
+
+int
+dxp_selnode(void)
+{
+	struct node *n;
+
+	n = node_for_nid(0);
+	sn_add(n, &fv_zero);
+	panel_show(PANEL_NINFO);
+	return (1);
+}
+
+int
+dxp_hlseldm(void)
+{
+	st.st_hlnc = HL_SELDM;
+	st.st_rf |= RF_HLNC;
+	return (1);
+}
+
+int
+dxp_hlall(void)
+{
+	st.st_hlnc = HL_ALL;
+	st.st_rf |= RF_HLNC;
+	return (1);
+}
+
+int
+dxp_seljob(void)
+{
+	struct node *n;
+	struct ivec iv;
+
+	if (job_list.ol_cur > 0) {
+		NODE_FOREACH(n, &iv)
+			if (n && n->n_job) {
+				sn_add(n, &fv_zero);
+				panel_show(PANEL_NINFO);
+				dxp_hlseldm();
+				return (1);
+			}
+	}
+	return (1);
+}
+
+int
+dxp_clrsn(void)
+{
+	sn_clear();
+	panel_hide(PANEL_NINFO);
+	return (1);
+}
+
+int
+dxp_end(void)
+{
+	st.st_opts &= ~OP_DEUSEX;
+	return (1);
+}
+
+int
+dxp_op_skel(void)
+{
+	opt_enable(OP_SKEL);
+	return (1);
+}
+
+int
+dxp_nop_skel(void)
+{
+	opt_disable(OP_SKEL);
+	return (1);
+}
+
+int
+dxp_op_pipes(void)
+{
+	opt_enable(OP_PIPES);
+	return (1);
+}
+
+int
+dxp_nop_pipes(void)
+{
+	opt_disable(OP_PIPES);
+	return (1);
+}
+
+int
+dxp_wisnake(void)
+{
+	static int t;
+	int ret;
+
+	if ((t % 50) == 0) {
+		st.st_wioff.iv_x++;
+		st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND | \
+		    RF_NODESWIV;
+	}
+
+	ret = 0;
+	if (++t >= 300) {
+		t = 0;
+		ret = 1;
+	}
+	return (ret);
+}
+
+int
+dxp_vm_phys(void)
+{
+	st.st_vmode = VM_PHYSICAL;
+	st.st_rf |= RF_VMODE;
+	return (1);
+}
+
+int
+dxp_vm_wione(void)
+{
+	st.st_vmode = VM_WIREDONE;
+	st.st_rf |= RF_VMODE;
+	return (1);
+}
+
+int
+dxp_dm_job(void)
+{
+	st.st_dmode = DM_JOB;
+	st.st_rf |= RF_DMODE;
+	return (1);
+}
+
+int
+dxp_dm_temp(void)
+{
+	st.st_dmode = DM_TEMP;
+	st.st_rf |= RF_DMODE;
+	return (1);
+}
+
+int
+dxp_panel_pipe(void)
+{
+	panel_show(PANEL_PIPE);
+	return (1);
+}
+
+int
+dxp_npanel_pipe(void)
+{
+	panel_hide(PANEL_PIPE);
+	return (1);
+}
+
+int
+dxp_stall(void)
+{
+	static int t;
+	int ret;
+
+	ret = 0;
+	if (++t >= fps * 10) {
+		t = 0;
+		ret = 1;
+	}
+	return (ret);
+}
+
+struct dxte {
+	void (*de_init)(void);
+	int  (*de_update)(void);
+} dxtab[] = {
+	{ NULL, dxp_start },
+	{ NULL, dxp_stall },
+	{ NULL, dx_orbit_urev },
+	{ NULL, dxp_selnode },
+	{ NULL, dxp_hlseldm },
+	{ NULL, dxp_op_skel },
+	{ NULL, dx_orbit_u },
+	{ NULL, dxp_hlall },
+	{ NULL, dxp_clrsn },
+	{ NULL, dxp_nop_skel },
+	{ NULL, dxp_vm_wione },
+	{ NULL, dxp_bird },
+	{ NULL, dxp_dm_job },
+	{ NULL, dxp_panel_pipe },
+	{ NULL, dxp_op_pipes },
+	{ NULL, dxp_seljob },
+	{ NULL, dx_orbit_u },
+	{ NULL, dxp_hlall },
+	{ NULL, dxp_clrsn },
+	{ NULL, dxp_nop_pipes },
+	{ NULL, dxp_npanel_pipe },
+	{ NULL, dxp_wisnake },
+	{ NULL, dxp_vm_phys },
+	{ NULL, dxp_dm_temp },
+	{ NULL, dxp_bird },
+//	{ NULL, dxp_end }
+#if 0
+	{ dxi_curlyq, dx_curlyq },
+	{ dxi_orbit, dx_orbit_u },
+	{ dxi_orbit, dx_orbit_urev },
+	{ dxi_orbit, dx_orbit_v },
+	{ dxi_orbit, dx_orbit_vrev },
+	{ NULL, dx_cubanoid_y },
+	{ dxi_orbit, dx_orbit3_u },
+	{ dxi_orbit, dx_orbit3_urev },
+	{ dxi_orbit, dx_orbit3_v },
+	{ dxi_orbit, dx_orbit3_vrev },
+	{ NULL, dx_corkscrew_x }
+#endif
+};
+#define NENTRIES(t) (sizeof((t)) / sizeof((t)[0]))
+
+#if 0
+void
+dx_update(void)
+{
+	static struct dxte *de;
+
+	if (de == NULL) {
+		de = &dxtab[rand() % NENTRIES(dxtab)];
+		if (de->de_init != NULL)
+			de->de_init();
+	}
+
+	if (de->de_update())
+		de = NULL;
+}
+#endif
+
+void
+dx_update(void)
+{
+	static struct dxte *de;
+	static size_t i;
+
+	if (de == NULL) {
+		de = &dxtab[i];
+		if (++i >= NENTRIES(dxtab))
+			i = 0;
+	}
+	if (de->de_update())
+		de = NULL;
 }
