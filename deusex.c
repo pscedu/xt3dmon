@@ -447,6 +447,15 @@ dxp_selnode(void)
 }
 
 int
+dxp_refocus(void)
+{
+	tween_push(TWF_POS | TWF_UP | TWF_LOOK);
+	cam_revolvefocus(0.0, 0.1);
+	tween_pop(TWF_POS | TWF_UP | TWF_LOOK);
+	return (1);
+}
+
+int
 dxp_hlseldm(void)
 {
 	st.st_hlnc = HL_SELDM;
@@ -596,7 +605,27 @@ dxp_stall(void)
 	int ret;
 
 	ret = 0;
-	if (++t >= fps * 10) {
+	if (++t >= fps * 3) {
+		t = 0;
+		ret = 1;
+	}
+	return (ret);
+}
+
+int
+dxp_forw(void)
+{
+	static int t;
+	int ret;
+
+	if ((t % 3) == 0) {
+		tween_push(TWF_POS);
+		cam_move(DIR_FORWARD, 0.5);
+		tween_pop(TWF_POS);
+	}
+
+	ret = 0;
+	if (++t >= 300) {
 		t = 0;
 		ret = 1;
 	}
@@ -610,7 +639,10 @@ struct dxte {
 	{ NULL, dxp_start },
 	{ NULL, dxp_stall },
 	{ NULL, dx_orbit_urev },
+	{ NULL, dxp_stall },
 	{ NULL, dxp_selnode },
+	{ NULL, dxp_refocus },
+	{ NULL, dxp_forw },
 	{ NULL, dxp_hlseldm },
 	{ NULL, dxp_op_skel },
 	{ NULL, dx_orbit_u },
@@ -619,9 +651,12 @@ struct dxte {
 	{ NULL, dxp_nop_skel },
 	{ NULL, dxp_vm_wione },
 	{ NULL, dxp_bird },
+	{ NULL, dxp_stall },
 	{ NULL, dxp_dm_job },
 	{ NULL, dxp_panel_pipe },
+	{ NULL, dx_orbit_urev },
 	{ NULL, dxp_op_pipes },
+	{ NULL, dxp_stall },
 	{ NULL, dxp_seljob },
 	{ NULL, dx_orbit_u },
 	{ NULL, dxp_hlall },
