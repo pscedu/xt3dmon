@@ -5,6 +5,7 @@
 #include <float.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "cdefs.h"
 #include "cam.h"
@@ -424,7 +425,7 @@ dxp_start(void)
 	opt_disable(~b);
 	opt_enable(b);
 
-	b = PANEL_LEGEND | PANEL_VMODE | PANEL_DMODE;
+	b = PANEL_LEGEND | PANEL_VMODE | PANEL_DMODE | PANEL_HELP;
 	TAILQ_FOREACH(p, &panels, p_link)
 		if (b & p->p_id)
 			b &= ~p->p_id;
@@ -450,7 +451,7 @@ int
 dxp_refocus(void)
 {
 	tween_push(TWF_POS | TWF_UP | TWF_LOOK);
-	cam_revolvefocus(0.0, 0.1);
+	cam_revolvefocus(0.0, 0.01);
 	tween_pop(TWF_POS | TWF_UP | TWF_LOOK);
 	return (1);
 }
@@ -599,6 +600,17 @@ dxp_npanel_pipe(void)
 }
 
 int
+dxp_camsync(void)
+{
+	if (memcmp(&st.st_v, &tv, sizeof(tv)) == 0 &&
+	    memcmp(&st.st_lv, &tlv, sizeof(tlv)) == 0 &&
+	    memcmp(&st.st_uv, &tuv, sizeof(tuv)) == 0)
+		return (1);
+	else
+		return (0);
+}
+
+int
 dxp_stall(void)
 {
 	static int t;
@@ -606,6 +618,20 @@ dxp_stall(void)
 
 	ret = 0;
 	if (++t >= fps * 3) {
+		t = 0;
+		ret = 1;
+	}
+	return (ret);
+}
+
+int
+dxp_sstall(void)
+{
+	static int t;
+	int ret;
+
+	ret = 0;
+	if (++t >= fps) {
 		t = 0;
 		ret = 1;
 	}
@@ -637,23 +663,31 @@ struct dxte {
 	int  (*de_update)(void);
 } dxtab[] = {
 	{ NULL, dxp_start },
-	{ NULL, dxp_stall },
+	{ NULL, dxp_camsync },
 	{ NULL, dx_orbit_urev },
 	{ NULL, dxp_stall },
 	{ NULL, dxp_selnode },
-	{ NULL, dxp_refocus },
-	{ NULL, dxp_forw },
 	{ NULL, dxp_hlseldm },
+	{ NULL, dxp_sstall },
+	{ NULL, dxp_refocus },
+	{ NULL, dxp_sstall },
+	{ NULL, dxp_forw },
+	{ NULL, dxp_sstall },
 	{ NULL, dxp_op_skel },
+	{ NULL, dxp_sstall },
 	{ NULL, dx_orbit_u },
+	{ NULL, dxp_sstall },
 	{ NULL, dxp_hlall },
+	{ NULL, dxp_refocus },
 	{ NULL, dxp_clrsn },
+	{ NULL, dxp_sstall },
 	{ NULL, dxp_nop_skel },
 	{ NULL, dxp_vm_wione },
 	{ NULL, dxp_bird },
 	{ NULL, dxp_stall },
 	{ NULL, dxp_dm_job },
 	{ NULL, dxp_panel_pipe },
+	{ NULL, dxp_stall },
 	{ NULL, dx_orbit_urev },
 	{ NULL, dxp_op_pipes },
 	{ NULL, dxp_stall },
