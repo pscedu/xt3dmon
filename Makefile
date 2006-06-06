@@ -52,4 +52,7 @@ lines:
 	@shopt -s extglob && eval \
 	    'wc -l !(y.tab).h !(phys-parse|phys-lex).c *.y *.l' | tail -1
 
+run: xt3dmon
+	./xt3dmon
+
 -include .depend
