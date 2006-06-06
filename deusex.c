@@ -422,6 +422,8 @@ dxp_start(void)
 	st.st_rf |= RF_VMODE | RF_DMODE;
 
 	b = OP_FRAMES | OP_TWEEN | OP_DISPLAY | OP_NODEANIM | OP_NLABELS;
+	if (st.st_opts & OP_DEUSEX)
+		b |= OP_DEUSEX;
 	opt_disable(~b);
 	opt_enable(b);
 
@@ -687,21 +689,23 @@ struct dxte {
 	{ NULL, dxp_op_pipes },
 	{ NULL, dxp_camsync },
 	{ NULL, dxp_seljob },
-	{ NULL, dxp_sstall },
+	{ NULL, dxp_stall },
 	{ NULL, dxp_refocus },
-	{ NULL, dxp_camsync },
+	{ NULL, dxp_stall },
 	{ NULL, dx_orbit_u },
+	{ NULL, dxp_camsync },
 	{ NULL, dxp_hlall },
 	{ NULL, dxp_clrsn },
 	{ NULL, dxp_refocus },
-	{ NULL, dxp_camsync },
+	{ NULL, dxp_stall },
 	{ NULL, dxp_nop_pipes },
 	{ NULL, dxp_npanel_pipe },
 	{ NULL, dxp_sstall },
 	{ NULL, dxp_wisnake },
 	{ NULL, dxp_sstall },
-	{ NULL, dxp_vm_phys },
 	{ NULL, dxp_bird },
+	{ NULL, dxp_vm_phys },
+	{ NULL, dxp_camsync },
 #if 0
 	{ dxi_curlyq, dx_curlyq },
 	{ dxi_orbit, dx_orbit_u },
