@@ -2,6 +2,7 @@
 
 #include "mon.h"
 
+#include <err.h>
 #include <float.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -428,6 +429,10 @@ dxp_start(void)
 	opt_enable(b);
 
 	b = PANEL_LEGEND | PANEL_VMODE | PANEL_DMODE | PANEL_HELP;
+	if (panel_for_id(PANEL_PANELS) != NULL)
+		b |= PANEL_PANELS;
+	if (panel_for_id(PANEL_OPTS) != NULL)
+		b |= PANEL_OPTS;
 	TAILQ_FOREACH(p, &panels, p_link)
 		if (b & p->p_id)
 			b &= ~p->p_id;
@@ -439,11 +444,26 @@ dxp_start(void)
 }
 
 int
-dxp_selnode(void)
+dxp_selnode0(void)
 {
 	struct node *n;
 
 	n = node_for_nid(0);
+	if (n == NULL)
+		errx(1, "nid 0 is NULL");
+	sn_add(n, &fv_zero);
+	panel_show(PANEL_NINFO);
+	return (1);
+}
+
+int
+dxp_selnode2749(void)
+{
+	struct node *n;
+
+	n = node_for_nid(2749);
+	if (n == NULL)
+		errx(1, "nid 2749 is NULL");
 	sn_add(n, &fv_zero);
 	panel_show(PANEL_NINFO);
 	return (1);
@@ -536,19 +556,60 @@ dxp_nop_pipes(void)
 }
 
 int
-dxp_wisnake(void)
+dxp_widepuff(void)
+{
+	st.st_winsp.iv_x = 4;
+	st.st_winsp.iv_y = 4;
+	st.st_winsp.iv_z = 4;
+	st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND | \
+	    RF_NODESWIV | RF_CAM;
+	return (1);
+}
+
+int
+dxp_wipuff(void)
 {
 	static int t;
 	int ret;
 
-	if ((t % 50) == 0) {
-		st.st_wioff.iv_x++;
+	if ((t % 20) == 0) {
+		st.st_winsp.iv_x++;
+		st.st_winsp.iv_y++;
+		st.st_winsp.iv_z++;
+		st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND | \
+		    RF_NODESWIV | RF_CAM;
+	}
+
+	ret = 0;
+	if (++t >= 20 * 10) {
+		t = 0;
+		ret = 1;
+	}
+	return (ret);
+}
+
+int
+dxp_wisnake(void)
+{
+	static int t;
+	int wait, ret;
+
+	wait = 15;
+	if ((t % wait) == 0) {
+		if (t > wait * 11)
+			st.st_wioff.iv_z--;
+		else if (t > wait * 7)
+			st.st_wioff.iv_x--;
+		else if (t > wait * 3)
+			st.st_wioff.iv_z++;
+		else
+			st.st_wioff.iv_x++;
 		st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND | \
 		    RF_NODESWIV;
 	}
 
 	ret = 0;
-	if (++t >= 300) {
+	if (++t >= wait * 16) {
 		t = 0;
 		ret = 1;
 	}
@@ -604,7 +665,7 @@ dxp_npanel_pipe(void)
 int
 dxp_camsync(void)
 {
-	return (memcmp(&st.st_v, &tv, sizeof(tv)) == 0);
+	return (DST(&st.st_v, &tv) < 0.5);
 }
 
 int
@@ -663,7 +724,7 @@ struct dxte {
 	{ NULL, dxp_camsync },
 	{ NULL, dx_orbit_urev },
 	{ NULL, dxp_camsync },
-	{ NULL, dxp_selnode },
+	{ NULL, dxp_selnode0 },
 	{ NULL, dxp_hlseldm },
 	{ NULL, dxp_op_skel },
 	{ NULL, dxp_sstall },
@@ -683,23 +744,36 @@ struct dxte {
 	{ NULL, dxp_bird },
 	{ NULL, dxp_camsync },
 	{ NULL, dxp_dm_job },
-	{ NULL, dxp_panel_pipe },
 	{ NULL, dxp_stall },
 	{ NULL, dx_orbit_urev },
-	{ NULL, dxp_op_pipes },
 	{ NULL, dxp_camsync },
 	{ NULL, dxp_seljob },
-	{ NULL, dxp_stall },
+	{ NULL, dxp_sstall },
 	{ NULL, dxp_refocus },
-	{ NULL, dxp_stall },
+	{ NULL, dxp_sstall },
 	{ NULL, dx_orbit_u },
 	{ NULL, dxp_camsync },
 	{ NULL, dxp_hlall },
 	{ NULL, dxp_clrsn },
 	{ NULL, dxp_refocus },
 	{ NULL, dxp_stall },
-	{ NULL, dxp_nop_pipes },
+	{ NULL, dxp_panel_pipe },
+	{ NULL, dxp_op_pipes },
+	{ NULL, dxp_wipuff },
+	{ NULL, dxp_selnode2749 },
+	{ NULL, dxp_refocus },
+	{ NULL, dxp_camsync },
+	{ NULL, dxp_forw },
+	{ NULL, dxp_forw },
+	{ NULL, dxp_camsync },
+	{ NULL, dx_orbit_u },
+	{ NULL, dxp_clrsn },
+	{ NULL, dxp_camsync },
+	{ NULL, dxp_bird },
+	{ NULL, dxp_sstall },
+	{ NULL, dxp_widepuff },
 	{ NULL, dxp_npanel_pipe },
+	{ NULL, dxp_nop_pipes },
 	{ NULL, dxp_sstall },
 	{ NULL, dxp_wisnake },
 	{ NULL, dxp_sstall },
