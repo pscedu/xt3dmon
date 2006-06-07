@@ -639,34 +639,6 @@ dxp_wipuff(void)
 }
 
 int
-dxp_wisnake(void)
-{
-	static int t;
-	int wait, ret;
-
-	wait = 10;
-	if ((t % wait) == 0) {
-		if (t > wait * 11)
-			st.st_wioff.iv_z--;
-		else if (t > wait * 7)
-			st.st_wioff.iv_x--;
-		else if (t > wait * 3)
-			st.st_wioff.iv_z++;
-		else
-			st.st_wioff.iv_x++;
-		st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND | \
-		    RF_NODESWIV;
-	}
-
-	ret = 0;
-	if (++t >= wait * 16) {
-		t = 0;
-		ret = 1;
-	}
-	return (ret);
-}
-
-int
 dxp_vm_phys(void)
 {
 	st.st_vmode = VM_PHYSICAL;
@@ -709,6 +681,20 @@ int
 dxp_npanel_pipe(void)
 {
 	panel_hide(PANEL_PIPE);
+	return (1);
+}
+
+int
+dxp_panel_wiadj(void)
+{
+	panel_show(PANEL_WIADJ);
+	return (1);
+}
+
+int
+dxp_npanel_wiadj(void)
+{
+	panel_hide(PANEL_WIADJ);
 	return (1);
 }
 
@@ -756,6 +742,69 @@ dxp_sstall(void)
 }
 
 int
+dxp_wisnake(void)
+{
+	static int t, lvl;
+	int max, wait, ret;
+	struct ivec wioff;
+
+	max = 64;
+	wait = 8;
+	if ((t % wait) == 0) {
+		wioff = st.st_wioff;
+		if (t > wait * 7 * max / 8.0 - 1)
+			;
+		else if (t > wait * 6 * max / 8.0 - 1)
+			st.st_wioff.iv_z--;
+		else if (t > wait * 5 * max / 8.0 - 1)
+			;
+		else if (t > wait * 4 * max / 8.0 - 1)
+			st.st_wioff.iv_x--;
+		else if (t > wait * 3 * max / 8.0 - 1) {
+			if (t == wait * 3 * max / 8.0) {
+				t--;
+				if (lvl < 1) {
+				 	if (dxp_camsync())
+						lvl++;
+				} else if (lvl < 2) {
+				 	if (dxp_sstall())
+						lvl++;
+				} else if (lvl < 3) {
+				 	if (dx_orbit_urev())
+						lvl++;
+				} else if (lvl < 4) {
+				 	if (dxp_camsync())
+						lvl++;
+				} else if (lvl < 5) {
+				 	if (dxp_sstall())
+						lvl++;
+				} else
+					t++;
+			}
+		} else if (t > wait * 2 * max / 8.0 - 1)
+			st.st_wioff.iv_z++;
+		else if (t > wait * 1 * max / 8.0 - 1)
+			;
+		else
+			st.st_wioff.iv_x++;
+
+		if (memcmp(&st.st_wioff, &wioff, sizeof(wioff)) != 0) {
+			st.st_rf |= RF_CLUSTER | RF_SELNODE | \
+			    RF_GROUND | RF_NODESWIV;
+			dxp_refocus();
+		}
+	}
+
+	ret = 0;
+	if (++t >= wait * max) {
+		t = 0;
+		lvl = 0;
+		ret = 1;
+	}
+	return (ret);
+}
+
+int
 dx_cam_move(double max, int wait, int dir)
 {
 	static int t;
@@ -782,17 +831,16 @@ dx_cam_move(double max, int wait, int dir)
 	return (ret);
 }
 
-
 int
 dxp_cam_move_forw(void)
 {
-	return (dx_cam_move(50.0, 4, DIR_FORWARD));
+	return (dx_cam_move(50.0, 3, DIR_FORWARD));
 }
 
 int
 dxp_cam_move_back(void)
 {
-	return (dx_cam_move(50.0, 4, DIR_BACK));
+	return (dx_cam_move(50.0, 3, DIR_BACK));
 }
 
 int
@@ -836,6 +884,9 @@ struct dxte {
 	{ NULL, dxp_camsync },
 	{ NULL, dxp_nop_skel },
 	{ NULL, dxp_sstall },
+
+/* XXX cycle hl node classes */
+
 	{ NULL, dxp_vm_wione },
 	{ NULL, dxp_bird },
 	{ NULL, dxp_camsync },
@@ -849,6 +900,9 @@ struct dxte {
 
 	{ NULL, dxp_sstall },
 	{ NULL, dxp_refocus },
+	{ NULL, dxp_camsync },
+	{ NULL, dxp_sstall },
+	{ NULL, dxp_cam_move_forw },
 
 	{ NULL, dxp_camsync },
 	{ NULL, dxp_sstall },
@@ -856,9 +910,13 @@ struct dxte {
 	{ NULL, dxp_camsync },
 	{ NULL, dxp_sstall },
 
+	{ NULL, dxp_cam_move_back },
+	{ NULL, dxp_camsync },
+	{ NULL, dxp_sstall },
+
 	{ NULL, dxp_hlall },
 	{ NULL, dxp_clrsn },
-	{ NULL, dxp_stall },
+	{ NULL, dxp_sstall },
 	{ NULL, dxp_refocus },
 	{ NULL, dxp_camsync },
 	{ NULL, dxp_sstall },
@@ -871,6 +929,7 @@ struct dxte {
 	{ NULL, dxp_selnode2749 },
 	{ NULL, dxp_refocus },
 	{ NULL, dxp_camsync },
+	{ NULL, dxp_sstall },
 	{ NULL, dxp_cam_move_forw },
 	{ NULL, dxp_cam_move_forw },
 	{ NULL, dxp_op_nlabels },
@@ -887,17 +946,30 @@ struct dxte {
 	{ NULL, dxp_nop_nlabels },
 	{ NULL, dxp_clrsn },
 	{ NULL, dxp_camsync },
+	{ NULL, dxp_sstall },
 	{ NULL, dxp_bird },
-	{ NULL, dxp_stall },
+	{ NULL, dxp_camsync },
+	{ NULL, dxp_sstall },
 	{ NULL, dxp_widepuff },
 	{ NULL, dxp_nodesync },
 	{ NULL, dxp_npanel_pipe },
 	{ NULL, dxp_nop_pipes },
 	{ NULL, dxp_sstall },
+
+	{ NULL, dxp_panel_wiadj },
+	{ NULL, dxp_sstall },
 	{ NULL, dxp_wisnake },
+	{ NULL, dxp_sstall },
+	{ NULL, dxp_npanel_wiadj },
+
 	{ NULL, dxp_sstall },
 	{ NULL, dxp_bird },
 	{ NULL, dxp_vm_phys },
+
+	{ NULL, dxp_camsync },
+	{ NULL, dxp_sstall },
+	{ NULL, dxp_bird },
+	{ NULL, dxp_refocus },
 	{ NULL, dxp_camsync },
 	{ NULL, dxp_sstall },
 #if 0
