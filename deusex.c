@@ -22,8 +22,6 @@
 #include "state.h"
 #include "tween.h"
 
-double curlyq_adj;
-
 #define DST(a, b)					\
 	(sqrt(						\
 	    SQUARE((a)->fv_x - (b)->fv_x) +		\
@@ -52,27 +50,68 @@ dxi_orbit(void)
 int
 dx_orbit(int dim, int sign)
 {
+	static double amt, adj;
 	static int t;
-	double du, dv;
-	int ret;
+	double incr, du, dv, max;
+	int wait, ret;
 
-	ret = 0;
+	max = 2 * M_PI / 0.01;
+	if (t == 0) {
+		wait = ceil(log(DST(&st.st_v, &focus) / log(1.1)));
+		adj = max / (fps * wait);
+		amt = 0.0;
+	}
+
 	du = dv = 0.0;
 	switch (dim) {
 	case DIM_X:
-		du = sign * (2 * M_PI / 360 / .01);
+		du = sign * adj;
 		break;
 	case DIM_Y:
-		dv = sign * -(2 * M_PI / 360 / .01);
+		dv = sign * -adj;
 		break;
 	}
 
-	tween_push(TWF_LOOK | TWF_POS | TWF_UP);
-	cam_revolvefocus(du, dv);
-	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
+#if 0
+	if (t / (fps * wait) < amt / max) {
+		/* make them bigger */
+		adj = (amt / max) / (t / (double)(fps * wait));
+		if (du)
+			du *= adj;
+		if (dv)
+			dv *= adj;
 
-	t += 1;
-	if (t >= 360) {
+	} else if (t / (fps * wait) > amt / max) {
+		/* make them smaller */
+		adj = (t / (double)(fps * wait)) / (amt / max);
+		if (du)
+			du *= adj;
+		if (dv)
+			dv *= adj;
+	}
+
+	if (amt >= max)
+		du = dv = 0.0;
+	else if (t + 1 >= fps * wait && max - amt > adj)
+		wait += ceil((max - amt) / adj / fps);
+#endif
+
+	incr = du + dv;
+	if (incr < 0.0)
+		incr = -incr;
+	amt += incr;
+
+	tween_push(TWF_POS | TWF_LOOK | TWF_UP);
+	cam_revolvefocus(du, dv);
+	tween_pop(TWF_POS | TWF_LOOK | TWF_UP);
+
+	/*
+	 * Add a small skew amount here (0.001)
+	 * to account for FP rounding.
+	 */
+	ret = 0;
+	t++;
+	if (amt + 0.001 >= max) {
 		t = 0;
 		ret = 1;
 	}
@@ -144,20 +183,28 @@ dx_orbit3_vrev(void)
 	return (dx_orbit3(DIM_Y, -1));
 }
 
-void
-dxi_curlyq(void)
-{
-	dxi_orbit();
-	curlyq_adj = DST(&st.st_v, &focus) / (180 * 3 + 90);
-}
-
 int
 dx_curlyq(void)
 {
+	static int inorbit;
+	static double curlyq_adj;
+	int ret;
+
+	if (inorbit == 0) {
+		curlyq_adj = DST(&st.st_v, &focus) / (180 * 3 + 90);
+		inorbit = 1;
+	}
+
 	tween_push(TWF_POS);
 	cam_move(DIR_FORWARD, curlyq_adj);
 	tween_pop(TWF_POS);
-	return (dx_orbit3(DIM_X, 1));
+
+	ret = 0;
+	if (dx_orbit3(DIM_X, 1)) {
+		inorbit = 0;
+		ret = 1;
+	}
+	return (ret);
 }
 
 int
@@ -298,7 +345,6 @@ dx_cubanoid_x(void)
 int
 dx_cubanoid_y(void)
 {
-mark_add(&st.st_v);
 	return (dx_cubanoid(DIM_Y));
 }
 
@@ -413,6 +459,15 @@ dxp_bird(void)
 }
 
 int
+dxp_refocus(void)
+{
+	tween_push(TWF_POS | TWF_UP | TWF_LOOK);
+	cam_revolvefocus(0.0, 0.01);
+	tween_pop(TWF_POS | TWF_UP | TWF_LOOK);
+	return (1);
+}
+
+int
 dxp_start(void)
 {
 	struct panel *p;
@@ -422,7 +477,7 @@ dxp_start(void)
 	st.st_dmode = DM_TEMP;
 	st.st_rf |= RF_VMODE | RF_DMODE;
 
-	b = OP_FRAMES | OP_TWEEN | OP_DISPLAY | OP_NODEANIM | OP_NLABELS;
+	b = OP_FRAMES | OP_TWEEN | OP_DISPLAY | OP_NODEANIM;
 	if (st.st_opts & OP_DEUSEX)
 		b |= OP_DEUSEX;
 	opt_disable(~b);
@@ -440,6 +495,7 @@ dxp_start(void)
 			b |= p->p_id;
 	panels_flip(b);
 	dxp_bird();
+	dxp_refocus();
 	return (1);
 }
 
@@ -466,15 +522,6 @@ dxp_selnode2749(void)
 		errx(1, "nid 2749 is NULL");
 	sn_add(n, &fv_zero);
 	panel_show(PANEL_NINFO);
-	return (1);
-}
-
-int
-dxp_refocus(void)
-{
-	tween_push(TWF_POS | TWF_UP | TWF_LOOK);
-	cam_revolvefocus(0.0, 0.01);
-	tween_pop(TWF_POS | TWF_UP | TWF_LOOK);
 	return (1);
 }
 
@@ -542,6 +589,20 @@ dxp_nop_skel(void)
 }
 
 int
+dxp_op_nlabels(void)
+{
+	opt_enable(OP_NLABELS);
+	return (1);
+}
+
+int
+dxp_nop_nlabels(void)
+{
+	opt_disable(OP_NLABELS);
+	return (1);
+}
+
+int
 dxp_op_pipes(void)
 {
 	opt_enable(OP_PIPES);
@@ -558,9 +619,9 @@ dxp_nop_pipes(void)
 int
 dxp_widepuff(void)
 {
-	st.st_winsp.iv_x = 4;
-	st.st_winsp.iv_y = 4;
-	st.st_winsp.iv_z = 4;
+	st.st_winsp.iv_x -= 10;
+	st.st_winsp.iv_y -= 10;
+	st.st_winsp.iv_z -= 10;
 	st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND | \
 	    RF_NODESWIV | RF_CAM;
 	return (1);
@@ -569,23 +630,12 @@ dxp_widepuff(void)
 int
 dxp_wipuff(void)
 {
-	static int t;
-	int ret;
-
-	if ((t % 20) == 0) {
-		st.st_winsp.iv_x++;
-		st.st_winsp.iv_y++;
-		st.st_winsp.iv_z++;
-		st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND | \
-		    RF_NODESWIV | RF_CAM;
-	}
-
-	ret = 0;
-	if (++t >= 20 * 10) {
-		t = 0;
-		ret = 1;
-	}
-	return (ret);
+	st.st_winsp.iv_x += 10;
+	st.st_winsp.iv_y += 10;
+	st.st_winsp.iv_z += 10;
+	st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND | \
+	    RF_NODESWIV | RF_CAM;
+	return (1);
 }
 
 int
@@ -594,7 +644,7 @@ dxp_wisnake(void)
 	static int t;
 	int wait, ret;
 
-	wait = 15;
+	wait = 10;
 	if ((t % wait) == 0) {
 		if (t > wait * 11)
 			st.st_wioff.iv_z--;
@@ -665,7 +715,10 @@ dxp_npanel_pipe(void)
 int
 dxp_camsync(void)
 {
-	return (DST(&st.st_v, &tv) < 0.5);
+	if (st.st_opts & OP_TWEEN)
+		return (DST(&st.st_v, &tv) < 0.1);
+	else
+		return (1);
 }
 
 int
@@ -685,35 +738,67 @@ dxp_stall(void)
 int
 dxp_sstall(void)
 {
-	static int t;
+	static int t, ofps;
 	int ret;
 
+	if (ofps == 0)
+		ofps = fps;
+
 	ret = 0;
-	if (++t >= fps) {
+	t++;
+	if (t >= 2 * fps ||
+	    (t >= fps && fps != ofps)) {
 		t = 0;
 		ret = 1;
+		ofps = 0;
 	}
 	return (ret);
 }
 
 int
-dxp_forw(void)
+dx_cam_move(double max, int wait, int dir)
 {
 	static int t;
+	static double amt, adj;
 	int ret;
 
-	if ((t % 3) == 0) {
-		tween_push(TWF_POS);
-		cam_move(DIR_FORWARD, 0.5);
-		tween_pop(TWF_POS);
-	}
+	if (adj == 0.0)
+		adj = max / (wait * fps);
+
+	tween_push(TWF_POS);
+	cam_move(dir, adj);
+	tween_pop(TWF_POS);
+
+	amt += adj;
 
 	ret = 0;
-	if (++t >= 300) {
+	t++;
+	if (amt >= max) {
 		t = 0;
 		ret = 1;
+		amt = 0.0;
+		adj = 0.0;
 	}
 	return (ret);
+}
+
+
+int
+dxp_cam_move_forw(void)
+{
+	return (dx_cam_move(50.0, 4, DIR_FORWARD));
+}
+
+int
+dxp_cam_move_back(void)
+{
+	return (dx_cam_move(50.0, 4, DIR_BACK));
+}
+
+int
+dxp_nodesync(void)
+{
+	return ((st.st_rf & RF_CLUSTER) == 0);
 }
 
 struct dxte {
@@ -721,9 +806,13 @@ struct dxte {
 	int  (*de_update)(void);
 } dxtab[] = {
 	{ NULL, dxp_start },
+
 	{ NULL, dxp_camsync },
+	{ NULL, dxp_sstall },
 	{ NULL, dx_orbit_urev },
 	{ NULL, dxp_camsync },
+	{ NULL, dxp_sstall },
+
 	{ NULL, dxp_selnode0 },
 	{ NULL, dxp_hlseldm },
 	{ NULL, dxp_op_skel },
@@ -731,47 +820,77 @@ struct dxte {
 	{ NULL, dxp_refocus },
 	{ NULL, dxp_camsync },
 	{ NULL, dxp_sstall },
-	{ NULL, dxp_forw },
+	{ NULL, dxp_cam_move_forw },
+	{ NULL, dxp_op_nlabels },
+
 	{ NULL, dxp_camsync },
+	{ NULL, dxp_sstall },
 	{ NULL, dx_orbit_u },
 	{ NULL, dxp_camsync },
+	{ NULL, dxp_sstall },
+
+	{ NULL, dxp_nop_nlabels },
 	{ NULL, dxp_clrsn },
 	{ NULL, dxp_bird },
 	{ NULL, dxp_hlall },
 	{ NULL, dxp_camsync },
 	{ NULL, dxp_nop_skel },
+	{ NULL, dxp_sstall },
 	{ NULL, dxp_vm_wione },
 	{ NULL, dxp_bird },
 	{ NULL, dxp_camsync },
+
 	{ NULL, dxp_dm_job },
-	{ NULL, dxp_stall },
+	{ NULL, dxp_sstall },
 	{ NULL, dx_orbit_urev },
 	{ NULL, dxp_camsync },
+
 	{ NULL, dxp_seljob },
+
 	{ NULL, dxp_sstall },
 	{ NULL, dxp_refocus },
+
+	{ NULL, dxp_camsync },
 	{ NULL, dxp_sstall },
 	{ NULL, dx_orbit_u },
 	{ NULL, dxp_camsync },
+	{ NULL, dxp_sstall },
+
 	{ NULL, dxp_hlall },
 	{ NULL, dxp_clrsn },
-	{ NULL, dxp_refocus },
 	{ NULL, dxp_stall },
+	{ NULL, dxp_refocus },
+	{ NULL, dxp_camsync },
+	{ NULL, dxp_sstall },
 	{ NULL, dxp_panel_pipe },
 	{ NULL, dxp_op_pipes },
 	{ NULL, dxp_wipuff },
+	{ NULL, dxp_nodesync },
+	{ NULL, dxp_sstall },
+
 	{ NULL, dxp_selnode2749 },
 	{ NULL, dxp_refocus },
 	{ NULL, dxp_camsync },
-	{ NULL, dxp_forw },
-	{ NULL, dxp_forw },
+	{ NULL, dxp_cam_move_forw },
+	{ NULL, dxp_cam_move_forw },
+	{ NULL, dxp_op_nlabels },
+
 	{ NULL, dxp_camsync },
+	{ NULL, dxp_sstall },
 	{ NULL, dx_orbit_u },
+	{ NULL, dxp_camsync },
+	{ NULL, dxp_sstall },
+
+	{ NULL, dxp_cam_move_back },
+	{ NULL, dxp_cam_move_back},
+
+	{ NULL, dxp_nop_nlabels },
 	{ NULL, dxp_clrsn },
 	{ NULL, dxp_camsync },
 	{ NULL, dxp_bird },
-	{ NULL, dxp_sstall },
+	{ NULL, dxp_stall },
 	{ NULL, dxp_widepuff },
+	{ NULL, dxp_nodesync },
 	{ NULL, dxp_npanel_pipe },
 	{ NULL, dxp_nop_pipes },
 	{ NULL, dxp_sstall },
@@ -780,8 +899,9 @@ struct dxte {
 	{ NULL, dxp_bird },
 	{ NULL, dxp_vm_phys },
 	{ NULL, dxp_camsync },
+	{ NULL, dxp_sstall },
 #if 0
-	{ dxi_curlyq, dx_curlyq },
+	{ dxi_orbit, dx_curlyq },
 	{ dxi_orbit, dx_orbit_u },
 	{ dxi_orbit, dx_orbit_urev },
 	{ dxi_orbit, dx_orbit_v },
