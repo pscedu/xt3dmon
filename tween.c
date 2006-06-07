@@ -7,11 +7,8 @@
 #include "tween.h"
 #include "xmath.h"
 
-#define TWEEN_AMT		(0.10f)
-
-#define TWEEN_THRES_POS		(0.001f)
-#define TWEEN_THRES_LOOK	(0.001f)
-#define TWEEN_THRES_UP		(0.001f)
+#define TWEEN_AMT		(0.05f)
+#define TWEEN_THRES		(0.001f)
 
 #define TWEEN_MAX_POS		(2.00f)
 #define TWEEN_MAX_LOOK		(0.06f)
@@ -34,14 +31,14 @@ tween_probe(float *cur, float stop, float max, float *scale, float *want)
 }
 
 __inline void
-tween_recalc(float *cur, float stop, float scale, float want, float thres)
+tween_recalc(float *cur, float stop, float scale, float want)
 {
 	if (want) {
 		if (scale < 0.001)
 			scale = 0.001;
 		*cur += want * scale;
-		if (stop - *cur < thres &&
-		    stop - *cur > -thres)
+		if (stop - *cur < TWEEN_THRES &&
+		    stop - *cur > -TWEEN_THRES)
 			*cur = stop;
 	}
 }
@@ -78,17 +75,17 @@ tween_update(void)
 	scale_l = MIN3(sc_l.fv_x, sc_l.fv_y, sc_l.fv_z);
 	scale_u = MIN3(sc_u.fv_x, sc_u.fv_y, sc_u.fv_z);
 
-	tween_recalc(&st.st_x, tv.fv_x, scale, want.fv_w, TWEEN_THRES_POS);
-	tween_recalc(&st.st_y, tv.fv_y, scale, want.fv_h, TWEEN_THRES_POS);
-	tween_recalc(&st.st_z, tv.fv_z, scale, want.fv_d, TWEEN_THRES_POS);
+	tween_recalc(&st.st_x, tv.fv_x, scale, want.fv_w);
+	tween_recalc(&st.st_y, tv.fv_y, scale, want.fv_h);
+	tween_recalc(&st.st_z, tv.fv_z, scale, want.fv_d);
 
-	tween_recalc(&st.st_lx, tlv.fv_x, scale_l, want_l.fv_w, TWEEN_THRES_LOOK);
-	tween_recalc(&st.st_ly, tlv.fv_y, scale_l, want_l.fv_h, TWEEN_THRES_LOOK);
-	tween_recalc(&st.st_lz, tlv.fv_z, scale_l, want_l.fv_d, TWEEN_THRES_LOOK);
+	tween_recalc(&st.st_lx, tlv.fv_x, scale_l, want_l.fv_w);
+	tween_recalc(&st.st_ly, tlv.fv_y, scale_l, want_l.fv_h);
+	tween_recalc(&st.st_lz, tlv.fv_z, scale_l, want_l.fv_d);
 
-	tween_recalc(&st.st_ux, tuv.fv_x, scale_u, want_u.fv_w, TWEEN_THRES_UP);
-	tween_recalc(&st.st_uy, tuv.fv_y, scale_u, want_u.fv_h, TWEEN_THRES_UP);
-	tween_recalc(&st.st_uz, tuv.fv_z, scale_u, want_u.fv_d, TWEEN_THRES_UP);
+	tween_recalc(&st.st_ux, tuv.fv_x, scale_u, want_u.fv_w);
+	tween_recalc(&st.st_uy, tuv.fv_y, scale_u, want_u.fv_h);
+	tween_recalc(&st.st_uz, tuv.fv_z, scale_u, want_u.fv_d);
 
 	if (want.fv_w || want.fv_h || want.fv_d ||
 	    want_l.fv_w || want_l.fv_h || want_l.fv_d ||
