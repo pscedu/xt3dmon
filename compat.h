@@ -61,7 +61,7 @@ do {                                                                        \
 } while (0)
 
 # undef __inline
-# define __inline
+# define __inline inline
 
 #undef SLIST_ENTRY
 
