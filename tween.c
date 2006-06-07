@@ -7,9 +7,9 @@
 #include "tween.h"
 #include "xmath.h"
 
-#define TWEEN_AMT		(0.05f)
+#define TWEEN_AMT		(0.10f)
 
-#define TWEEN_THRES_POS		(0.01f)
+#define TWEEN_THRES_POS		(0.001f)
 #define TWEEN_THRES_LOOK	(0.001f)
 #define TWEEN_THRES_UP		(0.001f)
 
