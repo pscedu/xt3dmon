@@ -150,7 +150,11 @@ draw_scene(void)
 	if (!SLIST_EMPTY(&lnsegs))
 		lnseg_draw();
 
-	draw_caption(10, "This is a test");
+{
+extern char *caption;
+	if (caption != NULL)
+		dx_caption(10, caption);
+}
 
 // draw_compass();
 // job_drawlabels();
@@ -351,7 +355,7 @@ draw_node(struct node *n, int flags)
 __inline void
 draw_ground(void)
 {
-	struct fvec fv, fdim;
+	struct fvec fv, fdim, *ndim;
 
 	/* Anti-aliasing */
 	glEnable(GL_BLEND);
@@ -382,9 +386,10 @@ draw_ground(void)
 		fv.fv_y = -0.2f + st.st_wioff.iv_y * st.st_winsp.iv_y;
 		fv.fv_z = st.st_winsp.iv_z * (st.st_wioff.iv_z - 1);
 
-		fdim.fv_w = (widim.iv_w + 1) * st.st_winsp.iv_w + NODEWIDTH;
+		ndim = &vmodes[VM_WIREDONE].vm_ndim[GEOM_CUBE];
+		fdim.fv_w = (widim.iv_w + 1) * st.st_winsp.iv_w + ndim->fv_w;
 		fdim.fv_y = -0.2f / 2.0f;
-		fdim.fv_d = (widim.iv_d + 1) * st.st_winsp.iv_d + NODEDEPTH;
+		fdim.fv_d = (widim.iv_d + 1) * st.st_winsp.iv_d + ndim->fv_d;
 
 		glPushMatrix();
 		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
@@ -449,7 +454,7 @@ draw_pd_skel(struct physdim *pdp, struct physdim *targetpd,
 void
 draw_skel(void)
 {
-	struct fvec cldim, fv, dim;
+	struct fvec cldim, fv, dim, *ndim;
 	struct physdim *pd;
 
 	switch (st.st_vmode) {
@@ -466,9 +471,10 @@ draw_skel(void)
 		cldim.fv_h = (widim.iv_h - 1) * st.st_winsp.iv_y;
 		cldim.fv_d = (widim.iv_d - 1) * st.st_winsp.iv_z;
 
-		dim.fv_w = cldim.fv_w + NODEWIDTH  + 2 * SKEL_GAP;
-		dim.fv_h = cldim.fv_h + NODEHEIGHT + 2 * SKEL_GAP;
-		dim.fv_z = cldim.fv_d + NODEDEPTH  + 2 * SKEL_GAP;
+		ndim = &vmodes[st.st_vmode].vm_ndim[GEOM_CUBE];
+		dim.fv_w = cldim.fv_w + ndim->fv_w + 2 * SKEL_GAP;
+		dim.fv_h = cldim.fv_h + ndim->fv_h + 2 * SKEL_GAP;
+		dim.fv_z = cldim.fv_d + ndim->fv_d + 2 * SKEL_GAP;
 
 		glPushMatrix();
 		glTranslatef(

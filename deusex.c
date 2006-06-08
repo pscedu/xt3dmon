@@ -23,6 +23,8 @@
 #include "state.h"
 #include "tween.h"
 
+char *caption;
+
 #define DST(a, b)					\
 	(sqrt(						\
 	    SQUARE((a)->fv_x - (b)->fv_x) +		\
@@ -203,13 +205,15 @@ dx_curlyq(void)
 }
 
 int
-dx_cubanoid(int dim)
+dx_cuban8(int dim)
 {
 	static double t;
 	struct fvec sv, uv, lv, xv, axis;
 	double roll, a, b, max;
 	float mag;
 	int ret;
+
+mark_add(&st.st_v, &fill_white);
 
 	ret = 0;
 
@@ -300,7 +304,7 @@ dx_cubanoid(int dim)
 
 	mag = vec_mag(&st.st_v);
 	vec_set(&axis, 1.0, 0.0, 0.0);
-	vec_rotate(&st.st_v, &axis, M_PI / 4.0);
+	vec_rotate(&st.st_v, &axis, M_PI / 2.0);
 	st.st_x = st.st_x * mag;
 	st.st_y = st.st_y * mag;
 	st.st_z = st.st_z * mag;
@@ -323,7 +327,9 @@ dx_cubanoid(int dim)
 
 	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
 
-	t += 0.010;
+//	dxp_refocus();
+
+	t += 0.015;
 	if (t > 4 * M_PI) {
 		t = 0;
 		ret = 1;
@@ -332,21 +338,21 @@ dx_cubanoid(int dim)
 }
 
 int
-dx_cubanoid_x(void)
+dx_cuban8_x(void)
 {
-	return (dx_cubanoid(DIM_X));
+	return (dx_cuban8(DIM_X));
 }
 
 int
-dx_cubanoid_y(void)
+dx_cuban8_y(void)
 {
-	return (dx_cubanoid(DIM_Y));
+	return (dx_cuban8(DIM_Y));
 }
 
 int
-dx_cubanoid_z(void)
+dx_cuban8_z(void)
 {
-	return (dx_cubanoid(DIM_Z));
+	return (dx_cuban8(DIM_Z));
 }
 
 int
@@ -539,13 +545,12 @@ dxp_seljob(void)
 	struct ivec iv;
 
 	if (job_list.ol_cur > 0) {
-		NODE_FOREACH(n, &iv)
-			if (n && n->n_job) {
-				sn_add(n, &fv_zero);
-				panel_show(PANEL_NINFO);
-				dxp_hlseldm();
-				return (1);
-			}
+		do {
+			n = node_for_nid(random() % NID_MAX);
+		} while (n == NULL || n->n_job == NULL);
+		sn_add(n, &fv_zero);
+		panel_show(PANEL_NINFO);
+		dxp_hlseldm();
 	}
 	return (1);
 }
@@ -594,8 +599,23 @@ dxp_nop_nlabels(void)
 }
 
 int
+dxp_op_modskels(void)
+{
+	opt_enable(OP_MODSKELS);
+	return (1);
+}
+
+int
+dxp_nop_modskels(void)
+{
+	opt_disable(OP_MODSKELS);
+	return (1);
+}
+
+int
 dxp_op_pipes(void)
 {
+	st.st_pipemode = PM_DIR;
 	opt_enable(OP_PIPES);
 	return (1);
 }
@@ -893,12 +913,124 @@ dxp_cyclenc(void)
 	return (ret);
 }
 
+void
+dx_caption(int y, char *s)
+{
+	int len, plen, i;
+	int cx;
+
+	/* Save state and set things up for 2D. */
+	glPushAttrib(GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
+
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	gluOrtho2D(0.0, winv.iv_w, 0.0, winv.iv_h);
+	glColor3f(1.0f, 1.0f, 1.0f);
+
+	len = strlen(s);
+	plen = glutBitmapLength(GLUT_BITMAP_TIMES_ROMAN_24, s);
+
+	/* XXX - Draw the Caption Box with Transparency */
+
+	/* Draw the Caption Text, center on x */
+	cx = (winv.iv_w / 2) - (0.5 * plen);
+	glRasterPos2f(cx, y);
+
+	while (*s != '\0')
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *s++);
+
+	/* End 2D mode. */
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+
+	glPopAttrib();
+}
+
+int
+dxp_setcap1(void)
+{
+	caption = "CPU temperatures in physical machine layout";
+	return (1);
+}
+
+int
+dxp_setcap2(void)
+{
+	caption = "Zoom while viewing nodes with temperature 34-37C";
+	return (1);
+}
+
+int
+dxp_setcap3(void)
+{
+	caption = "Cycle through all temperature ranges";
+	return (1);
+}
+
+int
+dxp_setcap4(void)
+{
+	caption = "Changing to \"wired\" mode";
+	return (1);
+}
+
+int
+dxp_setcap5(void)
+{
+	caption = "Jobs in wired mode (virtual interconnect)";
+	return (1);
+}
+
+int
+dxp_setcap6(void)
+{
+	caption = "Viewing one job in wired mode";
+	return (1);
+}
+
+int
+dxp_setcap7(void)
+{
+	caption = "Preparing to zoom inside the interconnect";
+	return (1);
+}
+
+int
+dxp_setcap8(void)
+{
+	caption = "Focus on one node";
+	return (1);
+}
+
+int
+dxp_setcap9(void)
+{
+	caption = "Change draw offset to show torus repetitions";
+	return (1);
+}
+
+int
+dxp_setcap10(void)
+{
+	caption = "Going back to physical mode";
+	return (1);
+}
+
 struct dxte {
 	void (*de_init)(void);
 	int  (*de_update)(void);
 } dxtab[] = {
 	{ NULL, dxp_start },
 	{ NULL, dxp_refocus },
+
+	{ NULL, dxp_setcap1 },
 
 	{ NULL, dxp_camsync },
 	{ NULL, dxp_sstall },
@@ -909,6 +1041,9 @@ struct dxte {
 	{ NULL, dxp_selnode0 },
 	{ NULL, dxp_hlseldm },
 	{ NULL, dxp_op_skel },
+
+	{ NULL, dxp_setcap2 },
+
 	{ NULL, dxp_sstall },
 	{ NULL, dxp_refocus },
 	{ NULL, dxp_camsync },
@@ -927,6 +1062,9 @@ struct dxte {
 	{ NULL, dxp_cam_move_back },
 	{ NULL, dxp_bird },
 	{ NULL, dxp_hlall },
+
+	{ NULL, dxp_setcap3 },
+
 	{ NULL, dxp_camsync },
 	{ NULL, dxp_sstall },
 
@@ -935,23 +1073,31 @@ struct dxte {
 	{ NULL, dxp_nop_skel },
 	{ NULL, dxp_sstall },
 
+	{ NULL, dxp_setcap4 },
+	{ NULL, dxp_sstall },
+
 	{ NULL, dxp_vm_wione },
 	{ NULL, dxp_nodesync },
 	{ NULL, dxp_bird },
 	{ NULL, dxp_camsync },
+	{ NULL, dxp_sstall },
 
 	{ NULL, dxp_dm_job },
+	{ NULL, dxp_setcap5 },
 	{ NULL, dxp_sstall },
 	{ NULL, dx_orbit_urev },
 	{ NULL, dxp_camsync },
 
 	{ NULL, dxp_seljob },
+/* XXX swap between phys & wi */
+	{ NULL, dxp_setcap6 },
 
 	{ NULL, dxp_sstall },
 	{ NULL, dxp_refocus },
 	{ NULL, dxp_camsync },
 	{ NULL, dxp_sstall },
 	{ NULL, dxp_op_skel },
+	{ NULL, dxp_op_nlabels },
 	{ NULL, dxp_sstall },
 	{ NULL, dxp_cam_move_forw },
 
@@ -966,8 +1112,12 @@ struct dxte {
 	{ NULL, dxp_sstall },
 
 	{ NULL, dxp_nop_skel },
+	{ NULL, dxp_nop_nlabels },
 	{ NULL, dxp_hlall },
 	{ NULL, dxp_clrsn },
+
+	{ NULL, dxp_setcap7 },
+
 	{ NULL, dxp_sstall },
 	{ NULL, dxp_refocus },
 	{ NULL, dxp_camsync },
@@ -986,6 +1136,8 @@ struct dxte {
 	{ NULL, dxp_cam_move_forw },
 	{ NULL, dxp_op_nlabels },
 
+	{ NULL, dxp_setcap8 },
+
 	{ NULL, dxp_camsync },
 	{ NULL, dxp_sstall },
 	{ NULL, dx_orbit_u },
@@ -1002,6 +1154,9 @@ struct dxte {
 	{ NULL, dxp_bird },
 	{ NULL, dxp_camsync },
 	{ NULL, dxp_sstall },
+
+	{ NULL, dxp_setcap9 },
+
 	{ NULL, dxp_npanel_pipe },
 	{ NULL, dxp_nop_pipes },
 	{ NULL, dxp_widepuff },
@@ -1014,6 +1169,8 @@ struct dxte {
 	{ NULL, dxp_sstall },
 	{ NULL, dxp_npanel_wiadj },
 
+	{ NULL, dxp_setcap10 },
+
 	{ NULL, dxp_sstall },
 	{ NULL, dxp_bird },
 	{ NULL, dxp_vm_phys },
@@ -1025,7 +1182,14 @@ struct dxte {
 	{ NULL, dxp_camsync },
 	{ NULL, dxp_sstall },
 
-/* XXX job range */
+/* XXX cycle jobs */
+	{ NULL, dxp_op_skel },
+	{ NULL, dxp_cyclenc },
+	{ NULL, dxp_nop_skel },
+
+	{ NULL, dxp_op_nlabels },
+	{ NULL, dx_cuban8_y },
+	{ NULL, dxp_nop_nlabels },
 
 #if 0
 	{ dxi_orbit, dx_curlyq },
@@ -1033,7 +1197,7 @@ struct dxte {
 	{ dxi_orbit, dx_orbit_urev },
 	{ dxi_orbit, dx_orbit_v },
 	{ dxi_orbit, dx_orbit_vrev },
-	{ NULL, dx_cubanoid_y },
+	{ NULL, dx_cuban8_y },
 	{ dxi_orbit, dx_orbit3_u },
 	{ dxi_orbit, dx_orbit3_urev },
 	{ dxi_orbit, dx_orbit3_v },
