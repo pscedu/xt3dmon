@@ -1090,6 +1090,7 @@ struct dxte {
 
 	{ NULL, dxp_seljob },
 /* XXX swap between phys & wi */
+/* XXX and do another, start in phys, goto wi, back to phys */
 	{ NULL, dxp_setcap6 },
 
 	{ NULL, dxp_sstall },
