@@ -16,6 +16,7 @@ void	 uinpcb_cmd(void);
 void	 uinpcb_gotonode(void);
 void	 uinpcb_gotojob(void);
 void	 uinpcb_login(void);
+void	 uinpcb_fbnew(void);
 
 extern struct uinput	 uinp;
 
