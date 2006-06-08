@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 
 #include <err.h>
+#include <errno.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,7 +31,6 @@
 #include "uinp.h"
 #include "util.h"
 #include "yod.h"
-#include "objlist.h"
 
 /* Blink panel text (swap between two strings during interval). */
 int
@@ -517,12 +517,20 @@ panel_refresh_ninfo(struct panel *p)
 void
 panel_refresh_flyby(struct panel *p)
 {
-	static int sav_mode = -1;
-	static char cur[] = "";
+	static int sav_cpanels, sav_mode = -1;
+	struct panel *t;
+	int cpanels;
 
-	if (sav_mode == flyby_mode && panel_ready(p))
+	cpanels = 0;
+	TAILQ_FOREACH(t, &panels, p_link)
+		if (t->p_id & (PANEL_FBNEW | PANEL_FBCHO))
+			cpanels |= t->p_id;
+
+	if (sav_cpanels == cpanels && sav_mode == flyby_mode &&
+	    panel_ready(p))
 		return;
 	sav_mode = flyby_mode;
+	sav_cpanels = cpanels;
 
 	pwidget_startlist(p);
 	panel_set_content(p, "- Flyby -\nCurrent flyby: %s", flyby_name);
@@ -537,20 +545,22 @@ panel_refresh_flyby(struct panel *p)
 		    gscb_pw_fb, PWFF_STOPREC);
 		break;
 	default:
-		panel_add_content(p, "\nFlyby mode disabled");
-
 		pwidget_add(p, &fill_nodata, "Play",
 		    gscb_pw_fb, PWFF_PLAY);
 		pwidget_add(p, &fill_nodata, "Record",
 		    gscb_pw_fb, PWFF_REC);
 		pwidget_add(p, &fill_nodata, "Delete",
 		    gscb_pw_fb, PWFF_CLR);
-		pwidget_add(p, &fill_nodata, "New",
+		pwidget_add(p,
+		    (panel_for_id(PANEL_FBNEW) ?
+		    &fill_white : &fill_nodata), "New",
 		    gscb_pw_fb, PWFF_NEW);
-		pwidget_add(p, &fill_nodata,
-			(panel_for_id(PANEL_FBCHO) == NULL) ? "Open Chooser"
-			: "Close Chooser", gscb_pw_fb, PWFF_OPEN);
-
+		pwidget_add(p,
+		    (panel_for_id(PANEL_FBCHO) ?
+		    &fill_white : &fill_nodata),
+		    (panel_for_id(PANEL_FBCHO) == NULL ?
+		    "Open Chooser" : "Close Chooser"),
+		    gscb_pw_fb, PWFF_OPEN);
 		break;
 	}
 	pwidget_endlist(p);
@@ -559,52 +569,66 @@ panel_refresh_flyby(struct panel *p)
 void
 panel_refresh_fbcho(struct panel *p)
 {
-//	static int sav_mode = -1;
-//	static char cur[] = "";
+	static char sav_flyby_name[NAME_MAX];
+	char path[PATH_MAX];
 	struct dirent *dent;
-	struct reel *rl;
+	struct fnent *fe;
+	struct stat stb;
+	size_t i;
 	DIR *dp;
-	int i;
 
-//	if (sav_mode == flyby_mode && panel_ready(p))
-//		return;
-//	sav_mode = flyby_mode;
+	if (panel_ready(p) && strcmp(sav_flyby_name, flyby_name) == 0)
+		return;
+	strncpy(sav_flyby_name, flyby_name, sizeof(sav_flyby_name) - 1);
+	sav_flyby_name[sizeof(sav_flyby_name) - 1] = '\0';
 
-	pwidget_startlist(p);
 	panel_set_content(p, "- Flyby Chooser -");
+	pwidget_startlist(p);
+	if ((dp = opendir(_PATH_FLYBYDIR)) == NULL) {
+		if (errno != ENOENT)
+			err(1, "%s", _PATH_FLYBYDIR);
+		errno = 0;
 
-	dp = opendir(_PATH_FLYBYDIR);
-	obj_batch_start(&flyby_list);
-	while ((dent = readdir(dp)) != NULL) {
-		if (strcmp(dent->d_name, ".") == 0 ||
-		    strcmp(dent->d_name, "..") == 0 ||
-		    dent->d_type == DT_DIR)
-			continue;
+		pwidget_add(p, &fill_white, flyby_name, NULL, 0);
+	} else {
+		obj_batch_start(&flyby_list);
+		while ((dent = readdir(dp)) != NULL) {
+			if (strcmp(dent->d_name, ".") == 0 ||
+			    strcmp(dent->d_name, "..") == 0)
+				continue;
 
-		rl = obj_get(dent->d_name, &flyby_list);
-		snprintf(rl->rl_dirname, sizeof(rl->rl_dirname),
-		    "%s/%s", _PATH_FLYBYDIR, dent->d_name);
-		snprintf(rl->rl_name, sizeof(rl->rl_name),
-		    "%s", dent->d_name);
+#if 0
+			snprintf(path, sizeof(path), "%s/%s",
+			    _PATH_FLYBYDIR, dent->d_name);
+			if (stat(path, &stb) == -1) {
+				warn("%s", path);
+				continue;
+			}
+			if (!S_ISREG(stb.st_mode))
+				continue;
+#endif
+
+			fe = obj_get(dent->d_name, &flyby_list);
+			snprintf(fe->fe_name, sizeof(fe->fe_name),
+			    "%s", dent->d_name);
+		}
+		obj_batch_end(&flyby_list);
+
+		/* XXX: check readdir NULL/errno */
+
+		closedir(dp);
+
+		qsort(flyby_list.ol_fnents, flyby_list.ol_cur,
+		    sizeof(struct fnent *), fe_cmp);
+
+		for (i = 0; i < flyby_list.ol_cur; i++) {
+			fe = flyby_list.ol_fnents[i];
+
+			pwidget_add(p, (strcmp(flyby_name, fe->fe_name) ?
+			    &fill_nodata : &fill_white), fe->fe_name,
+			    gscb_pw_fbcho, i);
+		}
 	}
-	obj_batch_end(&flyby_list);
-
-	closedir(dp);
-
-	qsort(flyby_list.ol_reels, flyby_list.ol_cur,
-	    sizeof(struct reel *), reel_cmp);
-
-	for (i = 0; i < flyby_list.ol_cur; i++) {
-		rl = flyby_list.ol_reels[i];
-
-		pwidget_add(p, (strcmp(flyby_name, rl->rl_name) ?
-		    &fill_nodata : &fill_white), rl->rl_name,
-		    gscb_pw_fbcho, i);
-	}
-
-	if (i == 0)
-		panel_add_content(p, "\nNone available.");
-
 	pwidget_endlist(p);
 }
 
@@ -616,7 +640,7 @@ panel_refresh_fbnew(struct panel *p)
 	uinp.uinp_opts &= ~UINPO_DIRTY;
 
 	panel_set_content(p, "- Flyby Creation -\n"
-	    "File name: %s", buf_get(&uinp.uinp_buf));
+	    "Flyby name: %s", buf_get(&uinp.uinp_buf));
 }
 
 void
@@ -989,6 +1013,8 @@ panel_refresh_reel(struct panel *p)
 
 	if (panel_ready(p) && strcmp(reel_fn, sav_reel_fn) == 0)
 		return;
+	strncpy(sav_reel_fn, reel_fn, sizeof(sav_reel_fn) - 1);
+	sav_reel_fn[sizeof(sav_reel_fn) - 1] = '\0';
 
 	panel_set_content(p, "- Reel -");
 	pwidget_startlist(p);
@@ -1003,7 +1029,7 @@ panel_refresh_reel(struct panel *p)
 		panel_add_content(p, "\nFrame %d/%d\n%s %s",
 		    reel_pos, reelent_list.ol_cur, fn,
 		    reelent_list.ol_cur > 0 ?
-		    reelent_list.ol_reelents[reel_pos]->re_name : "N/A");
+		    reelent_list.ol_fnents[reel_pos]->fe_name : "N/A");
 	} else if ((dp = opendir(_PATH_ARCHIVE)) == NULL) {
 		panel_add_content(p, "\nNo archive reels available.");
 	} else {
@@ -1012,6 +1038,8 @@ panel_refresh_reel(struct panel *p)
 			if (strcmp(dent->d_name, ".") == 0 ||
 			    strcmp(dent->d_name, "..") == 0)
 				continue;
+
+			/* XXX: check stat & ISFILE */
 
 			rl = obj_get(dent->d_name, &reel_list);
 			snprintf(rl->rl_dirname, sizeof(rl->rl_dirname),
