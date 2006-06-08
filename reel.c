@@ -65,6 +65,7 @@ reel_load(void)
 {
 	struct dirent *dent;
 	struct reel_ent *re;
+	char *rfn;
 	DIR *dp;
 	int n;
 
@@ -87,7 +88,9 @@ reel_load(void)
 				if (strcmp(dent->d_name, ".") == 0 ||
 				    strcmp(dent->d_name, "..") == 0)
 					continue;
-				if (strcmp(dent->d_name, reel_fn) > 0)
+
+				if ((rfn = strrchr(reel_fn, '/')) == NULL ||
+				    strcmp(dent->d_name, rfn + 1) > 0)
 					snprintf(reel_fn,
 					    sizeof(reel_fn), "%s/%s",
 					    _PATH_ARCHIVE, dent->d_name);
