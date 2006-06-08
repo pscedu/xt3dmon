@@ -58,4 +58,7 @@ run: xt3dmon
 debug: xt3dmon
 	gdb -q ./xt3dmon
 
+macdirs:
+	cp -R img data arch/macosx/build/Development/xt3dmon.app/Contents/Resources
+
 -include .depend
