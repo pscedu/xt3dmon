@@ -463,13 +463,9 @@ gscb_pw_fb(struct glname *gn, int flags)
 		case PWFF_CLR:
 			flyby_clear();
 			break;
-		case PWFF_OPEN: {
-			struct panel *p;
+		case PWFF_OPEN:
 			panel_toggle(PANEL_FBCHO);
-			if ((p = panel_for_id(PANEL_FLYBY)) != NULL)
-				p->p_opts |= POPT_REFRESH;
 			break;
-		}
 		case PWFF_NEW:
 			panel_toggle(PANEL_FBNEW);
 			break;
