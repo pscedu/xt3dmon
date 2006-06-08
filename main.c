@@ -624,6 +624,7 @@ main(int argc, char *argv[])
 
 	arch_init();
 	ssl_init();
+	srandom(time(NULL));
 
 	cfgfn = _PATH_PHYSCONF;
 
