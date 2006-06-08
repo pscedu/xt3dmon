@@ -7,7 +7,7 @@ struct job;
 struct yod;
 struct glname;
 struct reel;
-struct reel_ent;
+struct fnent;
 
 struct objhdr {
 	int	  oh_flags;
@@ -17,6 +17,11 @@ struct objhdr {
 #define OHF_OLD		(1<<1)		/* object has been around */
 #define OHF_USR1	(1<<2)		/* specific to object */
 
+struct fnent {
+	struct objhdr	fe_oh;
+	char		fe_name[NAME_MAX];
+};
+
 struct objlist {
 	union {
 		void		**olu_data;
@@ -24,7 +29,7 @@ struct objlist {
 		struct yod	**olu_yods;
 		struct glname	**olu_glnames;
 		struct reel	**olu_reels;
-		struct reel_ent	**olu_reelents;
+		struct fnent	**olu_fnents;
 	}	 		  ol_udata;
 	size_t	 		  ol_cur;
 	size_t	 		  ol_tcur;
@@ -38,12 +43,15 @@ struct objlist {
 #define ol_yods			  ol_udata.olu_yods
 #define ol_glnames		  ol_udata.olu_glnames
 #define ol_reels		  ol_udata.olu_reels
-#define ol_reelents		  ol_udata.olu_reelents
+#define ol_fnents		  ol_udata.olu_fnents
 };
 
 void	 obj_batch_start(struct objlist *);
 void	 obj_batch_end(struct objlist *);
 void	*obj_get(const void *, struct objlist *);
+
+int	 fe_eq(const void *, const void *);
+int	 fe_cmp(const void *, const void *);
 
 extern struct objlist	 job_list;
 extern struct objlist	 yod_list;

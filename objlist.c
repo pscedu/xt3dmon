@@ -94,6 +94,23 @@ struct nodeclass lustreclass[] = {
 };
 
 int
+fe_eq(const void *elem, const void *arg)
+{
+	const struct fnent *fe = elem;
+
+	return (strcmp(fe->fe_name, arg) == 0);
+}
+
+int
+fe_cmp(const void *a, const void *b)
+{
+	const struct fnent **fea = (const struct fnent **)a;
+	const struct fnent **feb = (const struct fnent **)b;
+
+	return (strcmp((*fea)->fe_name, (*feb)->fe_name));
+}
+
+int
 job_eq(const void *elem, const void *arg)
 {
 	return (((struct job *)elem)->j_id == *(int *)arg);

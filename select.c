@@ -19,7 +19,6 @@
 #include "selnode.h"
 #include "state.h"
 #include "util.h"
-#include "uinp.h"
 
 GLuint	 selbuf[1000];
 
@@ -427,6 +426,7 @@ gscb_pw_reel(struct glname *gn, int flags)
 	}
 }
 
+void
 gscb_pw_fbcho(struct glname *gn, int flags)
 {
 	int i = gn->gn_id;
@@ -436,7 +436,7 @@ gscb_pw_fbcho(struct glname *gn, int flags)
 		cursor_set(GLUT_CURSOR_INFO);
 	else if (flags == 0) {
 		snprintf(flyby_name, sizeof(flyby_name), "%s",
-		    flyby_list.ol_reels[i]->rl_name);
+		    flyby_list.ol_fnents[i]->fe_name);
 		if ((p = panel_for_id(PANEL_FLYBY)) != NULL)
 			p->p_opts |= POPT_REFRESH;
 	}

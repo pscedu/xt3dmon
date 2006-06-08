@@ -15,33 +15,14 @@
 #include "pathnames.h"
 #include "reel.h"
 
-int reelent_eq(const void *, const void *);
-
 char reel_fn[PATH_MAX];
 int  reel_len;
 size_t reel_pos;
 
 struct objlist reelent_list = { { NULL }, 0, 0, 0, 0, 10,
-    sizeof(struct reel_ent), reelent_eq };
+    sizeof(struct fnent), fe_eq };
 struct objlist reel_list = { { NULL }, 0, 0, 0, 0, 10,
     sizeof(struct reel), reel_eq };
-
-int
-reelent_eq(const void *elem, const void *arg)
-{
-	const struct reel_ent *re = elem;
-
-	return (strcmp(re->re_name, arg) == 0);
-}
-
-int
-reelent_cmp(const void *a, const void *b)
-{
-	const struct reel_ent **rea = (const struct reel_ent **)a;
-	const struct reel_ent **reb = (const struct reel_ent **)b;
-
-	return (strcmp((*rea)->re_name, (*reb)->re_name));
-}
 
 int
 reel_eq(const void *elem, const void *arg)
@@ -64,7 +45,7 @@ void
 reel_load(void)
 {
 	struct dirent *dent;
-	struct reel_ent *re;
+	struct fnent *re;
 	char *rfn;
 	DIR *dp;
 	int n;
@@ -88,6 +69,7 @@ reel_load(void)
 				if (strcmp(dent->d_name, ".") == 0 ||
 				    strcmp(dent->d_name, "..") == 0)
 					continue;
+				/* XXX: check stat and ISDIR */
 
 				if ((rfn = strrchr(reel_fn, '/')) == NULL ||
 				    strcmp(dent->d_name, rfn + 1) > 0)
@@ -113,16 +95,19 @@ reel_load(void)
 		    strcmp(dent->d_name, "last") == 0)
 			continue;
 
+		/* XXX: check stat and ISFILE */
+
 		re = obj_get(dent->d_name, &reelent_list);
-		strncpy(re->re_name, dent->d_name,
-		    sizeof(re->re_name) - 1);
-		re->re_name[sizeof(re->re_name) - 1] = '\0';
+		strncpy(re->fe_name, dent->d_name,
+		    sizeof(re->fe_name) - 1);
+		re->fe_name[sizeof(re->fe_name) - 1] = '\0';
 	}
 	obj_batch_end(&reelent_list);
+	/* XXX: check for error */
 	closedir(dp);
 
-	qsort(reelent_list.ol_reelents, reelent_list.ol_cur,
-	    sizeof(struct reel_ent *), reelent_cmp);
+	qsort(reelent_list.ol_fnents, reelent_list.ol_cur,
+	    sizeof(struct fnent *), fe_cmp);
 }
 
 /* XXX: bad */
@@ -160,11 +145,11 @@ reel_advance(void)
 		return;
 
 	snprintf(fn_node, sizeof(fn_node), "%s/%s/node",
-	    reel_fn, reelent_list.ol_reelents[reel_pos]->re_name);
+	    reel_fn, reelent_list.ol_fnents[reel_pos]->fe_name);
 	snprintf(fn_job, sizeof(fn_job), "%s/%s/job",
-	    reel_fn, reelent_list.ol_reelents[reel_pos]->re_name);
+	    reel_fn, reelent_list.ol_fnents[reel_pos]->fe_name);
 	snprintf(fn_yod, sizeof(fn_yod), "%s/%s/yod",
-	    reel_fn, reelent_list.ol_reelents[reel_pos]->re_name);
+	    reel_fn, reelent_list.ol_fnents[reel_pos]->fe_name);
 
 	datasrcs[DS_NODE].ds_flags |= DSF_FORCE;
 	datasrcs[DS_JOB].ds_flags |= DSF_FORCE;

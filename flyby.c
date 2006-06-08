@@ -12,6 +12,7 @@
 #include "gl.h"
 #include "node.h"
 #include "nodeclass.h"
+#include "objlist.h"
 #include "panel.h"
 #include "pathnames.h"
 #include "queue.h"
@@ -50,7 +51,6 @@ union fbun {
 	struct fbselnode	fbu_sn;
 };
 
-
 void		 init_panels(int);
 
 int		 flyby_mode = FBM_OFF;
@@ -60,8 +60,8 @@ int		 flyby_len;
 int		 flyby_pos;
 static FILE	*flyby_fp;
 struct state	 sav_st;
-struct objlist	 flyby_list = { { NULL }, 0, 0, 0, 0, 10, sizeof(struct reel), reel_eq };
-char 		 flyby_name[NAME_MAX];
+struct objlist	 flyby_list = { { NULL }, 0, 0, 0, 0, 10, sizeof(struct fnent), fe_eq };
+char 		 flyby_name[NAME_MAX] = FLYBY_DEFAULT;
 
 void
 flyby_calclen(void)
@@ -89,22 +89,20 @@ flyby_calclen(void)
 void
 flyby_begin(int mode)
 {
-	char path[NAME_MAX+PATH_MAX+1];
+	char path[PATH_MAX];
 
 	if (flyby_fp != NULL)
 		return;
-		
-	strncat(path, _PATH_FLYBYDIR, sizeof(path));
-	strncat(path, flyby_name, sizeof(path));
-	printf("flyby path: %s\n", path);
+
+	snprintf(path, sizeof(path), "%s/%s",
+	    _PATH_FLYBYDIR, flyby_name);
 
 	switch (mode) {
 	case FBM_PLAY:
-
 		if ((flyby_fp = fopen(path, "rb")) == NULL) {
 			if (errno == ENOENT)
 				return;
-			err(1, "%s", _PATH_FLYBYDIR);
+			err(1, "%s", path);
 		}
 		flyby_mode = FBM_PLAY;
 
@@ -132,7 +130,7 @@ flyby_begin(int mode)
 		break;
 	case FBM_REC:
 		if ((flyby_fp = fopen(path, "ab")) == NULL)
-			err(1, "%s", _PATH_FLYBYDIR);
+			err(1, "%s", path);
 		flyby_mode = FBM_REC;
 		flyby_writeinit(&st);
 		break;
@@ -369,10 +367,10 @@ flyby_beginauto(void)
 void
 flyby_clear(void)
 {
-	char path[NAME_MAX+PATH_MAX+1];
-	strncat(path, _PATH_FLYBYDIR, sizeof(path));
-	strncat(path, flyby_name, sizeof(path));
+	char path[PATH_MAX];
 
+	snprintf(path, sizeof(path), "%s/%s",
+	    _PATH_FLYBYDIR, flyby_name);
 	unlink(path); /* XXX remove()? */
 	errno = 0;
 }
