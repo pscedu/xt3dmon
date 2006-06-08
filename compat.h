@@ -84,6 +84,9 @@ typedef u_int16_t in_port_t;
 #define glutPostRedisplay post_redisplay
 void post_redisplay(void);
 
+#define glutMouseWheelFunc mouse_wheel_func
+void mouse_wheel_func(void (*func)(__unused int wheel, int dir, int u, int v));
+
 #elif defined(__APPLE_CC__)
 
 # include <sys/param.h>
@@ -97,6 +100,8 @@ void post_redisplay(void);
 # include <netdb.h>
 
 // # define port_t tcpip_port_t
+#define glutMouseWheelFunc mouse_wheel_func
+void mouse_wheel_func(void (*func)(__unused int wheel, int dir, int u, int v));
 
 #define SOCKETCLOSE(s) close(s)
 
