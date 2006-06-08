@@ -160,7 +160,7 @@ uinpcb_fbnew(void)
 		}
 
 	/* Create a new flyby data file, and make it selected */
-	if (*buf != '\0') {
+	if (buf[0] != '\0' && buf[0] != '.') {
 		snprintf(flyby_name, sizeof(flyby_name), "%s", buf);
 		snprintf(path, sizeof(path), "%s/%s",
 		    _PATH_FLYBYDIR, flyby_name);
