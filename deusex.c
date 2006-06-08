@@ -53,12 +53,12 @@ dx_orbit(int dim, int sign)
 {
 	static double amt, adj;
 	static int t;
-	double wait, incr, du, dv, max;
+	double wait, du, dv, max;
 	int ret;
 
 	max = 2 * M_PI / 0.01;
 	if (t == 0) {
-		wait = 1.5 * ceil(log(DST(&st.st_v, &focus) / log(1.1)));
+		wait = 1.3 * ceil(log(DST(&st.st_v, &focus) / log(1.1)));
 		adj = max / (fps * wait);
 		amt = 0.0;
 	}
@@ -73,34 +73,7 @@ dx_orbit(int dim, int sign)
 		break;
 	}
 
-#if 0
-	if (t / (fps * wait) < amt / max) {
-		/* make them bigger */
-		adj = (amt / max) / (t / (double)(fps * wait));
-		if (du)
-			du *= adj;
-		if (dv)
-			dv *= adj;
-
-	} else if (t / (fps * wait) > amt / max) {
-		/* make them smaller */
-		adj = (t / (double)(fps * wait)) / (amt / max);
-		if (du)
-			du *= adj;
-		if (dv)
-			dv *= adj;
-	}
-
-	if (amt >= max)
-		du = dv = 0.0;
-	else if (t + 1 >= fps * wait && max - amt > adj)
-		wait += ceil((max - amt) / adj / fps);
-#endif
-
-	incr = du + dv;
-	if (incr < 0.0)
-		incr = -incr;
-	amt += incr;
+	amt += fabs(adj);
 
 	tween_push(TWF_POS | TWF_LOOK | TWF_UP);
 	cam_revolvefocus(du, dv);
@@ -505,11 +478,7 @@ dxp_start(void)
 	opt_disable(~b);
 	opt_enable(b);
 
-	b = PANEL_LEGEND | PANEL_VMODE | PANEL_DMODE | PANEL_HELP;
-	if (panel_for_id(PANEL_PANELS) != NULL)
-		b |= PANEL_PANELS;
-	if (panel_for_id(PANEL_OPTS) != NULL)
-		b |= PANEL_OPTS;
+	b = PANEL_LEGEND | PANEL_HELP;
 	TAILQ_FOREACH(p, &panels, p_link)
 		if (b & p->p_id)
 			b &= ~p->p_id;
@@ -517,7 +486,6 @@ dxp_start(void)
 			b |= p->p_id;
 	panels_flip(b);
 	dxp_bird();
-	dxp_refocus();
 	return (1);
 }
 
@@ -929,6 +897,7 @@ struct dxte {
 	int  (*de_update)(void);
 } dxtab[] = {
 	{ NULL, dxp_start },
+	{ NULL, dxp_refocus },
 
 	{ NULL, dxp_camsync },
 	{ NULL, dxp_sstall },
@@ -1007,6 +976,7 @@ struct dxte {
 	{ NULL, dxp_selnode2749 },
 	{ NULL, dxp_refocus },
 	{ NULL, dxp_camsync },
+	{ NULL, dxp_op_skel },
 	{ NULL, dxp_sstall },
 	{ NULL, dxp_cam_move_forw },
 	{ NULL, dxp_cam_move_forw },
@@ -1021,6 +991,7 @@ struct dxte {
 	{ NULL, dxp_cam_move_back },
 	{ NULL, dxp_cam_move_back},
 
+	{ NULL, dxp_nop_skel },
 	{ NULL, dxp_nop_nlabels },
 	{ NULL, dxp_clrsn },
 	{ NULL, dxp_camsync },
@@ -1097,6 +1068,7 @@ dx_update(void)
 		if (++i >= NENTRIES(dxtab))
 			i = 0;
 	}
-	if (de->de_update())
-		de = NULL;
+	if ((st.st_opts & OP_STOP) == 0)
+		if (de->de_update())
+			de = NULL;
 }
