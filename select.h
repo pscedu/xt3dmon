@@ -53,6 +53,9 @@ struct glname {
 #define PWFF_PLAY	1
 #define PWFF_REC	2
 #define PWFF_CLR	3
+#define PWFF_OPEN	4
+#define PWFF_NEW	5
+
 
 void		 sel_begin(void);
 int		 sel_end(void);
@@ -75,3 +78,4 @@ void		 gscb_pw_reel(struct glname *, int);
 void		 gscb_pw_fb(struct glname *, int);
 void		 gscb_pw_wiadj(struct glname *, int);
 void		 gscb_pw_rt(struct glname *, int);
+void		 gscb_pw_fbcho(struct glname *gn, int flags);
