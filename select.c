@@ -19,6 +19,7 @@
 #include "selnode.h"
 #include "state.h"
 #include "util.h"
+#include "uinp.h"
 
 GLuint	 selbuf[1000];
 
@@ -426,6 +427,21 @@ gscb_pw_reel(struct glname *gn, int flags)
 	}
 }
 
+gscb_pw_fbcho(struct glname *gn, int flags)
+{
+	int i = gn->gn_id;
+	struct panel *p;
+
+	if (flags & SPF_PROBE)
+		cursor_set(GLUT_CURSOR_INFO);
+	else if (flags == 0) {
+		snprintf(flyby_name, sizeof(flyby_name), "%s",
+		    flyby_list.ol_reels[i]->rl_name);
+		if ((p = panel_for_id(PANEL_FLYBY)) != NULL)
+			p->p_opts |= POPT_REFRESH;
+	}
+}
+
 void
 gscb_pw_fb(struct glname *gn, int flags)
 {
@@ -446,6 +462,12 @@ gscb_pw_fb(struct glname *gn, int flags)
 			break;
 		case PWFF_CLR:
 			flyby_clear();
+			break;
+		case PWFF_OPEN:
+			panel_toggle(PANEL_FBCHO);
+			break;
+		case PWFF_NEW:
+			panel_toggle(PANEL_FBNEW);
 			break;
 		}
 	}
