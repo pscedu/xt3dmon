@@ -12,6 +12,7 @@
 
 #include "ds.h"
 #include "objlist.h"
+#include "panel.h"
 #include "pathnames.h"
 #include "reel.h"
 
@@ -141,6 +142,8 @@ reel_start(void)
 void
 reel_advance(void)
 {
+	struct panel *p;
+
 	if (reel_pos >= reelent_list.ol_cur)
 		return;
 
@@ -154,6 +157,9 @@ reel_advance(void)
 	datasrcs[DS_NODE].ds_flags |= DSF_FORCE;
 	datasrcs[DS_JOB].ds_flags |= DSF_FORCE;
 	datasrcs[DS_YOD].ds_flags |= DSF_FORCE;
+
+	if ((p = panel_for_id(PANEL_REEL)) != NULL)
+		p->p_opts |= POPT_REFRESH;
 
 	reel_pos++;
 }
