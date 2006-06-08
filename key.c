@@ -643,6 +643,12 @@ gl_keyh_default(unsigned char key, int u, int v)
 	case ']':
 		glutKeyboardFunc(gl_keyh_incr);
 		break;
+	case ' ':
+		if (st.st_opts & OP_DEUSEX) {
+			opt_flip(OP_STOP);
+			st.st_opts ^= OP_TWEEN;
+		}
+		break;
 	default:
 		return;
 	}
