@@ -9,7 +9,7 @@
 #define _PATH_ARCHIVE	"data/archive"
 
 #define _PATH_PHYSCONF	"data/phys.conf"
-#define _PATH_FLYBY	"data/flyby.data"
+#define _PATH_FLYBYDIR	"data/flybys/"
 
 #define _PATH_TEX_SC	"img/tex-sc%d.png"
 #define _PATH_TEX_SN	"img/tex-selnode.png"
