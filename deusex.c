@@ -36,9 +36,9 @@ dxi_orbit(void)
 
 	tween_push(TWF_POS);
 	do {
-		rx = (rand() % 2 ? 1 : -1) * fmod(rand() / 100.0, ROWWIDTH);
-		ry = (rand() % 2 ? 1 : -1) * fmod(rand() / 100.0, ROWWIDTH);
-		rz = (rand() % 2 ? 1 : -1) * fmod(rand() / 100.0, ROWWIDTH);
+		rx = (random() % 2 ? 1 : -1) * fmod(random() / 100.0, ROWWIDTH);
+		ry = (random() % 2 ? 1 : -1) * fmod(random() / 100.0, ROWWIDTH);
+		rz = (random() % 2 ? 1 : -1) * fmod(random() / 100.0, ROWWIDTH);
 
 		st.st_v = focus;
 		st.st_x += rx;
@@ -58,7 +58,7 @@ dx_orbit(int dim, int sign)
 
 	max = 2 * M_PI / 0.01;
 	if (t == 0) {
-		wait = 1.3 * ceil(log(DST(&st.st_v, &focus) / log(1.1)));
+		wait = 1.1 * ceil(log(DST(&st.st_v, &focus) / log(1.1)));
 		adj = max / (fps * wait);
 		amt = 0.0;
 	}
@@ -167,7 +167,7 @@ dx_curlyq(void)
 
 	max = 3 * 2 * M_PI / 0.01;
 	if (t == 0) {
-		wait = 1.5 * ceil(log(DST(&st.st_v, &focus) / log(1.1)));
+		wait = 1.1 * ceil(log(DST(&st.st_v, &focus) / log(1.1)));
 		fwadj = DST(&st.st_v, &focus) / (fps * wait);
 		adj = max / (fps * wait);
 		amt = 0.0;
@@ -494,9 +494,10 @@ dxp_selnode0(void)
 {
 	struct node *n;
 
-	n = node_for_nid(0);
-	if (n == NULL)
-		errx(1, "nid 0 is NULL");
+	do {
+		n = node_for_nid(random() % 1000);
+	} while (n == NULL);
+
 	sn_add(n, &fv_zero);
 	panel_show(PANEL_NINFO);
 	return (1);
@@ -923,6 +924,7 @@ struct dxte {
 
 	{ NULL, dxp_nop_nlabels },
 	{ NULL, dxp_clrsn },
+	{ NULL, dxp_cam_move_back },
 	{ NULL, dxp_bird },
 	{ NULL, dxp_hlall },
 	{ NULL, dxp_camsync },
@@ -949,6 +951,8 @@ struct dxte {
 	{ NULL, dxp_refocus },
 	{ NULL, dxp_camsync },
 	{ NULL, dxp_sstall },
+	{ NULL, dxp_op_skel },
+	{ NULL, dxp_sstall },
 	{ NULL, dxp_cam_move_forw },
 
 	{ NULL, dxp_camsync },
@@ -961,6 +965,7 @@ struct dxte {
 	{ NULL, dxp_camsync },
 	{ NULL, dxp_sstall },
 
+	{ NULL, dxp_nop_skel },
 	{ NULL, dxp_hlall },
 	{ NULL, dxp_clrsn },
 	{ NULL, dxp_sstall },
@@ -976,7 +981,6 @@ struct dxte {
 	{ NULL, dxp_selnode2749 },
 	{ NULL, dxp_refocus },
 	{ NULL, dxp_camsync },
-	{ NULL, dxp_op_skel },
 	{ NULL, dxp_sstall },
 	{ NULL, dxp_cam_move_forw },
 	{ NULL, dxp_cam_move_forw },
@@ -989,9 +993,8 @@ struct dxte {
 	{ NULL, dxp_sstall },
 
 	{ NULL, dxp_cam_move_back },
-	{ NULL, dxp_cam_move_back},
+	{ NULL, dxp_cam_move_back },
 
-	{ NULL, dxp_nop_skel },
 	{ NULL, dxp_nop_nlabels },
 	{ NULL, dxp_clrsn },
 	{ NULL, dxp_camsync },
@@ -1047,7 +1050,7 @@ dx_update(void)
 	static struct dxte *de;
 
 	if (de == NULL) {
-		de = &dxtab[rand() % NENTRIES(dxtab)];
+		de = &dxtab[random() % NENTRIES(dxtab)];
 		if (de->de_init != NULL)
 			de->de_init();
 	}
