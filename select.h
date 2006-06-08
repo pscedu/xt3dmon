@@ -78,4 +78,4 @@ void		 gscb_pw_reel(struct glname *, int);
 void		 gscb_pw_fb(struct glname *, int);
 void		 gscb_pw_wiadj(struct glname *, int);
 void		 gscb_pw_rt(struct glname *, int);
-void		 gscb_pw_fbcho(struct glname *gn, int flags);
+void		 gscb_pw_fbcho(struct glname *, int);

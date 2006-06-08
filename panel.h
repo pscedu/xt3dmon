@@ -130,8 +130,8 @@ void panel_refresh_pipe(struct panel *);
 void panel_refresh_sstar(struct panel *);
 void panel_refresh_wiadj(struct panel *);
 void panel_refresh_rt(struct panel *);
-void panel_refresh_fbcho(struct panel *p);
-void panel_refresh_fbnew(struct panel *p);
+void panel_refresh_fbcho(struct panel *);
+void panel_refresh_fbnew(struct panel *);
 
 extern struct panels	 panels;
 extern struct pinfo	 pinfo[];
