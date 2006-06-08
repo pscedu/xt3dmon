@@ -15,6 +15,7 @@
 #include "lnseg.h"
 #include "mark.h"
 #include "node.h"
+#include "nodeclass.h"
 #include "objlist.h"
 #include "panel.h"
 #include "queue.h"
@@ -52,12 +53,12 @@ dx_orbit(int dim, int sign)
 {
 	static double amt, adj;
 	static int t;
-	double incr, du, dv, max;
-	int wait, ret;
+	double wait, incr, du, dv, max;
+	int ret;
 
 	max = 2 * M_PI / 0.01;
 	if (t == 0) {
-		wait = ceil(log(DST(&st.st_v, &focus) / log(1.1)));
+		wait = 1.5 * ceil(log(DST(&st.st_v, &focus) / log(1.1)));
 		adj = max / (fps * wait);
 		amt = 0.0;
 	}
@@ -186,22 +187,43 @@ dx_orbit3_vrev(void)
 int
 dx_curlyq(void)
 {
-	static int inorbit;
-	static double curlyq_adj;
-	int ret;
+	static double fwadj, adj, amt;
+	static int t;
+	int ret, dim, sign;
+	double max, du, dv, wait;
 
-	if (inorbit == 0) {
-		curlyq_adj = DST(&st.st_v, &focus) / (180 * 3 + 90);
-		inorbit = 1;
+	max = 3 * 2 * M_PI / 0.01;
+	if (t == 0) {
+		wait = 1.5 * ceil(log(DST(&st.st_v, &focus) / log(1.1)));
+		fwadj = DST(&st.st_v, &focus) / (fps * wait);
+		adj = max / (fps * wait);
+		amt = 0.0;
 	}
 
-	tween_push(TWF_POS);
-	cam_move(DIR_FORWARD, curlyq_adj);
-	tween_pop(TWF_POS);
+	sign = 1;
+	dim = DIM_X;
+
+	du = dv = 0.0;
+	switch (dim) {
+	case DIM_X:
+		du = sign * adj;
+		break;
+	case DIM_Y:
+		dv = sign * -adj;
+		break;
+	}
+
+	amt += fabs(adj);
+
+	tween_push(TWF_POS | TWF_LOOK | TWF_UP);
+	cam_move(DIR_FORWARD, fwadj);
+	cam_revolvefocus(du, dv);
+	tween_pop(TWF_POS | TWF_LOOK | TWF_UP);
 
 	ret = 0;
-	if (dx_orbit3(DIM_X, 1)) {
-		inorbit = 0;
+	t++;
+	if (amt >= max) {
+		t = 0;
 		ret = 1;
 	}
 	return (ret);
@@ -849,6 +871,59 @@ dxp_nodesync(void)
 	return ((st.st_rf & RF_CLUSTER) == 0);
 }
 
+int
+dxp_cyclenc(void)
+{
+	static int t, max, nnc, ncp;
+	int ret, j;
+
+	if (t == 0) {
+		nnc = 0;
+		switch (st.st_dmode) {
+		case DM_JOB:
+			nnc = job_list.ol_cur;
+			break;
+		case DM_TEMP:
+			for (j = 0; j < NTEMPC; j++)
+				if (tempclass[j].nc_nmemb)
+					nnc++;
+			break;
+		}
+
+		max = nnc * 3 * fps;
+		ncp = -1;
+
+		/* -1 needed for DM_TEMP loop below. */
+		st.st_hlnc = -1;
+	}
+
+	if (ncp != t * nnc / max) {
+		ncp = t * nnc / max;
+		switch (st.st_dmode) {
+		case DM_JOB:
+			st.st_hlnc = ncp;
+			break;
+		case DM_TEMP:
+			for (j = st.st_hlnc + 1; j < NTEMPC; j++)
+				if (tempclass[j].nc_nmemb) {
+					st.st_hlnc = j;
+					break;
+				}
+			break;
+		}
+		st.st_rf |= RF_HLNC;
+	}
+
+	ret = 0;
+	if (++t >= max) {
+		t = 0;
+		ret = 1;
+		st.st_hlnc = HL_ALL;
+		st.st_rf |= RF_HLNC;
+	}
+	return (ret);
+}
+
 struct dxte {
 	void (*de_init)(void);
 	int  (*de_update)(void);
@@ -882,12 +957,15 @@ struct dxte {
 	{ NULL, dxp_bird },
 	{ NULL, dxp_hlall },
 	{ NULL, dxp_camsync },
+	{ NULL, dxp_sstall },
+
+	{ NULL, dxp_cyclenc },
+
 	{ NULL, dxp_nop_skel },
 	{ NULL, dxp_sstall },
 
-/* XXX cycle hl node classes */
-
 	{ NULL, dxp_vm_wione },
+	{ NULL, dxp_nodesync },
 	{ NULL, dxp_bird },
 	{ NULL, dxp_camsync },
 
@@ -924,7 +1002,7 @@ struct dxte {
 	{ NULL, dxp_op_pipes },
 	{ NULL, dxp_wipuff },
 	{ NULL, dxp_nodesync },
-	{ NULL, dxp_sstall },
+	{ NULL, dxp_stall },
 
 	{ NULL, dxp_selnode2749 },
 	{ NULL, dxp_refocus },
@@ -950,10 +1028,10 @@ struct dxte {
 	{ NULL, dxp_bird },
 	{ NULL, dxp_camsync },
 	{ NULL, dxp_sstall },
-	{ NULL, dxp_widepuff },
-	{ NULL, dxp_nodesync },
 	{ NULL, dxp_npanel_pipe },
 	{ NULL, dxp_nop_pipes },
+	{ NULL, dxp_widepuff },
+	{ NULL, dxp_nodesync },
 	{ NULL, dxp_sstall },
 
 	{ NULL, dxp_panel_wiadj },
@@ -972,6 +1050,9 @@ struct dxte {
 	{ NULL, dxp_refocus },
 	{ NULL, dxp_camsync },
 	{ NULL, dxp_sstall },
+
+/* XXX job range */
+
 #if 0
 	{ dxi_orbit, dx_curlyq },
 	{ dxi_orbit, dx_orbit_u },
