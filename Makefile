@@ -55,4 +55,7 @@ lines:
 run: xt3dmon
 	./xt3dmon
 
+debug: xt3dmon
+	gdb -q ./xt3dmon
+
 -include .depend
