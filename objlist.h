@@ -49,5 +49,6 @@ extern struct objlist	 job_list;
 extern struct objlist	 yod_list;
 extern struct objlist	 glname_list;
 extern struct objlist	 reel_list;
+extern struct objlist	 flyby_list;
 
 #endif /* _OBJLIST_H_ */
