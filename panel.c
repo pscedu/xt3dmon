@@ -818,3 +818,43 @@ init_panels(int start)
 			cur |= p->p_id;
 	panels_flip(cur ^ start);
 }
+
+void
+draw_caption(int y, char *s)
+{
+	int len, plen, i;
+	int cx;
+
+	/* Save state and set things up for 2D. */
+	glPushAttrib(GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
+
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	gluOrtho2D(0.0, winv.iv_w, 0.0, winv.iv_h);
+	glColor3f(0.5f, 0.5f, 0.5f);
+
+	len = strlen(s);
+	plen = glutBitmapLength(GLUT_BITMAP_TIMES_ROMAN_24, s);
+	
+	/* XXX - Draw the Caption Box with Transparency */
+
+	/* Draw the Caption Text, center on x */
+	cx = (winv.iv_w / 2) - (0.5 * plen);
+	glRasterPos2f(cx, y);
+
+	for (i = 0; i < strlen(s); i++)
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, s[i]);
+
+	/* End 2D mode. */
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+
+	glPopAttrib();
+}

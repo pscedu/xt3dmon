@@ -149,6 +149,9 @@ draw_scene(void)
 		mark_draw();
 	if (!SLIST_EMPTY(&lnsegs))
 		lnseg_draw();
+
+	draw_caption(10, "This is a test");
+
 // draw_compass();
 // job_drawlabels();
 }
