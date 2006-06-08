@@ -202,7 +202,7 @@ void
 draw_shadow_wisect(int *dl, struct wiselstep *ws, int cuts, int last,
     const struct fvec *cloffp)
 {
-	struct fvec onv, nv, dim, adj;
+	struct fvec onv, nv, dim, adj, *ndim;
 	struct ivec mag, len, *offp;
 	int cubeno;
 
@@ -222,12 +222,14 @@ draw_shadow_wisect(int *dl, struct wiselstep *ws, int cuts, int last,
 	nv.fv_y = offp->iv_y * st.st_winsp.iv_y;
 	nv.fv_z = offp->iv_z * st.st_winsp.iv_z;
 
+	ndim = &vmodes[st.st_vmode].vm_ndim[GEOM_CUBE];
+
 	if (st.st_winsp.iv_x < 0)
-		nv.fv_x += NODEWIDTH;
+		nv.fv_x += ndim->fv_w;
 	if (st.st_winsp.iv_y < 0)
-		nv.fv_y += NODEHEIGHT;
+		nv.fv_y += ndim->fv_h;
 	if (st.st_winsp.iv_z < 0)
-		nv.fv_z += NODEDEPTH;
+		nv.fv_z += ndim->fv_d;
 
 	onv = nv;
 
@@ -242,7 +244,7 @@ draw_shadow_wisect(int *dl, struct wiselstep *ws, int cuts, int last,
 			len.iv_w += mag.iv_x;
 			mag.iv_x = 0;
 		}
-		dim.fv_w = (len.iv_x - 1) * st.st_winsp.iv_x + NODEWIDTH *
+		dim.fv_w = (len.iv_x - 1) * st.st_winsp.iv_x + ndim->fv_w *
 		    SIGNF(st.st_winsp.iv_x);
 
 		/*
@@ -259,7 +261,7 @@ draw_shadow_wisect(int *dl, struct wiselstep *ws, int cuts, int last,
 				len.iv_h += mag.iv_y;
 				mag.iv_y = 0;
 			}
-			dim.fv_h = (len.iv_y - 1) * st.st_winsp.iv_y + NODEHEIGHT *
+			dim.fv_h = (len.iv_y - 1) * st.st_winsp.iv_y + ndim->fv_h *
 			    SIGNF(st.st_winsp.iv_y);
 
 			mag.iv_z = ws->ws_mag.iv_z;
@@ -270,7 +272,7 @@ draw_shadow_wisect(int *dl, struct wiselstep *ws, int cuts, int last,
 					len.iv_d += mag.iv_z;
 					mag.iv_z = 0;
 				}
-				dim.fv_d = (len.iv_z - 1) * st.st_winsp.iv_z + NODEDEPTH *
+				dim.fv_d = (len.iv_z - 1) * st.st_winsp.iv_z + ndim->fv_d *
 				    SIGNF(st.st_winsp.iv_z);
 
 				glPushMatrix();
