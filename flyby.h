@@ -8,6 +8,8 @@ struct state;
 #define FBM_PLAY	1
 #define FBM_REC		2
 
+#define FLYBY_DEFAULT	"default"
+
 void 	 flyby_begin(int);
 void 	 flyby_beginauto(void);
 void 	 flyby_end(void);
@@ -20,5 +22,6 @@ void	 flyby_writeselnode(int, const struct fvec *);
 void	 flyby_rstautoto(void);
 void	 flyby_clear(void);
 
-extern int flyby_mode;
-extern int flyby_nautoto;
+extern int	flyby_mode;
+extern int 	flyby_nautoto;
+extern char 	flyby_name[NAME_MAX];
