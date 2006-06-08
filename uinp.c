@@ -2,6 +2,10 @@
 
 #include "mon.h"
 
+#include <sys/stat.h>
+
+#include <err.h>
+#include <errno.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,15 +13,16 @@
 #include "buf.h"
 #include "capture.h"
 #include "flyby.h"
+#include "gl.h"
 #include "job.h"
 #include "node.h"
 #include "nodeclass.h"
 #include "panel.h"
+#include "pathnames.h"
 #include "queue.h"
 #include "selnode.h"
 #include "state.h"
 #include "uinp.h"
-#include "gl.h"
 #include "util.h"
 
 char authbuf[BUFSIZ];
@@ -142,14 +147,34 @@ uinpcb_login(void)
 void
 uinpcb_fbnew(void)
 {
-	char *buf;
-	
+	char path[PATH_MAX], *buf, *s;
+	struct stat stb;
+	FILE *fp;
+
 	buf = buf_get(&uinp.uinp_buf);
+
+	for (s = buf; *s != '\0'; s++)
+		if (!isalnum(*s) && *s != ' ' && *s != '.') {
+			*s = '\0';
+			break;
+		}
 
 	/* Create a new flyby data file, and make it selected */
 	if (*buf != '\0') {
-//		system("touch ");
 		snprintf(flyby_name, sizeof(flyby_name), "%s", buf);
+		snprintf(path, sizeof(path), "%s/%s",
+		    _PATH_FLYBYDIR, flyby_name);
+
+		if (stat(_PATH_FLYBYDIR, &stb) == -1) {
+			if (errno == ENOENT) {
+				if (mkdir(_PATH_FLYBYDIR, 0755) == -1)
+					err(1, "%s", _PATH_FLYBYDIR);
+			} else
+				err(1, "%s", _PATH_FLYBYDIR);
+		}
+		if ((fp = fopen(path, "a+")) == NULL)
+			err(1, "%s", path);
+		fclose(fp);
+		errno = 0;
 	}
 }
-
