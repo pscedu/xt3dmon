@@ -84,7 +84,7 @@ typedef u_int16_t in_port_t;
 #define glutPostRedisplay post_redisplay
 void post_redisplay(void);
 
-#define glutMouseWheelFunc(a, b, c, d)
+#define glutMouseWheelFunc(a)
 
 #elif defined(__APPLE_CC__)
 
@@ -100,7 +100,7 @@ void post_redisplay(void);
 
 // # define port_t tcpip_port_t
 
-#define glutMouseWheelFunc(a, b, c, d)
+#define glutMouseWheelFunc(a)
 
 #define SOCKETCLOSE(s) close(s)
 
