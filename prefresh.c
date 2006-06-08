@@ -30,6 +30,7 @@
 #include "uinp.h"
 #include "util.h"
 #include "yod.h"
+#include "objlist.h"
 
 /* Blink panel text (swap between two strings during interval). */
 int
@@ -517,13 +518,14 @@ void
 panel_refresh_flyby(struct panel *p)
 {
 	static int sav_mode = -1;
+	static char cur[] = "";
 
 	if (sav_mode == flyby_mode && panel_ready(p))
 		return;
 	sav_mode = flyby_mode;
 
 	pwidget_startlist(p);
-	panel_set_content(p, "- Flyby -");
+	panel_set_content(p, "- Flyby -\nCurrent flyby: %s", flyby_name);
 	switch (flyby_mode) {
 	case FBM_PLAY:
 		panel_add_content(p, "\nPlaying back flyby");
@@ -543,9 +545,78 @@ panel_refresh_flyby(struct panel *p)
 		    gscb_pw_fb, PWFF_REC);
 		pwidget_add(p, &fill_nodata, "Delete",
 		    gscb_pw_fb, PWFF_CLR);
+		pwidget_add(p, &fill_nodata, "New",
+		    gscb_pw_fb, PWFF_NEW);
+		pwidget_add(p, &fill_nodata,
+			(panel_for_id(PANEL_FBCHO) == NULL) ? "Open Chooser"
+			: "Close Chooser", gscb_pw_fb, PWFF_OPEN);
+
 		break;
 	}
 	pwidget_endlist(p);
+}
+
+void
+panel_refresh_fbcho(struct panel *p)
+{
+//	static int sav_mode = -1;
+//	static char cur[] = "";
+	struct dirent *dent;
+	struct reel *rl;
+	DIR *dp;
+	int i;
+
+//	if (sav_mode == flyby_mode && panel_ready(p))
+//		return;
+//	sav_mode = flyby_mode;
+
+	pwidget_startlist(p);
+	panel_set_content(p, "- Flyby Chooser -");
+
+	dp = opendir(_PATH_FLYBYDIR);
+	obj_batch_start(&flyby_list);
+	while ((dent = readdir(dp)) != NULL) {
+		if (strcmp(dent->d_name, ".") == 0 ||
+		    strcmp(dent->d_name, "..") == 0 ||
+		    dent->d_type == DT_DIR)
+			continue;
+
+		rl = obj_get(dent->d_name, &flyby_list);
+		snprintf(rl->rl_dirname, sizeof(rl->rl_dirname),
+		    "%s/%s", _PATH_FLYBYDIR, dent->d_name);
+		snprintf(rl->rl_name, sizeof(rl->rl_name),
+		    "%s", dent->d_name);
+	}
+	obj_batch_end(&flyby_list);
+
+	closedir(dp);
+
+	qsort(flyby_list.ol_reels, flyby_list.ol_cur,
+	    sizeof(struct reel *), reel_cmp);
+
+	for (i = 0; i < flyby_list.ol_cur; i++) {
+		rl = flyby_list.ol_reels[i];
+
+		pwidget_add(p, (strcmp(flyby_name, rl->rl_name) ?
+		    &fill_nodata : &fill_white), rl->rl_name,
+		    gscb_pw_fbcho, i);
+	}
+
+	if (i == 0)
+		panel_add_content(p, "\nNone available.");
+
+	pwidget_endlist(p);
+}
+
+void
+panel_refresh_fbnew(struct panel *p)
+{
+	if ((uinp.uinp_opts & UINPO_DIRTY) == 0 && panel_ready(p))
+		return;
+	uinp.uinp_opts &= ~UINPO_DIRTY;
+
+	panel_set_content(p, "- Flyby Creation -\n"
+	    "File name: %s", buf_get(&uinp.uinp_buf));
 }
 
 void
