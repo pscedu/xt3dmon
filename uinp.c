@@ -138,3 +138,18 @@ uinpcb_login(void)
 		}
 	}
 }
+
+void
+uinpcb_fbnew(void)
+{
+	char *buf;
+	
+	buf = buf_get(&uinp.uinp_buf);
+
+	/* Create a new flyby data file, and make it selected */
+	if (*buf != '\0') {
+//		system("touch ");
+		snprintf(flyby_name, sizeof(flyby_name), "%s", buf);
+	}
+}
+
