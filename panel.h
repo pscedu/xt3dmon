@@ -27,7 +27,9 @@
 #define PANEL_SSTAR	(1<<21)
 #define PANEL_WIADJ	(1<<22)
 #define PANEL_RT	(1<<23)
-#define NPANELS		24
+#define PANEL_FBCHO	(1<<24)
+#define PANEL_FBNEW	(1<<25)
+#define NPANELS		26
 
 struct glname;
 
@@ -128,6 +130,8 @@ void panel_refresh_pipe(struct panel *);
 void panel_refresh_sstar(struct panel *);
 void panel_refresh_wiadj(struct panel *);
 void panel_refresh_rt(struct panel *);
+void panel_refresh_fbcho(struct panel *p);
+void panel_refresh_fbnew(struct panel *p);
 
 extern struct panels	 panels;
 extern struct pinfo	 pinfo[];
