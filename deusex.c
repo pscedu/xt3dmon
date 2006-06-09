@@ -391,7 +391,7 @@ dxp_start(void)
 	st.st_rf |= RF_VMODE | RF_DMODE;
 	st.st_pipemode = PM_DIR;
 
-	b = OP_FRAMES | OP_TWEEN | OP_DISPLAY | OP_NODEANIM;
+	b = OP_FRAMES | OP_TWEEN | OP_DISPLAY | OP_NODEANIM | OP_CAPTION;
 	if (st.st_opts & OP_DEUSEX)
 		b |= OP_DEUSEX;
 	opt_disable(~b);
@@ -745,6 +745,22 @@ dxp_setcap(char *s)
 	return (1);
 }
 
+int
+dxp_cam_move_focus(void)
+{
+	int ret;
+
+	dxp_refocus();
+	tween_push(TWF_POS);
+	cam_move(DIR_FORW, 0.5);
+	tween_pop(TWF_POS);
+
+	ret = 0;
+	if (DST(&st.st_v, &focus) < 0.1)
+		ret = 1;
+	return (ret);
+}
+
 #define DA_NIL  0
 #define DA_STR  1
 #define DA_DBL  2
@@ -776,7 +792,7 @@ struct dxte {
 	DEN(dxp_selnode_rnd),
 	DEI(dxp_hlnc, HL_SELDM),
 	DEI(dxp_op, OP_SKEL),
-	DES(dxp_setcap, "Zoom while viewing nodes with temperature 34-37C"),
+	DES(dxp_setcap, "Zoom while viewing nodes in temperature range"),
 	DEN(dxp_sstall),
 	DEN(dxp_refocus),
 	DEN(dxp_camsync),
@@ -875,30 +891,42 @@ struct dxte {
 	DEN(dxp_wisnake),
 	DEN(dxp_sstall),
 	DEI(dxp_npanel, PANEL_WIADJ),
-	DEN(dxp_seljob),
-	DEI(dxp_vmode, VM_PHYS),
-	DEI(dxp_vmode, VM_WIONE),
-	DEN(dxp_clrsn),
-	DES(dxp_setcap, "Going back to physical mode"),
 	DEN(dxp_sstall),
-	DEN(dxp_bird),
-	DEI(dxp_vmode, VM_PHYS),
 	DEN(dxp_seljob),
-	DEI(dxp_vmode, VM_WIONE),
+	DES(dxp_setcap, "Viewing job between physical and wired modes"),
 	DEI(dxp_vmode, VM_PHYS),
+	DEN(dxp_nodesync),
+	DEN(dxp_stall),
+	DEI(dxp_vmode, VM_WIONE),
+	DEN(dxp_stall),
 	DEN(dxp_clrsn),
-	DEN(dxp_camsync),
+	DEI(dxp_hlnc, HL_ALL),
+	DES(dxp_setcap, "Going back to physical layout mode viewing jobs"),
+	DEN(dxp_sstall),
+	DEI(dxp_vmode, VM_PHYS),
+	DEN(dxp_nodesync),
 	DEN(dxp_sstall),
 	DEN(dxp_bird),
 	DEN(dxp_refocus),
 	DEN(dxp_camsync),
+	DEN(dxp_stall),
+	DES(dxp_setcap, "Cycle through all jobs"),
 	DEN(dxp_sstall),
 	DEI(dxp_op, OP_SKEL),
 	DEN(dxp_cyclenc),
 	DEI(dxp_nop, OP_SKEL),
+	DEN(dxp_sstall),
+	DES(dxp_setcap, "Flying through physical mode"),
 	DEI(dxp_op, OP_NLABELS),
+	DEN(dxp_refocus),
+	DEN(dxp_camsync),
+	DEN(dxp_cam_move_focus),
 	DEI(dxp_cuban8, DIM_Y),
 	DEI(dxp_nop, OP_NLABELS),
+	DEN(dxp_sstall),
+	DEN(dxp_bird),
+	DEN(dxp_camsync),
+	DEN(dxp_sstall),
 };
 
 #define NENTRIES(t) (sizeof((t)) / sizeof((t)[0]))

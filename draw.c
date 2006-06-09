@@ -38,7 +38,7 @@ int dl_cluster[2];
 int dl_ground[2];
 int dl_selnodes[2];
 
-void
+__inline void
 draw_compass(void)
 {
 	struct fvec fv, upadj, normv;
@@ -119,12 +119,16 @@ draw_compass(void)
 	glDisable(GL_BLEND);
 }
 
-void
+__inline void
 draw_caption(void)
 {
 	extern char *caption;
-	int cx, len, plen;
+	int cx, cy, len, plen;
 	const char *s;
+
+	s = caption;
+	if (s == NULL)
+		return;
 
 	/* Save state and set things up for 2D. */
 	glPushAttrib(GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
@@ -140,7 +144,6 @@ draw_caption(void)
 	gluOrtho2D(0.0, winv.iv_w, 0.0, winv.iv_h);
 	glColor4f(1.0f, 1.0f, 1.0f, 0.6f);
 
-	s = caption;
 	len = strlen(s);
 	plen = glutBitmapLength(GLUT_BITMAP_TIMES_ROMAN_24,
 	    (const unsigned char *)s);
@@ -149,8 +152,16 @@ draw_caption(void)
 
 	/* Draw the caption text, center on x */
 	cx = (winv.iv_w / 2) - (0.5 * plen);
-	glRasterPos2f(cx, 10);
+	cy = 10;
+	glRasterPos2f(cx, cy);
+	while (*s != '\0')
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *s++);
 
+	s = caption;
+	cx++;
+	cy--;
+	glColor4f(0.1f, 0.1f, 0.1f, 0.6f);
+	glRasterPos2f(cx, cy);
 	while (*s != '\0')
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *s++);
 
