@@ -597,7 +597,6 @@ panel_refresh_fbcho(struct panel *p)
 			    strcmp(dent->d_name, "..") == 0)
 				continue;
 
-#if 0
 			snprintf(path, sizeof(path), "%s/%s",
 			    _PATH_FLYBYDIR, dent->d_name);
 			if (stat(path, &stb) == -1) {
@@ -606,7 +605,6 @@ panel_refresh_fbcho(struct panel *p)
 			}
 			if (!S_ISREG(stb.st_mode))
 				continue;
-#endif
 
 			fe = obj_get(dent->d_name, &flyby_list);
 			snprintf(fe->fe_name, sizeof(fe->fe_name),
