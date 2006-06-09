@@ -16,9 +16,9 @@
 #define NDM		10
 
 /* View mode. */
-#define VM_PHYSICAL	0
+#define VM_PHYS		0
 #define VM_WIRED	1
-#define VM_WIREDONE	2
+#define VM_WIONE	2
 #define NVM		3
 
 struct state {
@@ -110,7 +110,8 @@ struct state {
 #define OP_REEL		(1<<17)
 #define OP_CABSKELS	(1<<18)
 #define OP_DEUSEX	(1<<19)
-#define NOPS		20
+#define OP_CAPTION	(1<<20)
+#define NOPS		21
 
 struct xoption {
 	const char	*opt_name;

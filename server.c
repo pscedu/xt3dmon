@@ -522,9 +522,9 @@ int
 svc_vmode(char *t, int *used, __unused struct session *ss)
 {
 	struct svc_enum *sve, tab[] = {
-		{ "wiredone",	VM_WIREDONE },
+		{ "wiredone",	VM_WIONE },
 		{ "wired",	VM_WIRED },
-		{ "physical",	VM_PHYSICAL },
+		{ "physical",	VM_PHYS },
 		{ NULL,		0 }
 	};
 

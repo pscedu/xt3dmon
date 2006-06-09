@@ -119,6 +119,49 @@ draw_compass(void)
 	glDisable(GL_BLEND);
 }
 
+void
+draw_caption(void)
+{
+	extern char *caption;
+	int cx, len, plen;
+	const char *s;
+
+	/* Save state and set things up for 2D. */
+	glPushAttrib(GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
+
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	gluOrtho2D(0.0, winv.iv_w, 0.0, winv.iv_h);
+	glColor4f(1.0f, 1.0f, 1.0f, 0.6f);
+
+	s = caption;
+	len = strlen(s);
+	plen = glutBitmapLength(GLUT_BITMAP_TIMES_ROMAN_24,
+	    (const unsigned char *)s);
+
+	/* XXX - Draw the caption box with transparency */
+
+	/* Draw the caption text, center on x */
+	cx = (winv.iv_w / 2) - (0.5 * plen);
+	glRasterPos2f(cx, 10);
+
+	while (*s != '\0')
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *s++);
+
+	/* End 2D mode. */
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+
+	glPopAttrib();
+}
+
 __inline void
 draw_scene(void)
 {
@@ -149,13 +192,8 @@ draw_scene(void)
 		mark_draw();
 	if (!SLIST_EMPTY(&lnsegs))
 		lnseg_draw();
-
-{
-extern char *caption;
-	if (caption != NULL)
-		dx_caption(10, caption);
-}
-
+	if (st.st_opts & OP_CAPTION)
+		draw_caption();
 // draw_compass();
 // job_drawlabels();
 }
@@ -381,12 +419,12 @@ draw_ground(void)
 
 	/* Ground */
 	switch (st.st_vmode) {
-	case VM_WIREDONE:
+	case VM_WIONE:
 		fv.fv_x = st.st_winsp.iv_x * (st.st_wioff.iv_x - 1);
 		fv.fv_y = -0.2f + st.st_wioff.iv_y * st.st_winsp.iv_y;
 		fv.fv_z = st.st_winsp.iv_z * (st.st_wioff.iv_z - 1);
 
-		ndim = &vmodes[VM_WIREDONE].vm_ndim[GEOM_CUBE];
+		ndim = &vmodes[VM_WIONE].vm_ndim[GEOM_CUBE];
 		fdim.fv_w = (widim.iv_w + 1) * st.st_winsp.iv_w + ndim->fv_w;
 		fdim.fv_y = -0.2f / 2.0f;
 		fdim.fv_d = (widim.iv_d + 1) * st.st_winsp.iv_d + ndim->fv_d;
@@ -396,7 +434,7 @@ draw_ground(void)
 		draw_cube(&fdim, &fill_ground, DF_FRAME);
 		glPopMatrix();
 		break;
-	case VM_PHYSICAL:
+	case VM_PHYS:
 		fv.fv_x = -5.0f;
 		fv.fv_y = -0.2f;
 		fv.fv_z = -5.0f;
@@ -458,7 +496,7 @@ draw_skel(void)
 	struct physdim *pd;
 
 	switch (st.st_vmode) {
-	case VM_PHYSICAL:
+	case VM_PHYS:
 		for (pd = physdim_top; pd != NULL; pd = pd->pd_contains)
 			if (pd->pd_flags & PDF_SKEL) {
 				vec_set(&fv, NODESPACE, NODESPACE, NODESPACE);
@@ -466,7 +504,7 @@ draw_skel(void)
 			}
 		break;
 	case VM_WIRED:
-	case VM_WIREDONE:
+	case VM_WIONE:
 		cldim.fv_w = (widim.iv_w - 1) * st.st_winsp.iv_x;
 		cldim.fv_h = (widim.iv_h - 1) * st.st_winsp.iv_y;
 		cldim.fv_d = (widim.iv_d - 1) * st.st_winsp.iv_z;
@@ -677,11 +715,11 @@ draw_cluster(void)
 	case VM_WIRED:
 		ndf |= NDF_ATORIGIN;
 		/* FALLTHROUGH */
-	case VM_WIREDONE:
+	case VM_WIONE:
 		if (st.st_opts & OP_PIPES)
 			draw_cluster_pipes(&fv_zero);
 		/* FALLTHROUGH */
-	case VM_PHYSICAL:
+	case VM_PHYS:
 		NODE_FOREACH(n, &iv)
 			if (n && node_show(n)) {
 				if (ndf & NDF_ATORIGIN) {
@@ -725,7 +763,7 @@ draw_selnodes(void)
 		draw_node(n, NDF_ATORIGIN);
 		glPopMatrix();
 
-		if (st.st_vmode != VM_PHYSICAL &&
+		if (st.st_vmode != VM_PHYS &&
 		    st.st_opts & OP_SELPIPES &&
 		    (st.st_opts & OP_PIPES) == 0)
 			draw_node_pipes(n);

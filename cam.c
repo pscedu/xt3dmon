@@ -39,7 +39,7 @@ cam_move(int dir, float amt)
 		st.st_y += fv.fv_y * amt;
 		st.st_z += fv.fv_z * amt;
 		break;
-	case DIR_FORWARD:
+	case DIR_FORW:
 	case DIR_BACK:
 		st.st_x += st.st_lx * amt;
 		st.st_y += st.st_ly * amt;
@@ -270,7 +270,7 @@ void
 cam_bird(void)
 {
 	switch (st.st_vmode) {
-	case VM_PHYSICAL:
+	case VM_PHYS:
 //		vec_set(&st.st_v, -14.00, 33.30, 65.00);
 //		vec_set(&st.st_lv,  0.63, -0.31, -0.71);
 //		vec_set(&st.st_uv,  0.00,  1.00,  0.00);
@@ -281,7 +281,7 @@ vec_set(&st.st_uv,.25,.94,-.22);
 
 		break;
 	case VM_WIRED:
-	case VM_WIREDONE:
+	case VM_WIONE:
 //		vec_set(&st.st_v, -74.00, 100.00, 122.50);
 //		vec_set(&st.st_lv,  0.64,  -0.50,  -0.60);
 //		vec_set(&st.st_uv,  0.36,   0.87,  -0.34);

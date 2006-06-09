@@ -27,7 +27,7 @@ egg_borg(void)
 		/* Save current state. */
 		ost = st;
 
-		st.st_vmode = VM_WIREDONE;
+		st.st_vmode = VM_WIONE;
 		st.st_dmode = DM_BORG;
 		opt_enable(OP_TEX);
 		opt_disable(OP_GROUND);
@@ -59,7 +59,7 @@ egg_matrix(void)
 	if (st.st_eggs & EGG_MATRIX) {
 		ost = st;
 
-		st.st_vmode = VM_PHYSICAL;
+		st.st_vmode = VM_PHYS;
 		st.st_dmode = DM_MATRIX;
 		opt_enable(OP_NLABELS);
 		opt_disable(OP_GROUND | OP_FRAMES);

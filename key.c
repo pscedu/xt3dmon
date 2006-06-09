@@ -237,13 +237,13 @@ gl_keyh_vmode(unsigned char key, __unused int u, __unused int v)
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'o':
-		st.st_vmode = VM_WIREDONE;
+		st.st_vmode = VM_WIONE;
 		break;
 	case 'w':
 		st.st_vmode = VM_WIRED;
 		break;
 	case 'p':
-		st.st_vmode = VM_PHYSICAL;
+		st.st_vmode = VM_PHYS;
 		break;
 	default:
 		return;
@@ -373,7 +373,7 @@ gl_spkeyh_node(int key, __unused int u, __unused int v)
 		dir = DIR_DOWN;
 		break;
 	case GLUT_KEY_UP:
-		dir = DIR_FORWARD;
+		dir = DIR_FORW;
 		break;
 	case GLUT_KEY_DOWN:
 		dir = DIR_BACK;
@@ -684,10 +684,10 @@ gl_spkeyh_default(int key, __unused int u, __unused int v)
 	case GLUT_KEY_RIGHT:
 		dir = DIR_RIGHT;
 		break;
-	case GLUT_KEY_UP:			/* Forward */
-		dir = DIR_FORWARD;
+	case GLUT_KEY_UP:
+		dir = DIR_FORW;
 		break;
-	case GLUT_KEY_DOWN:			/* Backward */
+	case GLUT_KEY_DOWN:
 		dir = DIR_BACK;
 		break;
 	case GLUT_KEY_PAGE_UP:
@@ -702,7 +702,7 @@ gl_spkeyh_default(int key, __unused int u, __unused int v)
 
 	amt = 0.3f;
 	switch (st.st_vmode) {
-	case VM_PHYSICAL:
+	case VM_PHYS:
 		r = sqrt(SQUARE(st.st_x - XCENTER) + SQUARE(st.st_z - ZCENTER));
 		adj = pow(2, r / (ROWWIDTH / 2.0f));
 		if (adj > 50.0f)
@@ -710,7 +710,7 @@ gl_spkeyh_default(int key, __unused int u, __unused int v)
 		amt *= adj;
 		break;
 	case VM_WIRED:
-	case VM_WIREDONE:
+	case VM_WIONE:
 		amt *= pow(fabs(st.st_winsp.iv_x) * fabs(st.st_winsp.iv_y) *
 		    fabs(st.st_winsp.iv_z), 1/3.0);
 		break;

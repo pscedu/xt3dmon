@@ -15,7 +15,7 @@
 #define DIR_RIGHT	1
 #define DIR_UP		2
 #define DIR_DOWN	3
-#define DIR_FORWARD	4
+#define DIR_FORW	4
 #define DIR_BACK	5
 
 /* Dimensions. */

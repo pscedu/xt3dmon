@@ -84,7 +84,7 @@ focus_cluster(struct fvec *cen)
 	double dist;
 
 	switch (st.st_vmode) {
-	case VM_PHYSICAL:
+	case VM_PHYS:
 		cen->fv_x = XCENTER;
 		cen->fv_y = YCENTER;
 		cen->fv_z = ZCENTER;
@@ -95,7 +95,7 @@ focus_cluster(struct fvec *cen)
 		cen->fv_y = st.st_y + st.st_ly * dist;
 		cen->fv_z = st.st_z + st.st_lz * dist;
 		break;
-	case VM_WIREDONE:
+	case VM_WIONE:
 		cen->fv_x = st.st_winsp.iv_x * (widim.iv_w / 2.0f + st.st_wioff.iv_x);
 		cen->fv_y = st.st_winsp.iv_y * (widim.iv_h / 2.0f + st.st_wioff.iv_y);
 		cen->fv_z = st.st_winsp.iv_z * (widim.iv_d / 2.0f + st.st_wioff.iv_z);

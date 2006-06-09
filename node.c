@@ -117,7 +117,7 @@ node_neighbor(struct node *node, int amt, int dir)
 		adj *= -1;
 		break;
 	case DIR_BACK:
-		dir = DIR_FORWARD;
+		dir = DIR_FORW;
 		adj *= -1;
 		break;
 	}
@@ -126,7 +126,7 @@ node_neighbor(struct node *node, int amt, int dir)
 	iv = node->n_wiv;
 	for (rem = abs(amt); rem > 0; rem--) {
 		switch (st.st_vmode) {
-		case VM_PHYSICAL:
+		case VM_PHYS:
 			switch (dir) {
 			case DIR_RIGHT:
 				pc.pc_m += adj;
@@ -178,7 +178,7 @@ node_neighbor(struct node *node, int amt, int dir)
 				}
 				pc.pc_cg %= NCAGES;
 				break;
-			case DIR_FORWARD:
+			case DIR_FORW:
 				/*
 				 * Move our position within a blade.
 				 *
@@ -222,7 +222,7 @@ node_neighbor(struct node *node, int amt, int dir)
 			rn = &nodes[pc.pc_r][pc.pc_cb][pc.pc_cg][pc.pc_m][pc.pc_n];
 			break;
 		case VM_WIRED:
-		case VM_WIREDONE:
+		case VM_WIONE:
 			switch (dir) {
 			case DIR_RIGHT:
 				iv.iv_x += adj + widim.iv_w;
@@ -232,7 +232,7 @@ node_neighbor(struct node *node, int amt, int dir)
 				iv.iv_y += adj + widim.iv_h;
 				iv.iv_y %= widim.iv_h;
 				break;
-			case DIR_FORWARD:
+			case DIR_FORW:
 				iv.iv_z += adj + widim.iv_d;
 				iv.iv_z %= widim.iv_d;
 				break;
@@ -266,7 +266,7 @@ node_goto(struct node *n)
 	tween_push(TWF_LOOK | TWF_POS);
 	st.st_v = *n->n_v;
 	switch (st.st_vmode) {
-	case VM_PHYSICAL:
+	case VM_PHYS:
 		st.st_lx = 0.0f;
 		st.st_ly = 0.0f;
 
@@ -284,7 +284,7 @@ node_goto(struct node *n)
 		}
 		break;
 	case VM_WIRED:
-	case VM_WIREDONE:
+	case VM_WIONE:
 		/* Set to the front where the label is. */
 		st.st_x -= GOTO_DIST_LOG;
 		st.st_y += 0.5 * n->n_dimp->fv_h;

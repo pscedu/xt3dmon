@@ -454,7 +454,7 @@ gl_select(int flags)
 		goto end;
 
 	switch (st.st_vmode) {
-	case VM_PHYSICAL:
+	case VM_PHYS:
 		ret = phys_select(dl, flags);
 		break;
 	case VM_WIRED:
@@ -462,7 +462,7 @@ gl_select(int flags)
 			if ((ret = wi_select(dl, flags, &v)) != SP_MISS)
 				goto end;
 		break;
-	case VM_WIREDONE:
+	case VM_WIONE:
 		ret = wi_select(dl, flags, &fv_zero);
 		break;
 	}

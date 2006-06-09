@@ -64,6 +64,8 @@ const struct fvec	 fv_zero = { { 0.0, 0.0, 0.0 } };
 int			 rt_portset = RPS_POS;
 int			 rt_type = RT_RECOVER;
 
+const char		*caption;
+
 char **sav_argv;
 
 struct xoption opts[] = {
@@ -86,7 +88,8 @@ struct xoption opts[] = {
  /* 16 */ { "Auto flyby mode",		OPF_FBIGN },
  /* 17 */ { "Reel mode",		OPF_FBIGN },
  /* 18 */ { "Cabinet skeletons",	0 },
- /* 19 */ { "Deus Ex mode",		0 }
+ /* 19 */ { "Deus Ex mode",		0 },
+ /* 20 */ { "Captions",			OPF_FBIGN }
 };
 
 struct vmode vmodes[] = {
@@ -115,7 +118,7 @@ struct state st = {
 	OP_FRAMES | OP_TWEEN | OP_GROUND | \
 	    OP_DISPLAY | OP_NODEANIM,			/* options */
 	DM_JOB,						/* which data to show */
-	VM_PHYSICAL,					/* viewing mode */
+	VM_PHYS,					/* viewing mode */
 	PM_RT,						/* pipe mode */
 	SSCNT_NBLK,					/* seastar mode */
 	0,						/* seastar vc */
@@ -286,6 +289,12 @@ roundclass(double t, double min, double max, int nclasses)
 		t = max;
 
 	return ((t - min) / ((max - min) / nclasses + 1e-10));
+}
+
+void
+caption_set(const char *s)
+{
+	caption = s;
 }
 
 void
@@ -474,7 +483,7 @@ vmode_change(void)
 
 	NODE_FOREACH(n, &iv)
 		if (n)
-			n->n_v = (st.st_vmode == VM_PHYSICAL) ?
+			n->n_v = (st.st_vmode == VM_PHYS) ?
 			    &n->n_physv : &n->n_swiv;
 }
 
@@ -553,8 +562,8 @@ rebuild(int opts)
 	}
 	if (opts & RF_CAM) {
 		switch (st.st_vmode) {
-		case VM_PHYSICAL:
-		case VM_WIREDONE:
+		case VM_PHYS:
+		case VM_WIONE:
 			clip = vmodes[st.st_vmode].vm_clip;
 			break;
 		case VM_WIRED:
