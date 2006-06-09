@@ -23,8 +23,6 @@
 #include "state.h"
 #include "tween.h"
 
-char *caption;
-
 #define DST(a, b)					\
 	(sqrt(						\
 	    SQUARE((a)->fv_x - (b)->fv_x) +		\
@@ -51,7 +49,7 @@ dxi_orbit(void)
 }
 
 int
-dx_orbit(int dim, int sign)
+dxp_orbit(int dim, int sign)
 {
 	static double amt, adj;
 	static int t;
@@ -68,6 +66,7 @@ dx_orbit(int dim, int sign)
 	du = dv = 0.0;
 	switch (dim) {
 	case DIM_X:
+	case DIM_Z:
 		du = sign * adj;
 		break;
 	case DIM_Y:
@@ -95,36 +94,12 @@ dx_orbit(int dim, int sign)
 }
 
 int
-dx_orbit_u(void)
-{
-	return (dx_orbit(DIM_X, 1));
-}
-
-int
-dx_orbit_urev(void)
-{
-	return (dx_orbit(DIM_X, -1));
-}
-
-int
-dx_orbit_v(void)
-{
-	return (dx_orbit(DIM_Y, 1));
-}
-
-int
-dx_orbit_vrev(void)
-{
-	return (dx_orbit(DIM_Y, -1));
-}
-
-int
 dx_orbit3(int dim, int sign)
 {
 	static int n = 0;
 	int ret;
 
-	if (dx_orbit(dim, sign))
+	if (dxp_orbit(dim, sign))
 		n++;
 
 	ret = 0;
@@ -136,31 +111,7 @@ dx_orbit3(int dim, int sign)
 }
 
 int
-dx_orbit3_u(void)
-{
-	return (dx_orbit3(DIM_X, 1));
-}
-
-int
-dx_orbit3_urev(void)
-{
-	return (dx_orbit3(DIM_X, -1));
-}
-
-int
-dx_orbit3_v(void)
-{
-	return (dx_orbit3(DIM_Y, 1));
-}
-
-int
-dx_orbit3_vrev(void)
-{
-	return (dx_orbit3(DIM_Y, -1));
-}
-
-int
-dx_curlyq(void)
+dxp_curlyq(void)
 {
 	static double fwadj, adj, amt;
 	static int t;
@@ -191,7 +142,7 @@ dx_curlyq(void)
 	amt += fabs(adj);
 
 	tween_push(TWF_POS | TWF_LOOK | TWF_UP);
-	cam_move(DIR_FORWARD, fwadj);
+	cam_move(DIR_FORW, fwadj);
 	cam_revolvefocus(du, dv);
 	tween_pop(TWF_POS | TWF_LOOK | TWF_UP);
 
@@ -205,17 +156,13 @@ dx_curlyq(void)
 }
 
 int
-dx_cuban8(int dim)
+dxp_cuban8(int dim)
 {
 	static double t;
 	struct fvec sv, uv, lv, xv, axis;
 	double roll, a, b, max;
 	float mag;
 	int ret;
-
-mark_add(&st.st_v, &fill_white);
-
-	ret = 0;
 
 	switch (dim) {
 	case DIM_X:
@@ -329,6 +276,7 @@ mark_add(&st.st_v, &fill_white);
 
 //	dxp_refocus();
 
+	ret = 0;
 	t += 0.015;
 	if (t > 4 * M_PI) {
 		t = 0;
@@ -338,25 +286,7 @@ mark_add(&st.st_v, &fill_white);
 }
 
 int
-dx_cuban8_x(void)
-{
-	return (dx_cuban8(DIM_X));
-}
-
-int
-dx_cuban8_y(void)
-{
-	return (dx_cuban8(DIM_Y));
-}
-
-int
-dx_cuban8_z(void)
-{
-	return (dx_cuban8(DIM_Z));
-}
-
-int
-dx_corkscrew(int dim)
+dxp_corkscrew(int dim)
 {
 	static double t;
 	double a, b, c;
@@ -433,24 +363,6 @@ dx_corkscrew(int dim)
 }
 
 int
-dx_corkscrew_x(void)
-{
-	return (dx_corkscrew(DIM_X));
-}
-
-int
-dx_corkscrew_y(void)
-{
-	return (dx_corkscrew(DIM_Y));
-}
-
-int
-dx_corkscrew_z(void)
-{
-	return (dx_corkscrew(DIM_Z));
-}
-
-int
 dxp_bird(void)
 {
 	tween_push(TWF_LOOK | TWF_POS | TWF_UP);
@@ -474,9 +386,10 @@ dxp_start(void)
 	struct panel *p;
 	int b;
 
-	st.st_vmode = VM_PHYSICAL;
+	st.st_vmode = VM_PHYS;
 	st.st_dmode = DM_TEMP;
 	st.st_rf |= RF_VMODE | RF_DMODE;
+	st.st_pipemode = PM_DIR;
 
 	b = OP_FRAMES | OP_TWEEN | OP_DISPLAY | OP_NODEANIM;
 	if (st.st_opts & OP_DEUSEX)
@@ -496,7 +409,7 @@ dxp_start(void)
 }
 
 int
-dxp_selnode0(void)
+dxp_selnode_rnd(void)
 {
 	struct node *n;
 
@@ -510,30 +423,22 @@ dxp_selnode0(void)
 }
 
 int
-dxp_selnode2749(void)
+dxp_selnode(int nid)
 {
 	struct node *n;
 
-	n = node_for_nid(2749);
+	n = node_for_nid(nid);
 	if (n == NULL)
-		errx(1, "nid 2749 is NULL");
+		errx(1, "nid %d is NULL", nid);
 	sn_add(n, &fv_zero);
 	panel_show(PANEL_NINFO);
 	return (1);
 }
 
 int
-dxp_hlseldm(void)
+dxp_hlnc(int nc)
 {
-	st.st_hlnc = HL_SELDM;
-	st.st_rf |= RF_HLNC;
-	return (1);
-}
-
-int
-dxp_hlall(void)
-{
-	st.st_hlnc = HL_ALL;
+	st.st_hlnc = nc;
 	st.st_rf |= RF_HLNC;
 	return (1);
 }
@@ -542,7 +447,6 @@ int
 dxp_seljob(void)
 {
 	struct node *n;
-	struct ivec iv;
 
 	if (job_list.ol_cur > 0) {
 		do {
@@ -550,7 +454,7 @@ dxp_seljob(void)
 		} while (n == NULL || n->n_job == NULL);
 		sn_add(n, &fv_zero);
 		panel_show(PANEL_NINFO);
-		dxp_hlseldm();
+		dxp_hlnc(HL_SELDM);
 	}
 	return (1);
 }
@@ -571,59 +475,16 @@ dxp_end(void)
 }
 
 int
-dxp_op_skel(void)
+dxp_op(int opt)
 {
-	opt_enable(OP_SKEL);
+	opt_enable(opt);
 	return (1);
 }
 
 int
-dxp_nop_skel(void)
+dxp_nop(int opt)
 {
-	opt_disable(OP_SKEL);
-	return (1);
-}
-
-int
-dxp_op_nlabels(void)
-{
-	opt_enable(OP_NLABELS);
-	return (1);
-}
-
-int
-dxp_nop_nlabels(void)
-{
-	opt_disable(OP_NLABELS);
-	return (1);
-}
-
-int
-dxp_op_modskels(void)
-{
-	opt_enable(OP_MODSKELS);
-	return (1);
-}
-
-int
-dxp_nop_modskels(void)
-{
-	opt_disable(OP_MODSKELS);
-	return (1);
-}
-
-int
-dxp_op_pipes(void)
-{
-	st.st_pipemode = PM_DIR;
-	opt_enable(OP_PIPES);
-	return (1);
-}
-
-int
-dxp_nop_pipes(void)
-{
-	opt_disable(OP_PIPES);
+	opt_disable(opt);
 	return (1);
 }
 
@@ -650,62 +511,32 @@ dxp_wipuff(void)
 }
 
 int
-dxp_vm_phys(void)
+dxp_vmode(int vmode)
 {
-	st.st_vmode = VM_PHYSICAL;
+	st.st_vmode = vmode;
 	st.st_rf |= RF_VMODE;
 	return (1);
 }
 
 int
-dxp_vm_wione(void)
+dxp_dmode(int dmode)
 {
-	st.st_vmode = VM_WIREDONE;
-	st.st_rf |= RF_VMODE;
-	return (1);
-}
-
-int
-dxp_dm_job(void)
-{
-	st.st_dmode = DM_JOB;
+	st.st_dmode = dmode;
 	st.st_rf |= RF_DMODE;
 	return (1);
 }
 
 int
-dxp_dm_temp(void)
+dxp_panel(int panel)
 {
-	st.st_dmode = DM_TEMP;
-	st.st_rf |= RF_DMODE;
+	panel_show(panel);
 	return (1);
 }
 
 int
-dxp_panel_pipe(void)
+dxp_npanel(int panel)
 {
-	panel_show(PANEL_PIPE);
-	return (1);
-}
-
-int
-dxp_npanel_pipe(void)
-{
-	panel_hide(PANEL_PIPE);
-	return (1);
-}
-
-int
-dxp_panel_wiadj(void)
-{
-	panel_show(PANEL_WIADJ);
-	return (1);
-}
-
-int
-dxp_npanel_wiadj(void)
-{
-	panel_hide(PANEL_WIADJ);
+	panel_hide(panel);
 	return (1);
 }
 
@@ -781,7 +612,7 @@ dxp_wisnake(void)
 				 	if (dxp_sstall())
 						lvl++;
 				} else if (lvl < 3) {
-				 	if (dx_orbit_urev())
+				 	if (dxp_orbit(DIM_X, -1))
 						lvl++;
 				} else if (lvl < 4) {
 				 	if (dxp_camsync())
@@ -843,15 +674,9 @@ dx_cam_move(double max, int wait, int dir)
 }
 
 int
-dxp_cam_move_forw(void)
+dxp_cam_move(int dir)
 {
-	return (dx_cam_move(50.0, 3, DIR_FORWARD));
-}
-
-int
-dxp_cam_move_back(void)
-{
-	return (dx_cam_move(50.0, 3, DIR_BACK));
+	return (dx_cam_move(50.0, 3, dir));
 }
 
 int
@@ -913,330 +738,214 @@ dxp_cyclenc(void)
 	return (ret);
 }
 
-void
-dx_caption(int y, char *s)
-{
-	int len, plen, i;
-	int cx;
-
-	/* Save state and set things up for 2D. */
-	glPushAttrib(GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
-
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-
-	gluOrtho2D(0.0, winv.iv_w, 0.0, winv.iv_h);
-	glColor3f(1.0f, 1.0f, 1.0f);
-
-	len = strlen(s);
-	plen = glutBitmapLength(GLUT_BITMAP_TIMES_ROMAN_24, s);
-
-	/* XXX - Draw the Caption Box with Transparency */
-
-	/* Draw the Caption Text, center on x */
-	cx = (winv.iv_w / 2) - (0.5 * plen);
-	glRasterPos2f(cx, y);
-
-	while (*s != '\0')
-		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *s++);
-
-	/* End 2D mode. */
-	glPopMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-
-	glPopAttrib();
-}
-
 int
-dxp_setcap1(void)
+dxp_setcap(char *s)
 {
-	caption = "CPU temperatures in physical machine layout";
+	caption_set(s);
 	return (1);
 }
 
-int
-dxp_setcap2(void)
-{
-	caption = "Zoom while viewing nodes with temperature 34-37C";
-	return (1);
-}
+#define DA_NIL  0
+#define DA_STR  1
+#define DA_DBL  2
+#define DA_INT  3
+#define DA_INT2 4
 
-int
-dxp_setcap3(void)
-{
-	caption = "Cycle through all temperature ranges";
-	return (1);
-}
-
-int
-dxp_setcap4(void)
-{
-	caption = "Changing to \"wired\" mode";
-	return (1);
-}
-
-int
-dxp_setcap5(void)
-{
-	caption = "Jobs in wired mode (virtual interconnect)";
-	return (1);
-}
-
-int
-dxp_setcap6(void)
-{
-	caption = "Viewing one job in wired mode";
-	return (1);
-}
-
-int
-dxp_setcap7(void)
-{
-	caption = "Preparing to zoom inside the interconnect";
-	return (1);
-}
-
-int
-dxp_setcap8(void)
-{
-	caption = "Focus on one node";
-	return (1);
-}
-
-int
-dxp_setcap9(void)
-{
-	caption = "Change draw offset to show torus repetitions";
-	return (1);
-}
-
-int
-dxp_setcap10(void)
-{
-	caption = "Going back to physical mode";
-	return (1);
-}
+#define DEN(name)		{ (name), DA_NIL,  0.0,   0,     0,      NULL  }
+#define DES(name, str)		{ (name), DA_STR,  0.0,   0,     0,      (str) }
+#define DEB(name, dbl)		{ (name), DA_DBL,  (dbl), 0,     0,      NULL  }
+#define DEI(name, itg)		{ (name), DA_INT,  0.0,   (itg), 0,      NULL  }
+#define DEII(name, itg, itg2)	{ (name), DA_INT2, 0.0,   (itg), (itg2), NULL  }
 
 struct dxte {
-	void (*de_init)(void);
-	int  (*de_update)(void);
+	void	 *de_update;
+	int	  de_type;
+	double	  de_arg_dbl;
+	int	  de_arg_int;
+	int	  de_arg_int2;
+	char	 *de_arg_str;
 } dxtab[] = {
-	{ NULL, dxp_start },
-	{ NULL, dxp_refocus },
-
-	{ NULL, dxp_setcap1 },
-
-	{ NULL, dxp_camsync },
-	{ NULL, dxp_sstall },
-	{ NULL, dx_orbit_urev },
-	{ NULL, dxp_camsync },
-	{ NULL, dxp_sstall },
-
-	{ NULL, dxp_selnode0 },
-	{ NULL, dxp_hlseldm },
-	{ NULL, dxp_op_skel },
-
-	{ NULL, dxp_setcap2 },
-
-	{ NULL, dxp_sstall },
-	{ NULL, dxp_refocus },
-	{ NULL, dxp_camsync },
-	{ NULL, dxp_sstall },
-	{ NULL, dxp_cam_move_forw },
-	{ NULL, dxp_op_nlabels },
-
-	{ NULL, dxp_camsync },
-	{ NULL, dxp_sstall },
-	{ NULL, dx_orbit_u },
-	{ NULL, dxp_camsync },
-	{ NULL, dxp_sstall },
-
-	{ NULL, dxp_nop_nlabels },
-	{ NULL, dxp_clrsn },
-	{ NULL, dxp_cam_move_back },
-	{ NULL, dxp_bird },
-	{ NULL, dxp_hlall },
-
-	{ NULL, dxp_setcap3 },
-
-	{ NULL, dxp_camsync },
-	{ NULL, dxp_sstall },
-
-	{ NULL, dxp_cyclenc },
-
-	{ NULL, dxp_nop_skel },
-	{ NULL, dxp_sstall },
-
-	{ NULL, dxp_setcap4 },
-	{ NULL, dxp_sstall },
-
-	{ NULL, dxp_vm_wione },
-	{ NULL, dxp_nodesync },
-	{ NULL, dxp_bird },
-	{ NULL, dxp_camsync },
-	{ NULL, dxp_sstall },
-
-	{ NULL, dxp_dm_job },
-	{ NULL, dxp_setcap5 },
-	{ NULL, dxp_sstall },
-	{ NULL, dx_orbit_urev },
-	{ NULL, dxp_camsync },
-
-	{ NULL, dxp_seljob },
-/* XXX swap between phys & wi */
-/* XXX and do another, start in phys, goto wi, back to phys */
-	{ NULL, dxp_setcap6 },
-
-	{ NULL, dxp_sstall },
-	{ NULL, dxp_refocus },
-	{ NULL, dxp_camsync },
-	{ NULL, dxp_sstall },
-	{ NULL, dxp_op_skel },
-	{ NULL, dxp_op_nlabels },
-	{ NULL, dxp_sstall },
-	{ NULL, dxp_cam_move_forw },
-
-	{ NULL, dxp_camsync },
-	{ NULL, dxp_sstall },
-	{ NULL, dx_orbit_u },
-	{ NULL, dxp_camsync },
-	{ NULL, dxp_sstall },
-
-	{ NULL, dxp_cam_move_back },
-	{ NULL, dxp_camsync },
-	{ NULL, dxp_sstall },
-
-	{ NULL, dxp_nop_skel },
-	{ NULL, dxp_nop_nlabels },
-	{ NULL, dxp_hlall },
-	{ NULL, dxp_clrsn },
-
-	{ NULL, dxp_setcap7 },
-
-	{ NULL, dxp_sstall },
-	{ NULL, dxp_refocus },
-	{ NULL, dxp_camsync },
-	{ NULL, dxp_sstall },
-	{ NULL, dxp_panel_pipe },
-	{ NULL, dxp_op_pipes },
-	{ NULL, dxp_wipuff },
-	{ NULL, dxp_nodesync },
-	{ NULL, dxp_stall },
-
-	{ NULL, dxp_selnode2749 },
-	{ NULL, dxp_refocus },
-	{ NULL, dxp_camsync },
-	{ NULL, dxp_sstall },
-	{ NULL, dxp_cam_move_forw },
-	{ NULL, dxp_cam_move_forw },
-	{ NULL, dxp_op_nlabels },
-
-	{ NULL, dxp_setcap8 },
-
-	{ NULL, dxp_camsync },
-	{ NULL, dxp_sstall },
-	{ NULL, dx_orbit_u },
-	{ NULL, dxp_camsync },
-	{ NULL, dxp_sstall },
-
-	{ NULL, dxp_cam_move_back },
-	{ NULL, dxp_cam_move_back },
-
-	{ NULL, dxp_nop_nlabels },
-	{ NULL, dxp_clrsn },
-	{ NULL, dxp_camsync },
-	{ NULL, dxp_sstall },
-	{ NULL, dxp_bird },
-	{ NULL, dxp_camsync },
-	{ NULL, dxp_sstall },
-
-	{ NULL, dxp_setcap9 },
-
-	{ NULL, dxp_npanel_pipe },
-	{ NULL, dxp_nop_pipes },
-	{ NULL, dxp_widepuff },
-	{ NULL, dxp_nodesync },
-	{ NULL, dxp_sstall },
-
-	{ NULL, dxp_panel_wiadj },
-	{ NULL, dxp_sstall },
-	{ NULL, dxp_wisnake },
-	{ NULL, dxp_sstall },
-	{ NULL, dxp_npanel_wiadj },
-
-	{ NULL, dxp_setcap10 },
-
-	{ NULL, dxp_sstall },
-	{ NULL, dxp_bird },
-	{ NULL, dxp_vm_phys },
-
-	{ NULL, dxp_camsync },
-	{ NULL, dxp_sstall },
-	{ NULL, dxp_bird },
-	{ NULL, dxp_refocus },
-	{ NULL, dxp_camsync },
-	{ NULL, dxp_sstall },
-
-/* XXX cycle jobs */
-	{ NULL, dxp_op_skel },
-	{ NULL, dxp_cyclenc },
-	{ NULL, dxp_nop_skel },
-
-	{ NULL, dxp_op_nlabels },
-	{ NULL, dx_cuban8_y },
-	{ NULL, dxp_nop_nlabels },
-
-#if 0
-	{ dxi_orbit, dx_curlyq },
-	{ dxi_orbit, dx_orbit_u },
-	{ dxi_orbit, dx_orbit_urev },
-	{ dxi_orbit, dx_orbit_v },
-	{ dxi_orbit, dx_orbit_vrev },
-	{ NULL, dx_cuban8_y },
-	{ dxi_orbit, dx_orbit3_u },
-	{ dxi_orbit, dx_orbit3_urev },
-	{ dxi_orbit, dx_orbit3_v },
-	{ dxi_orbit, dx_orbit3_vrev },
-	{ NULL, dx_corkscrew_x }
-#endif
+	DEN(dxp_start),
+	DEN(dxp_refocus),
+	DES(dxp_setcap, "CPU temperatures in physical machine layout"),
+	DEN(dxp_camsync),
+	DEN(dxp_sstall),
+	DEII(dxp_orbit, DIM_X, -1),
+	DEN(dxp_camsync),
+	DEN(dxp_sstall),
+	DEN(dxp_selnode_rnd),
+	DEI(dxp_hlnc, HL_SELDM),
+	DEI(dxp_op, OP_SKEL),
+	DES(dxp_setcap, "Zoom while viewing nodes with temperature 34-37C"),
+	DEN(dxp_sstall),
+	DEN(dxp_refocus),
+	DEN(dxp_camsync),
+	DEN(dxp_sstall),
+	DEI(dxp_cam_move, DIR_FORW),
+	DEI(dxp_op, OP_NLABELS),
+	DEN(dxp_camsync),
+	DEN(dxp_sstall),
+	DEII(dxp_orbit, DIM_X, 1),
+	DEN(dxp_camsync),
+	DEN(dxp_sstall),
+	DEI(dxp_nop, OP_NLABELS),
+	DEN(dxp_clrsn),
+	DEI(dxp_cam_move, DIR_BACK),
+	DEN(dxp_bird),
+	DEI(dxp_hlnc, HL_ALL),
+	DES(dxp_setcap, "Cycle through all temperature ranges"),
+	DEN(dxp_camsync),
+	DEN(dxp_sstall),
+	DEN(dxp_cyclenc),
+	DEI(dxp_nop, OP_SKEL),
+	DEN(dxp_sstall),
+	DES(dxp_setcap, "Changing to \"wired\" mode"),
+	DEN(dxp_sstall),
+	DEI(dxp_vmode, VM_WIONE),
+	DEN(dxp_nodesync),
+	DEN(dxp_bird),
+	DEN(dxp_camsync),
+	DEN(dxp_sstall),
+	DEI(dxp_dmode, DM_JOB),
+	DES(dxp_setcap, "Jobs in wired mode (virtual interconnect)"),
+	DEN(dxp_sstall),
+	DEII(dxp_orbit, DIM_X, -1),
+	DEN(dxp_camsync),
+	DEN(dxp_seljob),
+	DES(dxp_setcap, "Viewing one job in wired mode"),
+	DEN(dxp_sstall),
+	DEN(dxp_refocus),
+	DEN(dxp_camsync),
+	DEN(dxp_sstall),
+	DEI(dxp_op, OP_SKEL),
+	DEI(dxp_op, OP_NLABELS),
+	DEN(dxp_sstall),
+	DEI(dxp_cam_move, DIR_FORW),
+	DEN(dxp_camsync),
+	DEN(dxp_sstall),
+	DEII(dxp_orbit, DIM_X, 1),
+	DEN(dxp_camsync),
+	DEN(dxp_sstall),
+	DEI(dxp_cam_move, DIR_BACK),
+	DEN(dxp_camsync),
+	DEN(dxp_sstall),
+	DEI(dxp_nop, OP_SKEL),
+	DEI(dxp_nop, OP_NLABELS),
+	DEI(dxp_hlnc, HL_ALL),
+	DEN(dxp_clrsn),
+	DES(dxp_setcap, "Preparing to zoom inside the interconnect"),
+	DEN(dxp_sstall),
+	DEN(dxp_refocus),
+	DEN(dxp_camsync),
+	DEN(dxp_sstall),
+//	DEI(dxp_panel, PANEL_PIPE),
+	DEI(dxp_op, OP_PIPES),
+	DEN(dxp_wipuff),
+	DEN(dxp_nodesync),
+	DEN(dxp_stall),
+	DEI(dxp_selnode, 2749),
+	DEN(dxp_refocus),
+	DEN(dxp_camsync),
+	DEN(dxp_sstall),
+	DEI(dxp_cam_move, DIR_FORW),
+	DEI(dxp_cam_move, DIR_FORW),
+	DEI(dxp_op, OP_NLABELS),
+	DES(dxp_setcap, "Focus on one node"),
+	DEN(dxp_camsync),
+	DEN(dxp_sstall),
+	DEII(dxp_orbit, DIM_X, 1),
+	DEN(dxp_camsync),
+	DEN(dxp_sstall),
+	DEI(dxp_cam_move, DIR_BACK),
+	DEI(dxp_nop, OP_NLABELS),
+	DEN(dxp_clrsn),
+	DEN(dxp_camsync),
+	DEN(dxp_sstall),
+	DEN(dxp_bird),
+	DEN(dxp_camsync),
+	DEN(dxp_sstall),
+	DES(dxp_setcap, "Change draw offset to show torus repetitions"),
+//	DEI(dxp_npanel, PANEL_PIPE),
+	DEI(dxp_nop, OP_PIPES),
+	DEN(dxp_widepuff),
+	DEN(dxp_nodesync),
+	DEN(dxp_sstall),
+	DEI(dxp_panel, PANEL_WIADJ),
+	DEN(dxp_sstall),
+	DEN(dxp_wisnake),
+	DEN(dxp_sstall),
+	DEI(dxp_npanel, PANEL_WIADJ),
+	DEN(dxp_seljob),
+	DEI(dxp_vmode, VM_PHYS),
+	DEI(dxp_vmode, VM_WIONE),
+	DEN(dxp_clrsn),
+	DES(dxp_setcap, "Going back to physical mode"),
+	DEN(dxp_sstall),
+	DEN(dxp_bird),
+	DEI(dxp_vmode, VM_PHYS),
+	DEN(dxp_seljob),
+	DEI(dxp_vmode, VM_WIONE),
+	DEI(dxp_vmode, VM_PHYS),
+	DEN(dxp_clrsn),
+	DEN(dxp_camsync),
+	DEN(dxp_sstall),
+	DEN(dxp_bird),
+	DEN(dxp_refocus),
+	DEN(dxp_camsync),
+	DEN(dxp_sstall),
+	DEI(dxp_op, OP_SKEL),
+	DEN(dxp_cyclenc),
+	DEI(dxp_nop, OP_SKEL),
+	DEI(dxp_op, OP_NLABELS),
+	DEI(dxp_cuban8, DIM_Y),
+	DEI(dxp_nop, OP_NLABELS),
 };
+
 #define NENTRIES(t) (sizeof((t)) / sizeof((t)[0]))
-
-#if 0
-void
-dx_update(void)
-{
-	static struct dxte *de;
-
-	if (de == NULL) {
-		de = &dxtab[random() % NENTRIES(dxtab)];
-		if (de->de_init != NULL)
-			de->de_init();
-	}
-
-	if (de->de_update())
-		de = NULL;
-}
-#endif
 
 void
 dx_update(void)
 {
 	static struct dxte *de;
 	static size_t i;
+	int (*fn)(void);
+	int (*fs)(char *);
+	int (*fd)(double);
+	int (*fi)(int);
+	int (*fi2)(int, int);
 
 	if (de == NULL) {
 		de = &dxtab[i];
 		if (++i >= NENTRIES(dxtab))
 			i = 0;
 	}
-	if ((st.st_opts & OP_STOP) == 0)
-		if (de->de_update())
+	if (st.st_opts & OP_STOP)
+		return;
+	switch (de->de_type) {
+	case DA_NIL:
+		fn = de->de_update;
+		if (fn())
 			de = NULL;
+		break;
+	case DA_STR:
+		fs = de->de_update;
+		if (fs(de->de_arg_str))
+			de = NULL;
+		break;
+	case DA_DBL:
+		fd = de->de_update;
+		if (fd(de->de_arg_dbl))
+			de = NULL;
+		break;
+	case DA_INT:
+		fi = de->de_update;
+		if (fi(de->de_arg_int))
+			de = NULL;
+		break;
+	case DA_INT2:
+		fi2 = de->de_update;
+		if (fi2(de->de_arg_int, de->de_arg_int2))
+			de = NULL;
+		break;
+	}
 }
