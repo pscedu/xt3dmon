@@ -22,6 +22,7 @@ void	 draw_scene(void);
 void	 draw_node(struct node *, int);
 void	 draw_panels(int);
 void	 draw_shadow_panels(void);
+void	 draw_compass(int, int, int, int);
 
 void	 make_ground(void);
 void	 make_cluster(void);

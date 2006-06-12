@@ -39,75 +39,84 @@ int dl_ground[2];
 int dl_selnodes[2];
 
 __inline void
-draw_compass(void)
+draw_compass(int u, int w, int v, int h)
 {
-	struct fvec fv, upadj, normv;
+	double cl, mvm[16], pvm[16], x, y, z;
+	struct fvec fv;
+	int vp[4];
 
-	cam_getspecvec(&fv, 150, winv.iv_h - 150);
-	fv.fv_x *= 2.0;
-	fv.fv_y *= 2.0;
-	fv.fv_z *= 2.0;
-	vec_addto(&st.st_v, &fv);
+	glGetIntegerv(GL_VIEWPORT, vp);
+	glGetDoublev(GL_MODELVIEW_MATRIX, mvm);
+	glGetDoublev(GL_PROJECTION_MATRIX, pvm);
 
-	vec_set(&normv, 0.0, 1.0, 0.0);
-	vec_sub(&upadj, &normv, &st.st_uv);
+	if (gluUnProject(u, v, 0, mvm, pvm, vp, &x, &y, &z) == GL_FALSE)
+		return;
+
+	/*
+	 * The unprojected point will be at depth z=0,
+	 * and if we try to draw there, half of the line
+	 * will not be visible, so scale it out.
+	 */
+	fv.fv_x = st.st_v.fv_x + 1.5 * (x - st.st_v.fv_x);
+	fv.fv_y = st.st_v.fv_y + 1.5 * (y - st.st_v.fv_y);
+	fv.fv_z = st.st_v.fv_z + 1.5 * (z - st.st_v.fv_z);
 
 	glPushMatrix();
-//	glTranslatef(upadj.fv_x, 0.0, upadj.fv_z);
 
 	gluQuadricDrawStyle(quadric, GLU_FILL);
 
 	/* Anti-aliasing */
+	glLineWidth(0.6);
 	glEnable(GL_BLEND);
 	glEnable(GL_POLYGON_SMOOTH);
 	glEnable(GL_LINE_SMOOTH);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
 
-#define CMP_LLEN (0.25)
-#define CMP_ATHK (0.0125)
-#define CMP_ALEN (0.025)
+	cl = 0.05;
+#define CMP_ATHK (0.005)
+#define CMP_ALEN (0.01)
 
 	glColor3f(0.0f, 1.0f, 0.0f);					/* z - green */
 	glPushMatrix();
-	glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z - CMP_LLEN / 2.0);
+	glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z - cl / 2.0);
 	glBegin(GL_LINES);
-	glVertex3f(0.0, 0.0, 0.0);
-	glVertex3f(0.0, 0.0, CMP_LLEN);
+	glVertex3d(0.0, 0.0, 0.0);
+	glVertex3d(0.0, 0.0, cl);
 	glEnd();
 	glPopMatrix();
 
 	glPushMatrix();
-	glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z + CMP_LLEN / 2.0);
+	glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z + cl / 2.0 - CMP_ALEN);
 	gluCylinder(quadric, CMP_ATHK, 0.0001, CMP_ALEN, 4, 1);
 	glPopMatrix();
 
 	glColor3f(1.0f, 0.0f, 0.0f);					/* y - red */
 	glPushMatrix();
-	glTranslatef(fv.fv_x, fv.fv_y - CMP_LLEN / 2.0, fv.fv_z);
+	glTranslatef(fv.fv_x, fv.fv_y - cl / 2.0, fv.fv_z);
 	glBegin(GL_LINES);
-	glVertex3f(0.0, 0.0, 0.0);
-	glVertex3f(0.0, CMP_LLEN, 0.0);
+	glVertex3d(0.0, 0.0, 0.0);
+	glVertex3d(0.0, cl, 0.0);
 	glEnd();
 	glPopMatrix();
 
 	glPushMatrix();
-	glTranslatef(fv.fv_x, fv.fv_y + CMP_LLEN / 2.0, fv.fv_z);
+	glTranslatef(fv.fv_x, fv.fv_y + cl / 2.0 - CMP_ALEN, fv.fv_z);
 	glRotatef(-90.0, 1.0, 0.0, 0.0);
 	gluCylinder(quadric, CMP_ATHK, 0.0001, CMP_ALEN, 4, 1);
 	glPopMatrix();
 
 	glColor3f(0.0f, 0.0f, 1.0f);					/* x - blue */
 	glPushMatrix();
-	glTranslatef(fv.fv_x - CMP_LLEN / 2.0, fv.fv_y, fv.fv_z);
+	glTranslatef(fv.fv_x - cl / 2.0, fv.fv_y, fv.fv_z);
 	glBegin(GL_LINES);
-	glVertex3f(0.0, 0.0, 0.0);
-	glVertex3f(CMP_LLEN, 0.0, 0.0);
+	glVertex3d(0.0, 0.0, 0.0);
+	glVertex3d(cl, 0.0, 0.0);
 	glEnd();
 	glPopMatrix();
 
 	glPushMatrix();
-	glTranslatef(fv.fv_x + CMP_LLEN / 2.0, fv.fv_y, fv.fv_z);
+	glTranslatef(fv.fv_x + cl / 2.0 - CMP_ALEN, fv.fv_y, fv.fv_z);
 	glRotatef(90.0, 0.0, 1.0, 0.0);
 	gluCylinder(quadric, CMP_ATHK, 0.0001, CMP_ALEN, 4, 1);
 	glPopMatrix();
@@ -205,7 +214,6 @@ draw_scene(void)
 		lnseg_draw();
 	if (st.st_opts & OP_CAPTION)
 		draw_caption();
- draw_compass();
 // job_drawlabels();
 }
 
@@ -417,9 +425,11 @@ draw_ground(void)
 	glColor3f(0.0f, 0.0f, 1.0f);			/* blue */
 	glVertex3f(-500.0f, 0.0f, 0.0f);		/* x-axis */
 	glVertex3f(500.0f, 0.0f, 0.0f);
+
 	glColor3f(1.0f, 0.0f, 0.0f);			/* red */
 	glVertex3f(0.0f, -500.0f, 0.0f);		/* y-axis */
 	glVertex3f(0.0f, 500.0f, 0.0f);
+
 	glColor3f(0.0f, 1.0f, 0.0f);			/* green */
 	glVertex3f(0.0f, 0.0f, -500.0f);		/* z-axis */
 	glVertex3f(0.0f, 0.0f, 500.0f);

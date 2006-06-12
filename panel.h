@@ -29,7 +29,8 @@
 #define PANEL_RT	(1<<23)
 #define PANEL_FBCHO	(1<<24)
 #define PANEL_FBNEW	(1<<25)
-#define NPANELS		26
+#define PANEL_CMP	(1<<26)
+#define NPANELS		27
 
 struct glname;
 
@@ -65,6 +66,7 @@ struct panel {
 	struct pwidget		**p_nextwidget;
 	int			  p_nwidgets;
 	size_t			  p_maxwlen;
+	void			(*p_extdrawf)(struct panel *);
 };
 
 #define POPT_REMOVE	(1<<0)			/* being removed */
@@ -104,6 +106,7 @@ void		 panel_show(int);
 void		 panel_hide(int);
 struct panel	*panel_for_id(int);
 void		 panel_demobilize(struct panel *);
+void		 panel_draw_compass(struct panel *);
 void		 panels_flip(int);
 
 void panel_refresh_fps(struct panel *);
@@ -132,6 +135,7 @@ void panel_refresh_wiadj(struct panel *);
 void panel_refresh_rt(struct panel *);
 void panel_refresh_fbcho(struct panel *);
 void panel_refresh_fbnew(struct panel *);
+void panel_refresh_cmp(struct panel *);
 
 extern struct panels	 panels;
 extern struct pinfo	 pinfo[];

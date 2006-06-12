@@ -88,7 +88,8 @@ struct pinfo pinfo[] = {
  /* 22 */ { "Wired Controls",	panel_refresh_wiadj,	PSTICK_TR, 0,					0,		NULL },
  /* 23 */ { "Route Controls",	panel_refresh_rt,	PSTICK_TR, 0,					0,		NULL },
  /* 24 */ { "Flyby Chooser",	panel_refresh_fbcho,	PSTICK_TR, PF_FBIGN,				0,		NULL },
- /* 25 */ { "Flyby Creation",	panel_refresh_fbnew,	PSTICK_TR, PF_FBIGN | PF_UINP,			0,		uinpcb_fbnew }
+ /* 25 */ { "Flyby Creation",	panel_refresh_fbnew,	PSTICK_TR, PF_FBIGN | PF_UINP,			0,		uinpcb_fbnew },
+ /* 26 */ { "Compass",		panel_refresh_cmp,	PSTICK_BL, PF_FBIGN,				0,		NULL }
 };
 
 #define PVOFF_TL 0
@@ -428,6 +429,9 @@ draw_panel(struct panel *p, int toff)
 	glPopMatrix();
 
 	glPopAttrib();
+
+	if (p->p_extdrawf)
+		p->p_extdrawf(p);
 }
 
 __inline void
@@ -712,7 +716,6 @@ panel_toggle(int panel)
 	memset(p, 0, sizeof(*p));
 
 	p->p_info = &pinfo[baseconv(panel) - 1];
-	p->p_str = NULL;
 	p->p_refresh = p->p_info->pi_refresh;
 	p->p_id = panel;
 	p->p_fill.f_r = 1.0f;
@@ -817,4 +820,18 @@ init_panels(int start)
 		else
 			cur |= p->p_id;
 	panels_flip(cur ^ start);
+}
+
+void
+panel_draw_compass(struct panel *p)
+{
+	int voff;
+
+	/* Special case: remove space for panel title. */
+	voff = -7;
+	if (p->p_h - abs(voff) <= 0)
+		return;
+	draw_compass(
+	    p->p_u + p->p_w / 2, p->p_w,
+	    p->p_v - p->p_h / 2 + voff, p->p_h - abs(voff));
 }

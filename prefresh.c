@@ -880,11 +880,16 @@ panel_refresh_help(struct panel *p)
 	panel_set_content(p, "");
 	pwidget_startlist(p);
 	if (exthelp) {
-		pwidget_add(p, &fill_xparent, "Hide Help >>", gscb_pw_help, HF_HIDEHELP);
-		pwidget_add(p, &fill_xparent, "Panels", gscb_pw_panel, baseconv(PANEL_PANELS) - 1);
-		pwidget_add(p, &fill_xparent, "Options", gscb_pw_panel, baseconv(PANEL_OPTS) - 1);
-		pwidget_add(p, &fill_xparent, "Clear Selnodes", gscb_pw_help, HF_CLRSN);
-		pwidget_add(p, &fill_xparent, "Update Data", gscb_pw_help, HF_UPDATE);
+		pwidget_add(p, &fill_xparent, "Hide Help >>",
+		    gscb_pw_help, HF_HIDEHELP);
+		pwidget_add(p, &fill_xparent, "Panels",
+		    gscb_pw_panel, baseconv(PANEL_PANELS) - 1);
+		pwidget_add(p, &fill_xparent, "Options",
+		    gscb_pw_panel, baseconv(PANEL_OPTS) - 1);
+		pwidget_add(p, &fill_xparent, "Clear Selnodes",
+		    gscb_pw_help, HF_CLRSN);
+		pwidget_add(p, &fill_xparent, "Update Data",
+		    gscb_pw_help, HF_UPDATE);
 	} else {
 		pwidget_add(p, &fill_xparent, "Help <<",
 		    gscb_pw_help, HF_SHOWHELP);
@@ -1135,4 +1140,19 @@ panel_refresh_rt(struct panel *p)
 	pwidget_add(p, (st.st_rtetype == RT_ROUTER ? &fill_white :
 	    &fill_nodata), "Router", gscb_pw_rt, SRF_ROUTER);
 	pwidget_endlist(p);
+}
+
+void
+panel_refresh_cmp(struct panel *p)
+{
+	if ((st.st_rf & RF_CAM) == 0 && panel_ready(p))
+		return;
+
+	panel_set_content(p,
+	 "- Compass -\n"
+	 "          \n"
+	 "          \n"
+	 "          \n"
+	 "          ");
+	p->p_extdrawf = panel_draw_compass;
 }
