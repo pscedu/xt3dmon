@@ -205,7 +205,7 @@ draw_scene(void)
 		lnseg_draw();
 	if (st.st_opts & OP_CAPTION)
 		draw_caption();
-// draw_compass();
+ draw_compass();
 // job_drawlabels();
 }
 
@@ -414,13 +414,13 @@ draw_ground(void)
 
 	glLineWidth(1.0);
 	glBegin(GL_LINES);
-	glColor3f(1.0f, 1.0f, 1.0f);
+	glColor3f(0.0f, 0.0f, 1.0f);			/* blue */
 	glVertex3f(-500.0f, 0.0f, 0.0f);		/* x-axis */
 	glVertex3f(500.0f, 0.0f, 0.0f);
-	glColor3f(0.6f, 0.6f, 1.0f);
+	glColor3f(1.0f, 0.0f, 0.0f);			/* red */
 	glVertex3f(0.0f, -500.0f, 0.0f);		/* y-axis */
 	glVertex3f(0.0f, 500.0f, 0.0f);
-	glColor3f(1.0f, 0.9f, 0.0f);
+	glColor3f(0.0f, 1.0f, 0.0f);			/* green */
 	glVertex3f(0.0f, 0.0f, -500.0f);		/* z-axis */
 	glVertex3f(0.0f, 0.0f, 500.0f);
 	glEnd();
