@@ -696,6 +696,9 @@ dxp_cyclenc(void)
 		switch (st.st_dmode) {
 		case DM_JOB:
 			nnc = job_list.ol_cur;
+			for (j = 0; j < NSC; j++)
+				if (statusclass[j].nc_nmemb)
+					nnc++;
 			break;
 		case DM_TEMP:
 			for (j = 0; j < NTEMPC; j++)
@@ -715,7 +718,18 @@ dxp_cyclenc(void)
 		ncp = t * nnc / max;
 		switch (st.st_dmode) {
 		case DM_JOB:
-			st.st_hlnc = ncp;
+			for (j = st.st_hlnc + 1; j < NSC; j++)
+				if (statusclass[j].nc_nmemb) {
+					st.st_hlnc = j;
+					break;
+				}
+			if (j >= NSC) {
+				st.st_hlnc = 0;
+				for (j = 0; j < NSC; j++)
+					if (statusclass[j].nc_nmemb == 0)
+						st.st_hlnc++;
+				st.st_hlnc += ncp;
+			}
 			break;
 		case DM_TEMP:
 			for (j = st.st_hlnc + 1; j < NTEMPC; j++)
@@ -806,6 +820,7 @@ struct dxte {
 	DEN(dxp_sstall),
 	DEI(dxp_nop, OP_NLABELS),
 	DEN(dxp_clrsn),
+	DEN(dxp_sstall),
 	DEI(dxp_cam_move, DIR_BACK),
 	DEN(dxp_bird),
 	DEI(dxp_hlnc, HL_ALL),
@@ -827,6 +842,7 @@ struct dxte {
 	DEN(dxp_sstall),
 	DEII(dxp_orbit, DIM_X, -1),
 	DEN(dxp_camsync),
+	DEN(dxp_sstall),
 	DEN(dxp_seljob),
 	DES(dxp_setcap, "Viewing one job in wired mode"),
 	DEN(dxp_sstall),
@@ -858,11 +874,11 @@ struct dxte {
 	DEI(dxp_op, OP_PIPES),
 	DEN(dxp_wipuff),
 	DEN(dxp_nodesync),
-	DEN(dxp_stall),
+	DEN(dxp_sstall),
 	DEI(dxp_selnode, 2749),
 	DEN(dxp_refocus),
 	DEN(dxp_camsync),
-	DEN(dxp_sstall),
+	DEN(dxp_stall),
 	DEI(dxp_cam_move, DIR_FORW),
 	DEI(dxp_cam_move, DIR_FORW),
 	DEI(dxp_op, OP_NLABELS),
@@ -882,24 +898,27 @@ struct dxte {
 	DEN(dxp_sstall),
 	DES(dxp_setcap, "Change draw offset to show torus repetitions"),
 //	DEI(dxp_npanel, PANEL_PIPE),
-	DEI(dxp_nop, OP_PIPES),
 	DEN(dxp_widepuff),
 	DEN(dxp_nodesync),
 	DEN(dxp_sstall),
 	DEI(dxp_panel, PANEL_WIADJ),
 	DEN(dxp_sstall),
 	DEN(dxp_wisnake),
+	DEI(dxp_nop, OP_PIPES),
 	DEN(dxp_sstall),
 	DEI(dxp_npanel, PANEL_WIADJ),
 	DEN(dxp_sstall),
 	DEN(dxp_seljob),
+	DEI(dxp_op, OP_SKEL),
 	DES(dxp_setcap, "Viewing job between physical and wired modes"),
+	DEN(dxp_stall),
 	DEI(dxp_vmode, VM_PHYS),
 	DEN(dxp_nodesync),
 	DEN(dxp_stall),
 	DEI(dxp_vmode, VM_WIONE),
 	DEN(dxp_stall),
 	DEN(dxp_clrsn),
+	DEI(dxp_nop, OP_SKEL),
 	DEI(dxp_hlnc, HL_ALL),
 	DES(dxp_setcap, "Going back to physical layout mode viewing jobs"),
 	DEN(dxp_sstall),
@@ -907,7 +926,6 @@ struct dxte {
 	DEN(dxp_nodesync),
 	DEN(dxp_sstall),
 	DEN(dxp_bird),
-	DEN(dxp_refocus),
 	DEN(dxp_camsync),
 	DEN(dxp_stall),
 	DES(dxp_setcap, "Cycle through all jobs"),
@@ -920,9 +938,13 @@ struct dxte {
 	DEI(dxp_op, OP_NLABELS),
 	DEN(dxp_refocus),
 	DEN(dxp_camsync),
+	DEN(dxp_sstall),
 	DEN(dxp_cam_move_focus),
+	DEN(dxp_camsync),
+	DEN(dxp_sstall),
 	DEI(dxp_cuban8, DIM_Y),
 	DEI(dxp_nop, OP_NLABELS),
+	DEN(dxp_camsync),
 	DEN(dxp_sstall),
 	DEN(dxp_bird),
 	DEN(dxp_camsync),
