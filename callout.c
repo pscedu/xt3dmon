@@ -46,6 +46,7 @@ cocb_tourjob(__unused int a)
 	glutTimerFunc(15000, cocb_tourjob, 0);
 }
 
+/* Reset auto-flyby timeout. */
 void
 cocb_autoto(__unused int a)
 {

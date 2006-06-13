@@ -15,12 +15,18 @@
 #include "state.h"
 #include "tween.h"
 
-#define FPS_TO_USEC(x)	(1e6 / x)	/* Convert FPS to microseconds. */
+#define FPS_TO_USEC(x)	(1e6 / (x))	/* Convert FPS to microseconds. */
 #define GOVERN_FPS	30		/* FPS to govern at. */
 
 long	 fps = 50;	/* Last FPS sample. */
 long	 fps_cnt = 0;	/* Current FPS counter. */
 
+/*
+ * Run a function in both GL stereo environments.
+ * Anything which messes with the GL environment on
+ * a per-window basis (as opposed to per-application)
+ * should use this.
+ */
 __inline void
 gl_run(void (*f)(void))
 {
@@ -36,10 +42,15 @@ gl_run(void (*f)(void))
 		(*f)();
 }
 
+/* Handle GL window resize events. */
 void
 gl_reshapeh(int w, int h)
 {
 	struct panel *p;
+
+	/* Handle divide-by-zero when calculating aspect ratio. */
+	if (h == 0)
+		h++;
 
 	winv.iv_w = w;
 	winv.iv_h = h;
@@ -76,6 +87,7 @@ gl_idleh_default(void)
 	gl_run(glutPostRedisplay);
 }
 
+/* Per-application setup routine. */
 void
 gl_setup_core(void)
 {
@@ -83,6 +95,7 @@ gl_setup_core(void)
 	glutTimerFunc(1, cocb_clearstatus, 0); /* XXX: enable/disable when PANEL_STATUS? */
 }
 
+/* Per-window setup routine. */
 void
 gl_setup(void)
 {
@@ -143,6 +156,11 @@ gl_wid_update(void)
 		}
 }
 
+/*
+ * Check if wireps need rebuilt, which should happen
+ * when the camera moves from away from the center of
+ * the current repetitions.
+ */
 __inline void
 wired_update(void)
 {

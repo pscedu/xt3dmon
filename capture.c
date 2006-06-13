@@ -45,6 +45,7 @@ ppm_write(FILE *fp, unsigned char *buf, long w, long h)
 	fwrite(buf, 3 * w * h, 1, fp);
 }
 
+/* Write all buffered frames to disk. */
 void
 capture_writeback(int mode)
 {
@@ -102,6 +103,7 @@ capture_end(void)
 		free(fbuf[i]);
 }
 
+/* Copy frame buffer to another buffer. */
 void
 capture_copyfb(int mode, unsigned char *buf)
 {

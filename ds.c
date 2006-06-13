@@ -1,5 +1,17 @@
 /* $Id$ */
 
+/*
+ * Data source routines.
+ *
+ * Performs all file handling and such for retrieving data,
+ * from various data sources (such as client sessions when
+ * running in server mode).  Provides the convenient
+ * ds_update() function.
+ *
+ * For server mode, routines are also provided for cloning
+ * data sets (dsc_*).
+ */
+
 #include "mon.h"
 
 #include <sys/stat.h>
@@ -49,6 +61,11 @@ struct datasrc datasrcs[] = {
 int	 dsp = DSP_LOCAL;
 int	 dsflags = DSFF_ALERT;
 
+/*
+ * Since parse_node uses obj_get() for creating/finding
+ * jobs and yods, we protect the job and yod lists when
+ * starting and finalizing node data source fetches.
+ */
 void
 dsfi_node(__unused const struct datasrc *ds)
 {
@@ -79,6 +96,7 @@ ds_read(struct datasrc *ds)
 		ds->ds_finif(ds);
 }
 
+/* Change data source provider (e.g., local to remote). */
 void
 ds_chdsp(int type, int dsp)
 {
@@ -104,7 +122,8 @@ ds_refresh(int type, int flags)
 		if (flags & DSFF_CRIT)
 			err(1, "datasrc (%d) open failed", type);
 		else if (flags & DSFF_ALERT) {
-			status_add("Unable to retrieve data: %s\n", strerror(errno));
+			status_add("Unable to retrieve data: %s\n",
+			    strerror(errno));
 			panel_show(PANEL_STATUS);
 		} else if ((flags & DSFF_IGN) == 0)
 			warn("datasrc (%d) open failed", type);
@@ -116,7 +135,10 @@ ds_refresh(int type, int flags)
 	case DSP_LOCAL:
 		if (fstat(ds->ds_us->us_fd, &st) == -1)
 			err(1, "fstat %s", ds->ds_lpath);
-		/* XXX: no way to tell if it was modified with <1 second resolution. */
+		/*
+		 * XXX: no way to tell if it was modified
+		 *	with <1 second resolution.
+		 */
 		if (st.st_mtime <= ds->ds_mtime &&
 		    (ds->ds_flags & DSF_FORCE) == 0) {
 			readit = 0;
@@ -229,6 +251,7 @@ ds_open(int type)
 	return (ds);
 }
 
+/* Create a filename for a clone of a data set for a client. */
 __inline void
 dsc_fn(struct datasrc *ds, const char *sid, char *buf, size_t len)
 {
@@ -236,6 +259,7 @@ dsc_fn(struct datasrc *ds, const char *sid, char *buf, size_t len)
 	    ds->ds_name);
 }
 
+/* Create a clone of a data set for a client. */
 void
 dsc_create(const char *sid)
 {
@@ -273,6 +297,7 @@ dsc_exists(const char *sid)
 	return (1);
 }
 
+/* Clone a data set.  Create if needed. */
 void
 dsc_clone(int type, const char *sid)
 {
@@ -305,6 +330,7 @@ dsc_clone(int type, const char *sid)
 	ds_close(ds);
 }
 
+/* Open an existing cloned client data set. */
 struct datasrc *
 dsc_open(int type, const char *sid)
 {
@@ -339,6 +365,7 @@ dsc_load(int type, const char *sid)
 	dsc_close(ds);
 }
 
+/* Map the state data mode to a data source type. */
 int
 st_dsmode(void)
 {

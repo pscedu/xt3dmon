@@ -85,5 +85,6 @@ buf_cat(struct buf *ba, struct buf *bb)
 	}
 	strncpy(ba->buf_buf + ba->buf_pos + 1, bb->buf_buf,
 	    bb->buf_pos + 1);
+	/* XXX: ensure NUL termination? */
 	ba->buf_pos += bb->buf_pos;
 }

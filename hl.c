@@ -1,5 +1,14 @@
 /* $Id$ */
 
+/*
+ * Node class "highlighting" routines.
+ *
+ * The name is a white lie: we can do more than just
+ * highlight.  These routines perform operations on
+ * the various node classes, such as changing the
+ * alpha on nodes with temperature 34-37C.
+ */
+
 #include "mon.h"
 
 #include "flyby.h"
@@ -13,6 +22,9 @@
 #include "state.h"
 #include "yod.h"
 
+/*
+ * Run a fill operation on all currently displayed node classes.
+ */
 void
 nc_runall(void (*f)(struct fill *))
 {
@@ -67,6 +79,9 @@ nc_runall(void (*f)(struct fill *))
 		p->p_opts |= POPT_REFRESH;
 }
 
+/*
+ * Grab the fill for the given node class in the current display.
+ */
 struct fill *
 nc_getfp(size_t nc)
 {
@@ -119,6 +134,10 @@ nc_getfp(size_t nc)
 	return (NULL);
 }
 
+/*
+ * Run a fill operation on all node classes for which
+ * any currently selected node are a member.
+ */
 void
 nc_runsn(void (*f)(struct fill *))
 {

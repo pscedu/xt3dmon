@@ -307,6 +307,8 @@ draw_node_label(struct node *n)
 /*
  * Special case of pipe-drawing code: draw pipes around selected node
  * only.
+ *
+ * XXX: respect st_pipemode.
  */
 __inline void
 draw_node_pipes(struct node *np)
@@ -352,6 +354,9 @@ draw_node_pipes(struct node *np)
 	glDisable(GL_BLEND);
 }
 
+/*
+ * Move the node position (for animation).
+ */
 __inline int
 node_tween_dir(float *curpos, float *targetpos)
 {
@@ -473,6 +478,10 @@ draw_ground(void)
 	}
 }
 
+/*
+ * Recursively draw all physical dimension
+ * (row, cab, cage, etc.) skeletons.
+ */
 __inline void
 draw_pd_skel(struct physdim *pdp, struct physdim *targetpd,
     struct fvec *fvp)
@@ -580,7 +589,7 @@ draw_cluster_pipe(struct ivec *iv, struct fvec *dimv)
 	sv.fv_z = vmodes[st.st_vmode].vm_ndim[GEOM_CUBE].fv_d / 2;
 
 	switch (st.st_pipemode) {
-	case PM_DIR:
+	case PM_DIR:	/* color for torus directions */
 		sv.fv_x += st.st_wioff.iv_x * st.st_winsp.iv_x;
 		sv.fv_y += st.st_wioff.iv_y * st.st_winsp.iv_y;
 		sv.fv_z += st.st_wioff.iv_z * st.st_winsp.iv_z;
@@ -617,7 +626,7 @@ draw_cluster_pipe(struct ivec *iv, struct fvec *dimv)
 		gluCylinder(quadric, 0.1, 0.1, len, 3, 1);
 		glPopMatrix();
 		break;
-	case PM_RT:
+	case PM_RT:	/* color for route errors */
 		switch (dim) {
 		case DIM_X:
 			jmax = widim.iv_w;

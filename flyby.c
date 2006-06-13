@@ -1,5 +1,14 @@
 /* $Id$ */
 
+/*
+ * Flyby routines.
+ *
+ * Record or playback previously recorded actions.
+ * We try to record everything the user does, except
+ * for some things which would be annoying (such as
+ * certain options or toggling of certain panels).
+ */
+
 #include "mon.h"
 
 #include <err.h>
@@ -21,6 +30,7 @@
 #include "state.h"
 #include "xmath.h"
 
+/* Flyby record types (used in flyby record headers). */
 #define FHT_INIT	1
 #define FHT_SEQ		2
 #define FHT_SELNODE	3
@@ -54,12 +64,12 @@ union fbun {
 void		 init_panels(int);
 
 int		 flyby_mode = FBM_OFF;
-int		 flyby_autoto = 2 * 60 * 60; /* 20 seconds? */
-int		 flyby_nautoto;
+int		 flyby_autoto = 2 * 60 * 60;	/* time till autoflyby turns on */
+int		 flyby_nautoto;			/* see flyby_rstautoto */
 int		 flyby_len;
 int		 flyby_pos;
 static FILE	*flyby_fp;
-struct state	 sav_st;
+struct state	 sav_st;			/* preserve old state during flyby */
 struct objlist	 flyby_list = { { NULL }, 0, 0, 0, 0, 10, sizeof(struct fnent), fe_eq };
 char 		 flyby_name[NAME_MAX] = FLYBY_DEFAULT;
 
@@ -340,7 +350,21 @@ flyby_update(void)
 	}
 }
 
-/* Reset auto-flyby timeout. */
+/*
+ * Reset auto-flyby timeout.
+ *
+ * flyby_nautoto keeps track of the number of resets
+ * that have been triggered.  Once it hits zero, no
+ * more reset actions have been triggered, and the
+ * auto-flyby may commence (see cocb_autoto).
+ *
+ * For example, when the user moves the mouse, a flurry
+ * of resets are triggered, and when the timer for each
+ * expires, nautoto gets decremented, until the final
+ * one expires.  When that happens, and the callback is
+ * called, which decrements nautoto to zero, enabling the
+ * auto flyby.
+ */
 void
 flyby_rstautoto(void)
 {

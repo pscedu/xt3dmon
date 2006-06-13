@@ -90,6 +90,11 @@ col_get(int old, size_t n, size_t total, struct fill *fillp)
 	col_hsv_to_rgb(fillp);
 }
 
+/*
+ * Allocate colors from continuous intervals over
+ * the color wheel, which, if used correctly, should
+ * provide an somewhat-evenly divided palette of colors.
+ */
 void
 col_get_intv(int *posp, struct fill *fp)
 {
@@ -222,6 +227,10 @@ fill_contrast(struct fill *c)
 	col_hsv_to_rgb(c);
 }
 
+/*
+ * These mini fill routines are used for performing
+ * operations when walking lists of fills.
+ */
 void
 fill_setopaque(struct fill *fp)
 {
