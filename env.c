@@ -22,7 +22,7 @@ int		gl_cursor[2];		/* Current cursors for each stereo win */
 int		cursor;			/* What the cursors will be */
 
 struct fvec	focus;			/* 3D point of revolution */
-double		focus_ratio;		/* Elliptical ratio of rev. */
+double		focus_ratio = 1.0;	/* Elliptical ratio of rev. */
 
 struct ivec	winv = { 800, 600, 0 };
 
