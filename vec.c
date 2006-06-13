@@ -124,7 +124,7 @@ vec_rotate(struct fvec *fvp, const struct fvec *axis, double deg)
 
 #define x cart->fv_x
 #define y cart->fv_z	/* These are swapped because */
-#define z cart->fv_y	/* OpenGL uses y for depth. */
+#define z cart->fv_y	/* OpenGL uses z for depth. */
 
 #define r sphere->fv_r
 #define t sphere->fv_t
