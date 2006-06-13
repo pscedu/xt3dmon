@@ -41,15 +41,13 @@
 #define ROWWIDTH	(CABWIDTH * NCABS + CABSPACE * (NCABS - 1))
 #define ROWDEPTH	(MODDEPTH)
 
-#define XCENTER		(NODESPACE + ROWWIDTH / 2)
-#define YCENTER		(NODESPACE + (CAGEHEIGHT * NCAGES + \
-			    CAGESPACE * (NCAGES - 1)) / 2.0f)
-#define ZCENTER		(NODESPACE + (ROWDEPTH * NROWS + \
-			    ROWSPACE * (NROWS - 1)) / 2.0f)
-
 #define CL_WIDTH	(ROWWIDTH)
 #define CL_HEIGHT	(CABHEIGHT)
 #define CL_DEPTH	(ROWDEPTH * NROWS + ROWSPACE * (NROWS - 1))
+
+#define XCENTER		(NODESPACE + CL_WIDTH  / 2.0)
+#define YCENTER		(NODESPACE + CL_HEIGHT / 2.0)
+#define ZCENTER		(NODESPACE + CL_DEPTH  / 2.0)
 
 #define WIV_SWIDTH	(WIDIM_WIDTH  * st.st_winsp.iv_x)
 #define WIV_SHEIGHT	(WIDIM_HEIGHT * st.st_winsp.iv_y)

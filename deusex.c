@@ -44,7 +44,7 @@ dxi_orbit(void)
 		st.st_x += rx;
 		st.st_y += ry;
 		st.st_z += rz;
-	} while (DST(&focus, &st.st_v) < ROWDEPTH * NROWS + ROWSPACE * (NROWS - 1));
+	} while (DST(&focus, &st.st_v) < CL_DEPTH);
 	tween_pop(TWF_POS);
 }
 
@@ -245,8 +245,7 @@ dxp_cuban8(int dim)
 	}
 
 #if 0
-	vec_rotate(&st.st_v, &axis, atan2(
-	    (ROWDEPTH * NROWS + ROWSPACE * (NROWS - 1)) / 2.0, ROWWIDTH));
+	vec_rotate(&st.st_v, &axis, atan2(CL_DEPTH / 2.0, CL_WIDTH));
 #endif
 
 	mag = vec_mag(&st.st_v);
@@ -297,7 +296,7 @@ dxp_corkscrew(int dim)
 	switch (dim) {
 	case DIM_X:
 		a = CABHEIGHT / 4.0;
-		b = ((NROWS * ROWDEPTH + (NROWS - 1) * ROWSPACE)) / 4.0;
+		b = CL_DEPTH / 4.0;
 		c = ROWWIDTH;
 		break;
 	case DIM_Y:
