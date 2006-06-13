@@ -1,5 +1,12 @@
 /* $Id$ */
 
+/*
+ * Camera routines.
+ * These functions all deal directly with the current
+ * camera position, so make sure you surround any calls
+ * to them with tween_push/pop.
+ */
+
 #include "mon.h"
 
 #include <math.h>
@@ -17,8 +24,8 @@
  *	|
  *	| Left/Right < >
  *	+--------------- x
- *     /	     /\
- *    / Back/Forward \/
+ *     /	      /|
+ *    / Back/Forward |/
  *   z
  */
 void
@@ -109,6 +116,12 @@ cam_revolve(struct fvec *center, double d_theta, double d_phi)
 	vec_addto(center, &st.st_v);
 }
 
+/*
+ * Special case of above: utilizes focus elliptical skews
+ * and deals with VM_WIRED mode, which has no focus point
+ * or cluster center, since clusters are drawn repeatedly
+ * (using revolvefocus should be the standard revolve case).
+ */
 __inline void
 cam_revolvefocus(double dt, double dp)
 {
@@ -136,160 +149,21 @@ cam_roll(double amt)
 }
 
 void
-cam_rotate(const struct fvec *begfv, const struct fvec *endfv,
-    int signu, int signv)
-{
-	struct fvec sph, beg_sph, end_sph;
-	double dt, dp;
-	int upinv, flipt, invbeg, invend;
-
-	flipt = upinv = 0;
-	if (st.st_uv.fv_y < 0)
-		upinv = !upinv;
-
-	vec_cart2sphere(begfv, &beg_sph);
-	vec_cart2sphere(endfv, &end_sph);
-	vec_cart2sphere(&st.st_lv, &sph);
-
-#if 0
-	if (end_sph.fv_t > M_PI) {
-		if (end_sph.fv_p < M_PI / 2.0)
-			dp = end_sph.fv_p + beg_sph.fv_p;
-		else
-			dp = (M_PI - end_sph.fv_p) +
-			     (M_PI - beg_sph.fv_p);
-	} else
-#endif
-	/*
-	 * inv(erted) | normal
-	 *           pi/2
-	 *         +--|--+
-	 *        /   |   \
-	 *       /    |    \
-	 *      |     |     | pi
-	 *    0 |   theta   |
-	 *      |     |     | -pi
-	 *       \    |    /
-	 *        \   |   /
-	 *         +--|--+
-	 *          -pi/2
-	 */
-	invbeg = invend = 0;
-	if (beg_sph.fv_t <  M_PI / 2.0 &&
-	    beg_sph.fv_t > -M_PI / 2.0)
-		invbeg = 1;
-	if (end_sph.fv_t <  M_PI / 2.0 &&
-	    end_sph.fv_t > -M_PI / 2.0)
-		invend = 1;
-	if (invbeg && !invend && signv < 0)
-//		printf("beg %g,%g,%d\n", end_sph.fv_p, beg_sph.fv_p, signv);
-		beg_sph.fv_p += M_PI;
-	else if (!invbeg && invend && signv > 0)
-	//	printf("end %g,%g,%d\n", end_sph.fv_p, beg_sph.fv_p, signv);
-		end_sph.fv_p += M_PI;
-	dp = end_sph.fv_p - beg_sph.fv_p;
-
-	if (end_sph.fv_t < beg_sph.fv_t && signu > 0)
-		end_sph.fv_t += 2.0 * M_PI;
-	else if (end_sph.fv_t > beg_sph.fv_t && signu < 0)
-		beg_sph.fv_t += 2.0 * M_PI;
-	dt = end_sph.fv_t - beg_sph.fv_t;
-printf("%.05f\t%.05f\n", dt, dp);
-
-	/*
-	 * The values/logic are somewhat misleading
-	 * since they are negative when one would
-	 * not expect them to be: when the cursor
-	 * moved up but the end_sph moved down, or
-	 * the cursor moved down but end_sph moved
-	 * up, we flipped.
-	 */
-	if (upinv) {
-//	|| (dp > 0.0 && signy < 0) ||
-//	    (dp < 0.0 && signy > 0)) {
-		dt *= -1.0;
-		dp *= -1.0;
-		/*
-		 * We shouldn't need to set upinv
-		 * since it will get set for the
-		 * (phi < 0) handling below.
-		 */
-	}
-
-	sph.fv_t += dt;
-	sph.fv_p += dp;
-// printf("dt: %g, dp: %g (%g,%g) =>%d\n", dt, dp, end_sph.fv_p, beg_sph.fv_p, signy);
-
-if (sph.fv_p > M_PI)
- printf("  @@@@@ phi: %g > M_PI\n", sph.fv_p);
-//	if (sph.fv_p > M_PI)
-//		sph.fv_p = M_PI - sph.fv_p;
-	if (sph.fv_p < 0.0) {
-		sph.fv_t += M_PI;
-		sph.fv_p *= -1.0;
-		upinv = !upinv;
-flipt=1;
-	}
-
-	sph.fv_t = negmodf(sph.fv_t, 2.0 * M_PI);
-
-	vec_sphere2cart(&sph, &st.st_lv);
-	vec_normalize(&st.st_lv);
-
-#if 0
-if (flipt) {
-	sph.fv_t -= M_PI;
-	sph.fv_p *= -1.0;
-}
-#endif
-
-	sph.fv_p += M_PI / 2.0;
-	if (upinv)
-		sph.fv_p += M_PI;
-	vec_sphere2cart(&sph, &st.st_uv);
-	st.st_uv.fv_x *= -1.0;
-	st.st_uv.fv_y *= -1.0;
-	st.st_uv.fv_z *= -1.0;
-	vec_normalize(&st.st_uv);
-}
-
-void
-cam_getspecvec(struct fvec *fvp, int u, int v)
-{
-	struct fvec sph;
-
-	vec_cart2sphere(&st.st_lv, &sph);
-	/* XXX: st.st_uv.fv_y < 0 */
-	sph.fv_t += DEG_TO_RAD(FOVY) * ASPECT * (u - winv.iv_w / 2.0) / winv.iv_w;
-	sph.fv_p += DEG_TO_RAD(FOVY) *          (v - winv.iv_h / 2.0) / winv.iv_h;
-	vec_sphere2cart(&sph, fvp);
-	vec_normalize(fvp);
-}
-
-void
 cam_bird(void)
 {
 	switch (st.st_vmode) {
 	case VM_PHYS:
-//		vec_set(&st.st_v, -14.00, 33.30, 65.00);
-//		vec_set(&st.st_lv,  0.63, -0.31, -0.71);
-//		vec_set(&st.st_uv,  0.00,  1.00,  0.00);
-
-vec_set(&st.st_v, -17.8,30.76,51.92 );
-vec_set(&st.st_lv,.71,-.34,-.62 );
-vec_set(&st.st_uv,.25,.94,-.22);
-
+		/* XXX: move to fit CL_WIDTH/HEIGHT/DEPTH in view? */
+		vec_set(&st.st_v, -17.80, 30.76, 51.92);
+		vec_set(&st.st_lv,  0.71, -0.34, -0.62);
+		vec_set(&st.st_uv,  0.25,  0.94, -0.22);
 		break;
 	case VM_WIRED:
 	case VM_WIONE:
-//		vec_set(&st.st_v, -74.00, 100.00, 122.50);
-//		vec_set(&st.st_lv,  0.64,  -0.50,  -0.60);
-//		vec_set(&st.st_uv,  0.36,   0.87,  -0.34);
-
-vec_set(&st.st_v, -45.9,  82.7, 93.6);
-vec_set(&st.st_lv,.60,-.57,-.55);
-vec_set(&st.st_uv,0.43,.82,-.38);
-
+		/* XXX: move to fit WI_WIDTH/HEIGHT/DEPTH in view? */
+		vec_set(&st.st_v, -45.90, 82.70, 93.60);
+		vec_set(&st.st_lv,  0.60, -0.57, -0.55);
+		vec_set(&st.st_uv,  0.43,  0.82, -0.38);
 		break;
 	}
 }
