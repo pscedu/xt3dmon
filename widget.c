@@ -227,7 +227,7 @@ draw_cube(const struct fvec *dimp, const struct fill *fp, int flags)
 		glEnable(GL_LINE_SMOOTH);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
+		glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE); // GL_NICEST
 
 		glLineWidth(0.6f);
 		glColor4f(f_frame.f_r, f_frame.f_g, f_frame.f_b,
