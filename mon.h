@@ -47,6 +47,10 @@
 #define ZCENTER		(NODESPACE + (ROWDEPTH * NROWS + \
 			    ROWSPACE * (NROWS - 1)) / 2.0f)
 
+#define CL_WIDTH	(ROWWIDTH)
+#define CL_HEIGHT	(CABHEIGHT)
+#define CL_DEPTH	(ROWDEPTH * NROWS + ROWSPACE * (NROWS - 1))
+
 #define WIV_SWIDTH	(WIDIM_WIDTH  * st.st_winsp.iv_x)
 #define WIV_SHEIGHT	(WIDIM_HEIGHT * st.st_winsp.iv_y)
 #define WIV_SDEPTH	(WIDIM_DEPTH  * st.st_winsp.iv_z)
