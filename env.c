@@ -13,19 +13,21 @@
 #include "state.h"
 #include "xmath.h"
 
-#define FOCAL_POINT	(2.00f) /* distance from cam to center of 3d focus */
-#define FOCAL_LENGTH	(5.00f) /* length of 3d focus */
-#define ST_EYESEP	(0.30f) /* distance between "eyes" */
+/* Stereo mode parameters. */
+#define FOCAL_POINT	(2.00f) /* Distance from cam to 3d focus */
+#define FOCAL_LENGTH	(5.00f) /* Length of 3D focus */
+#define ST_EYESEP	(0.30f) /* Distance between "eyes" */
 
-int cursor;
-int gl_cursor[2];
+int		gl_cursor[2];		/* Current cursors for each stereo win */
+int		cursor;			/* What the cursors will be */
 
-struct fvec focus;
+struct fvec	focus;			/* 3D point of revolution */
+double		focus_ratio;		/* Elliptical ratio of rev. */
 
-struct ivec	 winv = { 800, 600, 0 };
+struct ivec	winv = { 800, 600, 0 };
 
-int	 window_ids[2];
-int	 wid = WINID_DEF;		/* current window */
+int	 	window_ids[2];
+int	 	wid = WINID_DEF;	/* Current window ID */
 
 __inline void
 frustum_init(struct frustum *fr)
@@ -83,11 +85,13 @@ focus_cluster(struct fvec *cen)
 {
 	double dist;
 
+	focus_ratio = 1.0;	 	/* reset elliptical ratio */
 	switch (st.st_vmode) {
 	case VM_PHYS:
 		cen->fv_x = XCENTER;
 		cen->fv_y = YCENTER;
 		cen->fv_z = ZCENTER;
+		focus_ratio = CL_WIDTH / CL_DEPTH;
 		break;
 	case VM_WIRED:
 		dist = MAX3(WIV_SWIDTH, WIV_SHEIGHT, WIV_SDEPTH) / 4.0;
@@ -116,6 +120,10 @@ focus_selnodes(struct fvec *cen)
 		cen->fv_y += n->n_v->fv_y + n->n_dimp->fv_h / 2;
 		cen->fv_z += n->n_v->fv_z + n->n_dimp->fv_d / 2;
 
+		/*
+		 * In wired mode, add the offsets which determine
+		 * in which wirep the node was selected in.
+		 */
 		if (st.st_vmode == VM_WIRED) {
 			cen->fv_x += sn->sn_offv.fv_x;
 			cen->fv_y += sn->sn_offv.fv_y;
@@ -125,4 +133,6 @@ focus_selnodes(struct fvec *cen)
 	cen->fv_x /= nselnodes;
 	cen->fv_y /= nselnodes;
 	cen->fv_z /= nselnodes;
+
+	focus_ratio = 1.0;		/* reset elliptical ratio */
 }
