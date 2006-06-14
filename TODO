@@ -80,3 +80,5 @@ todo
 - fix cam_getspecvec
 - subtitle mode
 - scripted action parser - like flyby & deusex combined
+- fix tween to real stack: once point is reached, pop it then move on
+- rename NODEWIDTH/HEIGHT/DEPTH cause its phys-only
