@@ -131,14 +131,14 @@ vec_rotate(struct fvec *fvp, const struct fvec *axis, double deg)
 #define p sphere->fv_p
 
 void
-vec_cart2sphere(const struct fvec *cart, struct fvec *sphere, double ratio)
+vec_cart2sphere(const struct fvec *cart, struct fvec *sphere)
 {
-	r = sqrt(SQUARE(x / ratio) + SQUARE(y) + SQUARE(z));
+	r = sqrt(SQUARE(x) + SQUARE(y) + SQUARE(z));
 
 	if (x == 0.0)
 		t = M_PI / 2.0 * SIGNF(y);
 	else
-		t = atan2(y, x / ratio);
+		t = atan2(y, x);
 
 	if (r == 0.0)
 		p = 0.0;
@@ -147,9 +147,9 @@ vec_cart2sphere(const struct fvec *cart, struct fvec *sphere, double ratio)
 }
 
 void
-vec_sphere2cart(const struct fvec *sphere, struct fvec *cart, double ratio)
+vec_sphere2cart(const struct fvec *sphere, struct fvec *cart)
 {
-	x = (r * ratio) * cos(t) * sin(p);
+	x = r * cos(t) * sin(p);
 	y = r * sin(t) * sin(p);
 	z = r * cos(p);
 
