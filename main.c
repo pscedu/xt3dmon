@@ -119,7 +119,7 @@ struct state st = {
 	    OP_DISPLAY | OP_NODEANIM,			/* options */
 	DM_JOB,						/* which data to show */
 	VM_PHYS,					/* viewing mode */
-	PM_RT,						/* pipe mode */
+	PM_DIR,						/* pipe mode */
 	SSCNT_NBLK,					/* seastar mode */
 	0,						/* seastar vc */
 	RPS_NEG,					/* rterr port set */
