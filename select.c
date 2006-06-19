@@ -220,8 +220,10 @@ gsn_get(int id, void (*cb)(struct glname *, int), int flags,
 void
 gscb_miss(__unused struct glname *gn, int flags)
 {
-	if (flags & SPF_PROBE)
+	if (flags & SPF_PROBE) {
 		cursor_set(GLUT_CURSOR_CYCLE);
+		exthelp = 0;
+	}
 }
 
 void
@@ -334,9 +336,10 @@ gscb_pw_help(struct glname *gn, int flags)
 {
 	int opt = gn->gn_id;
 
-	if (flags & SPF_PROBE)
+	if (flags & SPF_PROBE) {
 		cursor_set(GLUT_CURSOR_INFO);
-	else if (flags == 0) {
+		exthelp = 1;
+	} else if (flags == 0) {
 		switch (opt) {
 		case HF_SHOWHELP:
 			exthelp = 1;
