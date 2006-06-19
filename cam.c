@@ -12,6 +12,7 @@
 #include <math.h>
 
 #include "cdefs.h"
+#include "cam.h"
 #include "env.h"
 #include "selnode.h"
 #include "state.h"
@@ -62,10 +63,10 @@ cam_move(int dir, float amt)
 }
 
 void
-cam_revolve(struct fvec *center, double d_theta, double d_phi)
+cam_revolve(struct fvec *center, int nfocus, double dt, double dp)
 {
-	struct fvec diff, sph;
-	int upinv;
+	struct fvec focuspt, diff, sph;
+	int upinv, j;
 
 	upinv = 0;
 	if (st.st_uv.fv_y < 0.0) {
@@ -74,17 +75,29 @@ cam_revolve(struct fvec *center, double d_theta, double d_phi)
 		 * direction is reversed.
 		 */
 		upinv = !upinv;
-		d_phi *= -1;
-		d_theta *= -1;
+		dp *= -1.0;
+		dt *= -1.0;
 	}
 
-	vec_sub(&diff, &st.st_v, center);
-	vec_cart2sphere(&diff, &sph);
-	sph.fv_t += 0.01 * d_theta;
-	sph.fv_p += 0.01 * d_phi;
-//	sph.fv_p = negmodf(sph.fv_p, 2.0 * M_PI);
+	focuspt.fv_x = 0.0;
+	focuspt.fv_y = 0.0;
+	focuspt.fv_z = 0.0;
+	for (j = 0; j < nfocus; j++) {
+		focuspt.fv_x += center[j].fv_x;
+		focuspt.fv_y += center[j].fv_y;
+		focuspt.fv_z += center[j].fv_z;
+	}
+	focuspt.fv_x /= nfocus;
+	focuspt.fv_y /= nfocus;
+	focuspt.fv_z /= nfocus;
 
-	if (sph.fv_p < 0.0) {
+	vec_sub(&diff, &st.st_v, &focuspt);
+	vec_cart2sphere(&diff, &sph);
+
+	sph.fv_t += dt;
+	sph.fv_p += dp;
+
+	if (sph.fv_p < 0.0 || sph.fv_p > M_PI) {
 		/*
 		 * We flipped upside (or back rightside up),
 		 * so move theta onto the other side but
@@ -96,24 +109,35 @@ cam_revolve(struct fvec *center, double d_theta, double d_phi)
 	}
 
 	sph.fv_t = negmodf(sph.fv_t, 2.0 * M_PI);
+//	sph.fv_p = negmodf(sph.fv_p, M_PI);
 
-	/* Point the look vector at the center of revolution. */
 	vec_sphere2cart(&sph, &st.st_v);
-	st.st_lv.fv_x = -st.st_v.fv_x;
-	st.st_lv.fv_y = -st.st_v.fv_y;
-	st.st_lv.fv_z = -st.st_v.fv_z;
+	vec_addto(&focuspt, &st.st_v);
+
+	st.st_lv.fv_x = 0.0;
+	st.st_lv.fv_y = 0.0;
+	st.st_lv.fv_z = 0.0;
+	for (j = 0; j < nfocus; j++) {
+		struct fvec lv;
+
+		lv.fv_x = center[j].fv_x - st.st_v.fv_x;
+		lv.fv_y = center[j].fv_y - st.st_v.fv_y;
+		lv.fv_z = center[j].fv_z - st.st_v.fv_z;
+		vec_normalize(&lv);
+
+		vec_addto(&lv, &st.st_lv);
+	}
+	st.st_lv.fv_x /= nfocus;
+	st.st_lv.fv_y /= nfocus;
+	st.st_lv.fv_z /= nfocus;
 	vec_normalize(&st.st_lv);
 
-	sph.fv_p += M_PI / 2.0;
+	vec_cart2sphere(&st.st_lv, &sph);
+	sph.fv_p -= M_PI / 2.0;
 	if (upinv)
 		sph.fv_p += M_PI;
 	vec_sphere2cart(&sph, &st.st_uv);
-	st.st_uv.fv_x *= -1.0;
-	st.st_uv.fv_y *= -1.0;
-	st.st_uv.fv_z *= -1.0;
 	vec_normalize(&st.st_uv);
-
-	vec_addto(center, &st.st_v);
 }
 
 /*
@@ -130,8 +154,7 @@ cam_revolvefocus(double dt, double dp)
 	double dst;
 
 	fvp = &focus;
-	if (st.st_vmode == VM_WIRED &&
-	    nselnodes == 0) {
+	if (st.st_vmode == VM_WIRED && nselnodes == 0) {
 		dst = MAX3(WIV_SWIDTH, WIV_SHEIGHT, WIV_SDEPTH) / 4.0;
 		fv.fv_x = st.st_x + st.st_lx * dst;
 		fv.fv_y = st.st_y + st.st_ly * dst;
@@ -139,7 +162,15 @@ cam_revolvefocus(double dt, double dp)
 		fvp = &fv;
 	}
 
-	cam_revolve(fvp, dt, dp);
+	if (st.st_vmode == VM_PHYS && nselnodes == 0) {
+		struct fvec nfv[2] = {
+			{ { NODESPACE, NODESPACE + CL_HEIGHT / 2.0, CL_DEPTH / 2.0 } },
+			{ { NODESPACE + CL_WIDTH, NODESPACE + CL_HEIGHT / 2.0, CL_DEPTH / 2.0 } }
+		};
+
+		cam_revolve(nfv, 2, dt, dp);
+	} else
+		cam_revolve(fvp, 1, dt, dp);
 }
 
 void
