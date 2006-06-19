@@ -14,7 +14,7 @@ SRCS+= vec.c widget.c yod.c
 
 LIBS = -lGL -lglut -lGLU -lpng -lssl -lm -lcrypto -lcom_err
 CFLAGS += -Wall -W -g -D_LIVE_DSP=DSP_LOCAL
-CFLAGS += -O -Wuninitialized
+#CFLAGS += -O -Wuninitialized
 LDFLAGS =
 YFLAGS += -d
 INCS = $$(echo ${CFLAGS} | \
