@@ -56,7 +56,7 @@ dxp_orbit(int dim, int sign)
 	double wait, du, dv, max;
 	int ret;
 
-	max = 2 * M_PI / 0.01;
+	max = 2 * M_PI;
 	if (t == 0) {
 		wait = 1.1 * ceil(log(DST(&st.st_v, &focus) / log(1.1)));
 		adj = max / (fps * wait);
@@ -118,7 +118,7 @@ dxp_curlyq(void)
 	int ret, dim, sign;
 	double max, du, dv, wait;
 
-	max = 3 * 2 * M_PI / 0.01;
+	max = 3 * 2 * M_PI;
 	if (t == 0) {
 		wait = 1.1 * ceil(log(DST(&st.st_v, &focus) / log(1.1)));
 		fwadj = DST(&st.st_v, &focus) / (fps * wait);
@@ -387,7 +387,7 @@ dxp_start(void)
 
 	st.st_vmode = VM_PHYS;
 	st.st_dmode = DM_TEMP;
-	st.st_rf |= RF_VMODE | RF_DMODE;
+	st.st_rf |= RF_VMODE | RF_DMODE | RF_DATASRC;
 	st.st_pipemode = PM_DIR;
 
 	b = OP_FRAMES | OP_TWEEN | OP_DISPLAY | OP_NODEANIM | OP_CAPTION;
@@ -822,6 +822,8 @@ struct dxte {
 	DEN(dxp_sstall),
 	DEI(dxp_cam_move, DIR_BACK),
 	DEN(dxp_bird),
+	DEN(dxp_camsync),
+	DEN(dxp_sstall),
 	DEI(dxp_hlnc, HL_ALL),
 	DES(dxp_setcap, "Cycle through all temperature ranges"),
 	DEN(dxp_camsync),
@@ -869,12 +871,12 @@ struct dxte {
 	DEN(dxp_refocus),
 	DEN(dxp_camsync),
 	DEN(dxp_sstall),
-//	DEI(dxp_panel, PANEL_PIPE),
+	DEI(dxp_panel, PANEL_CMP),
 	DEI(dxp_op, OP_PIPES),
 	DEN(dxp_wipuff),
 	DEN(dxp_nodesync),
 	DEN(dxp_sstall),
-	DEI(dxp_selnode, 2749),
+	DEI(dxp_selnode, 2600),
 	DEN(dxp_refocus),
 	DEN(dxp_camsync),
 	DEN(dxp_stall),
@@ -896,7 +898,7 @@ struct dxte {
 	DEN(dxp_camsync),
 	DEN(dxp_sstall),
 	DES(dxp_setcap, "Change draw offset to show torus repetitions"),
-//	DEI(dxp_npanel, PANEL_PIPE),
+	DEI(dxp_npanel, PANEL_CMP),
 	DEN(dxp_widepuff),
 	DEN(dxp_nodesync),
 	DEN(dxp_sstall),
@@ -914,40 +916,46 @@ struct dxte {
 	DEI(dxp_vmode, VM_PHYS),
 	DEN(dxp_nodesync),
 	DEN(dxp_stall),
+	DEN(dxp_bird),
+	DEN(dxp_camsync),
+	DEN(dxp_stall),
 	DEI(dxp_vmode, VM_WIONE),
+	DEN(dxp_sstall),
+	DEN(dxp_bird),
+	DEN(dxp_camsync),
 	DEN(dxp_stall),
 	DEN(dxp_clrsn),
 	DEI(dxp_nop, OP_SKEL),
 	DEI(dxp_hlnc, HL_ALL),
 	DES(dxp_setcap, "Going back to physical layout mode viewing jobs"),
-	DEN(dxp_sstall),
+	DEN(dxp_stall),
 	DEI(dxp_vmode, VM_PHYS),
 	DEN(dxp_nodesync),
 	DEN(dxp_sstall),
 	DEN(dxp_bird),
 	DEN(dxp_camsync),
 	DEN(dxp_stall),
-	DES(dxp_setcap, "Cycle through all jobs"),
+	DES(dxp_setcap, "Cycle through all node states/jobs"),
 	DEN(dxp_sstall),
 	DEI(dxp_op, OP_SKEL),
 	DEN(dxp_cyclenc),
 	DEI(dxp_nop, OP_SKEL),
-	DEN(dxp_sstall),
-	DES(dxp_setcap, "Flying through physical mode"),
-	DEI(dxp_op, OP_NLABELS),
-	DEN(dxp_refocus),
-	DEN(dxp_camsync),
-	DEN(dxp_sstall),
-	DEN(dxp_cam_move_focus),
-	DEN(dxp_camsync),
-	DEN(dxp_sstall),
-	DEI(dxp_cuban8, DIM_Y),
-	DEI(dxp_nop, OP_NLABELS),
-	DEN(dxp_camsync),
-	DEN(dxp_sstall),
-	DEN(dxp_bird),
-	DEN(dxp_camsync),
-	DEN(dxp_sstall),
+	DEN(dxp_stall),
+//	DES(dxp_setcap, "Flying through physical mode"),
+//	DEI(dxp_op, OP_NLABELS),
+//	DEN(dxp_refocus),
+//	DEN(dxp_camsync),
+//	DEN(dxp_sstall),
+//	DEN(dxp_cam_move_focus),
+//	DEN(dxp_camsync),
+//	DEN(dxp_sstall),
+//	DEI(dxp_cuban8, DIM_Y),
+//	DEI(dxp_nop, OP_NLABELS),
+//	DEN(dxp_camsync),
+//	DEN(dxp_sstall),
+//	DEN(dxp_bird),
+//	DEN(dxp_camsync),
+//	DEN(dxp_sstall),
 };
 
 #define NENTRIES(t) (sizeof((t)) / sizeof((t)[0]))
