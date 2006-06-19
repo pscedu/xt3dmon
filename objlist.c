@@ -37,19 +37,19 @@ struct nodeclass statusclass[] = {
 
 struct nodeclass tempclass[] = {
 	{ "<22C",		FILL_INIT(0.0f, 0.0f, 0.4f), 0 },
-	{ "22-25C",		FILL_INIT(0.8f, 0.0f, 0.4f), 0 },
-	{ "26-29C",		FILL_INIT(0.6f, 0.0f, 0.6f), 0 },
-	{ "30-33C",		FILL_INIT(0.4f, 0.0f, 0.8f), 0 },
-	{ "34-37C",		FILL_INIT(0.2f, 0.2f, 1.0f), 0 },
-	{ "38-41C",		FILL_INIT(0.0f, 0.0f, 1.0f), 0 },
-	{ "42-45C",		FILL_INIT(0.0f, 0.6f, 0.6f), 0 },
-	{ "46-49C",		FILL_INIT(0.0f, 0.8f, 0.0f), 0 },
-	{ "50-53C",		FILL_INIT(0.4f, 1.0f, 0.0f), 0 },
+	{ "22-25C",		FILL_INIT(0.0f, 0.0f, 0.8f), 0 },
+	{ "26-29C",		FILL_INIT(0.0f, 0.0f, 1.0f), 0 },
+	{ "30-33C",		FILL_INIT(0.0f, 0.6f, 1.0f), 0 },
+	{ "34-37C",		FILL_INIT(0.0f, 0.8f, 1.0f), 0 },
+	{ "38-41C",		FILL_INIT(0.0f, 1.0f, 1.0f), 0 },
+	{ "42-45C",		FILL_INIT(0.8f, 1.0f, 1.0f), 0 },
+	{ "46-49C",		FILL_INIT(1.0f, 1.0f, 1.0f), 0 },
+	{ "50-53C",		FILL_INIT(1.0f, 1.0f, 0.6f), 0 },
 	{ "54-57C",		FILL_INIT(1.0f, 1.0f, 0.0f), 0 },
-	{ "58-61C",		FILL_INIT(1.0f, 0.8f, 0.2f), 0 },
+	{ "58-61C",		FILL_INIT(1.0f, 0.8f, 0.0f), 0 },
 	{ "62-65C",		FILL_INIT(1.0f, 0.6f, 0.0f), 0 },
-	{ "66-69C",		FILL_INIT(1.0f, 0.0f, 0.0f), 0 },
-	{ ">69C",		FILL_INIT(1.0f, 0.6f, 0.6f), 0 }
+	{ "66-69C",		FILL_INIT(1.0f, 0.4f, 0.0f), 0 },
+	{ ">69C",		FILL_INIT(1.0f, 0.0f, 0.0f), 0 }
 };
 
 struct nodeclass failclass[] = {
