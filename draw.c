@@ -129,15 +129,9 @@ draw_compass(int u, int w, int v, int h)
 }
 
 __inline void
-draw_caption(void)
+draw_string(int u, int v, void *font, const unsigned char *s)
 {
-	extern char *caption;
-	int cx, cy, len, plen;
-	const char *s;
-
-	s = caption;
-	if (s == NULL)
-		return;
+	int margin, w, h;
 
 	/* Save state and set things up for 2D. */
 	glPushAttrib(GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
@@ -150,29 +144,41 @@ draw_caption(void)
 	glPushMatrix();
 	glLoadIdentity();
 
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	gluOrtho2D(0.0, winv.iv_w, 0.0, winv.iv_h);
-	glColor4f(1.0f, 1.0f, 1.0f, 0.6f);
+	glColor4f(1.0f, 1.0f, 1.0f, 0.9f);
 
-	len = strlen(s);
-	plen = glutBitmapLength(GLUT_BITMAP_TIMES_ROMAN_24,
-	    (const unsigned char *)s);
+	w = glutBitmapLength(font, s);
+	h = glutBitmapHeight(font);
 
-	/* XXX - Draw the caption box with transparency */
-
-	/* Draw the caption text, center on x */
-	cx = (winv.iv_w / 2) - (0.5 * plen);
-	cy = 10;
-	glRasterPos2f(cx, cy);
+	glRasterPos2f(u, v);
 	while (*s != '\0')
-		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *s++);
+		glutBitmapCharacter(font, *s++);
 
-	s = caption;
-	cx++;
-	cy--;
-	glColor4f(0.1f, 0.1f, 0.1f, 0.6f);
-	glRasterPos2f(cx, cy);
+	u++;
+	v--;
+	glColor4f(0.1f, 0.1f, 0.1f, 0.9f);
+	glRasterPos2f(u, v);
 	while (*s != '\0')
-		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *s++);
+		glutBitmapCharacter(font, *s++);
+
+	margin = 2;
+	u -= 1 + margin;
+	w += margin * 2;
+	h += margin * 2;
+	v += h - 4 - margin;
+
+	glColor4f(0.2f, 0.2f, 0.2f, 0.6f);
+	glBegin(GL_POLYGON);
+	glVertex2d(u,		v);
+	glVertex2d(u + w,	v);
+	glVertex2d(u + w - 1,	v - h + 1);
+	glVertex2d(u,		v - h + 1);
+	glEnd();
+
+	glDisable(GL_BLEND);
 
 	/* End 2D mode. */
 	glPopMatrix();
@@ -180,6 +186,30 @@ draw_caption(void)
 	glPopMatrix();
 
 	glPopAttrib();
+}
+
+__inline void
+draw_caption(void)
+{
+	extern char *caption;
+	const unsigned char *s;
+	void *font;
+	int u, w, h;
+
+	font = GLUT_BITMAP_TIMES_ROMAN_24;
+
+	/* Draw the caption text, center on x */
+	if (caption) {
+		s = (const unsigned char *)caption;
+		w = glutBitmapLength(font, s);
+		u = (winv.iv_w / 2.0) - (w / 2.0);
+		draw_string(u, 10, font, s);
+	}
+	s = (const unsigned char *)"Live BigBen/XT3 Monitor";
+	w = glutBitmapLength(font, s);
+	h = glutBitmapHeight(font);
+	u = (winv.iv_w / 2.0) - (w / 2.0);
+	draw_string(u, winv.iv_h - h - 3, font, s);
 }
 
 __inline void
