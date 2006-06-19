@@ -36,6 +36,7 @@ struct glname;
 
 struct pwidget {
 	const char		 *pw_str;
+	int			  pw_flags;
 	struct fill		 *pw_fillp;
 	SLIST_ENTRY(pwidget)	  pw_next;
 	void			(*pw_cb)(struct glname *, int);
@@ -45,6 +46,8 @@ struct pwidget {
 	int			  pw_w;
 	int			  pw_h;
 };
+
+#define PWF_HIDE	(1<<0)
 
 struct pinfo;
 

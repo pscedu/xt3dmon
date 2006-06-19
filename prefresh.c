@@ -203,6 +203,7 @@ void
 panel_refresh_legend(struct panel *p)
 {
 	size_t j;
+	int i;
 
 	if ((mode_data_clean & PANEL_LEGEND) && panel_ready(p))
 		return;
@@ -247,11 +248,11 @@ panel_refresh_legend(struct panel *p)
 		pwidget_add(p, &fill_nodata, "Show all", gscb_pw_hlnc, HL_ALL);
 		pwidget_add(p, &fill_nodata, "No data", NULL, 0);
 
-		for (j = 0; j < NTEMPC; j++) {
-			if (tempclass[j].nc_nmemb == 0)
+		for (i = NTEMPC - 1; i >= 0; i--) {
+			if (tempclass[i].nc_nmemb == 0)
 				continue;
-			pwidget_add(p, &tempclass[j].nc_fill,
-			    tempclass[j].nc_name, gscb_pw_hlnc, j);
+			pwidget_add(p, &tempclass[i].nc_fill,
+			    tempclass[i].nc_name, gscb_pw_hlnc, i);
 		}
 		break;
 	case DM_YOD:
@@ -553,7 +554,7 @@ panel_refresh_flyby(struct panel *p)
 		    gscb_pw_fb, PWFF_CLR);
 		pwidget_add(p,
 		    (panel_for_id(PANEL_FBNEW) ?
-		    &fill_white : &fill_nodata), "New",
+		    &fill_white : &fill_nodata), "Create new",
 		    gscb_pw_fb, PWFF_NEW);
 		pwidget_add(p,
 		    (panel_for_id(PANEL_FBCHO) ?
@@ -1095,10 +1096,10 @@ panel_refresh_wiadj(struct panel *p)
 
 	pwidget_startlist(p);
 	pwidget_add(p, &fill_nodata, "x Space",  gscb_pw_wiadj, SWF_NSPX);
-	pwidget_add(p, &fill_nodata, "x Offset", gscb_pw_wiadj, SWF_OFFX);
 	pwidget_add(p, &fill_nodata, "y Space",  gscb_pw_wiadj, SWF_NSPY);
-	pwidget_add(p, &fill_nodata, "y Offset", gscb_pw_wiadj, SWF_OFFY);
 	pwidget_add(p, &fill_nodata, "z Space",  gscb_pw_wiadj, SWF_NSPZ);
+	pwidget_add(p, &fill_nodata, "x Offset", gscb_pw_wiadj, SWF_OFFX);
+	pwidget_add(p, &fill_nodata, "y Offset", gscb_pw_wiadj, SWF_OFFY);
 	pwidget_add(p, &fill_nodata, "z Offset", gscb_pw_wiadj, SWF_OFFZ);
 	pwidget_endlist(p);
 }
@@ -1129,16 +1130,16 @@ panel_refresh_rt(struct panel *p)
 	    rtetypelabels[st.st_rtetype]);
 
 	pwidget_startlist(p);
-	pwidget_add(p, (st.st_rtepset == RPS_NEG ?  &fill_white :
-	    &fill_nodata), "Negative", gscb_pw_rt, SRF_NEG);
-	pwidget_add(p, (st.st_rtepset == RPS_POS ?  &fill_white :
-	    &fill_nodata), "Positive",  gscb_pw_rt, SRF_POS);
 	pwidget_add(p, (st.st_rtetype == RT_RECOVER ? &fill_white :
 	    &fill_nodata), "Recoverable", gscb_pw_rt, SRF_RECOVER);
 	pwidget_add(p, (st.st_rtetype == RT_FATAL ? &fill_white :
 	    &fill_nodata), "Fatal",  gscb_pw_rt, SRF_FATAL);
 	pwidget_add(p, (st.st_rtetype == RT_ROUTER ? &fill_white :
 	    &fill_nodata), "Router", gscb_pw_rt, SRF_ROUTER);
+	pwidget_add(p, (st.st_rtepset == RPS_NEG ?  &fill_white :
+	    &fill_nodata), "Negative", gscb_pw_rt, SRF_NEG);
+	pwidget_add(p, (st.st_rtepset == RPS_POS ?  &fill_white :
+	    &fill_nodata), "Positive",  gscb_pw_rt, SRF_POS);
 	pwidget_endlist(p);
 }
 

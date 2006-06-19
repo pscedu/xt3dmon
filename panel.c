@@ -149,7 +149,7 @@ draw_shadow_panels(void)
 
 	TAILQ_FOREACH(p, &panels, p_link) {
 		SLIST_FOREACH(pw, &p->p_widgets, pw_next) {
-			if (pw->pw_cb == NULL)
+			if (pw->pw_cb == NULL || pw->pw_flags & PWF_HIDE)
 				continue;
 			name = gsn_get(pw->pw_cbarg, pw->pw_cb, GNF_2D, &fv_zero);
 			gn = obj_get(&name, &glname_list);
@@ -326,7 +326,7 @@ draw_panel(struct panel *p, int toff)
 	voff++;
 
 	/* First loop cuts into these. */
-	uoff += p->p_w / 2 - toff;
+//	uoff += p->p_w / 2 - toff;
 	voff += PWIDGET_HEIGHT - 1 - PWIDGET_PADDING;
 
 	nc = MIN(2, p->p_nwidgets);
@@ -334,11 +334,16 @@ draw_panel(struct panel *p, int toff)
 	SLIST_FOREACH(pw, &p->p_widgets, pw_next) {
 		struct fill *fp = pw->pw_fillp;
 
-		uoff += (p->p_w / 2 - toff) * (npw % 2 ? 1 : -1);
-		if (npw % 2 == 0)
-			voff -= PWIDGET_HEIGHT + PWIDGET_PADDING;
-		if (voff - PWIDGET_HEIGHT < p->p_v - p->p_h)
-			break;
+		if (npw == (p->p_nwidgets + 1) / 2) {
+			uoff += p->p_w / 2 - toff;
+			voff += npw * (PWIDGET_HEIGHT + PWIDGET_PADDING);
+		}
+		voff -= PWIDGET_HEIGHT + PWIDGET_PADDING;
+		if (voff - PWIDGET_HEIGHT < p->p_v - p->p_h) {
+			pw->pw_flags |= PWF_HIDE;
+			goto next;
+		}
+		pw->pw_flags &= ~PWF_HIDE;
 
 		if ((p->p_info->pi_opts & PF_XPARENT) == 0) {
 			if (fp->f_flags & FF_SKEL)
@@ -384,6 +389,7 @@ draw_panel(struct panel *p, int toff)
 		    (s - pw->pw_str) * LETTER_WIDTH;
 		pw->pw_h = PWIDGET_HEIGHT;
 
+next:
 		/*
 		 * We may have to break early because of the way
 		 * persistent memory allocations are performed.
