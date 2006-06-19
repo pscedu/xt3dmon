@@ -164,6 +164,7 @@ dxp_cuban8(int dim)
 	float mag;
 	int ret;
 
+	a = b = 0.0; /* gcc */
 	switch (dim) {
 	case DIM_X:
 		a = CABHEIGHT/4.0;
@@ -293,6 +294,7 @@ dxp_corkscrew(int dim)
 	int ret;
 
 	ret = 0;
+	a = b = c = 0.0; /* gcc */
 	switch (dim) {
 	case DIM_X:
 		a = CABHEIGHT / 4.0;
