@@ -129,9 +129,9 @@ draw_compass(int u, __unused int w, int v, __unused int h)
 }
 
 __inline void
-draw_string(int u, int v, void *font, const unsigned char *s)
+draw_string(int u, int v, int h, void *font, const unsigned char *s)
 {
-	int margin, w, h;
+	int margin, w;
 
 	/* Save state and set things up for 2D. */
 	glPushAttrib(GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
@@ -151,7 +151,6 @@ draw_string(int u, int v, void *font, const unsigned char *s)
 	glColor4f(1.0f, 1.0f, 1.0f, 0.9f);
 
 	w = glutBitmapLength(font, s);
-	h = glutBitmapHeight(font);
 
 	glRasterPos2f(u, v);
 	while (*s != '\0')
@@ -197,19 +196,19 @@ draw_caption(void)
 	int u, w, h;
 
 	font = GLUT_BITMAP_TIMES_ROMAN_24;
+	h = 24;
 
 	/* Draw the caption text, center on x */
 	if (caption) {
 		s = (const unsigned char *)caption;
 		w = glutBitmapLength(font, s);
 		u = (winv.iv_w / 2.0) - (w / 2.0);
-		draw_string(u, 10, font, s);
+		draw_string(u, 10, h, font, s);
 	}
 	s = (const unsigned char *)"Live BigBen/XT3 Monitor";
 	w = glutBitmapLength(font, s);
-	h = glutBitmapHeight(font);
 	u = (winv.iv_w / 2.0) - (w / 2.0);
-	draw_string(u, winv.iv_h - h - 3, font, s);
+	draw_string(u, winv.iv_h - h - 3, h, font, s);
 }
 
 __inline void
