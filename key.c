@@ -298,6 +298,9 @@ gl_keyh_option(unsigned char key, __unused int u, __unused int v)
 	case 'w':
 		opts |= OP_FRAMES;
 		break;
+	case 'x':
+		opts |= OP_DEUSEX;
+		break;
 	default:
 		return;
 	}
@@ -560,11 +563,12 @@ gl_keyh_default(unsigned char key, int u, int v)
 	case '6': case '8': {
 		double du, dv;
 
+		du = dv = 0.0;
 		switch (key) {
-		case '2': du =  0.0; dv = -2.0; break;
-		case '4': du =  2.0; dv =  0.0; break;
-		case '6': du = -2.0; dv =  0.0; break;
-		case '8': du =  0.0; dv =  2.0; break;
+		case '2': dv = -0.02; break;
+		case '4': du =  0.02; break;
+		case '6': du = -0.02; break;
+		case '8': dv =  0.02; break;
 		}
 
 		tween_push(TWF_LOOK | TWF_POS | TWF_UP);
