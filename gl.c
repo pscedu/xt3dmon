@@ -199,6 +199,7 @@ gl_displayh_stereo(void)
 	switch (stereo_mode) {
 	case STM_ACT:
 //		glDrawBuffer(GL_BACK_RIGHT);
+//		frid = (wid == WINID_LEFT) ? FRID_LEFT : FRID_RIGHT;
 		break;
 	case STM_PASV:
 		gl_wid_update();
