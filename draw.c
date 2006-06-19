@@ -39,7 +39,7 @@ int dl_ground[2];
 int dl_selnodes[2];
 
 __inline void
-draw_compass(int u, int w, int v, int h)
+draw_compass(int u, __unused int w, int v, __unused int h)
 {
 	double cl, mvm[16], pvm[16], x, y, z;
 	struct fvec fv;
