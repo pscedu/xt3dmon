@@ -22,7 +22,6 @@ int		gl_cursor[2];		/* Current cursors for each stereo win */
 int		cursor;			/* What the cursors will be */
 
 struct fvec	focus;			/* 3D point of revolution */
-double		focus_ratio = 1.0;	/* Elliptical ratio of rev. */
 
 struct ivec	winv = { 800, 600, 0 };
 
@@ -85,13 +84,11 @@ focus_cluster(struct fvec *cen)
 {
 	double dist;
 
-	focus_ratio = 1.0;	 	/* reset elliptical ratio */
 	switch (st.st_vmode) {
 	case VM_PHYS:
 		cen->fv_x = XCENTER;
 		cen->fv_y = YCENTER;
 		cen->fv_z = ZCENTER;
-		focus_ratio = CL_WIDTH / CL_DEPTH;
 		break;
 	case VM_WIRED:
 		dist = MAX3(WIV_SWIDTH, WIV_SHEIGHT, WIV_SDEPTH) / 4.0;
@@ -133,6 +130,4 @@ focus_selnodes(struct fvec *cen)
 	cen->fv_x /= nselnodes;
 	cen->fv_y /= nselnodes;
 	cen->fv_z /= nselnodes;
-
-	focus_ratio = 1.0;		/* reset elliptical ratio */
 }
