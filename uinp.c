@@ -33,12 +33,34 @@ uinpcb_cmd(void)
 	/* Send command to service node. */
 }
 
+/* Screenshot user input callback. */
 void
 uinpcb_ss(void)
 {
-	/* Take screenshot. */
-	if (*buf_get(&uinp.uinp_buf) != '\0')
-		capture_snap(buf_get(&uinp.uinp_buf), capture_mode);
+	const char *s, *ext;
+	int cm;
+
+	s = buf_get(&uinp.uinp_buf);
+
+	if (s[0] == '\0')
+		return;
+
+	if ((ext = strrchr(s, '.')) == NULL) {
+		buf_chop(&uinp.uinp_buf);
+		buf_append(&uinp.uinp_buf, '.');
+		buf_append(&uinp.uinp_buf, 'p');
+		buf_append(&uinp.uinp_buf, 'n');
+		buf_append(&uinp.uinp_buf, 'g');
+		buf_append(&uinp.uinp_buf, '\0');
+		cm = CM_PNG;
+	} else {
+		if (strcmp(ext, ".png") == 0)
+			cm = CM_PNG;
+		else
+			/* XXX: status_add("unsupported"); */
+			cm = CM_PPM;
+	}
+	capture_snap(s, cm);
 }
 
 void
