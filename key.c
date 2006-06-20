@@ -103,7 +103,7 @@ gl_keyh_uinput(unsigned char key, __unused int u, __unused int v)
 	p = uinp.uinp_panel;
 	uinp.uinp_opts |= UINPO_DIRTY;
 	switch (key) {
-	case 13: /* enter */
+	case 13:	/* enter */
 		glutKeyboardFunc(gl_keyh_default);
 		uinp.uinp_panel = NULL;
 
@@ -114,14 +114,15 @@ gl_keyh_uinput(unsigned char key, __unused int u, __unused int v)
 		if ((opts & UINPO_LINGER) == 0)
 			panel_tremove(p);
 		break;
-	case 27: /* escape */
+	case 27:	/* escape */
 		buf_reset(&uinp.uinp_buf);
 		buf_append(&uinp.uinp_buf, '\0');
 		glutKeyboardFunc(gl_keyh_default);
 		uinp.uinp_panel = NULL;
 		panel_tremove(p);
 		break;
-	case 8: /* backspace */
+	case 127:	/* MacOS delete */
+	case 8:		/* backspace */
 		if (strlen(buf_get(&uinp.uinp_buf)) > 0) {
 			buf_chop(&uinp.uinp_buf);
 			buf_chop(&uinp.uinp_buf);
