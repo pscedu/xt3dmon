@@ -89,8 +89,7 @@ struct pinfo pinfo[] = {
  /* 23 */ { "Route Controls",	panel_refresh_rt,	PSTICK_TR, 0,					0,		NULL },
  /* 24 */ { "Flyby Chooser",	panel_refresh_fbcho,	PSTICK_TR, PF_FBIGN,				0,		NULL },
  /* 25 */ { "Flyby Creation",	panel_refresh_fbnew,	PSTICK_TR, PF_FBIGN | PF_UINP,			0,		uinpcb_fbnew },
- /* 26 */ { "Compass",		panel_refresh_cmp,	PSTICK_BL, PF_FBIGN,				0,		NULL },
- /* 27 */ { "PSC",		panel_refresh_psc,	PSTICK_BL, PF_FBIGN | PF_XPARENT,			0,		NULL }
+ /* 26 */ { "Compass",		panel_refresh_cmp,	PSTICK_BL, PF_FBIGN,				0,		NULL }
 };
 
 #define PVOFF_TL 0
@@ -841,82 +840,4 @@ panel_draw_compass(struct panel *p)
 	draw_compass(
 	    p->p_u + p->p_w / 2, p->p_w,
 	    p->p_v - p->p_h / 2 + voff, p->p_h - abs(voff));
-}
-
-#define PSC_CW	156.0
-#define PSC_CH	156.0
-#define PSC_TW	256.0
-#define PSC_TH	256.0
-
-void
-panel_draw_psc(struct panel *p)
-{
-	int u, v, w, h;
-
-	u = p->p_u + PANEL_PADDING;
-	v = p->p_v - PANEL_PADDING;
-	w = p->p_w - (2 * PANEL_PADDING);
-	h = p->p_h - (2 * PANEL_PADDING);
-
-	if (w < 0 || h < 0)
-		return;
-
-	if (w > PSC_CW) {
-		u += (w - PSC_CW) / 2.0;
-		w = PSC_CW;
-	}
-
-	if (h > PSC_CH) {
-		v -= (h - PSC_CH) / 2.0;
-		h = PSC_CW;
-	}
-
-	/* Save state and set things up for 2D. */
-	glPushAttrib(GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
-
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-
-	gluOrtho2D(0.0, winv.iv_w, 0.0, winv.iv_h);
-
-	glEnable(GL_TEXTURE_2D);
-
-	glBindTexture(GL_TEXTURE_2D, fill_psc.f_texid[wid]);
-
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	glEnable(GL_POLYGON_OFFSET_FILL);
-	glPolygonOffset(1.0, 3.0);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-	glBegin(GL_QUADS);
-	glTexCoord2d(0.0, 1.0);
-	glVertex2d(u,		v);
-	glTexCoord2d(PSC_CW / PSC_TW, 1.0);
-	glVertex2d(u + w,	v);
-	glTexCoord2d(PSC_CW / PSC_TW, 1.0 - PSC_CH / PSC_TH);
-	glVertex2d(u + w,	v - h + 1);
-	glTexCoord2d(0.0, 1.0 - PSC_CH / PSC_TH);
-	glVertex2d(u,		v - h + 1);
-	glEnd();
-
-	glDisable(GL_LIGHTING);
-	glDisable(GL_LIGHT0);
-	glDisable(GL_POLYGON_OFFSET_FILL);
-
-	glDisable(GL_TEXTURE_2D);
-
-	/* End 2D mode. */
-	glPopMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-
-	glPopAttrib();
 }

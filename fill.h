@@ -80,7 +80,6 @@ extern struct fill	 fill_selnode;
 extern struct fill	 fill_clskel;
 extern struct fill	 fill_ground;
 
-extern struct fill	 fill_psc;
 extern struct fill	 fill_borg;
 extern struct fill	 fill_matrix;
 extern struct fill	 fill_matrix_reloaded;

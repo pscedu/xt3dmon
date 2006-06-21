@@ -1157,25 +1157,3 @@ panel_refresh_cmp(struct panel *p)
 	 "          ");
 	p->p_extdrawf = panel_draw_compass;
 }
-
-void
-panel_refresh_psc(struct panel *p)
-{
-	if (panel_ready(p))
-		return;
-
-	panel_set_content(p,
-	 "                    \n"
-	 "                    \n"
-	 "                    \n"
-	 "                    \n"
-	 "                    \n"
-	 "                    \n"
-	 "                    \n"
-	 "                    \n"
-	 "                    \n"
-	 "                    \n"
-	 "                    \n"
-	 "                    ");
-	p->p_extdrawf = panel_draw_psc;
-}
