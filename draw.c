@@ -170,10 +170,10 @@ draw_string(int u, int v, int h, void *font, const unsigned char *s)
 	v += h - 4 - margin;
 
 	glColor4f(0.2f, 0.2f, 0.2f, 0.6f);
-	glBegin(GL_POLYGON);
+	glBegin(GL_QUADS);
 	glVertex2d(u,		v);
 	glVertex2d(u + w,	v);
-	glVertex2d(u + w - 1,	v - h + 1);
+	glVertex2d(u + w,	v - h + 1);
 	glVertex2d(u,		v - h + 1);
 	glEnd();
 
