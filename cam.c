@@ -169,30 +169,6 @@ cam_revolvefocus(double dt, double dp)
 		};
 
 		cam_revolve(nfv, 2, dt, dp);
-	} else if (st.st_vmode == VM_WIONE && nselnodes == 0) {
-		struct fvec nfv[8];
-		double x, y, z, w, h, d;
-		int n;
-
-		x = st.st_wioff.iv_x * st.st_winsp.iv_w;
-		y = st.st_wioff.iv_y * st.st_winsp.iv_y;
-		z = st.st_wioff.iv_z * st.st_winsp.iv_z;
-
-		w = (widim.iv_w - 1) * st.st_winsp.iv_w + vmodes[VM_WIONE].vm_ndim[GEOM_CUBE].fv_w;
-		h = (widim.iv_h - 1) * st.st_winsp.iv_h + vmodes[VM_WIONE].vm_ndim[GEOM_CUBE].fv_h;
-		d = (widim.iv_d - 1) * st.st_winsp.iv_d + vmodes[VM_WIONE].vm_ndim[GEOM_CUBE].fv_d;
-
-		n = 0;
-		vec_set(&nfv[n++], x,	  y,	 z);
-		vec_set(&nfv[n++], x + w, y,	 z);
-		vec_set(&nfv[n++], x + w, y,	 z + d);
-		vec_set(&nfv[n++], x,	  y,	 z + d);
-		vec_set(&nfv[n++], x,	  y + h, z);
-		vec_set(&nfv[n++], x + w, y + h, z);
-		vec_set(&nfv[n++], x + w, y + h, z + d);
-		vec_set(&nfv[n++], x,	  y + h, z + d);
-
-		cam_revolve(nfv, n, dt, dp);
 	} else
 		cam_revolve(fvp, 1, dt, dp);
 }
