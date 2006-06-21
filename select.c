@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "cdefs.h"
+#include "cam.h"
 #include "env.h"
 #include "flyby.h"
 #include "gl.h"
@@ -18,6 +19,7 @@
 #include "select.h"
 #include "selnode.h"
 #include "state.h"
+#include "tween.h"
 #include "util.h"
 
 GLuint	 selbuf[1000];
@@ -509,6 +511,10 @@ gscb_pw_wiadj(struct glname *gn, int flags)
 		}
 		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_CAM |
 		    RF_SELNODE | RF_NODESWIV;
+
+		tween_push(TWF_POS | TWF_LOOK | TWF_UP);
+		cam_revolvefocus(0.0, 0.001);
+		tween_pop(TWF_POS | TWF_LOOK | TWF_UP);
 	}
 }
 
