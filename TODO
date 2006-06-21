@@ -82,3 +82,5 @@ todo
 - scripted action parser - like flyby & deusex combined
 - fix tween to real stack: once point is reached, pop it then move on
 - rename NODEWIDTH/HEIGHT/DEPTH cause its phys-only
+- PSC logo/watermark panel
+- add copyright stuff (glut, zlib, etc.) to xt3dmon.1
