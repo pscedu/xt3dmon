@@ -68,6 +68,11 @@ tex_load(void)
 	fill_selnode.f_texid[wid] = tex_init(data, GL_RGBA, w, h);
 	fill_selnode.f_texid_a[wid] = tex_init(data, GL_INTENSITY, w, h);
 	free(data);
+
+	/* PSC texture. */
+	data = png_load(_PATH_PSC, &w, &h);
+	fill_psc.f_texid[wid] = tex_init(data, GL_RGBA, w, h);
+	free(data);
 }
 
 /* Remove textures from memory. */

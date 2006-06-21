@@ -15,6 +15,7 @@
 #define _PATH_TEX_SN	"img/tex-selnode.png"
 #define _PATH_TEX_BORG	"img/borg.png"
 #define _PATH_FONT	"img/font.png"
+#define _PATH_PSC	"img/psc.png"
 
 #define _PATH_SSDIR	"snaps"
 #define _PATH_STAT	"/proc/self/stat"
