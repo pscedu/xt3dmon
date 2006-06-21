@@ -8,7 +8,13 @@ host=phantom.psc.edu
 
 # end config
 
+errh()
+{
+	exit 0
+}
+
 set -e
+trap errh ERR
 
 ssh -qgNL 3306:$sdb:3306 $host &
 pid=$(jobs -l | awk '{print $2}')

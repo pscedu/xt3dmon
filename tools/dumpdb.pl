@@ -237,16 +237,16 @@ if (!-e $lastdir || `diff -qr $lastdir $outdir | grep -v ^Only`) {
 }
 
 sub dberr {
-	warn "$0: ", @_, ": $DBI::errstr\n";
-	exit 1;
+#	warn "$0: ", @_, ": $DBI::errstr\n";
+	exit 0;
 }
 
 sub errx {
-	warn "$0: ", @_, "\n";
-	exit 1;
+#	warn "$0: ", @_, "\n";
+	exit 0;
 }
 
 sub err {
-	warn "$0: ", @_, ": $!\n";
-	exit 1;
+#	warn "$0: ", @_, ": $!\n";
+	exit 0;
 }
