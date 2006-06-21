@@ -45,8 +45,8 @@ open F, "<", $fn or die "$fn: $!\n";
 chomp(my $host = <F>);
 close F;
 
-my $dbh = DBI->connect("DBI:mysql:database=$db;host=$host;port=$port", $user, $pass)
-    or dberr("connect $host:$port");
+my $dbh = DBI->connect("DBI:mysql:database=$db;host=$host;port=$port",
+    $user, $pass, { PrintError => $err }) or dberr("connect $host:$port");
 
 my (%t_fn, %f_fn, %o_fn, %fh, $t);
 foreach $t (keys %c_fn) {
