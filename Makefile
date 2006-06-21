@@ -13,6 +13,9 @@ SRCS+= uinp.c ustrdtab.c ustream.c ustrop-file.c ustrop-ssl.c util.c
 SRCS+= vec.c widget.c yod.c
 
 LIBS = -lGL -lglut -lGLU -lpng -lssl -lm -lcrypto -lcom_err
+# -lGLcore -lXext -lX11 -ldl -lXxf86vm -lgss_s -lz
+# -lgssapi_krb5 -lkrb5 -lk5crypto -lresolv
+
 CFLAGS += -Wall -W -g -D_LIVE_DSP=DSP_LOCAL
 #CFLAGS += -O -Wuninitialized
 LDFLAGS =
