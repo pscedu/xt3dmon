@@ -8,6 +8,7 @@ use POSIX;
 use strict;
 use warnings;
 
+my $err = 0;
 # start config
 
 my $smwhost = "smw";
@@ -237,16 +238,16 @@ if (!-e $lastdir || `diff -qr $lastdir $outdir | grep -v ^Only`) {
 }
 
 sub dberr {
-#	warn "$0: ", @_, ": $DBI::errstr\n";
-	exit 0;
+	warn "$0: ", @_, ": $DBI::errstr\n" if $err;
+	exit $err;
 }
 
 sub errx {
-#	warn "$0: ", @_, "\n";
-	exit 0;
+	warn "$0: ", @_, "\n" if $err;
+	exit $err;
 }
 
 sub err {
-#	warn "$0: ", @_, ": $!\n";
-	exit 0;
+	warn "$0: ", @_, ": $!\n" if $err;
+	exit $err;
 }
