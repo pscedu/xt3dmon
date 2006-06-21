@@ -374,7 +374,7 @@ int
 dxp_refocus(void)
 {
 	tween_push(TWF_POS | TWF_UP | TWF_LOOK);
-	cam_revolvefocus(0.0, 0.01);
+	cam_revolvefocus(0.0, 0.001);
 	tween_pop(TWF_POS | TWF_UP | TWF_LOOK);
 	return (1);
 }
