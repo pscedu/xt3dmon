@@ -8,8 +8,12 @@ host=phantom.psc.edu
 
 # end config
 
+pid=""
 errh()
 {
+	if [ -n "$pid" ]; then
+		kill $pid
+	fi
 	exit 0
 }
 
@@ -24,6 +28,7 @@ sleep 2
 cd $servroot/tools
 perl dumpdb.pl
 
+disown
 kill $pid
 
 cd $webroot/src
