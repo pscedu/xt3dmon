@@ -100,7 +100,7 @@ col_get_intv(int *posp, struct fill *fp)
 {
 	struct fill *scfp;
 
-	*posp = (*posp + 23) % 360;
+	*posp = (*posp + 41) % 360;
 
 	fp->f_h = (*posp / 360.0) * HUE_MAX + HUE_MIN;
 	fp->f_s = (*posp / 360.0) * SAT_MAX + SAT_MIN;
