@@ -1,28 +1,87 @@
 # $Id$
 
-start {
-	vmode phys
-	dmode temp
-	panels legend,vmode,data
-	opts labels
-}
-bird
-selnode 0
-hlseldm
-opts +skels
-clrsn
-opts -skels
-vmode wiredone
-dmode jobs
-opts +pipes
-panel +pipe
-selnode 0
-hlseldm
-clrsn
-opts -pipes
-wioff 1 0 0
-wioff 2 0 0
-wioff 0 0 0
 vmode phys
 dmode temp
+refresh
+pipemode dir
+opt frames,tween,display,nodeanim,caption,deusex
+panel legend,help
 bird
+refocus
+caption "CPU temperatures in physical machine layout"
+orbit -x
+selnode random
+hl seldm
+op skel
+caption "Zoom while viewing nodes in temperature range"
+refocus
+move forward 50
+op nlabels
+orbit x
+op -nlabels
+clrsn
+move back 50
+bird
+hl all
+caption "Cycle through all temperature ranges"
+cyclenc
+op -skel
+caption "Changing to \"wired\" mode"
+vmode wione
+bird
+dmode job
+caption "Jobs in wired mode (virtual interconnect)"
+orbit -x
+seljob random
+caption "Viewing one job in wired mode"
+refocus
+op skel nlabels
+move forward 50
+orbit x
+move back 50
+op -skel -nlabels
+hl all
+clrsn
+caption "Preparing to zoom inside the interconnect"
+refocus
+panel compass
+op pipes
+winsp +14
+selnode 2600
+refocus
+move forward 100
+op nlabels
+caption "Focus on one node"
+orbit x
+move back 100
+op -nlabels
+clrsn
+bird
+caption "Change draw offset to show torus repetitions"
+panel -compass
+winsp -10
+panel wiadj
+wioff +8 +0 +0
+wioff +0 +0 +8
+orbit x
+wioff +0 +0 -8
+wioff -8 +0 +0
+op -pipes
+panel -wiadj
+seljob random
+op skel
+caption "Viewing job between physical and wired modes"
+vmode phys
+bird
+vmode wione
+bird
+clrsn
+op -skel
+hl all
+caption "Going back to physical layout mode viewing jobs"
+vmode phys
+bird
+caption "Cycle through all node states/jobs"
+op skel
+cyclenc
+op -skel
