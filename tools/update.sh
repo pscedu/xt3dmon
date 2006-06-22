@@ -29,7 +29,9 @@ cd $servroot/tools
 perl dumpdb.pl
 
 disown
-kill $pid
+newpid=$pid
+pid=""
+kill $newpid
 
 cd $webroot/src
 perl xtwmon.pl
