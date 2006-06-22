@@ -3,7 +3,6 @@
 vmode phys
 dmode temp
 refresh
-pipemode dir
 opt frames,tween,display,nodeanim,caption,deusex
 panel legend,help
 bird
@@ -12,20 +11,20 @@ caption "CPU temperatures in physical machine layout"
 orbit -x
 selnode random
 hl seldm
-op skel
+opt +skel
 caption "Zoom while viewing nodes in temperature range"
 refocus
 move forward 50
-op nlabels
+opt +nlabels
 orbit x
-op -nlabels
+opt -nlabels
 clrsn
 move back 50
 bird
 hl all
 caption "Cycle through all temperature ranges"
 cyclenc
-op -skel
+opt -skel
 caption "Changing to \"wired\" mode"
 vmode wione
 bird
@@ -35,53 +34,53 @@ orbit -x
 seljob random
 caption "Viewing one job in wired mode"
 refocus
-op skel nlabels
+opt +skel,nlabels
 move forward 50
 orbit x
 move back 50
-op -skel -nlabels
+opt -skel,nlabels
 hl all
 clrsn
 caption "Preparing to zoom inside the interconnect"
 refocus
-panel compass
-op pipes
+panel +compass
+opt +pipes
 winsp +14
 selnode 2600
 refocus
 move forward 100
-op nlabels
+opt +nlabels
 caption "Focus on one node"
 orbit x
 move back 100
-op -nlabels
+opt -nlabels
 clrsn
 bird
 caption "Change draw offset to show torus repetitions"
 panel -compass
 winsp -10
-panel wiadj
+panel +wiadj
 wioff +8 +0 +0
 wioff +0 +0 +8
 orbit x
 wioff +0 +0 -8
 wioff -8 +0 +0
-op -pipes
+opt -pipes
 panel -wiadj
 seljob random
-op skel
+opt +skel
 caption "Viewing job between physical and wired modes"
 vmode phys
 bird
 vmode wione
 bird
 clrsn
-op -skel
+opt -skel
 hl all
 caption "Going back to physical layout mode viewing jobs"
 vmode phys
 bird
 caption "Cycle through all node states/jobs"
-op skel
+opt +skel
 cyclenc
-op -skel
+opt -skel
