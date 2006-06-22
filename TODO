@@ -84,3 +84,4 @@ todo
 - rename NODEWIDTH/HEIGHT/DEPTH cause its phys-only
 - PSC logo/watermark panel
 - add copyright stuff (glut, zlib, etc.) to xt3dmon.1
+- use existing kerberos tickets to do auth
