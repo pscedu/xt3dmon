@@ -29,6 +29,19 @@
 	    SQUARE((a)->fv_y - (b)->fv_y) +		\
 	    SQUARE((a)->fv_z - (b)->fv_z)))
 
+TAILQ_HEAD(, dx_action) dxalist;
+
+void
+dxa_add(struct dx_action *dxa)
+{
+	struct dx_action *p;
+
+	if ((p = malloc(sizeof(*p))) == NULL)
+		err(1, "malloc");
+	*p = *dxa;
+	TAILQ_INSERT_TAIL(&dxalist, p, dxa_link);
+}
+
 void
 dxi_orbit(void)
 {
@@ -941,21 +954,6 @@ struct dxte {
 	DEN(dxp_cyclenc),
 	DEI(dxp_nop, OP_SKEL),
 	DEN(dxp_stall),
-//	DES(dxp_setcap, "Flying through physical mode"),
-//	DEI(dxp_op, OP_NLABELS),
-//	DEN(dxp_refocus),
-//	DEN(dxp_camsync),
-//	DEN(dxp_sstall),
-//	DEN(dxp_cam_move_focus),
-//	DEN(dxp_camsync),
-//	DEN(dxp_sstall),
-//	DEI(dxp_cuban8, DIM_Y),
-//	DEI(dxp_nop, OP_NLABELS),
-//	DEN(dxp_camsync),
-//	DEN(dxp_sstall),
-//	DEN(dxp_bird),
-//	DEN(dxp_camsync),
-//	DEN(dxp_sstall),
 };
 
 #define NENTRIES(t) (sizeof((t)) / sizeof((t)[0]))
