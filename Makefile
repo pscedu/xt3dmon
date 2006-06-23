@@ -5,6 +5,7 @@ MKDEP = `type -t mkdep >/dev/null 2>&1 && echo mkdep || echo makedepend -f.depen
 PROG = xt3dmon
 
 SRCS = arch.c buf.c callout.c cam.c capture.c dbg.c deusex.c draw.c ds.c
+SRCS+= dx-lex.l dx-parse.y
 SRCS+= eggs.c env.c fill.c flyby.c gl.c hl.c http.c job.c key.c lnseg.c
 SRCS+= main.c mark.c math.c mouse.c node.c objlist.c panel.c parse.c
 SRCS+= phys-lex.l phys-parse.y png.c prefresh.c reel.c select.c
@@ -19,7 +20,11 @@ LIBS = -lGL -lglut -lGLU -lpng -lssl -lm -lcrypto -lcom_err
 CFLAGS += -Wall -W -g -D_LIVE_DSP=DSP_LOCAL
 #CFLAGS += -O -Wuninitialized
 LDFLAGS =
-YFLAGS += -d
+
+YFLAGS += -d -b "$$(echo $@ | sed 's/-.*//')" \
+	     -p "$$(echo $@ | sed 's/-.*//')" \
+	     -o $@
+
 INCS = $$(echo ${CFLAGS} | \
     awk '{for (n = 1; n <= NF; n++) if (match($$n, /^-I/)) printf "%s ", $$n }')
 
@@ -31,12 +36,15 @@ CSRCS = $(filter %.c,${SRCS})
 CSRCS+= $(patsubst %.y,%.c,$(filter %.y,${SRCS}))
 CSRCS+= $(patsubst %.l,%.c,$(filter %.l,${SRCS}))
 
-CLEAN+= phys-lex.c phys-parse.c y.tab.h gmon.out
+CLEAN+= dx-parse.c phys-lex.c phys-parse.c y.tab.h gmon.out
 
 all: ${PROG}
 
 ${PROG}: ${OBJS}
 	${CC} ${LDFLAGS} ${LIBS} ${OBJS} -o $@
+
+.y.c:
+	${YACC} ${YFLAGS} $<
 
 .c.o:
 	${CC} ${CFLAGS} -c $<
