@@ -26,21 +26,24 @@ size				{ return (SIZE); }
 space				{ return (SPACE); }
 spans				{ return (SPANS); }
 skel				{ return (SKEL); }
-"{"				{ return (LBRACKET); }
-"}"				{ return (RBRACKET); }
-"<"				{ return (LANGLE); }
-">"				{ return (RANGLE); }
-,				{ return (COMMA); }
+
+"{"				{ return (LS_LBRACKET); }
+"}"				{ return (LS_RBRACKET); }
+"<"				{ return (LS_LANGLE); }
+">"				{ return (LS_RANGLE); }
+,				{ return (LS_COMMA); }
+"\""				{ return (LS_DQUOT); }
+
 [0-9]+				{
-					yylval.wnumber = atoi(yytext);
-					return (WNUMBER);
+					yylval.intg = atoi(yytext);
+					return (LS_INTG);
 				}
-[0-9]+\.[0-9]*|[0-9]*\.[0-9]+	{
+-?[0-9]+\.[0-9]*|-?\.[0-9]+	{
 					errno = 0;
-					yylval.fnumber = strtod(yytext, NULL);
+					yylval.dbl = strtod(yytext, NULL);
 					if (errno)
 						yyerror("%s", strerror(errno));
-					return (FNUMBER);
+					return (LS_DBL);
 				}
 [a-zA-Z_]+			{
 					if ((yylval.string = strdup(yytext)) == NULL)

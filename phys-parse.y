@@ -16,7 +16,7 @@ int yylex(void);
 int yyerror(const char *, ...);
 int yyparse(void);
 
-struct physdim *physdim_get(const char *name);
+struct physdim *physdim_get(const char *);
 
 int lineno = 1;
 static int errors;
@@ -31,13 +31,13 @@ LIST_HEAD(, physdim) physdims;
 %token COMMA LANGLE LBRACKET RANGLE RBRACKET
 
 %token <string> STRING
-%token <wnumber> WNUMBER
-%token <fnumber> FNUMBER
+%token <intg> INTG
+%token <dbl> DBL
 
 %union {
 	char	*string;
-	int	 wnumber;
-	double	 fnumber;
+	int	 intg;
+	double	 dbl;
 }
 
 %%
@@ -62,18 +62,18 @@ opts_l		: /* empty */
 		| opts opts_l
 		;
 
-opts		: MAG WNUMBER {
+opts		: MAG INTG {
 			physdim->pd_mag = $2;
 		}
-		| OFFSET LANGLE FNUMBER COMMA FNUMBER COMMA FNUMBER RANGLE {
+		| OFFSET LANGLE DBL COMMA DBL COMMA DBL RANGLE {
 			physdim->pd_offset.fv_x = $3;
 			physdim->pd_offset.fv_y = $5;
 			physdim->pd_offset.fv_z = $7;
 		}
-		| SPACE WNUMBER {
+		| SPACE INTG {
 			physdim->pd_space = $2;
 		}
-		| SPACE FNUMBER {
+		| SPACE DBL {
 			physdim->pd_space = $2;
 		}
 		| SPANS STRING {
@@ -105,7 +105,7 @@ opts		: MAG WNUMBER {
 			LIST_REMOVE(pd, pd_link);
 			free($2);
 		}
-		| SIZE LANGLE FNUMBER COMMA FNUMBER COMMA FNUMBER RANGLE {
+		| SIZE LANGLE DBL COMMA DBL COMMA DBL RANGLE {
 			physdim->pd_size.fv_x = $3;
 			physdim->pd_size.fv_y = $5;
 			physdim->pd_size.fv_z = $7;
