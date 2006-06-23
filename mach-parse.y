@@ -9,8 +9,8 @@
 #include <string.h>
 
 #include "env.h"
-#include "phys.h"
 #include "pathnames.h"
+#include "phys.h"
 
 #define yyin physin
 
