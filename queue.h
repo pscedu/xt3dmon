@@ -139,6 +139,11 @@
 	(LIST_FIRST(lh) == LIST_END(lh))
 #endif
 
+#ifndef TAILQ_HEAD_INITIALIZER
+#define TAILQ_HEAD_INITIALIZER(tqh)					\
+	{ NULL, &(tqh).tqh_first }
+#endif
+
 #ifndef TAILQ_END
 #define TAILQ_END(tqh) NULL
 #endif
