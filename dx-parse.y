@@ -11,9 +11,11 @@
 #include "deusex.h"
 #include "state.h"
 
+#define yyin dxin
+
 int yylex(void);
 int yyparse(void);
-static int yyerror(const char *, ...);
+int yyerror(const char *, ...);
 
 extern int lineno;
 int errors;
@@ -116,35 +118,19 @@ conf		: DAT_BIRD {
 
 %%
 
-static int
+int
 yyerror(const char *fmt, ...)
 {
 	va_list ap;
 
 	va_start(ap, fmt);
-	dx_error(fmt, ap);
-	va_end(ap);
-	return (0);
-}
-
-void
-dx_verror(const char *fmt, ...)
-{
-	va_list ap;
-
-	va_start(ap, fmt);
-	dx_error(fmt, ap);
-	va_end(ap);
-}
-
-void
-dx_error(const char *fmt, va_list ap)
-{
 	fprintf(stderr, "%s:%d: ", progname, lineno);
 	vfprintf(stderr, fmt, ap);
 	fprintf(stderr, "\n");
+	va_end(ap);
 
 	errors++;
+	return (0);
 }
 
 void

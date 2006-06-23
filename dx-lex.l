@@ -8,9 +8,12 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include "deusex.h"
+#include "dx-parse.h"
 
-#include "y.tab.h"
+#define yyerror dxerror
+#define yylval dxlval
+
+int yyerror(const char *, ...);
 
 extern int lineno;
 
@@ -74,28 +77,28 @@ wioff					{ return (DAT_WIOFF); }
 						errno = 0;
 						yylval.strict_dbl = strtod(yytext, NULL);
 						if (errno)
-							dx_verror("%s", strerror(errno));
+							yyerror("%s", strerror(errno));
 						return (STRICT_DBL);
 					}
 [a-zA-Z_]+				{
 						if ((yylval.string = strdup(yytext)) == NULL)
-							dx_verror("%s", strerror(errno));
+							yyerror("%s", strerror(errno));
 						return (STRING);
 					}
 \"[^"]*\"				{
 						char *endp;
 
 						if ((endp = strrchr(yytext, '"')) == NULL)
-							dx_verror("lexer missed quote");
+							yyerror("lexer missed quote");
 						endp = '\0';
 						if ((yylval.string = strdup(yytext + 1)) == NULL)
-							dx_verror("%s", strerror(errno));
+							yyerror("%s", strerror(errno));
 						return (STRING);
 					}
 #.*					{ ; }
 \n					{ lineno++; }
 [\t ]+					{ ; }
-.					{ dx_verror("%s: invalid token", yytext); }
+.					{ yyerror("%s: invalid token", yytext); }
 
 %%
 

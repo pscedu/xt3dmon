@@ -12,6 +12,8 @@
 #include "phys.h"
 #include "pathnames.h"
 
+#define yyin physin
+
 int yylex(void);
 int yyerror(const char *, ...);
 int yyparse(void);

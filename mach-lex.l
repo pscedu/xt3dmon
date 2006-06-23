@@ -8,7 +8,10 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include "y.tab.h"
+#include "phys-parse.h"
+
+#define yyerror physerror
+#define yylval physlval
 
 int yyerror(const char *, ...);
 
@@ -27,23 +30,22 @@ space				{ return (SPACE); }
 spans				{ return (SPANS); }
 skel				{ return (SKEL); }
 
-"{"				{ return (LS_LBRACKET); }
-"}"				{ return (LS_RBRACKET); }
-"<"				{ return (LS_LANGLE); }
-">"				{ return (LS_RANGLE); }
-,				{ return (LS_COMMA); }
-"\""				{ return (LS_DQUOT); }
+"{"				{ return (LBRACKET); }
+"}"				{ return (RBRACKET); }
+"<"				{ return (LANGLE); }
+">"				{ return (RANGLE); }
+,				{ return (COMMA); }
 
 [0-9]+				{
 					yylval.intg = atoi(yytext);
-					return (LS_INTG);
+					return (INTG);
 				}
 -?[0-9]+\.[0-9]*|-?\.[0-9]+	{
 					errno = 0;
 					yylval.dbl = strtod(yytext, NULL);
 					if (errno)
 						yyerror("%s", strerror(errno));
-					return (LS_DBL);
+					return (DBL);
 				}
 [a-zA-Z_]+			{
 					if ((yylval.string = strdup(yytext)) == NULL)
