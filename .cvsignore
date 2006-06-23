@@ -3,6 +3,7 @@ client-snap
 gmon.out
 phys-lex.c
 phys-parse.c
+phys-parse.h
 dx-lex.c
 dx-parse.c
-y.tab.h
+dx-parse.h
