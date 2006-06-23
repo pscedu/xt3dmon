@@ -56,3 +56,5 @@ void dxa_add(struct dx_action *);
 void dx_update(void);
 void dx_error(const char *, va_list);
 void dx_verror(const char *, ...);
+
+extern struct dxlist dxlist;

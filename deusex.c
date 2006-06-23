@@ -11,6 +11,7 @@
 #include "cdefs.h"
 #include "cam.h"
 #include "deusex.h"
+#include "dx-parse.h"
 #include "env.h"
 #include "lnseg.h"
 #include "mark.h"
@@ -45,7 +46,18 @@ dxa_add(struct dx_action *dxa)
 void
 dxa_clear(void)
 {
-	//free(dxa->dxa_caption);
+	struct dx_action *dxa;
+
+	while ((dxa = TAILQ_FIRST(&dxlist)) != TAILQ_END(&dxlist)) {
+		switch (dxa->dxa_type) {
+		case DAT_CAPTION:
+			free(dxa->dxa_caption);
+			break;
+		}
+		TAILQ_REMOVE(&dxlist, dxa, dxa_link);
+		free(dxa);
+	}
+//	TAILQ_INIT(&dxlist);
 }
 
 void
