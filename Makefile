@@ -24,6 +24,7 @@ LDFLAGS =
 YFLAGS += -d -b "$$(echo $@ | sed 's/-.*//')" \
 	     -p "$$(echo $@ | sed 's/-.*//')" \
 	     -o $@
+LFLAGS += -P"$$(echo $@ | sed 's/-.*//')"
 
 INCS = $$(echo ${CFLAGS} | \
     awk '{for (n = 1; n <= NF; n++) if (match($$n, /^-I/)) printf "%s ", $$n }')
@@ -36,7 +37,8 @@ CSRCS = $(filter %.c,${SRCS})
 CSRCS+= $(patsubst %.y,%.c,$(filter %.y,${SRCS}))
 CSRCS+= $(patsubst %.l,%.c,$(filter %.l,${SRCS}))
 
-CLEAN+= dx-parse.c phys-lex.c phys-parse.c y.tab.h gmon.out
+CLEAN+= gmon.out dx-lex.c dx-parse.c dx-parse.h
+CLEAN+= phys-lex.c phys-parse.c phys-parse.h
 
 all: ${PROG}
 
@@ -60,8 +62,8 @@ obj:
 	mkdir obj
 
 lines:
-	@shopt -s extglob && eval \
-	    'wc -l !(y.tab).h !(phys-parse|phys-lex).c *.y *.l' | tail -1
+	@shopt -s extglob && eval 'wc -l !(phys-parse|dx-parse).h \
+	    !(phys-parse|phys-lex|dx-parse|dx-lex).c *.y *.l' | tail -1
 
 run: xt3dmon
 	./xt3dmon
