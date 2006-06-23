@@ -45,7 +45,7 @@ caption "Preparing to zoom inside the interconnect"
 refocus
 panel +compass
 opt +pipes
-winsp +14
+winsp +10 +10 +10
 selnode 2600
 refocus
 move forward 100
@@ -58,7 +58,7 @@ clrsn
 bird
 caption "Change draw offset to show torus repetitions"
 panel -compass
-winsp -10
+winsp -10 -10 -10
 panel +wiadj
 wioff +8 +0 +0
 wioff +0 +0 +8
