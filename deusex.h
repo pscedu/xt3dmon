@@ -48,6 +48,8 @@ struct dx_action {
 #define dxa_wioff	dxa_iv2
 };
 
+TAILQ_HEAD(dxlist, dx_action);
+
 void dxa_clear(void);
 void dxa_add(struct dx_action *);
 

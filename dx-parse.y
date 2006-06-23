@@ -23,6 +23,7 @@ int yyerror(const char *, ...);
 extern int lineno;
 int errors;
 double dbl;
+struct dxlist dxlist = TAILQ_HEAD_INITIALIZER(dxlist);
 
 %}
 
@@ -358,7 +359,7 @@ dx_parse(const char *fn)
 	FILE *fp;
 	extern FILE *yyin;
 
-//	TAILQ_INIT(&dxacts);
+	dxa_clear();
 	if ((fp = fopen(fn, "r")) == NULL)
 		err(1, "%s", fn);
 	yyin = fp;
