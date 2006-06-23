@@ -43,6 +43,12 @@ dxa_add(struct dx_action *dxa)
 }
 
 void
+dxa_clear(void)
+{
+	//free(dxa->dxa_caption);
+}
+
+void
 dxi_orbit(void)
 {
 	double rx, ry, rz;
