@@ -3,10 +3,21 @@
 #include "queue.h"
 #include "xmath.h"
 
+/* Set mode values. */
+#define DXV_ON		0
+#define DXV_OFF		1
+#define DXV_SET		2
+
+/* Seljob values. */
+#define DXSJ_RND	(-1)
+
+/* Selnode values. */
+#define DXSN_RND	(-1)
+
 struct dx_action {
 	TAILQ_ENTRY(dx_action)	 dxa_link;
-	int			 dxa_action;
-	char			*dxa_captiontext;
+	int			 dxa_type;
+	char			*dxa_caption;
 	int			 dxa_intg;
 	int			 dxa_intg2;
 	struct ivec		 dxa_iv;
