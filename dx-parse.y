@@ -45,16 +45,19 @@ struct dxlist dxlist = TAILQ_HEAD_INITIALIZER(dxlist);
 %token DAT_WINSP
 %token DAT_WIOFF
 
-%token COMMA LANGLE LBRACKET RANGLE RBRACKET
+%token COMMA LANGLE LBRACKET RANGLE RBRACKET LS_MINUS LS_PLUS
 
 %token <string> STRING
 %token <intg> INTG
-%token <strict_dbl> STRICT_DBL
+%token <dbl> DBL
+
+%type <dbl> l_dbl;
+%type <intg> setmodifier;
 
 %union {
 	char	*string;
 	int	 intg;
-	double	 strict_dbl;
+	double	 dbl;
 };
 
 %%
@@ -64,12 +67,13 @@ grammar		: /* empty */
 		}
 		;
 
-l_dbl		: STRICT_DBL {
-			dbl = $1;
-		}
-		| INTG {
-			dbl = $1;
-		}
+l_dbl		: INTG		{ $$ = $1; }
+		| DBL		{ $$ = $1; }
+		;
+
+setmodifier	: /* empty */	{ $$ = DXV_SET; }
+		| LS_PLUS	{ $$ = DXV_ON;  }
+		| LS_MINUS 	{ $$ = DXV_OFF; }
 		;
 
 conf		: DAT_BIRD {
@@ -147,25 +151,14 @@ conf		: DAT_BIRD {
 			dxa.dxa_move_amt = dbl;
 			dxa_add(&dxa);
 		}
-		| DAT_OPT STRING {
+		| DAT_OPT setmodifier STRING {
 			struct dx_action dxa;
 			char *p, *t;
 
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DAT_OPT;
-			p = $2;
-			switch (*p) {
-			case '-':
-				dxa.dxa_opt_mode = DXV_OFF;
-				break;
-			case '+':
-				dxa.dxa_opt_mode = DXV_ON;
-				break;
-			default:
-				dxa.dxa_opt_mode = DXV_SET;
-				break;
-			}
-			for (; p != NULL; p = t) {
+			dxa.dxa_opt_mode = $2;
+			for (p = $3; p != NULL; p = t) {
 				if ((t = strchr(p, ',')) != NULL)
 					*t++ = '\0';
 				while (isspace(*p))
@@ -193,7 +186,7 @@ conf		: DAT_BIRD {
 			}
 			if (dxa.dxa_opts == 0)
 				yyerror("no options specified");
-			free($2);
+			free($3);
 			dxa_add(&dxa);
 		}
 		| DAT_ORBIT STRING {
@@ -219,27 +212,14 @@ conf		: DAT_BIRD {
 			free($2);
 			dxa_add(&dxa);
 		}
-		| DAT_PANEL STRING {
+		| DAT_PANEL setmodifier STRING {
 			struct dx_action dxa;
 			char *p, *t;
 
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DAT_PANEL;
-			p = $2;
-			switch (*p) {
-			case '-':
-				p++;
-				dxa.dxa_panel_mode = DXV_OFF;
-				break;
-			case '+':
-				p++;
-				dxa.dxa_panel_mode = DXV_ON;
-				break;
-			default:
-				dxa.dxa_panel_mode = DXV_SET;
-				break;
-			}
-			for (; p != NULL; p = t) {
+			dxa.dxa_panel_mode = $2;
+			for (p = $3; p != NULL; p = t) {
 				if ((t = strchr(p, ',')) != NULL)
 					*t++ = '\0';
 				while (isspace(*p))
@@ -257,7 +237,7 @@ conf		: DAT_BIRD {
 			}
 			if (dxa.dxa_panels == 0)
 				yyerror("no panels specified");
-			free($2);
+			free($3);
 			dxa_add(&dxa);
 		}
 		| DAT_REFOCUS {
@@ -320,18 +300,30 @@ conf		: DAT_BIRD {
 			free($2);
 			dxa_add(&dxa);
 		}
-		| DAT_WINSP {
+		| DAT_WINSP setmodifier INTG setmodifier INTG setmodifier INTG {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DAT_WINSP;
+			dxa.dxa_winsp_mode.iv_x = $2;
+			dxa.dxa_winsp_mode.iv_y = $4;
+			dxa.dxa_winsp_mode.iv_z = $6;
+			dxa.dxa_winsp.iv_x = $3;
+			dxa.dxa_winsp.iv_y = $5;
+			dxa.dxa_winsp.iv_z = $7;
 			dxa_add(&dxa);
 		}
-		| DAT_WIOFF {
+		| DAT_WIOFF setmodifier INTG setmodifier INTG setmodifier INTG {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DAT_WIOFF;
+			dxa.dxa_wioff_mode.iv_x = $2;
+			dxa.dxa_wioff_mode.iv_y = $4;
+			dxa.dxa_wioff_mode.iv_z = $6;
+			dxa.dxa_wioff.iv_x = $3;
+			dxa.dxa_wioff.iv_y = $5;
+			dxa.dxa_wioff.iv_z = $7;
 			dxa_add(&dxa);
 		}
 		;

@@ -69,16 +69,19 @@ wioff					{ return (DAT_WIOFF); }
 "<"					{ return (LANGLE); }
 ">"					{ return (RANGLE); }
 ,					{ return (COMMA); }
+-					{ return (LS_MINUS); }
+\+					{ return (LS_PLUS); }
+
 [0-9]+					{
 						yylval.intg = atoi(yytext);
 						return (INTG);
 					}
 -?[0-9]+\.[0-9]*|-?\.[0-9]+		{
 						errno = 0;
-						yylval.strict_dbl = strtod(yytext, NULL);
+						yylval.dbl = strtod(yytext, NULL);
 						if (errno)
 							yyerror("%s", strerror(errno));
-						return (STRICT_DBL);
+						return (DBL);
 					}
 [a-zA-Z_]+				{
 						if ((yylval.string = strdup(yytext)) == NULL)
