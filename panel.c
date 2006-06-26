@@ -63,33 +63,33 @@ void uinpcb_ss(void);
 void uinpcb_eggs(void);
 
 struct pinfo pinfo[] = {
- /*  0 */ { "FPS",		panel_refresh_fps,	PSTICK_TR, 0,					0,		NULL },
- /*  1 */ { "Node Info",	panel_refresh_ninfo,	PSTICK_TR, 0,					0,		NULL },
- /*  2 */ { "Command",		panel_refresh_cmd,	PSTICK_TR, PF_UINP | PF_HIDE,			UINPO_LINGER,	uinpcb_cmd },
- /*  3 */ { "Legend",		panel_refresh_legend,	PSTICK_TR, 0,					0,		NULL },
- /*  4 */ { "Flyby Status",	panel_refresh_flyby,	PSTICK_TR, PF_FBIGN,				0,		NULL },
- /*  5 */ { "Goto Node",	panel_refresh_gotonode,	PSTICK_TR, PF_UINP,				0,		uinpcb_gotonode },
- /*  6 */ { "Camera Position",	panel_refresh_pos,	PSTICK_TR, 0,					0,		NULL },
- /*  7 */ { "Screenshot",	panel_refresh_ss,	PSTICK_TR, PF_UINP,				0,		uinpcb_ss },
- /*  8 */ { "Status",		panel_refresh_status,	PSTICK_TR, 0,					0,		NULL },
- /*  9 */ { "Memory Usage",	panel_refresh_mem,	PSTICK_TR, PF_HIDE,				0,		NULL },
- /* 10 */ { NULL,		panel_refresh_eggs,	PSTICK_TR, PF_UINP | PF_HIDE,			0,		uinpcb_eggs },
- /* 11 */ { "Date",		panel_refresh_date,	PSTICK_BL, PF_XPARENT,				0,		NULL },
- /* 12 */ { "Option",		panel_refresh_opts,	PSTICK_TL, PF_FBIGN,				0,		NULL },
- /* 13 */ { "Goto Job",		panel_refresh_gotojob,	PSTICK_TR, PF_UINP,				0,		uinpcb_gotojob },
- /* 14 */ { NULL,		panel_refresh_panels,	PSTICK_TL, PF_HIDE | PF_FBIGN,			0,		NULL },
- /* 15 */ { "Login",		panel_refresh_login,	PSTICK_TR, PF_UINP,				UINPO_LINGER,	uinpcb_login },
- /* 16 */ { "Help",		panel_refresh_help,	PSTICK_BR, PF_HIDE | PF_FBIGN | PF_XPARENT,	0,		NULL },
- /* 17 */ { "View Mode",	panel_refresh_vmode,	PSTICK_TL, 0,					0,		NULL },
- /* 18 */ { "Data Mode",	panel_refresh_dmode,	PSTICK_TL, 0,					0,		NULL },
- /* 19 */ { "Reel",		panel_refresh_reel,	PSTICK_TR, PF_FBIGN,				0,		NULL },
- /* 20 */ { "Pipe Mode",	panel_refresh_pipe,	PSTICK_TR, 0,					0,		NULL },
- /* 21 */ { "Seastar",		panel_refresh_sstar,	PSTICK_TR, 0,					0,		NULL },
- /* 22 */ { "Wired Controls",	panel_refresh_wiadj,	PSTICK_TR, 0,					0,		NULL },
- /* 23 */ { "Route Controls",	panel_refresh_rt,	PSTICK_TR, 0,					0,		NULL },
- /* 24 */ { "Flyby Chooser",	panel_refresh_fbcho,	PSTICK_TR, PF_FBIGN,				0,		NULL },
- /* 25 */ { "Flyby Creation",	panel_refresh_fbnew,	PSTICK_TR, PF_FBIGN | PF_UINP,			0,		uinpcb_fbnew },
- /* 26 */ { "Compass",		panel_refresh_cmp,	PSTICK_BL, PF_FBIGN,				0,		NULL }
+ /*  0 */ { "fps",	"FPS",			panel_refresh_fps,	PSTICK_TR, 0,					0,		NULL },
+ /*  1 */ { "ninfo",	"Node Info",		panel_refresh_ninfo,	PSTICK_TR, 0,					0,		NULL },
+ /*  2 */ { "cmd",	"Command",		panel_refresh_cmd,	PSTICK_TR, PF_UINP | PF_HIDE,			UINPO_LINGER,	uinpcb_cmd },
+ /*  3 */ { "legend",	"Legend",		panel_refresh_legend,	PSTICK_TR, 0,					0,		NULL },
+ /*  4 */ { "fbstat",	"Flyby Status",		panel_refresh_flyby,	PSTICK_TR, PF_FBIGN,				0,		NULL },
+ /*  5 */ { "gotonode",	"Goto Node",		panel_refresh_gotonode,	PSTICK_TR, PF_UINP,				0,		uinpcb_gotonode },
+ /*  6 */ { "cam",	"Camera Position",	panel_refresh_pos,	PSTICK_TR, 0,					0,		NULL },
+ /*  7 */ { "sshot",	"Screenshot",		panel_refresh_ss,	PSTICK_TR, PF_UINP,				0,		uinpcb_ss },
+ /*  8 */ { "status",	"Status",		panel_refresh_status,	PSTICK_TR, 0,					0,		NULL },
+ /*  9 */ { "mem",	"Memory Usage",		panel_refresh_mem,	PSTICK_TR, PF_HIDE,				0,		NULL },
+ /* 10 */ { "eggs",	NULL,			panel_refresh_eggs,	PSTICK_TR, PF_UINP | PF_HIDE,			0,		uinpcb_eggs },
+ /* 11 */ { "date",	"Date",			panel_refresh_date,	PSTICK_BL, PF_XPARENT,				0,		NULL },
+ /* 12 */ { "options",	"Option",		panel_refresh_opts,	PSTICK_TL, PF_FBIGN,				0,		NULL },
+ /* 13 */ { "gotojob",	"Goto Job",		panel_refresh_gotojob,	PSTICK_TR, PF_UINP,				0,		uinpcb_gotojob },
+ /* 14 */ { "panels",	NULL,			panel_refresh_panels,	PSTICK_TL, PF_HIDE | PF_FBIGN,			0,		NULL },
+ /* 15 */ { "login",	"Login",		panel_refresh_login,	PSTICK_TR, PF_UINP,				UINPO_LINGER,	uinpcb_login },
+ /* 16 */ { "help",	"Help",			panel_refresh_help,	PSTICK_BR, PF_HIDE | PF_FBIGN | PF_XPARENT,	0,		NULL },
+ /* 17 */ { "vmode",	"View Mode",		panel_refresh_vmode,	PSTICK_TL, 0,					0,		NULL },
+ /* 18 */ { "dmode",	"Data Mode",		panel_refresh_dmode,	PSTICK_TL, 0,					0,		NULL },
+ /* 19 */ { "reel",	"Reel",			panel_refresh_reel,	PSTICK_TR, PF_FBIGN,				0,		NULL },
+ /* 20 */ { "pipe",	"Pipe Mode",		panel_refresh_pipe,	PSTICK_TR, 0,					0,		NULL },
+ /* 21 */ { "sstar",	"Seastar",		panel_refresh_sstar,	PSTICK_TR, 0,					0,		NULL },
+ /* 22 */ { "wiadj",	"Wired Controls",	panel_refresh_wiadj,	PSTICK_TR, 0,					0,		NULL },
+ /* 23 */ { "rt",	"Route Controls",	panel_refresh_rt,	PSTICK_TR, 0,					0,		NULL },
+ /* 24 */ { "fbcho",	"Flyby Chooser",	panel_refresh_fbcho,	PSTICK_TR, PF_FBIGN,				0,		NULL },
+ /* 25 */ { "fbcreat",	"Flyby Creation",	panel_refresh_fbnew,	PSTICK_TR, PF_FBIGN | PF_UINP,			0,		uinpcb_fbnew },
+ /* 26 */ { "compass",	"Compass",		panel_refresh_cmp,	PSTICK_BL, PF_FBIGN,				0,		NULL }
 };
 
 #define PVOFF_TL 0
@@ -799,22 +799,22 @@ panel_demobilize(struct panel *p)
 }
 
 void
-panels_flip(int panels)
+panels_flip(int ps)
 {
 	int b;
 
-	while (panels) {
-		b = ffs(panels) - 1;
-		panels &= ~(1 << b);
+	while (ps) {
+		b = ffs(ps) - 1;
+		ps &= ~(1 << b);
 		panel_toggle(1 << b);
 	}
 }
 
 /*
- * Set panels state to those specified in `start.'
+ * Show only the specified panels.
  */
 void
-init_panels(int start)
+panels_set(int start)
 {
 	struct panel *p;
 	int cur;
@@ -826,6 +826,30 @@ init_panels(int start)
 		else
 			cur |= p->p_id;
 	panels_flip(cur ^ start);
+}
+
+void
+panels_show(int ps)
+{
+	int b;
+
+	while (ps) {
+		b = ffs(ps) - 1;
+		ps &= ~(1 << b);
+		panel_show(1 << b);
+	}
+}
+
+void
+panels_hide(int ps)
+{
+	int b;
+
+	while (ps) {
+		b = ffs(ps) - 1;
+		ps &= ~(1 << b);
+		panel_hide(1 << b);
+	}
 }
 
 void
