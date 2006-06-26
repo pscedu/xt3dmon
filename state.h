@@ -114,6 +114,7 @@ struct state {
 #define NOPS		21
 
 struct xoption {
+	const char	*opt_abbr;
 	const char	*opt_name;
 	int		 opt_flags;
 };

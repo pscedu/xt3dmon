@@ -85,7 +85,8 @@ struct panel {
 TAILQ_HEAD(panels, panel);
 
 struct pinfo {
-	char		 *pi_name;
+	const char	 *pi_abbr;
+	const char	 *pi_name;
 	void		(*pi_refresh)(struct panel *);
 	int		  pi_stick;
 	int		  pi_opts;
@@ -110,7 +111,11 @@ void		 panel_hide(int);
 struct panel	*panel_for_id(int);
 void		 panel_demobilize(struct panel *);
 void		 panel_draw_compass(struct panel *);
+
+void		 panels_set(int);
 void		 panels_flip(int);
+void		 panels_show(int);
+void		 panels_hide(int);
 
 void panel_refresh_fps(struct panel *);
 void panel_refresh_ninfo(struct panel *);

@@ -69,27 +69,27 @@ const char		*caption;
 char **sav_argv;
 
 struct xoption opts[] = {
- /*  0 */ { "Texture mapping",		0 },
- /*  1 */ { "Node wireframes",		0 },
- /*  2 */ { "Ground/axes",		0 },
- /*  3 */ { "Camera tweening",		OPF_FBIGN },
- /*  4 */ { "Capture mode",		OPF_HIDE | OPF_FBIGN },
- /*  5 */ { "Display mode",		OPF_HIDE | OPF_FBIGN },
- /*  6 */ { "Govern mode",		OPF_FBIGN },
- /*  7 */ { "Flyby loop mode",		OPF_FBIGN },
- /*  8 */ { "Node labels",		0 },
- /*  9 */ { "Blade skeletons",		0 },
- /* 10 */ { "Pipe mode",		0 },
- /* 11 */ { "Selected node pipe mode",	0 },
- /* 12 */ { "Pause",			OPF_HIDE | OPF_FBIGN },
- /* 13 */ { "Job tour mode",		OPF_FBIGN },
- /* 14 */ { "Skeletons",		0 },
- /* 15 */ { "Node animation",		0 },
- /* 16 */ { "Auto flyby mode",		OPF_FBIGN },
- /* 17 */ { "Reel mode",		OPF_FBIGN },
- /* 18 */ { "Cabinet skeletons",	0 },
- /* 19 */ { "Deus Ex mode",		0 },
- /* 20 */ { "Captions",			OPF_FBIGN }
+ /*  0 */ { "tex",	"Texture mapping",		0 },
+ /*  1 */ { "frames",	"Node wireframes",		0 },
+ /*  2 */ { "ground",	"Ground/axes",			0 },
+ /*  3 */ { "tween",	"Camera tweening",		OPF_FBIGN },
+ /*  4 */ { "capture",	"Capture mode",			OPF_HIDE | OPF_FBIGN },
+ /*  5 */ { "display",	"Display mode",			OPF_HIDE | OPF_FBIGN },
+ /*  6 */ { "govern",	"Govern mode",			OPF_FBIGN },
+ /*  7 */ { "loop",	"Flyby loop mode",		OPF_FBIGN },
+ /*  8 */ { "nlabels",	"Node labels",			0 },
+ /*  9 */ { "modskel",	"Blade skeletons",		0 },
+ /* 10 */ { "pipes",	"Pipe mode",			0 },
+ /* 11 */ { "selpipes",	"Selected node pipe mode",	0 },
+ /* 12 */ { "pause",	"Pause",			OPF_HIDE | OPF_FBIGN },
+ /* 13 */ { "tour",	"Job tour mode",		OPF_FBIGN },
+ /* 14 */ { "skel",	"Skeletons",			0 },
+ /* 15 */ { "nodeanim",	"Node animation",		0 },
+ /* 16 */ { "autofb",	"Auto flyby mode",		OPF_FBIGN },
+ /* 17 */ { "reel",	"Reel mode",			OPF_FBIGN },
+ /* 18 */ { "cabskel",	"Cabinet skeletons",		0 },
+ /* 19 */ { "deusex",	"Deus Ex mode",			0 },
+ /* 20 */ { "caption",	"Captions",			OPF_FBIGN }
 };
 
 struct vmode vmodes[] = {
@@ -126,8 +126,8 @@ struct state st = {
 	RT_RECOVER,					/* rterr type */
 	HL_ALL,						/* node class to highlight */
 	0,						/* eggs */
-	{ 0, 0, 0 },					/* wired mode offset */
-	{ 4, 4, 4 },					/* wired node spacing */
+	{ { 0, 0, 0 } },				/* wired mode offset */
+	{ { 4, 4, 4 } },				/* wired node spacing */
 	0						/* rebuild flags */
 };
 
@@ -687,6 +687,8 @@ errx(1, "broken");
 	st.st_rf |= RF_INIT;
 
 	parse_physconf(cfgfn);
+
+dx_parse("scripts/overview");
 
 	if (server_mode)
 		serv_init();
