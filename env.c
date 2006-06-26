@@ -23,7 +23,7 @@ int		cursor;			/* What the cursors will be */
 
 struct fvec	focus;			/* 3D point of revolution */
 
-struct ivec	winv = { 800, 600, 0 };
+struct ivec	winv = { { 800, 600, 0 } };
 
 int	 	window_ids[2];
 int	 	wid = WINID_DEF;	/* Current window ID */
