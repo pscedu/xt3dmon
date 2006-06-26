@@ -21,50 +21,23 @@ extern int lineno;
 
 %%
 
-bird					{ return (DAT_BIRD); }
-caption					{ return (DAT_CAPTION); }
-
-clearselnode				{ return (DAT_CLRSN); }
-clearselnodes				{ return (DAT_CLRSN); }
-clearsn					{ return (DAT_CLRSN); }
-clearsns				{ return (DAT_CLRSN); }
-clrselnode				{ return (DAT_CLRSN); }
-clrselnodes				{ return (DAT_CLRSN); }
-clrsn					{ return (DAT_CLRSN); }
-clrsns					{ return (DAT_CLRSN); }
-
-cyclenc					{ return (DAT_CYCLENC); }
-
-dmode					{ return (DAT_DMODE); }
-dm					{ return (DAT_DMODE); }
-
-hl					{ return (DAT_HL); }
-move					{ return (DAT_MOVE); }
-
-options					{ return (DAT_OPT); }
-option					{ return (DAT_OPT); }
-opt					{ return (DAT_OPT); }
-op					{ return (DAT_OPT); }
-
-orbit					{ return (DAT_ORBIT); }
-
-panels					{ return (DAT_PANEL); }
-panel					{ return (DAT_PANEL); }
-
-refocus					{ return (DAT_REFOCUS); }
-refresh					{ return (DAT_REFRESH); }
-
-seljob					{ return (DAT_SELJOB); }
-sj					{ return (DAT_SELJOB); }
-
-selnode					{ return (DAT_SELNODE); }
-sn					{ return (DAT_SELNODE); }
-
-vmode					{ return (DAT_VMODE); }
-vm					{ return (DAT_VMODE); }
-
-winsp					{ return (DAT_WINSP); }
-wioff					{ return (DAT_WIOFF); }
+bird					{ return (DGT_BIRD); }
+clrsn					{ return (DGT_CLRSN); }
+cyclenc					{ return (DGT_CYCLENC); }
+dmode					{ return (DGT_DMODE); }
+hl					{ return (DGT_HL); }
+move					{ return (DGT_MOVE); }
+opt					{ return (DGT_OPT); }
+orbit					{ return (DGT_ORBIT); }
+panel					{ return (DGT_PANEL); }
+refocus					{ return (DGT_REFOCUS); }
+refresh					{ return (DGT_REFRESH); }
+seljob					{ return (DGT_SELJOB); }
+selnode					{ return (DGT_SELNODE); }
+setcap					{ return (DGT_SETCAP); }
+vmode					{ return (DGT_VMODE); }
+winsp					{ return (DGT_WINSP); }
+wioff					{ return (DGT_WIOFF); }
 
 "<"					{ return (LANGLE); }
 ">"					{ return (RANGLE); }
@@ -93,7 +66,7 @@ wioff					{ return (DAT_WIOFF); }
 
 						if ((endp = strrchr(yytext, '"')) == NULL)
 							yyerror("lexer missed quote");
-						endp = '\0';
+						*endp = '\0';
 						if ((yylval.string = strdup(yytext + 1)) == NULL)
 							yyerror("%s", strerror(errno));
 						return (STRING);
