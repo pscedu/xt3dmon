@@ -184,6 +184,7 @@ parse_physconf(const char *fn)
 	if ((fp = fopen(fn, "r")) == NULL)
 		err(1, "%s", fn);
 	yyin = fp;
+	lineno = 1;
 	yyparse();
 	fclose(fp);
 
