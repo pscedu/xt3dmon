@@ -40,9 +40,11 @@ struct fvec {
 };
 
 struct ivec {
-	int	 iv_x;
-	int	 iv_y;
-	int	 iv_z;
+	int	iv_val[3];
+#define iv_x iv_val[0]
+#define iv_y iv_val[1]
+#define iv_z iv_val[2]
+
 #define iv_w iv_x
 #define iv_h iv_y
 #define iv_d iv_z
