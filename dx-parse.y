@@ -27,23 +27,23 @@ struct dxlist dxlist = TAILQ_HEAD_INITIALIZER(dxlist);
 
 %}
 
-%token DAT_BIRD
-%token DAT_CAPTION
-%token DAT_CLRSN
-%token DAT_CYCLENC
-%token DAT_DMODE
-%token DAT_HL
-%token DAT_MOVE
-%token DAT_OPT
-%token DAT_ORBIT
-%token DAT_PANEL
-%token DAT_REFOCUS
-%token DAT_REFRESH
-%token DAT_SELJOB
-%token DAT_SELNODE
-%token DAT_VMODE
-%token DAT_WINSP
-%token DAT_WIOFF
+%token DGT_BIRD
+%token DGT_CLRSN
+%token DGT_CYCLENC
+%token DGT_DMODE
+%token DGT_HL
+%token DGT_MOVE
+%token DGT_OPT
+%token DGT_ORBIT
+%token DGT_PANEL
+%token DGT_REFOCUS
+%token DGT_REFRESH
+%token DGT_SELJOB
+%token DGT_SELNODE
+%token DGT_SETCAP
+%token DGT_VMODE
+%token DGT_WINSP
+%token DGT_WIOFF
 
 %token COMMA LANGLE LBRACKET RANGLE RBRACKET LS_MINUS LS_PLUS
 
@@ -53,6 +53,7 @@ struct dxlist dxlist = TAILQ_HEAD_INITIALIZER(dxlist);
 
 %type <dbl> l_dbl;
 %type <intg> setmodifier;
+%type <intg> opts opts_l panels panels_l;
 
 %union {
 	char	*string;
@@ -67,49 +68,85 @@ grammar		: /* empty */
 		}
 		;
 
-l_dbl		: INTG		{ $$ = $1; }
-		| DBL		{ $$ = $1; }
+l_dbl		: INTG			{ $$ = $1; }
+		| DBL			{ $$ = $1; }
 		;
 
-setmodifier	: /* empty */	{ $$ = DXV_SET; }
-		| LS_PLUS	{ $$ = DXV_ON;  }
-		| LS_MINUS 	{ $$ = DXV_OFF; }
+setmodifier	: /* empty */		{ $$ = DXV_SET; }
+		| LS_PLUS		{ $$ = DXV_ON;  }
+		| LS_MINUS 		{ $$ = DXV_OFF; }
 		;
 
-conf		: DAT_BIRD {
+opts		: STRING {
+			int j;
+
+			for (j = 0; j < NOPS; j++)
+				if (strcasecmp(opts[j].opt_abbr, $1) == 0) {
+					$$ = 1 << j;
+					break;
+				}
+			if (j == NOPS)
+				yyerror("unknown option: %s", $1);
+			free($1);
+		}
+		;
+
+opts_l		: opts			{ $$ = $1; }
+		| opts COMMA opts_l	{ $$ = $1 | $3; }
+		;
+
+panels		: STRING {
+			int j;
+
+			for (j = 0; j < NPANELS; j++)
+				if (strcasecmp(pinfo[j].pi_abbr, $1) == 0) {
+					$$ = 1 << j;
+					break;
+				}
+			if (j == NPANELS)
+				yyerror("unknown panel: %s", $1);
+			free($1);
+		}
+		;
+
+panels_l	: panels		{ $$ = $1; }
+		| panels COMMA panels_l	{ $$ = $1 | $3; }
+		;
+
+conf		: DGT_BIRD {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DAT_BIRD;
+			dxa.dxa_type = DGT_BIRD;
 			dxa_add(&dxa);
 		}
-		| DAT_CAPTION STRING  {
+		| DGT_SETCAP STRING  {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DAT_CAPTION;
+			dxa.dxa_type = DGT_SETCAP;
 			dxa.dxa_caption = $2;
 			dxa_add(&dxa);
 		}
-		| DAT_CLRSN {
+		| DGT_CLRSN {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DAT_CLRSN;
+			dxa.dxa_type = DGT_CLRSN;
 			dxa_add(&dxa);
 		}
-		| DAT_CYCLENC {
+		| DGT_CYCLENC {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DAT_CYCLENC;
+			dxa.dxa_type = DGT_CYCLENC;
 			dxa_add(&dxa);
 		}
-		| DAT_DMODE STRING {
+		| DGT_DMODE STRING {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DAT_DMODE;
+			dxa.dxa_type = DGT_DMODE;
 			if (strcasecmp($2, "job") == 0)
 				dxa.dxa_dmode = DM_JOB;
 			else if (strcasecmp($2, "temp") == 0 ||
@@ -121,11 +158,11 @@ conf		: DAT_BIRD {
 			free($2);
 			dxa_add(&dxa);
 		}
-		| DAT_HL STRING {
+		| DGT_HL STRING {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DAT_HL;
+			dxa.dxa_type = DGT_HL;
 			if (strcasecmp($2, "all") == 0)
 				dxa.dxa_hl = HL_ALL;
 			else if (strcasecmp($2, "seldm") == 0)
@@ -135,11 +172,11 @@ conf		: DAT_BIRD {
 			free($2);
 			dxa_add(&dxa);
 		}
-		| DAT_MOVE STRING l_dbl {
+		| DGT_MOVE STRING l_dbl {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DAT_MOVE;
+			dxa.dxa_type = DGT_MOVE;
 			if (strcasecmp($2, "forward") == 0 ||
 			    strcasecmp($2, "forw") == 0)
 				dxa.dxa_move_dir = DIR_FORW;
@@ -151,114 +188,60 @@ conf		: DAT_BIRD {
 			dxa.dxa_move_amt = dbl;
 			dxa_add(&dxa);
 		}
-		| DAT_OPT setmodifier STRING {
+		| DGT_OPT setmodifier opts_l {
 			struct dx_action dxa;
-			char *p, *t;
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DAT_OPT;
+			dxa.dxa_type = DGT_OPT;
 			dxa.dxa_opt_mode = $2;
-			for (p = $3; p != NULL; p = t) {
-				if ((t = strchr(p, ',')) != NULL)
-					*t++ = '\0';
-				while (isspace(*p))
-					p++;
-				if (strcasecmp(p, "nlabels"))
-					dxa.dxa_opts |= OP_NLABELS;
-				else if (strcasecmp(p, "pipes"))
-					dxa.dxa_opts |= OP_PIPES;
-				else if (strcasecmp(p, "skel"))
-					dxa.dxa_opts |= OP_SKEL;
-				else if (strcasecmp(p, "frames"))
-					dxa.dxa_opts |= OP_FRAMES;
-				else if (strcasecmp(p, "tween"))
-					dxa.dxa_opts |= OP_TWEEN;
-				else if (strcasecmp(p, "display"))
-					dxa.dxa_opts |= OP_DISPLAY;
-				else if (strcasecmp(p, "nodeanim"))
-					dxa.dxa_opts |= OP_NODEANIM;
-				else if (strcasecmp(p, "caption"))
-					dxa.dxa_opts |= OP_CAPTION;
-				else if (strcasecmp(p, "deusex"))
-					dxa.dxa_opts |= OP_DEUSEX;
-				else
-					yyerror("invalid option: %s", p);
-			}
-			if (dxa.dxa_opts == 0)
-				yyerror("no options specified");
-			free($3);
+			dxa.dxa_opts = $3;
 			dxa_add(&dxa);
 		}
-		| DAT_ORBIT STRING {
+		| DGT_ORBIT setmodifier STRING {
 			struct dx_action dxa;
-			char *p;
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DAT_ORBIT;
-			p = $2;
-			if (p[0] == '-') {
-				p++;
-				dxa.dxa_orbit_dir = -1;
-			} else
-				dxa.dxa_orbit_dir = 1;
-			if (strcasecmp(p, "x"))
+			dxa.dxa_type = DGT_ORBIT;
+			dxa.dxa_orbit_dir = ($2 == DXV_OFF) ? -1 : 1;
+			if (strcasecmp($3, "x") == 0)
 				dxa.dxa_orbit_dim = DIM_X;
-			else if (strcasecmp(p, "y"))
+			else if (strcasecmp($3, "y") == 0)
 				dxa.dxa_orbit_dim = DIM_Y;
-			else if (strcasecmp(p, "z"))
+			else if (strcasecmp($3, "z") == 0)
 				dxa.dxa_orbit_dim = DIM_Z;
 			else
-				yyerror("invalid orbit dimension: %s", p);
-			free($2);
-			dxa_add(&dxa);
-		}
-		| DAT_PANEL setmodifier STRING {
-			struct dx_action dxa;
-			char *p, *t;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DAT_PANEL;
-			dxa.dxa_panel_mode = $2;
-			for (p = $3; p != NULL; p = t) {
-				if ((t = strchr(p, ',')) != NULL)
-					*t++ = '\0';
-				while (isspace(*p))
-					p++;
-				if (strcasecmp(p, "compass"))
-					dxa.dxa_panels |= PANEL_CMP;
-				else if (strcasecmp(p, "wiadj"))
-					dxa.dxa_panels |= PANEL_WIADJ;
-				else if (strcasecmp(p, "legend"))
-					dxa.dxa_panels |= PANEL_LEGEND;
-				else if (strcasecmp(p, "help"))
-					dxa.dxa_panels |= PANEL_HELP;
-				else
-					yyerror("invalid panel: %s", p);
-			}
-			if (dxa.dxa_panels == 0)
-				yyerror("no panels specified");
+				yyerror("invalid orbit dimension: %s", $3);
 			free($3);
 			dxa_add(&dxa);
 		}
-		| DAT_REFOCUS {
+		| DGT_PANEL setmodifier panels_l {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DAT_REFOCUS;
+			dxa.dxa_type = DGT_PANEL;
+			dxa.dxa_panel_mode = $2;
+			dxa.dxa_panels = $3;
 			dxa_add(&dxa);
 		}
-		| DAT_REFRESH {
+		| DGT_REFOCUS {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DAT_REFRESH;
+			dxa.dxa_type = DGT_REFOCUS;
 			dxa_add(&dxa);
 		}
-		| DAT_SELJOB STRING {
+		| DGT_REFRESH {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DAT_SELJOB;
+			dxa.dxa_type = DGT_REFRESH;
+			dxa_add(&dxa);
+		}
+		| DGT_SELJOB STRING {
+			struct dx_action dxa;
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_SELJOB;
 			if (strcasecmp($2, "random") == 0)
 				dxa.dxa_seljob = DXSJ_RND;
 			else
@@ -266,19 +249,19 @@ conf		: DAT_BIRD {
 			free($2);
 			dxa_add(&dxa);
 		}
-		| DAT_SELNODE INTG {
+		| DGT_SELNODE INTG {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DAT_SELNODE;
+			dxa.dxa_type = DGT_SELNODE;
 			dxa.dxa_selnode = $2;
 			dxa_add(&dxa);
 		}
-		| DAT_SELNODE STRING {
+		| DGT_SELNODE STRING {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DAT_SELNODE;
+			dxa.dxa_type = DGT_SELNODE;
 			if (strcasecmp($2, "random") == 0)
 				dxa.dxa_selnode = DXSN_RND;
 			else
@@ -286,11 +269,11 @@ conf		: DAT_BIRD {
 			free($2);
 			dxa_add(&dxa);
 		}
-		| DAT_VMODE STRING {
+		| DGT_VMODE STRING {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DAT_VMODE;
+			dxa.dxa_type = DGT_VMODE;
 			if (strcasecmp($2, "phys") == 0)
 				dxa.dxa_vmode = VM_PHYS;
 			else if (strcasecmp($2, "wione") == 0)
@@ -300,11 +283,11 @@ conf		: DAT_BIRD {
 			free($2);
 			dxa_add(&dxa);
 		}
-		| DAT_WINSP setmodifier INTG setmodifier INTG setmodifier INTG {
+		| DGT_WINSP setmodifier INTG setmodifier INTG setmodifier INTG {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DAT_WINSP;
+			dxa.dxa_type = DGT_WINSP;
 			dxa.dxa_winsp_mode.iv_x = $2;
 			dxa.dxa_winsp_mode.iv_y = $4;
 			dxa.dxa_winsp_mode.iv_z = $6;
@@ -313,11 +296,11 @@ conf		: DAT_BIRD {
 			dxa.dxa_winsp.iv_z = $7;
 			dxa_add(&dxa);
 		}
-		| DAT_WIOFF setmodifier INTG setmodifier INTG setmodifier INTG {
+		| DGT_WIOFF setmodifier INTG setmodifier INTG setmodifier INTG {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DAT_WIOFF;
+			dxa.dxa_type = DGT_WIOFF;
 			dxa.dxa_wioff_mode.iv_x = $2;
 			dxa.dxa_wioff_mode.iv_y = $4;
 			dxa.dxa_wioff_mode.iv_z = $6;
@@ -360,5 +343,5 @@ dx_parse(const char *fn)
 	fclose(fp);
 
 	if (errors)
-		errx(1, "%d error(s) encountered", errors);
+		errx(1, "%s: %d error(s) encountered", fn, errors);
 }
