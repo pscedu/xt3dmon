@@ -61,8 +61,6 @@ union fbun {
 	struct fbselnode	fbu_sn;
 };
 
-void		 init_panels(int);
-
 int		 flyby_mode = FBM_OFF;
 int		 flyby_autoto = 2 * 60 * 60;	/* time till autoflyby turns on */
 int		 flyby_nautoto;			/* see flyby_rstautoto */
@@ -235,7 +233,7 @@ flyby_read(void)
 			st = fbun.fbu_init.fbi_state;
 			st.st_rf |= RF_VMODE | RF_DMODE | RF_CAM |
 			    RF_SELNODE | RF_HLNC;
-			init_panels(fbun.fbu_init.fbi_panels);
+			panels_set(fbun.fbu_init.fbi_panels);
 //		egg_toggle(st.st_eggs ^ sav_st.st_eggs);
 			done = 1;
 			break;
