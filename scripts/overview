@@ -7,12 +7,12 @@ opt frames,tween,display,nodeanim,caption,deusex
 panel legend,help
 bird
 refocus
-caption "CPU temperatures in physical machine layout"
+setcap "CPU temperatures in physical machine layout"
 orbit -x
 selnode random
 hl seldm
 opt +skel
-caption "Zoom while viewing nodes in temperature range"
+setcap "Zoom while viewing nodes in temperature range"
 refocus
 move forward 50
 opt +nlabels
@@ -22,17 +22,17 @@ clrsn
 move back 50
 bird
 hl all
-caption "Cycle through all temperature ranges"
+setcap "Cycle through all temperature ranges"
 cyclenc
 opt -skel
-caption "Changing to \"wired\" mode"
+setcap "Changing to 'wired' mode"
 vmode wione
 bird
 dmode job
-caption "Jobs in wired mode (virtual interconnect)"
+setcap "Jobs in wired mode (virtual interconnect)"
 orbit -x
 seljob random
-caption "Viewing one job in wired mode"
+setcap "Viewing one job in wired mode"
 refocus
 opt +skel,nlabels
 move forward 50
@@ -41,7 +41,7 @@ move back 50
 opt -skel,nlabels
 hl all
 clrsn
-caption "Preparing to zoom inside the interconnect"
+setcap "Preparing to zoom inside the interconnect"
 refocus
 panel +compass
 opt +pipes
@@ -50,26 +50,26 @@ selnode 2600
 refocus
 move forward 100
 opt +nlabels
-caption "Focus on one node"
+setcap "Focus on one node"
 orbit x
 move back 100
 opt -nlabels
 clrsn
 bird
-caption "Change draw offset to show torus repetitions"
+setcap "Change draw offset to show torus repetitions"
 panel -compass
 winsp -10 -10 -10
 panel +wiadj
 wioff +8 +0 +0
 wioff +0 +0 +8
 orbit x
-wioff +0 +0 -8
 wioff -8 +0 +0
+wioff +0 +0 -8
 opt -pipes
 panel -wiadj
 seljob random
 opt +skel
-caption "Viewing job between physical and wired modes"
+setcap "Viewing job between physical and wired modes"
 vmode phys
 bird
 vmode wione
@@ -77,10 +77,10 @@ bird
 clrsn
 opt -skel
 hl all
-caption "Going back to physical layout mode viewing jobs"
+setcap "Going back to physical layout mode viewing jobs"
 vmode phys
 bird
-caption "Cycle through all node states/jobs"
+setcap "Cycle through all node states/jobs"
 opt +skel
 cyclenc
 opt -skel
