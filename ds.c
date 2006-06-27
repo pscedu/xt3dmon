@@ -213,6 +213,7 @@ ds_open(int type)
 	struct ustream *(*httpf)(const char *, struct http_res *);
 	struct http_res res;
 	struct datasrc *ds;
+	struct tm tm_zero;
 	int mod, fd;
 
 	mod = 0;
@@ -231,6 +232,10 @@ ds_open(int type)
 		memset(&res, 0, sizeof(res));
 		if ((ds->ds_us = httpf(ds->ds_rpath, &res)) == NULL)
 			return (NULL);
+		memset(&tm_zero, 0, sizeof(tm_zero));
+		if (memcmp(&res.htres_mtime, &tm_zero,
+		    sizeof(tm_zero)) != 0)
+			ds->ds_mtime = mktime(&res.htres_mtime);
 		if (res.htres_code != 200) {
 			us_close(ds->ds_us);
 			switch (res.htres_code) {
