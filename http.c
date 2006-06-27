@@ -103,6 +103,19 @@ http_open(struct http_req *req, struct http_res *res)
 			if (l >= 0 && l <= INT_MAX)
 				res->htres_code = (int)l;
 		}
+
+		s = "Last-Modified: ";
+		len = strlen(s);
+		if (strncmp(buf, s, len) == 0) {
+			const char *endp;
+			struct tm tm;
+
+			s = p = buf + len;
+			endp = strptime(s, "%a, %d %h %Y %T", &tm);
+			if (endp != NULL &&
+			    strncmp(endp, " GMT", 4) == 0)
+				res->htres_mtime = tm;
+		}
 	}
 	if (us_error(us))
 		err(1, "us_gets");
