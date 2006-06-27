@@ -767,16 +767,18 @@ panel_refresh_date(struct panel *p)
 		if (stat(fn, &stb) == -1)
 			err(1, "stat %s", fn);
 		now = stb.st_mtime;
-	} else {
+	} else if (datasrcs[DS_NODE].ds_mtime) {
 		now = datasrcs[DS_NODE].ds_mtime;
-//		time(&now);		/* XXX: check for failure */
+	} else {
+		if (time(&now) == (time_t)-1)
+			err(1, "time");
 	}
 	localtime_r(&now, &tm);
 
 	if (ssp == NULL)
 		glutTimerFunc(1000 * (60 - tm.tm_sec),
 		    panel_date_invalidate, 0);
-	strftime(tmbuf, sizeof(tmbuf), "%b %e %y %l:%M%p", &tm);
+	strftime(tmbuf, sizeof(tmbuf), "%b %e %l:%M%p", &tm);
 	panel_set_content(p, "(c) 2006 PSC\n%s", tmbuf);
 }
 
