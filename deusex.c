@@ -30,6 +30,9 @@
 	    SQUARE((a)->fv_y - (b)->fv_y) +		\
 	    SQUARE((a)->fv_z - (b)->fv_z)))
 
+int	dx_built;		/* Whether dx path is already built. */
+char	dx_fn[PATH_MAX];	/* Path to current dx script. */
+
 void
 dxa_add(struct dx_action *dxa)
 {
@@ -56,6 +59,14 @@ dxa_clear(void)
 		free(dxa);
 	}
 //	TAILQ_INIT(&dxlist);
+}
+
+void
+dx_setfn(const char *fn)
+{
+	dx_built = 0;
+	strncpy(dx_fn, fn, sizeof(dx_fn) - 1);
+	dx_fn[sizeof(dx_fn) - 1] = '\0';
 }
 
 int
@@ -505,7 +516,7 @@ dxp_panel(struct dx_action *dxa)
 }
 
 int
-dxp_camsync(void)
+dxp_camsync(__unused struct dx_action *dxa)
 {
 	if (st.st_opts & OP_TWEEN)
 		return (DST(&st.st_v, &tv) < 0.1);
@@ -528,7 +539,7 @@ dxp_stall(void)
 }
 
 int
-dxp_sstall(void)
+dxp_sstall(__unused struct dx_action *dxa)
 {
 	static int t, ofps;
 	int ret;
@@ -548,7 +559,7 @@ dxp_sstall(void)
 }
 
 int
-dxp_nodesync(void)
+dxp_nodesync(__unused struct dx_action *dxa)
 {
 	return ((st.st_rf & RF_CLUSTER) == 0);
 }
@@ -649,8 +660,8 @@ dxp_wioff(struct dx_action *dxa)
 int
 dx_cam_move(double max, int wait, int dir)
 {
-	static int t;
 	static double amt, adj;
+	static int t;
 	int ret;
 
 	if (adj == 0.0)
@@ -758,11 +769,13 @@ struct dxent {
 	int	(*de_update)(struct dx_action *);
 } dxtab[] = {
 	{ DGT_BIRD,	dxp_bird },
+	{ DGT_CAMSYNC,	dxp_camsync },
 	{ DGT_CLRSN,	dxp_clrsn },
 	{ DGT_CYCLENC,	dxp_cyclenc },
 	{ DGT_DMODE,	dxp_dmode },
 	{ DGT_HL,	dxp_hl },
 	{ DGT_MOVE,	dxp_cam_move },
+	{ DGT_NODESYNC,	dxp_nodesync },
 	{ DGT_OPT,	dxp_opt },
 	{ DGT_ORBIT,	dxp_orbit },
 	{ DGT_PANEL,	dxp_panel },
@@ -771,6 +784,7 @@ struct dxent {
 	{ DGT_SELJOB,	dxp_seljob },
 	{ DGT_SELNODE,	dxp_selnode },
 	{ DGT_SETCAP,	dxp_caption },
+	{ DGT_SSTALL,	dxp_sstall },
 	{ DGT_VMODE,	dxp_vmode },
 	{ DGT_WINSP,	dxp_winsp },
 	{ DGT_WIOFF,	dxp_wioff }
