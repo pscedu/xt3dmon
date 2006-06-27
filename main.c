@@ -540,6 +540,7 @@ int
 rebuild(int opts)
 {
 	static int rebuild_wirep;
+	struct panel *p;
 
 	if (opts & RF_DATASRC) {
 		ds_refresh(DS_NODE, dsflags);
@@ -550,6 +551,9 @@ rebuild(int opts)
 		ds_refresh(DS_MEM, DSFF_IGN);
 
 		opts |= RF_DMODE | RF_CLUSTER | RF_HLNC;
+
+		if ((p = panel_for_id(PANEL_DATE)) != NULL)
+			p->p_opts |= POPT_REFRESH;
 	}
 	if (opts & RF_DMODE) {
 		dmode_change();
