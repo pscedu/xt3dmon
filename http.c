@@ -107,14 +107,22 @@ http_open(struct http_req *req, struct http_res *res)
 		s = "Last-Modified: ";
 		len = strlen(s);
 		if (strncmp(buf, s, len) == 0) {
-			const char *endp;
+			time_t t, lt, gt;
 			struct tm tm;
+			char *endp;
 
-			s = p = buf + len;
-			endp = strptime(s, "%a, %d %h %Y %T", &tm);
+			lt = time(NULL);
+			gmtime_r(&lt, &tm);
+			gt = mktime(&tm);
+
+			endp = strptime(buf + len, "%a, %d %h %Y %T", &tm);
 			if (endp != NULL &&
-			    strncmp(endp, " GMT", 4) == 0)
-				res->htres_mtime = tm;
+			    strncmp(endp, " GMT", 4) == 0) {
+				tm.tm_isdst = 0;
+				t = mktime(&tm);
+				t += lt - gt;
+				localtime_r(&t, &res->htres_mtime);
+			}
 		}
 	}
 	if (us_error(us))
