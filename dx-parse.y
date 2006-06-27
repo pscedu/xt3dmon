@@ -22,17 +22,18 @@ int yyerror(const char *, ...);
 
 extern int lineno;
 int errors;
-double dbl;
 struct dxlist dxlist = TAILQ_HEAD_INITIALIZER(dxlist);
 
 %}
 
 %token DGT_BIRD
+%token DGT_CAMSYNC
 %token DGT_CLRSN
 %token DGT_CYCLENC
 %token DGT_DMODE
 %token DGT_HL
 %token DGT_MOVE
+%token DGT_NODESYNC
 %token DGT_OPT
 %token DGT_ORBIT
 %token DGT_PANEL
@@ -41,6 +42,7 @@ struct dxlist dxlist = TAILQ_HEAD_INITIALIZER(dxlist);
 %token DGT_SELJOB
 %token DGT_SELNODE
 %token DGT_SETCAP
+%token DGT_SSTALL
 %token DGT_VMODE
 %token DGT_WINSP
 %token DGT_WIOFF
@@ -51,7 +53,7 @@ struct dxlist dxlist = TAILQ_HEAD_INITIALIZER(dxlist);
 %token <intg> INTG
 %token <dbl> DBL
 
-%type <dbl> l_dbl;
+%type <dbl> dbl;
 %type <intg> setmodifier;
 %type <intg> opts opts_l panels panels_l;
 
@@ -68,7 +70,7 @@ grammar		: /* empty */
 		}
 		;
 
-l_dbl		: INTG			{ $$ = $1; }
+dbl		: INTG			{ $$ = $1; }
 		| DBL			{ $$ = $1; }
 		;
 
@@ -119,6 +121,14 @@ conf		: DGT_BIRD {
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DGT_BIRD;
 			dxa_add(&dxa);
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_CAMSYNC;
+			dxa_add(&dxa);
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_SSTALL;
+			dxa_add(&dxa);
 		}
 		| DGT_SETCAP STRING  {
 			struct dx_action dxa;
@@ -126,6 +136,10 @@ conf		: DGT_BIRD {
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DGT_SETCAP;
 			dxa.dxa_caption = $2;
+			dxa_add(&dxa);
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_SSTALL;
 			dxa_add(&dxa);
 		}
 		| DGT_CLRSN {
@@ -171,8 +185,12 @@ conf		: DGT_BIRD {
 				yyerror("invalid hl: %s", $2);
 			free($2);
 			dxa_add(&dxa);
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_SSTALL;
+			dxa_add(&dxa);
 		}
-		| DGT_MOVE STRING l_dbl {
+		| DGT_MOVE STRING dbl {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
@@ -185,7 +203,15 @@ conf		: DGT_BIRD {
 			else
 				yyerror("invalid move direction: %s", $2);
 			free($2);
-			dxa.dxa_move_amt = dbl;
+			dxa.dxa_move_amt = $3;
+			dxa_add(&dxa);
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_CAMSYNC;
+			dxa_add(&dxa);
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_CAMSYNC;
 			dxa_add(&dxa);
 		}
 		| DGT_OPT setmodifier opts_l {
@@ -213,6 +239,14 @@ conf		: DGT_BIRD {
 				yyerror("invalid orbit dimension: %s", $3);
 			free($3);
 			dxa_add(&dxa);
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_CAMSYNC;
+			dxa_add(&dxa);
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_SSTALL;
+			dxa_add(&dxa);
 		}
 		| DGT_PANEL setmodifier panels_l {
 			struct dx_action dxa;
@@ -228,6 +262,14 @@ conf		: DGT_BIRD {
 
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DGT_REFOCUS;
+			dxa_add(&dxa);
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_CAMSYNC;
+			dxa_add(&dxa);
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_SSTALL;
 			dxa_add(&dxa);
 		}
 		| DGT_REFRESH {
@@ -295,6 +337,14 @@ conf		: DGT_BIRD {
 			dxa.dxa_winsp.iv_y = $5;
 			dxa.dxa_winsp.iv_z = $7;
 			dxa_add(&dxa);
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_NODESYNC;
+			dxa_add(&dxa);
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_SSTALL;
+			dxa_add(&dxa);
 		}
 		| DGT_WIOFF setmodifier INTG setmodifier INTG setmodifier INTG {
 			struct dx_action dxa;
@@ -307,6 +357,14 @@ conf		: DGT_BIRD {
 			dxa.dxa_wioff.iv_x = $3;
 			dxa.dxa_wioff.iv_y = $5;
 			dxa.dxa_wioff.iv_z = $7;
+			dxa_add(&dxa);
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_NODESYNC;
+			dxa_add(&dxa);
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_SSTALL;
 			dxa_add(&dxa);
 		}
 		;
@@ -329,19 +387,21 @@ yyerror(const char *fmt, ...)
 }
 
 void
-dx_parse(const char *fn)
+dx_parse(void)
 {
 	FILE *fp;
 	extern FILE *yyin;
 
 	dxa_clear();
-	if ((fp = fopen(fn, "r")) == NULL)
-		err(1, "%s", fn);
+	if ((fp = fopen(dx_fn, "r")) == NULL)
+		err(1, "%s", dx_fn);
 	yyin = fp;
 	lineno = 1;
 	yyparse();
 	fclose(fp);
 
 	if (errors)
-		errx(1, "%s: %d error(s) encountered", fn, errors);
+		errx(1, "%s: %d error(s) encountered", dx_fn, errors);
+
+	dx_built = 1;
 }
