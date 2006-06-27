@@ -11,6 +11,7 @@
 #include "cdefs.h"
 #include "buf.h"
 #include "capture.h"
+#include "deusex.h"
 #include "draw.h"
 #include "ds.h"
 #include "env.h"
@@ -245,6 +246,10 @@ opt_flip(int fopts)
 		case OP_REEL:
 			if (on)
 				st.st_rf |= RF_REEL;
+			break;
+		case OP_DEUSEX:
+			if (on && !dx_built)
+				dx_parse();
 			break;
 		}
 	}
@@ -686,9 +691,8 @@ errx(1, "broken");
 	buf_append(&uinp.uinp_buf, '\0');
 	st.st_rf |= RF_INIT;
 
+	parse_colors(_PATH_COLORS);
 	parse_physconf(cfgfn);
-
-dx_parse("scripts/overview");
 
 	if (server_mode)
 		serv_init();
