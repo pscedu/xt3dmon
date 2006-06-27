@@ -218,6 +218,8 @@ parse_node(const struct datasrc *ds)
 	int enabled, jobid, temp, yodid, nfails, lustat;
 	char buf[BUFSIZ], *s;
 	struct node *node;
+	struct job *job;
+	struct yod *yod;
 	size_t j;
 
 	widim.iv_w = widim.iv_h = widim.iv_d = 0;
@@ -331,35 +333,14 @@ bad:
 		warn("us_gets");
 	errno = 0;
 
-	/*
-	 * XXXX: Disgusting special case hack for reel mode:
-	 * jobs in reel mode should have the same color
-	 * for their duration, so use a separate color
-	 * allocation algorithm for them.
-	 */
-//	if (st.st_opts & OP_REEL &&
-//	    flyby_mode == FBM_PLAY) {
-		for (j = 0; j < job_list.ol_tcur; j++)
-			if ((job_list.ol_jobs[j]->j_oh.oh_flags & OHF_OLD) == 0)
-				col_get_intv(&job_ca_cookie,
-				    &job_list.ol_jobs[j]->j_fill);
-		for (j = 0; j < yod_list.ol_tcur; j++)
-			if ((yod_list.ol_yods[j]->y_oh.oh_flags & OHF_OLD) == 0)
-				col_get_intv(&yod_ca_cookie,
-				    &yod_list.ol_yods[j]->y_fill);
-//	} else {
-//		qsort(job_list.ol_jobs, job_list.ol_tcur,
-//		    sizeof(struct job *), job_cmp);
-//		for (j = 0; j < job_list.ol_tcur; j++)
-//			col_get(job_list.ol_jobs[j]->j_oh.oh_flags & OHF_OLD,
-//			    j, job_list.ol_tcur, &job_list.ol_jobs[j]->j_fill);
-//
-//		qsort(yod_list.ol_yods, yod_list.ol_tcur,
-//		    sizeof(struct yod *), yod_cmp);
-//		for (j = 0; j < yod_list.ol_tcur; j++)
-//			col_get(yod_list.ol_yods[j]->y_oh.oh_flags & OHF_OLD,
-//			    j, yod_list.ol_tcur, &yod_list.ol_yods[j]->y_fill);
-//	}
+	for (j = 0; j < job_list.ol_tcur; j++) {
+		job = job_list.ol_jobs[j];
+		col_get_hash(&job->j_oh, job->j_id, &job->j_fill);
+	}
+	for (j = 0; j < yod_list.ol_tcur; j++) {
+		yod = yod_list.ol_yods[j];
+		col_get_hash(&job->j_oh, yod->y_id, &yod->y_fill);
+	}
 
 	if (++widim.iv_w != WIDIM_WIDTH ||
 	    ++widim.iv_h != WIDIM_HEIGHT ||
@@ -586,4 +567,59 @@ bad:
 	if (us_error(ds->ds_us))
 		warn("us_gets");
 	errno = 0;
+}
+
+void
+parse_colors(const char *fn)
+{
+	int cv, idx, col[3], lineno;
+	char *s, *p, buf[BUFSIZ];
+	struct color *c;
+	FILE *fp;
+	long l;
+
+	obj_batch_start(&col_list);
+
+	if ((fp = fopen(fn, "r")) == NULL)
+		err(1, "%s", fn);
+
+	idx = 0;
+	lineno = 0;
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
+		lineno++;
+
+		idx = 0;
+		s = buf;
+		do {
+			while (*s != '\0' && !isdigit(*s))
+				s++;
+			if (!isdigit(*s))
+				goto bad;
+			p = s + 1;
+
+			while (isdigit(*p))
+				p++;
+			*p++ = '\0';
+
+			l = strtol(s, NULL, 0);
+			if (l > 255 || l < 0)
+				goto bad;
+			col[idx++] = (int)l;
+
+			s = p;
+		} while (idx < 3);
+
+		cv = col[0] * 256 * 256 +
+		    col[1] * 256 + col[2];
+		c = obj_get(&cv, &col_list);
+		memcpy(c->c_rgb, col, sizeof(c->c_rgb));
+		continue;
+bad:
+		warnx("col:%d: malformed line [%s] [%s]", lineno, buf, s);
+	}
+	if (ferror(fp))
+		warn("%s", fn);
+	fclose(fp);
+
+	obj_batch_end(&col_list);
 }
