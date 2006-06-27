@@ -45,7 +45,7 @@ todo
 - make job searching bsearch again, since it is sorted
 - show other things in the queue (other pbs queues)
 - dynamic font widths
-- draw_node, if (hide) curv = *v
+- draw_node, if (!show) curv = *v
 - introduce widim.iv_[whd] instead of WIDIM_WIDTH, etc.
 - check that the server dsc-copies fresh data in case data is no
   longer automatically refreshing itself
@@ -68,7 +68,6 @@ todo
 - watch out for server mode, dmode=temp then setting hlnc
 - add table for service node hostnames to ssh/command
 - merge gl and env files?
-- increase tween limit when fps is high
 - bring back option for SEL_GAP things
 - add flag to NODE_FOREACH for wired/physical ordered traversal (fix phys alpha problem)
 - if job fields are 0 in ninfo, don't print
@@ -78,6 +77,7 @@ todo
 - vec_rotate() is busted for large amounts
 - on mac/win32, fix node labels on solid node colors
 - fix tween to real stack: once point is reached, pop it then move on
+- increase tween limit when fps is high, or when "stack" contains many layers
 - rename NODEWIDTH/HEIGHT/DEPTH cause its phys-only
 - add copyright stuff (glut, zlib, etc.) to xt3dmon.1
 - use existing kerberos tickets to do auth
