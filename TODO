@@ -82,3 +82,4 @@ todo
 - add copyright stuff (glut, zlib, etc.) to xt3dmon.1
 - use existing kerberos tickets to do auth
 - ensure tweening leaves normalized vectors
+- kill job_findbyid, just use obj_get with a flag that prevents creation
