@@ -13,6 +13,7 @@
 
 #include "cdefs.h"
 #include "buf.h"
+#include "ds.h"
 #include "env.h"
 #include "fill.h"
 #include "flyby.h"
@@ -752,9 +753,10 @@ panel_refresh_date(struct panel *p)
 
 	if (panel_ready(p))
 		return;
+
 	/*
-	 * If a session is live, (other than race
-	 * conditions) the directory should exit.
+	 * If a session is live, assume directory exists.
+	 * (race conditions...)
 	 */
 	if (ssp != NULL) {
 		char fn[PATH_MAX];
@@ -766,14 +768,15 @@ panel_refresh_date(struct panel *p)
 			err(1, "stat %s", fn);
 		now = stb.st_mtime;
 	} else {
-		time(&now);		/* XXX: check for failure */
+		now = datasrcs[DS_NODE].ds_mtime;
+//		time(&now);		/* XXX: check for failure */
 	}
 	localtime_r(&now, &tm);
 
 	if (ssp == NULL)
 		glutTimerFunc(1000 * (60 - tm.tm_sec),
 		    panel_date_invalidate, 0);
-	strftime(tmbuf, sizeof(tmbuf), "%b %e %y %H:%M", &tm);
+	strftime(tmbuf, sizeof(tmbuf), "%b %e %y %l:%M%p", &tm);
 	panel_set_content(p, "(c) 2006 PSC\n%s", tmbuf);
 }
 
