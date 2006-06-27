@@ -1,10 +1,19 @@
 /* $Id$ */
 
+#include "mon.h"
+
 #include "cdefs.h"
 #include "env.h"
 #include "fill.h"
 #include "nodeclass.h"
+#include "objlist.h"
 #include "util.h"
+
+#define CINCR 10
+
+int col_eq(const void *, const void *);
+
+struct objlist col_list = { { NULL }, 0, 0, 0, 0, CINCR, sizeof(struct color), col_eq };
 
 struct fill fill_black		= FILL_INIT(0.0f, 0.0f, 0.0f);
 struct fill fill_grey		= FILL_INIT(0.2f, 0.2f, 0.2f);
@@ -26,6 +35,14 @@ struct fill fill_ground		= FILL_INITAB(0.3f, 0.3f, 0.3f, 0.1f, GL_ONE_MINUS_SRC_
 struct fill fill_borg		= FILL_INIT(0.0f, 0.0f, 0.0f);
 struct fill fill_matrix		= FILL_INITF(0.0f, 1.0f, 0.0f, FF_SKEL);
 struct fill fill_matrix_reloaded= FILL_INITA(0.0f, 1.0f, 0.0f, 0.3);
+
+int
+col_eq(const void *elem, const void *arg)
+{
+	const struct color *c = elem;
+
+	return (c->c_r * 256 * 256 + c->c_g * 256 + c->c_b == *(int *)arg);
+}
 
 __inline void
 fill_setrgb(struct fill *fp, float r, float g, float b)
@@ -108,6 +125,30 @@ col_get_intv(int *posp, struct fill *fp)
 	col_hsv_to_rgb(fp);
 
 	fp->f_a = 1.0;
+
+	scfp = &statusclass[SC_USED].nc_fill;	/* XXX */
+	fp->f_texid[WINID_LEFT]    = scfp->f_texid[WINID_LEFT];
+	fp->f_texid[WINID_RIGHT]   = scfp->f_texid[WINID_RIGHT];
+	fp->f_texid_a[WINID_LEFT]  = scfp->f_texid_a[WINID_LEFT];
+	fp->f_texid_a[WINID_RIGHT] = scfp->f_texid_a[WINID_RIGHT];
+}
+
+void
+col_get_hash(struct objhdr *oh, int id, struct fill *fp)
+{
+	struct fill *scfp;
+	int mod;
+
+	mod = (id * 13) % 45;
+
+	fp->f_h = (8 * mod / 360.0) * HUE_MAX + HUE_MIN;
+	fp->f_s = (8 * mod / 360.0) * SAT_MAX + SAT_MIN;
+	fp->f_v = (8 * mod / 360.0) * VAL_MAX + VAL_MIN;
+	col_hsv_to_rgb(fp);
+
+	if ((oh->oh_flags & OHF_OLD) == 0)
+		fp->f_a = 1.0;
+		/* st.st_rf |= ST_HLNC; */
 
 	scfp = &statusclass[SC_USED].nc_fill;	/* XXX */
 	fp->f_texid[WINID_LEFT]    = scfp->f_texid[WINID_LEFT];

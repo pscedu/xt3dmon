@@ -29,6 +29,13 @@ struct fill {
 #define f_v f_rgba[2]
 };
 
+struct color {
+	int		c_rgb[3];
+#define c_r c_rgb[0]
+#define c_g c_rgb[1]
+#define c_b c_rgb[2]
+};
+
 #define FF_SKEL		(1<<0)			/* Fill is outline, not solid. */
 #define FF_TEX		(1<<1)			/* Textured. */
 #define FF_OPAQUE	(1<<2)			/* Ignore alpha channel. */
@@ -51,6 +58,8 @@ struct fill {
 #define FILL_INITFAB(r, g, b, a, flags, blf)		\
 	{ { (r), (g), (b), (a) }, (flags), (blf), { 0, 0 }, { 0, 0 } }
 
+struct objhdr;
+
 void 	 fill_contrast(struct fill *);
 void	 fill_setopaque(struct fill *);
 void	 fill_setxparent(struct fill *);
@@ -62,6 +71,9 @@ void	 fill_untex(struct fill *);
 void	 col_hsv_to_rgb(struct fill *);
 void	 col_get(int, size_t, size_t, struct fill *);
 void	 col_get_intv(int *, struct fill *);
+void	 col_get_hash(struct objhdr *, int, struct fill *);
+
+extern struct objlist	 col_list;
 
 extern struct fill	 fill_black;
 extern struct fill	 fill_grey;
