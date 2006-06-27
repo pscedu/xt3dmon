@@ -85,3 +85,4 @@ todo
 - PSC logo/watermark panel
 - add copyright stuff (glut, zlib, etc.) to xt3dmon.1
 - use existing kerberos tickets to do auth
+- ensure tweening leaves normalized vectors
