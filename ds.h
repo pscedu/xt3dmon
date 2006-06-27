@@ -59,6 +59,8 @@ void		 parse_yod(const struct datasrc *);
 void		 parse_rt(const struct datasrc *);
 void		 parse_ss(const struct datasrc *);
 
+void		 parse_colors(const char *);
+
 extern int	 	dsp;			/* Data source provider. */
 extern int	 	dsflags;
 extern struct datasrc	datasrcs[];
