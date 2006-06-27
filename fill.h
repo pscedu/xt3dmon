@@ -5,6 +5,8 @@
 
 #include <sys/types.h>
 
+#include "objlist.h"
+
 /* HSV constants. */
 #define HUE_MIN		0
 #define HUE_MAX		360
@@ -30,6 +32,7 @@ struct fill {
 };
 
 struct color {
+	struct objhdr	c_oh;
 	int		c_rgb[3];
 #define c_r c_rgb[0]
 #define c_g c_rgb[1]

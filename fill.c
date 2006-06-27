@@ -137,14 +137,12 @@ void
 col_get_hash(struct objhdr *oh, int id, struct fill *fp)
 {
 	struct fill *scfp;
-	int mod;
+	struct color *c;
 
-	mod = (id * 13) % 45;
-
-	fp->f_h = (8 * mod / 360.0) * HUE_MAX + HUE_MIN;
-	fp->f_s = (8 * mod / 360.0) * SAT_MAX + SAT_MIN;
-	fp->f_v = (8 * mod / 360.0) * VAL_MAX + VAL_MIN;
-	col_hsv_to_rgb(fp);
+	c = col_list.ol_colors[id % col_list.ol_cur];
+	fp->f_r = c->c_r / 255.0;
+	fp->f_g = c->c_g / 255.0;
+	fp->f_b = c->c_b / 255.0;
 
 	if ((oh->oh_flags & OHF_OLD) == 0)
 		fp->f_a = 1.0;

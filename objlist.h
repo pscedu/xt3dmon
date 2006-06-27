@@ -8,6 +8,7 @@ struct yod;
 struct glname;
 struct reel;
 struct fnent;
+struct color;
 
 struct objhdr {
 	int	  oh_flags;
@@ -30,6 +31,7 @@ struct objlist {
 		struct glname	**olu_glnames;
 		struct reel	**olu_reels;
 		struct fnent	**olu_fnents;
+		struct color	**olu_colors;
 	}	 		  ol_udata;
 	size_t	 		  ol_cur;
 	size_t	 		  ol_tcur;
@@ -44,6 +46,7 @@ struct objlist {
 #define ol_glnames		  ol_udata.olu_glnames
 #define ol_reels		  ol_udata.olu_reels
 #define ol_fnents		  ol_udata.olu_fnents
+#define ol_colors		  ol_udata.olu_colors
 };
 
 void	 obj_batch_start(struct objlist *);
@@ -58,5 +61,6 @@ extern struct objlist	 yod_list;
 extern struct objlist	 glname_list;
 extern struct objlist	 reel_list;
 extern struct objlist	 flyby_list;
+extern struct objlist	 col_list;
 
 #endif /* _OBJLIST_H_ */
