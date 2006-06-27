@@ -15,18 +15,6 @@
 #include "select.h"
 #include "yod.h"
 
-#define JINCR	10
-#define YINCR	10
-#define GINCR	10
-
-int job_eq(const void *, const void *);
-int yod_eq(const void *, const void *);
-int glname_eq(const void *, const void *);
-
-struct objlist	 job_list    = { { NULL }, 0, 0, 0, 0, JINCR, sizeof(struct job),    job_eq };
-struct objlist	 yod_list    = { { NULL }, 0, 0, 0, 0, YINCR, sizeof(struct yod),    yod_eq };
-struct objlist	 glname_list = { { NULL }, 0, 0, 0, 0, GINCR, sizeof(struct glname), glname_eq };
-
 struct nodeclass statusclass[] = {
 	{ "Free",		FILL_INIT(1.00f, 1.00f, 1.00f), 0 },
 	{ "Disabled (PBS)",	FILL_INIT(1.00f, 0.00f, 0.00f), 0 },
@@ -108,36 +96,6 @@ fe_cmp(const void *a, const void *b)
 	const struct fnent **feb = (const struct fnent **)b;
 
 	return (strcmp((*fea)->fe_name, (*feb)->fe_name));
-}
-
-int
-job_eq(const void *elem, const void *arg)
-{
-	return (((struct job *)elem)->j_id == *(int *)arg);
-}
-
-int
-yod_eq(const void *elem, const void *arg)
-{
-	return (((struct yod *)elem)->y_id == *(int *)arg);
-}
-
-int
-glname_eq(const void *elem, const void *arg)
-{
-	return (((struct glname *)elem)->gn_name == *(unsigned int *)arg);
-}
-
-int
-job_cmp(const void *a, const void *b)
-{
-	return (CMP((*(struct job **)a)->j_id, (*(struct job **)b)->j_id));
-}
-
-int
-yod_cmp(const void *a, const void *b)
-{
-	return (CMP((*(struct yod **)a)->y_id, (*(struct yod **)b)->y_id));
 }
 
 void

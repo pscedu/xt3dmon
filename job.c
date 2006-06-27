@@ -4,6 +4,25 @@
 
 #include "cdefs.h"
 #include "job.h"
+#include "util.h"
+
+#define JINCR	10
+
+int job_eq(const void *, const void *);
+
+struct objlist job_list = { { NULL }, 0, 0, 0, 0, JINCR, sizeof(struct job), job_eq };
+
+int
+job_eq(const void *elem, const void *arg)
+{
+	return (((struct job *)elem)->j_id == *(int *)arg);
+}
+
+int
+job_cmp(const void *a, const void *b)
+{
+	return (CMP((*(struct job **)a)->j_id, (*(struct job **)b)->j_id));
+}
 
 struct job *
 job_findbyid(int id, int *pos)

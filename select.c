@@ -22,7 +22,19 @@
 #include "tween.h"
 #include "util.h"
 
+#define GINCR	10
+
+int glname_eq(const void *, const void *);
+
+struct objlist glname_list = { { NULL }, 0, 0, 0, 0, GINCR, sizeof(struct glname), glname_eq };
+
 GLuint	 selbuf[1000];
+
+int
+glname_eq(const void *elem, const void *arg)
+{
+	return (((struct glname *)elem)->gn_name == *(unsigned int *)arg);
+}
 
 void
 sel_begin(void)
