@@ -274,6 +274,172 @@ Switch to the physical viewing mode (default).
 .It Ic vw
 Switch to the wired viewing mode with the cluster drawn continuously.
 .El
+.Sh DEUS EX SYNTAX
+.Nm
+can have many of its actions scripted by loading a
+.Em deus ex
+script and running it with the Deus Ex option.
+The syntax and grammar for these scripts are as follows:
+.Pp
+Empty lines and lines beginning with a
+.Sq #
+are ignored.
+All other lines are expected to contain one action directive,
+which may be any of the following:
+.Bl -tag -width Ds
+.It Ic bird
+Move to a bird's eye view.
+.It Ic clrsn
+Clear any selected nodes.
+.It Ic cyclenc
+Cycle through each node class (such as jobs or temperature range)
+of the current data mode, displaying only one class at a time.
+.It Ic dmode Ar dm
+Set the data mode.
+.Ar dm
+may be one of:
+.Ic job , temp .
+.It Ic hl Ar class
+Highlight (i.e., only show) nodes in given node
+.Ar class .
+The following symbolic names are recognized:
+.Pp
+.Bl -tag -offset indent -width Ds -compact
+.It Ic all
+Show all node classes.
+.It Ic seldm
+Show all node classes of any selected node.
+.El
+.It Ic move Ar dir amt
+Pan the camera in the given direction
+.Ar dir
+the given amount
+.Ar amt .
+.Ar dir
+may be one of
+.Ic forward , back .
+.Ar amt
+is a floating-point or integer number of 3-space units.
+.It Ic opt Ar modifier option Op , Ar ...
+Change the view options.
+.Ar modifier
+may be
+.Ic + ,
+which enables options,
+.Ic - ,
+which disables options, or left blank, which sets all current
+options to only those specified.
+.Pp
+The following options are recognized:
+.Pp
+.Bl -tag -width nodeanimXX -offset indent -compact
+.It Ic nlabels
+Node labels.
+.It Ic pipes
+Wired mode pipes.
+.It Ic skel
+Cluster skeletons.
+.It Ic frames
+Show node wireframes.
+.It Ic tween
+Smooth camera movement with
+.Dq tween
+steps.
+.It Ic display
+Enable drawing to screen.
+.It Ic nodeanim
+Animate node movement.
+.It Ic caption
+Show captions.
+.It Ic deusex
+Enable Deus Ex mode.
+.El
+.It Ic orbit Ar dim
+Orbit the current focus point, which will be the center of all
+selected nodes, if their are any, or otherwise the entire cluster
+view.
+.Ar dim
+specifies which dimension, e.g.,
+.Ic x , y ,
+or
+.Ic z ,
+and may be prefixed with a minus sign
+.Pq Sq -
+to specify reverse revolutions.
+.It Ic panel Ar modifier panel Op , Ar ...
+Change which panels are shown.
+.Ar modifier
+may be
+.Sq + ,
+which enables panels,
+.Sq - ,
+which disables panels, or left blank, which makes
+.Nm
+show only the specified panels.
+.Pp
+The following panels are available:
+.Pp
+.Bl -tag -width compassXX -offset indent -compact
+.It Ic compass
+Compass.
+.It Ic wiadj
+Wired-mode spacing controls.
+.It Ic legend
+Node class legend.
+.It Ic Help
+Help.
+.El
+.It Ic refocus
+Move the camera view to point to the current focus, which will
+be the center of all selected nodes, if there are any, or otherwise
+the entire cluster view.
+.It Ic refresh
+Grab new data.
+.It Ic seljob random
+Select a random job-allocated node and highlight its respective job.
+.It Ic selnode Ar nid
+Select the node with the given node ID
+.Ar nid .
+.Ar nid
+may also be
+.Ic random ,
+in which case a random node will be selected.
+.It Ic setcap Ar caption
+If the caption option is enabled, the caption displayed will be
+changed to the given
+.Ar caption .
+Captions may be optionally surrounded by double quotes
+.Pq Dq \&
+to allow spaces.
+.It Ic vmode Ar vm
+Set the current cluster view mode.
+Recognized values are
+.Ic phys , wione .
+.It Ic winsp Ar x y z
+Set the wired-mode node spacing factor.
+Each of
+.Ar x , y ,
+or
+.Ar z
+may be prefixed by a
+.Sq + ,
+which will increase the spacing by the given factor,
+.Sq - ,
+which will decrease the spacing factor, or nothing, in which case the
+spacing factor for that dimension will be set to the given value.
+.It Ic wioff Ar x y z
+Set the wired-mode node offset.
+Each of
+.Ar x , y ,
+or
+.Ar z
+may be prefixed by a
+.Sq + ,
+which will increase the offset,
+.Sq - ,
+which will decrease the offset, or nothing, in which case the
+offset in that dimension will be set to the given value.
+.El
 .Sh FILES
 .Bl -tag -width Pa -compact
 .It Pa img/tex-sc Ns Em %d Ns Pa .png
@@ -286,6 +452,8 @@ font texture used for node labels
 top-level reel directory
 .It Pa data/phys.conf
 cluster physical description file
+.It Pa data/colors
+job color table
 .It Pa data/node
 node information
 .It Pa data/job
@@ -298,6 +466,27 @@ seastar data
 routing data
 .It Pa data/flyby.data
 flyby data file
+.It Pa scripts
+deus-ex scripts
 .It Pa snaps/ Ns Em %08d Ns Pa .png
 capture output files
+.El
+.Sh COPYRIGHT
+Copyright
+.Pq c
+2005-2006 Pittsburgh Supercomputing Center
+http://www.psc.edu/
+.Pp
+Distributed binaries contain and/or are linked with the following bits
+of software and their respective licenses:
+.Pp
+.Bl -tag -width freeglutX -offset indent -compact
+.It libpng
+http://www.libpng.org/pub/png/libpng-1.2.5-manual.html#section-10
+.It zlib
+http://www.zlib.net/zlib_license.html
+.It freeglut
+http://www.opensource.org/licenses/mit-license.php
+.It openssl
+http://www.openssl.org/source/license.html
 .El
