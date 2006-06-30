@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "env.h"
 #include "flyby.h"
 #include "node.h"
 #include "panel.h"
@@ -127,4 +128,15 @@ sn_set(struct node *n, const struct fvec *offv)
 {
 	sn_clear();
 	sn_insert(n, offv);
+}
+
+void
+sn_addallvis(void)
+{
+	struct ivec iv;
+	struct node *n;
+
+	NODE_FOREACH(n, &iv)
+		if (n && node_show(n))
+			sn_add(n, &fv_zero);
 }

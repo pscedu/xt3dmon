@@ -18,6 +18,7 @@ void	sn_insert(struct node *, const struct fvec *);
 void	sn_replace(struct selnode *, struct node *);
 void	sn_set(struct node *, const struct fvec *);
 void	sn_toggle(struct node *, const struct fvec *);
+void	sn_addallvis(void);
 
 extern struct selnodes	selnodes;
 extern size_t		nselnodes;

@@ -560,6 +560,9 @@ gl_keyh_default(unsigned char key, int u, int v)
 {
 	flyby_rstautoto();
 	switch (key) {
+	case 1:
+		sn_addallvis();
+		break;
 	case '2': case '4':
 	case '6': case '8': {
 		double du, dv;
@@ -597,6 +600,15 @@ gl_keyh_default(unsigned char key, int u, int v)
 	case 'f':
 		glutKeyboardFunc(gl_keyh_flyby);
 		break;
+	case 'i': {
+		struct selnode *sn;
+
+		SLIST_FOREACH(sn, &selnodes, sn_next)
+			printf("%d%s", sn->sn_nodep->n_nid,
+			    SLIST_NEXT(sn, sn_next) ? "," : "");
+		printf("\n");
+		break;
+	    }
 	case 'k':
 		glutKeyboardFunc(gl_keyh_keyh);
 		break;
