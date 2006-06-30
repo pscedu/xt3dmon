@@ -322,6 +322,8 @@ panel_refresh_legend(struct panel *p)
 	pwidget_endlist(p);
 }
 
+#define NINFO_MAXNIDS 30
+
 void
 panel_refresh_ninfo(struct panel *p)
 {
@@ -354,14 +356,16 @@ panel_refresh_ninfo(struct panel *p)
 		SLIST_FOREACH(sn, &selnodes, sn_next) {
 			n = sn->sn_nodep;
 
-			nids_pos += snprintf(nids + nids_pos,
-			    sizeof(nids) - nids_pos, ",%d", n->n_nid);
+			if (j == NINFO_MAXNIDS)
+				nids_pos += snprintf(nids + nids_pos,
+				    sizeof(nids) - nids_pos, ",...");
+			else if (j < NINFO_MAXNIDS && nids_pos < sizeof(nids))
+				nids_pos += snprintf(nids + nids_pos,
+				    sizeof(nids) - nids_pos, ",%d", n->n_nid);
 
-			if (nids_pos >= sizeof(nids))
-				break;
 			switch (st.st_dmode) {
 			case DM_JOB:
-				if (n->n_state == SC_USED)
+				if (n->n_job)
 					n->n_job->j_oh.oh_flags |= OHF_TMP;
 				break;
 			case DM_YOD:
@@ -379,12 +383,6 @@ panel_refresh_ninfo(struct panel *p)
 		case DM_JOB:
 			label = "Job ID(s)";
 			ol = &job_list;
-			break;
-		case DM_TEMP:
-			label = "Temperature(s)";
-			break;
-		case DM_FAIL:
-			label = "Failure(s)";
 			break;
 		case DM_YOD:
 			label = "Yod ID(s)";
