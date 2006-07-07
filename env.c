@@ -28,6 +28,12 @@ struct ivec	winv = { { 800, 600, 0 } };
 int	 	window_ids[2];
 int	 	wid = WINID_DEF;	/* Current window ID */
 
+struct keyh keyhtab[] = {
+	{ "Camera movement",	gl_spkeyh_default },
+	{ "Node neighbors",	gl_spkeyh_node },
+	{ "Wired controls",	gl_spkeyh_wiadj }
+};
+
 __inline void
 frustum_init(struct frustum *fr)
 {

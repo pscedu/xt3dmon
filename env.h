@@ -40,6 +40,12 @@
 
 #define WINID_DEF	0
 
+/* Key handlers. */
+#define KEYH_DEF	0
+#define KEYH_NEIGH	1
+#define KEYH_WIADJ	2
+#define NKEYH		3
+
 struct vmode {
 	const char	*vm_name;
 	int		 vm_clip;
@@ -48,6 +54,11 @@ struct vmode {
 
 struct dmode {
 	const char	*dm_name;
+};
+
+struct keyh {
+	const char	 *kh_name;
+	void		(*kh_spkeyh)(int, int, int);
 };
 
 struct frustum {
@@ -101,6 +112,8 @@ extern int		 wid;
 extern int		 spkey;
 extern struct ivec	 mousev;
 extern struct ivec	 winv;
+extern struct keyh	 keyhtab[];
+extern int		 keyh;
 
 extern struct fvec	 focus;
 

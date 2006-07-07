@@ -558,3 +558,16 @@ gscb_pw_rt(struct glname *gn, int flags)
 		st.st_rf |= RF_CLUSTER | RF_DMODE;
 	}
 }
+
+void
+gscb_pw_keyh(struct glname *gn, int flags)
+{
+	int kh = gn->gn_id;
+
+	if (flags & SPF_PROBE)
+		cursor_set(GLUT_CURSOR_INFO);
+	else if (flags == 0) {
+		keyh = kh;
+		glutSpecialFunc(keyhtab[keyh].kh_spkeyh);
+	}
+}

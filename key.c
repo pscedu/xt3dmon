@@ -29,7 +29,8 @@
 
 #define TRANS_INC	0.10
 
-struct uinput uinp;
+struct uinput	uinp;
+int		keyh = KEYH_DEF;
 
 void
 gl_spkeyh_null(__unused int key, __unused int u, __unused int v)
@@ -361,6 +362,36 @@ gl_keyh_incr(unsigned char key, __unused int u, __unused int v)
 }
 
 void
+gl_spkeyh_wiadj(int key, __unused int u, __unused int v)
+{
+	flyby_rstautoto();
+	spkey = glutGetModifiers();
+	switch (key) {
+	case GLUT_KEY_PAGE_UP:
+		st.st_wioff.iv_y++;
+		break;
+	case GLUT_KEY_PAGE_DOWN:
+		st.st_wioff.iv_y--;
+		break;
+	case GLUT_KEY_UP:
+		st.st_wioff.iv_x++;
+		break;
+	case GLUT_KEY_DOWN:
+		st.st_wioff.iv_x--;
+		break;
+	case GLUT_KEY_LEFT:
+		st.st_wioff.iv_z--;
+		break;
+	case GLUT_KEY_RIGHT:
+		st.st_wioff.iv_z++;
+		break;
+	default:
+		return;
+	}
+	st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND | RF_NODESWIV;
+}
+
+void
 gl_spkeyh_node(int key, __unused int u, __unused int v)
 {
 	struct selnode *sn;
@@ -409,9 +440,15 @@ gl_keyh_keyh(unsigned char key, __unused int u, __unused int v)
 	switch (key) {
 	case 'n':
 		glutSpecialFunc(gl_spkeyh_node);
+		keyh = KEYH_NEIGH;
+		break;
+	case 'w':
+		glutSpecialFunc(gl_spkeyh_wiadj);
+		keyh = KEYH_WIADJ;
 		break;
 	default:
 		glutSpecialFunc(gl_spkeyh_default);
+		keyh = KEYH_DEF;
 		break;
 	}
 }

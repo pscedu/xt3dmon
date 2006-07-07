@@ -1160,3 +1160,25 @@ panel_refresh_cmp(struct panel *p)
 	 "          ");
 	p->p_extdrawf = panel_draw_compass;
 }
+
+void
+panel_refresh_keyh(struct panel *p)
+{
+	static int sav_keyh;
+	int j;
+
+	if (panel_ready(p) && sav_keyh == keyh)
+		return;
+	sav_keyh = keyh;
+
+	panel_set_content(p,
+	    "- Key Controls -\n"
+	    "Current: %s",
+	    keyhtab[keyh].kh_name);
+
+	pwidget_startlist(p);
+	for (j = 0; j < NKEYH; j++)
+		pwidget_add(p, (j == keyh ? &fill_white : &fill_nodata),
+		    keyhtab[j].kh_name, gscb_pw_keyh, j);
+	pwidget_endlist(p);
+}
