@@ -38,8 +38,8 @@ add:
 	$e_router  = substr $rest, 42 + 24 + 24;
 
 	$n{$nid}{$port}{recover} += int($e_recover);
-	$n{$nid}{$port}{fatal}++  if $e_fatal;
-	$n{$nid}{$port}{router}++ if $e_router;
+	$n{$nid}{$port}{fatal}++  unless $e_fatal  =~ /^\s+$/;
+	$n{$nid}{$port}{router}++ unless $e_router =~ /^\s+$/;
 }
 
 my ($v, $t);
