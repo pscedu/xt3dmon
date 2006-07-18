@@ -18,6 +18,8 @@
 #define NFAILC		6
 
 #define NRTC		10
+#define RTC_SND		11
+#define RTC_RCV		12
 
 #define NSSC		10
 
@@ -33,5 +35,6 @@ extern struct nodeclass	 statusclass[];
 extern struct nodeclass	 tempclass[NTEMPC];	/* XXX SPOT */
 extern struct nodeclass	 failclass[NFAILC];	/* XXX SPOT */
 extern struct nodeclass	 rtclass[NRTC];		/* XXX SPOT */
+extern struct nodeclass	 rtpipeclass[NRTC];	/* XXX SPOT */
 extern struct nodeclass	 ssclass[NSSC];		/* XXX SPOT */
 extern struct nodeclass	 lustreclass[];
