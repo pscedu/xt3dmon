@@ -35,6 +35,7 @@
 #define FHT_SEQ		2
 #define FHT_SELNODE	3
 #define FHT_PANEL	4
+#define FHT_HLNC	5
 
 struct fbhdr {
 	int		fbh_type;
@@ -55,10 +56,16 @@ struct fbselnode {
 	struct fvec	fbsn_offv;
 };
 
+struct fbhlnc {
+	int		fbhl_nc;
+	int		fbhl_op;
+};
+
 union fbun {
 	struct fbinit		fbu_init;
 	struct fbpanel		fbu_panel;
 	struct fbselnode	fbu_sn;
+	struct fbhlnc		fbu_hlnc;
 };
 
 int		 flyby_mode = FBM_OFF;
@@ -197,6 +204,16 @@ flyby_writeselnode(int nid, const struct fvec *offv)
 	flyby_writemsg(FHT_SELNODE, &fbsn, sizeof(fbsn));
 }
 
+__inline void
+flyby_writehlnc(int nc, int op)
+{
+	struct fbhlnc fbhl;
+
+	fbhl.fbhl_nc = nc;
+	fbhl.fbhl_op = op;
+	flyby_writemsg(FHT_HLNC, &fbhl, sizeof(fbhl));
+}
+
 /* Read a set of flyby data. */
 void
 flyby_read(void)
@@ -232,7 +249,7 @@ flyby_read(void)
 				err(1, "flyby read init");
 			st = fbun.fbu_init.fbi_state;
 			st.st_rf |= RF_VMODE | RF_DMODE | RF_CAM |
-			    RF_SELNODE | RF_HLNC;
+			    RF_SELNODE;
 			panels_set(fbun.fbu_init.fbi_panels);
 //		egg_toggle(st.st_eggs ^ sav_st.st_eggs);
 			done = 1;
@@ -258,6 +275,21 @@ flyby_read(void)
 				err(1, "flyby read selnode");
 			if ((n = node_for_nid(fbun.fbu_sn.fbsn_nid)) != NULL)
 				sn_toggle(n, &fbun.fbu_sn.fbsn_offv);
+			break;
+		case FHT_HLNC:
+			if (fread(&fbun, 1, sizeof(struct fbhlnc),
+			    flyby_fp) != sizeof(struct fbhlnc))
+				err(1, "flyby read hlnc");
+			switch (fbun.fbu_hlnc.fbhl_op) {
+			case FBHLOP_XPARENT:
+				break;
+			case FBHLOP_OPAQUE:
+				break;
+			case FBHLOP_ALPHAINC:
+				break;
+			case FBHLOP_ALPHADEC:
+				break;
+			}
 			break;
 		default:
 			if (fseek(flyby_fp, fbh.fbh_len, SEEK_CUR) == -1)
@@ -315,8 +347,9 @@ flyby_end(void)
 		    !ivec_eq(&st.st_wioff, &sav_st.st_wioff) ||
 		    !ivec_eq(&st.st_winsp, &sav_st.st_winsp))
 			rf |= RF_CLUSTER;
-		if (st.st_hlnc != sav_st.st_hlnc)
-			rf |= RF_HLNC;
+//		if (st.st_hlnc != sav_st.st_hlnc)
+//			rf |= RF_HLNC;
+/* XXX: preserve hlnc */
 		egg_toggle(st.st_eggs ^ sav_st.st_eggs);
 
 		opts = st.st_opts;
