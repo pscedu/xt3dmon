@@ -90,10 +90,13 @@ extern struct fill	 fill_green;
 extern struct fill	 fill_bg;
 extern struct fill	 fill_font;
 extern struct fill	 fill_nodata;
+extern struct fill	 fill_rtesnd;
+extern struct fill	 fill_rtercv;
 extern struct fill	 fill_same;
 extern struct fill	 fill_selnode;
 extern struct fill	 fill_clskel;
 extern struct fill	 fill_ground;
+extern struct fill	 fill_showall;
 
 extern struct fill	 fill_borg;
 extern struct fill	 fill_matrix;

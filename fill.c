@@ -15,26 +15,29 @@ int col_eq(const void *, const void *);
 
 struct objlist col_list = { { NULL }, 0, 0, 0, 0, CINCR, sizeof(struct color), col_eq };
 
-struct fill fill_black		= FILL_INIT(0.0f, 0.0f, 0.0f);
-struct fill fill_grey		= FILL_INIT(0.2f, 0.2f, 0.2f);
-struct fill fill_light_blue	= FILL_INIT(0.2f, 0.4f, 0.6f);
-struct fill fill_white		= FILL_INIT(1.0f, 1.0f, 1.0f);
-struct fill fill_xparent	= FILL_INITA(1.0f, 1.0f, 1.0f, 0.0f);
-struct fill fill_yellow		= FILL_INIT(1.0f, 1.0f, 0.0f);
-struct fill fill_pink		= FILL_INIT(1.0f, 0.6f, 1.0f);
-struct fill fill_green		= FILL_INIT(0.0f, 1.0f, 0.0f);
+struct fill fill_black		= FILL_INIT  (0.0f, 0.0f, 0.0f);
+struct fill fill_grey		= FILL_INIT  (0.2f, 0.2f, 0.2f);
+struct fill fill_light_blue	= FILL_INIT  (0.2f, 0.4f, 0.6f);
+struct fill fill_white		= FILL_INIT  (1.0f, 1.0f, 1.0f);
+struct fill fill_xparent	= FILL_INITA (1.0f, 1.0f, 1.0f, 0.0f);
+struct fill fill_yellow		= FILL_INIT  (1.0f, 1.0f, 0.0f);
+struct fill fill_pink		= FILL_INIT  (1.0f, 0.6f, 1.0f);
+struct fill fill_green		= FILL_INIT  (0.0f, 1.0f, 0.0f);
 
-struct fill fill_bg		= FILL_INIT(0.1f, 0.2f, 0.3f);
-struct fill fill_font		= FILL_INIT(0.0f, 0.0f, 0.0f);
-struct fill fill_nodata		= FILL_INITF(1.0f, 1.0f, 0.0f, FF_SKEL);
-struct fill fill_same		= FILL_INIT(1.0f, 1.0f, 1.0f);
-struct fill fill_selnode	= FILL_INIT(0.2f, 0.4f, 0.6f);
+struct fill fill_bg		= FILL_INIT  (0.1f, 0.2f, 0.3f);
+struct fill fill_font		= FILL_INIT  (0.0f, 0.0f, 0.0f);
+struct fill fill_nodata		= FILL_INITF (1.0f, 1.0f, 0.0f, FF_SKEL);
+struct fill fill_rtesnd		= FILL_INITF (1.0f, 1.0f, 0.0f, FF_SKEL);
+struct fill fill_rtercv		= FILL_INITF (0.0f, 0.2f, 1.0f, FF_SKEL);
+struct fill fill_same		= FILL_INIT  (1.0f, 1.0f, 1.0f);
+struct fill fill_selnode	= FILL_INIT  (0.2f, 0.4f, 0.6f);
 struct fill fill_clskel		= FILL_INITFA(1.0f, 0.6f, 0.6f, 0.6f, FF_SKEL);
 struct fill fill_ground		= FILL_INITAB(0.3f, 0.3f, 0.3f, 0.1f, GL_ONE_MINUS_SRC_COLOR);
+struct fill fill_showall	= FILL_INITA (1.0f, 1.0f, 1.0f, 0.0f);
 
-struct fill fill_borg		= FILL_INIT(0.0f, 0.0f, 0.0f);
-struct fill fill_matrix		= FILL_INITF(0.0f, 1.0f, 0.0f, FF_SKEL);
-struct fill fill_matrix_reloaded= FILL_INITA(0.0f, 1.0f, 0.0f, 0.3);
+struct fill fill_borg		= FILL_INIT  (0.0f, 0.0f, 0.0f);
+struct fill fill_matrix		= FILL_INITF (0.0f, 1.0f, 0.0f, FF_SKEL);
+struct fill fill_matrix_reloaded= FILL_INITA (0.0f, 1.0f, 0.0f, 0.3);
 
 int
 col_eq(const void *elem, const void *arg)
