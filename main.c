@@ -61,9 +61,7 @@ const char		*progname;
 int			 verbose;
 
 const struct fvec	 fv_zero = { { 0.0, 0.0, 0.0 } };
-
-int			 rt_portset = RPS_POS;
-int			 rt_type = RT_RECOVER;
+const struct ivec	 iv_zero = { { 0, 0, 0 } };
 
 const char		*caption;
 
@@ -305,9 +303,9 @@ caption_set(const char *s)
 void
 dmode_change(void)
 {
+	struct node *n, *ng;
+	int rd, i, port;
 	struct ivec iv;
-	struct node *n;
-	int i;
 
 	mode_data_clean = 0;
 
@@ -338,6 +336,11 @@ dmode_change(void)
 			lustreclass[i].nc_nmemb = 0;
 		break;
 	}
+
+	if (st.st_dmode == DM_RTUNK)
+		NODE_FOREACH(n, &iv)
+			if (n)
+				n->n_fillp = &fill_xparent;
 
 	NODE_FOREACH(n, &iv) {
 		if (n == NULL)
@@ -389,13 +392,44 @@ dmode_change(void)
 			n->n_fillp = &fill_same;
 			break;
 		case DM_RTUNK:
-			if (n->n_route.rt_err[RP_UNK][rt_type] == DV_NODATA)
-				n->n_fillp = &fill_xparent;
-			else {
-				i = roundclass(n->n_route.rt_err[RP_UNK][rt_type],
-				    0, rt_max.rt_err[RP_UNK][rt_type], NRTC);
+			if (n->n_route.rt_err[RP_UNK][st.st_rtetype]) {
+				i = roundclass(n->n_route.rt_err[RP_UNK][st.st_rtetype],
+				    0, rt_max.rt_err[RP_UNK][st.st_rtetype], NRTC);
 				n->n_fillp = &rtclass[i].nc_fill;
 				rtclass[i].nc_nmemb++;
+			} else {
+				for (i = 0; i < NDIM; i++) {
+					port = DIM_TO_PORT(i, st.st_rtepset);
+					if (n->n_route.rt_err[port][st.st_rtetype]) {
+						n->n_fillp = &fill_rtesnd;
+
+						rd = 0; /* gcc */
+						switch (port) {
+						case RP_NEGX:
+							rd = RD_NEGX;
+							break;
+						case RP_POSX:
+							rd = RD_POSX;
+							break;
+						case RP_NEGY:
+							rd = RD_NEGY;
+							break;
+						case RP_POSY:
+							rd = RD_POSY;
+							break;
+						case RP_NEGZ:
+							rd = RD_NEGZ;
+							break;
+						case RP_POSZ:
+							rd = RD_POSZ;
+							break;
+						}
+
+						ng = node_wineighbor(n, rd);
+						if (ng->n_fillp == &fill_xparent)
+							ng->n_fillp = &fill_rtercv;
+					}
+				}
 			}
 			break;
 		case DM_SEASTAR:
@@ -410,6 +444,7 @@ dmode_change(void)
 			break;
 //		default:
 //			n->n_fillp = &fill_xparent;
+//			dbg_crash();
 //			break;
 		}
 	}
