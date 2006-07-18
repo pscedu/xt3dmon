@@ -27,8 +27,6 @@
 #include "uinp.h"
 #include "xmath.h"
 
-#define TRANS_INC	0.10
-
 struct uinput	uinp;
 int		keyh = KEYH_DEF;
 
