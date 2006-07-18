@@ -33,6 +33,10 @@
 #include "util.h"
 #include "yod.h"
 
+int	 dmode_data_clean;
+int	 selnode_clean;
+int	 hlnc_clean;
+
 /* Blink panel text (swap between two strings during interval). */
 int
 panel_blink(struct timeval *pre, char **s, int size, int *i, long interval)
@@ -181,11 +185,10 @@ panel_refresh_cmd(struct panel *p)
 {
 	/* XXX:  is the mode_data_clean check correct? */
 	if ((uinp.uinp_opts & UINPO_DIRTY) == 0 &&
-	    selnode_clean & PANEL_CMD && (SLIST_EMPTY(&selnodes) ||
-	    (mode_data_clean & PANEL_CMD) == 0) && panel_ready(p))
+	    selnode_clean & PANEL_CMD &&
+	    panel_ready(p))
 		return;
 	uinp.uinp_opts &= ~UINPO_DIRTY;
-	mode_data_clean |= PANEL_CMD;
 	selnode_clean |= PANEL_CMD;
 
 	if (SLIST_EMPTY(&selnodes))
@@ -206,9 +209,11 @@ panel_refresh_legend(struct panel *p)
 	size_t j;
 	int i;
 
-	if ((mode_data_clean & PANEL_LEGEND) && panel_ready(p))
+	if (dmode_data_clean & PANEL_LEGEND &&
+	    hlnc_clean & PANEL_LEGEND && panel_ready(p))
 		return;
-	mode_data_clean |= PANEL_LEGEND;
+	dmode_data_clean |= PANEL_LEGEND;
+	hlnc_clean |= PANEL_LEGEND;
 
 	pwidget_startlist(p);
 	switch (st.st_dmode) {
@@ -277,8 +282,8 @@ panel_refresh_legend(struct panel *p)
 		panel_set_content(p, "- Routing Legend -");
 
 		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, HL_ALL);
-		pwidget_add(p, &fill_rtesnd, "Sender", NULL, 0);
-		pwidget_add(p, &fill_rtercv, "Target", NULL, 0);
+		pwidget_add(p, &fill_rtesnd, "Sender", gscb_pw_hlnc, RTC_SND);
+		pwidget_add(p, &fill_rtercv, "Target", gscb_pw_hlnc, RTC_RCV);
 
 		for (j = 0; j < NRTC; j++) {
 			if (rtclass[j].nc_nmemb == 0)
@@ -337,10 +342,15 @@ panel_refresh_ninfo(struct panel *p)
 	struct node *n;
 	int j;
 
+	/*
+	 * Since dmode-dependent data is written into
+	 * the panel content, if the dmode changes, so
+	 * must the panel content.
+	 */
 	if (selnode_clean & PANEL_NINFO && (SLIST_EMPTY(&selnodes) ||
-	    (mode_data_clean & PANEL_NINFO)) && panel_ready(p))
+	    (dmode_data_clean & PANEL_NINFO)) && panel_ready(p))
 		return;
-	mode_data_clean |= PANEL_NINFO;
+	dmode_data_clean |= PANEL_NINFO;
 	selnode_clean |= PANEL_NINFO;
 
 	if (SLIST_EMPTY(&selnodes)) {
@@ -422,10 +432,11 @@ panel_refresh_ninfo(struct panel *p)
 		panel_set_content(p,
 		    "- Node Information -\n"
 		    "%d node(s) selected\n"
-		    "Node ID(s): %s\n"
-		    "%s: %s",
-		    nselnodes, nids + 1,
-		    label, data + 1);
+		    "Node ID(s): %s",
+		    nselnodes, nids + 1);
+		if (label)
+			panel_add_content(p,
+			    "\n%s: %s", label, data + 1);
 		return;
 	}
 
@@ -699,9 +710,8 @@ panel_refresh_gotojob(struct panel *p)
 void
 panel_refresh_mem(struct panel *p)
 {
-	if ((mode_data_clean & PANEL_MEM) && panel_ready(p))
+	if (panel_ready(p))
 		return;
-	mode_data_clean |= PANEL_MEM;
 	panel_set_content(p, "- Memory Usage -\n"
 	    "VSZ: %lu\n"
 	    "RSS: %ld",
@@ -1200,9 +1210,9 @@ panel_refresh_rt(struct panel *p)
 
 	pwidget_startlist(p);
 
-	for (i = 0; i < NRTC; i++)
-		pwidget_add(p, &rtclass[i].nc_fill,
-		    rtclass[i].nc_name, gscb_pw_hlnc, i);
+	for (i = 0; i < NRTC / 2; i++)
+		pwidget_add(p, &rtpipeclass[i].nc_fill,
+		    rtpipeclass[i].nc_name, NULL, 0);
 
 	pwidget_add(p, (st.st_rtetype == RT_RECOVER ? &fill_white :
 	    &fill_nodata), "Recoverable", gscb_pw_rt, SRF_RECOVER);
@@ -1210,6 +1220,11 @@ panel_refresh_rt(struct panel *p)
 	    &fill_nodata), "Fatal",  gscb_pw_rt, SRF_FATAL);
 	pwidget_add(p, (st.st_rtetype == RT_ROUTER ? &fill_white :
 	    &fill_nodata), "Router", gscb_pw_rt, SRF_ROUTER);
+
+	for (; i < NRTC; i++)
+		pwidget_add(p, &rtpipeclass[i].nc_fill,
+		    rtpipeclass[i].nc_name, NULL, 0);
+
 	pwidget_add(p, (st.st_rtepset == RPS_NEG ?  &fill_white :
 	    &fill_nodata), "Negative", gscb_pw_rt, SRF_NEG);
 	pwidget_add(p, (st.st_rtepset == RPS_POS ?  &fill_white :

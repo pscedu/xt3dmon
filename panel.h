@@ -150,3 +150,7 @@ void panel_refresh_keyh(struct panel *);
 extern struct panels	 panels;
 extern struct pinfo	 pinfo[];
 extern struct panel	*panel_mobile;
+
+extern int		 dmode_data_clean;
+extern int		 selnode_clean;
+extern int		 hlnc_clean;
