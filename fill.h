@@ -102,4 +102,6 @@ extern struct fill	 fill_borg;
 extern struct fill	 fill_matrix;
 extern struct fill	 fill_matrix_reloaded;
 
+extern struct fill	 fill_dim[];
+
 #endif /* _FILL_H_ */

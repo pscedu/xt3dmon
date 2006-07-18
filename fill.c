@@ -39,6 +39,12 @@ struct fill fill_borg		= FILL_INIT  (0.0f, 0.0f, 0.0f);
 struct fill fill_matrix		= FILL_INITF (0.0f, 1.0f, 0.0f, FF_SKEL);
 struct fill fill_matrix_reloaded= FILL_INITA (0.0f, 1.0f, 0.0f, 0.3);
 
+struct fill fill_dim[] = {
+	FILL_INIT(0.0f, 0.0f, 1.0f),	/* x - blue */
+	FILL_INIT(1.0f, 0.0f, 0.0f),	/* y - red */
+	FILL_INIT(0.0f, 1.0f, 0.0f)	/* z - green */
+};
+
 int
 col_eq(const void *elem, const void *arg)
 {
