@@ -305,6 +305,14 @@ gscb_pw_hlnc(struct glname *gn, int flags)
 			f(fp);
 		st.st_rf |= RF_CLUSTER;
 	} else if (flags == 0) {
+		spkey = glutGetModifiers();
+		if (spkey & GLUT_ACTIVE_SHIFT) {
+			/* Don't reset others. */
+		}
+		if (spkey & GLUT_ACTIVE_CTRL) {
+			/* Disable instead of enable. */
+		}
+
 		st.st_hlnc = nc;
 		st.st_rf |= RF_HLNC;
 	}
