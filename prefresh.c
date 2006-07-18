@@ -927,8 +927,6 @@ panel_refresh_help(struct panel *p)
 	panel_set_content(p, "");
 	pwidget_startlist(p);
 	if (exthelp) {
-		pwidget_add(p, &fill_xparent, "Hide Help >>",
-		    gscb_pw_help, HF_HIDEHELP);
 		pwidget_add(p, &fill_xparent, "Panels",
 		    gscb_pw_panel, baseconv(PANEL_PANELS) - 1);
 		pwidget_add(p, &fill_xparent, "Options",
