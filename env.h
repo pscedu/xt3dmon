@@ -24,6 +24,14 @@
 #define DIM_Z		2
 #define NDIM		3
 
+/* Relative directions. */
+#define RD_NEGX		0
+#define RD_POSX		1
+#define RD_NEGY		2
+#define RD_POSY		3
+#define RD_NEGZ		4
+#define RD_POSZ		5
+
 /* Geometries. */
 #define GEOM_CUBE	0
 #define GEOM_SPHERE	1
