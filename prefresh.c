@@ -216,7 +216,7 @@ panel_refresh_legend(struct panel *p)
 		panel_set_content(p, "- Job Legend -\n"
 		    "Total jobs: %lu", job_list.ol_cur);
 
-		pwidget_add(p, &fill_nodata, "Show all", gscb_pw_hlnc, HL_ALL);
+		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, HL_ALL);
 
 		for (j = 0; j < NSC; j++) {
 			if (j == SC_USED ||
@@ -233,7 +233,7 @@ panel_refresh_legend(struct panel *p)
 		panel_set_content(p, "- Failure Legend -\n"
 		    "Total: %lu", total_failures);
 
-		pwidget_add(p, &fill_nodata, "Show all", gscb_pw_hlnc, HL_ALL);
+		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, HL_ALL);
 		pwidget_add(p, &fill_nodata, "No data", NULL, 0);
 
 		for (j = 0; j < NFAILC; j++) {
@@ -246,7 +246,7 @@ panel_refresh_legend(struct panel *p)
 	case DM_TEMP:
 		panel_set_content(p, "- Temperature Legend -");
 
-		pwidget_add(p, &fill_nodata, "Show all", gscb_pw_hlnc, HL_ALL);
+		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, HL_ALL);
 		pwidget_add(p, &fill_nodata, "No data", NULL, 0);
 
 		for (i = NTEMPC - 1; i >= 0; i--) {
@@ -260,7 +260,7 @@ panel_refresh_legend(struct panel *p)
 		panel_set_content(p, "- Yod Legend -\n"
 		    "Total yods: %lu", yod_list.ol_cur);
 
-		pwidget_add(p, &fill_nodata, "Show all", gscb_pw_hlnc, HL_ALL);
+		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, HL_ALL);
 
 		for (j = 0; j < NSC; j++) {
 			if (j == SC_USED ||
@@ -276,7 +276,9 @@ panel_refresh_legend(struct panel *p)
 	case DM_RTUNK:
 		panel_set_content(p, "- Routing Legend -");
 
-		pwidget_add(p, &fill_nodata, "Show all", gscb_pw_hlnc, HL_ALL);
+		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, HL_ALL);
+		pwidget_add(p, &fill_rtesnd, "Sender", NULL, 0);
+		pwidget_add(p, &fill_rtercv, "Target", NULL, 0);
 
 		for (j = 0; j < NRTC; j++) {
 			if (rtclass[j].nc_nmemb == 0)
@@ -288,7 +290,7 @@ panel_refresh_legend(struct panel *p)
 	case DM_SEASTAR:
 		panel_set_content(p, "- Seastar Legend -");
 
-		pwidget_add(p, &fill_nodata, "Show all", gscb_pw_hlnc, HL_ALL);
+		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, HL_ALL);
 
 		for (j = 0; j < NSSC; j++) {
 			if (ssclass[j].nc_nmemb == 0)
@@ -305,7 +307,7 @@ panel_refresh_legend(struct panel *p)
 	case DM_LUSTRE:
 		panel_set_content(p, "- Lustre Legend -");
 
-		pwidget_add(p, &fill_nodata, "Show all", gscb_pw_hlnc, HL_ALL);
+		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, HL_ALL);
 
 		for (j = 0; j < NLUSTC; j++) {
 			if (lustreclass[j].nc_nmemb == 0)
@@ -333,6 +335,7 @@ panel_refresh_ninfo(struct panel *p)
 	struct selnode *sn;
 	struct ivec *iv;
 	struct node *n;
+	int j;
 
 	if (selnode_clean & PANEL_NINFO && (SLIST_EMPTY(&selnodes) ||
 	    (mode_data_clean & PANEL_NINFO)) && panel_ready(p))
@@ -437,7 +440,6 @@ panel_refresh_ninfo(struct panel *p)
 	    "Wired position: (%d,%d,%d)\n"
 	    "Hardware name: c%d-%dc%ds%dn%d\n"
 	    "Status: %s",
-//	    "Routing errors: (%d recover, %d fatal, %d rtr)\n"
 //	    "# Failures: %d",
 	    n->n_nid,
 	    iv->iv_x, iv->iv_y, iv->iv_z,
@@ -448,6 +450,37 @@ panel_refresh_ninfo(struct panel *p)
 		panel_add_content(p, "\nTemperature: N/A");
 	else
 		panel_add_content(p, "\nTemperature: %dC", n->n_temp);
+
+	panel_add_content(p, "\n\nRouting errors:");
+	if (memcmp(&n->n_route.rt_err, &rt_zero, sizeof(rt_zero)) == 0)
+		panel_add_content(p, " none");
+	else {
+		for (j = 0; j < NRP; j++) {
+			if (n->n_route.rt_err[j][RT_RECOVER] ||
+			    n->n_route.rt_err[j][RT_FATAL] ||
+			    n->n_route.rt_err[j][RT_ROUTER]) {
+				int needcomma = 0;
+
+				panel_add_content(p, "\n  port %d: ", j);
+				if (n->n_route.rt_err[j][RT_RECOVER]) {
+					panel_add_content(p, "%d recover",
+					    n->n_route.rt_err[j][RT_RECOVER]);
+					needcomma = 1;
+				}
+				if (n->n_route.rt_err[j][RT_FATAL]) {
+					panel_add_content(p, "%s%d fatal",
+					    needcomma ? ", " : "",
+					    n->n_route.rt_err[j][RT_FATAL]);
+					needcomma = 1;
+				}
+				if (n->n_route.rt_err[j][RT_ROUTER]) {
+					panel_add_content(p, "%s%d rtr",
+					    needcomma ? ", " : "",
+					    n->n_route.rt_err[j][RT_ROUTER]);
+				}
+			}
+		}
+	}
 
 	if (n->n_job)
 		panel_add_content(p,
@@ -1117,6 +1150,7 @@ void
 panel_refresh_rt(struct panel *p)
 {
 	static int sav_rtepset, sav_rtetype;
+	int i;
 
 	if (panel_ready(p) &&
 	    sav_rtepset == st.st_rtepset &&
@@ -1132,7 +1166,44 @@ panel_refresh_rt(struct panel *p)
 	    st.st_rtepset ? "Positive" : "Negative",
 	    rtetypelabels[st.st_rtetype]);
 
+	panel_add_content(p, "\nMax errors:");
+	if (memcmp(&rt_max, &rt_zero, sizeof(rt_zero)) == 0)
+		panel_add_content(p, " none");
+	else {
+		for (i = 0; i < NRP; i++) {
+			if (rt_max.rt_err[i][RT_RECOVER] ||
+			    rt_max.rt_err[i][RT_FATAL] ||
+			    rt_max.rt_err[i][RT_ROUTER]) {
+				int needcomma = 0;
+
+				panel_add_content(p, "\n  port %d: ", i);
+				if (rt_max.rt_err[i][RT_RECOVER]) {
+					panel_add_content(p, "%d recover",
+					    rt_max.rt_err[i][RT_RECOVER]);
+					needcomma = 1;
+				}
+				if (rt_max.rt_err[i][RT_FATAL]) {
+					panel_add_content(p, "%s%d fatal",
+					    (needcomma ? ", " : ""),
+					    rt_max.rt_err[i][RT_RECOVER]);
+					needcomma = 1;
+				}
+				if (rt_max.rt_err[i][RT_ROUTER]) {
+					panel_add_content(p, "%s%d router",
+					    (needcomma ? ", " : ""),
+					    rt_max.rt_err[i][RT_ROUTER]);
+					needcomma = 1;
+				}
+			}
+		}
+	}
+
 	pwidget_startlist(p);
+
+	for (i = 0; i < NRTC; i++)
+		pwidget_add(p, &rtclass[i].nc_fill,
+		    rtclass[i].nc_name, gscb_pw_hlnc, i);
+
 	pwidget_add(p, (st.st_rtetype == RT_RECOVER ? &fill_white :
 	    &fill_nodata), "Recoverable", gscb_pw_rt, SRF_RECOVER);
 	pwidget_add(p, (st.st_rtetype == RT_FATAL ? &fill_white :
@@ -1154,10 +1225,10 @@ panel_refresh_cmp(struct panel *p)
 
 	panel_set_content(p,
 	 "- Compass -\n"
-	 "          \n"
-	 "          \n"
-	 "          \n"
-	 "          ");
+	 "           \n"
+	 "           \n"
+	 "           \n"
+	 "           ");
 	p->p_extdrawf = panel_draw_compass;
 }
 
