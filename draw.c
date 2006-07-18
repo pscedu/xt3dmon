@@ -593,6 +593,7 @@ draw_cluster_pipe(struct ivec *iv, struct fvec *dimv)
 		FILL_INITA(0.0f, 1.0f, 0.0f, 0.5f)	/* z - green */
 	};
 	int *j, jmax, dim, port, class;
+	const struct ivec *negv;
 	struct ivec adjv, *spv;
 	struct fvec sv, *np;
 	struct node *n;
@@ -660,17 +661,17 @@ draw_cluster_pipe(struct ivec *iv, struct fvec *dimv)
 		case DIM_X:
 			jmax = widim.iv_w;
 			j = &iv->iv_x;
-			len = 2 * st.st_winsp.iv_x;
+			len = st.st_winsp.iv_x;
 			break;
 		case DIM_Y:
 			jmax = widim.iv_h;
 			j = &iv->iv_y;
-			len = 2 * st.st_winsp.iv_y;
+			len = st.st_winsp.iv_y;
 			break;
 		case DIM_Z:
 			jmax = widim.iv_d;
 			j = &iv->iv_z;
-			len = 2 * st.st_winsp.iv_z;
+			len = st.st_winsp.iv_z;
 			break;
 		}
 
@@ -683,7 +684,7 @@ draw_cluster_pipe(struct ivec *iv, struct fvec *dimv)
 				continue;
 
 			port = DIM_TO_PORT(dim, st.st_rtepset);
-			if (n->n_route.rt_err[port][st.st_rtetype] == DV_NODATA)
+			if (n->n_route.rt_err[port][st.st_rtetype] == 0)
 				continue;
 
 			if (rt_max.rt_err[port][st.st_rtetype])
@@ -702,10 +703,17 @@ draw_cluster_pipe(struct ivec *iv, struct fvec *dimv)
 			else
 				np = n->n_v;
 
+			if (port == RP_NEGX ||
+			    port == RP_NEGY ||
+			    port == RP_NEGZ)
+				negv = spv;
+			else
+				negv = &iv_zero;
+
 			switch (dim) {
 			case DIM_X:
 				glTranslatef(
-				    sv.fv_x + np->fv_x - spv->iv_x,
+				    sv.fv_x + np->fv_x - negv->iv_x,
 				    sv.fv_y + np->fv_y,
 				    sv.fv_z + np->fv_z);
 				glRotatef(90.0, 0.0, 1.0, 0.0);
@@ -713,7 +721,7 @@ draw_cluster_pipe(struct ivec *iv, struct fvec *dimv)
 			case DIM_Y:
 				glTranslatef(
 				    sv.fv_x + np->fv_x,
-				    sv.fv_y + np->fv_y - spv->iv_y,
+				    sv.fv_y + np->fv_y - negv->iv_y,
 				    sv.fv_z + np->fv_z);
 				glRotatef(-90.0, 1.0, 0.0, 0.0);
 				break;
@@ -721,7 +729,7 @@ draw_cluster_pipe(struct ivec *iv, struct fvec *dimv)
 				glTranslatef(
 				    sv.fv_x + np->fv_x,
 				    sv.fv_y + np->fv_y,
-				    sv.fv_z + np->fv_z - spv->iv_z);
+				    sv.fv_z + np->fv_z - negv->iv_z);
 				break;
 			}
 
