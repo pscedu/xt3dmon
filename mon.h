@@ -91,9 +91,10 @@ void		 egg_borg(void);
 void		 egg_matrix(void);
 
 /* hl.c */
-void		 hl_change(void);
 void		 nc_runall(void (*)(struct fill *));
+void		 nc_runsn(void (*f)(struct fill *));
 struct fill	*nc_getfp(size_t);
+void		 nc_set(int);
 
 /* png.c */
 void 		*png_load(char *, unsigned int *, unsigned int *);
@@ -125,8 +126,6 @@ void		 tex_load(void);
 /* text.c */
 void		 text_wrap(char *, size_t, size_t);
 
-extern int		 mode_data_clean;
-extern int		 selnode_clean;
 extern int		 exthelp;
 
 /* Program-related variables. */
