@@ -41,5 +41,6 @@ struct route {
 };
 
 extern struct route rt_max;
+extern struct route rt_zero;
 
 #endif /* _ROUTE_H_ */
