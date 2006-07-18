@@ -42,6 +42,7 @@ __inline void
 draw_compass(int u, __unused int w, int v, __unused int h)
 {
 	double cl, mvm[16], pvm[16], x, y, z;
+	struct fill *fp;
 	struct fvec fv;
 	int vp[4];
 
@@ -77,7 +78,8 @@ draw_compass(int u, __unused int w, int v, __unused int h)
 #define CMP_ATHK (0.005)
 #define CMP_ALEN (0.01)
 
-	glColor3f(0.0f, 1.0f, 0.0f);					/* z - green */
+	fp = &fill_dim[DIM_Z];
+	glColor3f(fp->f_r, fp->f_g, fp->f_b);
 	glPushMatrix();
 	glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z - cl / 2.0);
 	glBegin(GL_LINES);
@@ -91,7 +93,8 @@ draw_compass(int u, __unused int w, int v, __unused int h)
 	gluCylinder(quadric, CMP_ATHK, 0.0001, CMP_ALEN, 4, 1);
 	glPopMatrix();
 
-	glColor3f(1.0f, 0.0f, 0.0f);					/* y - red */
+	fp = &fill_dim[DIM_Y];
+	glColor3f(fp->f_r, fp->f_g, fp->f_b);
 	glPushMatrix();
 	glTranslatef(fv.fv_x, fv.fv_y - cl / 2.0, fv.fv_z);
 	glBegin(GL_LINES);
@@ -106,7 +109,8 @@ draw_compass(int u, __unused int w, int v, __unused int h)
 	gluCylinder(quadric, CMP_ATHK, 0.0001, CMP_ALEN, 4, 1);
 	glPopMatrix();
 
-	glColor3f(0.0f, 0.0f, 1.0f);					/* x - blue */
+	fp = &fill_dim[DIM_X];
+	glColor3f(fp->f_r, fp->f_g, fp->f_b);
 	glPushMatrix();
 	glTranslatef(fv.fv_x - cl / 2.0, fv.fv_y, fv.fv_z);
 	glBegin(GL_LINES);
@@ -484,6 +488,7 @@ __inline void
 draw_ground(void)
 {
 	struct fvec fv, fdim, *ndim;
+	struct fill *fp;
 
 	/* Anti-aliasing */
 	glEnable(GL_BLEND);
@@ -493,16 +498,21 @@ draw_ground(void)
 
 	glLineWidth(1.0);
 	glBegin(GL_LINES);
-	glColor3f(0.0f, 0.0f, 1.0f);			/* blue */
-	glVertex3f(-500.0f, 0.0f, 0.0f);		/* x-axis */
+
+	fp = &fill_dim[DIM_X];
+	glColor3f(fp->f_r, fp->f_g, fp->f_b);
+	glColor3f(0.0f, 0.0f, 1.0f);
+	glVertex3f(-500.0f, 0.0f, 0.0f);
 	glVertex3f(500.0f, 0.0f, 0.0f);
 
-	glColor3f(1.0f, 0.0f, 0.0f);			/* red */
-	glVertex3f(0.0f, -500.0f, 0.0f);		/* y-axis */
+	fp = &fill_dim[DIM_Y];
+	glColor3f(fp->f_r, fp->f_g, fp->f_b);
+	glVertex3f(0.0f, -500.0f, 0.0f);
 	glVertex3f(0.0f, 500.0f, 0.0f);
 
-	glColor3f(0.0f, 1.0f, 0.0f);			/* green */
-	glVertex3f(0.0f, 0.0f, -500.0f);		/* z-axis */
+	fp = &fill_dim[DIM_Z];
+	glColor3f(fp->f_r, fp->f_g, fp->f_b);
+	glVertex3f(0.0f, 0.0f, -500.0f);
 	glVertex3f(0.0f, 0.0f, 500.0f);
 	glEnd();
 
