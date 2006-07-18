@@ -8,6 +8,12 @@ struct state;
 #define FBM_PLAY	1
 #define FBM_REC		2
 
+/* Flyby node class highlighting operations. */
+#define FBHLOP_XPARENT	0
+#define FBHLOP_OPAQUE	1
+#define FBHLOP_ALPHAINC	2
+#define FBHLOP_ALPHADEC	3
+
 #define FLYBY_DEFAULT	"default"
 
 void 	 flyby_begin(int);
