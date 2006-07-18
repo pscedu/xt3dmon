@@ -342,6 +342,49 @@ draw_node_label(struct node *n)
 __inline void
 draw_node_pipes(struct node *np)
 {
+	struct ivec v, startv, endv;
+	struct fvec dimv, pos, off;
+	int *vp, max, len, dim;
+	struct node *ng;
+	struct fill *fp;
+
+	pos.fv_x = np->n_v->fv_x + np->n_dimp->fv_w / 2.0;
+	pos.fv_y = np->n_v->fv_y + np->n_dimp->fv_h / 2.0;
+	pos.fv_z = np->n_v->fv_z + np->n_dimp->fv_d / 2.0;
+
+	ivec_set(&startv, 0, 0, 0);
+	ivec_set(&endv, 0, 0, 0);
+
+	for (dim = 0; dim < NDIM; dim++) {
+		max = widim.iv_val[dim];
+		v = np->n_wiv;
+		vp = &v.iv_val[dim];
+		len = 0;
+		do {
+			*vp = negmod(*vp - 1, max);
+			ng = wimap[v.iv_x][v.iv_y][v.iv_z];
+			len++;
+		} while (ng == NULL);
+		startv.iv_val[dim] = len;
+
+		v = np->n_wiv;
+		len = 0;
+		do {
+			*vp = negmod(*vp + 1, max);
+			ng = wimap[v.iv_x][v.iv_y][v.iv_z];
+			len++;
+		} while (ng == NULL);
+		endv.iv_val[dim] = len;
+	}
+
+	dimv.fv_w = (startv.iv_x + endv.iv_x) * st.st_winsp.iv_w;
+	dimv.fv_h = (startv.iv_y + endv.iv_y) * st.st_winsp.iv_h;
+	dimv.fv_d = (startv.iv_z + endv.iv_z) * st.st_winsp.iv_d;
+
+	off.fv_w = startv.iv_x * st.st_winsp.iv_w;
+	off.fv_h = startv.iv_y * st.st_winsp.iv_h;
+	off.fv_d = startv.iv_z * st.st_winsp.iv_d;
+
 	gluQuadricDrawStyle(quadric, GLU_FILL);
 
 	/* Anti-aliasing */
@@ -350,33 +393,27 @@ draw_node_pipes(struct node *np)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
 
-	glColor4f(0.0f, 1.0f, 0.0f, 0.7f);				/* z - green */
+	fp = &fill_dim[DIM_Z];
+	glColor4f(fp->f_r, fp->f_g, fp->f_b, 0.5f);
 	glPushMatrix();
-	glTranslatef(
-	    np->n_v->fv_x + np->n_dimp->fv_w / 2.0,
-	    np->n_v->fv_y + np->n_dimp->fv_h / 2.0,
-	    np->n_v->fv_z + np->n_dimp->fv_d / 2.0 - st.st_winsp.iv_d);
-	gluCylinder(quadric, 0.1, 0.1, 2.0 * st.st_winsp.iv_d, 3, 1);
+	glTranslatef(pos.fv_x, pos.fv_y, pos.fv_z - off.fv_d);
+	gluCylinder(quadric, 0.1, 0.1, dimv.fv_d, 3, 1);
 	glPopMatrix();
 
-	glColor4f(1.0f, 0.0f, 0.0f, 0.7f);				/* y - red */
+	fp = &fill_dim[DIM_Y];
+	glColor4f(fp->f_r, fp->f_g, fp->f_b, 0.5f);
 	glPushMatrix();
-	glTranslatef(
-	    np->n_v->fv_x + np->n_dimp->fv_w / 2.0,
-	    np->n_v->fv_y + np->n_dimp->fv_h / 2.0 - st.st_winsp.iv_h,
-	    np->n_v->fv_z + np->n_dimp->fv_d / 2.0);
+	glTranslatef(pos.fv_x, pos.fv_y - off.fv_h, pos.fv_z);
 	glRotatef(-90.0, 1.0, 0.0, 0.0);
-	gluCylinder(quadric, 0.1, 0.1, 2.0 * st.st_winsp.iv_h, 3, 1);
+	gluCylinder(quadric, 0.1, 0.1, dimv.fv_h, 3, 1);
 	glPopMatrix();
 
-	glColor4f(0.0f, 0.0f, 1.0f, 0.7f);				/* x - blue */
+	fp = &fill_dim[DIM_X];
+	glColor4f(fp->f_r, fp->f_g, fp->f_b, 0.5f);
 	glPushMatrix();
-	glTranslatef(
-	    np->n_v->fv_x + np->n_dimp->fv_w / 2.0 - st.st_winsp.iv_w,
-	    np->n_v->fv_y + np->n_dimp->fv_h / 2.0,
-	    np->n_v->fv_z + np->n_dimp->fv_d / 2.0);
+	glTranslatef(pos.fv_x - off.fv_w, pos.fv_y, pos.fv_z);
 	glRotatef(90.0, 0.0, 1.0, 0.0);
-	gluCylinder(quadric, 0.1, 0.1, 2.0 * st.st_winsp.iv_w, 3, 1);
+	gluCylinder(quadric, 0.1, 0.1, dimv.fv_w, 3, 1);
 	glPopMatrix();
 
 	glDisable(GL_POLYGON_SMOOTH);
@@ -587,16 +624,13 @@ draw_skel(void)
 void
 draw_cluster_pipe(struct ivec *iv, struct fvec *dimv)
 {
-	struct fill *fp, dims[] = {
-		FILL_INITA(0.0f, 0.0f, 1.0f, 0.5f),	/* x - blue */
-		FILL_INITA(1.0f, 0.0f, 0.0f, 0.5f),	/* y - red */
-		FILL_INITA(0.0f, 1.0f, 0.0f, 0.5f)	/* z - green */
-	};
+	struct fill *fp;
 	int *j, jmax, dim, port, class;
+	int rowlen, *dimlen, *dimadj;
 	const struct ivec *negv;
 	struct ivec adjv, *spv;
 	struct fvec sv, *np;
-	struct node *n;
+	struct node *n, *ng;
 	float len;
 
 	if (dimv->fv_w)
@@ -620,41 +654,85 @@ draw_cluster_pipe(struct ivec *iv, struct fvec *dimv)
 
 	switch (st.st_pipemode) {
 	case PM_DIR:	/* color for torus directions */
-		sv.fv_x += st.st_wioff.iv_x * st.st_winsp.iv_x;
-		sv.fv_y += st.st_wioff.iv_y * st.st_winsp.iv_y;
-		sv.fv_z += st.st_wioff.iv_z * st.st_winsp.iv_z;
-
-		fp = &dims[dim];
-		glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
-		glPushMatrix();
-
 		switch (dim) {
 		case DIM_X:
-			glTranslatef(
-			    sv.fv_x - spv->iv_x,
-			    sv.fv_y + iv->iv_y * spv->iv_y,
-			    sv.fv_z + iv->iv_z * spv->iv_z);
-			glRotatef(90.0, 0.0, 1.0, 0.0);
-			len = (widim.iv_w + 1) * st.st_winsp.iv_x;
+			jmax = widim.iv_w;
+			j = &iv->iv_x;
+			dimlen = &spv->iv_w;
+			dimadj = &adjv.iv_x;
 			break;
 		case DIM_Y:
-			glTranslatef(
-			    sv.fv_x + iv->iv_x * spv->iv_x,
-			    sv.fv_y - spv->iv_y,
-			    sv.fv_z + iv->iv_z * spv->iv_z);
-			glRotatef(-90.0, 1.0, 0.0, 0.0);
-			len = (widim.iv_h + 1) * st.st_winsp.iv_y;
+			jmax = widim.iv_h;
+			j = &iv->iv_y;
+			dimlen = &spv->iv_h;
+			dimadj = &adjv.iv_y;
 			break;
 		case DIM_Z:
-			glTranslatef(
-			    sv.fv_x + iv->iv_x * spv->iv_x,
-			    sv.fv_y + iv->iv_y * spv->iv_y,
-			    sv.fv_z - spv->iv_z);
-			len = (widim.iv_d + 1) * st.st_winsp.iv_z;
+			jmax = widim.iv_d;
+			j = &iv->iv_z;
+			dimlen = &spv->iv_d;
+			dimadj = &adjv.iv_z;
 			break;
 		}
-		gluCylinder(quadric, 0.1, 0.1, len, 3, 1);
-		glPopMatrix();
+
+		len = 0.0; /* gcc */
+		for (*j = 0; *j < jmax; ++*j) {
+			adjv.iv_x = negmod(iv->iv_x + st.st_wioff.iv_x, widim.iv_w);
+			adjv.iv_y = negmod(iv->iv_y + st.st_wioff.iv_y, widim.iv_h);
+			adjv.iv_z = negmod(iv->iv_z + st.st_wioff.iv_z, widim.iv_d);
+			n = wimap[adjv.iv_x][adjv.iv_y][adjv.iv_z];
+			if (n == NULL || !node_show(n))
+				continue;
+
+			rowlen = 1;
+			do {
+				*dimadj = negmod(*dimadj + 1, jmax);
+				ng = wimap[adjv.iv_x][adjv.iv_y][adjv.iv_z];
+				rowlen++;
+
+				if (*j + rowlen >= jmax)
+					break;
+			} while (ng == NULL || node_show(ng));
+			*dimadj = negmod(*dimadj - 1, jmax);
+			rowlen--;
+
+			*j += rowlen - 1;	/* for loop will increment */
+			len = *dimlen * (rowlen + 1);
+
+			fp = &fill_dim[dim];
+			glColor4f(fp->f_r, fp->f_g, fp->f_b, 0.5f);
+			glPushMatrix();
+
+			if (st.st_opts & OP_NODEANIM)
+				np = &n->n_vcur;
+			else
+				np = n->n_v;
+
+			switch (dim) {
+			case DIM_X:
+				glTranslatef(
+				    sv.fv_x + np->fv_x - spv->iv_x,
+				    sv.fv_y + np->fv_y,
+				    sv.fv_z + np->fv_z);
+				glRotatef(90.0, 0.0, 1.0, 0.0);
+				break;
+			case DIM_Y:
+				glTranslatef(
+				    sv.fv_x + np->fv_x,
+				    sv.fv_y + np->fv_y - spv->iv_y,
+				    sv.fv_z + np->fv_z);
+				glRotatef(-90.0, 1.0, 0.0, 0.0);
+				break;
+			case DIM_Z:
+				glTranslatef(
+				    sv.fv_x + np->fv_x,
+				    sv.fv_y + np->fv_y,
+				    sv.fv_z + np->fv_z - spv->iv_z);
+				break;
+			}
+			gluCylinder(quadric, 0.1, 0.1, len, 3, 1);
+			glPopMatrix();
+		}
 		break;
 	case PM_RT:	/* color for route errors */
 		switch (dim) {
@@ -693,7 +771,7 @@ draw_cluster_pipe(struct ivec *iv, struct fvec *dimv)
 			else
 				class = 100;		/* 100% */
 
-			fp = &rtclass[class / 10].nc_fill;
+			fp = &rtpipeclass[class / 10].nc_fill;
 
 			glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
 			glPushMatrix();
