@@ -96,18 +96,22 @@ Using the
 .Ic + , - , = ,
 and
 .Ic _
-keys over the label will modify the transluceny of that node class.
+keys over the label will modify the translucency of that node class.
 .Pp
-The following is a quick reference of the most common key bindings:
-.Bl -tag -width Ds -offset indent
+The following is a quick reference of the most useful key bindings:
+.Pp
+.Bl -tag -width Ds -offset indent -compact
 .It left, right, up, down
 Pan the camera to the left, right, forward, or backward along its
 view.
+.Pp
 .It home, end
 .Dq Barrel roll
 the camera to the left or right.
+.Pp
 .It pageup, pagedown
 Pan the camera up and down along (perpendicular to) its view.
+.Pp
 .It left click
 Click a node for extended information.
 Hold shift and click to add nodes to the selection.
@@ -118,31 +122,37 @@ normally the cluster view.
 .Pp
 While holding the shift key, click, hold, and drag the mouse to freely
 adjust the camera view.
-.It Ic 2 , 4, 6, 8
+.Pp
+.It Ic 2 , 4 , 6 , 8
 Revolve around the point of focus.
+.Pp
 .It Ic aj
 Display only nodes in jobs of any selected nodes.
+.Pp
 .It Ic O
 Move the camera to a bird's eye view of the cluster.
+.Pp
 .It Ic pa
 Toggle all non-interactive panels.
+.Pp
 .It Ic q
 Quit.
-.It Xo
-.Ic [x , [y , [z ,
-.Ic [[ ,
-.Ic ]x , ]y , ]z ,
-.Ic ]]
-.Xc
+.Pp
+.It Ic [x , [y , [z , [[
+.It Ic ]x , ]y , ]z , ]]
 Adjust the wired cluster viewing mode node spacing factor.
+.Pp
 .It Xo
 .Ic {x , {y , {z ,
-.Ic {0 , {{ ,
+.Ic {0 , {{
+.Xc
+.It Xo
 .Ic }x , }y , }z ,
 .Ic }0 , }}
 .Xc
 Adjust the wired cluster viewing mode node offset factor.
 The key sequences involving zero reset the offset.
+.Pp
 .It Ic + , _ , = , -
 Adjust translucency for the node class under the cursor of the
 legend panel.
@@ -150,10 +160,8 @@ legend panel.
 .Pp
 The following extended/advanced key bindings are available:
 .Bl -tag -width Ds -offset indent
-.It Ic ad
-Display only PBS-disabled nodes.
-.It Ic af
-Display only free (i.e., no job running) nodes.
+.It Ic ^A
+Select all visible nodes.
 .It Ic ar
 Restore display of all nodes.
 .It Ic as
@@ -174,6 +182,8 @@ Press any key to break out of playback mode.
 .It Ic fq
 Toggle the recording and saving of the live state, for use in flyby
 playbacks.
+.It Ic i
+Print the node IDs (nids) of all selected nodes to standard output.
 .It Ic kd
 Restore the arrow keys to camera movement (see
 .Ic kn
@@ -184,6 +194,9 @@ Remap the arrow keys to move about the neighbors of any selected nodes.
 While holding shift, neighbors in the direction of the key pressed will
 be selected additionally instead of in place of the currently selected
 nodes.
+.It Ic kw
+Remap the arrow keys to modify the wired cluster viewing mode node
+offset factor.
 .It Ic mj
 Switch to job data mode (default).
 .It Ic mt
@@ -448,7 +461,7 @@ node state textures
 node state textures
 .It Pa img/font.png
 font texture used for node labels
-.It Pa data/archive
+.It Pa data/archive/
 top-level reel directory
 .It Pa data/phys.conf
 cluster physical description file
@@ -466,7 +479,7 @@ seastar data
 routing data
 .It Pa data/flyby.data
 flyby data file
-.It Pa scripts
+.It Pa scripts/
 deus-ex scripts
 .It Pa snaps/ Ns Em %08d Ns Pa .png
 capture output files
