@@ -24,6 +24,7 @@
 #define PS_ALLOWSPACE (1<<0)
 
 struct route	 rt_max;
+struct route	 rt_zero;
 struct seastar	 ss_max;
 struct ivec	 widim;
 int		 total_failures;
@@ -474,9 +475,7 @@ parse_rt(const struct datasrc *ds)
 
 	NODE_FOREACH(n, &iv)
 		if (n)
-			for (j = 0; j < NRP; j++)
-				for (k = 0; k < NRT; k++)
-					n->n_route.rt_err[j][k] = DV_NODATA;
+			memset(&n->n_route, 0, sizeof(n->n_route));
 	memset(&rt_max, 0, sizeof(rt_max));
 
 	lineno = 0;
@@ -498,6 +497,13 @@ parse_rt(const struct datasrc *ds)
 		PARSENUM(s, fatal, INT_MAX);
 		PARSENUM(s, router, INT_MAX);
 
+/* XXX: max vs. total? */
+
+/*
+		rt_max.rt_err[port][RT_RECOVER] = MAX(recover, rt_max.rt_err[port][RT_RECOVER]);
+		rt_max.rt_err[port][RT_FATAL]   = MAX(fatal,   rt_max.rt_err[port][RT_FATAL]);
+		rt_max.rt_err[port][RT_ROUTER]  = MAX(router,  rt_max.rt_err[port][RT_ROUTER]);
+*/
 		rt_max.rt_err[port][RT_RECOVER] += recover;
 		rt_max.rt_err[port][RT_FATAL]   += fatal;
 		rt_max.rt_err[port][RT_ROUTER]  += router;
