@@ -98,6 +98,40 @@ node_physpos(struct node *node, struct physcoord *pc)
 }
 
 struct node *
+node_wineighbor(struct node *n, int rdir)
+{
+	int x, y, z;
+
+	x = n->n_wiv.iv_x;
+	y = n->n_wiv.iv_y;
+	z = n->n_wiv.iv_z;
+
+	do {
+		switch (rdir) {
+		case RD_NEGX:
+			x = negmod(x - 1, widim.iv_w);
+			break;
+		case RD_POSX:
+			x = negmod(x + 1, widim.iv_w);
+			break;
+		case RD_NEGY:
+			y = negmod(y - 1, widim.iv_h);
+			break;
+		case RD_POSY:
+			y = negmod(y + 1, widim.iv_h);
+			break;
+		case RD_NEGZ:
+			z = negmod(z - 1, widim.iv_d);
+			break;
+		case RD_POSZ:
+			z = negmod(z + 1, widim.iv_d);
+			break;
+		}
+	} while (wimap[x][y][z] == NULL);
+	return (wimap[x][y][z]);
+}
+
+struct node *
 node_neighbor(struct node *node, int amt, int dir)
 {
 	int rem, adj, row, col;

@@ -53,6 +53,7 @@ struct node {
 			    (iv)->iv_z++)				\
 
 struct node	*node_neighbor(struct node *, int, int);
+struct node	*node_wineighbor(struct node *, int);
 void		 node_physpos(struct node *, struct physcoord *);
 void		 node_getmodpos(int, int *, int *);
 void		 node_adjmodpos(int, struct fvec *);
