@@ -203,14 +203,14 @@ draw_pwbg(struct fill *fp, int uoff, int voff)
 	int max, blend;
 	float tl, th;
 
-	blend = (fp->f_a != 1.0 && (fp->f_flags & FF_OPAQUE) == 0);
-
-	if (blend) {
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	}
-
 	if (fp->f_flags & FF_TEX) {
+		blend = (fp->f_a != 1.0 && (fp->f_flags & FF_OPAQUE) == 0);
+
+		if (blend) {
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		}
+
 		glEnable(GL_TEXTURE_2D);
 
 		glBindTexture(GL_TEXTURE_2D, blend ?
@@ -250,15 +250,31 @@ draw_pwbg(struct fill *fp, int uoff, int voff)
 		glDisable(GL_POLYGON_OFFSET_FILL);
 
 		glDisable(GL_TEXTURE_2D);
-	} else {
-		glBegin(GL_QUADS);
-		glColor4f(fp->f_r, fp->f_g, fp->f_b, blend ? fp->f_a : 1.0);
-		glVertex2d(uoff + 1,			voff);
-		glVertex2d(uoff + PWIDGET_LENGTH - 1,	voff);
-		glVertex2d(uoff + PWIDGET_LENGTH - 1,	voff - PWIDGET_HEIGHT + 2);
-		glVertex2d(uoff + 1,			voff - PWIDGET_HEIGHT + 2);
-		glEnd();
+
+		if (blend)
+			glDisable(GL_BLEND);
+
+		/*
+		 * For textures as panel widget backgrounds,
+		 * draw the texture over a transparent block.
+		 */
+		fp = &fill_xparent;
 	}
+
+	blend = (fp->f_a != 1.0 && (fp->f_flags & FF_OPAQUE) == 0);
+
+	if (blend) {
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
+
+	glBegin(GL_QUADS);
+	glColor4f(fp->f_r, fp->f_g, fp->f_b, blend ? fp->f_a : 1.0);
+	glVertex2d(uoff + 1,			voff);
+	glVertex2d(uoff + PWIDGET_LENGTH - 1,	voff);
+	glVertex2d(uoff + PWIDGET_LENGTH - 1,	voff - PWIDGET_HEIGHT + 2);
+	glVertex2d(uoff + 1,			voff - PWIDGET_HEIGHT + 2);
+	glEnd();
 
 	if (blend)
 		glDisable(GL_BLEND);
