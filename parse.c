@@ -471,7 +471,6 @@ parse_rt(const struct datasrc *ds)
 	struct physcoord pc;
 	struct node *n;
 	struct ivec iv;
-	int j, k;
 
 	NODE_FOREACH(n, &iv)
 		if (n)
