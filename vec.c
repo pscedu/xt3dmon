@@ -48,6 +48,14 @@ vec_set(struct fvec *fv, float x, float y, float z)
 }
 
 __inline void
+ivec_set(struct ivec *iv, int x, int y, int z)
+{
+	iv->iv_x = x;
+	iv->iv_y = y;
+	iv->iv_z = z;
+}
+
+__inline void
 vec_copyto(const struct fvec *fva, struct fvec *fvb)
 {
 	fvb->fv_x = fva->fv_x;

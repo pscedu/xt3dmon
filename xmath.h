@@ -59,6 +59,7 @@ double	 negmodf(double, double);
 
 /* vec.c */
 int	 ivec_eq(const struct ivec *, const struct ivec *);
+void	 ivec_set(struct ivec *, int, int, int);
 
 void	 vec_cart2sphere(const struct fvec *, struct fvec *);
 void	 vec_sphere2cart(const struct fvec *, struct fvec *);
