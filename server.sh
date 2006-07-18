@@ -11,6 +11,13 @@ if [ X$(id -un) != X"yanovich" ]; then
 	exit 1
 fi
 
+xauth=/var/gdm/:0.Xauth
+
+if ! [ -r $xauth ]; then
+	echo "$xauth: no read permission"
+	exit 1
+fi
+
 cd /home/yanovich/code/proj/xt3dmon
-msg=$(XAUTHORITY=/var/gdm/:0.Xauth ./xt3dmon -display :0 -d 2>&1)
+msg=$(XAUTHORITY=$xauth ./xt3dmon -display :0 -d 2>&1)
 echo $msg | mail -s "xt3dmon down" yanovich@psc.edu
