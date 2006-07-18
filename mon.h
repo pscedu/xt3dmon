@@ -141,5 +141,6 @@ extern long		 rmem;
 extern char		 login_auth[BUFSIZ];
 
 extern const struct fvec fv_zero;
+extern const struct ivec iv_zero;
 
 #endif	/* _XT3DMON_H_ */
