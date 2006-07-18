@@ -50,16 +50,16 @@ struct nodeclass failclass[] = {
 };
 
 struct nodeclass rtclass[] = {
-	{ "<10%",		FILL_INITA(1.0f, 1.0f, 0.4f, 0.5f), 0 },
-	{ "10-20%",		FILL_INITA(1.0f, 0.9f, 0.4f, 0.5f), 0 },
-	{ "20-30%",		FILL_INITA(1.0f, 0.8f, 0.4f, 0.5f), 0 },
-	{ "30-40%",		FILL_INITA(1.0f, 0.7f, 0.4f, 0.5f), 0 },
-	{ "40-50%",		FILL_INITA(1.0f, 0.6f, 0.4f, 0.5f), 0 },
-	{ "50-60%",		FILL_INITA(1.0f, 0.5f, 0.4f, 0.6f), 0 },
-	{ "60-70%",		FILL_INITA(1.0f, 0.4f, 0.4f, 0.7f), 0 },
-	{ "70-80%",		FILL_INITA(1.0f, 0.3f, 0.4f, 0.8f), 0 },
-	{ "80-90%",		FILL_INITA(1.0f, 0.2f, 0.4f, 0.9f), 0 },
-	{ ">90%",		FILL_INITA(1.0f, 0.1f, 0.4f, 1.0f), 0 }
+	{ "<10%",		FILL_INIT(1.0f, 1.0f, 0.4f), 0 },
+	{ "10-20%",		FILL_INIT(1.0f, 0.9f, 0.4f), 0 },
+	{ "20-30%",		FILL_INIT(1.0f, 0.8f, 0.4f), 0 },
+	{ "30-40%",		FILL_INIT(1.0f, 0.7f, 0.4f), 0 },
+	{ "40-50%",		FILL_INIT(1.0f, 0.6f, 0.4f), 0 },
+	{ "50-60%",		FILL_INIT(1.0f, 0.5f, 0.4f), 0 },
+	{ "60-70%",		FILL_INIT(1.0f, 0.4f, 0.4f), 0 },
+	{ "70-80%",		FILL_INIT(1.0f, 0.3f, 0.4f), 0 },
+	{ "80-90%",		FILL_INIT(1.0f, 0.2f, 0.4f), 0 },
+	{ ">90%",		FILL_INIT(1.0f, 0.1f, 0.4f), 0 }
 };
 
 struct nodeclass ssclass[] = {
