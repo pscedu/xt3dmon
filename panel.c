@@ -104,8 +104,6 @@ struct fill	 fill_ipanel	= FILL_INITA(0.5, 0.7, 0.9, 0.9);
 struct fill	 fill_panelbd	= FILL_INITA(0.2, 0.4, 0.6, 1.0);
 struct panels	 panels;
 int		 panel_offset[NPVOFF];
-int		 mode_data_clean;
-int		 selnode_clean;
 int		 exthelp;
 
 void
