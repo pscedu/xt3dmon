@@ -53,9 +53,9 @@ struct datasrc datasrcs[] = {
 	{ "node", 0, _LIVE_DSP, _PATH_NODE, _RPATH_NODE, parse_node, DSF_AUTO | DSF_USESSL, dsfi_node,	dsff_node,  NULL },
 	{ "job",  0, _LIVE_DSP, _PATH_JOB,  _RPATH_JOB,  parse_job,  DSF_AUTO | DSF_USESSL, NULL,	NULL,	    NULL },
 	{ "yod",  0, _LIVE_DSP, _PATH_YOD,  _RPATH_YOD,  parse_yod,  DSF_AUTO | DSF_USESSL, NULL,	NULL,	    NULL },
-	{ "rt",   0, _LIVE_DSP, _PATH_RT,   _RPATH_RT,   parse_rt,   DSF_AUTO | DSF_USESSL, NULL,	NULL,       NULL },
+	{ "rt",   0, DSP_LOCAL, _PATH_RT,   _RPATH_RT,   parse_rt,   DSF_AUTO,		    NULL,	NULL,       NULL },
 	{ "mem",  0, DSP_LOCAL, _PATH_STAT, NULL,	 parse_mem,  DSF_AUTO,		    NULL,	NULL,	    NULL },
-	{ "ss",   0, _LIVE_DSP, _PATH_SS,   _RPATH_SS,   parse_ss,   DSF_AUTO | DSF_USESSL, NULL,	NULL,       NULL }
+	{ "ss",   0, DSP_LOCAL, _PATH_SS,   _RPATH_SS,   parse_ss,   DSF_AUTO,		    NULL,	NULL,       NULL }
 };
 
 int	 dsp = DSP_LOCAL;
