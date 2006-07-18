@@ -224,7 +224,7 @@ serv_displayh(void)
 	dbg_warn("Servicing new connection");
 	nreqs++;
 	sn_clear();
-	st.st_hlnc = HL_ALL;
+	nc_runall(fill_setopaque);
 	for (i = 0; i < MAXTRIES; i++) {
 		usleep(TRYWAIT);
 		if ((len = read(clifd, buf, sizeof(buf) - 1)) == -1) {
@@ -257,7 +257,7 @@ snap:
 //	glutReshapeFunc(gl_reshapeh);
 	gl_reshapeh(winv.iv_w, winv.iv_h);
 
-	rf = st.st_rf | RF_CAM | RF_DATASRC | RF_CLUSTER | RF_DMODE | RF_HLNC;
+	rf = st.st_rf | RF_CAM | RF_DATASRC | RF_CLUSTER | RF_DMODE;
 	if (ss.ss_sid) {
 		struct panel *p;
 		int dsm;
@@ -296,9 +296,12 @@ snap:
 
 		if (job_findbyid(ss.ss_jobid, &pos) != NULL) {
 			st.st_opts |= OP_SKEL;
-			st.st_hlnc = NSC + pos;
-//			st.st_rf |= RF_HLNC;
-			rebuild(RF_HLNC);
+			nc_set(NSC + pos);
+			/*
+			 * Cluster needs rebuilt
+			 * for clicking to work.
+			 */
+			rebuild(RF_CLUSTER);
 		}
 	}
 	memset(buf, 0, sizeof(buf));
@@ -513,8 +516,7 @@ svc_hl(char *t, int *used, __unused struct session *ss)
 	if ((sve = sve_find(t, tab, used)) == NULL)
 		return (0);
 	st.st_opts |= OP_SKEL;
-	st.st_hlnc = sve->sve_value;
-	st.st_rf |= RF_HLNC;
+	nc_set(sve->sve_value); /* XXX: ensure job mode */
 	return (1);
 }
 

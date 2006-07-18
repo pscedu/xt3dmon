@@ -33,7 +33,6 @@ struct state {
 	int		 st_ssvc;		/* seastar vc */
 	int		 st_rtepset;		/* route error port set */
 	int		 st_rtetype;		/* route error type */
-	int		 st_hlnc;		/* highlighted node class */
 	int		 st_eggs;		/* Easter eggs */
 	struct ivec	 st_wioff;		/* wired mode offsets */
 	struct ivec	 st_winsp;		/* wired node spacing */
@@ -58,7 +57,7 @@ struct state {
 
 /*
  * Node highlighting.
- * If the value of st.st_hlnc is something other than
+ * If the value of a nodeclass is something other than
  * these values, it is a value specific to the current
  * dmode.
  */
@@ -73,18 +72,17 @@ struct state {
 #define RF_CAM		(1<<3)
 #define RF_GROUND	(1<<4)
 #define RF_DMODE	(1<<5)
-#define RF_HLNC		(1<<6)
-#define RF_DIM		(1<<7)
-#define RF_NODEPHYSV	(1<<8)
-#define RF_NODESWIV	(1<<9)
-#define RF_VMODE	(1<<10)
-#define RF_WIREP	(1<<11)
-#define RF_FOCUS	(1<<12)
-#define RF_REEL		(1<<13)
-#define RF_INIT		(RF_DATASRC | RF_CLUSTER | RF_GROUND | \
-			 RF_SELNODE | RF_CAM | RF_DMODE | RF_HLNC | \
-			 RF_DIM | RF_NODEPHYSV | RF_NODESWIV | \
-			 RF_VMODE | RF_FOCUS | RF_REEL)
+#define RF_DIM		(1<<6)
+#define RF_NODEPHYSV	(1<<7)
+#define RF_NODESWIV	(1<<8)
+#define RF_VMODE	(1<<9)
+#define RF_WIREP	(1<<10)
+#define RF_FOCUS	(1<<11)
+#define RF_REEL		(1<<12)
+#define RF_INIT		(RF_DATASRC | RF_CLUSTER | RF_GROUND |		\
+			 RF_SELNODE | RF_CAM | RF_DMODE | RF_DIM |	\
+			 RF_NODEPHYSV | RF_NODESWIV |  RF_VMODE |	\
+			 RF_FOCUS | RF_REEL)
 
 #define EGG_BORG 	(1<<0)
 #define EGG_MATRIX 	(1<<1)

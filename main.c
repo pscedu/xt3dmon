@@ -123,7 +123,6 @@ struct state st = {
 	0,						/* seastar vc */
 	RPS_NEG,					/* rterr port set */
 	RT_RECOVER,					/* rterr type */
-	HL_ALL,						/* node class to highlight */
 	0,						/* eggs */
 	{ { 0, 0, 0 } },				/* wired mode offset */
 	{ { 4, 4, 4 } },				/* wired node spacing */
@@ -307,7 +306,7 @@ dmode_change(void)
 	int rd, i, port;
 	struct ivec iv;
 
-	mode_data_clean = 0;
+	dmode_data_clean = 0;
 
 	switch (st.st_dmode) {
 	case DM_JOB:
@@ -585,18 +584,16 @@ rebuild(int opts)
 		ds_refresh(DS_SS, dsflags);
 		ds_refresh(DS_MEM, DSFF_IGN);
 
-		opts |= RF_DMODE | RF_CLUSTER | RF_HLNC;
+		opts |= RF_DMODE | RF_CLUSTER;
 
+/* XXX: preserve hlnc */
 		if ((p = panel_for_id(PANEL_DATE)) != NULL)
 			p->p_opts |= POPT_REFRESH;
 	}
 	if (opts & RF_DMODE) {
 		dmode_change();
-		opts |= RF_CLUSTER | RF_HLNC;
-	}
-	if (opts & RF_HLNC) {
-		hl_change();
 		opts |= RF_CLUSTER;
+/* XXX: preserve hlnc */
 	}
 	if (opts & RF_VMODE) {
 		vmode_change();

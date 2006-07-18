@@ -459,25 +459,19 @@ gl_keyh_alpha(unsigned char key, __unused int u, __unused int v)
 	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
-	case 'd':
-		st.st_hlnc = SC_DISABLED;
-		break;
-	case 'f':
-		st.st_hlnc = SC_FREE;
-		break;
 	case 'j':
-		st.st_hlnc = HL_SELDM;
+		nc_runall(fill_setxparent);
+		nc_runsn(fill_setopaque);
 		break;
 	case 'r':
-		st.st_hlnc = HL_ALL;
+		nc_runall(fill_setopaque);
 		break;
 	case 's':
-		st.st_hlnc = HL_NONE;
+		nc_runall(fill_setxparent);
 		break;
 	default:
 		return;
 	}
-	st.st_rf |= RF_HLNC;
 }
 
 void
@@ -597,7 +591,7 @@ gl_keyh_default(unsigned char key, int u, int v)
 {
 	flyby_rstautoto();
 	switch (key) {
-	case 1:
+	case 1: /* ^A */
 		sn_addallvis();
 		break;
 	case '2': case '4':

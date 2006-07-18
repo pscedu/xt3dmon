@@ -28,7 +28,6 @@
 void
 nc_runall(void (*f)(struct fill *))
 {
-	struct panel *p;
 	size_t i;
 
 	switch (st.st_dmode) {
@@ -55,6 +54,8 @@ nc_runall(void (*f)(struct fill *))
 	case DM_RTUNK:
 		for (i = 0; i < NRTC; i++)
 			f(&rtclass[i].nc_fill);
+		f(&fill_rtesnd);
+		f(&fill_rtercv);
 		break;
 	case DM_SEASTAR:
 		for (i = 0; i < NSSC; i++)
@@ -75,8 +76,8 @@ nc_runall(void (*f)(struct fill *))
 		break;
 	}
 
-	if ((p = panel_for_id(PANEL_LEGEND)) != NULL)
-		p->p_opts |= POPT_REFRESH;
+	hlnc_clean = 0;
+	st.st_rf |= RF_CLUSTER;
 }
 
 /*
@@ -85,11 +86,9 @@ nc_runall(void (*f)(struct fill *))
 struct fill *
 nc_getfp(size_t nc)
 {
-	struct panel *p;
-
 	/* Assume a nodeclass will be modified. */
-	if ((p = panel_for_id(PANEL_LEGEND)) != NULL)
-		p->p_opts |= POPT_REFRESH;
+	hlnc_clean = 0;
+	st.st_rf |= RF_CLUSTER;
 
 	switch (st.st_dmode) {
 	case DM_JOB:
@@ -115,6 +114,10 @@ nc_getfp(size_t nc)
 	case DM_RTUNK:
 		if (nc < NRTC)
 			return (&rtclass[nc].nc_fill);
+		else if (nc == RTC_SND)
+			return (&fill_rtesnd);
+		else if (nc == RTC_RCV)
+			return (&fill_rtercv);
 		break;
 	case DM_SEASTAR:
 		if (nc < NSSC)
@@ -142,7 +145,6 @@ void
 nc_runsn(void (*f)(struct fill *))
 {
 	struct selnode *sn;
-	struct panel *p;
 	struct node *n;
 
 	SLIST_FOREACH(sn, &selnodes, sn_next) {
@@ -164,6 +166,7 @@ nc_runsn(void (*f)(struct fill *))
 		case DM_RTUNK:
 			if (n->n_route.rt_err[RP_UNK][st.st_rtetype])
 				f(n->n_fillp);
+			/* XXX: neighbor detection */
 			break;
 		case DM_YOD:
 			if (n->n_yod != NULL)
@@ -179,36 +182,18 @@ nc_runsn(void (*f)(struct fill *))
 		}
 	}
 
-	if ((p = panel_for_id(PANEL_LEGEND)) != NULL)
-		p->p_opts |= POPT_REFRESH;
+	hlnc_clean = 0;
+	st.st_rf |= RF_CLUSTER;
 }
 
 void
-hl_change(void)
+nc_set(int nc)
 {
 	struct fill *fp;
-	struct panel *p;
 
-	switch (st.st_hlnc) {
-	case HL_ALL:
-		nc_runall(fill_setopaque);
-		break;
-	case HL_NONE:
+	fp = nc_getfp(nc);
+	if (fp) {
 		nc_runall(fill_setxparent);
-		break;
-	case HL_SELDM:
-		nc_runall(fill_setxparent);
-		nc_runsn(fill_setopaque);
-		break;
-	default:
-		fp = nc_getfp(st.st_hlnc);
-		if (fp) {
-			nc_runall(fill_setxparent);
-			fill_setopaque(fp);
-		}
-		break;
+		fill_setopaque(fp);
 	}
-
-	if ((p = panel_for_id(PANEL_LEGEND)) != NULL)
-		p->p_opts |= POPT_REFRESH;
 }

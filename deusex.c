@@ -430,8 +430,7 @@ dxp_selnode(struct dx_action *dxa)
 int
 dxp_hl(struct dx_action *dxa)
 {
-	st.st_hlnc = dxa->dxa_hl;
-	st.st_rf |= RF_HLNC;
+	nc_set(dxa->dxa_hl);
 	return (1);
 }
 
@@ -448,8 +447,8 @@ dxp_seljob(struct dx_action *dxa)
 			} while (n == NULL || n->n_job == NULL);
 			sn_add(n, &fv_zero);
 			panel_show(PANEL_NINFO);
-			st.st_hlnc = HL_SELDM;
-			st.st_rf |= RF_HLNC;
+			nc_runall(fill_setxparent);
+			nc_runsn(fill_setopaque);
 		}
 //	} else if (j = job_findbyid(dxa->dxa_seljob)) {
 //		dxp_hlnc(HL_SELDM);
@@ -693,9 +692,10 @@ dxp_cam_move(struct dx_action *dxa)
 int
 dxp_cyclenc(__unused struct dx_action *dxa)
 {
-	static int t, max, nnc, ncp;
-	int ret, j;
+	static int t, max, nnc, ncp, nc;
+	int ret, j, wait;
 
+	wait = 3;
 	if (t == 0) {
 		nnc = 0;
 		switch (st.st_dmode) {
@@ -712,47 +712,41 @@ dxp_cyclenc(__unused struct dx_action *dxa)
 			break;
 		}
 
-		max = nnc * 3 * fps;
 		ncp = -1;
-
-		/* -1 needed for DM_TEMP loop below. */
-		st.st_hlnc = -1;
+		nc = -1;
 	}
 
+	ret = 0;
 	if (ncp != t * nnc / max) {
 		ncp = t * nnc / max;
 		switch (st.st_dmode) {
 		case DM_JOB:
-			for (j = st.st_hlnc + 1; j < NSC; j++)
+			for (j = nc + 1; j < NSC; j++)
 				if (statusclass[j].nc_nmemb) {
-					st.st_hlnc = j;
+					nc_set(j);
 					break;
 				}
 			if (j >= NSC) {
-				st.st_hlnc = 0;
+				nc = 0;
 				for (j = 0; j < NSC; j++)
 					if (statusclass[j].nc_nmemb == 0)
-						st.st_hlnc++;
-				st.st_hlnc += ncp;
+						nc++;
+				nc += ncp;
+				nc_set(nc);
 			}
 			break;
 		case DM_TEMP:
-			for (j = st.st_hlnc + 1; j < NTEMPC; j++)
+			for (j = nc + 1; j < NTEMPC; j++)
 				if (tempclass[j].nc_nmemb) {
-					st.st_hlnc = j;
+					nc_set(j);
 					break;
 				}
 			break;
 		}
-		st.st_rf |= RF_HLNC;
 	}
-
-	ret = 0;
-	if (++t >= max) {
+	if (ret) {
 		t = 0;
-		ret = 1;
-		st.st_hlnc = HL_ALL;
-		st.st_rf |= RF_HLNC;
+		nc_runall(fill_setopaque);
 	}
 	return (ret);
 }

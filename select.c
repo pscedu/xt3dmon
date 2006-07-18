@@ -291,30 +291,45 @@ void
 gscb_pw_hlnc(struct glname *gn, int flags)
 {
 	int nc = gn->gn_id;
-	void (*f)(struct fill *);
+	void (*all_f)(struct fill *);
+	void (*nc_f)(struct fill *);
 	struct fill *fp;
 
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
 	else if (flags & (SPF_SQUIRE | SPF_DESQUIRE)) {
-		f = (flags & SPF_SQUIRE) ?
+		nc_f = (flags & SPF_SQUIRE) ?
 		    fill_alphainc : fill_alphadec;
 		if (nc == HL_ALL)
-			nc_runall(f);
+			nc_runall(nc_f);
 		else if (nc >= 0 && (fp = nc_getfp(nc)) != NULL)
-			f(fp);
+			nc_f(fp);
 		st.st_rf |= RF_CLUSTER;
 	} else if (flags == 0) {
 		spkey = glutGetModifiers();
-		if (spkey & GLUT_ACTIVE_SHIFT) {
-			/* Don't reset others. */
-		}
-		if (spkey & GLUT_ACTIVE_CTRL) {
-			/* Disable instead of enable. */
-		}
 
-		st.st_hlnc = nc;
-		st.st_rf |= RF_HLNC;
+		switch (nc) {
+		case HL_ALL:
+			nc_runall(fill_setopaque);
+			break;
+		default:
+			if (spkey & GLUT_ACTIVE_CTRL) {
+				/* Disable instead of enable. */
+				all_f = fill_setopaque;
+				nc_f = fill_setxparent;
+			} else {
+				all_f = fill_setxparent;
+				nc_f = fill_setopaque;
+			}
+
+			fp = nc_getfp(nc);
+			if (fp != NULL) {
+				if ((spkey & GLUT_ACTIVE_SHIFT) == 0)
+					nc_runall(all_f);
+				nc_f(fp);
+			}
+			break;
+		}
 	}
 }
 
