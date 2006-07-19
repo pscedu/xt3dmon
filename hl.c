@@ -11,6 +11,9 @@
 
 #include "mon.h"
 
+#include <err.h>
+
+#include "cdefs.h"
 #include "flyby.h"
 #include "job.h"
 #include "node.h"
@@ -22,6 +25,25 @@
 #include "state.h"
 #include "yod.h"
 
+int
+nc_gethlop(void (*f)(struct fill *))
+{
+	/* This highlight ops definition must match FBHLOP_* in flyby.h. */
+	void (*hlops[])(struct fill *) = {
+		fill_setxparent,
+		fill_setopaque,
+		fill_alphainc,
+		fill_alphadec
+	};
+	size_t j;
+	
+	for (j = 0; j < NENTRIES(hlops); j++)
+		if (hlops[j] == f)
+			return (j);
+	warnx("flyby: unknown fill operation");
+	return (FBHLOP_UNKNOWN);
+}
+
 /*
  * Run a fill operation on all currently displayed node classes.
  */
@@ -29,6 +51,7 @@ void
 nc_runall(void (*f)(struct fill *))
 {
 	size_t i;
+	int hlop;
 
 	switch (st.st_dmode) {
 	case DM_JOB:
@@ -139,23 +162,6 @@ nc_getfp(size_t nc)
 		break;
 	}
 	return (NULL);
-}
-
-int
-nc_gethlop(void (*f)(struct fill *))
-{
-	switch (f) {
-	case fill_setopaque:
-		return (FBHLOP_OPAQUE);
-	case fill_setxparent:
-		return (FBHLOP_XPARENT);
-	case fill_alphainc:
-		return (FBHLOP_ALPHAINC);
-	case fill_alphadec:
-		return (FBHLOP_ALPHADEC);
-	}
-	warnx("flyby: unknown fill operation");
-	return (FBHLOP_UNKNOWN);
 }
 
 /*
