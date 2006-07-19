@@ -219,6 +219,7 @@ void
 flyby_read(void)
 {
 	int i, done, oldrf, oldopts, optdiff;
+	void (*f)(struct fill *);
 	struct fbhdr fbh;
 	union fbun fbun;
 	struct node *n;
