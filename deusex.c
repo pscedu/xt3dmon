@@ -783,7 +783,6 @@ struct dxent {
 	{ DGT_WINSP,	dxp_winsp },
 	{ DGT_WIOFF,	dxp_wioff }
 };
-#define NENTRIES(t) (sizeof(t) / sizeof(t[0]))
 
 void
 dx_update(void)

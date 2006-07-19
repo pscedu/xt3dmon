@@ -28,6 +28,10 @@
 #define howmany(x, y) (((x) + ((y) + 1)) / (y))
 #endif
 
+#ifndef NENTRIES
+#define NENTRIES(t) (sizeof(t) / sizeof(t[0]))
+#endif
+
 #if defined(__FLT_MAX__) && !defined(FLT_MAX)
 #define FLT_MAX __FLT_MAX__
 #endif
