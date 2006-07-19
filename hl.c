@@ -78,18 +78,22 @@ nc_runall(void (*f)(struct fill *))
 
 	hlnc_clean = 0;
 	st.st_rf |= RF_CLUSTER;
+
+	if (flyby_mode != FBM_REC)
+		return;
+	hlop = nc_gethlop(f);
+	if (hlop != FBHLOP_UNKNOWN)
+		flyby_writehlnc(HL_ALL, hlop);
 }
 
 /*
  * Grab the fill for the given node class in the current display.
+ * Do not modify the returned fill directly!  Such changes will
+ * not be saved in flybys!
  */
 struct fill *
 nc_getfp(size_t nc)
 {
-	/* Assume a nodeclass will be modified. */
-	hlnc_clean = 0;
-	st.st_rf |= RF_CLUSTER;
-
 	switch (st.st_dmode) {
 	case DM_JOB:
 		if (nc < NSC)
@@ -137,6 +141,46 @@ nc_getfp(size_t nc)
 	return (NULL);
 }
 
+int
+nc_gethlop(void (*f)(struct fill *))
+{
+	switch (f) {
+	case fill_setopaque:
+		return (FBHLOP_OPAQUE);
+	case fill_setxparent:
+		return (FBHLOP_XPARENT);
+	case fill_alphainc:
+		return (FBHLOP_ALPHAINC);
+	case fill_alphadec:
+		return (FBHLOP_ALPHADEC);
+	}
+	warnx("flyby: unknown fill operation");
+	return (FBHLOP_UNKNOWN);
+}
+
+/*
+ * Apply a fill operation on a node class.
+ */
+void
+nc_apply(void (*f)(struct fill *), size_t nc)
+{
+	struct fill *fp;
+	int hlop;
+
+	fp = nc_getfp(nc);
+	if (fp == NULL)
+		return;
+
+	hlnc_clean = 0;
+	st.st_rf |= RF_CLUSTER;
+
+	if (flyby_mode != FBM_REC)
+		return;
+	hlop = nc_gethlop(f);
+	if (hlop != FBHLOP_UNKNOWN)
+		flyby_writehlnc(nc, hlop);
+}
+
 /*
  * Run a fill operation on all node classes for which
  * any currently selected node are a member.
@@ -146,6 +190,7 @@ nc_runsn(void (*f)(struct fill *))
 {
 	struct selnode *sn;
 	struct node *n;
+	int hlop;
 
 	SLIST_FOREACH(sn, &selnodes, sn_next) {
 		n = sn->sn_nodep;
@@ -184,16 +229,20 @@ nc_runsn(void (*f)(struct fill *))
 
 	hlnc_clean = 0;
 	st.st_rf |= RF_CLUSTER;
+
+	if (flyby_mode != FBM_REC)
+		return;
+	hlop = nc_gethlop(f);
+	if (hlop != FBHLOP_UNKNOWN)
+		flyby_writehlnc(HL_SELDM, hlop);
 }
 
+/* Select the given node class -- hide all others. */
 void
 nc_set(int nc)
 {
-	struct fill *fp;
-
-	fp = nc_getfp(nc);
-	if (fp) {
+	if (nc_getfp(nc) != NULL) {
 		nc_runall(fill_setxparent);
-		fill_setopaque(fp);
+		nc_apply(fill_setopaque, nc);
 	}
 }

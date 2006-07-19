@@ -280,14 +280,40 @@ flyby_read(void)
 			if (fread(&fbun, 1, sizeof(struct fbhlnc),
 			    flyby_fp) != sizeof(struct fbhlnc))
 				err(1, "flyby read hlnc");
+			f = NULL;
 			switch (fbun.fbu_hlnc.fbhl_op) {
 			case FBHLOP_XPARENT:
+				f = fill_setxparent;
 				break;
 			case FBHLOP_OPAQUE:
+				f = fill_setopaque;
 				break;
 			case FBHLOP_ALPHAINC:
+				f = fill_alphainc;
 				break;
 			case FBHLOP_ALPHADEC:
+				f = fill_alphadec;
+				break;
+			default:
+				warnx("unknown highlight op: %d", fbun.fbu_hlnc.fbhl_op);
+				break;
+			}
+
+			if (f == NULL)
+				break;
+
+			switch (fbun.fbu_hlnc.fbhl_nc) {
+			case HL_ALL:
+				nc_runall(f);
+				break;
+			case HL_SELDM:
+				nc_runsn(f);
+				break;
+			case HL_NONE:
+				/* XXX ? */
+				break;
+			default:
+				nc_apply(f, fbun.fbu_hlnc.fbhl_nc);
 				break;
 			}
 			break;

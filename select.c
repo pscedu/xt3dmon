@@ -302,8 +302,8 @@ gscb_pw_hlnc(struct glname *gn, int flags)
 		    fill_alphainc : fill_alphadec;
 		if (nc == HL_ALL)
 			nc_runall(nc_f);
-		else if (nc >= 0 && (fp = nc_getfp(nc)) != NULL)
-			nc_f(fp);
+		else if (nc >= 0)
+			nc_apply(nc_f, nc);
 		st.st_rf |= RF_CLUSTER;
 	} else if (flags == 0) {
 		spkey = glutGetModifiers();
@@ -322,11 +322,10 @@ gscb_pw_hlnc(struct glname *gn, int flags)
 				nc_f = fill_setopaque;
 			}
 
-			fp = nc_getfp(nc);
-			if (fp != NULL) {
+			if (nc_getfp(nc) != NULL) {
 				if ((spkey & GLUT_ACTIVE_SHIFT) == 0)
 					nc_runall(all_f);
-				nc_f(fp);
+				nc_apply(nc_f, nc);
 			}
 			break;
 		}

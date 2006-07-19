@@ -9,6 +9,7 @@ struct state;
 #define FBM_REC		2
 
 /* Flyby node class highlighting operations. */
+#define FBHLOP_UNKNOWN	(-1)
 #define FBHLOP_XPARENT	0
 #define FBHLOP_OPAQUE	1
 #define FBHLOP_ALPHAINC	2
