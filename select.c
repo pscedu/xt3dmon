@@ -293,7 +293,6 @@ gscb_pw_hlnc(struct glname *gn, int flags)
 	int nc = gn->gn_id;
 	void (*all_f)(struct fill *);
 	void (*nc_f)(struct fill *);
-	struct fill *fp;
 
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
