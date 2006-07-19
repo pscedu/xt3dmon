@@ -8,7 +8,7 @@ struct state;
 #define FBM_PLAY	1
 #define FBM_REC		2
 
-/* Flyby node class highlighting operations. */
+/* Flyby node class highlighting operations -- must stay sync'd to hl.c. */
 #define FBHLOP_UNKNOWN	(-1)
 #define FBHLOP_XPARENT	0
 #define FBHLOP_OPAQUE	1
@@ -26,6 +26,7 @@ void	 flyby_writeinit(struct state *);
 void	 flyby_writeseq(struct state *);
 void	 flyby_writepanel(int);
 void	 flyby_writeselnode(int, const struct fvec *);
+void	 flyby_writehlnc(int, int);
 void	 flyby_rstautoto(void);
 void	 flyby_clear(void);
 
