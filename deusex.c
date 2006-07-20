@@ -30,8 +30,9 @@
 	    SQUARE((a)->fv_y - (b)->fv_y) +		\
 	    SQUARE((a)->fv_z - (b)->fv_z)))
 
-int	dx_built;		/* Whether dx path is already built. */
-char	dx_fn[PATH_MAX];	/* Path to current dx script. */
+int		dx_built;			/* Whether dx path is already built. */
+char		dx_fn[NAME_MAX] = DX_DEFAULT;	/* Path to current dx script. */
+struct objlist	dxscript_list = { { NULL }, 0, 0, 0, 0, 10, sizeof(struct fnent), fe_eq };
 
 void
 dxa_add(struct dx_action *dxa)

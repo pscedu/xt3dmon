@@ -61,6 +61,7 @@ extern struct objlist	 yod_list;
 extern struct objlist	 glname_list;
 extern struct objlist	 reel_list;
 extern struct objlist	 flyby_list;
+extern struct objlist	 dxscript_list;
 extern struct objlist	 col_list;
 
 #endif /* _OBJLIST_H_ */
