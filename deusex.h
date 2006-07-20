@@ -3,6 +3,8 @@
 #include "queue.h"
 #include "xmath.h"
 
+#define DX_DEFAULT "overview"
+
 /* Set mode values. */
 #define DXV_ON		0
 #define DXV_OFF		1
