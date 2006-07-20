@@ -580,8 +580,8 @@ rebuild(int opts)
 		ds_refresh(DS_NODE, dsflags);
 		ds_refresh(DS_JOB, dsflags);
 		ds_refresh(DS_YOD, dsflags);
-		ds_refresh(DS_RT, dsflags);
-		ds_refresh(DS_SS, dsflags);
+		ds_refresh(DS_RT, DSFF_IGN);
+		ds_refresh(DS_SS, DSFF_IGN);
 		ds_refresh(DS_MEM, DSFF_IGN);
 
 		opts |= RF_DMODE | RF_CLUSTER;
@@ -666,7 +666,7 @@ restart(void)
 int
 main(int argc, char *argv[])
 {
-	int flags, c, sw, sh;
+	int Nflag, flags, c, sw, sh;
 	const char *cfgfn;
 
 	progname = argv[0];
@@ -678,9 +678,10 @@ main(int argc, char *argv[])
 
 	cfgfn = _PATH_PHYSCONF;
 
+	Nflag = 0;
 	flags = GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE;
 	glutInit(&argc, argv);
-	while ((c = getopt(argc, argv, "ac:dpv")) != -1)
+	while ((c = getopt(argc, argv, "ac:dNpv")) != -1)
 		switch (c) {
 		case 'a':
 errx(1, "broken");
@@ -692,6 +693,9 @@ errx(1, "broken");
 			break;
 		case 'd':
 			server_mode = 1;
+			break;
+		case 'N':
+			Nflag = 1;
 			break;
 		case 'p':
 			stereo_mode = STM_PASV;
@@ -732,11 +736,15 @@ errx(1, "broken");
 
 	if (server_mode)
 		serv_init();
-	else
-		panel_toggle(PANEL_HELP);
 
 	gl_run(gl_setup);
 	gl_setup_core();
+
+	if (!server_mode) {
+		panel_toggle(PANEL_HELP);
+		if (!Nflag)
+			panel_toggle(PANEL_LOGIN);
+	}
 
 	if ((quadric = gluNewQuadric()) == NULL)
 		err(1, "gluNewQuadric");
