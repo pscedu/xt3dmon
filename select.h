@@ -80,3 +80,4 @@ void		 gscb_pw_wiadj(struct glname *, int);
 void		 gscb_pw_rt(struct glname *, int);
 void		 gscb_pw_fbcho(struct glname *, int);
 void		 gscb_pw_keyh(struct glname *, int);
+void		 gscb_pw_dxcho(struct glname *, int);

@@ -8,6 +8,7 @@
 
 #include "cdefs.h"
 #include "cam.h"
+#include "deusex.h"
 #include "env.h"
 #include "flyby.h"
 #include "gl.h"
@@ -590,5 +591,20 @@ gscb_pw_keyh(struct glname *gn, int flags)
 	else if (flags == 0) {
 		keyh = kh;
 		glutSpecialFunc(keyhtab[keyh].kh_spkeyh);
+	}
+}
+
+void
+gscb_pw_dxcho(struct glname *gn, int flags)
+{
+	int i = gn->gn_id;
+	struct panel *p;
+
+	if (flags & SPF_PROBE)
+		cursor_set(GLUT_CURSOR_INFO);
+	else if (flags == 0) {
+		dx_setfn(dxscript_list.ol_fnents[i]->fe_name);
+		if ((p = panel_for_id(PANEL_DXCHO)) != NULL)
+			p->p_opts |= POPT_REFRESH;
 	}
 }

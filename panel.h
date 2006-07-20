@@ -31,7 +31,8 @@
 #define PANEL_FBNEW	(1<<25)
 #define PANEL_CMP	(1<<26)
 #define PANEL_KEYH	(1<<27)
-#define NPANELS		28
+#define PANEL_DXCHO	(1<<28)
+#define NPANELS		29
 
 struct glname;
 
@@ -146,6 +147,7 @@ void panel_refresh_fbcho(struct panel *);
 void panel_refresh_fbnew(struct panel *);
 void panel_refresh_cmp(struct panel *);
 void panel_refresh_keyh(struct panel *);
+void panel_refresh_dxcho(struct panel *);
 
 extern struct panels	 panels;
 extern struct pinfo	 pinfo[];
