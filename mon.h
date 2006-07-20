@@ -56,8 +56,9 @@
 #define WIV_CLIPY	(st.st_winsp.iv_y * vmodes[st.st_vmode].vm_clip)
 #define WIV_CLIPZ	(st.st_winsp.iv_z * vmodes[st.st_vmode].vm_clip)
 
-/* Defined values. */
+/* Defined values in data files. */
 #define DV_NODATA	(-1)
+#define DV_NOAUTH	"???"
 
 struct physcoord {				/* XXX: become just dynamic array */
 	int	 pc_r;
@@ -70,6 +71,7 @@ struct physcoord {				/* XXX: become just dynamic array */
 typedef int (*cmpf_t)(const void *, const void *);
 
 struct fill;
+struct buf;
 
 /* arch.c */
 void		 arch_init(void);
@@ -125,7 +127,7 @@ const char	*status_get(void);
 void		 tex_load(void);
 
 /* text.c */
-void		 text_wrap(char *, size_t, size_t);
+void		 text_wrap(struct buf *, const char *, size_t, const char *, size_t);
 
 extern int		 exthelp;
 
@@ -142,5 +144,7 @@ extern char		 login_auth[BUFSIZ];
 
 extern const struct fvec fv_zero;
 extern const struct ivec iv_zero;
+
+extern char		 date_fmt[];
 
 #endif	/* _XT3DMON_H_ */
