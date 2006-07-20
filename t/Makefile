@@ -1,8 +1,8 @@
 # $Id$
 
 TESTS=		text base64
-CFLAGS+=	-I..
-LDFLAGS+=	../text.o ../util.o
+CFLAGS+=	-I.. -W -Wall
+LDFLAGS+=	../text.o ../util.o ../buf.o
 
 all: ${TESTS} xt3dmon
 
