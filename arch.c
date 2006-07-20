@@ -6,6 +6,8 @@
 
 #include "uinp.h"
 
+char date_fmt[] = "%b %e %l:%M%p";
+
 void
 arch_init(void)
 {

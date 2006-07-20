@@ -4,6 +4,8 @@
 
 #include <err.h>
 
+char date_fmt[] = "%b %d %I:%M%p";
+
 void
 arch_init(void)
 {
