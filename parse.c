@@ -449,6 +449,10 @@ parse_job(const struct datasrc *ds)
 		    PS_ALLOWSPACE))
 			goto bad;
 
+		if (strcmp(j_fake.j_name, DV_NOAUTH) == 0)
+			snprintf(j_fake.j_name, sizeof(j_fake.j_name),
+			    "job %d", j_fake.j_id);
+
 		*j = j_fake;
 		continue;
 bad:
