@@ -23,6 +23,10 @@
 # include "getopt.h"
 # include "dirent.h"
 
+#define strcasecmp stricmp
+#define random rand
+#define srandom srand
+
 # define atanf atan
 # define acosf acos
 # define asinf asin
@@ -61,7 +65,7 @@ do {                                                                        \
 } while (0)
 
 # undef __inline
-# define __inline inline
+# define __inline
 
 #undef SLIST_ENTRY
 
