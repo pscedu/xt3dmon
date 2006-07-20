@@ -389,12 +389,16 @@ yyerror(const char *fmt, ...)
 void
 dx_parse(void)
 {
-	FILE *fp;
+	char fn[PATH_MAX];
 	extern FILE *yyin;
+	FILE *fp;
+
+	snprintf(fn, sizeof(fn), "%s/%s",
+	    _PATH_DXSCRIPTS, dx_fn);
 
 	dxa_clear();
-	if ((fp = fopen(dx_fn, "r")) == NULL)
-		err(1, "%s", dx_fn);
+	if ((fp = fopen(fn, "r")) == NULL)
+		err(1, "%s", fn);
 	yyin = fp;
 	lineno = 1;
 	yyparse();
