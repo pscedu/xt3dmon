@@ -177,6 +177,8 @@ nc_apply(void (*f)(struct fill *), size_t nc)
 	if (fp == NULL)
 		return;
 
+	f(fp);
+
 	hlnc_clean = 0;
 	st.st_rf |= RF_CLUSTER;
 
