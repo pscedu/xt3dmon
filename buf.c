@@ -39,8 +39,31 @@ buf_append(struct buf *buf, char ch)
 	buf->buf_buf[buf->buf_pos] = ch;
 }
 
+__inline void
+buf_appendv(struct buf *buf, const char *s)
+{
+	while (*s != '\0')
+		buf_append(buf, *s++);
+}
+
+__inline void
+buf_appendfv(struct buf *buf, const char *fmt, ...)
+{
+	char *s, *t;
+	va_list ap;
+
+	va_start(ap, fmt);
+	if (vasprintf(&t, fmt, ap) == -1)
+		err(1, "vasprintf");
+	va_end(ap);
+
+	for (s = t; *s != '\0'; s++)
+		buf_append(buf, *s);
+	free(t);
+}
+
 __inline char *
-buf_get(struct buf *buf)
+buf_get(const struct buf *buf)
 {
 	return (buf->buf_buf);
 }
@@ -71,13 +94,13 @@ buf_chop(struct buf *buf)
 }
 
 __inline int
-buf_len(struct buf *buf)
+buf_len(const struct buf *buf)
 {
 	return (buf->buf_pos + 1);
 }
 
 void
-buf_cat(struct buf *ba, struct buf *bb)
+buf_cat(struct buf *ba, const struct buf *bb)
 {
 	if (ba->buf_max - ba->buf_pos <= bb->buf_pos) {
 		ba->buf_max = ba->buf_pos + bb->buf_pos + BUF_GROWAMT;
