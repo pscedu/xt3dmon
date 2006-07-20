@@ -13,6 +13,7 @@
 
 #include "cdefs.h"
 #include "buf.h"
+#include "deusex.h"
 #include "ds.h"
 #include "env.h"
 #include "fill.h"
@@ -360,21 +361,34 @@ panel_refresh_ninfo(struct panel *p)
 	}
 
 	if (nselnodes > 1) {
-		char *label, nids[BUFSIZ], data[BUFSIZ];
-		size_t j, nids_pos, data_pos;
+		struct buf b_nids, bw_nids, b_data, bw_data;
+		size_t j;
+
+		buf_init(&b_nids);
+		buf_init(&b_data);
+
+		buf_appendv(&b_nids, "Node ID(s): ");
+
+		ol = NULL; /* gcc */
+		switch (st.st_dmode) {
+		case DM_JOB:
+			buf_appendv(&b_data, "Job ID(s): ");
+			ol = &job_list;
+			break;
+		case DM_YOD:
+			buf_appendv(&b_data, "Yod ID(s): ");
+			ol = &yod_list;
+			break;
+		}
 
 		j = 0;
-		nids[0] = data[0] = '\0';
-		nids_pos = data_pos = 0;
 		SLIST_FOREACH(sn, &selnodes, sn_next) {
 			n = sn->sn_nodep;
 
 			if (j == NINFO_MAXNIDS)
-				nids_pos += snprintf(nids + nids_pos,
-				    sizeof(nids) - nids_pos, ",...");
-			else if (j < NINFO_MAXNIDS && nids_pos < sizeof(nids))
-				nids_pos += snprintf(nids + nids_pos,
-				    sizeof(nids) - nids_pos, ",%d", n->n_nid);
+				buf_appendv(&b_nids, ",...");
+			else if (j < NINFO_MAXNIDS)
+				buf_appendfv(&b_nids, "%d,", n->n_nid);
 
 			switch (st.st_dmode) {
 			case DM_JOB:
@@ -388,20 +402,10 @@ panel_refresh_ninfo(struct panel *p)
 			}
 			j++;
 		}
-		text_wrap(nids, sizeof(nids), 50);
-
-		label = NULL; /* gcc */
-		ol = NULL; /* gcc */
-		switch (st.st_dmode) {
-		case DM_JOB:
-			label = "Job ID(s)";
-			ol = &job_list;
-			break;
-		case DM_YOD:
-			label = "Yod ID(s)";
-			ol = &yod_list;
-			break;
-		}
+		buf_chop(&b_nids);
+		buf_append(&b_nids, '\0');
+		text_wrap(&bw_nids, buf_get(&b_nids), 25, "\n  ", 2);
+		buf_free(&b_nids);
 
 		for (j = 0; ol && j < ol->ol_cur; j++) {
 			ohp = ol->ol_data[j];
@@ -409,34 +413,32 @@ panel_refresh_ninfo(struct panel *p)
 				ohp->oh_flags &= ~OHF_TMP;
 				switch (st.st_dmode) {
 				case DM_JOB:
-					data_pos += snprintf(data + data_pos,
-					    sizeof(data) - data_pos, ",%d",
+					buf_appendfv(&b_data, "%d,",
 					    ((struct job *)ohp)->j_id);
 					break;
 				case DM_YOD:
-					data_pos += snprintf(data + data_pos,
-					    sizeof(data) - data_pos, ",%d",
+					buf_appendfv(&b_data, "%d,",
 					    ((struct yod *)ohp)->y_id);
 					break;
 				}
 			}
-			if (data_pos >= sizeof(data))
-				break;
 		}
-		text_wrap(data, sizeof(data), 50);
-
-		if (data[0] == '\0')
-			strncpy(data, "_(none)", sizeof(data) - 1);
-		data[sizeof(data) - 1] = '\0';
+		buf_chop(&b_data);
+		buf_append(&b_data, '\0');
+		text_wrap(&bw_data, buf_get(&b_data), 25, "\n  ", 2);
+		buf_free(&b_data);
 
 		panel_set_content(p,
 		    "- Node Information -\n"
 		    "%d node(s) selected\n"
-		    "Node ID(s): %s",
-		    nselnodes, nids + 1);
-		if (label)
-			panel_add_content(p,
-			    "\n%s: %s", label, data + 1);
+		    "%s",
+		    nselnodes, buf_get(&bw_nids));
+		if (j)
+			panel_add_content(p, "\n%s",
+			    buf_get(&bw_data));
+
+		buf_free(&bw_nids);
+		buf_free(&bw_data);
 		return;
 	}
 
@@ -462,52 +464,53 @@ panel_refresh_ninfo(struct panel *p)
 	else
 		panel_add_content(p, "\nTemperature: %dC", n->n_temp);
 
-	panel_add_content(p, "\n\nRouting errors:");
-	if (memcmp(&n->n_route.rt_err, &rt_zero, sizeof(rt_zero)) == 0)
-		panel_add_content(p, " none");
-	else {
-		for (j = 0; j < NRP; j++) {
-			if (n->n_route.rt_err[j][RT_RECOVER] ||
-			    n->n_route.rt_err[j][RT_FATAL] ||
-			    n->n_route.rt_err[j][RT_ROUTER]) {
-				int needcomma = 0;
+	if (memcmp(&rt_max, &rt_zero, sizeof(rt_zero)) != 0) {
+		panel_add_content(p, "\n\nRouting errors:");
+		if (memcmp(&n->n_route.rt_err, &rt_zero, sizeof(rt_zero)) == 0)
+			panel_add_content(p, " none");
+		else {
+			for (j = 0; j < NRP; j++) {
+				if (n->n_route.rt_err[j][RT_RECOVER] ||
+				    n->n_route.rt_err[j][RT_FATAL] ||
+				    n->n_route.rt_err[j][RT_ROUTER]) {
+					int needcomma = 0;
 
-				panel_add_content(p, "\n  port %d: ", j);
-				if (n->n_route.rt_err[j][RT_RECOVER]) {
-					panel_add_content(p, "%d recover",
-					    n->n_route.rt_err[j][RT_RECOVER]);
+					panel_add_content(p, "\n  port %d: ", j);
+					if (n->n_route.rt_err[j][RT_RECOVER]) {
+						panel_add_content(p, "%d recover",
+						    n->n_route.rt_err[j][RT_RECOVER]);
+						needcomma = 1;
+					}
+					if (n->n_route.rt_err[j][RT_FATAL]) {
+						panel_add_content(p, "%s%d fatal",
+						    needcomma ? ", " : "",
+						    n->n_route.rt_err[j][RT_FATAL]);
 					needcomma = 1;
-				}
-				if (n->n_route.rt_err[j][RT_FATAL]) {
-					panel_add_content(p, "%s%d fatal",
-					    needcomma ? ", " : "",
-					    n->n_route.rt_err[j][RT_FATAL]);
-					needcomma = 1;
-				}
-				if (n->n_route.rt_err[j][RT_ROUTER]) {
-					panel_add_content(p, "%s%d rtr",
-					    needcomma ? ", " : "",
-					    n->n_route.rt_err[j][RT_ROUTER]);
+					}
+					if (n->n_route.rt_err[j][RT_ROUTER]) {
+						panel_add_content(p, "%s%d rtr",
+						    needcomma ? ", " : "",
+						    n->n_route.rt_err[j][RT_ROUTER]);
+					}
 				}
 			}
 		}
 	}
 
-	if (n->n_job)
+	if (n->n_job) {
+		panel_add_content(p, "\n\nJob ID: %d", n->n_job->j_id);
+		if (strcmp(n->n_job->j_owner, DV_NOAUTH) != 0)
+			panel_add_content(p, "\nJob owner: %s", n->n_job->j_owner);
+		if (strcmp(n->n_job->j_name, DV_NOAUTH) != 0)
+			panel_add_content(p, "\nJob name: %s", n->n_job->j_name);
+		if (strcmp(n->n_job->j_queue, DV_NOAUTH) != 0)
+			panel_add_content(p, "\nJob queue: %s", n->n_job->j_queue);
 		panel_add_content(p,
-		    "\n\n"
-		    "Job ID: %d\n"
-		    "Job owner: %s\n"
-		    "Job name: %s\n"
-		    "Job queue: %s\n"
+		    "\n"
 		    "Job duration: %d:%02d\n"
 		    "Job time used: %d:%02d (%d%%)\n"
-		    "Job CPUs: %d\n"
+			"Job # of CPUs: %d\n"
 		    "Job Memory: %dKB",
-		    n->n_job->j_id,
-		    n->n_job->j_owner,
-		    n->n_job->j_name,
-		    n->n_job->j_queue,
 		    n->n_job->j_tmdur / 60,
 		    n->n_job->j_tmdur % 60,
 		    n->n_job->j_tmuse / 60,
@@ -517,24 +520,25 @@ panel_refresh_ninfo(struct panel *p)
 		       n->n_job->j_tmdur : 1),
 		    n->n_job->j_ncpus,
 		    n->n_job->j_mem);
+	}
 
 	if (n->n_yod) {
-		char cmdbuf[YFL_CMD];
-
-		strncpy(cmdbuf, n->n_yod->y_cmd, sizeof(cmdbuf) - 1);
-		cmdbuf[sizeof(cmdbuf) - 1] = '\0';
-		text_wrap(cmdbuf, sizeof(cmdbuf), 50);
-
 		panel_add_content(p,
 		    "\n\n"
 		    "Yod ID: %d\n"
 		    "Yod partition ID: %d\n"
-		    "Yod CPUs: %d\n"
-		    "Yod command: %s",
+		    "Yod CPUs: %d",
 		    n->n_yod->y_id,
 		    n->n_yod->y_partid,
-		    n->n_yod->y_ncpus,
-		    cmdbuf);
+		    n->n_yod->y_ncpus);
+
+		if (strcmp(n->n_yod->y_cmd, DV_NOAUTH) != 0) {
+			struct buf bw_ycmd;
+
+			text_wrap(&bw_ycmd, n->n_yod->y_cmd, 40, "\n  ", 2);
+			panel_add_content(p, "\nYod command: %s", buf_get(&bw_ycmd));
+			buf_free(&bw_ycmd);
+		}
 	}
 
 #if 0
@@ -647,7 +651,7 @@ panel_refresh_fbcho(struct panel *p)
 				warn("%s", path);
 				continue;
 			}
-			if (!S_ISREG(stb.st_mode))
+			if ((stb.st_mode & S_IFMT) != S_IFREG)
 				continue;
 
 			fe = obj_get(dent->d_name, &flyby_list);
@@ -819,7 +823,7 @@ panel_refresh_date(struct panel *p)
 	if (ssp == NULL)
 		glutTimerFunc(1000 * (60 - tm.tm_sec),
 		    panel_date_invalidate, 0);
-	strftime(tmbuf, sizeof(tmbuf), "%b %e %l:%M%p", &tm);
+	strftime(tmbuf, sizeof(tmbuf), date_fmt, &tm);
 	panel_set_content(p, "(c) 2006 PSC\n%s", tmbuf);
 }
 
@@ -909,7 +913,11 @@ panel_refresh_login(struct panel *p)
 	}
 
 	panel_set_content(p, "- Login -\n"
-	    "Username: %s%s%s",
+		"As job information is restricted\n"
+		"to BigBen users, please login to\n"
+		"obtain access.\n"
+	    "\n"
+		"Username: %s%s%s",
 	    atpass ? authbuf : buf_get(&uinp.uinp_buf),
 	    atpass ? "\nPassword: " : "",
 	    atpass ? passbuf : "");
@@ -1264,5 +1272,69 @@ panel_refresh_keyh(struct panel *p)
 	for (j = 0; j < NKEYH; j++)
 		pwidget_add(p, (j == keyh ? &fill_white : &fill_nodata),
 		    keyhtab[j].kh_name, gscb_pw_keyh, j);
+	pwidget_endlist(p);
+}
+
+void
+panel_refresh_dxcho(struct panel *p)
+{
+	static char sav_dx_name[NAME_MAX];
+	char path[PATH_MAX];
+	struct dirent *dent;
+	struct fnent *fe;
+	struct stat stb;
+	size_t i;
+	DIR *dp;
+
+	if (panel_ready(p) && strcmp(sav_dx_name, dx_fn) == 0)
+		return;
+	strncpy(sav_dx_name, dx_fn, sizeof(sav_dx_name) - 1);
+	sav_dx_name[sizeof(sav_dx_name) - 1] = '\0';
+
+	panel_set_content(p, "- Deus Ex Chooser -");
+	pwidget_startlist(p);
+	if ((dp = opendir(_PATH_DXSCRIPTS)) == NULL) {
+		if (errno != ENOENT)
+			err(1, "%s", _PATH_DXSCRIPTS);
+		errno = 0;
+
+		pwidget_add(p, &fill_white, dx_fn, NULL, 0);
+	} else {
+		obj_batch_start(&dxscript_list);
+		while ((dent = readdir(dp)) != NULL) {
+			if (strcmp(dent->d_name, ".") == 0 ||
+			    strcmp(dent->d_name, "..") == 0)
+				continue;
+
+			snprintf(path, sizeof(path), "%s/%s",
+			    _PATH_DXSCRIPTS, dent->d_name);
+			if (stat(path, &stb) == -1) {
+				warn("%s", path);
+				continue;
+			}
+			if ((stb.st_mode & S_IFMT) != S_IFREG)
+				continue;
+
+			fe = obj_get(dent->d_name, &dxscript_list);
+			snprintf(fe->fe_name, sizeof(fe->fe_name),
+			    "%s", dent->d_name);
+		}
+		obj_batch_end(&dxscript_list);
+
+		/* XXX: check readdir NULL/errno */
+
+		closedir(dp);
+
+		qsort(dxscript_list.ol_fnents, dxscript_list.ol_cur,
+		    sizeof(struct fnent *), fe_cmp);
+
+		for (i = 0; i < dxscript_list.ol_cur; i++) {
+			fe = dxscript_list.ol_fnents[i];
+
+			pwidget_add(p, (strcmp(dx_fn, fe->fe_name) ?
+			    &fill_nodata : &fill_white), fe->fe_name,
+			    gscb_pw_dxcho, i);
+		}
+	}
 	pwidget_endlist(p);
 }
