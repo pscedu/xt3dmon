@@ -34,14 +34,17 @@
 #include "xssl.h"
 #include "yod.h"
 
-#define STARTX		(-30.0)
-#define STARTY		( 10.0)
-#define STARTZ		( 25.0)
+#define STARTX		(-17.80)
+#define STARTY		( 30.76)
+#define STARTZ		( 51.92)
 
-/* Must form a unit vector. */
-#define STARTLX		(0.99f)
-#define STARTLY		(0.0f)
-#define STARTLZ		(-0.12f)
+#define STARTLX		( 0.71)
+#define STARTLY		(-0.34)
+#define STARTLZ		(-0.62)
+
+#define STARTUX		( 0.25)
+#define STARTUY		( 0.94)
+#define STARTUZ		(-0.22)
 
 void	usage(void);
 
@@ -51,9 +54,9 @@ struct node		*wimap[WIDIM_WIDTH][WIDIM_HEIGHT][WIDIM_DEPTH];
 
 int			 stereo_mode;
 
-struct fvec		 tv = { { STARTX, STARTY, STARTZ } };
+struct fvec		 tv  = { { STARTX,  STARTY,  STARTZ } };
 struct fvec		 tlv = { { STARTLX, STARTLY, STARTLZ } };
-struct fvec		 tuv = { { 0.0f, 1.0f, 0.0f } };
+struct fvec		 tuv = { { STARTUX, STARTUY, STARTUZ } };
 
 char			 login_auth[BUFSIZ];
 
@@ -111,9 +114,9 @@ struct dmode dmodes[] = {
 };
 
 struct state st = {
-	{ { STARTX, STARTY, STARTZ } },			/* (x,y,z) */
+	{ { STARTX,  STARTY,  STARTZ  } },		/* (x,y,z) */
 	{ { STARTLX, STARTLY, STARTLZ } },		/* (lx,ly,lz) */
-	{ { 0.0f, 1.0f, 0.0f } },			/* (ux,uy,uz) */
+	{ { STARTUX, STARTUY, STARTUZ } },		/* (ux,uy,uz) */
 	OP_FRAMES | OP_TWEEN | OP_GROUND | \
 	    OP_DISPLAY | OP_NODEANIM,			/* options */
 	DM_JOB,						/* which data to show */
