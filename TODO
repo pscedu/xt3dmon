@@ -87,3 +87,5 @@ todo
 - add to help: goto bird's eye, print selnode ids
 - rename HL_* to NC_*
 - add subtitle for when machine down
+- set the mtime on server dsc copies to the _original_ time,
+  not the mtime of the copy
