@@ -331,130 +331,50 @@
 								ObjectFile="$(IntDir)/$(InputName)1.obj"/>
 						</FileConfiguration>
 					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\png.h">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngconf.h">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngerror.c">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pnggccrd.c">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngget.c">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngmem.c">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngpread.c">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngread.c">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngrio.c">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngrtran.c">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngrutil.c">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngset.c">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngtrans.c">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngvcrd.c">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngwio.c">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngwrite.c">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngwtran.c">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngwutil.c">
-					</File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\png.h"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngconf.h"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngerror.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pnggccrd.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngget.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngmem.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngpread.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngread.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngrio.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngrtran.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngrutil.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngset.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngtrans.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngvcrd.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngwio.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngwrite.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngwtran.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngwutil.c"> </File>
 				</Filter>
 				<Filter
 					Name="zlib"
 					Filter="">
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\adler32.c">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\compress.c">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\crc32.c">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\crc32.h">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\deflate.c">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\deflate.h">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\gzio.c">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\infback.c">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\inffast.c">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\inffast.h">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\inffixed.h">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\inflate.c">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\inflate.h">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\inftrees.c">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\inftrees.h">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\trees.c">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\trees.h">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\uncompr.c">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\zconf.h">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\zlib.h">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\zutil.c">
-					</File>
-					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\zutil.h">
-					</File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\adler32.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\compress.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\crc32.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\crc32.h"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\deflate.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\deflate.h"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\gzio.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\infback.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\inffast.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\inffast.h"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\inffixed.h"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\inflate.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\inflate.h"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\inftrees.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\inftrees.h"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\trees.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\trees.h"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\uncompr.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\zconf.h"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\zlib.h"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\zutil.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\zutil.h"> </File>
 				</Filter>
 			</Filter>
 		</Filter>
