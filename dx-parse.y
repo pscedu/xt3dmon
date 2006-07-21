@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include "deusex.h"
+#include "pathnames.h"
 #include "env.h"
 #include "panel.h"
 #include "state.h"
