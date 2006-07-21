@@ -13,13 +13,14 @@ SRCS+= selnode.c server.c shadow.c ssl.c status.c tex.c text.c tween.c
 SRCS+= uinp.c ustrdtab.c ustream.c ustrop-file.c ustrop-ssl.c util.c
 SRCS+= vec.c widget.c yod.c
 
-LIBS = -lGL -lglut -lGLU -lpng -lssl -lm -lcrypto -lcom_err
-# -lGLcore -lXext -lX11 -ldl -lXxf86vm -lgss_s -lz
-# -lgssapi_krb5 -lkrb5 -lk5crypto -lresolv
+LIBS += -lglut -lglx -lGL -lGLU -lXext -lglut -lX11 -lpng -lssl
+LIBS += -lm -lcrypto -lkrb5 -lk5crypto -lz -lcom_err -lpthread
+LIBS += -lresolv -ldl -lXxf86vm
 
 CFLAGS += -Wall -W -g -D_LIVE_DSP=DSP_LOCAL
 #CFLAGS += -O -Wuninitialized
-LDFLAGS =
+LDFLAGS += -L/usr/X11R6/lib/modules/extensions -L/usr/X11R6/lib
+LDFLAGS +=
 
 YFLAGS += -d -b "$$(echo $@ | sed 's/-.*//')" \
 	     -p "$$(echo $@ | sed 's/-.*//')" \
@@ -43,7 +44,7 @@ CLEAN+= phys-lex.c phys-parse.c phys-parse.h
 all: ${PROG}
 
 ${PROG}: ${OBJS}
-	${CC} ${LDFLAGS} ${LIBS} ${OBJS} -o $@
+	${CC} ${LDFLAGS} ${OBJS} -o $@ ${LIBS}
 
 .y.c:
 	${YACC} ${YFLAGS} $<
