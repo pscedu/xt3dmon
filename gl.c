@@ -2,6 +2,8 @@
 
 #include "mon.h"
 
+#include <err.h>
+
 #include "cam.h"
 #include "capture.h"
 #include "deusex.h"
@@ -272,6 +274,8 @@ gl_displayh_default(void)
 	newrf = st.st_rf;
 	st.st_rf = rf;
 	draw_scene();
+	if (st.st_rf != rf)
+		warnx("internal error: draw_scene() modified rf");
 	st.st_rf = newrf;
 
 	if (st.st_opts & OP_CAPTURE)
