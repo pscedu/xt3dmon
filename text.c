@@ -9,10 +9,12 @@
 #include "buf.h"
 
 void
-text_wrap(struct buf *bufp, const char *s, size_t maxlen, const char *ins, size_t mocklen)
+text_wrap(struct buf *bufp, const char *s, size_t maxlen, const char *ins,
+    size_t mocklen)
 {
 	const char *p, *t, *brk, *sp;
-	size_t linelen, inslen, i;
+	size_t linelen, inslen;
+	long i;
 
 	inslen = strlen(ins);
 
@@ -29,7 +31,7 @@ text_wrap(struct buf *bufp, const char *s, size_t maxlen, const char *ins, size_
 		} else if (++linelen > maxlen) {
 			/* First attempt: try to break on whitespace. */
 			brk = NULL;
-			for (t = p - 1; p - t < linelen - mocklen && *t != '\n'; t--) {
+			for (t = p - 1; p - t < (long)(linelen - mocklen) && *t != '\n'; t--) {
 				if (!isalnum(*t) && brk == NULL)
 					brk = t + 1;
 				if (isspace(*t)) {
