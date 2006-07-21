@@ -8,7 +8,7 @@
 
 #define _PATH_ARCHIVE	"data/archive"
 #define _PATH_FLYBYDIR	"data/flybys"
-#define _PATH_DXSCRIPTS	"data/scripts"
+#define _PATH_DXSCRIPTS	"scripts"
 
 #define _PATH_PHYSCONF	"data/phys.conf"
 #define _PATH_COLORS	"data/colors"
