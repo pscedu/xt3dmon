@@ -509,8 +509,8 @@ panel_refresh_ninfo(struct panel *p)
 		    "\n"
 		    "Job duration: %d:%02d\n"
 		    "Job time used: %d:%02d (%d%%)\n"
-			"Job # of CPUs: %d\n"
-		    "Job Memory: %dKB",
+		    "Job # of CPUs: %d\n"
+		    "Job Login Node Memory: %dKB",
 		    n->n_job->j_tmdur / 60,
 		    n->n_job->j_tmdur % 60,
 		    n->n_job->j_tmuse / 60,
