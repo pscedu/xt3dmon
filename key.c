@@ -173,9 +173,6 @@ gl_keyh_panel(unsigned char key, __unused int u, __unused int v)
 	case 'l':
 		panel_toggle(PANEL_LEGEND);
 		break;
-	case 'm':
-		panel_toggle(PANEL_MEM);
-		break;
 	case 'n':
 		panel_toggle(PANEL_NINFO);
 		break;
@@ -613,7 +610,7 @@ gl_keyh_default(unsigned char key, int u, int v)
 		glutKeyboardFunc(gl_keyh_alpha);
 		break;
 	case 'C':
-		st.st_rf |= RF_CLUSTER | RF_WIREP;
+		st.st_rf |= RF_CLUSTER | RF_WIREP | RF_SELNODE;
 		break;
 	case 'c':
 		sn_clear();
@@ -634,8 +631,7 @@ gl_keyh_default(unsigned char key, int u, int v)
 
 		SLIST_FOREACH(sn, &selnodes, sn_next)
 			printf("%d%s", sn->sn_nodep->n_nid,
-			    SLIST_NEXT(sn, sn_next) ? "," : "");
-		printf("\n");
+			    SLIST_NEXT(sn, sn_next) ? "," : "\n");
 		break;
 	    }
 	case 'k':

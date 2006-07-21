@@ -12,27 +12,26 @@
 #define PANEL_POS	(1<<6)
 #define PANEL_SS	(1<<7)
 #define PANEL_STATUS	(1<<8)
-#define PANEL_MEM	(1<<9)
-#define PANEL_EGGS	(1<<10)
-#define PANEL_DATE	(1<<11)
-#define PANEL_OPTS	(1<<12)
-#define PANEL_GOTOJOB	(1<<13)
-#define PANEL_PANELS	(1<<14)
-#define PANEL_LOGIN	(1<<15)
-#define PANEL_HELP	(1<<16)
-#define PANEL_VMODE	(1<<17)
-#define PANEL_DMODE	(1<<18)
-#define PANEL_REEL	(1<<19)
-#define PANEL_PIPE	(1<<20)
-#define PANEL_SSTAR	(1<<21)
-#define PANEL_WIADJ	(1<<22)
-#define PANEL_RT	(1<<23)
-#define PANEL_FBCHO	(1<<24)
-#define PANEL_FBNEW	(1<<25)
-#define PANEL_CMP	(1<<26)
-#define PANEL_KEYH	(1<<27)
-#define PANEL_DXCHO	(1<<28)
-#define NPANELS		29
+#define PANEL_EGGS	(1<<9)
+#define PANEL_DATE	(1<<10)
+#define PANEL_OPTS	(1<<11)
+#define PANEL_GOTOJOB	(1<<12)
+#define PANEL_PANELS	(1<<13)
+#define PANEL_LOGIN	(1<<14)
+#define PANEL_HELP	(1<<15)
+#define PANEL_VMODE	(1<<16)
+#define PANEL_DMODE	(1<<17)
+#define PANEL_REEL	(1<<18)
+#define PANEL_PIPE	(1<<19)
+#define PANEL_SSTAR	(1<<20)
+#define PANEL_WIADJ	(1<<21)
+#define PANEL_RT	(1<<22)
+#define PANEL_FBCHO	(1<<23)
+#define PANEL_FBNEW	(1<<24)
+#define PANEL_CMP	(1<<25)
+#define PANEL_KEYH	(1<<26)
+#define PANEL_DXCHO	(1<<27)
+#define NPANELS		28
 
 struct glname;
 
@@ -128,7 +127,6 @@ void panel_refresh_gotonode(struct panel *);
 void panel_refresh_pos(struct panel *);
 void panel_refresh_ss(struct panel *);
 void panel_refresh_status(struct panel *);
-void panel_refresh_mem(struct panel *);
 void panel_refresh_eggs(struct panel *);
 void panel_refresh_date(struct panel *);
 void panel_refresh_opts(struct panel *);
