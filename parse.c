@@ -548,7 +548,7 @@ parse_ss(const struct datasrc *ds)
 		s = buf;
 		while (isspace(*s))
 			s++;
-		if (*s == '#')
+		if (*s == '#' || *s == '\0')
 			continue;
 
 		if (parsestr(&s, nid, sizeof(nid), 0) ||
@@ -596,9 +596,13 @@ parse_colors(const char *fn)
 	lineno = 0;
 	while (fgets(buf, sizeof(buf), fp) != NULL) {
 		lineno++;
+		s = buf;
+		while (isspace(*s))
+			s++;
+		if (*s == '#' || *s == '\0')
+			continue;
 
 		idx = 0;
-		s = buf;
 		do {
 			while (*s != '\0' && !isdigit(*s))
 				s++;
