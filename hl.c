@@ -249,8 +249,22 @@ nc_runsn(void (*f)(struct fill *))
 void
 nc_set(int nc)
 {
-	if (nc_getfp(nc) != NULL) {
+	switch (nc) {
+	case HL_ALL:
 		nc_runall(fill_setxparent);
-		nc_apply(fill_setopaque, nc);
+		break;
+	case HL_NONE:
+		/* XXX ? */
+		break;
+	case HL_SELDM:
+		nc_runall(fill_setopaque);
+		nc_runsn(fill_setxparent);
+		break;
+	default:
+		if (nc_getfp(nc) != NULL) {
+			nc_runall(fill_setxparent);
+			nc_apply(fill_setopaque, nc);
+		}
+		break;
 	}
 }
