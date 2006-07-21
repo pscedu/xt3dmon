@@ -908,7 +908,8 @@ draw_selnodes(void)
 		ofp = n->n_fillp;
 		n->n_fillp = &fill_selnode;
 
-		if (st.st_opts & OP_NODEANIM)
+		if (st.st_opts & OP_NODEANIM &&
+		    st.st_vmode != VM_WIRED)
 			fvp = &n->n_vcur;
 		else
 			fvp = n->n_v;
