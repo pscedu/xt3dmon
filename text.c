@@ -58,7 +58,6 @@ text_wrap(struct buf *bufp, const char *s, size_t maxlen, const char *ins, size_
 
 			for (i = 0; i < p - t; i++)
 				buf_chop(bufp);
-insert:
 			buf_appendv(bufp, ins);
 			linelen = mocklen;
 			p = t - 1;
