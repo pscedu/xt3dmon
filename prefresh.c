@@ -386,7 +386,7 @@ panel_refresh_ninfo(struct panel *p)
 			n = sn->sn_nodep;
 
 			if (j == NINFO_MAXNIDS)
-				buf_appendv(&b_nids, ",...");
+				buf_appendv(&b_nids, "...."); /* chop() */
 			else if (j < NINFO_MAXNIDS)
 				buf_appendfv(&b_nids, "%d,", n->n_nid);
 
@@ -453,7 +453,6 @@ panel_refresh_ninfo(struct panel *p)
 	    "Wired position: (%d,%d,%d)\n"
 	    "Hardware name: c%d-%dc%ds%dn%d\n"
 	    "Status: %s",
-//	    "# Failures: %d",
 	    n->n_nid,
 	    iv->iv_x, iv->iv_y, iv->iv_z,
 	    pc.pc_cb, pc.pc_r, pc.pc_cg, pc.pc_m, pc.pc_n,
@@ -711,17 +710,6 @@ panel_refresh_gotojob(struct panel *p)
 
 	panel_set_content(p, "- Go to Job -\n"
 	    "Job ID: %s", buf_get(&uinp.uinp_buf));
-}
-
-void
-panel_refresh_mem(struct panel *p)
-{
-	if (panel_ready(p))
-		return;
-	panel_set_content(p, "- Memory Usage -\n"
-	    "VSZ: %lu\n"
-	    "RSS: %ld",
-	    vmem, rmem);
 }
 
 void
