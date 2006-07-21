@@ -913,11 +913,10 @@ panel_refresh_login(struct panel *p)
 	}
 
 	panel_set_content(p, "- Login -\n"
-		"As job information is restricted\n"
-		"to BigBen users, please login to\n"
-		"obtain access.\n"
-	    "\n"
-		"Username: %s%s%s",
+	    "As job details are restricted to\n"
+	    "BigBen users, please login to obtain\n"
+	    "access or press escape to close.\n\n"
+	    "Username: %s%s%s",
 	    atpass ? authbuf : buf_get(&uinp.uinp_buf),
 	    atpass ? "\nPassword: " : "",
 	    atpass ? passbuf : "");
