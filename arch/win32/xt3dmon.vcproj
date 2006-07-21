@@ -34,7 +34,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ws2_32.lib glut32.lib opengl32.lib glu32.lib ssleay32.lib libeay32.lib"
+				AdditionalDependencies="ws2_32.lib freeglut.lib opengl32.lib glu32.lib ssleay32.lib libeay32.lib"
 				OutputFile="$(OutDir)/xt3dmon.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
@@ -118,9 +118,6 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
-				RelativePath="..\..\compat\arch.c">
-			</File>
-			<File
 				RelativePath="..\..\buf.c">
 			</File>
 			<File
@@ -143,6 +140,12 @@
 			</File>
 			<File
 				RelativePath="..\..\ds.c">
+			</File>
+			<File
+				RelativePath="..\..\dx-lex.c">
+			</File>
+			<File
+				RelativePath="..\..\dx-parse.c">
 			</File>
 			<File
 				RelativePath="..\..\eggs.c">
@@ -268,6 +271,9 @@
 				Name="compat"
 				Filter="">
 				<File
+					RelativePath="..\..\compat\arch.c">
+				</File>
+				<File
 					RelativePath="..\..\compat\asprintf.c">
 				</File>
 				<File
@@ -286,6 +292,9 @@
 					RelativePath="..\..\compat\gettimeofday.c">
 				</File>
 				<File
+					RelativePath="..\..\compat\gmtime_r.c">
+				</File>
+				<File
 					RelativePath="..\..\compat\redisplay.c">
 				</File>
 				<File
@@ -293,6 +302,9 @@
 				</File>
 				<File
 					RelativePath="..\..\compat\snprintf.c">
+				</File>
+				<File
+					RelativePath="..\..\compat\strptime.c">
 				</File>
 				<File
 					RelativePath="..\..\compat\ustrdtab.c">
@@ -305,7 +317,7 @@
 					Name="libpng"
 					Filter="">
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\png.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\png.c">
 						<FileConfiguration
 							Name="Debug|Win32">
 							<Tool
@@ -320,128 +332,128 @@
 						</FileConfiguration>
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\png.h">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\png.h">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngconf.h">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngconf.h">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngerror.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngerror.c">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pnggccrd.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pnggccrd.c">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngget.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngget.c">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngmem.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngmem.c">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngpread.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngpread.c">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngread.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngread.c">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngrio.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngrio.c">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngrtran.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngrtran.c">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngrutil.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngrutil.c">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngset.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngset.c">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngtrans.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngtrans.c">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngvcrd.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngvcrd.c">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngwio.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngwio.c">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngwrite.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngwrite.c">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngwtran.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngwtran.c">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\lpng128\pngwutil.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngwutil.c">
 					</File>
 				</Filter>
 				<Filter
 					Name="zlib"
 					Filter="">
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\zlib\adler32.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\adler32.c">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\zlib\compress.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\compress.c">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\zlib\crc32.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\crc32.c">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\zlib\crc32.h">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\crc32.h">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\zlib\deflate.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\deflate.c">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\zlib\deflate.h">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\deflate.h">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\zlib\gzio.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\gzio.c">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\zlib\infback.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\infback.c">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\zlib\inffast.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\inffast.c">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\zlib\inffast.h">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\inffast.h">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\zlib\inffixed.h">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\inffixed.h">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\zlib\inflate.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\inflate.c">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\zlib\inflate.h">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\inflate.h">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\zlib\inftrees.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\inftrees.c">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\zlib\inftrees.h">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\inftrees.h">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\zlib\trees.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\trees.c">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\zlib\trees.h">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\trees.h">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\zlib\uncompr.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\uncompr.c">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\zlib\zconf.h">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\zconf.h">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\zlib\zlib.h">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\zlib.h">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\zlib\zutil.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\zutil.c">
 					</File>
 					<File
-						RelativePath="..\..\..\..\Desktop\yanovich\zlib\zutil.h">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\zlib\zutil.h">
 					</File>
 				</Filter>
 			</Filter>
