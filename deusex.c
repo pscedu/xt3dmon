@@ -715,33 +715,38 @@ dxp_cyclenc(__unused struct dx_action *dxa)
 
 		ncp = -1;
 		nc = -1;
+		max = nnc * fps;
 	}
 
 	ret = 0;
-	if (ncp != t * nnc / max) {
+	if (ncp != ++t * nnc / max) {
 		ncp = t * nnc / max;
 		switch (st.st_dmode) {
 		case DM_JOB:
-			for (j = nc + 1; j < NSC; j++)
-				if (statusclass[j].nc_nmemb) {
-					nc_set(j);
+			while (++nc < NSC)
+				if (statusclass[nc].nc_nmemb) {
+					nc_set(nc);
 					break;
 				}
-			if (j >= NSC) {
-				nc = 0;
-				for (j = 0; j < NSC; j++)
-					if (statusclass[j].nc_nmemb == 0)
-						nc++;
-				nc += ncp;
-				nc_set(nc);
+			if (nc >= NSC) {
+				if (nc_getfp(nc) == NULL)
+					ret = 1;
+				else
+					nc_set(nc);
 			}
 			break;
 		case DM_TEMP:
-			for (j = nc + 1; j < NTEMPC; j++)
-				if (tempclass[j].nc_nmemb) {
-					nc_set(j);
+			while (++nc < NTEMPC)
+				if (tempclass[nc].nc_nmemb) {
+					nc_set(nc);
+
 					break;
 				}
+			if (nc >= NTEMPC)
+				ret = 1;
+			break;
+		default:
+			ret = 1;
 			break;
 		}
 	}
