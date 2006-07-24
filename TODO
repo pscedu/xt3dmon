@@ -43,15 +43,15 @@ todo
   cronjob should check too?
 - dsc chdir to avoid races
 - show other things in the queue (other pbs queues)
-- dynamic font widths
-- draw_node, if (!show) curv = *v
+- support variable font widths/antialiased fonts
+- draw_node, if (!show) n_curv = *v
 - replace WIDIM_WIDTH, ... with widim.iv_[whd]
 - check that the server dsc-copies fresh data in case data is no
   longer automatically refreshing itself
 - add recursive check to gl_run() to protect against that kind of
   invocation
 - provide if-modified-since in http headers to avoid extra work on
-  update intervals when no new data is available
+  update intervals when no new data is available/check for new data
 - for tweening, calculate the % moved by one (e.g. move), then apply
   that % to the others, instead of use MAX_{LOOK,TWEEN} values
 - fix crash when revolve position = st.st_v
@@ -68,11 +68,13 @@ todo
 - make status panels contents queue, remove in due time
 - vec_rotate() is busted for large amounts
 - on macos, fix node labels on solid node colors from distances
-- fix tween to real stack: once point is reached, pop it then move on
-- increase tween limit when fps is high, or when "stack" contains many layers
 - rename NODEWIDTH/HEIGHT/DEPTH cause its phys-only
 - use existing kerberos tickets to do auth
-- ensure tweening leaves normalized vectors
 - kill job_findbyid, just use obj_get with a flag that prevents creation
 - make job searching bsearch again, since it is sorted
 - add subtitle for when machine down
+
+tweening
+- ensure tweening leaves normalized vectors
+- fix tween to real stack: once point is reached, pop it then move on
+- increase tween limit when fps is high, or when "stack" contains many layers
