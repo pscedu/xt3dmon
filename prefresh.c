@@ -917,9 +917,12 @@ panel_refresh_help(struct panel *p)
 {
 	static int sav_exthelp;
 
-	if (panel_ready(p) && sav_exthelp == exthelp)
+	if (sav_exthelp == exthelp &&
+	    selnode_clean & PANEL_HELP &&
+	    panel_ready(p))
 		return;
 	sav_exthelp = exthelp;
+	selnode_clean |= PANEL_HELP;
 
 	panel_set_content(p, "");
 	pwidget_startlist(p);
@@ -928,10 +931,16 @@ panel_refresh_help(struct panel *p)
 		    gscb_pw_panel, baseconv(PANEL_PANELS) - 1);
 		pwidget_add(p, &fill_xparent, "Options",
 		    gscb_pw_panel, baseconv(PANEL_OPTS) - 1);
-		pwidget_add(p, &fill_xparent, "Clear Selnodes",
-		    gscb_pw_help, HF_CLRSN);
+		pwidget_add(p, &fill_xparent, "Reorient",
+		    gscb_pw_help, HF_REORIENT);
 		pwidget_add(p, &fill_xparent, "Update Data",
 		    gscb_pw_help, HF_UPDATE);
+		if (nselnodes) {
+			pwidget_add(p, &fill_xparent, "Clear Selnodes",
+			    gscb_pw_help, HF_CLRSN);
+			pwidget_add(p, &fill_xparent, "Print Selnode IDs",
+			    gscb_pw_help, HF_PRTSN);
+		}
 	} else {
 		pwidget_add(p, &fill_xparent, "Help <<",
 		    gscb_pw_help, HF_SHOWHELP);

@@ -371,6 +371,7 @@ void
 gscb_pw_help(struct glname *gn, int flags)
 {
 	int opt = gn->gn_id;
+	struct selnode *sn;
 
 	if (flags & SPF_PROBE) {
 		cursor_set(GLUT_CURSOR_INFO);
@@ -385,6 +386,16 @@ gscb_pw_help(struct glname *gn, int flags)
 			break;
 		case HF_CLRSN:
 			sn_clear();
+			break;
+		case HF_REORIENT:
+			tween_push(TWF_POS | TWF_LOOK | TWF_UP);
+			cam_bird();
+			tween_pop(TWF_POS | TWF_LOOK | TWF_UP);
+			break;
+		case HF_PRTSN:
+			SLIST_FOREACH(sn, &selnodes, sn_next)
+				printf("%d%s", sn->sn_nodep->n_nid,
+				    SLIST_NEXT(sn, sn_next) ? "," : "\n");
 			break;
 		case HF_UPDATE:
 			st.st_rf |= RF_DATASRC;
