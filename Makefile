@@ -13,13 +13,17 @@ SRCS+= selnode.c server.c shadow.c ssl.c status.c tex.c text.c tween.c
 SRCS+= uinp.c ustrdtab.c ustream.c ustrop-file.c ustrop-ssl.c util.c
 SRCS+= vec.c widget.c yod.c
 
-LIBS += -lglut -lglx -lGL -lGLU -lXext -lglut -lX11 -lpng -lssl
-LIBS += -lm -lcrypto -lkrb5 -lk5crypto -lz -lcom_err -lpthread
-LIBS += -lresolv -ldl -lXxf86vm
-
 CFLAGS += -Wall -W -g -D_LIVE_DSP=DSP_LOCAL
 #CFLAGS += -O -Wuninitialized
-LDFLAGS += -L/usr/X11R6/lib/modules/extensions -L/usr/X11R6/lib
+
+LIBS += -lGL -lGLU -lglut -lssl -lpng
+
+# static compiles:
+# LIBS += -lglut -lglx -lGL -lGLU -lXext -lglut -lX11 -lpng -lssl
+# LIBS += -lm -lcrypto -lkrb5 -lk5crypto -lz -lcom_err -lpthread
+# LIBS += -lresolv -ldl -lXxf86vm
+# LDFLAGS += -L/usr/X11R6/lib/modules/extensions -L/usr/X11R6/lib
+
 LDFLAGS +=
 
 YFLAGS += -d -b "$$(echo $@ | sed 's/-.*//')" \
