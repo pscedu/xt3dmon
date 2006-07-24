@@ -77,6 +77,6 @@ debug: xt3dmon
 	gdb -q ./xt3dmon
 
 macdirs:
-	cp -R img data arch/macosx/build/Development/xt3dmon.app/Contents/Resources
+	cp -R img data snaps scripts arch/macosx/build/Development/xt3dmon.app/Contents/Resources
 
 -include .depend
