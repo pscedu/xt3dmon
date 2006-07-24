@@ -69,7 +69,7 @@ todo
 - add panel reporting when new data is available
 - make status panels contents queue, remove in due time
 - vec_rotate() is busted for large amounts
-- on mac/win32, fix node labels on solid node colors
+- on macos, fix node labels on solid node colors from distances
 - fix tween to real stack: once point is reached, pop it then move on
 - increase tween limit when fps is high, or when "stack" contains many layers
 - rename NODEWIDTH/HEIGHT/DEPTH cause its phys-only
