@@ -88,6 +88,14 @@ jscmpf(const void *a, const void *b)
 		return (0);
 }
 
+#include <err.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "env.h"
+#include "node.h"
+#include "state.h"
+
 void
 job_drawlabels(void)
 {
@@ -102,6 +110,8 @@ job_drawlabels(void)
 	siz = job_list.ol_cur * sizeof(*jobstats);
 	if ((jobstats = malloc(siz)) == NULL)
 		err(1, "malloc");
+
+	glPushMatrix();
 
 	for (r = 0; r < NROWS; r++) {
 		for (cb = 0; cb < NCABS; cb++) {
@@ -135,20 +145,18 @@ job_drawlabels(void)
 			jp = job_list.ol_jobs[jmax];
 			snprintf(buf, sizeof(buf), "job %d", jp->j_id);
 
-//			glPushMatrix();
 			vp = nodes[r][cb][2][0][0].n_v;
 			fp = &jp->j_fill;
 			glColor3f(fp->f_r, fp->f_g, fp->f_b);
 			glRasterPos3d(vp->fv_x + CABWIDTH / 2.0,
-			    vp->fv_y + CAGEHEIGHT + 1.0,
+			    vp->fv_y + CAGEHEIGHT * 2.0,
 			    vp->fv_z + ROWDEPTH / 2.0);
 			for (p = buf; *p != '\0'; p++)
 				glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *p);
-//			glPopMatrix();
 		}
 	}
+	glPopMatrix();
 
 	free(jobstats);
 }
-
 #endif
