@@ -304,13 +304,13 @@ flyby_read(void)
 				break;
 
 			switch (fbun.fbu_hlnc.fbhl_nc) {
-			case HL_ALL:
+			case NC_ALL:
 				nc_runall(f);
 				break;
-			case HL_SELDM:
+			case NC_SELDM:
 				nc_runsn(f);
 				break;
-			case HL_NONE:
+			case NC_NONE:
 				/* XXX ? */
 				break;
 			default:

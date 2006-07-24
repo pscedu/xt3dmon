@@ -10,9 +10,10 @@
 #include <string.h>
 
 #include "deusex.h"
-#include "pathnames.h"
 #include "env.h"
+#include "nodeclass.h"
 #include "panel.h"
+#include "pathnames.h"
 #include "state.h"
 
 #define yyin dxin
@@ -179,9 +180,9 @@ conf		: DGT_BIRD {
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DGT_HL;
 			if (strcasecmp($2, "all") == 0)
-				dxa.dxa_hl = HL_ALL;
+				dxa.dxa_hl = NC_ALL;
 			else if (strcasecmp($2, "seldm") == 0)
-				dxa.dxa_hl = HL_SELDM;
+				dxa.dxa_hl = NC_SELDM;
 			else
 				yyerror("invalid hl: %s", $2);
 			free($2);

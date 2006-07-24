@@ -55,16 +55,6 @@ struct state {
 #define PM_RT		1
 #define NPM		2
 
-/*
- * Node highlighting.
- * If the value of a nodeclass is something other than
- * these values, it is a value specific to the current
- * dmode.
- */
-#define HL_ALL		(-1)
-#define HL_NONE		(-2)
-#define HL_SELDM	(-3)
-
 /* Rebuild flags. */
 #define RF_DATASRC	(1<<0)
 #define RF_CLUSTER	(1<<1)

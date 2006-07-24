@@ -300,7 +300,7 @@ gscb_pw_hlnc(struct glname *gn, int flags)
 	else if (flags & (SPF_SQUIRE | SPF_DESQUIRE)) {
 		nc_f = (flags & SPF_SQUIRE) ?
 		    fill_alphainc : fill_alphadec;
-		if (nc == HL_ALL)
+		if (nc == NC_ALL)
 			nc_runall(nc_f);
 		else if (nc >= 0)
 			nc_apply(nc_f, nc);
@@ -309,7 +309,7 @@ gscb_pw_hlnc(struct glname *gn, int flags)
 		spkey = glutGetModifiers();
 
 		switch (nc) {
-		case HL_ALL:
+		case NC_ALL:
 			nc_runall(fill_setopaque);
 			break;
 		default:

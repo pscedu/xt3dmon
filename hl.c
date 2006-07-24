@@ -106,7 +106,7 @@ nc_runall(void (*f)(struct fill *))
 		return;
 	hlop = nc_gethlop(f);
 	if (hlop != FBHLOP_UNKNOWN)
-		flyby_writehlnc(HL_ALL, hlop);
+		flyby_writehlnc(NC_ALL, hlop);
 }
 
 /*
@@ -242,7 +242,7 @@ nc_runsn(void (*f)(struct fill *))
 		return;
 	hlop = nc_gethlop(f);
 	if (hlop != FBHLOP_UNKNOWN)
-		flyby_writehlnc(HL_SELDM, hlop);
+		flyby_writehlnc(NC_SELDM, hlop);
 }
 
 /* Select the given node class -- hide all others. */
@@ -250,13 +250,13 @@ void
 nc_set(int nc)
 {
 	switch (nc) {
-	case HL_ALL:
+	case NC_ALL:
 		nc_runall(fill_setxparent);
 		break;
-	case HL_NONE:
+	case NC_NONE:
 		/* XXX ? */
 		break;
-	case HL_SELDM:
+	case NC_SELDM:
 		nc_runall(fill_setopaque);
 		nc_runsn(fill_setxparent);
 		break;

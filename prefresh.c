@@ -222,7 +222,7 @@ panel_refresh_legend(struct panel *p)
 		panel_set_content(p, "- Job Legend -\n"
 		    "Total jobs: %lu", job_list.ol_cur);
 
-		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, HL_ALL);
+		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, NC_ALL);
 
 		for (j = 0; j < NSC; j++) {
 			if (j == SC_USED ||
@@ -239,7 +239,7 @@ panel_refresh_legend(struct panel *p)
 		panel_set_content(p, "- Failure Legend -\n"
 		    "Total: %lu", total_failures);
 
-		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, HL_ALL);
+		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, NC_ALL);
 		pwidget_add(p, &fill_nodata, "No data", NULL, 0);
 
 		for (j = 0; j < NFAILC; j++) {
@@ -252,7 +252,7 @@ panel_refresh_legend(struct panel *p)
 	case DM_TEMP:
 		panel_set_content(p, "- Temperature Legend -");
 
-		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, HL_ALL);
+		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, NC_ALL);
 		pwidget_add(p, &fill_nodata, "No data", NULL, 0);
 
 		for (i = NTEMPC - 1; i >= 0; i--) {
@@ -266,7 +266,7 @@ panel_refresh_legend(struct panel *p)
 		panel_set_content(p, "- Yod Legend -\n"
 		    "Total yods: %lu", yod_list.ol_cur);
 
-		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, HL_ALL);
+		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, NC_ALL);
 
 		for (j = 0; j < NSC; j++) {
 			if (j == SC_USED ||
@@ -282,7 +282,7 @@ panel_refresh_legend(struct panel *p)
 	case DM_RTUNK:
 		panel_set_content(p, "- Routing Legend -");
 
-		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, HL_ALL);
+		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, NC_ALL);
 		pwidget_add(p, &fill_rtesnd, "Sender", gscb_pw_hlnc, RTC_SND);
 		pwidget_add(p, &fill_rtercv, "Target", gscb_pw_hlnc, RTC_RCV);
 
@@ -296,7 +296,7 @@ panel_refresh_legend(struct panel *p)
 	case DM_SEASTAR:
 		panel_set_content(p, "- Seastar Legend -");
 
-		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, HL_ALL);
+		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, NC_ALL);
 
 		for (j = 0; j < NSSC; j++) {
 			if (ssclass[j].nc_nmemb == 0)
@@ -308,12 +308,12 @@ panel_refresh_legend(struct panel *p)
 	case DM_SAME:
 		panel_set_content(p, "- Legend -");
 
-		pwidget_add(p, &fill_same, "All nodes", gscb_pw_hlnc, HL_ALL);
+		pwidget_add(p, &fill_same, "All nodes", gscb_pw_hlnc, NC_ALL);
 		break;
 	case DM_LUSTRE:
 		panel_set_content(p, "- Lustre Legend -");
 
-		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, HL_ALL);
+		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, NC_ALL);
 
 		for (j = 0; j < NLUSTC; j++) {
 			if (lustreclass[j].nc_nmemb == 0)

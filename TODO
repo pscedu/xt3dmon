@@ -60,7 +60,7 @@ todo
 - use a different font.png for matrix egg (katonese chars)
 - kill PF_XPARENT and just set fill differently
 - implement FF_OPAQUE everywhere
-- watch out for server mode, dmode=temp then setting hlnc
+- watch out for server mode, dmode=temp then setting hl=free
 - add table for service node hostnames to ssh/command
 - merge gl and env files?
 - bring back option for SEL_GAP things
@@ -78,5 +78,4 @@ todo
 - kill job_findbyid, just use obj_get with a flag that prevents creation
 - bird eye: respect winsp and maybe wioff
 - add to help: goto bird's eye, print selnode ids
-- rename HL_* to NC_*
 - add subtitle for when machine down

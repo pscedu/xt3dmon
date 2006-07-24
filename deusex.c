@@ -452,7 +452,7 @@ dxp_seljob(struct dx_action *dxa)
 			nc_runsn(fill_setopaque);
 		}
 //	} else if (j = job_findbyid(dxa->dxa_seljob)) {
-//		dxp_hlnc(HL_SELDM);
+//		dxp_hlnc(NC_SELDM);
 	}
 	return (1);
 }
