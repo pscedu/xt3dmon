@@ -76,6 +76,5 @@ todo
 - use existing kerberos tickets to do auth
 - ensure tweening leaves normalized vectors
 - kill job_findbyid, just use obj_get with a flag that prevents creation
-- bird eye: respect winsp and maybe wioff
 - add to help: goto bird's eye, print selnode ids
 - add subtitle for when machine down
