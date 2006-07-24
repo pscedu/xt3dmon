@@ -307,7 +307,9 @@ void
 dsc_clone(int type, const char *sid)
 {
 	char buf[BUFSIZ], fn[BUFSIZ];
+	struct timeval tv[2];
 	struct datasrc *ds;
+	struct stat stb;
 	ssize_t n;
 	int fd;
 
@@ -321,16 +323,31 @@ dsc_clone(int type, const char *sid)
 
 	switch (ds->ds_dsp) {
 	case DSP_LOCAL:
+		/* XXX: use us_stat */
+		if (fstat(ds->ds_us->us_fd, &stb) == -1)
+			err(1, "fstat");
+		break;
 	case DSP_REMOTE:
-		/* XXXXXXXX: use us_read */
-		while ((n = read(ds->ds_us->us_fd, &buf,
-		    sizeof(buf))) != -1 && n != 0)
-			if (write(fd, buf, n) != n)
-				err(1, "write");
-		if (n == -1)
-			err(1, "read");
+		stb.st_mtime = ds->ds_mtime;
 		break;
 	}
+
+	if (stb.st_mtime) {
+		tv[0].tv_usec = stb.st_mtime;
+		tv[0].tv_usec = 0L;
+		tv[1] = tv[0];
+		if (futimes(fd, tv) == -1)
+			err(1, "futimes");
+	}
+
+	/* XXXXXXXX: use us_read */
+	while ((n = read(ds->ds_us->us_fd, &buf,
+	    sizeof(buf))) != -1 && n != 0)
+		if (write(fd, buf, n) != n)
+			err(1, "write");
+	if (n == -1)
+		err(1, "read");
+
 	close(fd);
 	ds_close(ds);
 }
