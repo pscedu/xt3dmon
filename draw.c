@@ -338,100 +338,6 @@ draw_node_label(struct node *n)
 }
 
 /*
- * Special case of pipe-drawing code: draw pipes around selected node
- * only.
- *
- * XXX: respect st_pipemode.
- */
-__inline void
-draw_node_pipes(struct node *np)
-{
-	struct ivec v, startv, endv;
-	struct fvec dimv, pos, off;
-	int *vp, max, len, dim;
-	struct node *ng;
-	struct fill *fp;
-
-	pos.fv_x = np->n_v->fv_x + np->n_dimp->fv_w / 2.0;
-	pos.fv_y = np->n_v->fv_y + np->n_dimp->fv_h / 2.0;
-	pos.fv_z = np->n_v->fv_z + np->n_dimp->fv_d / 2.0;
-
-	ivec_set(&startv, 0, 0, 0);
-	ivec_set(&endv, 0, 0, 0);
-
-	for (dim = 0; dim < NDIM; dim++) {
-		max = widim.iv_val[dim];
-		vp = &v.iv_val[dim];
-
-		v = np->n_wiv;
-		len = 0;
-		do {
-			*vp = negmod(*vp - 1, max);
-			ng = wimap[v.iv_x][v.iv_y][v.iv_z];
-			len++;
-
-			if (*vp == max - 1)
-				break;
-		} while (ng == NULL);
-		startv.iv_val[dim] = len;
-
-		v = np->n_wiv;
-		len = 0;
-		do {
-			*vp = negmod(*vp + 1, max);
-			ng = wimap[v.iv_x][v.iv_y][v.iv_z];
-			len++;
-
-			if (*vp == 0)
-				break;
-		} while (ng == NULL);
-		endv.iv_val[dim] = len;
-	}
-
-	dimv.fv_w = (startv.iv_x + endv.iv_x) * st.st_winsp.iv_w;
-	dimv.fv_h = (startv.iv_y + endv.iv_y) * st.st_winsp.iv_h;
-	dimv.fv_d = (startv.iv_z + endv.iv_z) * st.st_winsp.iv_d;
-
-	off.fv_w = startv.iv_x * st.st_winsp.iv_w;
-	off.fv_h = startv.iv_y * st.st_winsp.iv_h;
-	off.fv_d = startv.iv_z * st.st_winsp.iv_d;
-
-	gluQuadricDrawStyle(quadric, GLU_FILL);
-
-	/* Anti-aliasing */
-	glEnable(GL_BLEND);
-	glEnable(GL_POLYGON_SMOOTH);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
-
-	fp = &fill_dim[DIM_Z];
-	glColor4f(fp->f_r, fp->f_g, fp->f_b, 0.5f);
-	glPushMatrix();
-	glTranslatef(pos.fv_x, pos.fv_y, pos.fv_z - off.fv_d);
-	gluCylinder(quadric, 0.1, 0.1, dimv.fv_d, 3, 1);
-	glPopMatrix();
-
-	fp = &fill_dim[DIM_Y];
-	glColor4f(fp->f_r, fp->f_g, fp->f_b, 0.5f);
-	glPushMatrix();
-	glTranslatef(pos.fv_x, pos.fv_y - off.fv_h, pos.fv_z);
-	glRotatef(-90.0, 1.0, 0.0, 0.0);
-	gluCylinder(quadric, 0.1, 0.1, dimv.fv_h, 3, 1);
-	glPopMatrix();
-
-	fp = &fill_dim[DIM_X];
-	glColor4f(fp->f_r, fp->f_g, fp->f_b, 0.5f);
-	glPushMatrix();
-	glTranslatef(pos.fv_x - off.fv_w, pos.fv_y, pos.fv_z);
-	glRotatef(90.0, 0.0, 1.0, 0.0);
-	gluCylinder(quadric, 0.1, 0.1, dimv.fv_w, 3, 1);
-	glPopMatrix();
-
-	glDisable(GL_POLYGON_SMOOTH);
-	glDisable(GL_BLEND);
-}
-
-/*
  * Move the node position (for animation).
  */
 __inline int
@@ -636,6 +542,100 @@ draw_skel(void)
 		glPopMatrix();
 		break;
 	}
+}
+
+/*
+ * Special case of pipe-drawing code: draw pipes around selected node
+ * only.
+ *
+ * XXX: respect st_pipemode.
+ */
+__inline void
+draw_node_pipes(struct node *np)
+{
+	struct ivec v, startv, endv;
+	struct fvec dimv, pos, off;
+	int *vp, max, len, dim;
+	struct node *ng;
+	struct fill *fp;
+
+	pos.fv_x = np->n_v->fv_x + np->n_dimp->fv_w / 2.0;
+	pos.fv_y = np->n_v->fv_y + np->n_dimp->fv_h / 2.0;
+	pos.fv_z = np->n_v->fv_z + np->n_dimp->fv_d / 2.0;
+
+	ivec_set(&startv, 0, 0, 0);
+	ivec_set(&endv, 0, 0, 0);
+
+	for (dim = 0; dim < NDIM; dim++) {
+		max = widim.iv_val[dim];
+		vp = &v.iv_val[dim];
+
+		v = np->n_wiv;
+		len = 0;
+		do {
+			*vp = negmod(*vp - 1, max);
+			ng = wimap[v.iv_x][v.iv_y][v.iv_z];
+			len++;
+
+			if (*vp == max - 1)
+				break;
+		} while (ng == NULL);
+		startv.iv_val[dim] = len;
+
+		v = np->n_wiv;
+		len = 0;
+		do {
+			*vp = negmod(*vp + 1, max);
+			ng = wimap[v.iv_x][v.iv_y][v.iv_z];
+			len++;
+
+			if (*vp == 0)
+				break;
+		} while (ng == NULL);
+		endv.iv_val[dim] = len;
+	}
+
+	dimv.fv_w = (startv.iv_x + endv.iv_x) * st.st_winsp.iv_w;
+	dimv.fv_h = (startv.iv_y + endv.iv_y) * st.st_winsp.iv_h;
+	dimv.fv_d = (startv.iv_z + endv.iv_z) * st.st_winsp.iv_d;
+
+	off.fv_w = startv.iv_x * st.st_winsp.iv_w;
+	off.fv_h = startv.iv_y * st.st_winsp.iv_h;
+	off.fv_d = startv.iv_z * st.st_winsp.iv_d;
+
+	gluQuadricDrawStyle(quadric, GLU_FILL);
+
+	/* Anti-aliasing */
+	glEnable(GL_BLEND);
+	glEnable(GL_POLYGON_SMOOTH);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
+
+	fp = &fill_dim[DIM_Z];
+	glColor4f(fp->f_r, fp->f_g, fp->f_b, 0.5f);
+	glPushMatrix();
+	glTranslatef(pos.fv_x, pos.fv_y, pos.fv_z - off.fv_d);
+	gluCylinder(quadric, 0.1, 0.1, dimv.fv_d, 3, 1);
+	glPopMatrix();
+
+	fp = &fill_dim[DIM_Y];
+	glColor4f(fp->f_r, fp->f_g, fp->f_b, 0.5f);
+	glPushMatrix();
+	glTranslatef(pos.fv_x, pos.fv_y - off.fv_h, pos.fv_z);
+	glRotatef(-90.0, 1.0, 0.0, 0.0);
+	gluCylinder(quadric, 0.1, 0.1, dimv.fv_h, 3, 1);
+	glPopMatrix();
+
+	fp = &fill_dim[DIM_X];
+	glColor4f(fp->f_r, fp->f_g, fp->f_b, 0.5f);
+	glPushMatrix();
+	glTranslatef(pos.fv_x - off.fv_w, pos.fv_y, pos.fv_z);
+	glRotatef(90.0, 0.0, 1.0, 0.0);
+	gluCylinder(quadric, 0.1, 0.1, dimv.fv_w, 3, 1);
+	glPopMatrix();
+
+	glDisable(GL_POLYGON_SMOOTH);
+	glDisable(GL_BLEND);
 }
 
 void
