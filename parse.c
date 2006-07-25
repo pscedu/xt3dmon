@@ -314,8 +314,8 @@ parse_node(const struct datasrc *ds)
 		node->n_fails = nfails ? nfails : DV_NODATA;
 
 		if (jobid) {
-			if (node->n_state == SC_USED)
-				node->n_state = SC_FREE;
+			if (node->n_state == SC_FREE)
+				node->n_state = SC_USED;
 			node->n_job = obj_get(&jobid, &job_list);
 			node->n_job->j_id = jobid;
 		}
