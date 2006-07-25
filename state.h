@@ -99,7 +99,8 @@ struct state {
 #define OP_CABSKELS	(1<<18)
 #define OP_DEUSEX	(1<<19)
 #define OP_CAPTION	(1<<20)
-#define NOPS		21
+#define OP_SUBSET	(1<<21)
+#define NOPS		22
 
 struct xoption {
 	const char	*opt_abbr;

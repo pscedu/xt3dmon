@@ -91,7 +91,8 @@ struct xoption opts[] = {
  /* 17 */ { "reel",	"Reel mode",			OPF_FBIGN },
  /* 18 */ { "cabskel",	"Cabinet skeletons",		0 },
  /* 19 */ { "deusex",	"Deus Ex mode",			0 },
- /* 20 */ { "caption",	"Captions",			OPF_FBIGN }
+ /* 20 */ { "caption",	"Captions",			OPF_FBIGN },
+ /* 21 */ { "subset",	"Subset mode",			0 }
 };
 
 struct vmode vmodes[] = {
