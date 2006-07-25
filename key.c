@@ -419,7 +419,7 @@ gl_spkeyh_node(int key, __unused int u, __unused int v)
 	}
 	if (!SLIST_EMPTY(&selnodes))
 		SLIST_FOREACH(sn, &selnodes, sn_next) {
-			n = node_neighbor(st.st_vmode, sn->sn_nodep, rd);
+			n = node_neighbor(st.st_vmode, sn->sn_nodep, rd, NULL);
 			if (spkey & GLUT_ACTIVE_SHIFT)
 				sn_add(n, &fv_zero);
 			else

@@ -400,7 +400,7 @@ dmode_change(void)
 					n->n_fillp = &fill_rtesnd;
 
 					rd = rteport_to_rdir(port);
-					ng = node_neighbor(VM_WIRED, n, rd);
+					ng = node_neighbor(VM_WIRED, n, rd, NULL);
 					if (ng->n_fillp == &fill_xparent)
 						ng->n_fillp = &fill_rtercv;
 				}
