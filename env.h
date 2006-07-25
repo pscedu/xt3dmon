@@ -31,6 +31,7 @@
 #define RD_POSY		3
 #define RD_NEGZ		4
 #define RD_POSZ		5
+#define NRD		6
 
 /* Geometries. */
 #define GEOM_CUBE	0
