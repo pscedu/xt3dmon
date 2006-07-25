@@ -533,8 +533,8 @@ gl_keyh_pipes(unsigned char key, __unused int u, __unused int v)
 	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
-	case 'r': /* color by route info */
-		st.st_pipemode = PM_RT;
+	case 'r': /* color by route errors */
+		st.st_pipemode = PM_RTE;
 		break;
 	case 'd': /* color by direction */
 		st.st_pipemode = PM_DIR;

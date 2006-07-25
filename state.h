@@ -52,7 +52,7 @@ struct state {
 
 /* Pipe modes. */
 #define PM_DIR		0
-#define PM_RT		1
+#define PM_RTE		1
 #define NPM		2
 
 /* Rebuild flags. */
