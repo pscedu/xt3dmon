@@ -73,6 +73,8 @@ todo
 - kill job_findbyid, just use obj_get with a flag that prevents creation
 - make job searching bsearch again, since it is sorted
 - add subtitle for when machine down
+- merge selpipes and pipes with a simple check: n_flags & NF_SELNODE
+  in the loop which determines how long/when to draw pipes
 
 tweening
 - ensure tweening leaves normalized vectors
