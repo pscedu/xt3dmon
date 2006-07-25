@@ -394,44 +394,22 @@ dmode_change(void)
 			n->n_fillp = &fill_same;
 			break;
 		case DM_RTUNK:
+			for (i = 0; i < NDIM; i++) {
+				port = DIM_TO_PORT(i, st.st_rtepset);
+				if (n->n_route.rt_err[port][st.st_rtetype]) {
+					n->n_fillp = &fill_rtesnd;
+
+					rd = rteport_to_rdir(port);
+					ng = node_wineighbor(n, rd);
+					if (ng->n_fillp == &fill_xparent)
+						ng->n_fillp = &fill_rtercv;
+				}
+			}
 			if (n->n_route.rt_err[RP_UNK][st.st_rtetype]) {
 				i = roundclass(n->n_route.rt_err[RP_UNK][st.st_rtetype],
 				    0, rt_max.rt_err[RP_UNK][st.st_rtetype], NRTC);
 				n->n_fillp = &rtclass[i].nc_fill;
 				rtclass[i].nc_nmemb++;
-			} else {
-				for (i = 0; i < NDIM; i++) {
-					port = DIM_TO_PORT(i, st.st_rtepset);
-					if (n->n_route.rt_err[port][st.st_rtetype]) {
-						n->n_fillp = &fill_rtesnd;
-
-						rd = 0; /* gcc */
-						switch (port) {
-						case RP_NEGX:
-							rd = RD_NEGX;
-							break;
-						case RP_POSX:
-							rd = RD_POSX;
-							break;
-						case RP_NEGY:
-							rd = RD_NEGY;
-							break;
-						case RP_POSY:
-							rd = RD_POSY;
-							break;
-						case RP_NEGZ:
-							rd = RD_NEGZ;
-							break;
-						case RP_POSZ:
-							rd = RD_POSZ;
-							break;
-						}
-
-						ng = node_wineighbor(n, rd);
-						if (ng->n_fillp == &fill_xparent)
-							ng->n_fillp = &fill_rtercv;
-					}
-				}
 			}
 			break;
 		case DM_SEASTAR:
