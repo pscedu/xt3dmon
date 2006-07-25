@@ -794,78 +794,80 @@ draw_cluster_pipe(struct ivec *iv, struct fvec *dimv)
 __inline void
 draw_cluster_pipes(const struct fvec *v)
 {
-	struct fvec dim;
-	struct ivec iv;
-
-	glPushMatrix();
-	glTranslatef(v->fv_x, v->fv_y, v->fv_z);
-	gluQuadricDrawStyle(quadric, GLU_FILL);
-
-	vec_set(&dim, 0.0f, 0.0f, WIV_SDEPTH);
-	for (iv.iv_x = 0; iv.iv_x < widim.iv_w; iv.iv_x++)
-		for (iv.iv_y = 0; iv.iv_y < widim.iv_h; iv.iv_y++)
-			draw_cluster_pipe(&iv, &dim);
-
-	vec_set(&dim, 0.0f, WIV_SHEIGHT, 0.0f);
-	for (iv.iv_z = 0; iv.iv_z < widim.iv_d; iv.iv_z++)
-		for (iv.iv_x = 0; iv.iv_x < widim.iv_w; iv.iv_x++)
-			draw_cluster_pipe(&iv, &dim);
-
-	vec_set(&dim, WIV_SWIDTH, 0.0f, 0.0f);
-	for (iv.iv_y = 0; iv.iv_y < widim.iv_h; iv.iv_y++)
-		for (iv.iv_z = 0; iv.iv_z < widim.iv_d; iv.iv_z++)
-			draw_cluster_pipe(&iv, &dim);
-
-	glPopMatrix();
-}
-
-void
-draw_cluster_physpipes(void)
-{
 	struct node *n, *ng;
 	struct fill *fp;
+	struct fvec dim;
 	struct ivec iv;
 	int rd;
 
-	glLineWidth(2.0);
-	NODE_FOREACH(n, &iv) {
-		if (n && node_show(n)) {
-			for (rd = 0; rd < NRD; rd++) {
-				ng = node_wineighbor(n, rd);
-				switch (rd) {
-				case RD_NEGX:
-					if (!node_show(n))
-						continue;
-				case RD_POSX:
-					fp = &fill_dim[DIM_X];
-					break;
-				case RD_NEGY:
-					if (!node_show(n))
-						continue;
-				case RD_POSY:
-					fp = &fill_dim[DIM_Y];
-					break;
-				case RD_NEGZ:
-					if (!node_show(n))
-						continue;
-				case RD_POSZ:
-					fp = &fill_dim[DIM_Z];
-					break;
-				default:
-					continue;
-				}
+	switch (st.st_vmode) {
+	case VM_WIRED:
+	case VM_WIONE:
+		glPushMatrix();
+		glTranslatef(v->fv_x, v->fv_y, v->fv_z);
+		gluQuadricDrawStyle(quadric, GLU_FILL);
 
-				glColor3f(fp->f_r, fp->f_g, fp->f_b);
-				glBegin(GL_LINES);
-				glVertex3d(
-				    n->n_v->fv_x + n->n_dimp->fv_w / 2.0,
-				    n->n_v->fv_y + n->n_dimp->fv_h / 2.0,
-				    n->n_v->fv_z + n->n_dimp->fv_d / 2.0);
-				glVertex3d(
-				    ng->n_v->fv_x + ng->n_dimp->fv_w / 2.0,
-				    ng->n_v->fv_y + ng->n_dimp->fv_h / 2.0,
-				    ng->n_v->fv_z + ng->n_dimp->fv_d / 2.0);
-				glEnd();
+		vec_set(&dim, 0.0f, 0.0f, WIV_SDEPTH);
+		for (iv.iv_x = 0; iv.iv_x < widim.iv_w; iv.iv_x++)
+			for (iv.iv_y = 0; iv.iv_y < widim.iv_h; iv.iv_y++)
+				draw_cluster_pipe(&iv, &dim);
+
+		vec_set(&dim, 0.0f, WIV_SHEIGHT, 0.0f);
+		for (iv.iv_z = 0; iv.iv_z < widim.iv_d; iv.iv_z++)
+			for (iv.iv_x = 0; iv.iv_x < widim.iv_w; iv.iv_x++)
+				draw_cluster_pipe(&iv, &dim);
+
+		vec_set(&dim, WIV_SWIDTH, 0.0f, 0.0f);
+		for (iv.iv_y = 0; iv.iv_y < widim.iv_h; iv.iv_y++)
+			for (iv.iv_z = 0; iv.iv_z < widim.iv_d; iv.iv_z++)
+				draw_cluster_pipe(&iv, &dim);
+
+		glPopMatrix();
+		break;
+	case VM_PHYS:
+		glLineWidth(2.0);
+		NODE_FOREACH(n, &iv) {
+			if (n && node_show(n)) {
+				for (rd = 0; rd < NRD; rd++) {
+					ng = node_wineighbor(n, rd);
+					switch (rd) {
+					case RD_NEGX:
+						if (!node_show(n))
+							continue;
+						/* FALLTHROUGH */
+					case RD_POSX:
+						fp = &fill_dim[DIM_X];
+						break;
+					case RD_NEGY:
+						if (!node_show(n))
+							continue;
+						/* FALLTHROUGH */
+					case RD_POSY:
+						fp = &fill_dim[DIM_Y];
+						break;
+					case RD_NEGZ:
+						if (!node_show(n))
+							continue;
+						/* FALLTHROUGH */
+					case RD_POSZ:
+						fp = &fill_dim[DIM_Z];
+						break;
+					default:
+						continue;
+					}
+
+					glColor3f(fp->f_r, fp->f_g, fp->f_b);
+					glBegin(GL_LINES);
+					glVertex3d(
+					    n->n_v->fv_x + n->n_dimp->fv_w / 2.0,
+					    n->n_v->fv_y + n->n_dimp->fv_h / 2.0,
+					    n->n_v->fv_z + n->n_dimp->fv_d / 2.0);
+					glVertex3d(
+					    ng->n_v->fv_x + ng->n_dimp->fv_w / 2.0,
+					    ng->n_v->fv_y + ng->n_dimp->fv_h / 2.0,
+					    ng->n_v->fv_z + ng->n_dimp->fv_d / 2.0);
+					glEnd();
+				}
 			}
 		}
 	}
@@ -884,13 +886,9 @@ draw_cluster(void)
 		ndf |= NDF_ATORIGIN;
 		/* FALLTHROUGH */
 	case VM_WIONE:
+	case VM_PHYS:
 		if (st.st_opts & OP_PIPES)
 			draw_cluster_pipes(&fv_zero);
-		/* FALLTHROUGH */
-	case VM_PHYS:
-//if (st.st_opts & OP_PIPES)
-	//draw_cluster_physpipes();
-
 		NODE_FOREACH(n, &iv)
 			if (n && node_show(n)) {
 				if (ndf & NDF_ATORIGIN) {
