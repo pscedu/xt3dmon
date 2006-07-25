@@ -8,7 +8,7 @@
 #include "route.h"
 
 int
-rteport_to_dir(int port)
+rteport_to_rdir(int port)
 {
 	switch (port) {
 	case RP_NEGX:

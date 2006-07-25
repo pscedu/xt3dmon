@@ -40,6 +40,8 @@ struct route {
 	int rt_err[NRP][NRT];
 };
 
+int rteport_to_rdir(int);
+
 extern struct route rt_max;
 extern struct route rt_zero;
 
