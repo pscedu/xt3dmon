@@ -34,6 +34,7 @@ struct node {
 };
 
 #define NF_HIDE		(1<<0)			/* don't display */
+#define NF_SELNODE	(1<<1)			/* is selected */
 
 #define LS_CLEAN	0
 #define LS_DIRTY	1
@@ -52,7 +53,7 @@ struct node {
 			        [(iv)->iv_z]) || 1);			\
 			    (iv)->iv_z++)				\
 
-struct node	*node_neighbor(int, struct node *, int);
+struct node	*node_neighbor(int, struct node *, int, int *);
 void		 node_physpos(struct node *, struct physcoord *);
 void		 node_getmodpos(int, int *, int *);
 void		 node_adjmodpos(int, struct fvec *);

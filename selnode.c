@@ -39,6 +39,7 @@ sn_insert(struct node *n, const struct fvec *offv)
 {
 	struct selnode *sn;
 
+	n->n_flags |= NF_SELNODE;
 	if ((sn = malloc(sizeof(*sn))) == NULL)
 		err(1, "malloc");
 	sn->sn_nodep = n;
@@ -86,6 +87,7 @@ sn_clear(void)
 
 	for (sn = SLIST_FIRST(&selnodes);
 	    sn != SLIST_END(&selnodes); sn = next) {
+		sn->sn_nodep->n_flags &= ~NF_SELNODE;
 		next = SLIST_NEXT(sn, sn_next);
 		if (flyby_mode == FBM_REC)
 			flyby_writeselnode(sn->sn_nodep->n_nid, &fv_zero);
@@ -105,6 +107,7 @@ sn_del(struct node *n)
 
 	SLIST_FOREACH_PREVPTR(sn, prev, &selnodes, sn_next)
 		if (sn->sn_nodep == n) {
+			n->n_flags &= ~NF_SELNODE;
 			*prev = SLIST_NEXT(sn, sn_next);
 			free(sn);
 			if (flyby_mode == FBM_REC)

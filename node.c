@@ -99,7 +99,7 @@ node_physpos(struct node *node, struct physcoord *pc)
 }
 
 struct node *
-node_neighbor(int vm, struct node *n, int rd)
+node_neighbor(int vm, struct node *n, int rd, int *flip)
 {
 	int row, col, adj, dim;
 	struct physcoord pc;
@@ -132,6 +132,9 @@ node_neighbor(int vm, struct node *n, int rd)
 		err(1, "unknown relative dir: %d", rd);
 	}
 
+	if (flip)
+		*flip = 0;
+
 	iv = n->n_wiv;
 	switch (vm) {
 	case VM_WIRED:
@@ -140,6 +143,11 @@ node_neighbor(int vm, struct node *n, int rd)
 			iv.iv_val[dim] = negmod(iv.iv_val[dim] + adj,
 			    widim.iv_val[dim]);
 			ng = wimap[iv.iv_x][iv.iv_y][iv.iv_z];
+
+			if (flip &&
+			    ((adj > 0 && iv.iv_val[dim] == 0) ||
+			     (adj < 0 && iv.iv_val[dim] == widim.iv_val[dim] - 1)))
+				*flip = adj;
 		} while (ng == NULL);
 		break;
 	case VM_PHYS:
