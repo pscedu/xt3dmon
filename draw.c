@@ -549,8 +549,8 @@ draw_skel(void)
 }
 
 /*
- * Special case of pipe-drawing code: draw pipes around selected node
- * only.
+ * Special case of pipe-drawing code:
+ * draw pipes around selected node only.
  */
 __inline void
 draw_node_pipes(struct node *n)
@@ -656,7 +656,7 @@ return;
 		gluCylinder(quadric, 0.1, 0.1, fabs(len), 3, 1);
 		glPopMatrix();
 
-		/* Draw extend arrows. */
+		/* Draw arrows to imply extension. */
 		if (flip) {
 			glPushMatrix();
 			glTranslated(
