@@ -575,32 +575,24 @@ draw_node_pipes(struct node *n)
 	for (rd = 0; rd < NRD; rd++) {
 		sign = 1;
 
-		ng = node_neighbor(VM_WIRED, n, rd, &flip);
-
-		glPushMatrix();
-		glTranslated(sx, sy, sz);
 		switch (rd) {
 		case RD_NEGX:
 			sign = -1;
 			/* FALLTHROUGH */
 		case RD_POSX:
 			dim = DIM_X;
-			glRotatef(90.0, 0.0, sign * 1.0, 0.0);
 			break;
 		case RD_NEGY:
 			sign = -1;
 			/* FALLTHROUGH */
 		case RD_POSY:
 			dim = DIM_Y;
-			glRotatef(-90.0, sign * 1.0, 0.0, 0.0);
 			break;
 		case RD_NEGZ:
 			sign = -1;
 			/* FALLTHROUGH */
 		case RD_POSZ:
 			dim = DIM_Z;
-			if (sign < 0)
-				glRotatef(180.0, 0.0, 1.0, 0.0);
 			break;
 		}
 
@@ -618,6 +610,25 @@ return;
 			break;
 		}
 
+		glPushMatrix();
+		glTranslated(sx, sy, sz);
+
+		switch (dim) {
+		case DIM_X:
+			glRotatef(90.0, 0.0, sign * 1.0, 0.0);
+			break;
+		case DIM_Y:
+			glRotatef(-90.0, sign * 1.0, 0.0, 0.0);
+			break;
+		case DIM_Z:
+			if (sign < 0)
+				glRotatef(180.0, 0.0, 1.0, 0.0);
+			break;
+		}
+
+		ng = node_neighbor(VM_WIRED, n, rd, &flip);
+
+		glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
 		if (flip) {
 			/*
 			 * OK to use wired-mode values since this
@@ -630,14 +641,6 @@ return;
 			else
 				len = st.st_winsp.iv_val[dim] *
 				    (n->n_wiv.iv_val[dim] + 1);
-
-			/*
-			 * Draw on other side, too,
-			 * unless the other side is also a selnode.
-			 */
-			if (st.st_vmode == VM_WIONE &&
-			    (ng->n_flags & NF_SELNODE) == 0)
-				/* draw */;
 		} else {
 			dx = ng->n_v->fv_x + ng->n_dimp->fv_w / 2.0;
 			dy = ng->n_v->fv_y + ng->n_dimp->fv_h / 2.0;
@@ -650,10 +653,42 @@ return;
 			else
 				len = dz - sz;
 		}
-
-		glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
 		gluCylinder(quadric, 0.1, 0.1, fabs(len), 3, 1);
 		glPopMatrix();
+
+		/* Draw extend arrows. */
+		if (flip) {
+			glPushMatrix();
+			glTranslated(
+			    sx + sign * (dim == DIM_X) * len,
+			    sy + sign * (dim == DIM_Y) * len,
+			    sz + sign * (dim == DIM_Z) * len);
+			switch (dim) {
+			case DIM_X:
+				glRotatef(90.0, 0.0, sign * 1.0, 0.0);
+				break;
+			case DIM_Y:
+				glRotatef(-90.0, sign * 1.0, 0.0, 0.0);
+				break;
+			case DIM_Z:
+				if (sign < 0)
+					glRotatef(180.0, 0.0, 1.0, 0.0);
+				break;
+			}
+			gluCylinder(quadric, 0.5, 0.1, 0.5, 3, 1);
+			glPopMatrix();
+
+			/*
+			 * Draw on other side, too,
+			 * unless the other side is also a selnode.
+			 */
+			if (st.st_vmode == VM_WIONE &&
+			    (ng->n_flags & NF_SELNODE) == 0) {
+				if (flip > 0) {
+				} else {
+				}
+			}
+		}
 	}
 
 	glDisable(GL_POLYGON_SMOOTH);
