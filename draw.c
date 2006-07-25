@@ -368,6 +368,10 @@ draw_node(struct node *n, int flags)
 //	if (!node_show(n))
 //		return;
 
+	if (st.st_opts & OP_SUBSET &&
+	    (n->n_flags & NF_SHOW) == 0)
+			return;
+
 	if ((flags & NDF_ATORIGIN) == 0) {
 		if (st.st_opts & OP_NODEANIM &&
 		    (node_tween_dir(&n->n_vcur.fv_x, &n->n_v->fv_x) |
@@ -547,61 +551,14 @@ draw_skel(void)
 /*
  * Special case of pipe-drawing code: draw pipes around selected node
  * only.
- *
- * XXX: respect st_pipemode.
  */
 __inline void
-draw_node_pipes(struct node *np)
+draw_node_pipes(struct node *n)
 {
-	struct ivec v, startv, endv;
-	struct fvec dimv, pos, off;
-	int *vp, max, len, dim;
-	struct node *ng;
+	double len, sx, sy, sz, dx, dy, dz;
+	int sign, rd, dim, flip;
 	struct fill *fp;
-
-	pos.fv_x = np->n_v->fv_x + np->n_dimp->fv_w / 2.0;
-	pos.fv_y = np->n_v->fv_y + np->n_dimp->fv_h / 2.0;
-	pos.fv_z = np->n_v->fv_z + np->n_dimp->fv_d / 2.0;
-
-	ivec_set(&startv, 0, 0, 0);
-	ivec_set(&endv, 0, 0, 0);
-
-	for (dim = 0; dim < NDIM; dim++) {
-		max = widim.iv_val[dim];
-		vp = &v.iv_val[dim];
-
-		v = np->n_wiv;
-		len = 0;
-		do {
-			*vp = negmod(*vp - 1, max);
-			ng = wimap[v.iv_x][v.iv_y][v.iv_z];
-			len++;
-
-			if (*vp == max - 1)
-				break;
-		} while (ng == NULL);
-		startv.iv_val[dim] = len;
-
-		v = np->n_wiv;
-		len = 0;
-		do {
-			*vp = negmod(*vp + 1, max);
-			ng = wimap[v.iv_x][v.iv_y][v.iv_z];
-			len++;
-
-			if (*vp == 0)
-				break;
-		} while (ng == NULL);
-		endv.iv_val[dim] = len;
-	}
-
-	dimv.fv_w = (startv.iv_x + endv.iv_x) * st.st_winsp.iv_w;
-	dimv.fv_h = (startv.iv_y + endv.iv_y) * st.st_winsp.iv_h;
-	dimv.fv_d = (startv.iv_z + endv.iv_z) * st.st_winsp.iv_d;
-
-	off.fv_w = startv.iv_x * st.st_winsp.iv_w;
-	off.fv_h = startv.iv_y * st.st_winsp.iv_h;
-	off.fv_d = startv.iv_z * st.st_winsp.iv_d;
+	struct node *ng;
 
 	gluQuadricDrawStyle(quadric, GLU_FILL);
 
@@ -611,28 +568,93 @@ draw_node_pipes(struct node *np)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
 
-	fp = &fill_dim[DIM_Z];
-	glColor4f(fp->f_r, fp->f_g, fp->f_b, 0.5f);
-	glPushMatrix();
-	glTranslatef(pos.fv_x, pos.fv_y, pos.fv_z - off.fv_d);
-	gluCylinder(quadric, 0.1, 0.1, dimv.fv_d, 3, 1);
-	glPopMatrix();
+	sx = n->n_v->fv_x + n->n_dimp->fv_w / 2.0;
+	sy = n->n_v->fv_y + n->n_dimp->fv_h / 2.0;
+	sz = n->n_v->fv_z + n->n_dimp->fv_d / 2.0;
 
-	fp = &fill_dim[DIM_Y];
-	glColor4f(fp->f_r, fp->f_g, fp->f_b, 0.5f);
-	glPushMatrix();
-	glTranslatef(pos.fv_x, pos.fv_y - off.fv_h, pos.fv_z);
-	glRotatef(-90.0, 1.0, 0.0, 0.0);
-	gluCylinder(quadric, 0.1, 0.1, dimv.fv_h, 3, 1);
-	glPopMatrix();
+	for (rd = 0; rd < NRD; rd++) {
+		sign = 1;
 
-	fp = &fill_dim[DIM_X];
-	glColor4f(fp->f_r, fp->f_g, fp->f_b, 0.5f);
-	glPushMatrix();
-	glTranslatef(pos.fv_x - off.fv_w, pos.fv_y, pos.fv_z);
-	glRotatef(90.0, 0.0, 1.0, 0.0);
-	gluCylinder(quadric, 0.1, 0.1, dimv.fv_w, 3, 1);
-	glPopMatrix();
+		ng = node_neighbor(VM_WIRED, n, rd, &flip);
+
+		glPushMatrix();
+		glTranslated(sx, sy, sz);
+		switch (rd) {
+		case RD_NEGX:
+			sign = -1;
+			/* FALLTHROUGH */
+		case RD_POSX:
+			dim = DIM_X;
+			glRotatef(90.0, 0.0, sign * 1.0, 0.0);
+			break;
+		case RD_NEGY:
+			sign = -1;
+			/* FALLTHROUGH */
+		case RD_POSY:
+			dim = DIM_Y;
+			glRotatef(-90.0, sign * 1.0, 0.0, 0.0);
+			break;
+		case RD_NEGZ:
+			sign = -1;
+			/* FALLTHROUGH */
+		case RD_POSZ:
+			dim = DIM_Z;
+			if (sign < 0)
+				glRotatef(180.0, 0.0, 1.0, 0.0);
+			break;
+		}
+
+		switch (st.st_pipemode) {
+		case PM_DIR:
+			fp = &fill_dim[dim];
+			break;
+		case PM_RTE:
+			/*
+			 * If this is the direction of the port set,
+			 * draw, otherwise, only draw if the neighbor
+			 * isn't also a selnode.
+			 */
+return;
+			break;
+		}
+
+		if (flip) {
+			/*
+			 * OK to use wired-mode values since this
+			 * flip is always a wivmode flip, never a
+			 * physvmode flip.
+			 */
+			if (flip > 0)
+				len = st.st_winsp.iv_val[dim] *
+				    (widim.iv_val[dim] - n->n_wiv.iv_val[dim]);
+			else
+				len = st.st_winsp.iv_val[dim] *
+				    (n->n_wiv.iv_val[dim] + 1);
+
+			/*
+			 * Draw on other side, too,
+			 * unless the other side is also a selnode.
+			 */
+			if (st.st_vmode == VM_WIONE &&
+			    (ng->n_flags & NF_SELNODE) == 0)
+				/* draw */;
+		} else {
+			dx = ng->n_v->fv_x + ng->n_dimp->fv_w / 2.0;
+			dy = ng->n_v->fv_y + ng->n_dimp->fv_h / 2.0;
+			dz = ng->n_v->fv_z + ng->n_dimp->fv_d / 2.0;
+
+			if (dx - sx)
+				len = dx - sx;
+			else if (dy - sy)
+				len = dy - sy;
+			else
+				len = dz - sz;
+		}
+
+		glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
+		gluCylinder(quadric, 0.1, 0.1, fabs(len), 3, 1);
+		glPopMatrix();
+	}
 
 	glDisable(GL_POLYGON_SMOOTH);
 	glDisable(GL_BLEND);
@@ -794,9 +816,10 @@ draw_cluster_pipe(struct ivec *iv, struct fvec *dimv)
 __inline void
 draw_cluster_pipes(const struct fvec *v)
 {
+	double sx, sy, sz, dx, dy, dz;
 	struct node *n, *ng;
-	struct fill *fp;
 	struct fvec dim;
+	struct fill *fp;
 	struct ivec iv;
 	int rd;
 
@@ -828,8 +851,12 @@ draw_cluster_pipes(const struct fvec *v)
 		glLineWidth(2.0);
 		NODE_FOREACH(n, &iv) {
 			if (n && node_show(n)) {
+				sx = n->n_v->fv_x + n->n_dimp->fv_w / 2.0;
+				sy = n->n_v->fv_y + n->n_dimp->fv_h / 2.0;
+				sz = n->n_v->fv_z + n->n_dimp->fv_d / 2.0;
+
 				for (rd = 0; rd < NRD; rd++) {
-					ng = node_neighbor(VM_WIRED, n, rd);
+					ng = node_neighbor(VM_WIRED, n, rd, NULL);
 					switch (rd) {
 					case RD_NEGX:
 						if (!node_show(n))
@@ -856,16 +883,24 @@ draw_cluster_pipes(const struct fvec *v)
 						continue;
 					}
 
+					dx = ng->n_v->fv_x + ng->n_dimp->fv_w / 2.0;
+					dy = ng->n_v->fv_y + ng->n_dimp->fv_h / 2.0;
+					dz = ng->n_v->fv_z + ng->n_dimp->fv_d / 2.0;
+
 					glColor3f(fp->f_r, fp->f_g, fp->f_b);
 					glBegin(GL_LINES);
-					glVertex3d(
-					    n->n_v->fv_x + n->n_dimp->fv_w / 2.0,
-					    n->n_v->fv_y + n->n_dimp->fv_h / 2.0,
-					    n->n_v->fv_z + n->n_dimp->fv_d / 2.0);
-					glVertex3d(
-					    ng->n_v->fv_x + ng->n_dimp->fv_w / 2.0,
-					    ng->n_v->fv_y + ng->n_dimp->fv_h / 2.0,
-					    ng->n_v->fv_z + ng->n_dimp->fv_d / 2.0);
+					if (sx != dx) {
+						glVertex3d(sx, sy, sz);
+						glVertex3d(dx, sy, sz);
+					}
+					if (sy != dy) {
+						glVertex3d(dx, sy, sz);
+						glVertex3d(dx, dy, sz);
+					}
+					if (sz != dz) {
+						glVertex3d(dx, dy, sz);
+						glVertex3d(dx, dy, dz);
+					}
 					glEnd();
 				}
 			}
@@ -933,8 +968,7 @@ draw_selnodes(void)
 		draw_node(n, NDF_ATORIGIN);
 		glPopMatrix();
 
-		if (st.st_vmode != VM_PHYS &&
-		    st.st_opts & OP_SELPIPES &&
+		if (st.st_opts & OP_SELPIPES &&
 		    (st.st_opts & OP_PIPES) == 0)
 			draw_node_pipes(n);
 
