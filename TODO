@@ -24,15 +24,16 @@ bs
 - make selnode drawing respect n_curv
 - add arg to getcol() to set the texids
 - function to do rebuild option diffs
+- (server mode) use overlay display cleanup of damaged glut win in
+  generated screenshots
 
 todo
 - tourjob mode - use captions
 - try #define __inline to see if it does anything
 - poll data files for when to refresh instead of blind refresh
+- provide if-modified-since in http headers to avoid extra work on
 - divide color wheel among all modes (free/down/disabled/etc)
   and probably keep these the same always
-- (server mode) use overlay display cleanup of damaged glut win in
-  generated screenshots
 - cache the current selected stuff to check for short circuiting --
   if it follows the cursor, this should save on small movements
 - find some way to alloc wi sel steps once
@@ -50,7 +51,6 @@ todo
   longer automatically refreshing itself
 - add recursive check to gl_run() to protect against that kind of
   invocation
-- provide if-modified-since in http headers to avoid extra work on
   update intervals when no new data is available/check for new data
 - for tweening, calculate the % moved by one (e.g. move), then apply
   that % to the others, instead of use MAX_{LOOK,TWEEN} values
