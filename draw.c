@@ -829,7 +829,7 @@ draw_cluster_pipes(const struct fvec *v)
 		NODE_FOREACH(n, &iv) {
 			if (n && node_show(n)) {
 				for (rd = 0; rd < NRD; rd++) {
-					ng = node_wineighbor(n, rd);
+					ng = node_neighbor(VM_WIRED, n, rd);
 					switch (rd) {
 					case RD_NEGX:
 						if (!node_show(n))

@@ -73,7 +73,6 @@ todo
 - kill job_findbyid, just use obj_get with a flag that prevents creation
 - make job searching bsearch again, since it is sorted
 - add subtitle for when machine down
-- fix node_neighbor -- remove amt, merge with wi
 
 tweening
 - ensure tweening leaves normalized vectors

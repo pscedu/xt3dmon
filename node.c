@@ -2,6 +2,7 @@
 
 #include "mon.h"
 
+#include <err.h>
 #include <stdlib.h>
 
 #include "env.h"
@@ -98,71 +99,55 @@ node_physpos(struct node *node, struct physcoord *pc)
 }
 
 struct node *
-node_wineighbor(struct node *n, int rdir)
+node_neighbor(int vm, struct node *n, int rd)
 {
-	int x, y, z;
-
-	x = n->n_wiv.iv_x;
-	y = n->n_wiv.iv_y;
-	z = n->n_wiv.iv_z;
-
-	do {
-		switch (rdir) {
-		case RD_NEGX:
-			x = negmod(x - 1, widim.iv_w);
-			break;
-		case RD_POSX:
-			x = negmod(x + 1, widim.iv_w);
-			break;
-		case RD_NEGY:
-			y = negmod(y - 1, widim.iv_h);
-			break;
-		case RD_POSY:
-			y = negmod(y + 1, widim.iv_h);
-			break;
-		case RD_NEGZ:
-			z = negmod(z - 1, widim.iv_d);
-			break;
-		case RD_POSZ:
-			z = negmod(z + 1, widim.iv_d);
-			break;
-		}
-	} while (wimap[x][y][z] == NULL);
-	return (wimap[x][y][z]);
-}
-
-struct node *
-node_neighbor(struct node *node, int amt, int dir)
-{
-	int rem, adj, row, col;
+	int row, col, adj, dim;
 	struct physcoord pc;
-	struct node *rn;
+	struct node *ng;
 	struct ivec iv;
 
 	adj = 1;
-	rn = NULL;
-	switch (dir) {
-	case DIR_LEFT:
-		dir = DIR_RIGHT;
-		adj *= -1;
-		break;
-	case DIR_DOWN:
-		dir = DIR_UP;
-		adj *= -1;
-		break;
-	case DIR_BACK:
-		dir = DIR_FORW;
-		adj *= -1;
+	switch (rd) {
+	case RD_NEGX:
+	case RD_NEGY:
+	case RD_NEGZ:
+		adj = -1;
 		break;
 	}
 
-	node_physpos(node, &pc);
-	iv = node->n_wiv;
-	for (rem = abs(amt); rem > 0; rem--) {
-		switch (st.st_vmode) {
-		case VM_PHYS:
-			switch (dir) {
-			case DIR_RIGHT:
+	switch (rd) {
+	case RD_NEGX:
+	case RD_POSX:
+		dim = DIM_X;
+		break;
+	case RD_NEGY:
+	case RD_POSY:
+		dim = DIM_Y;
+		break;
+	case RD_NEGZ:
+	case RD_POSZ:
+		dim = DIM_Z;
+		break;
+	default:
+		err(1, "unknown relative dir: %d", rd);
+	}
+
+	iv = n->n_wiv;
+	switch (vm) {
+	case VM_WIRED:
+	case VM_WIONE:
+		do {
+			iv.iv_val[dim] = negmod(iv.iv_val[dim] + adj,
+			    widim.iv_val[dim]);
+			ng = wimap[iv.iv_x][iv.iv_y][iv.iv_z];
+		} while (ng == NULL);
+		break;
+	case VM_PHYS:
+		node_physpos(n, &pc);
+		do {
+			switch (rd) {
+			case RD_POSZ:
+			case RD_NEGZ:
 				pc.pc_m += adj;
 				if (pc.pc_m < 0) {
 					pc.pc_cb--;
@@ -173,7 +158,8 @@ node_neighbor(struct node *node, int amt, int dir)
 				pc.pc_m %= NMODS;
 				pc.pc_cb %= NCABS;
 				break;
-			case DIR_UP:
+			case RD_POSY:
+			case RD_NEGY:
 				/*
 				 * Move our position within a blade.
 				 *
@@ -212,7 +198,8 @@ node_neighbor(struct node *node, int amt, int dir)
 				}
 				pc.pc_cg %= NCAGES;
 				break;
-			case DIR_FORW:
+			case RD_POSX:
+			case RD_NEGX:
 				/*
 				 * Move our position within a blade.
 				 *
@@ -253,31 +240,11 @@ node_neighbor(struct node *node, int amt, int dir)
 				pc.pc_r %= NROWS;
 				break;
 			}
-			rn = &nodes[pc.pc_r][pc.pc_cb][pc.pc_cg][pc.pc_m][pc.pc_n];
-			break;
-		case VM_WIRED:
-		case VM_WIONE:
-			switch (dir) {
-			case DIR_RIGHT:
-				iv.iv_x += adj + widim.iv_w;
-				iv.iv_x %= widim.iv_w;
-				break;
-			case DIR_UP:
-				iv.iv_y += adj + widim.iv_h;
-				iv.iv_y %= widim.iv_h;
-				break;
-			case DIR_FORW:
-				iv.iv_z += adj + widim.iv_d;
-				iv.iv_z %= widim.iv_d;
-				break;
-			}
-			rn = wimap[iv.iv_x][iv.iv_y][iv.iv_z];
-			break;
-		}
-		if (rn->n_flags & NF_HIDE)
-			rem++;
+			ng = &nodes[pc.pc_r][pc.pc_cb][pc.pc_cg][pc.pc_m][pc.pc_n];
+		} while (ng->n_flags & NF_HIDE);
+		break;
 	}
-	return (rn);
+	return (ng);
 }
 
 struct node *

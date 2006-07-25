@@ -391,35 +391,35 @@ gl_spkeyh_node(int key, __unused int u, __unused int v)
 {
 	struct selnode *sn;
 	struct node *n;
-	int dir;
+	int rd;
 
 	flyby_rstautoto();
 	spkey = glutGetModifiers();
 	switch (key) {
 	case GLUT_KEY_PAGE_UP:
-		dir = DIR_UP;
+		rd = RD_POSY;
 		break;
 	case GLUT_KEY_PAGE_DOWN:
-		dir = DIR_DOWN;
+		rd = RD_NEGY;
 		break;
 	case GLUT_KEY_UP:
-		dir = DIR_FORW;
+		rd = RD_POSX;
 		break;
 	case GLUT_KEY_DOWN:
-		dir = DIR_BACK;
+		rd = RD_NEGX;
 		break;
 	case GLUT_KEY_LEFT:
-		dir = DIR_LEFT;
+		rd = RD_NEGZ;
 		break;
 	case GLUT_KEY_RIGHT:
-		dir = DIR_RIGHT;
+		rd = RD_POSZ;
 		break;
 	default:
 		return;
 	}
 	if (!SLIST_EMPTY(&selnodes))
 		SLIST_FOREACH(sn, &selnodes, sn_next) {
-			n = node_neighbor(sn->sn_nodep, 1, dir);
+			n = node_neighbor(st.st_vmode, sn->sn_nodep, rd);
 			if (spkey & GLUT_ACTIVE_SHIFT)
 				sn_add(n, &fv_zero);
 			else
