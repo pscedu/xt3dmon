@@ -626,6 +626,13 @@ gl_keyh_default(unsigned char key, int u, int v)
 	case 'f':
 		glutKeyboardFunc(gl_keyh_flyby);
 		break;
+	case 'I': {
+		struct selnode *sn;
+
+		SLIST_FOREACH(sn, &selnodes, sn_next)
+			sn->sn_nodep->n_flags ^= NF_SHOW;
+		break;
+	}
 	case 'i': {
 		struct selnode *sn;
 
