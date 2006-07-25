@@ -361,13 +361,17 @@ draw_node_pipes(struct node *np)
 
 	for (dim = 0; dim < NDIM; dim++) {
 		max = widim.iv_val[dim];
-		v = np->n_wiv;
 		vp = &v.iv_val[dim];
+
+		v = np->n_wiv;
 		len = 0;
 		do {
 			*vp = negmod(*vp - 1, max);
 			ng = wimap[v.iv_x][v.iv_y][v.iv_z];
 			len++;
+
+			if (*vp == max - 1)
+				break;
 		} while (ng == NULL);
 		startv.iv_val[dim] = len;
 
@@ -377,6 +381,9 @@ draw_node_pipes(struct node *np)
 			*vp = negmod(*vp + 1, max);
 			ng = wimap[v.iv_x][v.iv_y][v.iv_z];
 			len++;
+
+			if (*vp == 0)
+				break;
 		} while (ng == NULL);
 		endv.iv_val[dim] = len;
 	}
@@ -694,41 +701,35 @@ draw_cluster_pipe(struct ivec *iv, struct fvec *dimv)
 
 		switch (st.st_pipemode) {
 		case PM_DIR:	/* color for torus directions */
-			rowlen = 1;
-			do {
+			for (rowlen = 0; *j + rowlen < jmax; rowlen++) {
 				/* XXX use node_wineighbor? */
 				*dimadj = negmod(*dimadj + 1, jmax);
 				ng = wimap[adjv.iv_x][adjv.iv_y][adjv.iv_z];
-				rowlen++;
 
-				if (*j + rowlen >= jmax)
+				if (ng != NULL && !node_show(ng))
 					break;
-			} while (ng == NULL || node_show(ng));
-			*dimadj = negmod(*dimadj - 1, jmax);
-			rowlen--;
-
-			*j += rowlen - 1;	/* for loop will increment */
+			}
+			*j += rowlen;
 			len = *dimlen * (rowlen + 1);
 
 			fp = &fill_dim[dim];
 			negv = spv;
 			break;
-		case PM_RTE:
-			rowlen = 1;
-			do {
+		case PM_RTE:	/* color for route errors */
+			for (rowlen = 0; *j + rowlen < jmax; rowlen++) {
 				/* XXX use node_wineighbor? */
 				*dimadj = negmod(*dimadj + 1, jmax);
 				ng = wimap[adjv.iv_x][adjv.iv_y][adjv.iv_z];
-				rowlen++;
 
-				if (*j + rowlen >= jmax)
+				if (ng != NULL)
 					break;
-			} while (ng == NULL);
-			*dimadj = negmod(*dimadj - 1, jmax);
-			rowlen--;
 
-			*j += rowlen - 1;	/* for loop will increment */
-			len = *dimlen * rowlen;
+//				if (*dimadj == 0 ||
+//				    *dimadj == jmax - 1)
+//					break;
+			}
+			*j += rowlen;
+			len = *dimlen * (rowlen + 1);
 
 			port = DIM_TO_PORT(dim, st.st_rtepset);
 			if (n->n_route.rt_err[port][st.st_rtetype] == 0)
@@ -753,13 +754,13 @@ draw_cluster_pipe(struct ivec *iv, struct fvec *dimv)
 			err(1, "invalid pipe mode");
 		}
 
-		glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
-		glPushMatrix();
-
 		if (st.st_opts & OP_NODEANIM)
 			np = &n->n_vcur;
 		else
 			np = n->n_v;
+
+		glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
+		glPushMatrix();
 
 		switch (dim) {
 		case DIM_X:
