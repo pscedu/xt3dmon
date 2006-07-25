@@ -33,8 +33,9 @@ struct node {
 	struct fvec	*n_dimp;		/* dimensions */
 };
 
-#define NF_HIDE		(1<<0)			/* don't display */
+#define NF_EMPTY	(1<<0)			/* not a node */
 #define NF_SELNODE	(1<<1)			/* is selected */
+#define NF_SHOW		(1<<2)			/* visible */
 
 #define LS_CLEAN	0
 #define LS_DIRTY	1
