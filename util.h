@@ -13,5 +13,5 @@
 	} while (0)
 
 int	 baseconv(int);
-void	 base64_encode(const char *, char *);
+void	 base64_encode(const char *, char *, size_t);
 char	*strnchr(const char *, char, size_t);

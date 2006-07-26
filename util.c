@@ -18,18 +18,22 @@ baseconv(int n)
 	return (0);
 }
 
-/* enc buffer must be (strlen(buf) * 3 + 1). */
+/*
+ * enc buffer must be 4/3+1 the size of buf.
+ * Note: enc and buf are NOT C-strings.
+ */
 void
-base64_encode(const char *buf, char *enc)
+base64_encode(const char *buf, char *enc, size_t siz)
 {
 	static char pres[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	    "abcdefghijklmnopqrstuvwxyz0123456789+/";
 	const char *p;
 	u_int32_t val;
+	size_t pos;
 	int i;
 
 	i = 0;
-	for (p = buf; *p != '\0'; p += 3) {
+	for (pos = 0, p = buf; pos < siz; pos += 3, p += 3) {
 		/*
 		 * Convert 3 bytes of input (3*8 bits) into
 		 * 4 bytes of output (4*6 bits).
@@ -38,26 +42,25 @@ base64_encode(const char *buf, char *enc)
 		 * round, use zeroes in their place.
 		 */
 		val = p[0] << 16;
-		if (p[1] != '\0')
+		if (pos + 1 < siz)
 			val |= p[1] << 8;
-		if (p[2] != '\0')
+		if (pos + 2 < siz)
 			val |= p[2];
 
 		enc[i++] = pres[val >> 18];
 		enc[i++] = pres[(val >> 12) & 0x3f];
-		if (p[1] == '\0')
-				break;
+		if (pos + 1 >= siz)
+			break;
 		enc[i++] = pres[(val >> 6) & 0x3f];
-		if (p[2] == '\0')
+		if (pos + 2 >= siz)
 			break;
 		enc[i++] = pres[val & 0x3f];
 	}
-	if (p[1] == '\0') {
+	if (pos + 1 >= siz) {
 		enc[i++] = '=';
 		enc[i++] = '=';
-	} else if (p[2] == '\0')
+	} else if (pos + 2 >= siz)
 		enc[i++] = '=';
-	enc[i] = '\0';
 }
 
 /* Like strchr, but bound before NUL. */
