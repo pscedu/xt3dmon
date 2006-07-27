@@ -49,7 +49,7 @@ gss_build_auth(const struct ustream *us)
 	if (us_write(us, authline, strlen(authline)) != strlen(authline))
 		err(1, "us_write");
 
-	if (us_write(us, p, bsiz - 1) != (ssize_t)(bsiz - 1))
+	if (us_write(us, p, strlen(p)) != (ssize_t)strlen(p))
 		err(1, "us_write");
 	free(p);
 
