@@ -144,8 +144,11 @@ uinpcb_login(void)
 			st.st_rf |= RF_DATASRC;
 
 			if (strlen(authbuf) < 4 * sizeof(login_auth) / 3)
+{
+ printf("base64: have %d chars\n", sizeof(login_auth));
 				base64_encode(authbuf, login_auth,
 				    strlen(authbuf));
+}
 			memset(authbuf, 0, sizeof(authbuf));
 		} else {
 			memset(login_auth, 0, sizeof(login_auth));

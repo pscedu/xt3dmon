@@ -62,6 +62,7 @@ base64_encode(const void *buf, char *enc, size_t siz)
 	} else if (pos + 2 >= siz)
 		enc[i++] = '=';
 	enc[i++] = '\0';
+printf("base64: wrote %d chars\n", i);
 }
 
 /* Like strchr, but bound before NUL. */
