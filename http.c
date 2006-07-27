@@ -83,6 +83,10 @@ http_open(struct http_req *req, struct http_res *res)
 			if (us_write(us, *hdr, strlen(*hdr)) !=
 			    (int)strlen(*hdr))
 				err(1, "us_write");
+	if (req->htreq_extraf != NULL) {
+		printf("calling extra\n");
+		req->htreq_extraf(us);
+	}
 	snprintf(buf, sizeof(buf), "\r\n");
 	if (us_write(us, buf, strlen(buf)) != (int)strlen(buf))
 		err(1, "us_write");
@@ -102,6 +106,7 @@ http_open(struct http_req *req, struct http_res *res)
 			l = strtoul(s, NULL, 10);
 			if (l >= 0 && l <= INT_MAX)
 				res->htres_code = (int)l;
+			printf("\nres_code: %d [%s]\n", l, p);
 		}
 
 		s = "Last-Modified: ";
