@@ -27,7 +27,7 @@ base64_encode(const char *buf, char *enc, size_t siz)
 {
 	static char pres[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	    "abcdefghijklmnopqrstuvwxyz0123456789+/";
-	const char *p;
+	const unsigned char *p;
 	u_int32_t val;
 	size_t pos;
 	int i;
