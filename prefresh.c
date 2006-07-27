@@ -879,7 +879,7 @@ panel_refresh_status(struct panel *p)
 	s = status_get();
 	if (s[0] == '\0')
 		s = "(empty)";
-	panel_set_content(p, "- Status -\n%s", s);
+	panel_set_content(p, "- Status Log -\n%s", s);
 }
 
 void
