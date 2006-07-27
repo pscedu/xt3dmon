@@ -67,7 +67,7 @@ struct pinfo pinfo[] = {
  /*  1 */ { "ninfo",	"Node Info",		panel_refresh_ninfo,	PSTICK_TR, 0,					0,		NULL },
  /*  2 */ { "cmd",	"Command",		panel_refresh_cmd,	PSTICK_TR, PF_UINP | PF_HIDE,			UINPO_LINGER,	uinpcb_cmd },
  /*  3 */ { "legend",	"Legend",		panel_refresh_legend,	PSTICK_TR, 0,					0,		NULL },
- /*  4 */ { "fbstat",	"Flyby Status",		panel_refresh_flyby,	PSTICK_TR, PF_FBIGN,				0,		NULL },
+ /*  4 */ { "fbstat",	"Flyby Controls",	panel_refresh_flyby,	PSTICK_TR, PF_FBIGN,				0,		NULL },
  /*  5 */ { "gotonode",	"Goto Node",		panel_refresh_gotonode,	PSTICK_TR, PF_UINP,				0,		uinpcb_gotonode },
  /*  6 */ { "cam",	"Camera Position",	panel_refresh_pos,	PSTICK_TR, 0,					0,		NULL },
  /*  7 */ { "sshot",	"Screenshot",		panel_refresh_ss,	PSTICK_TR, PF_UINP,				0,		uinpcb_ss },
@@ -87,7 +87,7 @@ struct pinfo pinfo[] = {
  /* 21 */ { "wiadj",	"Wired Controls",	panel_refresh_wiadj,	PSTICK_TR, 0,					0,		NULL },
  /* 22 */ { "rt",	"Route Controls",	panel_refresh_rt,	PSTICK_TR, 0,					0,		NULL },
  /* 23 */ { "fbcho",	"Flyby Chooser",	panel_refresh_fbcho,	PSTICK_TR, PF_FBIGN,				0,		NULL },
- /* 24 */ { "fbcreat",	"Flyby Creation",	panel_refresh_fbnew,	PSTICK_TR, PF_FBIGN | PF_UINP,			0,		uinpcb_fbnew },
+ /* 24 */ { "fbcreat",	"Flyby Creator",	panel_refresh_fbnew,	PSTICK_TR, PF_FBIGN | PF_UINP,			0,		uinpcb_fbnew },
  /* 25 */ { "compass",	"Compass",		panel_refresh_cmp,	PSTICK_BL, PF_FBIGN,				0,		NULL },
  /* 26 */ { "keyh",	"Key Handler",		panel_refresh_keyh,	PSTICK_BL, 0,					0,		NULL },
  /* 27 */ { "dxcho",	"Deus Ex Chooser",	panel_refresh_dxcho,	PSTICK_TR, PF_FBIGN,				0,		NULL }

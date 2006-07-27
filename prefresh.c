@@ -582,7 +582,7 @@ panel_refresh_flyby(struct panel *p)
 	sav_cpanels = cpanels;
 
 	pwidget_startlist(p);
-	panel_set_content(p, "- Flyby -\nCurrent flyby: %s", flyby_name);
+	panel_set_content(p, "- Flyby Controls -\nCurrent flyby: %s", flyby_name);
 	switch (flyby_mode) {
 	case FBM_PLAY:
 		panel_add_content(p, "\nPlaying back flyby");
@@ -686,7 +686,7 @@ panel_refresh_fbnew(struct panel *p)
 		return;
 	uinp.uinp_opts &= ~UINPO_DIRTY;
 
-	panel_set_content(p, "- Flyby Creation -\n"
+	panel_set_content(p, "- Flyby Creator -\n"
 	    "Flyby name: %s", buf_get(&uinp.uinp_buf));
 }
 
