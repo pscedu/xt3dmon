@@ -71,7 +71,7 @@ struct pinfo pinfo[] = {
  /*  5 */ { "gotonode",	"Goto Node",		panel_refresh_gotonode,	PSTICK_TR, PF_UINP,				0,		uinpcb_gotonode },
  /*  6 */ { "cam",	"Camera Position",	panel_refresh_pos,	PSTICK_TR, 0,					0,		NULL },
  /*  7 */ { "sshot",	"Screenshot",		panel_refresh_ss,	PSTICK_TR, PF_UINP,				0,		uinpcb_ss },
- /*  8 */ { "status",	"Status",		panel_refresh_status,	PSTICK_TR, 0,					0,		NULL },
+ /*  8 */ { "status",	"Status Log",		panel_refresh_status,	PSTICK_TR, 0,					0,		NULL },
  /*  9 */ { "eggs",	NULL,			panel_refresh_eggs,	PSTICK_TR, PF_UINP | PF_HIDE,			0,		uinpcb_eggs },
  /* 10 */ { "date",	"Date",			panel_refresh_date,	PSTICK_BL, PF_XPARENT,				0,		NULL },
  /* 11 */ { "options",	"Option",		panel_refresh_opts,	PSTICK_TL, PF_FBIGN,				0,		NULL },
