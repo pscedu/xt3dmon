@@ -12,14 +12,14 @@ struct ustream;
 
 struct http_req {
 	const char	 *htreq_server;
-	in_port_t	  htreq_port;				/* host-byte order. */
+	in_port_t	  htreq_port;		/* host-byte order. */
 	int		  htreq_flags;
 
 	const char	 *htreq_method;
 	const char	 *htreq_version;
 	const char	 *htreq_url;
-	char		**htreq_extra;				/* NULL-terminate. */
-	void		(*htreq_extraf)(struct ustream *);	/* Callback for extra headers. */
+	char		**htreq_extra;		/* NULL-terminate. */
+	void		(*htreq_extraf)(const struct ustream *);
 };
 
 struct http_res {
