@@ -232,7 +232,7 @@ parse_node(const struct datasrc *ds)
 				for (m = 0; m < NMODS; m++)
 					for (n = 0; n < NNODES; n++) {
 						node = &nodes[r][cb][cg][m][n];
-						node->n_flags |= NF_EMPTY;
+						node->n_flags &= ~NF_VALID;
 						node->n_job = NULL;
 						node->n_yod = NULL;
 					}
@@ -325,7 +325,7 @@ parse_node(const struct datasrc *ds)
 			node->n_yod->y_id = yodid;
 		}
 
-		node->n_flags &= ~NF_EMPTY;
+		node->n_flags |= NF_VALID;
 		continue;
 bad:
 		prerror("node", lineno, buf, s);

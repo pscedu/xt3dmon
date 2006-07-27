@@ -33,7 +33,7 @@ struct node {
 	struct fvec	*n_dimp;		/* dimensions */
 };
 
-#define NF_EMPTY	(1<<0)			/* not a node */
+#define NF_VALID	(1<<0)			/* valid node */
 #define NF_SELNODE	(1<<1)			/* is selected */
 #define NF_SHOW		(1<<2)			/* visible */
 

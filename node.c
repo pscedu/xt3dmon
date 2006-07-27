@@ -249,7 +249,7 @@ node_neighbor(int vm, struct node *n, int rd, int *flip)
 				break;
 			}
 			ng = &nodes[pc.pc_r][pc.pc_cb][pc.pc_cg][pc.pc_m][pc.pc_n];
-		} while (ng->n_flags & NF_EMPTY);
+		} while ((ng->n_flags & NF_VALID) == 0);
 		break;
 	}
 	return (ng);
@@ -310,7 +310,8 @@ node_goto(struct node *n)
 __inline int
 node_show(struct node *n)
 {
-	if (n->n_flags & NF_EMPTY || n->n_fillp->f_a == 0.0f)
-		return (0);
-	return (1);
+	if (n->n_flags & NF_VALID &&
+	    n->n_fillp->f_a != 0.0f)
+		return (1);
+	return (0);
 }
