@@ -14,7 +14,6 @@ ssl_error(void)
         return (ERR_error_string(ERR_get_error(), errbuf));
 }
 
-
 void
 ssl_init(void)
 {
