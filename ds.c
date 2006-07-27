@@ -48,8 +48,6 @@
 # define _LIVE_DSP DSP_REMOTE
 #endif
 
-char* negotiate_auth(char*, size_t*);
-
 /* Must match DS_* defines in ds.h. */
 struct datasrc datasrcs[] = {
 	{ "node", 0, _LIVE_DSP, _PATH_NODE, _RPATH_NODE, parse_node, DSF_AUTO | DSF_USESSL, dsfi_node,	dsff_node,  NULL },
@@ -164,7 +162,7 @@ ds_refresh(int type, int flags)
 }
 
 struct ustream *
-ds_http(const char *path, struct http_res *res)
+ds_http(const char *path, struct http_res *res, __unused int flags)
 {
 	struct http_req req;
 
@@ -180,24 +178,11 @@ ds_http(const char *path, struct http_res *res)
 	return (http_open(&req, res));
 }
 
-void
-build_negotiate(struct ustream *us)
-{
-	char nl[BUFSIZ];
-	size_t siz;
-	char *p;
-
-	p = negotiate_auth(RDS_HOST, &siz);
-	if (us_write(us, p, siz) != (int)siz)
-		err(1, "us_write");
-
-	snprintf(nl, sizeof(nl), "\r\n");
-	if (us_write(us, nl, strlen(nl)) != (int)strlen(nl))
-		err(1, "us_write");
-}
+/* HTTP data source flags. */
+#define DHF_USEGSS	(1<<0)
 
 struct ustream *
-ds_https(const char *path, struct http_res *res)
+ds_https(const char *path, struct http_res *res, int flags)
 {
 	struct ustream *usp;
 	struct http_req req;
@@ -212,38 +197,33 @@ ds_https(const char *path, struct http_res *res)
 	req.htreq_version = "HTTP/1.1";
 	req.htreq_url = path;
 
-	req.htreq_extraf = build_negotiate;
-
-	return (http_open(&req, res));
-#if 0
-	if ((req.htreq_extra = calloc(2, sizeof(char *))) == NULL)
-		err(1, "calloc");
-	if (asprintf(&req.htreq_extra[0], "Authorization: Basic %s\r\n",
-	    login_auth) == -1)
-		err(1, "asprintf");
-#endif 
-#if 0
-	if (asprintf(&req.htreq_extra[0], "%s\r\n",
-		negotiate_auth(RDS_HOST)) == -1)
-		err(1, "asprintf");
-#endif
-//	req.htreq_extra[0] = negotiate_auth(RDS_HOST);
+	if (flags & DHF_USEGSS)
+		req.htreq_extraf = gss_build_auth;
+	else {
+		if ((req.htreq_extra = calloc(2, sizeof(char *))) == NULL)
+			err(1, "calloc");
+		if (asprintf(&req.htreq_extra[0],
+		    "Authorization: Basic %s\r\n", login_auth) == -1)
+			err(1, "asprintf");
+	}
 
 	usp = http_open(&req, res);
 
-	free(req.htreq_extra[0]);
-	free(req.htreq_extra);
+	if ((flags & DHF_USEGSS) == 0) {
+		free(req.htreq_extra[0]);
+		free(req.htreq_extra);
+	}
 	return (usp);
 }
 
 struct datasrc *
 ds_open(int type)
 {
-	struct ustream *(*httpf)(const char *, struct http_res *);
+	struct ustream *(*httpf)(const char *, struct http_res *, int);
 	struct http_res res;
 	struct datasrc *ds;
 	struct tm tm_zero;
-	int mod, fd;
+	int mod, fd, flg;
 
 	mod = 0;
 	ds = &datasrcs[type];
@@ -254,13 +234,19 @@ ds_open(int type)
 		ds->ds_us = us_init(fd, UST_LOCAL, "r");
 		break;
 	case DSP_REMOTE:
-//		httpf = ds_http;
-		httpf = ds_https;
-		if (login_auth[0] != '\0')
+		flg = 0;
+
+		httpf = ds_http;
+		if (login_auth[0] == '\0') {
+			if (gss_valid(RDS_HOST)) {
+				httpf = ds_https;
+				flg |= DHF_USEGSS;
+			}
+		} else
 			httpf = ds_https;
 
 		memset(&res, 0, sizeof(res));
-		if ((ds->ds_us = httpf(ds->ds_rpath, &res)) == NULL)
+		if ((ds->ds_us = httpf(ds->ds_rpath, &res, flg)) == NULL)
 			return (NULL);
 		memset(&tm_zero, 0, sizeof(tm_zero));
 		if (memcmp(&res.htres_mtime, &tm_zero,
@@ -432,123 +418,4 @@ st_dsmode(void)
 		break;
 	}
 	return (ds);
-}
-
-
-
-
-
-#include<krb5.h>
-#ifdef HEIMDAL
-	#include<gssapi.h>
-#else
-	#include<gssapi/gssapi.h>
-	#include<gssapi/gssapi_generic.h>
-	#include<gssapi/gssapi_krb5.h>
-#endif
-
-char* negotiate_auth(char *host, size_t *siz)
-{
-	/* Definitions for Kerberos5 and SPNEGO */
-	const gss_OID_desc krb5_oid = {9, (void *) "\x2a\x86\x48\x86\xf7\x12\x01\x02\x02"};
-//	const gss_OID_desc spnego_oid = {6, (void *) "\x2b\x06\x01\x05\x05\x02"};
-	gss_buffer_desc itoken = GSS_C_EMPTY_BUFFER;
-	gss_buffer_desc otoken = GSS_C_EMPTY_BUFFER;
-	const char auth_type[] = "Authorization: Negotiate ";
-	const char http[] = "HTTP@";
-	OM_uint32 major, minor;
-	OM_uint32 rflags, rtime;
-	gss_ctx_id_t ctx;
-	gss_name_t server;
-	gss_OID_set mset;
-	gss_OID oid;
-	char *auth, *enc;
-	int size, bsize;
-	char *tmp;
-
-	/* Default to MIT Kerberos */
-	oid = &krb5_oid;
-
-	/* XXX - Determine the underlying authentication mechanisms and check for SPNEGO */
-#if 0
-	major = gss_indiate_mechs(&minor, &mset);
-	if(GSS_ERROR(major)) {
-		errx(1, "gss_indiate_mechs failed");		
-	} else {
-		/* XXX - SPNEGO - for windows */
-	}
-#endif
-
-	/* itoken = "HTTP/f.q.d.n" aka "HTTP@hostname.foo.bar" */
-	size = strlen(host) + strlen(http) + 1;
-	itoken.value = malloc(size);
-
-	bzero(itoken.value, size);
-	strncpy(itoken.value, http, strlen(http));
-	strncat(itoken.value, host, strlen(host));
-
-	itoken.length = size;
-
-	/* Convert the printable name to an internal format */
-	major = gss_import_name(&minor, &itoken, GSS_C_NT_HOSTBASED_SERVICE, &server);
-
-	if(itoken.value != NULL) {
-		free(itoken.value);
-		itoken.value = NULL;
-		itoken.length = 0;
-	}
-	
-	if(GSS_ERROR(major)) {
-		printf("gss_import_name failed\n");
-		return NULL;
-	}
-
-	/* Initiate a security context */
-	rflags = 0;
-	rtime = GSS_C_INDEFINITE;
-	ctx = GSS_C_NO_CONTEXT;
-	major = gss_init_sec_context(&minor, GSS_C_NO_CREDENTIAL, &ctx,
-					server, oid, rflags, rtime,
-					GSS_C_NO_CHANNEL_BINDINGS,
-					GSS_C_NO_BUFFER, NULL, &otoken,
-					NULL, NULL);
-
-	if(GSS_ERROR(major) || otoken.length == 0) {
-		gss_release_name(&minor, &server);
-		if(ctx != GSS_C_NO_CONTEXT) {
-			gss_delete_sec_context(&minor, &ctx, GSS_C_NO_BUFFER);
-			ctx = GSS_C_NO_CONTEXT;
-		}
-		printf("gss_init_sec_context failed\n");
-		return NULL;
-	}
-
-	/* Base64 Encoding */
-	bsize = otoken.length * 4.0 / 3.0 + 1;
-	enc = malloc(bsize);
-	bzero(enc, bsize);
-	base64_encode(otoken.value, enc, otoken.length);
-
-	/* "Authorization: Negotiate <base64 encoded tkt> */
-	size = strlen(auth_type) + bsize + 3;
-	auth = malloc(size);
-	bzero(auth, size);
-	strncpy(auth, auth_type, strlen(auth_type));
-	tmp = auth;
-	tmp += strlen(auth_type);
-
-	/* memcpy because of NULL's */
-	memcpy(tmp, enc, bsize);
-	tmp += bsize;
-
-	*siz = size;
-
-	/* Cleanup */
-	gss_release_name(&minor, &server);
-	if(ctx != GSS_C_NO_CONTEXT) {
-		gss_delete_sec_context(&minor, &ctx, GSS_C_NO_BUFFER);
-		ctx = GSS_C_NO_CONTEXT;
-	}
-
-	return auth;
 }
