@@ -737,6 +737,6 @@ errx(1, "broken");
 void
 usage(void)
 {
-	fprintf(stderr, "usage: %s [-dp] [-c physconf]\n", progname);
+	fprintf(stderr, "usage: %s [-dNp] [-c physconf]\n", progname);
 	exit(1);
 }
