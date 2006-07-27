@@ -66,6 +66,8 @@ clean:
 obj:
 	mkdir obj
 
+lint:
+
 lines:
 	@shopt -s extglob && eval 'wc -l !(phys-parse|dx-parse).h \
 	    !(phys-parse|phys-lex|dx-parse|dx-lex).c *.y *.l' | tail -1
