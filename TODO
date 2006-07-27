@@ -75,9 +75,8 @@ todo
 - add subtitle for when machine down
 - merge selpipes and pipes with a simple check: n_flags & NF_SELNODE
   in the loop which determines how long/when to draw pipes
-- no data + press "Alt" -> segfault
 - merge reel, fbcho, dxcho code
-- segfault in node.c:313 when data files do not exist or cannot be parsed
+- on gss failure, assume it will always fail (don't try again)
 
 tweening
 - ensure tweening leaves normalized vectors
