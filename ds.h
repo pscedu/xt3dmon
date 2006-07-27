@@ -61,6 +61,9 @@ void		 parse_ss(const struct datasrc *);
 
 void		 parse_colors(const char *);
 
+int		 gss_valid(const char *);
+void		 gss_build_auth(const struct ustream *);
+
 extern int	 	dsp;			/* Data source provider. */
 extern int	 	dsflags;
 extern struct datasrc	datasrcs[];
