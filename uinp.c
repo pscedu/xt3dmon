@@ -143,11 +143,9 @@ uinpcb_login(void)
 			panel_tremove(p);
 			st.st_rf |= RF_DATASRC;
 
-			if (strlen(authbuf) < 4 * sizeof(login_auth) / 3) {
+			if (strlen(authbuf) < 4 * sizeof(login_auth) / 3)
 				base64_encode(authbuf, login_auth,
 				    strlen(authbuf));
-				login_auth[sizeof(login_auth) - 1] = '\0';
-			}
 			memset(authbuf, 0, sizeof(authbuf));
 		} else {
 			memset(login_auth, 0, sizeof(login_auth));

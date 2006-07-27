@@ -23,7 +23,7 @@ baseconv(int n)
  * Note: enc and buf are NOT C-strings.
  */
 void
-base64_encode(const char *buf, char *enc, size_t siz)
+base64_encode(const void *buf, char *enc, size_t siz)
 {
 	static char pres[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	    "abcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -61,6 +61,7 @@ base64_encode(const char *buf, char *enc, size_t siz)
 		enc[i++] = '=';
 	} else if (pos + 2 >= siz)
 		enc[i++] = '=';
+	enc[i++] = '\0';
 }
 
 /* Like strchr, but bound before NUL. */
