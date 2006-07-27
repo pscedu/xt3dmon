@@ -45,6 +45,8 @@
 		6DFABA95096ED0AB001374A0 /* phys-lex.c in Sources */ = {isa = PBXBuildFile; fileRef = 6DFABA92096ED0AB001374A0 /* phys-lex.c */; };
 		6DFABA96096ED0AB001374A0 /* phys-parse.c in Sources */ = {isa = PBXBuildFile; fileRef = 6DFABA93096ED0AB001374A0 /* phys-parse.c */; };
 		6DFABAA0096ED102001374A0 /* widget.c in Sources */ = {isa = PBXBuildFile; fileRef = 6DFABA9F096ED102001374A0 /* widget.c */; };
+		9B61523F0A7922110008CDA2 /* rte.c in Sources */ = {isa = PBXBuildFile; fileRef = 9B61523E0A7922110008CDA2 /* rte.c */; };
+		9B6152500A7940D60008CDA2 /* gss.c in Sources */ = {isa = PBXBuildFile; fileRef = 9B61524F0A7940D60008CDA2 /* gss.c */; };
 		9B9C2C420A713AD600D00D18 /* dx-lex.c in Sources */ = {isa = PBXBuildFile; fileRef = 9B9C2C400A713AD600D00D18 /* dx-lex.c */; };
 		9B9C2C430A713AD600D00D18 /* dx-parse.c in Sources */ = {isa = PBXBuildFile; fileRef = 9B9C2C410A713AD600D00D18 /* dx-parse.c */; };
 		9BD64E5A0A1A10E600A0CDA7 /* lnseg.c in Sources */ = {isa = PBXBuildFile; fileRef = 9BD64E580A1A10E600A0CDA7 /* lnseg.c */; };
@@ -134,6 +136,8 @@
 		6DFABA93096ED0AB001374A0 /* phys-parse.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = "phys-parse.c"; path = "../../phys-parse.c"; sourceTree = SOURCE_ROOT; };
 		6DFABA9F096ED102001374A0 /* widget.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = widget.c; path = ../../widget.c; sourceTree = SOURCE_ROOT; };
 		6DFABAA1096ED116001374A0 /* y.tab.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = y.tab.h; path = ../../y.tab.h; sourceTree = SOURCE_ROOT; };
+		9B61523E0A7922110008CDA2 /* rte.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = rte.c; path = ../../rte.c; sourceTree = SOURCE_ROOT; };
+		9B61524F0A7940D60008CDA2 /* gss.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = gss.c; path = ../../gss.c; sourceTree = SOURCE_ROOT; };
 		9B9C2C400A713AD600D00D18 /* dx-lex.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = "dx-lex.c"; path = "../../dx-lex.c"; sourceTree = SOURCE_ROOT; };
 		9B9C2C410A713AD600D00D18 /* dx-parse.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = "dx-parse.c"; path = "../../dx-parse.c"; sourceTree = SOURCE_ROOT; };
 		9BD64E580A1A10E600A0CDA7 /* lnseg.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = lnseg.c; path = ../../lnseg.c; sourceTree = SOURCE_ROOT; };
@@ -253,8 +257,6 @@
 		D37C167C0833BE1100B1AA74 = {
 			isa = PBXGroup;
 			children = (
-				9B9C2C400A713AD600D00D18 /* dx-lex.c */,
-				9B9C2C410A713AD600D00D18 /* dx-parse.c */,
 				D31796C908AD1C210016A4BD /* Documentation */,
 				D31796C808AD1BF60016A4BD /* Headers */,
 				D37C16CA0833BF9400B1AA74 /* Sources */,
@@ -285,6 +287,10 @@
 		D37C16CA0833BF9400B1AA74 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				9B61524F0A7940D60008CDA2 /* gss.c */,
+				9B9C2C400A713AD600D00D18 /* dx-lex.c */,
+				9B9C2C410A713AD600D00D18 /* dx-parse.c */,
+				9B61523E0A7922110008CDA2 /* rte.c */,
 				9BD64E580A1A10E600A0CDA7 /* lnseg.c */,
 				D2ABB87A0A18E10F005762AF /* deusex.c */,
 				D2ABB87B0A18E10F005762AF /* env.c */,
@@ -500,6 +506,8 @@
 				9BD64E5A0A1A10E600A0CDA7 /* lnseg.c in Sources */,
 				9B9C2C420A713AD600D00D18 /* dx-lex.c in Sources */,
 				9B9C2C430A713AD600D00D18 /* dx-parse.c in Sources */,
+				9B61523F0A7922110008CDA2 /* rte.c in Sources */,
+				9B6152500A7940D60008CDA2 /* gss.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -530,6 +538,7 @@
 					"-lm",
 					"-lcrypto",
 					"-lssl",
+					"-lgssapi_krb5",
 					"-g",
 				);
 				OTHER_REZFLAGS = "";
@@ -567,6 +576,7 @@
 					"-lm",
 					"-lcrypto",
 					"-lssl",
+					"-lgssapi_krb5",
 					"-g",
 				);
 				OTHER_REZFLAGS = "";
@@ -604,6 +614,7 @@
 					"-lm",
 					"-lcrypto",
 					"-lssl",
+					"-lgssapi_krb5",
 					"-g",
 				);
 				OTHER_REZFLAGS = "";
