@@ -13,8 +13,7 @@ SRCS+= selnode.c server.c shadow.c ssl.c status.c tex.c text.c tween.c
 SRCS+= uinp.c ustrdtab.c ustream.c ustrop-file.c ustrop-ssl.c util.c
 SRCS+= vec.c widget.c yod.c
 
-CFLAGS += -Wall -W -g 
-#-D_LIVE_DSP=DSP_LOCAL
+CFLAGS += -Wall -W -g -D_LIVE_DSP=DSP_LOCAL
 #CFLAGS += -O -Wuninitialized
 
 LIBS += -lGL -lGLU -lglut -lssl -lpng
