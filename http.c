@@ -69,25 +69,24 @@ http_open(struct http_req *req, struct http_res *res)
 
 	snprintf(buf, sizeof(buf), "%s %s %s\r\n", req->htreq_method,
 	    req->htreq_url, req->htreq_version);
-	if (us_write(us, buf, strlen(buf)) != (int)strlen(buf))
+	if (us_write(us, buf, strlen(buf)) != (ssize_t)strlen(buf))
 		err(1, "us_write");
 	/* XXX: disgusting */
 	if (strcmp(req->htreq_version, "HTTP/1.1") == 0) {
 		snprintf(buf, sizeof(buf), "Host: %s\r\nConnection: close\r\n",
 		    req->htreq_server);
-		if (us_write(us, buf, strlen(buf)) != (int)strlen(buf))
+		if (us_write(us, buf, strlen(buf)) != (ssize_t)strlen(buf))
 			err(1, "us_write");
 	}
 	if (req->htreq_extra != NULL)
 		for (hdr = req->htreq_extra; *hdr != NULL; hdr++)
 			if (us_write(us, *hdr, strlen(*hdr)) !=
-			    (int)strlen(*hdr))
+			    (ssize_t)strlen(*hdr))
 				err(1, "us_write");
-	if (req->htreq_extraf != NULL) {
+	if (req->htreq_extraf != NULL)
 		req->htreq_extraf(us);
-	}
 	snprintf(buf, sizeof(buf), "\r\n");
-	if (us_write(us, buf, strlen(buf)) != (int)strlen(buf))
+	if (us_write(us, buf, strlen(buf)) != (ssize_t)strlen(buf))
 		err(1, "us_write");
 
 	while (us_gets(us, buf, sizeof(buf)) != NULL) {
