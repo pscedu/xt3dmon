@@ -464,9 +464,7 @@ char* negotiate_auth(char *host, size_t *siz)
 	gss_OID oid;
 	char *auth, *enc;
 	int size, bsize;
-FILE *fp;
-int i;
-char *tmp;
+	char *tmp;
 
 	/* Default to MIT Kerberos */
 	oid = &krb5_oid;
@@ -481,7 +479,7 @@ char *tmp;
 	}
 #endif
 
-	/* itoken = "HTTP/f.q.d.n" aka "HTTP@hostname.foo.bar" according to konqueror */
+	/* itoken = "HTTP/f.q.d.n" aka "HTTP@hostname.foo.bar" */
 	size = strlen(host) + strlen(http) + 1;
 	itoken.value = malloc(size);
 
@@ -531,16 +529,6 @@ char *tmp;
 	bzero(enc, bsize);
 	base64_encode(otoken.value, enc, otoken.length);
 
-auth = otoken.value;
-fp = fopen("/tmp/before_base64.rbudden", "w");
-for(i = 0; i < otoken.length; i++)
-	fprintf(fp, "%c", auth[i]);
-fclose(fp);
-fp = fopen("/tmp/base64.rbudden", "w");
-for(i = 0; i < bsize; i++)
-	fprintf(fp, "%c", enc[i]);
-fclose(fp);
-
 	/* "Authorization: Negotiate <base64 encoded tkt> */
 	size = strlen(auth_type) + bsize + 3;
 	auth = malloc(size);
@@ -552,12 +540,6 @@ fclose(fp);
 	/* memcpy because of NULL's */
 	memcpy(tmp, enc, bsize);
 	tmp += bsize;
-
-#if 0
-for(i = 0; i < bsize + 3; i++)
-		printf("%c", auth[i]);
-printf("\n\n");
-#endif
 
 	*siz = size;
 
