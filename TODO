@@ -72,12 +72,11 @@ todo
 - use existing kerberos tickets to do auth
 - kill job_findbyid, just use obj_get with a flag that prevents creation
 - make job searching bsearch again, since it is sorted
-- add subtitle for when machine down
 - merge selpipes and pipes with a simple check: n_flags & NF_SELNODE
   in the loop which determines how long/when to draw pipes
 - merge reel, fbcho, dxcho code - .cvsignore/dirs
-- on gss failure, assume it will always fail (don't try again)
 - parse /usr/local/pbs/partition_info for captions
+- add subtitle for when machine down
 
 tweening
 - ensure tweening leaves normalized vectors

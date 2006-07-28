@@ -63,11 +63,16 @@ gss_build_auth(const struct ustream *us)
 int
 gss_valid(const char *host)
 {
+	static int valid = 1;
+
 	gss_OID_desc krb5_oid = {9, "\x2a\x86\x48\x86\xf7\x12\x01\x02\x02"};
 	gss_buffer_desc itoken = GSS_C_EMPTY_BUFFER;
 	OM_uint32 major, rflags, rtime;
 	const char service[] = "HTTP";
 	gss_OID oid;
+
+	if (!valid)
+		return (valid);
 
 	/* Default to MIT Kerberos */
 	oid = &krb5_oid;
@@ -106,7 +111,7 @@ gss_valid(const char *host)
 	if (GSS_ERROR(major) || gss_otoken.length == 0) {
 		gss_finish();
 		warnx("gss_init_sec_context");
-		return (0);
+		valid = 0;
 	}
-	return (1);
+	return (valid);
 }
