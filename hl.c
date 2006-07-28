@@ -33,10 +33,11 @@ nc_gethlop(void (*f)(struct fill *))
 		fill_setxparent,
 		fill_setopaque,
 		fill_alphainc,
-		fill_alphadec
+		fill_alphadec,
+		fill_togglevis
 	};
 	size_t j;
-	
+
 	for (j = 0; j < NENTRIES(hlops); j++)
 		if (hlops[j] == f)
 			return (j);

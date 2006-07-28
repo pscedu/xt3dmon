@@ -292,6 +292,15 @@ fill_setxparent(struct fill *fp)
 }
 
 void
+fill_togglevis(struct fill *fp)
+{
+	if (fp->f_a)
+		fp->f_a = 0.0;
+	else
+		fp->f_a = 1.0;
+}
+
+void
 fill_alphainc(struct fill *fp)
 {
 	fp->f_a += 0.1;

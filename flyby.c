@@ -295,6 +295,9 @@ flyby_read(void)
 			case FBHLOP_ALPHADEC:
 				f = fill_alphadec;
 				break;
+			case FBHLOP_TOGGLEVIS:
+				f = fill_togglevis;
+				break;
 			default:
 				warnx("unknown highlight op: %d", fbun.fbu_hlnc.fbhl_op);
 				break;

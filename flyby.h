@@ -4,16 +4,17 @@ struct fvec;
 struct state;
 
 /* Flyby modes. */
-#define FBM_OFF		0
-#define FBM_PLAY	1
-#define FBM_REC		2
+#define FBM_OFF			0
+#define FBM_PLAY		1
+#define FBM_REC			2
 
 /* Flyby node class highlighting operations -- must stay sync'd to hl.c. */
-#define FBHLOP_UNKNOWN	(-1)
-#define FBHLOP_XPARENT	0
-#define FBHLOP_OPAQUE	1
-#define FBHLOP_ALPHAINC	2
-#define FBHLOP_ALPHADEC	3
+#define FBHLOP_UNKNOWN		(-1)
+#define FBHLOP_XPARENT		0
+#define FBHLOP_OPAQUE		1
+#define FBHLOP_ALPHAINC		2
+#define FBHLOP_ALPHADEC		3
+#define FBHLOP_TOGGLEVIS	4
 
 #define FLYBY_DEFAULT	"default"
 

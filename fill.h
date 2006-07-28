@@ -70,6 +70,7 @@ void	 fill_alphainc(struct fill *);
 void	 fill_alphadec(struct fill *);
 void	 fill_tex(struct fill *);
 void	 fill_untex(struct fill *);
+void	 fill_togglevis(struct fill *);
 
 void	 col_hsv_to_rgb(struct fill *);
 void	 col_get(int, size_t, size_t, struct fill *);
