@@ -7,4 +7,3 @@ phys-parse.h
 dx-lex.c
 dx-parse.c
 dx-parse.h
-y.tab.h
