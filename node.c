@@ -310,8 +310,12 @@ node_goto(struct node *n)
 __inline int
 node_show(struct node *n)
 {
+	if (st.st_opts & OP_SUBSET &&
+	    (n->n_flags & NF_SHOW) == 0)
+		return (0);
 	if (n->n_flags & NF_VALID &&
 	    n->n_fillp->f_a != 0.0f)
 		return (1);
+
 	return (0);
 }
