@@ -473,8 +473,17 @@ panel_refresh_ninfo(struct panel *p)
 				    n->n_route.rt_err[j][RT_FATAL] ||
 				    n->n_route.rt_err[j][RT_ROUTER]) {
 					int needcomma = 0;
+					int pset;
 
-					panel_add_content(p, "\n  port %d: ", j);
+					if (j == RP_NEGX ||
+					    j == RP_NEGY ||
+					    j == RP_NEGZ)
+						pset = RPS_NEG;
+					else
+						pset = RPS_POS;
+
+					panel_add_content(p, "\n %sport %d: ",
+					    pset == st.st_rtepset ? "*" : " ", j);
 					if (n->n_route.rt_err[j][RT_RECOVER]) {
 						panel_add_content(p, "%d recover",
 						    n->n_route.rt_err[j][RT_RECOVER]);
@@ -484,7 +493,7 @@ panel_refresh_ninfo(struct panel *p)
 						panel_add_content(p, "%s%d fatal",
 						    needcomma ? ", " : "",
 						    n->n_route.rt_err[j][RT_FATAL]);
-					needcomma = 1;
+						needcomma = 1;
 					}
 					if (n->n_route.rt_err[j][RT_ROUTER]) {
 						panel_add_content(p, "%s%d rtr",
