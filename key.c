@@ -152,6 +152,9 @@ gl_keyh_panel(unsigned char key, __unused int u, __unused int v)
 	case 'c':
 		panel_toggle(PANEL_CMD);
 		break;
+	case 'D':
+		panel_toggle(PANEL_DMODE);
+		break;
 	case 'd':
 		panel_toggle(PANEL_DATE);
 		break;
@@ -190,6 +193,9 @@ gl_keyh_panel(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 'S':
 		panel_toggle(PANEL_STATUS);
+		break;
+	case 'V':
+		panel_toggle(PANEL_VMODE);
 		break;
 	case '~':
 		panel_toggle(PANEL_EGGS);
