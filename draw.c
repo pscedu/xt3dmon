@@ -26,6 +26,9 @@
 
 #define SKEL_GAP	(0.1f)
 
+#define IS_SELNODE_IF_NEEDED(n, onlysn)	\
+	(((onlysn) && (n)->n_flags & NF_SELNODE) || !(onlysn))
+
 float	 snap_to_grid(float, float, float);
 
 struct fvec wi_repstart;
@@ -548,114 +551,7 @@ draw_skel(void)
 	}
 }
 
-/*
- * Special case of pipe-drawing code:
- * draw pipes around selected node only.
- */
-__inline void
-draw_node_pipes(struct node *n)
-{
-	double len, sx, sy, sz, dx, dy, dz;
-	int sign, rd, dim, flip;
-	struct fill *fp;
-	struct node *ng;
-
-	gluQuadricDrawStyle(quadric, GLU_FILL);
-
-	/* Anti-aliasing */
-	glEnable(GL_BLEND);
-	glEnable(GL_POLYGON_SMOOTH);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
-
-	sx = n->n_v->fv_x + n->n_dimp->fv_w / 2.0;
-	sy = n->n_v->fv_y + n->n_dimp->fv_h / 2.0;
-	sz = n->n_v->fv_z + n->n_dimp->fv_d / 2.0;
-
-	for (rd = 0; rd < NRD; rd++) {
-		sign = 1;
-
-		switch (rd) {
-		case RD_NEGX:
-			sign = -1;
-			/* FALLTHROUGH */
-		case RD_POSX:
-			dim = DIM_X;
-			break;
-		case RD_NEGY:
-			sign = -1;
-			/* FALLTHROUGH */
-		case RD_POSY:
-			dim = DIM_Y;
-			break;
-		case RD_NEGZ:
-			sign = -1;
-			/* FALLTHROUGH */
-		case RD_POSZ:
-			dim = DIM_Z;
-			break;
-		}
-
-		switch (st.st_pipemode) {
-		case PM_DIR:
-			fp = &fill_dim[dim];
-			break;
-		case PM_RTE:
-			/*
-			 * If this is the direction of the port set,
-			 * draw, otherwise, only draw if the neighbor
-			 * isn't also a selnode.
-			 */
-return;
-			break;
-		}
-
-		glPushMatrix();
-		glTranslated(sx, sy, sz);
-
-		switch (dim) {
-		case DIM_X:
-			glRotatef(90.0, 0.0, sign * 1.0, 0.0);
-			break;
-		case DIM_Y:
-			glRotatef(-90.0, sign * 1.0, 0.0, 0.0);
-			break;
-		case DIM_Z:
-			if (sign < 0)
-				glRotatef(180.0, 0.0, 1.0, 0.0);
-			break;
-		}
-
-		ng = node_neighbor(VM_WIRED, n, rd, &flip);
-
-		glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
-		if (flip) {
-			/*
-			 * OK to use wired-mode values since this
-			 * flip is always a wivmode flip, never a
-			 * physvmode flip.
-			 */
-			if (flip > 0)
-				len = st.st_winsp.iv_val[dim] *
-				    (widim.iv_val[dim] - n->n_wiv.iv_val[dim]);
-			else
-				len = st.st_winsp.iv_val[dim] *
-				    (n->n_wiv.iv_val[dim] + 1);
-		} else {
-			dx = ng->n_v->fv_x + ng->n_dimp->fv_w / 2.0;
-			dy = ng->n_v->fv_y + ng->n_dimp->fv_h / 2.0;
-			dz = ng->n_v->fv_z + ng->n_dimp->fv_d / 2.0;
-
-			if (dx - sx)
-				len = dx - sx;
-			else if (dy - sy)
-				len = dy - sy;
-			else
-				len = dz - sz;
-		}
-		gluCylinder(quadric, 0.1, 0.1, fabs(len), 3, 1);
-		glPopMatrix();
-
+#if 0
 		/* Draw arrows to imply extension. */
 		if (flip) {
 			glPushMatrix();
@@ -689,23 +585,18 @@ return;
 				}
 			}
 		}
-	}
-
-	glDisable(GL_POLYGON_SMOOTH);
-	glDisable(GL_BLEND);
-}
+#endif
 
 void
-draw_cluster_pipe(struct ivec *iv, struct fvec *dimv)
+draw_pipe(struct ivec *iv, struct fvec *dimv, int onlysn)
 {
-	int *j, jmax, dim, port, class;
-	int rowlen, *dimlen, *dimadj;
-	const struct ivec *negv;
-	struct ivec adjv, *spv;
-	struct fvec sv, *np;
-	struct node *n, *ng;
+	int *j, jmax, dim, port, class, pipelen;
+	int forwrd, backrd, backflip, flip, *dimlen;
+	struct node *ns, *ne, *lastn, *firstn;
+	struct fvec fv, *np;
+	struct ivec adjv;
 	struct fill *fp;
-	float len;
+	double len;
 
 	if (dimv->fv_w)
 		dim = DIM_X;
@@ -714,131 +605,158 @@ draw_cluster_pipe(struct ivec *iv, struct fvec *dimv)
 	else
 		dim = DIM_Z;
 
-	spv = &st.st_winsp;
-
 	/* Anti-aliasing */
 	glEnable(GL_BLEND);
 	glEnable(GL_POLYGON_SMOOTH);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
 
-	sv.fv_x = vmodes[st.st_vmode].vm_ndim[GEOM_CUBE].fv_w / 2;
-	sv.fv_y = vmodes[st.st_vmode].vm_ndim[GEOM_CUBE].fv_h / 2;
-	sv.fv_z = vmodes[st.st_vmode].vm_ndim[GEOM_CUBE].fv_d / 2;
-
 	switch (dim) {
 	case DIM_X:
 		jmax = widim.iv_w;
 		j = &iv->iv_x;
-		dimlen = &spv->iv_w;
-		dimadj = &adjv.iv_x;
+		dimlen = &st.st_winsp.iv_w;
+		forwrd = RD_POSX;
+		backrd = RD_NEGX;
 		break;
 	case DIM_Y:
 		jmax = widim.iv_h;
 		j = &iv->iv_y;
-		dimlen = &spv->iv_h;
-		dimadj = &adjv.iv_y;
+		dimlen = &st.st_winsp.iv_h;
+		forwrd = RD_POSY;
+		backrd = RD_NEGY;
 		break;
 	case DIM_Z:
 		jmax = widim.iv_d;
 		j = &iv->iv_z;
-		dimlen = &spv->iv_d;
-		dimadj = &adjv.iv_z;
+		dimlen = &st.st_winsp.iv_d;
+		forwrd = RD_POSZ;
+		backrd = RD_NEGZ;
+		break;
+	}
+	jmax++; /* 1 more pipe than #nodes */
+
+	switch (st.st_pipemode) {
+	case PM_DIR:
+		fp = &fill_dim[dim];
 		break;
 	}
 
-	len = 0.0; /* gcc */
 	for (*j = 0; *j < jmax; ++*j) {
 		adjv.iv_x = negmod(iv->iv_x + st.st_wioff.iv_x, widim.iv_w);
 		adjv.iv_y = negmod(iv->iv_y + st.st_wioff.iv_y, widim.iv_h);
 		adjv.iv_z = negmod(iv->iv_z + st.st_wioff.iv_z, widim.iv_d);
-		n = wimap[adjv.iv_x][adjv.iv_y][adjv.iv_z];
-		if (n == NULL || !node_show(n))
+		ne = wimap[adjv.iv_x][adjv.iv_y][adjv.iv_z];
+		if (ne == NULL || !node_show(ne) ||
+		    !IS_SELNODE_IF_NEEDED(ne, onlysn))
 			continue;
+		firstn = ne;
+
+		ns = node_neighbor(VM_WIRED, ne, backrd, &backflip);
+		if (ns == NULL)
+			errx(1, "pipe: no %d neighbor at %d,%d,%d",
+			    backrd, adjv.iv_x, adjv.iv_y, adjv.iv_z);
+
+		if (st.st_opts & OP_NODEANIM)
+			np = &ne->n_vcur;
+		else
+			np = ne->n_v;
+
+		vec_set(&fv,
+		    np->fv_x + ne->n_dimp->fv_w / 2.0,
+		    np->fv_y + ne->n_dimp->fv_h / 2.0,
+		    np->fv_z + ne->n_dimp->fv_d / 2.0);
+		fv.fv_val[dim] -= *dimlen;
+		if (*j == jmax - 1)
+			fv.fv_val[dim] += *dimlen * widim.iv_val[dim];
+
+		pipelen = 1;
+		if (!backflip) {
+			pipelen = ne->n_wiv.iv_val[dim] - ns->n_wiv.iv_val[dim];
+			fv.fv_val[dim] -= *dimlen *
+			    (ne->n_wiv.iv_val[dim] - ns->n_wiv.iv_val[dim] - 1);
+		}
+		if (*j == 0)
+			backflip = 0;
 
 		switch (st.st_pipemode) {
-		case PM_DIR:	/* color for torus directions */
-			for (rowlen = 0; *j + rowlen < jmax; rowlen++) {
-				/* XXX use node_wineighbor? */
-				*dimadj = negmod(*dimadj + 1, jmax);
-				ng = wimap[adjv.iv_x][adjv.iv_y][adjv.iv_z];
-
-				if (ng != NULL && !node_show(ng))
-					break;
-			}
-			*j += rowlen;
-			len = *dimlen * (rowlen + 1);
-
-			fp = &fill_dim[dim];
-			negv = spv;
-			break;
-		case PM_RTE:	/* color for route errors */
-			for (rowlen = 0; *j + rowlen < jmax; rowlen++) {
-				/* XXX use node_wineighbor? */
-				*dimadj = negmod(*dimadj + 1, jmax);
-				ng = wimap[adjv.iv_x][adjv.iv_y][adjv.iv_z];
-
-				if (ng != NULL)
-					break;
-
-//				if (*dimadj == 0 ||
-//				    *dimadj == jmax - 1)
-//					break;
-			}
-			*j += rowlen;
-			len = *dimlen * (rowlen + 1);
-
+		case PM_RTE:
 			port = DIM_TO_PORT(dim, st.st_rtepset);
+#if 0
 			if (n->n_route.rt_err[port][st.st_rtetype] == 0)
 				continue;
-
-			if (rt_max.rt_err[port][st.st_rtetype])
-				class = 100 * n->n_route.rt_err[port][st.st_rtetype] /
-				    rt_max.rt_err[port][st.st_rtetype];
-			else
-				class = 100;		/* 100% */
-
-			fp = &rtpipeclass[class / 10].nc_fill;
+			class = NODECLASS(n->n_route.rt_err[port][st.st_rtetype],
+			    rt_max.rt_err[port][st.st_rtetype]);
 
 			if (port == RP_NEGX ||
 			    port == RP_NEGY ||
 			    port == RP_NEGZ)
-				negv = spv;
+				negv = &st.st_winsp;
 			else
 				negv = &iv_zero;
+#endif
 			break;
-		default:
-			err(1, "invalid pipe mode");
 		}
 
-		if (st.st_opts & OP_NODEANIM)
-			np = &n->n_vcur;
-		else
-			np = n->n_v;
+		lastn = NULL;
+		flip = 0;
+		while (++*j < jmax) {
+			lastn = ne;
+		    	ne = node_neighbor(VM_WIRED, ne, forwrd, &flip);
+			if (ne == NULL)
+				errx(1, "pipe: no %d neighbor at %d,%d,%d",
+				    forwrd, ne->n_wiv.iv_x, ne->n_wiv.iv_y,
+				    ne->n_wiv.iv_z);
+		    	if (!node_show(ne))
+				break;
+			switch (st.st_pipemode) {
+			case PM_RTE:
+				if (NODECLASS(ne->n_route.rt_err[port][st.st_rtetype],
+				    rt_max.rt_err[port][st.st_rtetype]) != class)
+					goto done;
+				break;
+			}
+			if (flip) {
+				pipelen++;
+				++*j;
+				break;
+			}
+			pipelen += ne->n_wiv.iv_val[dim] - lastn->n_wiv.iv_val[dim];
+			if (!IS_SELNODE_IF_NEEDED(ne, onlysn))
+				break;
+		}
+done:
+		switch (st.st_pipemode) {
+		case PM_RTE:
+			fp = &rtpipeclass[class].nc_fill;
+			break;
+		}
+
+		if (backflip) {
+			pipelen += firstn->n_wiv.iv_val[dim];
+			fv.fv_val[dim] -= *dimlen *
+			    firstn->n_wiv.iv_val[dim];
+		}
+		if (flip) {
+			if (lastn == NULL)
+				errx(1, "pipe: flipped but no last %d", *j);
+			pipelen += (widim.iv_val[dim] -
+			    lastn->n_wiv.iv_val[dim] - 1);
+		}
+
+		len = *dimlen * pipelen;
 
 		glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
 		glPushMatrix();
-
+		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
 		switch (dim) {
 		case DIM_X:
-			glTranslatef(
-			    sv.fv_x + np->fv_x - negv->iv_x,
-			    sv.fv_y + np->fv_y,
-			    sv.fv_z + np->fv_z);
 			glRotatef(90.0, 0.0, 1.0, 0.0);
 			break;
 		case DIM_Y:
-			glTranslatef(
-			    sv.fv_x + np->fv_x,
-			    sv.fv_y + np->fv_y - negv->iv_y,
-			    sv.fv_z + np->fv_z);
 			glRotatef(-90.0, 1.0, 0.0, 0.0);
 			break;
 		case DIM_Z:
-			glTranslatef(
-			    sv.fv_x + np->fv_x,
-			    sv.fv_y + np->fv_y,
-			    sv.fv_z + np->fv_z - negv->iv_z);
 			break;
 		}
 		gluCylinder(quadric, 0.1, 0.1, len, 3, 1);
@@ -849,7 +767,7 @@ draw_cluster_pipe(struct ivec *iv, struct fvec *dimv)
 }
 
 __inline void
-draw_cluster_pipes(const struct fvec *v)
+draw_pipes(int onlysn)
 {
 	double sx, sy, sz, dx, dy, dz;
 	struct node *n, *ng;
@@ -858,34 +776,31 @@ draw_cluster_pipes(const struct fvec *v)
 	struct ivec iv;
 	int rd;
 
+	gluQuadricDrawStyle(quadric, GLU_FILL);
+
 	switch (st.st_vmode) {
 	case VM_WIRED:
 	case VM_WIONE:
-		glPushMatrix();
-		glTranslatef(v->fv_x, v->fv_y, v->fv_z);
-		gluQuadricDrawStyle(quadric, GLU_FILL);
-
 		vec_set(&dim, 0.0f, 0.0f, WIV_SDEPTH);
 		for (iv.iv_x = 0; iv.iv_x < widim.iv_w; iv.iv_x++)
 			for (iv.iv_y = 0; iv.iv_y < widim.iv_h; iv.iv_y++)
-				draw_cluster_pipe(&iv, &dim);
+				draw_pipe(&iv, &dim, onlysn);
 
 		vec_set(&dim, 0.0f, WIV_SHEIGHT, 0.0f);
 		for (iv.iv_z = 0; iv.iv_z < widim.iv_d; iv.iv_z++)
 			for (iv.iv_x = 0; iv.iv_x < widim.iv_w; iv.iv_x++)
-				draw_cluster_pipe(&iv, &dim);
+				draw_pipe(&iv, &dim, onlysn);
 
 		vec_set(&dim, WIV_SWIDTH, 0.0f, 0.0f);
 		for (iv.iv_y = 0; iv.iv_y < widim.iv_h; iv.iv_y++)
 			for (iv.iv_z = 0; iv.iv_z < widim.iv_d; iv.iv_z++)
-				draw_cluster_pipe(&iv, &dim);
-
-		glPopMatrix();
+				draw_pipe(&iv, &dim, onlysn);
 		break;
 	case VM_PHYS:
 		glLineWidth(2.0);
 		NODE_FOREACH(n, &iv) {
-			if (n && node_show(n)) {
+			if (n && node_show(n) &&
+			    IS_SELNODE_IF_NEEDED(n, onlysn)) {
 				sx = n->n_v->fv_x + n->n_dimp->fv_w / 2.0;
 				sy = n->n_v->fv_y + n->n_dimp->fv_h / 2.0;
 				sz = n->n_v->fv_z + n->n_dimp->fv_d / 2.0;
@@ -958,7 +873,7 @@ draw_cluster(void)
 	case VM_WIONE:
 	case VM_PHYS:
 		if (st.st_opts & OP_PIPES)
-			draw_cluster_pipes(&fv_zero);
+			draw_pipes(0);
 		NODE_FOREACH(n, &iv)
 			if (n && node_show(n)) {
 				if (ndf & NDF_ATORIGIN) {
@@ -987,6 +902,9 @@ draw_selnodes(void)
 	struct fill *ofp;
 	struct node *n;
 
+	if (st.st_opts & OP_SELPIPES &&
+	    (st.st_opts & OP_PIPES) == 0)
+		draw_pipes(1);
 	SLIST_FOREACH(sn, &selnodes, sn_next) {
 		n = sn->sn_nodep;
 		ofp = n->n_fillp;
@@ -1002,10 +920,6 @@ draw_selnodes(void)
 		glTranslatef(fvp->fv_x, fvp->fv_y, fvp->fv_z);
 		draw_node(n, NDF_ATORIGIN);
 		glPopMatrix();
-
-		if (st.st_opts & OP_SELPIPES &&
-		    (st.st_opts & OP_PIPES) == 0)
-			draw_node_pipes(n);
 
 		n->n_fillp = ofp;
 	}
