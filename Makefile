@@ -72,7 +72,7 @@ lines:
 	    !(phys-parse|phys-lex|dx-parse|dx-lex).c *.y *.l' | tail -1
 
 run: xt3dmon
-	./xt3dmon -N
+	./xt3dmon
 
 debug: xt3dmon
 	gdb -q ./xt3dmon

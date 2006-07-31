@@ -219,6 +219,7 @@ opt_flip(int fopts)
 		case OP_FRAMES:
 		case OP_SELPIPES:
 		case OP_NLABELS:
+		case OP_PIPES:
 			st.st_rf |= RF_CLUSTER | RF_SELNODE;
 			break;
 		case OP_MODSKELS:
@@ -235,7 +236,7 @@ opt_flip(int fopts)
 			st.st_rf |= RF_CLUSTER;
 			break;
 		case OP_SKEL:
-		case OP_PIPES:
+		case OP_SUBSET:
 			st.st_rf |= RF_CLUSTER;
 			break;
 		case OP_AUTOFLYBY:
@@ -661,7 +662,7 @@ main(int argc, char *argv[])
 	Nflag = 0;
 	flags = GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE;
 	glutInit(&argc, argv);
-	while ((c = getopt(argc, argv, "ac:dNpv")) != -1)
+	while ((c = getopt(argc, argv, "ac:dpv")) != -1)
 		switch (c) {
 		case 'a':
 errx(1, "broken");
@@ -673,9 +674,6 @@ errx(1, "broken");
 			break;
 		case 'd':
 			server_mode = 1;
-			break;
-		case 'N':
-			Nflag = 1;
 			break;
 		case 'p':
 			stereo_mode = STM_PASV;
@@ -720,11 +718,8 @@ errx(1, "broken");
 	gl_run(gl_setup);
 	gl_setup_core();
 
-	if (!server_mode) {
+	if (!server_mode)
 		panel_toggle(PANEL_HELP);
-		if (!Nflag)
-			panel_toggle(PANEL_LOGIN);
-	}
 
 	if ((quadric = gluNewQuadric()) == NULL)
 		err(1, "gluNewQuadric");
@@ -737,6 +732,6 @@ errx(1, "broken");
 void
 usage(void)
 {
-	fprintf(stderr, "usage: %s [-dNp] [-c physconf]\n", progname);
+	fprintf(stderr, "usage: %s [-dp] [-c physconf]\n", progname);
 	exit(1);
 }
