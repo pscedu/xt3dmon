@@ -665,8 +665,6 @@ draw_pipe(struct ivec *iv, struct fvec *dimv, int onlysn)
 		    np->fv_y + ne->n_dimp->fv_h / 2.0,
 		    np->fv_z + ne->n_dimp->fv_d / 2.0);
 		fv.fv_val[dim] -= *dimlen;
-//		if (*j == jmax - 1)
-//			fv.fv_val[dim] += *dimlen * widim.iv_val[dim];
 
 		pipelen = 1;
 		if (!backflip) {
