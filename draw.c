@@ -634,7 +634,6 @@ draw_pipe(struct ivec *iv, struct fvec *dimv, int onlysn)
 		backrd = RD_NEGZ;
 		break;
 	}
-	jmax++; /* 1 more pipe than #nodes */
 
 	switch (st.st_pipemode) {
 	case PM_DIR:
@@ -650,7 +649,6 @@ draw_pipe(struct ivec *iv, struct fvec *dimv, int onlysn)
 		if (ne == NULL || !node_show(ne) ||
 		    !IS_SELNODE_IF_NEEDED(ne, onlysn))
 			continue;
-		firstn = ne;
 
 		ns = node_neighbor(VM_WIRED, ne, backrd, &backflip);
 		if (ns == NULL)
@@ -667,8 +665,8 @@ draw_pipe(struct ivec *iv, struct fvec *dimv, int onlysn)
 		    np->fv_y + ne->n_dimp->fv_h / 2.0,
 		    np->fv_z + ne->n_dimp->fv_d / 2.0);
 		fv.fv_val[dim] -= *dimlen;
-		if (*j == jmax - 1)
-			fv.fv_val[dim] += *dimlen * widim.iv_val[dim];
+//		if (*j == jmax - 1)
+//			fv.fv_val[dim] += *dimlen * widim.iv_val[dim];
 
 		pipelen = 1;
 		if (!backflip) {
@@ -676,8 +674,10 @@ draw_pipe(struct ivec *iv, struct fvec *dimv, int onlysn)
 			fv.fv_val[dim] -= *dimlen *
 			    (ne->n_wiv.iv_val[dim] - ns->n_wiv.iv_val[dim] - 1);
 		}
-		if (*j == 0)
-			backflip = 0;
+
+		firstn = ne;
+		if (*j == 0 || backflip == 0)
+			firstn = NULL;
 
 		switch (st.st_pipemode) {
 		case PM_RTE:
@@ -700,13 +700,19 @@ draw_pipe(struct ivec *iv, struct fvec *dimv, int onlysn)
 
 		lastn = NULL;
 		flip = 0;
-		while (++*j < jmax) {
+		while (++*j <= jmax) {
 			lastn = ne;
 		    	ne = node_neighbor(VM_WIRED, ne, forwrd, &flip);
 			if (ne == NULL)
 				errx(1, "pipe: no %d neighbor at %d,%d,%d",
 				    forwrd, ne->n_wiv.iv_x, ne->n_wiv.iv_y,
 				    ne->n_wiv.iv_z);
+			if (flip) {
+				pipelen++;
+				++*j;
+				break;
+			}
+			pipelen += ne->n_wiv.iv_val[dim] - lastn->n_wiv.iv_val[dim];
 		    	if (!node_show(ne))
 				break;
 			switch (st.st_pipemode) {
@@ -716,12 +722,6 @@ draw_pipe(struct ivec *iv, struct fvec *dimv, int onlysn)
 					goto done;
 				break;
 			}
-			if (flip) {
-				pipelen++;
-				++*j;
-				break;
-			}
-			pipelen += ne->n_wiv.iv_val[dim] - lastn->n_wiv.iv_val[dim];
 			if (!IS_SELNODE_IF_NEEDED(ne, onlysn))
 				break;
 		}
@@ -732,7 +732,7 @@ done:
 			break;
 		}
 
-		if (backflip) {
+		if (firstn) {
 			pipelen += firstn->n_wiv.iv_val[dim];
 			fv.fv_val[dim] -= *dimlen *
 			    firstn->n_wiv.iv_val[dim];
@@ -756,10 +756,14 @@ done:
 		case DIM_Y:
 			glRotatef(-90.0, 1.0, 0.0, 0.0);
 			break;
-		case DIM_Z:
-			break;
 		}
 		gluCylinder(quadric, 0.1, 0.1, len, 3, 1);
+		if (backflip)
+			gluCylinder(quadric, 0.001, 0.5, 0.5, 3, 1);
+		if (flip) {
+			glTranslatef(0.0, 0.0, len);
+			gluCylinder(quadric, 0.5, 0.001, 0.5, 3, 1);
+		}
 		glPopMatrix();
 	}
 	glDisable(GL_BLEND);
