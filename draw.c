@@ -592,7 +592,7 @@ draw_pipe(struct ivec *iv, struct fvec *dimv, int onlysn)
 {
 	int *j, jmax, dim, port, class, pipelen;
 	int forwrd, backrd, backflip, flip, *dimlen;
-	struct node *ns, *ne, *lastn, *firstn;
+	struct node *ns, *ne, *lastn, *firstn, *prevn;
 	struct fvec fv, *np;
 	struct ivec adjv;
 	struct fill *fp;
@@ -646,14 +646,25 @@ draw_pipe(struct ivec *iv, struct fvec *dimv, int onlysn)
 		adjv.iv_y = negmod(iv->iv_y + st.st_wioff.iv_y, widim.iv_h);
 		adjv.iv_z = negmod(iv->iv_z + st.st_wioff.iv_z, widim.iv_d);
 		ne = wimap[adjv.iv_x][adjv.iv_y][adjv.iv_z];
-		if (ne == NULL || !node_show(ne) ||
-		    !IS_SELNODE_IF_NEEDED(ne, onlysn))
+		if (ne == NULL || !node_show(ne))
 			continue;
 
 		ns = node_neighbor(VM_WIRED, ne, backrd, &backflip);
 		if (ns == NULL)
 			errx(1, "pipe: no %d neighbor at %d,%d,%d",
 			    backrd, adjv.iv_x, adjv.iv_y, adjv.iv_z);
+
+		switch (st.st_pipemode) {
+		case PM_RTE:
+			if (!IS_SELNODE_IF_NEEDED(ne, onlysn) &&
+			    !IS_SELNODE_IF_NEEDED(ns, onlysn))
+				continue;
+			break;
+		case PM_DIR:
+			if (!IS_SELNODE_IF_NEEDED(ne, onlysn))
+				continue;
+			break;
+		}
 
 		if (st.st_opts & OP_NODEANIM)
 			np = &ne->n_vcur;
@@ -680,19 +691,14 @@ draw_pipe(struct ivec *iv, struct fvec *dimv, int onlysn)
 		switch (st.st_pipemode) {
 		case PM_RTE:
 			port = DIM_TO_PORT(dim, st.st_rtepset);
-#if 0
-			if (n->n_route.rt_err[port][st.st_rtetype] == 0)
-				continue;
-			class = NODECLASS(n->n_route.rt_err[port][st.st_rtetype],
-			    rt_max.rt_err[port][st.st_rtetype]);
 
-			if (port == RP_NEGX ||
-			    port == RP_NEGY ||
-			    port == RP_NEGZ)
-				negv = &st.st_winsp;
-			else
-				negv = &iv_zero;
-#endif
+			prevn = ne;
+			if (st.st_rtepset == RPS_POS)
+				prevn = ns;
+			if (prevn->n_route.rt_err[port][st.st_rtetype] == 0)
+				continue;
+			class = NODECLASS(prevn->n_route.rt_err[port][st.st_rtetype],
+			    rt_max.rt_err[port][st.st_rtetype]);
 			break;
 		}
 
@@ -705,6 +711,19 @@ draw_pipe(struct ivec *iv, struct fvec *dimv, int onlysn)
 				errx(1, "pipe: no %d neighbor at %d,%d,%d",
 				    forwrd, ne->n_wiv.iv_x, ne->n_wiv.iv_y,
 				    ne->n_wiv.iv_z);
+			switch (st.st_pipemode) {
+			case PM_RTE:
+				prevn = ne;
+				if (st.st_rtepset == RPS_POS)
+					prevn = lastn;
+				if (NODECLASS(prevn->n_route.rt_err[port][st.st_rtetype],
+				    rt_max.rt_err[port][st.st_rtetype]) != class) {
+					--*j;
+					flip = 0;
+					goto done;
+				}
+				break;
+			}
 			if (flip) {
 				pipelen++;
 				++*j;
@@ -713,13 +732,6 @@ draw_pipe(struct ivec *iv, struct fvec *dimv, int onlysn)
 			pipelen += ne->n_wiv.iv_val[dim] - lastn->n_wiv.iv_val[dim];
 		    	if (!node_show(ne))
 				break;
-			switch (st.st_pipemode) {
-			case PM_RTE:
-				if (NODECLASS(ne->n_route.rt_err[port][st.st_rtetype],
-				    rt_max.rt_err[port][st.st_rtetype]) != class)
-					goto done;
-				break;
-			}
 			if (!IS_SELNODE_IF_NEEDED(ne, onlysn))
 				break;
 		}
