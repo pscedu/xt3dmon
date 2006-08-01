@@ -145,6 +145,8 @@ extern char		 login_auth[BUFSIZ];
 extern const struct fvec fv_zero;
 extern const struct ivec iv_zero;
 
+extern time_t		 mach_drain;
+
 extern char		 date_fmt[];
 
 #endif	/* _XT3DMON_H_ */
