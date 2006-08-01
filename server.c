@@ -155,7 +155,7 @@ serv_init(void)
 #define SERVP_ERR	2
 
 #define MAXTRIES	10
-#define TRYWAIT		10	/* microseconds */
+#define TRYWAIT		50	/* microseconds */
 
 void
 serv_drawinfo(void)
