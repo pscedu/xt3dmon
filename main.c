@@ -52,23 +52,23 @@ struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 struct node		*invmap[NID_MAX];
 struct node		*wimap[WIDIM_WIDTH][WIDIM_HEIGHT][WIDIM_DEPTH];
 
-int			 stereo_mode;
-
 struct fvec		 tv  = { { STARTX,  STARTY,  STARTZ } };
 struct fvec		 tlv = { { STARTLX, STARTLY, STARTLZ } };
 struct fvec		 tuv = { { STARTUX, STARTUY, STARTUZ } };
 
 char			 login_auth[BUFSIZ];
 
-const char		*progname;
-int			 verbose;
-
 const struct fvec	 fv_zero = { { 0.0, 0.0, 0.0 } };
 const struct ivec	 iv_zero = { { 0, 0, 0 } };
 
 const char		*caption;
 
-char **sav_argv;
+time_t			 mach_drain;
+
+int			 verbose;
+const char		*progname;
+
+char			**sav_argv;
 
 struct xoption opts[] = {
  /*  0 */ { "tex",	"Texture mapping",		0 },

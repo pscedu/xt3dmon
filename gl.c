@@ -22,6 +22,8 @@
 
 long	 fps = 50;	/* Last FPS sample. */
 long	 fps_cnt = 0;	/* Current FPS counter. */
+int	 stereo_mode;
+int	 visible;
 
 /*
  * Run a function in both GL stereo environments.
@@ -68,6 +70,13 @@ gl_reshapeh(int w, int h)
 		p->p_opts |= POPT_DIRTY;
 }
 
+
+void
+gl_visible(int state)
+{
+	visible = (state == GLUT_VISIBLE);
+}
+
 void
 gl_idleh_govern(void)
 {
@@ -86,6 +95,8 @@ void
 gl_idleh_default(void)
 {
 	fps_cnt++;
+	if (!visible)
+		usleep(100);
 	gl_run(glutPostRedisplay);
 }
 
@@ -123,6 +134,7 @@ gl_setup(void)
 		glutPassiveMotionFunc(gl_pasvmotionh_default);
 		glutSpecialFunc(gl_spkeyh_default);
 		glutMouseWheelFunc(gl_mwheel_default);
+		glutVisibilityFunc(gl_visible);
 	}
 
 	glClearColor(fill_bg.f_r, fill_bg.f_g, fill_bg.f_b, 1.0);
