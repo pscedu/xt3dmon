@@ -217,13 +217,14 @@ parse_node(const struct datasrc *ds)
 {
 	int lineno, r, cb, cg, m, n, nid, x, y, z, stat;
 	int enabled, jobid, temp, yodid, nfails, lustat;
-	char buf[BUFSIZ], *s;
+	char buf[BUFSIZ], *s, *field;
 	struct node *node;
 	struct job *job;
 	struct yod *yod;
 	size_t j;
 
 	widim.iv_w = widim.iv_h = widim.iv_d = 0;
+	mach_drain = 0;
 
 	/* Explicitly initialize all nodes. */
 	for (r = 0; r < NROWS; r++)
@@ -245,6 +246,24 @@ parse_node(const struct datasrc *ds)
 			s++;
 		if (*s == '#' || *s == '\0')
 			continue;
+
+		if (*s == '@') {
+			s++;
+
+			field = "drain";
+			if (strncmp(s, field, strlen(field)) == 0) {
+				time_t drain;
+
+				s += strlen(field);
+				if (!isspace(*s))
+					goto bad;
+				PARSENUM(s, drain, INT_MAX);
+				mach_drain = (time_t)drain;
+				continue;
+			}
+
+			goto bad;
+		}
 
 		PARSENUM(s, nid, NID_MAX);
 		PARSENUM(s, r, NROWS);
