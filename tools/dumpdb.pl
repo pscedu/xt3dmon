@@ -17,6 +17,7 @@ my $user = "sys_mgmt";
 my $pass = "sys_mgmt";
 my $db   = "XTAdmin";
 my $temp_path = "/home/crayadm/TempCheck/XT3CpuTemp*.txt"; # smw path to temperatures
+my $mach_path = "/usr/local/pbs/partition_info"; # extra machine info
 
 # data file base names
 my %c_fn = (
@@ -78,6 +79,18 @@ while (defined($line = <CONNFH>)) {
 }
 close CONNFH;
 
+# Gather extra machine info.
+open CONNFH, "ssh $login_host cat $mach_path |" or err("ssh $login_host");
+while (defined($line = <CONNFH>)) {
+	$line =~ s/^\s+|\s+$//g;
+
+	if ($line =~ /^DRAIN_TIME\s*=\s*(\d+)$/) {
+		print { $fh{node} } "\@drain $1\n";
+	}
+}
+close CONNFH;
+
+# Build more fields for node data file.
 my $sth = $dbh->prepare(<<SQL) or dberr("preparing sql");
 	SELECT
 		processor_id		AS nid,
@@ -156,6 +169,7 @@ while ($row = $sth->fetchrow_hashref()) {
 }
 $sth->finish;
 
+# Gather and print yod data.
 $sth = $dbh->prepare(<<SQL) or dberr("preparing sql");
 	SELECT
 		yod_id,
@@ -178,6 +192,7 @@ $sth->finish;
 
 $dbh->disconnect;
 
+# Gather data from qstat(1) and print job data file.
 my %j = (state => "");
 open CONNFH, "ssh $login_host \"perl -We 'my \\\$pid = fork; " .
     "exit if \\\$pid == -1; if (\\\$pid) { " .
