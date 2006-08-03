@@ -27,9 +27,6 @@
 
 #define SKEL_GAP	(0.1f)
 
-#define IS_SELNODE_IF_NEEDED(n, onlysn)	\
-	(((onlysn) && (n)->n_flags & NF_SELNODE) || !(onlysn))
-
 float	 snap_to_grid(float, float, float);
 
 struct fvec wi_repstart;
@@ -589,23 +586,10 @@ draw_skel(void)
 #endif
 
 void
-draw_pipe(struct ivec *iv, struct fvec *dimv, int onlysn)
+draw_pipe(struct ivec *iv, int dim)
 {
-	int *j, jmax, dim, port, class, pipelen;
-	int forwrd, backrd, backflip, flip, *dimlen;
-	struct node *ns, *ne, *lastn, *firstn, *curn;
-	struct fvec fv, *np;
-	struct ivec adjv;
 	struct fill *fp;
-	int t, jincr;
-	double len;
-
-	if (dimv->fv_w)
-		dim = DIM_X;
-	else if (dimv->fv_h)
-		dim = DIM_Y;
-	else
-		dim = DIM_Z;
+	struct fvec *dimp;
 
 	/* Anti-aliasing */
 	glEnable(GL_BLEND);
@@ -613,228 +597,234 @@ draw_pipe(struct ivec *iv, struct fvec *dimv, int onlysn)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
 
+	fp = &fill_dim[dim];
+	dimp = &vmodes[st.st_vmode].vm_ndim[GEOM_CUBE];
+
+	glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
+	glPushMatrix();
+	glTranslatef(
+	    st.st_winsp.iv_x * (st.st_wioff.iv_x + iv->iv_x - (dim == DIM_X)) + dimp->fv_w / 2.0,
+	    st.st_winsp.iv_y * (st.st_wioff.iv_y + iv->iv_y - (dim == DIM_Y)) + dimp->fv_h / 2.0,
+	    st.st_winsp.iv_z * (st.st_wioff.iv_z + iv->iv_z - (dim == DIM_Z)) + dimp->fv_d / 2.0);
 	switch (dim) {
 	case DIM_X:
-		jmax = widim.iv_w;
-		j = &iv->iv_x;
-		dimlen = &st.st_winsp.iv_w;
-		forwrd = RD_POSX;
-		backrd = RD_NEGX;
+		glRotatef(90.0, 0.0, 1.0, 0.0);
 		break;
 	case DIM_Y:
-		jmax = widim.iv_h;
-		j = &iv->iv_y;
-		dimlen = &st.st_winsp.iv_h;
-		forwrd = RD_POSY;
-		backrd = RD_NEGY;
-		break;
-	case DIM_Z:
-		jmax = widim.iv_d;
-		j = &iv->iv_z;
-		dimlen = &st.st_winsp.iv_d;
-		forwrd = RD_POSZ;
-		backrd = RD_NEGZ;
+		glRotatef(-90.0, 1.0, 0.0, 0.0);
 		break;
 	}
+	gluCylinder(quadric, 0.1, 0.1,
+	    st.st_winsp.iv_val[dim] * (widim.iv_val[dim] + 1), 3, 1);
+//	if (flip) {
+//		glTranslatef(0.0, 0.0, len);
+//		gluCylinder(quadric, 0.5, 0.001, 0.5, 3, 1);
+//	}
+	glPopMatrix();
 
-	jincr = 1;
-	switch (st.st_pipemode) {
-	case PM_DIR:
-		fp = &fill_dim[dim];
-		break;
-	case PM_RTE:
-		switch (st.st_rtepset) {
-		case RPS_POS:
-			jincr = -1;
-			SWAP(backrd, forwrd, t);
-			break;
-		}
-		break;
-	}
-
-	for (*j = 0; abs(*j) < jmax; *j += jincr) {
-		adjv.iv_x = negmod(iv->iv_x + st.st_wioff.iv_x, widim.iv_w);
-		adjv.iv_y = negmod(iv->iv_y + st.st_wioff.iv_y, widim.iv_h);
-		adjv.iv_z = negmod(iv->iv_z + st.st_wioff.iv_z, widim.iv_d);
-		ne = wimap[adjv.iv_x][adjv.iv_y][adjv.iv_z];
-		if (ne == NULL || !node_show(ne))
-			continue;
-
-		ns = node_neighbor(VM_WIRED, ne, backrd, &backflip);
-		if (ns == NULL)
-			errx(1, "pipe: no %d neighbor at %d,%d,%d",
-			    backrd, adjv.iv_x, adjv.iv_y, adjv.iv_z);
-
-		if (!IS_SELNODE_IF_NEEDED(ne, onlysn))
-			continue;
-
-		if (st.st_opts & OP_NODEANIM)
-			np = &ne->n_vcur;
-		else
-			np = ne->n_v;
-
-		vec_set(&fv,
-		    np->fv_x + ne->n_dimp->fv_w / 2.0,
-		    np->fv_y + ne->n_dimp->fv_h / 2.0,
-		    np->fv_z + ne->n_dimp->fv_d / 2.0);
-		fv.fv_val[dim] -= *dimlen; // * jincr ?
-
-		pipelen = 1;
-		firstn = ne;
-
-		switch (st.st_pipemode) {
-		case PM_RTE:
-			port = DIM_TO_PORT(dim, st.st_rtepset);
-
-			if (ne->n_route.rt_err[port][st.st_rtetype] == 0)
-				continue;
-			class = NODECLASS(ne->n_route.rt_err[port][st.st_rtetype],
-			    rt_max.rt_err[port][st.st_rtetype]);
-			curn = ns;
-			break;
-		}
-
-		lastn = NULL;
-		flip = 0;
-		while (abs(*j += jincr) <= jmax) {
-			lastn = ne;
-		    	ne = node_neighbor(VM_WIRED, ne, forwrd, &flip);
-			if (ne == NULL)
-				errx(1, "pipe: no %d neighbor at %d,%d,%d",
-				    forwrd, ne->n_wiv.iv_x, ne->n_wiv.iv_y,
-				    ne->n_wiv.iv_z);
-			switch (st.st_pipemode) {
-			case PM_RTE:
-				if (NODECLASS(ne->n_route.rt_err[port][st.st_rtetype],
-				    rt_max.rt_err[port][st.st_rtetype]) != class) {
-					*j -= jincr;
-					goto done;
-				}
-				break;
-			}
-			if (flip) {
-				pipelen++;
-				*j += jincr;
-				break;
-			}
-			pipelen += abs(ne->n_wiv.iv_val[dim] -
-			    lastn->n_wiv.iv_val[dim]);
-		    	if (!node_show(ne))
-				break;
-			if (!IS_SELNODE_IF_NEEDED(ne, onlysn))
-				break;
-		}
-done:
-		switch (st.st_pipemode) {
-		case PM_RTE:
-			fp = &rtpipeclass[class].nc_fill;
-			switch (st.st_rtepset) {
-			case RPS_POS:
-				SWAP(backflip, flip, t);
-				break;
-			}
-			break;
-		}
-
-		if (!backflip && ns->n_wiv.iv_val[dim] != 0) {
-printf("no blackflip pipelen %d -> ", pipelen);
-			pipelen += abs(firstn->n_wiv.iv_val[dim] -
-			    ns->n_wiv.iv_val[dim]) - 1;
-printf("%d\n", pipelen);
-			fv.fv_val[dim] -= *dimlen *
-			    (firstn->n_wiv.iv_val[dim] -
-			    ns->n_wiv.iv_val[dim] - 1);
-		}
-
-		if (backflip && firstn->n_wiv.iv_val[dim] != 0) {
-printf("backflip [%d:%d] pipelen %d -> ",
-  firstn->n_wiv.iv_val[dim],
-  ns->n_wiv.iv_val[dim],
-  pipelen);
-			pipelen += firstn->n_wiv.iv_val[dim];
-printf("%d\n", pipelen);
-			fv.fv_val[dim] -= *dimlen *
-			    firstn->n_wiv.iv_val[dim];
-		}
-		if (flip) {
-printf("flip!\n");
-			if (lastn == NULL)
-				errx(1, "pipe: flipped but no last %d", *j);
-printf("pipelen %d -> ", pipelen);
-			pipelen += (widim.iv_val[dim] -
-			    lastn->n_wiv.iv_val[dim] - 1);
-printf("%d\n", pipelen);
-		}
-
-		len = *dimlen * pipelen;
-
-		glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
-		glPushMatrix();
-		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
-		switch (dim) {
-		case DIM_X:
-			glRotatef(90.0, 0.0, jincr * 1.0, 0.0);
-			break;
-		case DIM_Y:
-			glRotatef(-90.0, jincr * 1.0, 0.0, 0.0);
-			break;
-		case DIM_Z:
-			if (jincr < 0)
-				glRotatef(180.0, 0.0, 1.0, 0.0);
-			break;
-		}
-//printf("len=%f\n", len);
-printf("np=%f,%f,%f\n", np->fv_x, np->fv_y, np->fv_z);
-
-		gluCylinder(quadric, 0.1, 0.1, len, 3, 1);
-printf("drew pipe\n");
-		if (backflip)
-			gluCylinder(quadric, 0.001, 0.5, 0.5, 3, 1);
-		if (flip) {
-			glTranslatef(0.0, 0.0, len);
-			gluCylinder(quadric, 0.5, 0.001, 0.5, 3, 1);
-		}
-		glPopMatrix();
-	}
 	glDisable(GL_BLEND);
 	glDisable(GL_POLYGON_SMOOTH);
 }
 
 __inline void
-draw_pipes(int onlysn)
+draw_node_pipes(struct node *n)
+{
+	int rsign, rd, flip, dim, port, class;
+	struct fvec cen, ngcen;
+	struct node *ng;
+	struct fill *fp;
+	double len;
+
+	gluQuadricDrawStyle(quadric, GLU_FILL);
+
+	/* Anti-aliasing */
+	glEnable(GL_BLEND);
+	glEnable(GL_POLYGON_SMOOTH);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
+
+	node_center(n, &cen);
+
+	for (rd = 0; rd < NRD; rd++) {
+		ng = node_neighbor(VM_WIRED, n, rd, &flip);
+
+		rsign = 1;
+		switch (rd) {
+		case RD_NEGX:
+			rsign = -1;
+			/* FALLTHROUGH */
+		case RD_POSX:
+			dim = DIM_X;
+			break;
+		case RD_NEGY:
+			rsign = -1;
+			/* FALLTHROUGH */
+		case RD_POSY:
+			dim = DIM_Y;
+			break;
+		case RD_NEGZ:
+			rsign = -1;
+			/* FALLTHROUGH */
+		case RD_POSZ:
+			dim = DIM_Z;
+			break;
+		}
+
+		switch (st.st_pipemode) {
+		case PM_DIR:
+			fp = &fill_dim[dim];
+			break;
+		case PM_RTE:
+			port = rdir_to_rteport(rd);
+
+			if (n->n_route.rt_err[port][st.st_rtetype] == 0)
+				continue;
+			switch (st.st_rtepset) {
+			case RPS_POS:
+				if (rsign < 0)
+					continue;
+				break;
+			case RPS_NEG:
+				if (rsign > 0)
+					continue;
+				break;
+			}
+			class = NODECLASS(n->n_route.rt_err[port][st.st_rtetype],
+			    rt_max.rt_err[port][st.st_rtetype]);
+			fp = &rtpipeclass[class].nc_fill;
+			break;
+		}
+
+		glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
+		switch (st.st_vmode) {
+		case VM_WIRED:
+		case VM_WIONE:
+			len = st.st_winsp.iv_val[dim];
+			if (flip) {
+				/* Draw continuation arrow. */
+				node_center(ng, &ngcen);
+
+				if (rsign > 0)
+					len *= ng->n_wiv.iv_val[dim] + 1;
+				else
+					len *= widim.iv_val[dim] -
+					    ng->n_wiv.iv_val[dim];
+
+				glPushMatrix();
+				glTranslatef(ngcen.fv_x, ngcen.fv_y, ngcen.fv_z);
+				switch (dim) {
+				case DIM_X:
+					glRotatef(90.0, 0.0, -rsign * 1.0, 0.0);
+					break;
+				case DIM_Y:
+					glRotatef(-90.0, -rsign * 1.0, 0.0, 0.0);
+					break;
+				case DIM_Z:
+					if (rsign > 0)
+						glRotatef(180.0, 0.0, 1.0, 0.0);
+					break;
+				}
+
+				gluCylinder(quadric, 0.1, 0.1, len, 3, 1);
+				glTranslatef(0.0, 0.0, len);
+				gluCylinder(quadric, 0.5, 0.001, 0.5, 3, 1);
+				glPopMatrix();
+
+				/* Calculate length to end of cluster. */
+				len = st.st_winsp.iv_val[dim];
+				if (rsign < 0)
+					len *= n->n_wiv.iv_val[dim] + 1;
+				else
+					len *= widim.iv_val[dim] -
+					    n->n_wiv.iv_val[dim];
+
+			} else
+				len *= abs(ng->n_wiv.iv_val[dim] -
+				    n->n_wiv.iv_val[dim]);
+
+			glPushMatrix();
+			glTranslatef(cen.fv_x, cen.fv_y, cen.fv_z);
+			switch (dim) {
+			case DIM_X:
+				glRotatef(90.0, 0.0, rsign * 1.0, 0.0);
+				break;
+			case DIM_Y:
+				glRotatef(-90.0, rsign * 1.0, 0.0, 0.0);
+				break;
+			case DIM_Z:
+				if (rsign < 0)
+					glRotatef(180.0, 0.0, 1.0, 0.0);
+				break;
+			}
+
+			gluCylinder(quadric, 0.1, 0.1, len, 3, 1);
+			if (flip) {
+				glTranslatef(0.0, 0.0, len);
+				gluCylinder(quadric, 0.5, 0.001, 0.5, 3, 1);
+			}
+			glPopMatrix();
+			break;
+		case VM_PHYS:
+			node_center(ng, &ngcen);
+
+			glLineWidth(5.0);
+			glBegin(GL_LINES);
+			glVertex3d(cen.fv_x, cen.fv_y, cen.fv_z);
+			glVertex3d(ngcen.fv_x, ngcen.fv_y, ngcen.fv_z);
+			glEnd();
+			break;
+		}
+	}
+
+	glDisable(GL_BLEND);
+	glDisable(GL_POLYGON_SMOOTH);
+}
+
+__inline void
+draw_pipes(void)
 {
 	double sx, sy, sz, dx, dy, dz;
 	struct node *n, *ng;
-	struct fvec dim;
 	struct fill *fp;
 	struct ivec iv;
 	int rd;
+
+	switch (st.st_pipemode) {
+	case PM_DIR:
+		if ((st.st_opts & OP_SUBSET) == 0)
+			break;
+		/* FALLTHROUGH */
+	case PM_RTE:
+		NODE_FOREACH(n, &iv)
+			if (n)
+				draw_node_pipes(n);
+		return;
+	}
 
 	gluQuadricDrawStyle(quadric, GLU_FILL);
 
 	switch (st.st_vmode) {
 	case VM_WIRED:
 	case VM_WIONE:
-		vec_set(&dim, 0.0f, 0.0f, WIV_SDEPTH);
+		ivec_set(&iv, 0, 0, 0);
 		for (iv.iv_x = 0; iv.iv_x < widim.iv_w; iv.iv_x++)
 			for (iv.iv_y = 0; iv.iv_y < widim.iv_h; iv.iv_y++)
-				draw_pipe(&iv, &dim, onlysn);
+				draw_pipe(&iv, DIM_Z);
 
-		vec_set(&dim, 0.0f, WIV_SHEIGHT, 0.0f);
+		ivec_set(&iv, 0, 0, 0);
 		for (iv.iv_z = 0; iv.iv_z < widim.iv_d; iv.iv_z++)
 			for (iv.iv_x = 0; iv.iv_x < widim.iv_w; iv.iv_x++)
-				draw_pipe(&iv, &dim, onlysn);
+				draw_pipe(&iv, DIM_Y);
 
-		vec_set(&dim, WIV_SWIDTH, 0.0f, 0.0f);
+		ivec_set(&iv, 0, 0, 0);
 		for (iv.iv_y = 0; iv.iv_y < widim.iv_h; iv.iv_y++)
 			for (iv.iv_z = 0; iv.iv_z < widim.iv_d; iv.iv_z++)
-				draw_pipe(&iv, &dim, onlysn);
+				draw_pipe(&iv, DIM_X);
 		break;
 	case VM_PHYS:
 		glLineWidth(2.0);
 		NODE_FOREACH(n, &iv) {
-			if (n && node_show(n) &&
-			    IS_SELNODE_IF_NEEDED(n, onlysn)) {
+			if (n && node_show(n)) {
 				sx = n->n_v->fv_x + n->n_dimp->fv_w / 2.0;
 				sy = n->n_v->fv_y + n->n_dimp->fv_h / 2.0;
 				sz = n->n_v->fv_z + n->n_dimp->fv_d / 2.0;
@@ -907,7 +897,7 @@ draw_cluster(void)
 	case VM_WIONE:
 	case VM_PHYS:
 		if (st.st_opts & OP_PIPES)
-			draw_pipes(0);
+			draw_pipes();
 		NODE_FOREACH(n, &iv)
 			if (n && node_show(n)) {
 				if (ndf & NDF_ATORIGIN) {
@@ -936,9 +926,6 @@ draw_selnodes(void)
 	struct fill *ofp;
 	struct node *n;
 
-	if (st.st_opts & OP_SELPIPES &&
-	    (st.st_opts & OP_PIPES) == 0)
-		draw_pipes(1);
 	SLIST_FOREACH(sn, &selnodes, sn_next) {
 		n = sn->sn_nodep;
 		ofp = n->n_fillp;
@@ -949,6 +936,10 @@ draw_selnodes(void)
 			fvp = &n->n_vcur;
 		else
 			fvp = n->n_v;
+
+		if (st.st_opts & OP_SELPIPES &&
+		    (st.st_opts & OP_PIPES) == 0)
+			draw_node_pipes(n);
 
 		glPushMatrix();
 		glTranslatef(fvp->fv_x, fvp->fv_y, fvp->fv_z);
