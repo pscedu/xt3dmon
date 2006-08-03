@@ -546,7 +546,7 @@ gl_keyh_pipes(unsigned char key, __unused int u, __unused int v)
 		st.st_pipemode = PM_DIR;
 		break;
 	}
-	st.st_rf |= RF_CLUSTER;
+	st.st_rf |= RF_CLUSTER | RF_SELNODE;
 }
 
 void

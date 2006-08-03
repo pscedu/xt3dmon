@@ -444,7 +444,7 @@ gscb_pw_pipe(struct glname *gn, int flags)
 		cursor_set(GLUT_CURSOR_INFO);
 	else if (flags == 0) {
 		st.st_pipemode = m;
-		st.st_rf |= RF_CLUSTER;
+		st.st_rf |= RF_CLUSTER | RF_SELNODE;
 		if ((st.st_opts & (OP_PIPES | OP_SELPIPES)) == 0)
 			opt_enable(OP_PIPES);
 	}
