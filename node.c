@@ -308,7 +308,7 @@ node_goto(struct node *n)
 }
 
 __inline int
-node_show(struct node *n)
+node_show(const struct node *n)
 {
 	if (st.st_opts & OP_SUBSET &&
 	    (n->n_flags & NF_SHOW) == 0)
@@ -316,6 +316,18 @@ node_show(struct node *n)
 	if (n->n_flags & NF_VALID &&
 	    n->n_fillp->f_a != 0.0f)
 		return (1);
-
 	return (0);
+}
+
+void
+node_center(const struct node *n, struct fvec *fvp)
+{
+	if (st.st_opts & OP_NODEANIM &&
+	    st.st_vmode != VM_WIRED)
+		*fvp = n->n_vcur;
+	else
+		*fvp = *n->n_v;
+	fvp->fv_x += n->n_dimp->fv_w / 2.0;
+	fvp->fv_y += n->n_dimp->fv_h / 2.0;
+	fvp->fv_z += n->n_dimp->fv_d / 2.0;
 }

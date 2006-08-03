@@ -61,7 +61,8 @@ void		 node_adjmodpos(int, struct fvec *);
 void		 node_setphyspos(struct node *, struct fvec *);
 struct node	*node_for_nid(int);
 void		 node_goto(struct node *);
-int		 node_show(struct node *);
+int		 node_show(const struct node *);
+void		 node_center(const struct node *, struct fvec *);
 
 extern struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 extern struct node	*invmap[];
