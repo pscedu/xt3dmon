@@ -41,6 +41,7 @@ struct route {
 };
 
 int rteport_to_rdir(int);
+int rdir_to_rteport(int);
 
 extern struct route rt_max;
 extern struct route rt_zero;

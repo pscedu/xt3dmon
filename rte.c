@@ -27,3 +27,24 @@ rteport_to_rdir(int port)
 		err(1, "invalid rteport: %d", port);
 	}
 }
+
+int
+rdir_to_rteport(int rd)
+{
+	switch (rd) {
+	case RD_NEGX:
+		return (RP_NEGX);
+	case RD_POSX:
+		return (RP_POSX);
+	case RD_NEGY:
+		return (RP_NEGY);
+	case RD_POSY:
+		return (RP_POSY);
+	case RD_NEGZ:
+		return (RP_NEGZ);
+	case RD_POSZ:
+		return (RP_POSZ);
+	default:
+		err(1, "invalid rdir: %d", rd);
+	}
+}
