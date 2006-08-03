@@ -22,6 +22,7 @@
 #include "route.h"
 #include "selnode.h"
 #include "state.h"
+#include "util.h"
 #include "xmath.h"
 
 #define SKEL_GAP	(0.1f)
@@ -592,10 +593,11 @@ draw_pipe(struct ivec *iv, struct fvec *dimv, int onlysn)
 {
 	int *j, jmax, dim, port, class, pipelen;
 	int forwrd, backrd, backflip, flip, *dimlen;
-	struct node *ns, *ne, *lastn, *firstn, *prevn;
+	struct node *ns, *ne, *lastn, *firstn, *curn;
 	struct fvec fv, *np;
 	struct ivec adjv;
 	struct fill *fp;
+	int t, jincr;
 	double len;
 
 	if (dimv->fv_w)
@@ -635,13 +637,22 @@ draw_pipe(struct ivec *iv, struct fvec *dimv, int onlysn)
 		break;
 	}
 
+	jincr = 1;
 	switch (st.st_pipemode) {
 	case PM_DIR:
 		fp = &fill_dim[dim];
 		break;
+	case PM_RTE:
+		switch (st.st_rtepset) {
+		case RPS_POS:
+			jincr = -1;
+			SWAP(backrd, forwrd, t);
+			break;
+		}
+		break;
 	}
 
-	for (*j = 0; *j < jmax; ++*j) {
+	for (*j = 0; abs(*j) < jmax; *j += jincr) {
 		adjv.iv_x = negmod(iv->iv_x + st.st_wioff.iv_x, widim.iv_w);
 		adjv.iv_y = negmod(iv->iv_y + st.st_wioff.iv_y, widim.iv_h);
 		adjv.iv_z = negmod(iv->iv_z + st.st_wioff.iv_z, widim.iv_d);
@@ -654,17 +665,8 @@ draw_pipe(struct ivec *iv, struct fvec *dimv, int onlysn)
 			errx(1, "pipe: no %d neighbor at %d,%d,%d",
 			    backrd, adjv.iv_x, adjv.iv_y, adjv.iv_z);
 
-		switch (st.st_pipemode) {
-		case PM_RTE:
-			if (!IS_SELNODE_IF_NEEDED(ne, onlysn) &&
-			    !IS_SELNODE_IF_NEEDED(ns, onlysn))
-				continue;
-			break;
-		case PM_DIR:
-			if (!IS_SELNODE_IF_NEEDED(ne, onlysn))
-				continue;
-			break;
-		}
+		if (!IS_SELNODE_IF_NEEDED(ne, onlysn))
+			continue;
 
 		if (st.st_opts & OP_NODEANIM)
 			np = &ne->n_vcur;
@@ -675,36 +677,26 @@ draw_pipe(struct ivec *iv, struct fvec *dimv, int onlysn)
 		    np->fv_x + ne->n_dimp->fv_w / 2.0,
 		    np->fv_y + ne->n_dimp->fv_h / 2.0,
 		    np->fv_z + ne->n_dimp->fv_d / 2.0);
-		fv.fv_val[dim] -= *dimlen;
+		fv.fv_val[dim] -= *dimlen; // * jincr ?
 
 		pipelen = 1;
-		if (!backflip) {
-			pipelen = ne->n_wiv.iv_val[dim] - ns->n_wiv.iv_val[dim];
-			fv.fv_val[dim] -= *dimlen *
-			    (ne->n_wiv.iv_val[dim] - ns->n_wiv.iv_val[dim] - 1);
-		}
-
 		firstn = ne;
-		if (*j == 0 || backflip == 0)
-			firstn = NULL;
 
 		switch (st.st_pipemode) {
 		case PM_RTE:
 			port = DIM_TO_PORT(dim, st.st_rtepset);
 
-			prevn = ne;
-			if (st.st_rtepset == RPS_POS)
-				prevn = ns;
-			if (prevn->n_route.rt_err[port][st.st_rtetype] == 0)
+			if (ne->n_route.rt_err[port][st.st_rtetype] == 0)
 				continue;
-			class = NODECLASS(prevn->n_route.rt_err[port][st.st_rtetype],
+			class = NODECLASS(ne->n_route.rt_err[port][st.st_rtetype],
 			    rt_max.rt_err[port][st.st_rtetype]);
+			curn = ns;
 			break;
 		}
 
 		lastn = NULL;
 		flip = 0;
-		while (++*j <= jmax) {
+		while (abs(*j += jincr) <= jmax) {
 			lastn = ne;
 		    	ne = node_neighbor(VM_WIRED, ne, forwrd, &flip);
 			if (ne == NULL)
@@ -713,23 +705,20 @@ draw_pipe(struct ivec *iv, struct fvec *dimv, int onlysn)
 				    ne->n_wiv.iv_z);
 			switch (st.st_pipemode) {
 			case PM_RTE:
-				prevn = ne;
-				if (st.st_rtepset == RPS_POS)
-					prevn = lastn;
-				if (NODECLASS(prevn->n_route.rt_err[port][st.st_rtetype],
+				if (NODECLASS(ne->n_route.rt_err[port][st.st_rtetype],
 				    rt_max.rt_err[port][st.st_rtetype]) != class) {
-					--*j;
-					flip = 0;
+					*j -= jincr;
 					goto done;
 				}
 				break;
 			}
 			if (flip) {
 				pipelen++;
-				++*j;
+				*j += jincr;
 				break;
 			}
-			pipelen += ne->n_wiv.iv_val[dim] - lastn->n_wiv.iv_val[dim];
+			pipelen += abs(ne->n_wiv.iv_val[dim] -
+			    lastn->n_wiv.iv_val[dim]);
 		    	if (!node_show(ne))
 				break;
 			if (!IS_SELNODE_IF_NEEDED(ne, onlysn))
@@ -739,19 +728,42 @@ done:
 		switch (st.st_pipemode) {
 		case PM_RTE:
 			fp = &rtpipeclass[class].nc_fill;
+			switch (st.st_rtepset) {
+			case RPS_POS:
+				SWAP(backflip, flip, t);
+				break;
+			}
 			break;
 		}
 
-		if (firstn) {
+		if (!backflip && ns->n_wiv.iv_val[dim] != 0) {
+printf("no blackflip pipelen %d -> ", pipelen);
+			pipelen += abs(firstn->n_wiv.iv_val[dim] -
+			    ns->n_wiv.iv_val[dim]) - 1;
+printf("%d\n", pipelen);
+			fv.fv_val[dim] -= *dimlen *
+			    (firstn->n_wiv.iv_val[dim] -
+			    ns->n_wiv.iv_val[dim] - 1);
+		}
+
+		if (backflip && firstn->n_wiv.iv_val[dim] != 0) {
+printf("backflip [%d:%d] pipelen %d -> ",
+  firstn->n_wiv.iv_val[dim],
+  ns->n_wiv.iv_val[dim],
+  pipelen);
 			pipelen += firstn->n_wiv.iv_val[dim];
+printf("%d\n", pipelen);
 			fv.fv_val[dim] -= *dimlen *
 			    firstn->n_wiv.iv_val[dim];
 		}
 		if (flip) {
+printf("flip!\n");
 			if (lastn == NULL)
 				errx(1, "pipe: flipped but no last %d", *j);
+printf("pipelen %d -> ", pipelen);
 			pipelen += (widim.iv_val[dim] -
 			    lastn->n_wiv.iv_val[dim] - 1);
+printf("%d\n", pipelen);
 		}
 
 		len = *dimlen * pipelen;
@@ -761,13 +773,21 @@ done:
 		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
 		switch (dim) {
 		case DIM_X:
-			glRotatef(90.0, 0.0, 1.0, 0.0);
+			glRotatef(90.0, 0.0, jincr * 1.0, 0.0);
 			break;
 		case DIM_Y:
-			glRotatef(-90.0, 1.0, 0.0, 0.0);
+			glRotatef(-90.0, jincr * 1.0, 0.0, 0.0);
+			break;
+		case DIM_Z:
+			if (jincr < 0)
+				glRotatef(180.0, 0.0, 1.0, 0.0);
 			break;
 		}
+//printf("len=%f\n", len);
+printf("np=%f,%f,%f\n", np->fv_x, np->fv_y, np->fv_z);
+
 		gluCylinder(quadric, 0.1, 0.1, len, 3, 1);
+printf("drew pipe\n");
 		if (backflip)
 			gluCylinder(quadric, 0.001, 0.5, 0.5, 3, 1);
 		if (flip) {
