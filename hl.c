@@ -101,7 +101,7 @@ nc_runall(void (*f)(struct fill *))
 	}
 
 	hlnc_clean = 0;
-	st.st_rf |= RF_CLUSTER;
+	st.st_rf |= RF_CLUSTER | RF_SELNODE;
 
 	if (flyby_mode != FBM_REC)
 		return;
@@ -181,7 +181,7 @@ nc_apply(void (*f)(struct fill *), size_t nc)
 	f(fp);
 
 	hlnc_clean = 0;
-	st.st_rf |= RF_CLUSTER;
+	st.st_rf |= RF_CLUSTER | RF_SELNODE;
 
 	if (flyby_mode != FBM_REC)
 		return;
@@ -237,7 +237,7 @@ nc_runsn(void (*f)(struct fill *))
 	}
 
 	hlnc_clean = 0;
-	st.st_rf |= RF_CLUSTER;
+	st.st_rf |= RF_CLUSTER | RF_SELNODE;
 
 	if (flyby_mode != FBM_REC)
 		return;
