@@ -79,6 +79,7 @@ draw_compass(int u, __unused int w, int v, __unused int h)
 #define CMP_ATHK (0.005)
 #define CMP_ALEN (0.01)
 
+	/* Draw z axis. */
 	fp = &fill_dim[DIM_Z];
 	glColor3f(fp->f_r, fp->f_g, fp->f_b);
 	glPushMatrix();
@@ -94,6 +95,11 @@ draw_compass(int u, __unused int w, int v, __unused int h)
 	gluCylinder(quadric, CMP_ATHK, 0.0001, CMP_ALEN, 4, 1);
 	glPopMatrix();
 
+	glRasterPos3d(fv.fv_x, fv.fv_y, fv.fv_z + cl / 2.0);
+	glutBitmapCharacter(GLUT_BITMAP_8_BY_13, '+');
+	glutBitmapCharacter(GLUT_BITMAP_8_BY_13, 'z');
+
+	/* Draw y axis. */
 	fp = &fill_dim[DIM_Y];
 	glColor3f(fp->f_r, fp->f_g, fp->f_b);
 	glPushMatrix();
@@ -110,6 +116,11 @@ draw_compass(int u, __unused int w, int v, __unused int h)
 	gluCylinder(quadric, CMP_ATHK, 0.0001, CMP_ALEN, 4, 1);
 	glPopMatrix();
 
+	glRasterPos3d(fv.fv_x, fv.fv_y + cl / 2.0, fv.fv_z);
+	glutBitmapCharacter(GLUT_BITMAP_8_BY_13, '+');
+	glutBitmapCharacter(GLUT_BITMAP_8_BY_13, 'y');
+
+	/* Draw x axis. */
 	fp = &fill_dim[DIM_X];
 	glColor3f(fp->f_r, fp->f_g, fp->f_b);
 	glPushMatrix();
@@ -125,6 +136,10 @@ draw_compass(int u, __unused int w, int v, __unused int h)
 	glRotatef(90.0, 0.0, 1.0, 0.0);
 	gluCylinder(quadric, CMP_ATHK, 0.0001, CMP_ALEN, 4, 1);
 	glPopMatrix();
+
+	glRasterPos3d(fv.fv_x + cl / 2.0, fv.fv_y, fv.fv_z);
+	glutBitmapCharacter(GLUT_BITMAP_8_BY_13, '+');
+	glutBitmapCharacter(GLUT_BITMAP_8_BY_13, 'x');
 
 	glPopMatrix();
 
@@ -701,34 +716,36 @@ draw_node_pipes(struct node *n)
 		case VM_WIONE:
 			len = st.st_winsp.iv_val[dim];
 			if (flip) {
-				/* Draw continuation arrow. */
-				node_center(ng, &ngcen);
+				if (node_show(ng)) {
+					/* Draw continuation arrow. */
+					node_center(ng, &ngcen);
 
-				if (rsign > 0)
-					len *= ng->n_wiv.iv_val[dim] + 1;
-				else
-					len *= widim.iv_val[dim] -
-					    ng->n_wiv.iv_val[dim];
-
-				glPushMatrix();
-				glTranslatef(ngcen.fv_x, ngcen.fv_y, ngcen.fv_z);
-				switch (dim) {
-				case DIM_X:
-					glRotatef(90.0, 0.0, -rsign * 1.0, 0.0);
-					break;
-				case DIM_Y:
-					glRotatef(-90.0, -rsign * 1.0, 0.0, 0.0);
-					break;
-				case DIM_Z:
 					if (rsign > 0)
-						glRotatef(180.0, 0.0, 1.0, 0.0);
-					break;
-				}
+						len *= ng->n_wiv.iv_val[dim] + 1;
+					else
+						len *= widim.iv_val[dim] -
+						    ng->n_wiv.iv_val[dim];
 
-				gluCylinder(quadric, 0.1, 0.1, len, 3, 1);
-				glTranslatef(0.0, 0.0, len);
-				gluCylinder(quadric, 0.5, 0.001, 0.5, 3, 1);
-				glPopMatrix();
+					glPushMatrix();
+					glTranslatef(ngcen.fv_x, ngcen.fv_y, ngcen.fv_z);
+					switch (dim) {
+					case DIM_X:
+						glRotatef(90.0, 0.0, -rsign * 1.0, 0.0);
+						break;
+					case DIM_Y:
+						glRotatef(-90.0, -rsign * 1.0, 0.0, 0.0);
+						break;
+					case DIM_Z:
+						if (rsign > 0)
+							glRotatef(180.0, 0.0, 1.0, 0.0);
+						break;
+					}
+
+					gluCylinder(quadric, 0.1, 0.1, len, 3, 1);
+					glTranslatef(0.0, 0.0, len);
+					gluCylinder(quadric, 0.5, 0.001, 0.5, 3, 1);
+					glPopMatrix();
+				}
 
 				/* Calculate length to end of cluster. */
 				len = st.st_winsp.iv_val[dim];
@@ -796,7 +813,7 @@ draw_pipes(void)
 		/* FALLTHROUGH */
 	case PM_RTE:
 		NODE_FOREACH(n, &iv)
-			if (n)
+			if (n && node_show(n))
 				draw_node_pipes(n);
 		return;
 	}
