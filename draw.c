@@ -564,42 +564,6 @@ draw_skel(void)
 	}
 }
 
-#if 0
-		/* Draw arrows to imply extension. */
-		if (flip) {
-			glPushMatrix();
-			glTranslated(
-			    sx + sign * (dim == DIM_X) * len,
-			    sy + sign * (dim == DIM_Y) * len,
-			    sz + sign * (dim == DIM_Z) * len);
-			switch (dim) {
-			case DIM_X:
-				glRotatef(90.0, 0.0, sign * 1.0, 0.0);
-				break;
-			case DIM_Y:
-				glRotatef(-90.0, sign * 1.0, 0.0, 0.0);
-				break;
-			case DIM_Z:
-				if (sign < 0)
-					glRotatef(180.0, 0.0, 1.0, 0.0);
-				break;
-			}
-			gluCylinder(quadric, 0.5, 0.1, 0.5, 3, 1);
-			glPopMatrix();
-
-			/*
-			 * Draw on other side, too,
-			 * unless the other side is also a selnode.
-			 */
-			if (st.st_vmode == VM_WIONE &&
-			    (ng->n_flags & NF_SELNODE) == 0) {
-				if (flip > 0) {
-				} else {
-				}
-			}
-		}
-#endif
-
 void
 draw_pipe(struct ivec *iv, int dim)
 {
@@ -631,10 +595,6 @@ draw_pipe(struct ivec *iv, int dim)
 	}
 	gluCylinder(quadric, 0.1, 0.1,
 	    st.st_winsp.iv_val[dim] * (widim.iv_val[dim] + 1), 3, 1);
-//	if (flip) {
-//		glTranslatef(0.0, 0.0, len);
-//		gluCylinder(quadric, 0.5, 0.001, 0.5, 3, 1);
-//	}
 	glPopMatrix();
 
 	glDisable(GL_BLEND);
@@ -642,7 +602,7 @@ draw_pipe(struct ivec *iv, int dim)
 }
 
 __inline void
-draw_node_pipes(struct node *n)
+draw_node_pipes(struct node *n, int is_sel)
 {
 	int rsign, rd, flip, dim, port, class;
 	struct fvec cen, ngcen;
@@ -716,7 +676,12 @@ draw_node_pipes(struct node *n)
 		case VM_WIONE:
 			len = st.st_winsp.iv_val[dim];
 			if (flip) {
-				if (node_show(ng)) {
+				/*
+				 * If we're drawing on selected nodes,
+				 *
+				 */
+				if (is_sel && node_show(ng) &&
+				    (ng->n_flags & NF_SELNODE) == 0) {
 					/* Draw continuation arrow. */
 					node_center(ng, &ngcen);
 
@@ -814,7 +779,7 @@ draw_pipes(void)
 	case PM_RTE:
 		NODE_FOREACH(n, &iv)
 			if (n && node_show(n))
-				draw_node_pipes(n);
+				draw_node_pipes(n, 0);
 		return;
 	}
 
@@ -956,7 +921,7 @@ draw_selnodes(void)
 
 		if (st.st_opts & OP_SELPIPES &&
 		    (st.st_opts & OP_PIPES) == 0)
-			draw_node_pipes(n);
+			draw_node_pipes(n, 1);
 
 		glPushMatrix();
 		glTranslatef(fvp->fv_x, fvp->fv_y, fvp->fv_z);
