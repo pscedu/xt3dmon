@@ -75,7 +75,6 @@ todo
 - merge selpipes and pipes with a simple check: n_flags & NF_SELNODE
   in the loop which determines how long/when to draw pipes
 - merge reel, fbcho, dxcho code - .cvsignore/dirs
-- parse /usr/local/pbs/partition_info for captions
 - add subtitle for when machine down
 
 tweening
