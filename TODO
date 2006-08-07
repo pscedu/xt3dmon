@@ -76,6 +76,7 @@ todo
   in the loop which determines how long/when to draw pipes
 - merge reel, fbcho, dxcho code - .cvsignore/dirs
 - add subtitle for when machine down
+- add cam_refocus()
 
 tweening
 - ensure tweening leaves normalized vectors

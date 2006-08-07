@@ -546,7 +546,7 @@ gscb_pw_wiadj(struct glname *gn, int flags)
 		    RF_SELNODE | RF_NODESWIV;
 
 		tween_push(TWF_POS | TWF_LOOK | TWF_UP);
-		cam_revolvefocus(0.0, 0.001);
+		cam_revolvefocus(0.0, 0.001, REVT_LKAVG);
 		tween_pop(TWF_POS | TWF_LOOK | TWF_UP);
 	}
 }

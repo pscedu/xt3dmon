@@ -63,7 +63,7 @@ cam_move(int dir, float amt)
 }
 
 void
-cam_revolve(struct fvec *center, int nfocus, double dt, double dp)
+cam_revolve(struct fvec *center, int nfocus, double dt, double dp, int revt)
 {
 	struct fvec focuspt, diff, sph;
 	int upinv, j;
@@ -117,19 +117,28 @@ cam_revolve(struct fvec *center, int nfocus, double dt, double dp)
 	st.st_lv.fv_x = 0.0;
 	st.st_lv.fv_y = 0.0;
 	st.st_lv.fv_z = 0.0;
-	for (j = 0; j < nfocus; j++) {
-		struct fvec lv;
+	switch (revt) {
+	case REVT_LKAVG:
+		for (j = 0; j < nfocus; j++) {
+			struct fvec lv;
 
-		lv.fv_x = center[j].fv_x - st.st_v.fv_x;
-		lv.fv_y = center[j].fv_y - st.st_v.fv_y;
-		lv.fv_z = center[j].fv_z - st.st_v.fv_z;
-		vec_normalize(&lv);
+			lv.fv_x = center[j].fv_x - st.st_v.fv_x;
+			lv.fv_y = center[j].fv_y - st.st_v.fv_y;
+			lv.fv_z = center[j].fv_z - st.st_v.fv_z;
+			vec_normalize(&lv);
 
-		vec_addto(&lv, &st.st_lv);
+			vec_addto(&lv, &st.st_lv);
+		}
+		st.st_lv.fv_x /= nfocus;
+		st.st_lv.fv_y /= nfocus;
+		st.st_lv.fv_z /= nfocus;
+		break;
+	case REVT_LKCEN:
+		st.st_lv.fv_x = focuspt.fv_x - st.st_v.fv_x;
+		st.st_lv.fv_y = focuspt.fv_y - st.st_v.fv_y;
+		st.st_lv.fv_z = focuspt.fv_z - st.st_v.fv_z;
+		break;
 	}
-	st.st_lv.fv_x /= nfocus;
-	st.st_lv.fv_y /= nfocus;
-	st.st_lv.fv_z /= nfocus;
 	vec_normalize(&st.st_lv);
 
 	vec_cart2sphere(&st.st_lv, &sph);
@@ -147,7 +156,7 @@ cam_revolve(struct fvec *center, int nfocus, double dt, double dp)
  * (using revolvefocus should be the standard revolve case).
  */
 __inline void
-cam_revolvefocus(double dt, double dp)
+cam_revolvefocus(double dt, double dp, int type)
 {
 	struct fvec *fvp;
 	struct fvec fv;
@@ -168,9 +177,9 @@ cam_revolvefocus(double dt, double dp)
 			{ { NODESPACE + CL_WIDTH, NODESPACE + CL_HEIGHT / 2.0, CL_DEPTH / 2.0 } }
 		};
 
-		cam_revolve(nfv, 2, dt, dp);
+		cam_revolve(nfv, 2, dt, dp, type);
 	} else
-		cam_revolve(fvp, 1, dt, dp);
+		cam_revolve(fvp, 1, dt, dp, type);
 }
 
 void
@@ -204,7 +213,7 @@ cam_bird(void)
 		st.st_v.fv_x += st.st_wioff.iv_x * st.st_winsp.iv_x + cen.fv_w / 2.0;
 		st.st_v.fv_y += st.st_wioff.iv_y * st.st_winsp.iv_y + cen.fv_h / 2.0;
 		st.st_v.fv_z += st.st_wioff.iv_z * st.st_winsp.iv_z + cen.fv_d / 2.0;
-		cam_revolvefocus(0.0, 0.01);
+		cam_revolvefocus(0.0, 0.01, REVT_LKAVG);
 		break;
 	}
 }

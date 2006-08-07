@@ -83,9 +83,9 @@ gl_motionh_default(int u, int v)
 		center.fv_x = st.st_v.fv_x + st.st_lv.fv_x;
 		center.fv_y = st.st_v.fv_y + st.st_lv.fv_y;
 		center.fv_z = st.st_v.fv_z + st.st_lv.fv_z;
-		cam_revolve(&center, 1, du * 0.01, -dv * 0.01);
+		cam_revolve(&center, 1, du * 0.01, -dv * 0.01, REVT_LKCEN);
 	} else
-		cam_revolvefocus(du * 0.01, -dv * 0.01);
+		cam_revolvefocus(du * 0.01, -dv * 0.01, REVT_LKCEN);
 	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
 
 	mousev.iv_x = u;

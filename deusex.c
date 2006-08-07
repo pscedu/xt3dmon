@@ -99,7 +99,7 @@ dxp_orbit(struct dx_action *dxa)
 	amt += fabs(adj);
 
 	tween_push(TWF_POS | TWF_LOOK | TWF_UP);
-	cam_revolvefocus(du, dv);
+	cam_revolvefocus(du, dv, REVT_LKAVG);
 	tween_pop(TWF_POS | TWF_LOOK | TWF_UP);
 
 	/*
@@ -165,7 +165,7 @@ dxp_curlyq(void)
 
 	tween_push(TWF_POS | TWF_LOOK | TWF_UP);
 	cam_move(DIR_FORW, fwadj);
-	cam_revolvefocus(du, dv);
+	cam_revolvefocus(du, dv, REVT_LKAVG);
 	tween_pop(TWF_POS | TWF_LOOK | TWF_UP);
 
 	ret = 0;
@@ -396,7 +396,7 @@ int
 dxp_refocus(__unused struct dx_action *dxa)
 {
 	tween_push(TWF_POS | TWF_UP | TWF_LOOK);
-	cam_revolvefocus(0.0, 0.001);
+	cam_revolvefocus(0.0, 0.001, REVT_LKAVG);
 	tween_pop(TWF_POS | TWF_UP | TWF_LOOK);
 	return (1);
 }
