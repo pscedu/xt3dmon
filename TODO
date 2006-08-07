@@ -77,6 +77,7 @@ todo
 - merge reel, fbcho, dxcho code - .cvsignore/dirs
 - add subtitle for when machine down
 - add cam_refocus()
+- add "extended help" panel -- contents description get updated on each item moused over
 
 tweening
 - ensure tweening leaves normalized vectors
