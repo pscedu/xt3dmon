@@ -41,9 +41,6 @@
 /* Lustre class constants. */
 #define NLUSTC		3
 
-#define NODECLASS(val, max) \
-	((max) ? 10 * ((val) - 1e-5) / (max) : 9)
-
 struct nodeclass {
 	char		*nc_name;
 	struct fill	 nc_fill;

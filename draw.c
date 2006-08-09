@@ -664,8 +664,8 @@ draw_node_pipes(struct node *n, int is_sel)
 					continue;
 				break;
 			}
-			class = NODECLASS(n->n_route.rt_err[port][st.st_rtetype],
-			    rt_max.rt_err[port][st.st_rtetype]);
+			class = roundclass(n->n_route.rt_err[port][st.st_rtetype],
+			    0, rt_max.rt_err[port][st.st_rtetype], NRTC);
 			fp = &rtpipeclass[class].nc_fill;
 			break;
 		}
