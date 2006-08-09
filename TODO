@@ -73,7 +73,7 @@ todo
 - make job searching bsearch again, since it is sorted
 - merge reel, fbcho, dxcho code - .cvsignore/dirs
 - add subtitle for when machine down
-- add cam_refocus()
+- add cam_refocus() and factor the code out of cam_revolve()
 - add "extended help" panel -- contents description get updated on each item moused over
 - modify the pipe code to determine absolute points based on
 	(node->n_wiv + wioff) * winsp
