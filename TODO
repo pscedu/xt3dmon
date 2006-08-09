@@ -85,6 +85,9 @@ todo
   data fetch script cannot do there job -- when getting data fails,
   set_caption("ssh connection to phantom prohibited?") won't work,
   but we got to say something (in the data files)
+- add a caption timer to prevent captions from being changed so
+  often that they flicker (in the case during a reel playback, e.g.)
+- make the focus point an SLIST
 
 tweening
 - ensure tweening leaves normalized vectors
