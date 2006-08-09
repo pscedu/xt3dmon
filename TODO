@@ -78,6 +78,10 @@ todo
 - add subtitle for when machine down
 - add cam_refocus()
 - add "extended help" panel -- contents description get updated on each item moused over
+- need a way in the script files to report a problem with the
+  data fetch script cannot do there job -- when getting data fails,
+  set_caption("ssh connection to phantom prohibited?") won't work,
+  but we got to say something (in the data files)
 
 tweening
 - ensure tweening leaves normalized vectors
