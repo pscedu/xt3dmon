@@ -152,7 +152,6 @@ opt_enable(int ops)
 	}
 	if (fopts)
 		opt_flip(fopts);
-
 }
 
 void
@@ -298,7 +297,7 @@ roundclass(double t, double min, double max, int nclasses)
 	return ((t - min) / ((max - min) / nclasses + 1e-10));
 }
 
-void
+__inline void
 caption_set(const char *s)
 {
 	caption = s;
