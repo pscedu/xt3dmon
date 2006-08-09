@@ -69,7 +69,6 @@ todo
 - vec_rotate() is busted for large amounts
 - on macos, fix node labels on solid node colors from distances
 - rename NODEWIDTH/HEIGHT/DEPTH cause its phys-only
-- use existing kerberos tickets to do auth
 - kill job_findbyid, just use obj_get with a flag that prevents creation
 - make job searching bsearch again, since it is sorted
 - merge reel, fbcho, dxcho code - .cvsignore/dirs
