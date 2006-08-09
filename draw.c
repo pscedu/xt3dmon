@@ -677,8 +677,10 @@ draw_node_pipes(struct node *n, int is_sel)
 			len = st.st_winsp.iv_val[dim];
 			if (flip) {
 				/*
-				 * If we're drawing on selected nodes,
-				 *
+				 * If we're drawing selpipes, we may
+				 * need to draw continuation arrows
+				 * as the continued nodes themselves
+				 * will not have their arrows drawn.
 				 */
 				if (is_sel && node_show(ng) &&
 				    (ng->n_flags & NF_SELNODE) == 0) {
