@@ -22,6 +22,7 @@ struct dx_action {
 	char			*dxa_caption;
 	int			 dxa_intg;
 	int			 dxa_intg2;
+	double			 dxa_dbl;
 	struct ivec		 dxa_iv;
 	struct ivec		 dxa_iv2;
 #define dxa_dmode	dxa_intg
@@ -29,7 +30,7 @@ struct dx_action {
 #define dxa_hl		dxa_intg
 
 #define dxa_move_dir	dxa_intg
-#define dxa_move_amt	dxa_intg2
+#define dxa_move_amt	dxa_dbl
 
 #define dxa_opt_mode	dxa_intg
 #define dxa_opts	dxa_intg2
