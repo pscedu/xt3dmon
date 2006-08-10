@@ -72,7 +72,7 @@ draw_compass(int u, __unused int w, int v, __unused int h)
 	gluQuadricDrawStyle(quadric, GLU_FILL);
 
 	/* Anti-aliasing */
-	glLineWidth(0.6L);
+	glLineWidth(0.6f);
 	glEnable(GL_BLEND);
 	glEnable(GL_POLYGON_SMOOTH);
 	glEnable(GL_LINE_SMOOTH);
