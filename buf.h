@@ -23,6 +23,5 @@ void	 buf_free(struct buf *);
 void	 buf_reset(struct buf *);
 void	 buf_chop(struct buf *);
 int	 buf_len(const struct buf *);
-void	 buf_cat(struct buf *, const struct buf *);
 
 #endif /* _BUF_H_ */

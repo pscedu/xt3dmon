@@ -47,7 +47,7 @@ buf_appendv(struct buf *buf, const char *s)
 		buf_append(buf, *s++);
 }
 
-__inline void
+void
 buf_appendfv(struct buf *buf, const char *fmt, ...)
 {
 	char *s, *t;
@@ -98,17 +98,4 @@ __inline int
 buf_len(const struct buf *buf)
 {
 	return (buf->buf_pos + 1);
-}
-
-void
-buf_cat(struct buf *ba, const struct buf *bb)
-{
-	if (ba->buf_max - ba->buf_pos <= bb->buf_pos) {
-		ba->buf_max = ba->buf_pos + bb->buf_pos + BUF_GROWAMT;
-		buf_realloc(ba);
-	}
-	strncpy(ba->buf_buf + ba->buf_pos + 1, bb->buf_buf,
-	    bb->buf_pos + 1);
-	/* XXX: ensure NUL termination? */
-	ba->buf_pos += bb->buf_pos;
 }
