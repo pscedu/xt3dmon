@@ -32,8 +32,8 @@ void	 make_selnodes(void);
 void	 draw_cube(const struct fvec *, const struct fill *, int);
 void	 draw_sphere(const struct fvec *, const struct fill *, int);
 
-extern int dl_cluster[2];
-extern int dl_ground[2];
-extern int dl_selnodes[2];
+extern unsigned int dl_cluster[2];
+extern unsigned int dl_ground[2];
+extern unsigned int dl_selnodes[2];
 
 extern GLUquadric *quadric;

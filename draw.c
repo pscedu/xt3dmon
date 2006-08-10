@@ -25,6 +25,9 @@
 #include "util.h"
 #include "xmath.h"
 
+#define SELNODE_IF_NEEDED(n, selpipes) \
+	((selpipes) ? (n)->n_flags & NF_SELNODE : 1)
+
 #define SKEL_GAP	(0.1f)
 
 float	 snap_to_grid(float, float, float);
@@ -35,9 +38,9 @@ float clip;
 
 GLUquadric *quadric;
 
-int dl_cluster[2];
-int dl_ground[2];
-int dl_selnodes[2];
+unsigned int dl_cluster[2];
+unsigned int dl_ground[2];
+unsigned int dl_selnodes[2];
 
 __inline void
 draw_compass(int u, __unused int w, int v, __unused int h)
@@ -51,7 +54,8 @@ draw_compass(int u, __unused int w, int v, __unused int h)
 	glGetDoublev(GL_MODELVIEW_MATRIX, mvm);
 	glGetDoublev(GL_PROJECTION_MATRIX, pvm);
 
-	if (gluUnProject(u, v, 0, mvm, pvm, vp, &x, &y, &z) == GL_FALSE)
+	if (gluUnProject((double)u, (double)v, 0.0,
+	    mvm, pvm, vp, &x, &y, &z) == GL_FALSE)
 		return;
 
 	/*
@@ -68,7 +72,7 @@ draw_compass(int u, __unused int w, int v, __unused int h)
 	gluQuadricDrawStyle(quadric, GLU_FILL);
 
 	/* Anti-aliasing */
-	glLineWidth(0.6);
+	glLineWidth(0.6L);
 	glEnable(GL_BLEND);
 	glEnable(GL_POLYGON_SMOOTH);
 	glEnable(GL_LINE_SMOOTH);
@@ -765,7 +769,7 @@ draw_node_pipes(struct node *n, int is_sel)
 }
 
 __inline void
-draw_pipes(void)
+draw_pipes(int selpipes)
 {
 	double sx, sy, sz, dx, dy, dz;
 	struct node *n, *ng;
@@ -773,23 +777,32 @@ draw_pipes(void)
 	struct ivec iv;
 	int rd;
 
-	switch (st.st_pipemode) {
-	case PM_DIR:
-		if ((st.st_opts & OP_SUBSET) == 0)
-			break;
-		/* FALLTHROUGH */
-	case PM_RTE:
-		NODE_FOREACH(n, &iv)
-			if (n && node_show(n))
-				draw_node_pipes(n, 0);
-		return;
-	}
-
 	gluQuadricDrawStyle(quadric, GLU_FILL);
 
 	switch (st.st_vmode) {
 	case VM_WIRED:
 	case VM_WIONE:
+		/*
+		 * As some of the wired-mode pipe drawing
+		 * code is icky, cut it into two parts so
+		 * an 'optimized' mode for all pipes can
+		 * exist instead of drawing tons of little
+		 * cylinders all over the place.
+		 */
+		if (selpipes) {
+			switch (st.st_pipemode) {
+			case PM_DIR:
+				if ((st.st_opts & OP_SUBSET) == 0)
+					break;
+				/* FALLTHROUGH */
+			case PM_RTE:
+				NODE_FOREACH(n, &iv)
+					if (n && node_show(n))
+						draw_node_pipes(n, 0);
+				return;
+			}
+		}
+
 		ivec_set(&iv, 0, 0, 0);
 		for (iv.iv_x = 0; iv.iv_x < widim.iv_w; iv.iv_x++)
 			for (iv.iv_y = 0; iv.iv_y < widim.iv_h; iv.iv_y++)
@@ -806,9 +819,10 @@ draw_pipes(void)
 				draw_pipe(&iv, DIM_X);
 		break;
 	case VM_PHYS:
-		glLineWidth(2.0);
+		glLineWidth(5.0);
 		NODE_FOREACH(n, &iv) {
-			if (n && node_show(n)) {
+			if (n && node_show(n) &&
+			    SELNODE_IF_NEEDED(n, selpipes)) {
 				sx = n->n_v->fv_x + n->n_dimp->fv_w / 2.0;
 				sy = n->n_v->fv_y + n->n_dimp->fv_h / 2.0;
 				sz = n->n_v->fv_z + n->n_dimp->fv_d / 2.0;
@@ -881,7 +895,7 @@ draw_cluster(void)
 	case VM_WIONE:
 	case VM_PHYS:
 		if (st.st_opts & OP_PIPES)
-			draw_pipes();
+			draw_pipes(0);
 		NODE_FOREACH(n, &iv)
 			if (n && node_show(n)) {
 				if (ndf & NDF_ATORIGIN) {
@@ -910,6 +924,10 @@ draw_selnodes(void)
 	struct fill *ofp;
 	struct node *n;
 
+	if (st.st_opts & OP_SELPIPES &&
+	    (st.st_opts & OP_PIPES) == 0)
+		draw_pipes(1);
+
 	SLIST_FOREACH(sn, &selnodes, sn_next) {
 		n = sn->sn_nodep;
 		ofp = n->n_fillp;
@@ -920,10 +938,6 @@ draw_selnodes(void)
 			fvp = &n->n_vcur;
 		else
 			fvp = n->n_v;
-
-		if (st.st_opts & OP_SELPIPES &&
-		    (st.st_opts & OP_PIPES) == 0)
-			draw_node_pipes(n, 1);
 
 		glPushMatrix();
 		glTranslatef(fvp->fv_x, fvp->fv_y, fvp->fv_z);
