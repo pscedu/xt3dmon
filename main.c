@@ -82,7 +82,7 @@ struct xoption opts[] = {
  /*  8 */ { "nlabels",	"Node labels",			0 },
  /*  9 */ { "modskel",	"Blade skeletons",		0 },
  /* 10 */ { "pipes",	"Pipe mode",			0 },
- /* 11 */ { "selpipes",	"Selected node pipe mode",	0 },
+ /* 11 */ { "selpipes",	"Selected node pipes",		0 },
  /* 12 */ { "pause",	"Pause",			OPF_HIDE | OPF_FBIGN },
  /* 13 */ { "tour",	"Job tour mode",		OPF_FBIGN },
  /* 14 */ { "skel",	"Skeletons",			0 },
