@@ -40,7 +40,7 @@ vec_crossprod(struct fvec *cross, const struct fvec *a, const struct fvec *b)
 }
 
 __inline void
-vec_set(struct fvec *fv, float x, float y, float z)
+vec_set(struct fvec *fv, double x, double y, double z)
 {
 	fv->fv_x = x;
 	fv->fv_y = y;

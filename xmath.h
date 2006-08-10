@@ -66,7 +66,7 @@ void	 vec_sphere2cart(const struct fvec *, struct fvec *);
 void	 vec_crossprod(struct fvec *, const struct fvec *, const struct fvec *);
 void	 vec_normalize(struct fvec *);
 float	 vec_mag(const struct fvec *);
-void	 vec_set(struct fvec *, float, float, float);
+void	 vec_set(struct fvec *, double, double, double);
 void	 vec_copyto(const struct fvec *, struct fvec *);
 void	 vec_addto(const struct fvec *, struct fvec *);
 void	 vec_subfrom(const struct fvec *, struct fvec *);
