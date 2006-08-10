@@ -12,7 +12,8 @@ SRCS+= prefresh.c reel.c rte.c select.c selnode.c server.c shadow.c
 SRCS+= ssl.c status.c tex.c text.c tween.c uinp.c ustrdtab.c ustream.c
 SRCS+= ustrop-file.c ustrop-ssl.c util.c vec.c widget.c yod.c
 
-CFLAGS += -Wall -W -g -D_LIVE_DSP=DSP_LOCAL
+CFLAGS += -Wall -Wextra -g -D_LIVE_DSP=DSP_LOCAL
+#CFLAGS += -Wconversion
 #CFLAGS += -O -Wuninitialized
 
 LIBS += -lGL -lGLU -lglut -lssl -lpng
