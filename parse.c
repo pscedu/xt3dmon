@@ -367,7 +367,7 @@ bad:
 	}
 	for (j = 0; j < yod_list.ol_tcur; j++) {
 		yod = yod_list.ol_yods[j];
-		col_get_hash(&job->j_oh, yod->y_id, &yod->y_fill);
+		col_get_hash(&yod->y_oh, yod->y_id, &yod->y_fill);
 	}
 
 	if (++widim.iv_w != WIDIM_WIDTH ||
