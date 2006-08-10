@@ -739,7 +739,6 @@ dxp_cyclenc(__unused struct dx_action *dxa)
 			while (++nc < NTEMPC)
 				if (tempclass[nc].nc_nmemb) {
 					nc_set(nc);
-
 					break;
 				}
 			if (nc >= NTEMPC)
