@@ -210,6 +210,7 @@ gl_displayh_stereo(void)
 
 	frustum_init(&fr);
 
+	frid = 0; /* gcc */
 	switch (stereo_mode) {
 	case STM_ACT:
 //		glDrawBuffer(GL_BACK_RIGHT);

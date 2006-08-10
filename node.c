@@ -136,6 +136,8 @@ node_neighbor(int vm, struct node *n, int rd, int *flip)
 		*flip = 0;
 
 	iv = n->n_wiv;
+
+	ng = NULL; /* gcc */
 	switch (vm) {
 	case VM_WIRED:
 	case VM_WIONE:

@@ -624,6 +624,9 @@ draw_node_pipes(struct node *n, int is_sel)
 
 	node_center(n, &cen);
 
+	dim = 0; /* gcc */
+	fp = NULL; /* gcc */
+
 	for (rd = 0; rd < NRD; rd++) {
 		ng = node_neighbor(VM_WIRED, n, rd, &flip);
 

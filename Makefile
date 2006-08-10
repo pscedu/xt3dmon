@@ -14,7 +14,7 @@ SRCS+= ustrop-file.c ustrop-ssl.c util.c vec.c widget.c yod.c
 
 CFLAGS += -Wall -Wextra -g -D_LIVE_DSP=DSP_LOCAL
 #CFLAGS += -Wconversion
-#CFLAGS += -O -Wuninitialized
+CFLAGS += -O -Wuninitialized
 
 LIBS += -lGL -lGLU -lglut -lssl -lpng
 

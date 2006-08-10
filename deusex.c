@@ -181,23 +181,25 @@ int
 dxp_cuban8(int dim)
 {
 	static double t;
+
 	struct fvec sv, uv, lv, xv, axis;
 	double roll, a, b, max;
 	float mag;
 	int ret;
 
+	a = b = 0.0; /* gcc */
 	switch (dim) {
 	case DIM_X:
-		a = CABHEIGHT/4.0;
-		b = ROWDEPTH/4.0;
+		a = CABHEIGHT / 4.0;
+		b = ROWDEPTH / 4.0;
 		break;
 	case DIM_Y:
-		a = ROWWIDTH/4.0;
-		b = CABHEIGHT/2.0;
+		a = ROWWIDTH / 4.0;
+		b = CABHEIGHT / 2.0;
 		break;
 	case DIM_Z:
-		a = ROWWIDTH/4.0 - CABWIDTH;
-		b = CABHEIGHT/4.0;
+		a = ROWWIDTH / 4.0 - CABWIDTH;
+		b = CABHEIGHT / 4.0;
 		break;
 	}
 	max = MAX(a, b);
@@ -315,6 +317,7 @@ dxp_corkscrew(int dim)
 	int ret;
 
 	ret = 0;
+	a = b = c = 0.0; /* gcc */
 	switch (dim) {
 	case DIM_X:
 		a = CABHEIGHT / 4.0;

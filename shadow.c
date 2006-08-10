@@ -435,6 +435,7 @@ gl_select(int flags)
 	struct fvec v;
 	int dl[NGEOM];
 
+	ret = 0; /* gcc */
 	switch (stereo_mode) {
 	case STM_PASV:
 		gl_wid_update();
