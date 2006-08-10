@@ -30,7 +30,7 @@
  *   z
  */
 void
-cam_move(int dir, float amt)
+cam_move(int dir, double amt)
 {
 	static struct fvec fv;
 
@@ -203,9 +203,9 @@ cam_bird(void)
 	case VM_WIRED:
 	case VM_WIONE:
 		vec_set(&cen,
-		    widim.iv_x * st.st_winsp.iv_x,
-		    widim.iv_y * st.st_winsp.iv_y,
-		    widim.iv_z * st.st_winsp.iv_z);
+		    1.0 * widim.iv_x * st.st_winsp.iv_x,
+		    1.0 * widim.iv_y * st.st_winsp.iv_y,
+		    1.0 * widim.iv_z * st.st_winsp.iv_z);
 		sph.fv_r = 2.5 * widim.iv_x * st.st_winsp.iv_x;
 		sph.fv_t = M_PI / 2.0 + atan2(cen.fv_z, cen.fv_x);
 		sph.fv_p = M_PI / 4.0;

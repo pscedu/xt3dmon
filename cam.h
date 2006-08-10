@@ -2,7 +2,7 @@
 
 struct fvec;
 
-void	 cam_move(int, float);
+void	 cam_move(int, double);
 void	 cam_revolve(struct fvec *, int, double, double, int);
 void	 cam_revolvefocus(double, double, int);
 void	 cam_rotate(const struct fvec *, const struct fvec *, int, int);

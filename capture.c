@@ -41,8 +41,12 @@ int		 capture_pos;
 void
 ppm_write(FILE *fp, unsigned char *buf, long w, long h)
 {
+	size_t len;
+
+	len = 3 * w * h;
 	fprintf(fp, "P6 %ld %ld %d\n", w, h, 255);
-	fwrite(buf, 3 * w * h, 1, fp);
+	if (fwrite(buf, 1, len, fp) != len)
+		err(1, "fwrite");
 }
 
 /* Write all buffered frames to disk. */
