@@ -13,6 +13,7 @@
 
 /* Selection processing return values. */
 #define SP_MISS		(INT_MIN)
+#define SP_NONE		(INT_MIN + 1)
 
 struct glname {
 	struct objhdr	  gn_oh;
@@ -58,10 +59,12 @@ struct glname {
 #define PWFF_OPEN	4
 #define PWFF_NEW	5
 
-
 void		 sel_begin(void);
 int		 sel_end(void);
 int		 sel_process(int, int, int);
+
+int		 wi_shadow(int *, int, const struct fvec *);
+int		 phys_shadow(int *, int);
 
 unsigned int	 gsn_get(int, void (*)(struct glname *, int), int, const struct fvec *);
 void		 gscb_miss(struct glname *, int);

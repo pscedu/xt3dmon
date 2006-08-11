@@ -20,7 +20,9 @@
 
 struct ivec	 mousev;
 int	 	 spkey;
+int		 motion_select_ret;
 struct panel	*panel_mobile;
+
 
 void
 gl_mouseh_null(__unused int button, __unused int state, __unused int u, __unused int v)
@@ -32,14 +34,34 @@ gl_mouseh_null(__unused int button, __unused int state, __unused int u, __unused
 void
 gl_mouseh_default(__unused int button, __unused int state, int u, int v)
 {
-	spkey = glutGetModifiers();
-	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
-		gl_select(0);
+	static int ret;
 
-	if (state == GLUT_UP && panel_mobile != NULL) {
-		panel_demobilize(panel_mobile);
-		panel_mobile = NULL;
-		glutMotionFunc(gl_motionh_default);
+	spkey = glutGetModifiers();
+	if (button == GLUT_LEFT_BUTTON) {
+		switch (state) {
+		case GLUT_DOWN:
+			ret = gl_select(0);
+
+			/*
+			 * If the user selected an object, do not
+			 * perform the "default" motion handler
+			 * (i.e. focus revolve) until declick.
+			 */
+			if (ret != SP_MISS) {
+				glutMotionFunc(gl_motionh_select);
+				motion_select_ret = SP_NONE;
+			}
+			break;
+		case GLUT_UP:
+			if (panel_mobile != NULL) {
+				panel_demobilize(panel_mobile);
+				panel_mobile = NULL;
+				glutMotionFunc(gl_motionh_default);
+			} else if (ret != SP_MISS) {
+				glutMotionFunc(gl_motionh_default);
+			}
+			break;
+		}
 	}
 
 	mousev.iv_x = u;
@@ -61,6 +83,28 @@ gl_motionh_panel(int u, int v)
 	panel_mobile->p_u += du;
 	panel_mobile->p_v -= dv;
 	panel_mobile->p_opts |= POPT_DIRTY;
+
+	flyby_rstautoto();
+}
+
+void
+gl_motionh_select(int u, int v)
+{
+	double du, dv;
+	int ret;
+
+	du = u - mousev.iv_x;
+	dv = v - mousev.iv_y;
+
+	if (abs(du) + abs(dv) <= 1)
+		return;
+	mousev.iv_x = u;
+	mousev.iv_y = v;
+
+	ret = gl_select(SPF_PROBE);
+	if (motion_select_ret != ret)
+		gl_select(0);
+	motion_select_ret = ret;
 
 	flyby_rstautoto();
 }

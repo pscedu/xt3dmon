@@ -3,6 +3,7 @@
 #include "mon.h"
 
 #include <err.h>
+#include <string.h>
 
 #include "cam.h"
 #include "capture.h"
@@ -13,6 +14,7 @@
 #include "gl.h"
 #include "panel.h"
 #include "queue.h"
+#include "select.h"
 #include "server.h"
 #include "state.h"
 #include "tween.h"
@@ -296,3 +298,55 @@ gl_displayh_default(void)
 	if (st.st_opts & OP_DISPLAY)
 		glutSwapBuffers();
 }
+
+int
+gl_select(int flags)
+{
+	int i, ret, nrecs;
+	struct fvec v;
+	int dl[NGEOM];
+
+	ret = 0; /* gcc */
+	switch (stereo_mode) {
+	case STM_PASV:
+		gl_wid_update();
+		break;
+	case STM_ACT:
+		/* Assume last buffer drawn in. */
+		break;
+	}
+
+	memset(dl, 0, sizeof(dl));
+
+	sel_begin();
+	draw_shadow_panels();
+	nrecs = sel_end();
+	if (nrecs && (ret = sel_process(nrecs, 0,
+	    SPF_2D | flags)) != SP_MISS)
+		goto end;
+
+	switch (st.st_vmode) {
+	case VM_PHYS:
+		ret = phys_shadow(dl, flags);
+		break;
+	case VM_WIRED:
+		WIREP_FOREACH(&v)
+			if ((ret = wi_shadow(dl, flags, &v)) != SP_MISS)
+				goto end;
+		break;
+	case VM_WIONE:
+		ret = wi_shadow(dl, flags, &fv_zero);
+		break;
+	}
+end:
+	for (i = 0; i < NGEOM; i++)
+		if (dl[i])
+			glDeleteLists(dl[i], 1);
+
+	st.st_rf |= RF_CAM;
+
+	if (ret == SP_MISS)
+		gscb_miss(NULL, flags);
+	return (ret);
+}
+

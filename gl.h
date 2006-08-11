@@ -11,7 +11,7 @@ void	 gl_setup_core(void);
 void	 gl_wid_update(void);
 void	 gl_displayh_default(void);
 void	 gl_displayh_stereo(void);
-void	 gl_select(int);
+int	 gl_select(int);
 
 /* key.c */
 void	 gl_keyh_actflyby(unsigned char, int, int);
@@ -28,6 +28,7 @@ void	 gl_spkeyh_wiadj(int, int, int);
 void	 gl_motionh_default(int, int);
 void	 gl_motionh_null(int, int);
 void	 gl_motionh_panel(int, int);
+void	 gl_motionh_select(int, int);
 void	 gl_mouseh_default(int, int, int, int);
 void	 gl_mouseh_null(int, int, int, int);
 void	 gl_pasvmotionh_default(int, int);
