@@ -774,14 +774,13 @@ draw_node_pipes(struct node *n, int is_sel)
 __inline void
 draw_physpipes(int selpipes)
 {
-	int rd, r, c, dim, neg;
-	struct physcoord pc, ngpc;
+	int rd, r, c, ngr, ngc, dim, neg;
 	struct node *n, *ng, *gn, *ln;
+	struct physcoord pc, ngpc;
 	struct fvec s, d;
 	struct fill *fp;
 	struct ivec iv;
 	double ox, oy, oz;
-	void *t;
 
 	glLineWidth(5.0);
 	NODE_FOREACH(n, &iv) {
@@ -844,6 +843,7 @@ draw_physpipes(int selpipes)
 			node_physpos(ln, &pc);
 			node_physpos(gn, &ngpc);
 			node_getmodpos(pc.pc_n, &r, &c);
+			node_getmodpos(ngpc.pc_n, &ngr, &ngc);
 
 			glColor3f(fp->f_r, fp->f_g, fp->f_b);
 			glBegin(GL_LINE_STRIP);
@@ -874,19 +874,13 @@ draw_physpipes(int selpipes)
 				break;
 			    }
 			case DIM_Y:
-				/*
-				 * Pipes under following conditions
-				 * are adjacent between neighbors:
-				 *   *) attached to nodes in the
-				 *	second column.
-				 *   *) in the first column and
-				 *	pipe orientation (postive
-				 *	or negative) matches row.
-				 * If pipes do not meet these
-				 * circumstances, they are broken
-				 * up and drawn in segments.
-				 */
-				if (c == 0 && r ^ neg) {
+				if (pc.pc_cg == ngpc.pc_cg) {
+					oy = 0.0;
+					if (pc.pc_m == 0 && r == ngr)
+						oy = NODEHEIGHT / 4.0;
+					glVertex3d(s.fv_x, s.fv_y + oy, s.fv_z);
+					glVertex3d(d.fv_x, d.fv_y + oy, d.fv_z);
+				} else {
 					ox = MODSPACE / 3.0;
 
 					if (abs(pc.pc_cg - ngpc.pc_cg) > 1)
@@ -899,13 +893,6 @@ draw_physpipes(int selpipes)
 					glVertex3d(s.fv_x + ox, s.fv_y + oy, s.fv_z);
 					glVertex3d(d.fv_x + ox, d.fv_y - oy, d.fv_z);
 					glVertex3d(d.fv_x,      d.fv_y - oy, d.fv_z);
-				} else {
-					oy = 0.0;
-					if (pc.pc_m == 0 &&
-					    c ^ r ^ !neg)
-						oy = NODEHEIGHT / 4.0;
-					glVertex3d(s.fv_x, s.fv_y + oy, s.fv_z);
-					glVertex3d(d.fv_x, d.fv_y + oy, d.fv_z);
 				}
 				break;
 			case DIM_Z:
