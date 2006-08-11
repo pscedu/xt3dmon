@@ -47,7 +47,8 @@ gl_mouseh_default(__unused int button, __unused int state, int u, int v)
 			 * perform the "default" motion handler
 			 * (i.e. focus revolve) until declick.
 			 */
-			if (ret != SP_MISS) {
+			if (spkey & GLUT_ACTIVE_SHIFT &&
+			    ret != SP_MISS) {
 				glutMotionFunc(gl_motionh_select);
 				motion_select_ret = SP_NONE;
 			}
