@@ -85,6 +85,7 @@ todo
 - add a caption timer to prevent captions from being changed so
   often that they flicker (in the case during a reel playback, e.g.)
 - make the focus point an SLIST
+- replace spkeys with retrieval/cache function
 
 tweening
 - ensure tweening leaves normalized vectors
