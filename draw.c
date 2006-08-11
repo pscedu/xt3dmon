@@ -851,8 +851,8 @@ draw_physpipes(int selpipes)
 			case DIM_X: {
 				int modoff;
 
-				modoff = 1 + pc.pc_m +
-				    (pc.pc_cb % 2) * NMODS;
+				modoff = (NMODS * 2) - (pc.pc_m +
+				    (pc.pc_cb % 2) * NMODS);
 
 				ox = NODEWIDTH / 3.0;
 				oz = NODEDEPTH;
@@ -860,21 +860,12 @@ draw_physpipes(int selpipes)
 				    modoff / (NMODS * 2 + 1);
 				if (c == 0)
 					oz *= -1.0;
-				if (pc.pc_cb % 2)
+				if (s.fv_x > d.fv_x)
 					ox *= -1.0;
-/*
-				if (neg) {
-					oy *= -1.0;
-					ox *= -1.0;
-				}
-
-				if (pc.pc_cb == 0 || pc.pc_cb == NCABS - 1 ||
-				    ngpc.pc_cb == 0 || ngpc.pc_cb == NCABS - 1)
-					oy += SIGNF(oy) *
-					    NODEHEIGHT / 3.0;
-*/
 				if (pc.pc_cb == 0 || ngpc.pc_cb == NCABS - 1)
 					oy *= -1.0;
+				if (abs(pc.pc_cb - ngpc.pc_cb) == 1)
+					oy += SIGNF(oy) * NODEHEIGHT / 3.0;
 
 				glVertex3d(s.fv_x + ox, s.fv_y + oy, s.fv_z);
 				glVertex3d(s.fv_x + ox, s.fv_y + oy, s.fv_z + oz);
