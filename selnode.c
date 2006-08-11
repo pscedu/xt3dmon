@@ -22,7 +22,9 @@ sn_replace(struct selnode *sn, struct node *n)
 {
 	if (sn->sn_nodep == n)
 		return;
+	sn->sn_nodep->n_flags &= ~NF_SELNODE;
 	sn->sn_nodep = n;
+	n->n_flags |= NF_SELNODE;
 	if (flyby_mode == FBM_REC) {
 		flyby_writeselnode(sn->sn_nodep->n_nid, &sn->sn_offv);
 		flyby_writeselnode(n->n_nid, &fv_zero);
