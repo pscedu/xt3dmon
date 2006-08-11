@@ -390,7 +390,7 @@ draw_node(struct node *n, int flags)
 
 	if (st.st_opts & OP_SUBSET &&
 	    (n->n_flags & NF_SHOW) == 0)
-			return;
+		return;
 
 	if ((flags & NDF_ATORIGIN) == 0) {
 		if (st.st_opts & OP_NODEANIM &&
@@ -774,11 +774,12 @@ draw_node_pipes(struct node *n, int is_sel)
 __inline void
 draw_pipes(int selpipes)
 {
-	double sx, sy, sz, dx, dy, dz;
+	double sx, sy, sz, dx, dy, dz, ox, oy, oz;
+	int rd, r, c, dim, neg;
+	struct physcoord pc;
 	struct node *n, *ng;
 	struct fill *fp;
 	struct ivec iv;
-	int rd;
 
 	gluQuadricDrawStyle(quadric, GLU_FILL);
 
@@ -832,49 +833,115 @@ draw_pipes(int selpipes)
 
 				for (rd = 0; rd < NRD; rd++) {
 					ng = node_neighbor(VM_WIRED, n, rd, NULL);
+					neg = 0;
 					switch (rd) {
 					case RD_NEGX:
-						if (!node_show(n))
-							continue;
+						neg = 1;
 						/* FALLTHROUGH */
 					case RD_POSX:
-						fp = &fill_dim[DIM_X];
+						dim = DIM_X;
 						break;
 					case RD_NEGY:
-						if (!node_show(n))
-							continue;
+						neg = 1;
 						/* FALLTHROUGH */
 					case RD_POSY:
-						fp = &fill_dim[DIM_Y];
+						dim = DIM_Y;
 						break;
 					case RD_NEGZ:
-						if (!node_show(n))
-							continue;
+						neg = 1;
 						/* FALLTHROUGH */
 					case RD_POSZ:
-						fp = &fill_dim[DIM_Z];
+						dim = DIM_Z;
 						break;
 					default:
 						continue;
 					}
 
+					/*
+					 * If there is a neighbor whose
+					 * pipes will be drawn, skip out
+					 * on half of ours to avoid dups.
+					 */
+					if (neg && node_show(ng) &&
+					    SELNODE_IF_NEEDED(ng, selpipes))
+						continue;
+
+					fp = &fill_dim[dim];
+
 					dx = ng->n_v->fv_x + ng->n_dimp->fv_w / 2.0;
 					dy = ng->n_v->fv_y + ng->n_dimp->fv_h / 2.0;
 					dz = ng->n_v->fv_z + ng->n_dimp->fv_d / 2.0;
 
+					node_physpos(n, &pc);
+					node_getmodpos(pc.pc_n, &r, &c);
+
 					glColor3f(fp->f_r, fp->f_g, fp->f_b);
-					glBegin(GL_LINES);
-					if (sx != dx) {
+					glBegin(GL_LINE_STRIP);
+					switch (dim) {
+					case DIM_X: {
+						int modoff;
+
+						modoff = 1 + pc.pc_m +
+						    (pc.pc_cb % 2) * NMODS;
+
+						ox = NODEWIDTH / 3.0;
+						oz = NODEDEPTH;
+						oy = NODEHEIGHT / 3.0 *
+						    modoff / (NMODS * 2 + 1);
+						if (c == 0)
+							oz *= -1.0;
+						if (rd == RD_NEGX) {
+							oy *= -1.0;
+							ox *= -1.0;
+						}
+
+						if (pc.pc_cb == 0 ||
+						    pc.pc_cb == NCABS - 1)
+							oy += SIGNF(oy) * NODEHEIGHT / 3.0;
+
+						glVertex3d(sx + ox, sy + oy, sz);
+						glVertex3d(sx + ox, sy + oy, sz + oz);
+						glVertex3d(dx - ox, dy + oy, dz + oz);
+						glVertex3d(dx - ox, dy + oy, dz);
+						break;
+					    }
+					case DIM_Y:
+						neg = (rd == RD_NEGY);
+
+						/*
+						 * Pipes under following conditions
+						 * are adjacent between neighbors:
+						 *   *) attached to nodes in the
+						 *	second column.
+						 *   *) in the first column and
+						 *	pipe orientation (postive
+						 *	or negative) matches row.
+						 * If pipes do not meet these
+						 * circumstances, they are broken
+						 * up and drawn in segments.
+						 */
+						if (c == 0 && r ^ neg) {
+							ox = MODSPACE / 3.0;
+							if ((pc.pc_cg == 0 && r) ||
+							    (pc.pc_cg == NCAGES - 1 && !r))
+								ox *= 2.0;
+							oy = NODEHEIGHT / 3.0;
+							if (sy > dy)
+								oy *= -1.0;
+
+							glVertex3d(sx,      sy + oy, sz);
+							glVertex3d(sx + ox, sy + oy, sz);
+							glVertex3d(dx + ox, dy - oy, dz);
+							glVertex3d(dx,      dy - oy, dz);
+						} else {
+							glVertex3d(sx, sy, sz);
+							glVertex3d(dx, dy, dz);
+						}
+						break;
+					case DIM_Z:
 						glVertex3d(sx, sy, sz);
-						glVertex3d(dx, sy, sz);
-					}
-					if (sy != dy) {
-						glVertex3d(dx, sy, sz);
-						glVertex3d(dx, dy, sz);
-					}
-					if (sz != dz) {
-						glVertex3d(dx, dy, sz);
 						glVertex3d(dx, dy, dz);
+						break;
 					}
 					glEnd();
 				}
