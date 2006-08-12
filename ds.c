@@ -398,7 +398,7 @@ dsc_load(int type, const char *sid)
 
 	ds = dsc_open(type, sid);
 	if (ds == NULL)
-		err(1, "dsc_open");
+		err(1, "dsc_open(%s, %s)", datasrcs[type].ds_name, sid);
 	ds_read(ds);
 	dsc_close(ds);
 }
