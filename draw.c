@@ -774,7 +774,7 @@ draw_node_pipes(struct node *n, int is_sel)
 __inline void
 draw_physpipes(int selpipes)
 {
-	int rd, r, c, ngr, ngc, dim, neg;
+	int class, port, rd, r, c, ngr, ngc, dim, neg;
 	struct node *n, *ng, *gn, *ln;
 	struct physcoord pc, ngpc;
 	struct fvec s, d;
@@ -819,18 +819,37 @@ draw_physpipes(int selpipes)
 			 * on half of ours to avoid dups.
 			 */
 			ng = node_neighbor(VM_WIRED, n, rd, NULL);
+
+			fp = NULL; /* gcc */
 			switch (st.st_pipemode) {
 			case PM_DIR:
+				if (neg && node_show(ng) &&
+				    SELNODE_IF_NEEDED(ng, selpipes))
+					continue;
+
 				fp = &fill_dim[dim];
 				break;
 			case PM_RTE:
+				ln = NULL; /* gcc */
+				switch (st.st_rtepset) {
+				case RPS_POS:
+					if (neg)
+						continue;
+					break;
+				case RPS_NEG:
+					if (!neg)
+						continue;
+					break;
+				}
+				port = rdir_to_rteport(rd);
+				if (n->n_route.rt_err[port][st.st_rtetype] == 0)
+					continue;
+				class = roundclass(n->n_route.rt_err[port][st.st_rtetype],
+				    0, rt_max.rt_err[port][st.st_rtetype], NRTC);
+				fp = &rtpipeclass[class].nc_fill;
 				break;
 			}
-			/* XXX: negate `neg' if rtepset==neg */
 			if (neg) {
-				if (node_show(ng) &&
-				    SELNODE_IF_NEEDED(ng, selpipes))
-					continue;
 				ln = ng;
 				gn = n;
 			} else {
@@ -857,15 +876,15 @@ draw_physpipes(int selpipes)
 				ox = NODEWIDTH / 3.0;
 				oz = NODEDEPTH;
 				oy = NODEHEIGHT / 3.0 *
-				    modoff / (NMODS * 2 + 1);
+				    modoff / (NMODS * 2);
 				if (c == 0)
 					oz *= -1.0;
 				if (s.fv_x > d.fv_x)
 					ox *= -1.0;
+				if (abs(pc.pc_cb - ngpc.pc_cb) != 2)
+					oy *= -1.0;
 				if (pc.pc_cb == 0 || ngpc.pc_cb == NCABS - 1)
 					oy *= -1.0;
-				if (abs(pc.pc_cb - ngpc.pc_cb) == 1)
-					oy += SIGNF(oy) * NODEHEIGHT / 3.0;
 
 				glVertex3d(s.fv_x + ox, s.fv_y + oy, s.fv_z);
 				glVertex3d(s.fv_x + ox, s.fv_y + oy, s.fv_z + oz);
@@ -925,7 +944,12 @@ draw_pipes(int selpipes)
 		 * exist instead of drawing tons of little
 		 * cylinders all over the place.
 		 */
-		if (selpipes || st.st_opts & OP_SUBSET) {
+		switch (st.st_pipemode) {
+		case PM_DIR:
+			if (!selpipes && (st.st_opts & OP_SUBSET) == 0)
+				break;
+			/* FALLTHROUGH */
+		case PM_RTE:
 			NODE_FOREACH(n, &iv)
 				if (n && node_show(n) &&
 				    SELNODE_IF_NEEDED(n, selpipes))
