@@ -252,7 +252,7 @@ parse_node(const struct datasrc *ds)
 
 			field = "drain";
 			if (strncmp(s, field, strlen(field)) == 0) {
-				static char capbuf[BUFSIZ];
+				static char capfmt[BUFSIZ], capbuf[BUFSIZ];
 				struct tm tm;
 
 				s += strlen(field);
@@ -261,11 +261,11 @@ parse_node(const struct datasrc *ds)
 				PARSENUM(s, mach_drain, INT_MAX); /* XXX TIME_T_MAX */
 				localtime_r(&mach_drain, &tm);
 
-				snprintf(capbuf, sizeof(capbuf),
+				snprintf(capfmt, sizeof(capfmt),
 				    "Drain set for %s", date_fmt);
 				/* XXX: check snprintf for short write */
 				strftime(capbuf, sizeof(capbuf),
-				    capbuf, &tm);
+				    capfmt, &tm);
 				caption_set(capbuf);
 				continue;
 			}
