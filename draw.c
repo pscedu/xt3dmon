@@ -155,6 +155,7 @@ draw_compass(int u, __unused int w, int v, __unused int h)
 __inline void
 draw_string(int u, int v, int h, void *font, const unsigned char *s)
 {
+	const unsigned char *t;
 	int margin, w;
 
 	/* Save state and set things up for 2D. */
@@ -177,15 +178,15 @@ draw_string(int u, int v, int h, void *font, const unsigned char *s)
 	w = glutBitmapLength(font, s);
 
 	glRasterPos2f(u, v);
-	while (*s != '\0')
-		glutBitmapCharacter(font, *s++);
+	for (t = s; *t != '\0'; t++)
+		glutBitmapCharacter(font, *t);
 
 	u++;
 	v--;
 	glColor4f(0.1f, 0.1f, 0.1f, 0.9f);
 	glRasterPos2f(u, v);
-	while (*s != '\0')
-		glutBitmapCharacter(font, *s++);
+	for (t = s; *t != '\0'; t++)
+		glutBitmapCharacter(font, *t);
 
 	margin = 2;
 	u -= 1 + margin;
