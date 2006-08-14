@@ -114,8 +114,7 @@ Pan the camera up and down along (perpendicular to) its view.
 .Pp
 .It left click
 Click a node for extended information.
-Hold shift and click to add nodes to the selection.
-Hold control and click to remove nodes from the selection.
+Hold shift and click to toggle the selected state of additional nodes.
 .Pp
 Click, hold, and drag the mouse to revolve around the point of focus,
 normally the cluster view.
@@ -158,16 +157,16 @@ Adjust translucency for the node class under the cursor of the
 legend panel.
 .El
 .Pp
-The following extended/advanced key bindings are available:
+The following additional key bindings are also available:
 .Bl -tag -width Ds -offset indent
 .It Ic ^A
 Select all visible nodes.
 .It Ic ar
-Restore display of all nodes.
+Display all nodes.
 .It Ic as
 Display only selected nodes.
-.It Ic C
-Redraw the cluster.
+.\" .It Ic C
+.\" Redraw the cluster.
 .It Ic c
 Clear the selected node(s).
 .It Ic fc
@@ -331,13 +330,17 @@ may be one of
 .Ic forward , back .
 .Ar amt
 is a floating-point or integer number of 3-space units.
-.It Ic opt Ar modifier option Op , Ar ...
+.It Xo
+.Ic opt
+.Op Ar modifier
+.Ar option Op , Ar ...
+.Xc
 Change the view options.
 .Ar modifier
 may be
-.Ic + ,
+.Sq + ,
 which enables options,
-.Ic - ,
+.Sq - ,
 which disables options, or left blank, which sets all current
 options to only those specified.
 .Pp
@@ -370,14 +373,18 @@ Orbit the current focus point, which will be the center of all
 selected nodes, if their are any, or otherwise the entire cluster
 view.
 .Ar dim
-specifies which dimension, e.g.,
+specifies which dimension (e.g.,
 .Ic x , y ,
 or
-.Ic z ,
+.Ic z )
 and may be prefixed with a minus sign
 .Pq Sq -
 to specify reverse revolutions.
-.It Ic panel Ar modifier panel Op , Ar ...
+.It Xo
+.Ic panel
+.Op Ar modifier
+.Ar panel Op , Ar ...
+.Xc
 Change which panels are shown.
 .Ar modifier
 may be
