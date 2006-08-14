@@ -93,3 +93,4 @@ tweening
 - ensure tweening leaves normalized vectors
 - fix tween to real stack: once point is reached, pop it then move on
 - increase tween limit when fps is high, or when "stack" contains many layers
+- use vec_rotate() instead of fractional values for up/look when spinning around
