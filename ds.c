@@ -333,6 +333,7 @@ dsc_clone(int type, const char *sid)
 		dsc_create(sid);
 
 	ds = ds_open(type);
+	/* XXX check for errors */
 	dsc_fn(ds, sid, fn, sizeof(fn));
 	if ((fd = open(fn, O_RDWR | O_CREAT, 0644)) == -1)
 		err(1, "open: %s", fn);
