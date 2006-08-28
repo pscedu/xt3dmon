@@ -21,15 +21,16 @@
 
 gss_name_t	 gss_server;
 gss_ctx_id_t	 gss_ctx;
-OM_uint32	 gss_minor;
 gss_buffer_desc	 gss_otoken = GSS_C_EMPTY_BUFFER;
 
 void
 gss_finish(void)
 {
-	gss_release_name(&gss_minor, &gss_server);
+	OM_uint32 major, minor;
+
+	major = gss_release_name(&minor, &gss_server);
 	if (gss_ctx != GSS_C_NO_CONTEXT)
-		gss_delete_sec_context(&gss_minor,
+		gss_delete_sec_context(&minor,
 		    &gss_ctx, GSS_C_NO_BUFFER);
 }
 
@@ -67,7 +68,7 @@ gss_valid(const char *host)
 
 	gss_OID_desc krb5_oid = {9, "\x2a\x86\x48\x86\xf7\x12\x01\x02\x02"};
 	gss_buffer_desc itoken = GSS_C_EMPTY_BUFFER;
-	OM_uint32 major, rflags, rtime;
+	OM_uint32 major, minor, rflags, rtime;
 	const char service[] = "HTTP";
 	gss_OID oid;
 
@@ -91,26 +92,26 @@ gss_valid(const char *host)
 		err(1, "asprintf");
 
 	/* Convert the printable name to an internal format */
-	major = gss_import_name(&gss_minor, &itoken,
+	major = gss_import_name(&minor, &itoken,
 	    GSS_C_NT_HOSTBASED_SERVICE, &gss_server);
 
 	free(itoken.value);
 
 	if (GSS_ERROR(major))
-		errx(1, "gss_import_name");
+		errx(1, "gss_import_name"); // XXX get gss error
 
 	/* Initiate a security context */
 	rflags = 0;
 	rtime = GSS_C_INDEFINITE;
 	gss_ctx = GSS_C_NO_CONTEXT;
-	major = gss_init_sec_context(&gss_minor, GSS_C_NO_CREDENTIAL,
+	major = gss_init_sec_context(&minor, GSS_C_NO_CREDENTIAL,
 	    &gss_ctx, gss_server, oid, rflags, rtime,
 	    GSS_C_NO_CHANNEL_BINDINGS, GSS_C_NO_BUFFER,
 	    NULL, &gss_otoken, NULL, NULL);
 
 	if (GSS_ERROR(major) || gss_otoken.length == 0) {
 		gss_finish();
-		warnx("gss_init_sec_context");
+		warnx("gss_init_sec_context"); // XXX get gss errstr
 		valid = 0;
 	}
 	return (valid);
