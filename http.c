@@ -65,7 +65,7 @@ http_open(struct http_req *req, struct http_res *res)
 		return (NULL);
 	ust = req->htreq_port == 443 ? UST_SSL : UST_REMOTE; /* XXX */
 	if ((us = us_init(fd, ust, "rw")) == NULL)
-			return (NULL);
+		return (NULL);
 
 	snprintf(buf, sizeof(buf), "%s %s %s\r\n", req->htreq_method,
 	    req->htreq_url, req->htreq_version);
