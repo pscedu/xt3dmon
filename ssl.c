@@ -6,12 +6,46 @@
 #include "xssl.h"
 
 const char *
-ssl_error(void)
+ssl_errstr(int code)
+{
+	switch (code) {
+	case SSL_ERROR_NONE:
+		return ("none");
+	case SSL_ERROR_ZERO_RETURN:
+		return ("zero return");
+	case SSL_ERROR_WANT_READ:
+		return ("want read");
+	case SSL_ERROR_WANT_WRITE:
+		return ("want write");
+	case SSL_ERROR_WANT_CONNECT:
+		return ("want connect");
+	case SSL_ERROR_WANT_ACCEPT:
+		return ("want accept");
+	case SSL_ERROR_WANT_X509_LOOKUP:
+		return ("want lookup");
+	case SSL_ERROR_SYSCALL:
+		return ("syscall");
+	case SSL_ERROR_SSL:
+		return ("ssl lib error");
+	default:
+		return ("unknown");
+	}
+}
+
+const char *
+ssl_error(SSL *ssl, int code)
 {
 #define ERRBUF_LEN 120
-        static char errbuf[ERRBUF_LEN];
+	static char sslerr[ERRBUF_LEN];
+	static char errbuf[BUFSIZ];
 
-        return (ERR_error_string(ERR_get_error(), errbuf));
+	int xcode = SSL_get_error(ssl, code);
+
+	if (ERR_error_string(ERR_get_error(), sslerr) == NULL)
+		return ("unable to get SSL error");
+	snprintf(errbuf, sizeof(errbuf), "ssl: %s (%s)", sslerr,
+	    ssl_errstr(xcode));
+	return (errbuf);
 }
 
 void
