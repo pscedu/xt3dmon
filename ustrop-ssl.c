@@ -17,12 +17,17 @@
 int
 ustrop_ssl_init(struct ustream *usp)
 {
-	if ((usp->us_ctx = SSL_CTX_new(SSLv2_client_method())) == NULL)
-		errx(1, "%s", ssl_error());
+	int ret;
+
+	if ((usp->us_ctx = SSL_CTX_new(SSLv23_client_method())) == NULL)
+		errx(1, "%s", ssl_error(NULL, 0));
 	usp->us_ssl = SSL_new(usp->us_ctx);
+	if (usp->us_ssl == NULL)
+		errx(1, "%s", ssl_error(NULL, 0));
 	SSL_set_fd(usp->us_ssl, usp->us_fd);
-	if (SSL_connect(usp->us_ssl) != 1)
-		errx(1, "%s", ssl_error());
+
+	if ((ret = SSL_connect(usp->us_ssl)) != 1)
+		errx(1, "%s", ssl_error(usp->us_ssl, ret));
 	return (1);
 }
 
