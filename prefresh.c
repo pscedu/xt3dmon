@@ -773,19 +773,6 @@ panel_refresh_eggs(struct panel *p)
 	panel_set_content(p, s[i], buf_get(&uinp.uinp_buf));
 }
 
-void
-panel_date_invalidate(__unused int a)
-{
-	struct panel *p;
-
-	p = panel_for_id(PANEL_DATE);
-	if (p == NULL)
-		return;
-//		errx(1, "internal error: date invalidate callback "
-//		    "called but no date panel present");
-	p->p_opts |= POPT_REFRESH;
-}
-
 #define TMBUF_SIZ 30
 
 void
@@ -806,8 +793,9 @@ panel_refresh_date(struct panel *p)
 		char fn[PATH_MAX];
 		struct stat stb;
 
-		snprintf(fn, sizeof(fn), "%s/%s",
-		    _PATH_SESSIONS, ssp->ss_sid);
+		snprintf(fn, sizeof(fn), "%s/%s/%s",
+		    _PATH_SESSIONS, ssp->ss_sid,
+		    datasrcs[DS_NODE].ds_name);
 		if (stat(fn, &stb) == -1)
 			err(1, "stat %s", fn);
 		now = stb.st_mtime;
@@ -819,9 +807,6 @@ panel_refresh_date(struct panel *p)
 	}
 	localtime_r(&now, &tm);
 
-	if (ssp == NULL)
-		glutTimerFunc(1000 * (60 - tm.tm_sec),
-		    panel_date_invalidate, 0);
 	strftime(tmbuf, sizeof(tmbuf), date_fmt, &tm);
 	panel_set_content(p, "(c) 2006 PSC\n%s", tmbuf);
 }
