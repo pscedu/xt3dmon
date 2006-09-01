@@ -349,14 +349,6 @@ dsc_clone(int type, const char *sid)
 		break;
 	}
 
-	if (stb.st_mtime) {
-		tv[0].tv_sec = stb.st_mtime;
-		tv[0].tv_usec = 0L;
-		tv[1] = tv[0];
-		if (futimes(fd, tv) == -1)
-			err(1, "futimes");
-	}
-
 	/* XXXXXXXX: use us_read */
 	while ((n = read(ds->ds_us->us_fd, &buf,
 	    sizeof(buf))) != -1 && n != 0)
@@ -364,6 +356,14 @@ dsc_clone(int type, const char *sid)
 			err(1, "write");
 	if (n == -1)
 		err(1, "read");
+
+	if (stb.st_mtime) {
+		tv[0].tv_sec = stb.st_mtime;
+		tv[0].tv_usec = 0L;
+		tv[1] = tv[0];
+		if (futimes(fd, tv) == -1)
+			err(1, "futimes");
+	}
 
 	close(fd);
 	ds_close(ds);
