@@ -19,6 +19,5 @@ if ! [ -r $xauth ]; then
 fi
 
 cd /home/yanovich/code/proj/xt3dmon
-msg=$(XAUTHORITY=$xauth ./xt3dmon -display :0 -d 2>&1)
-echo $msg | mail -s "xt3dmon down" yanovich@psc.edu
-echo $msg
+XAUTHORITY=$xauth ./xt3dmon -display :0 -d 2>&1 | \
+	tee /dev/fd/2 | mail -s "xt3dmon down" yanovich@psc.edu
