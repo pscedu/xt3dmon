@@ -258,7 +258,7 @@ snap:
 	gl_reshapeh(winv.iv_w, winv.iv_h);
 
 	rf = st.st_rf | RF_CAM | RF_DATASRC | RF_CLUSTER | RF_DMODE;
-	if (ss.reorient) {
+	if (ss.ss_reorient) {
 		struct fvec sph;
 
 		vec_cart2sphere(&st.st_lv, &sph);
