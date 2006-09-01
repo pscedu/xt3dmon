@@ -350,7 +350,7 @@ dsc_clone(int type, const char *sid)
 	}
 
 	if (stb.st_mtime) {
-		tv[0].tv_usec = stb.st_mtime;
+		tv[0].tv_sec = stb.st_mtime;
 		tv[0].tv_usec = 0L;
 		tv[1] = tv[0];
 		if (futimes(fd, tv) == -1)
