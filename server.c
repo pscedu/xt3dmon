@@ -125,7 +125,7 @@ serv_init(void)
 		err(1, "listen");
 
 	st.st_opts &= ~(OP_TWEEN | OP_NODEANIM);
-	st.st_opts |= OP_NLABELS;
+	st.st_opts |= OP_NLABELS | OP_CAPTION;
 
 	panel_toggle(PANEL_DATE);
 	if ((p = panel_for_id(PANEL_DATE)) != NULL) {
@@ -225,6 +225,7 @@ serv_displayh(void)
 	nreqs++;
 	sn_clear();
 	nc_runall(fill_setopaque);
+	caption_set(NULL);
 	for (i = 0; i < MAXTRIES; i++) {
 		usleep(TRYWAIT);
 		if ((len = read(clifd, buf, sizeof(buf) - 1)) == -1) {
