@@ -268,11 +268,13 @@ snap:
 			dsc_clone(DS_JOB, ss.ss_sid);
 			dsc_clone(DS_YOD, ss.ss_sid);
 		}
-		dsc_load(DS_NODE, ss.ss_sid);
+		if (!dsc_load(DS_NODE, ss.ss_sid))
+			goto drop;
 
 		dsm = st_dsmode();
 		if (dsm != DS_INV)
-			dsc_load(dsm, ss.ss_sid);
+			if (!dsc_load(dsm, ss.ss_sid))
+				goto drop;
 		rf &= ~RF_DATASRC;
 
 		if ((p = panel_for_id(PANEL_DATE)) != NULL)

@@ -392,16 +392,19 @@ dsc_close(struct datasrc *ds)
 	us_close(ds->ds_us);
 }
 
-void
+int
 dsc_load(int type, const char *sid)
 {
 	struct datasrc *ds;
 
 	ds = dsc_open(type, sid);
-	if (ds == NULL)
-		err(1, "dsc_open(%s, %s)", datasrcs[type].ds_name, sid);
+	if (ds == NULL) {
+		warn("dsc_open(%s, %s)", datasrcs[type].ds_name, sid);
+		return (0);
+	}
 	ds_read(ds);
 	dsc_close(ds);
+	return (1);
 }
 
 /* Map the state data mode to a data source type. */

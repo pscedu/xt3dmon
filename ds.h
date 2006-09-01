@@ -43,7 +43,7 @@ void		 ds_refresh(int, int);
 /* Data source cloning. */
 int		 dsc_exists(const char *);
 void		 dsc_clone(int, const char *);
-void		 dsc_load(int, const char *);
+int		 dsc_load(int, const char *);
 
 /* Data source fetching initialization/finalization. */
 void		 dsfi_node(const struct datasrc *);
