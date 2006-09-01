@@ -35,3 +35,7 @@ kill $newpid
 
 cd $webroot/src
 perl xtwmon.pl
+
+if ! [ -e $servroot/data/node ]; then
+	echo "data/node not there!!" >&2
+fi
