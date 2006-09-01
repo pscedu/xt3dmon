@@ -258,6 +258,16 @@ snap:
 	gl_reshapeh(winv.iv_w, winv.iv_h);
 
 	rf = st.st_rf | RF_CAM | RF_DATASRC | RF_CLUSTER | RF_DMODE;
+	if (ss.reorient) {
+		struct fvec sph;
+
+		vec_cart2sphere(&st.st_lv, &sph);
+		sph.fv_p -= M_PI / 2.0;
+//		if (upinv)
+//			sph.fv_p += M_PI;
+		vec_sphere2cart(&sph, &st.st_uv);
+		vec_normalize(&st.st_uv);
+	}
 	if (ss.ss_sid) {
 		struct panel *p;
 		int dsm;
@@ -432,6 +442,7 @@ svc_lx(char *t, int *used, __unused struct session *ss)
 {
 	if (sscanf(t, "%f%n", &st.st_lv.fv_x, used) != 1)
 		return (0);
+	ss->ss_reorient = 1;
 	return (1);
 }
 
@@ -440,6 +451,7 @@ svc_ly(char *t, int *used, __unused struct session *ss)
 {
 	if (sscanf(t, "%f%n", &st.st_lv.fv_y, used) != 1)
 		return (0);
+	ss->ss_reorient = 1;
 	return (1);
 }
 
@@ -448,6 +460,7 @@ svc_lz(char *t, int *used, __unused struct session *ss)
 {
 	if (sscanf(t, "%f%n", &st.st_lv.fv_z, used) != 1)
 		return (0);
+	ss->ss_reorient = 1;
 	return (1);
 }
 
