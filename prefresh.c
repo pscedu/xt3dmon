@@ -651,8 +651,7 @@ panel_refresh_fbcho(struct panel *p)
 	} else {
 		obj_batch_start(&flyby_list);
 		while ((dent = readdir(dp)) != NULL) {
-			if (strcmp(dent->d_name, ".") == 0 ||
-			    strcmp(dent->d_name, "..") == 0)
+			if (dent->d_name[0] == '.')
 				continue;
 
 			snprintf(path, sizeof(path), "%s/%s",
