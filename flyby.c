@@ -372,13 +372,14 @@ flyby_end(void)
 
 		if (st.st_dmode != sav_st.st_dmode)
 			rf |= RF_DMODE;
-		if (st.st_vmode != sav_st.st_vmode ||
-		    st.st_pipemode != sav_st.st_pipemode ||
-		    !ivec_eq(&st.st_wioff, &sav_st.st_wioff) ||
-		    !ivec_eq(&st.st_winsp, &sav_st.st_winsp))
-			rf |= RF_CLUSTER;
-//		if (st.st_hlnc != sav_st.st_hlnc)
-//			rf |= RF_HLNC;
+		if (st.st_vmode != sav_st.st_vmode)
+			rf |= RF_VMODE;
+		if (st.st_pipemode != sav_st.st_pipemode)
+			rf |= RF_CLUSTER | RF_SELNODE;
+		if (!ivec_eq(&st.st_wioff, &sav_st.st_wioff))
+			rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND | RF_NODESWIV;
+		if (!ivec_eq(&st.st_winsp, &sav_st.st_winsp))
+			rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND | RF_NODESWIV | RF_CAM;
 /* XXX: preserve hlnc */
 		egg_toggle(st.st_eggs ^ sav_st.st_eggs);
 
