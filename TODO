@@ -89,6 +89,9 @@ todo
 - use epoll to in server to avoid small sleeps
 - check dsc_clone to ensure that a new file is created even if master
   is empty (open() ... close() with no intervening write())
+- sort panels panel widgets alphabetically
+- add symlinks for files in reel data capture when states are the same,
+  skip symlinks in processing to obtain current functionality
 
 tweening
 - ensure tweening leaves normalized vectors
