@@ -1082,8 +1082,7 @@ panel_refresh_reel(struct panel *p)
 	} else {
 		obj_batch_start(&reel_list);
 		while ((dent = readdir(dp)) != NULL) {
-			if (strcmp(dent->d_name, ".") == 0 ||
-			    strcmp(dent->d_name, "..") == 0)
+			if (dent->d_name[0] == '.')
 				continue;
 
 			/* XXX: check stat & ISFILE */
