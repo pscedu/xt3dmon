@@ -252,14 +252,14 @@ nc_set(int nc)
 {
 	switch (nc) {
 	case NC_ALL:
-		nc_runall(fill_setxparent);
+		nc_runall(fill_setopaque);
 		break;
 	case NC_NONE:
 		/* XXX ? */
 		break;
 	case NC_SELDM:
-		nc_runall(fill_setopaque);
-		nc_runsn(fill_setxparent);
+		nc_runall(fill_setxparent);
+		nc_runsn(fill_setopaque);
 		break;
 	default:
 		if (nc_getfp(nc) != NULL) {
