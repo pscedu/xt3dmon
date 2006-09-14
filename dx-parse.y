@@ -150,6 +150,10 @@ conf		: DGT_BIRD {
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DGT_CLRSN;
 			dxa_add(&dxa);
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_SSTALL;
+			dxa_add(&dxa);
 		}
 		| DGT_CYCLENC {
 			struct dx_action dxa;
@@ -213,7 +217,7 @@ conf		: DGT_BIRD {
 			dxa_add(&dxa);
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_CAMSYNC;
+			dxa.dxa_type = DGT_SSTALL;
 			dxa_add(&dxa);
 		}
 		| DGT_OPT setmodifier opts_l {
@@ -223,6 +227,10 @@ conf		: DGT_BIRD {
 			dxa.dxa_type = DGT_OPT;
 			dxa.dxa_opt_mode = $2;
 			dxa.dxa_opts = $3;
+			dxa_add(&dxa);
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_SSTALL;
 			dxa_add(&dxa);
 		}
 		| DGT_ORBIT setmodifier STRING {
