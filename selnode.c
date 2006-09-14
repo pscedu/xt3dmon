@@ -50,14 +50,14 @@ sn_insert(struct node *n, const struct fvec *offv)
 	if (flyby_mode == FBM_REC)
 		flyby_writeselnode(n->n_nid, offv);
 #if 0
-	switch (st.st_mode) {
-	case SM_JOBS:
+	switch (st.st_dmode) {
+	case DM_JOBS:
 		if (n->n_state == JST_USED)
 			n->n_job->j_oh.oh_flags |= OHF_SEL;
 		break;
-	case SM_TEMP:
+	case DM_TEMP:
 		break;
-	case SM_FAIL:
+	case DM_FAIL:
 		break;
 	}
 #endif
