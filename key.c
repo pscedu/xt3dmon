@@ -651,6 +651,9 @@ gl_keyh_default(unsigned char key, int u, int v)
 	case 'k':
 		glutKeyboardFunc(gl_keyh_keyh);
 		break;
+	case 'M':
+		glutFullScreen();
+		break;
 	case 'm':
 		glutKeyboardFunc(gl_keyh_dmode);
 		break;
