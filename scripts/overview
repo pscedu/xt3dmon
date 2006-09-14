@@ -41,10 +41,10 @@ move back 50
 opt -skel,nlabels
 hl all
 clrsn
-setcap "Preparing to zoom inside the interconnect"
 refocus
-panel +compass
+setcap "Preparing to zoom inside the interconnect"
 opt +pipes
+panel +compass
 winsp +10 +10 +10
 selnode 2600
 refocus
@@ -55,10 +55,10 @@ orbit x
 move back 100
 opt -nlabels
 clrsn
-bird
-setcap "Change draw offset to show torus repetitions"
+setcap "Change node offset to show torus repetitions"
 panel -compass
 winsp -10 -10 -10
+bird
 panel +wiadj
 wioff +8 +0 +0
 wioff +0 +0 +8
@@ -68,6 +68,7 @@ wioff +0 +0 -8
 opt -pipes
 panel -wiadj
 seljob random
+refocus
 opt +skel
 setcap "Viewing job between physical and wired modes"
 vmode phys
