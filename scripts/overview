@@ -3,7 +3,7 @@
 vmode phys
 dmode temp
 refresh
-opt frames,tween,display,nodeanim,caption,deusex
+opt frames,tween,display,nodeanim,caption,deusex,ground
 panel legend,help
 bird
 refocus
