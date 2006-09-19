@@ -3,7 +3,7 @@
 #include "queue.h"
 #include "xmath.h"
 
-#define DX_DEFAULT "overview"
+#define DX_DEFAULT "full"
 
 /* Set mode values. */
 #define DXV_ON		0
@@ -57,6 +57,8 @@ void dxa_clear(void);
 void dxa_add(struct dx_action *);
 
 void dx_parse(void);
+void dx_start(void);
+void dx_end(void);
 void dx_setfn(const char *);
 void dx_update(void);
 void dx_error(const char *, va_list);
@@ -65,3 +67,4 @@ void dx_verror(const char *, ...);
 extern struct dxlist	dxlist;
 extern int		dx_built;
 extern char		dx_fn[];
+int			dx_active;
