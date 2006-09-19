@@ -30,9 +30,11 @@
 	    SQUARE((a)->fv_y - (b)->fv_y) +		\
 	    SQUARE((a)->fv_z - (b)->fv_z)))
 
-int		dx_built;			/* Whether dx path is already built. */
-char		dx_fn[NAME_MAX] = DX_DEFAULT;	/* Path to current dx script. */
-struct objlist	dxscript_list = { { NULL }, 0, 0, 0, 0, 10, sizeof(struct fnent), fe_eq };
+int		  dx_built;			/* Whether dx path is already built. */
+int		  dx_active;			/* Whether dx mode is running. */
+struct dx_action *dx_action;			/* Current dx action. */
+char		  dx_fn[NAME_MAX] = DX_DEFAULT;	/* Path to current dx script. */
+struct objlist	  dxscript_list = { { NULL }, 0, 0, 0, 0, 10, sizeof(struct fnent), fe_eq };
 
 void
 dxa_add(struct dx_action *dxa)
@@ -528,21 +530,7 @@ dxp_camsync(__unused struct dx_action *dxa)
 }
 
 int
-dxp_stall(void)
-{
-	static int t;
-	int ret;
-
-	ret = 0;
-	if (++t >= fps * 3) {
-		t = 0;
-		ret = 1;
-	}
-	return (ret);
-}
-
-int
-dxp_sstall(__unused struct dx_action *dxa)
+dxp_stall(__unused struct dx_action *dxa)
 {
 	static int t, ofps;
 	int ret;
@@ -699,7 +687,7 @@ dxp_cyclenc(__unused struct dx_action *dxa)
 	static int t, max, nnc, ncp, nc;
 	int ret, j, wait;
 
-	wait = 3;
+	wait = 4;
 	if (t == 0) {
 		nnc = 0;
 		switch (st.st_dmode) {
@@ -786,7 +774,7 @@ struct dxent {
 	{ DGT_SELJOB,	dxp_seljob },
 	{ DGT_SELNODE,	dxp_selnode },
 	{ DGT_SETCAP,	dxp_caption },
-	{ DGT_SSTALL,	dxp_sstall },
+	{ DGT_STALL,	dxp_stall },
 	{ DGT_VMODE,	dxp_vmode },
 	{ DGT_WINSP,	dxp_winsp },
 	{ DGT_WIOFF,	dxp_wioff }
@@ -795,33 +783,56 @@ struct dxent {
 void
 dx_update(void)
 {
-	static struct dx_action *dxa;
 	static struct dxent *de;
 	size_t j;
 
 	if (st.st_opts & OP_STOP)
 		return;
 
-	if (dxa == NULL) {
-		dxa = TAILQ_FIRST(&dxlist);
-		if (dxa == NULL)
+	if (dx_action == NULL) {
+		dx_action = TAILQ_FIRST(&dxlist);
+		if (dx_action == NULL)
 //			status_add();
 			return;
 		de = NULL;
+
+		//if (st.st_opts & )
 	}
 
 	if (de == NULL) {
 		for (j = 0; j < NENTRIES(dxtab); j++)
-			if (dxtab[j].de_val == dxa->dxa_type)
+			if (dxtab[j].de_val == dx_action->dxa_type)
 				break;
 		if (j >= NENTRIES(dxtab))
 			errx(1, "internal error: unknown dx type %d",
-			    dxa->dxa_type);
+			    dx_action->dxa_type);
 		de = &dxtab[j];
 	}
 
-	if (de->de_update(dxa)) {
-		dxa = TAILQ_NEXT(dxa, dxa_link);
+	if (de->de_update(dx_action)) {
+		dx_action = TAILQ_NEXT(dx_action, dxa_link);
 		de = NULL;
 	}
+}
+
+struct state dx_save_state;
+const char *oldcap;
+
+void
+dx_start(void)
+{
+	dx_active = 1;
+	if (!dx_built)
+		dx_parse();
+	dx_action = NULL;
+	dx_save_state = st;
+	oldcap = caption_get();
+}
+
+void
+dx_end(void)
+{
+	dx_active = 0;
+	load_state(&dx_save_state);
+	caption_set(oldcap);
 }
