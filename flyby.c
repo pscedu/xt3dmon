@@ -348,8 +348,6 @@ flyby_read(void)
 void
 flyby_end(void)
 {
-	int rf, opts;
-
 	if (flyby_fp != NULL) {
 		fclose(flyby_fp);
 		flyby_fp = NULL;
@@ -364,36 +362,15 @@ flyby_end(void)
 		glutMouseFunc(gl_mouseh_default);
 		cursor_set(GLUT_CURSOR_INHERIT);
 
-		rf = RF_CAM;
+		load_state(&sav_st);
+
 		if (st.st_opts & OP_REEL) {
 			reel_end();
-			rf |= RF_DATASRC;
+			st.st_rf |= RF_DATASRC;
 		}
-
-		if (st.st_dmode != sav_st.st_dmode)
-			rf |= RF_DMODE;
-		if (st.st_vmode != sav_st.st_vmode)
-			rf |= RF_VMODE;
-		if (st.st_pipemode != sav_st.st_pipemode)
-			rf |= RF_CLUSTER | RF_SELNODE;
-		if (!ivec_eq(&st.st_wioff, &sav_st.st_wioff))
-			rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND | RF_NODESWIV;
-		if (!ivec_eq(&st.st_winsp, &sav_st.st_winsp))
-			rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND | RF_NODESWIV | RF_CAM;
-/* XXX: preserve hlnc */
-		egg_toggle(st.st_eggs ^ sav_st.st_eggs);
-
-		opts = st.st_opts;
-		st = sav_st;
-		st.st_opts = opts;
-		st.st_rf = rf;
-
-		opt_flip(st.st_opts ^ sav_st.st_opts);
 		break;
 	}
-
 	flyby_mode = FBM_OFF;
-
 	flyby_rstautoto();
 }
 
