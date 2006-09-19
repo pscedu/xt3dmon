@@ -61,8 +61,6 @@ char			 login_auth[BUFSIZ];
 const struct fvec	 fv_zero = { { 0.0, 0.0, 0.0 } };
 const struct ivec	 iv_zero = { { 0, 0, 0 } };
 
-const char		*caption;
-
 time_t			 mach_drain;
 
 int			 verbose;
@@ -90,7 +88,6 @@ struct xoption opts[] = {
  /* 16 */ { "autofb",	"Auto flyby mode",		OPF_FBIGN },
  /* 17 */ { "reel",	"Reel mode",			OPF_FBIGN },
  /* 18 */ { "cabskel",	"Cabinet skeletons",		0 },
- /* 19 */ { "deusex",	"Deus Ex mode",			0 },
  /* 20 */ { "caption",	"Captions",			OPF_FBIGN },
  /* 21 */ { "subset",	"Subset mode",			0 }
 };
@@ -119,7 +116,7 @@ struct state st = {
 	{ { STARTLX, STARTLY, STARTLZ } },		/* (lx,ly,lz) */
 	{ { STARTUX, STARTUY, STARTUZ } },		/* (ux,uy,uz) */
 	OP_FRAMES | OP_TWEEN | OP_GROUND | \
-	    OP_DISPLAY | OP_NODEANIM,			/* options */
+	    OP_DISPLAY | OP_NODEANIM | OP_CAPTION,	/* options */
 	DM_JOB,						/* which data to show */
 	VM_PHYS,					/* viewing mode */
 	PM_DIR,						/* pipe mode */
@@ -248,12 +245,35 @@ opt_flip(int fopts)
 			if (on)
 				st.st_rf |= RF_REEL;
 			break;
-		case OP_DEUSEX:
-			if (on && !dx_built)
-				dx_parse();
-			break;
 		}
 	}
+}
+
+void
+load_state(struct state *nst)
+{
+	int opts, rf;
+
+	rf = RF_CAM;
+	if (st.st_dmode != nst->st_dmode)
+		rf |= RF_DMODE;
+	if (st.st_vmode != nst->st_vmode)
+		rf |= RF_VMODE;
+	if (st.st_pipemode != nst->st_pipemode)
+		rf |= RF_CLUSTER | RF_SELNODE;
+	if (!ivec_eq(&st.st_wioff, &nst->st_wioff))
+		rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND | RF_NODESWIV;
+	if (!ivec_eq(&st.st_winsp, &nst->st_winsp))
+		rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND | RF_NODESWIV | RF_CAM;
+/* XXX: preserve hlnc */
+	egg_toggle(st.st_eggs ^ nst->st_eggs);
+
+	opts = st.st_opts;
+	st = *nst;
+	st.st_opts = opts;
+	st.st_rf = rf;
+
+	opt_flip(st.st_opts ^ nst->st_opts);
 }
 
 #if 0
@@ -295,12 +315,6 @@ roundclass(double t, double min, double max, int nclasses)
 		t = max;
 
 	return ((t - min) / ((max - min) / nclasses + 1e-10));
-}
-
-__inline void
-caption_set(const char *s)
-{
-	caption = s;
 }
 
 void
