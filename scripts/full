@@ -1,0 +1,87 @@
+# $Id$
+
+vmode phys
+dmode temp
+refresh
+opt frames,tween,display,nodeanim,caption,ground
+panel legend,help
+bird
+refocus
+setcap "CPU temperatures in physical machine layout"
+orbit -x
+selnode random
+hl seldm
+opt +skel
+setcap "Zoom while viewing nodes in temperature range"
+refocus
+move forward 50
+opt +nlabels
+orbit x
+opt -nlabels
+clrsn
+move back 50
+bird
+hl all
+setcap "Cycle through all temperature ranges"
+cyclenc
+opt -skel
+setcap "Changing to 'wired' mode"
+vmode wione
+bird
+dmode job
+setcap "Jobs in wired mode (virtual interconnect)"
+orbit -x
+seljob random
+setcap "Viewing one job in wired mode"
+refocus
+opt +skel,nlabels
+move forward 50
+orbit x
+move back 50
+opt -skel,nlabels
+hl all
+clrsn
+refocus
+setcap "Preparing to zoom inside the interconnect"
+opt +pipes
+panel +compass
+winsp +10 +10 +10
+selnode 2600
+refocus
+move forward 100
+opt +nlabels
+setcap "Focus on one node"
+orbit x
+move back 100
+opt -nlabels
+clrsn
+setcap "Change node offset to show torus repetitions"
+panel -compass
+winsp -10 -10 -10
+bird
+panel +wiadj
+wioff +8 +0 +0
+wioff +0 +0 +8
+orbit x
+wioff -8 +0 +0
+wioff +0 +0 -8
+opt -pipes
+panel -wiadj
+seljob random
+refocus
+opt +skel
+setcap "Viewing job between physical and wired modes"
+vmode phys
+bird
+vmode wione
+bird
+clrsn
+opt -skel
+hl all
+setcap "Going back to physical layout mode viewing jobs"
+vmode phys
+bird
+setcap "Cycle through all node states/jobs"
+opt +skel
+cyclenc
+opt -skel
