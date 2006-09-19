@@ -250,6 +250,10 @@ if (!-e $lastdir || `diff -qr $lastdir $outdir | grep -v ^Only`) {
 	`cp -R $outdir/{$files} $ardir`;
 	`rm -f $lastdir`;
 	`ln -s \$(basename $ardir) $lastdir`;
+} else {
+	my $lastreal = readlink $lastdir;
+	`ln -s $lastreal $ardir`;
+print "ran: ln -s $lastreal $ardir\n";
 }
 
 sub dberr {
