@@ -97,10 +97,9 @@ struct state {
 #define OP_AUTOFLYBY	(1<<16)
 #define OP_REEL		(1<<17)
 #define OP_CABSKELS	(1<<18)
-#define OP_DEUSEX	(1<<19)
-#define OP_CAPTION	(1<<20)
-#define OP_SUBSET	(1<<21)
-#define NOPS		22
+#define OP_CAPTION	(1<<19)
+#define OP_SUBSET	(1<<20)
+#define NOPS		21
 
 struct xoption {
 	const char	*opt_abbr;
@@ -112,6 +111,7 @@ struct xoption {
 #define OPF_FBIGN	(1<<1)		/* ignore in flybys */
 
 int	 rebuild(int);
+void	 load_state(struct state *);
 
 extern struct state	 st;
 extern struct xoption	 opts[];

@@ -198,7 +198,7 @@ gl_displayh_stereo(void)
 
 	if (flyby_mode)
 		flyby_update();
-	else if (st.st_opts & OP_DEUSEX)
+	else if (dx_active)
 		dx_update();
 	if (st.st_opts & OP_TWEEN)
 		tween_update();
@@ -266,7 +266,7 @@ gl_displayh_default(void)
 
 	if (flyby_mode)
 		flyby_update();
-	else if (st.st_opts & OP_DEUSEX)
+	else if (dx_active)
 		dx_update();
 	if (st.st_opts & OP_TWEEN)
 		tween_update();
