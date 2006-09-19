@@ -12,6 +12,7 @@
 
 #include "cdefs.h"
 #include "ds.h"
+#include "env.h"
 #include "fill.h"
 #include "flyby.h"
 #include "job.h"
