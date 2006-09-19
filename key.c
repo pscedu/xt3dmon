@@ -301,9 +301,6 @@ gl_keyh_option(unsigned char key, __unused int u, __unused int v)
 	case 'w':
 		opts |= OP_FRAMES;
 		break;
-	case 'x':
-		opts |= OP_DEUSEX;
-		break;
 	default:
 		return;
 	}
@@ -683,6 +680,12 @@ gl_keyh_default(unsigned char key, int u, int v)
 	case 'v':
 		glutKeyboardFunc(gl_keyh_vmode);
 		break;
+	case 'x':
+		if (dx_active)
+			dx_end();
+		else
+			dx_start();
+		break;
 	case '{':
 		glutKeyboardFunc(gl_keyh_wioffdecr);
 		break;
@@ -703,7 +706,7 @@ gl_keyh_default(unsigned char key, int u, int v)
 		glutKeyboardFunc(gl_keyh_incr);
 		break;
 	case ' ':
-		if (st.st_opts & OP_DEUSEX) {
+		if (dx_active) {
 			opt_flip(OP_STOP);
 			st.st_opts ^= OP_TWEEN;
 		}
