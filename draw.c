@@ -215,8 +215,8 @@ draw_string(int u, int v, int h, void *font, const unsigned char *s)
 __inline void
 draw_caption(void)
 {
-	extern char *caption;
 	const unsigned char *s;
+	const char *cap;
 	void *font;
 	int u, w, h;
 
@@ -224,8 +224,9 @@ draw_caption(void)
 	h = 24;
 
 	/* Draw the caption text, center on x */
-	if (caption) {
-		s = (const unsigned char *)caption;
+	cap = caption_get();
+	if (cap) {
+		s = (const unsigned char *)cap;
 		w = glutBitmapLength(font, s);
 		u = (winv.iv_w / 2.0) - (w / 2.0);
 		draw_string(u, 10, h, font, s);

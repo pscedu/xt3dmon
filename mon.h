@@ -108,8 +108,6 @@ void		 opt_flip(int);
 void		 opt_enable(int);
 void		 opt_disable(int);
 
-void		 caption_set(const char *);
-
 void		 restart(void);
 
 int		 roundclass(double, double, double, int);

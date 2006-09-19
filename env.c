@@ -137,3 +137,17 @@ focus_selnodes(struct fvec *cen)
 	cen->fv_y /= nselnodes;
 	cen->fv_z /= nselnodes;
 }
+
+const char *caption;
+
+__inline void
+caption_set(const char *s)
+{
+	caption = s;
+}
+
+__inline const char *
+caption_get(void)
+{
+	return (caption);
+}

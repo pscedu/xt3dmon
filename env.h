@@ -97,6 +97,9 @@ void cursor_set(int);
 void focus_cluster(struct fvec *);
 void focus_selnodes(struct fvec *);
 
+void		 caption_set(const char *);
+const char	*caption_get(void);
+
 /* Loop through wired repetitions. */
 #define WIREP_FOREACH(fvp)							\
 	for ((fvp)->fv_x = wi_repstart.fv_x;					\
