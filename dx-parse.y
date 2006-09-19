@@ -44,7 +44,7 @@ struct dxlist dxlist = TAILQ_HEAD_INITIALIZER(dxlist);
 %token DGT_SELJOB
 %token DGT_SELNODE
 %token DGT_SETCAP
-%token DGT_SSTALL
+%token DGT_STALL
 %token DGT_VMODE
 %token DGT_WINSP
 %token DGT_WIOFF
@@ -129,7 +129,7 @@ conf		: DGT_BIRD {
 			dxa_add(&dxa);
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_SSTALL;
+			dxa.dxa_type = DGT_STALL;
 			dxa_add(&dxa);
 		}
 		| DGT_SETCAP STRING  {
@@ -141,7 +141,7 @@ conf		: DGT_BIRD {
 			dxa_add(&dxa);
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_SSTALL;
+			dxa.dxa_type = DGT_STALL;
 			dxa_add(&dxa);
 		}
 		| DGT_CLRSN {
@@ -152,7 +152,7 @@ conf		: DGT_BIRD {
 			dxa_add(&dxa);
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_SSTALL;
+			dxa.dxa_type = DGT_STALL;
 			dxa_add(&dxa);
 		}
 		| DGT_CYCLENC {
@@ -193,7 +193,15 @@ conf		: DGT_BIRD {
 			dxa_add(&dxa);
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_SSTALL;
+			dxa.dxa_type = DGT_STALL;
+			dxa_add(&dxa);
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_STALL;
+			dxa_add(&dxa);
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_STALL;
 			dxa_add(&dxa);
 		}
 		| DGT_MOVE STRING dbl {
@@ -217,7 +225,7 @@ conf		: DGT_BIRD {
 			dxa_add(&dxa);
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_SSTALL;
+			dxa.dxa_type = DGT_STALL;
 			dxa_add(&dxa);
 		}
 		| DGT_OPT setmodifier opts_l {
@@ -230,7 +238,7 @@ conf		: DGT_BIRD {
 			dxa_add(&dxa);
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_SSTALL;
+			dxa.dxa_type = DGT_STALL;
 			dxa_add(&dxa);
 		}
 		| DGT_ORBIT setmodifier STRING {
@@ -255,7 +263,7 @@ conf		: DGT_BIRD {
 			dxa_add(&dxa);
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_SSTALL;
+			dxa.dxa_type = DGT_STALL;
 			dxa_add(&dxa);
 		}
 		| DGT_PANEL setmodifier panels_l {
@@ -265,6 +273,10 @@ conf		: DGT_BIRD {
 			dxa.dxa_type = DGT_PANEL;
 			dxa.dxa_panel_mode = $2;
 			dxa.dxa_panels = $3;
+			dxa_add(&dxa);
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_STALL;
 			dxa_add(&dxa);
 		}
 		| DGT_REFOCUS {
@@ -279,7 +291,7 @@ conf		: DGT_BIRD {
 			dxa_add(&dxa);
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_SSTALL;
+			dxa.dxa_type = DGT_STALL;
 			dxa_add(&dxa);
 		}
 		| DGT_REFRESH {
@@ -334,6 +346,14 @@ conf		: DGT_BIRD {
 				yyerror("invalid vmode: %s", $2);
 			free($2);
 			dxa_add(&dxa);
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_NODESYNC;
+			dxa_add(&dxa);
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_STALL;
+			dxa_add(&dxa);
 		}
 		| DGT_WINSP setmodifier INTG setmodifier INTG setmodifier INTG {
 			struct dx_action dxa;
@@ -353,7 +373,7 @@ conf		: DGT_BIRD {
 			dxa_add(&dxa);
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_SSTALL;
+			dxa.dxa_type = DGT_STALL;
 			dxa_add(&dxa);
 		}
 		| DGT_WIOFF setmodifier INTG setmodifier INTG setmodifier INTG {
@@ -374,7 +394,7 @@ conf		: DGT_BIRD {
 			dxa_add(&dxa);
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_SSTALL;
+			dxa.dxa_type = DGT_STALL;
 			dxa_add(&dxa);
 		}
 		;
