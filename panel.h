@@ -90,15 +90,15 @@ struct pinfo {
 	const char	 *pi_name;
 	void		(*pi_refresh)(struct panel *);
 	int		  pi_stick;
-	int		  pi_opts;
+	int		  pi_flags;
 	int		  pi_uinpopts;
 	void		(*pi_uinpcb)(void);
 };
 
-#define PF_UINP		(1<<0)
-#define PF_XPARENT	(1<<1)			/* panel is transparent */
-#define PF_HIDE		(1<<2)
-#define PF_FBIGN	(1<<3)			/* ignore in flybys */
+#define PIF_UINP	(1<<0)
+#define PIF_XPARENT	(1<<1)			/* panel is transparent */
+#define PIF_HIDE	(1<<2)
+#define PIF_FBIGN	(1<<3)			/* ignore in flybys */
 
 #define PSTICK_TL	1
 #define PSTICK_TR	2

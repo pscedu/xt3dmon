@@ -876,7 +876,7 @@ panel_refresh_panels(struct panel *p)
 
 	pwidget_startlist(p);
 	for (i = 0; i < NPANELS; i++) {
-		if (pinfo[i].pi_opts & PF_HIDE)
+		if (pinfo[i].pi_flags & PIF_HIDE)
 			continue;
 		pwidget_add(p, (pids & (1 << i) ?
 		    &fill_white : &fill_nodata), pinfo[i].pi_name,

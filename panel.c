@@ -65,32 +65,32 @@ void uinpcb_eggs(void);
 struct pinfo pinfo[] = {
  /*  0 */ { "fps",	"FPS",			panel_refresh_fps,	PSTICK_TR, 0,					0,		NULL },
  /*  1 */ { "ninfo",	"Node Info",		panel_refresh_ninfo,	PSTICK_TR, 0,					0,		NULL },
- /*  2 */ { "cmd",	"Command",		panel_refresh_cmd,	PSTICK_TR, PF_UINP | PF_HIDE,			UINPO_LINGER,	uinpcb_cmd },
+ /*  2 */ { "cmd",	"Command",		panel_refresh_cmd,	PSTICK_TR, PIF_UINP | PIF_HIDE,			UINPO_LINGER,	uinpcb_cmd },
  /*  3 */ { "legend",	"Legend",		panel_refresh_legend,	PSTICK_TR, 0,					0,		NULL },
- /*  4 */ { "fbstat",	"Flyby Controls",	panel_refresh_flyby,	PSTICK_TR, PF_FBIGN,				0,		NULL },
- /*  5 */ { "gotonode",	"Goto Node",		panel_refresh_gotonode,	PSTICK_TR, PF_UINP,				0,		uinpcb_gotonode },
+ /*  4 */ { "fbstat",	"Flyby Controls",	panel_refresh_flyby,	PSTICK_TR, PIF_FBIGN,				0,		NULL },
+ /*  5 */ { "gotonode",	"Goto Node",		panel_refresh_gotonode,	PSTICK_TR, PIF_UINP,				0,		uinpcb_gotonode },
  /*  6 */ { "cam",	"Camera Position",	panel_refresh_pos,	PSTICK_TR, 0,					0,		NULL },
- /*  7 */ { "sshot",	"Screenshot",		panel_refresh_ss,	PSTICK_TR, PF_UINP,				0,		uinpcb_ss },
+ /*  7 */ { "sshot",	"Screenshot",		panel_refresh_ss,	PSTICK_TR, PIF_UINP,				0,		uinpcb_ss },
  /*  8 */ { "status",	"Status Log",		panel_refresh_status,	PSTICK_TR, 0,					0,		NULL },
- /*  9 */ { "eggs",	NULL,			panel_refresh_eggs,	PSTICK_TR, PF_UINP | PF_HIDE,			0,		uinpcb_eggs },
- /* 10 */ { "date",	"Date",			panel_refresh_date,	PSTICK_BL, PF_XPARENT,				0,		NULL },
- /* 11 */ { "options",	"Option",		panel_refresh_opts,	PSTICK_TL, PF_FBIGN,				0,		NULL },
- /* 12 */ { "gotojob",	"Goto Job",		panel_refresh_gotojob,	PSTICK_TR, PF_UINP,				0,		uinpcb_gotojob },
- /* 13 */ { "panels",	NULL,			panel_refresh_panels,	PSTICK_TL, PF_HIDE | PF_FBIGN,			0,		NULL },
- /* 14 */ { "login",	"Login",		panel_refresh_login,	PSTICK_TR, PF_UINP,				UINPO_LINGER,	uinpcb_login },
- /* 15 */ { "help",	"Help",			panel_refresh_help,	PSTICK_BR, PF_HIDE | PF_FBIGN | PF_XPARENT,	0,		NULL },
+ /*  9 */ { "eggs",	NULL,			panel_refresh_eggs,	PSTICK_TR, PIF_UINP | PIF_HIDE,			0,		uinpcb_eggs },
+ /* 10 */ { "date",	"Date",			panel_refresh_date,	PSTICK_BL, PIF_XPARENT,				0,		NULL },
+ /* 11 */ { "options",	"Option",		panel_refresh_opts,	PSTICK_TL, PIF_FBIGN,				0,		NULL },
+ /* 12 */ { "gotojob",	"Goto Job",		panel_refresh_gotojob,	PSTICK_TR, PIF_UINP,				0,		uinpcb_gotojob },
+ /* 13 */ { "panels",	NULL,			panel_refresh_panels,	PSTICK_TL, PIF_HIDE | PIF_FBIGN,		0,		NULL },
+ /* 14 */ { "login",	"Login",		panel_refresh_login,	PSTICK_TR, PIF_UINP,				UINPO_LINGER,	uinpcb_login },
+ /* 15 */ { "help",	"Help",			panel_refresh_help,	PSTICK_BR, PIF_HIDE | PIF_FBIGN | PIF_XPARENT,	0,		NULL },
  /* 16 */ { "vmode",	"View Mode",		panel_refresh_vmode,	PSTICK_TL, 0,					0,		NULL },
  /* 17 */ { "dmode",	"Data Mode",		panel_refresh_dmode,	PSTICK_TL, 0,					0,		NULL },
- /* 18 */ { "reel",	"Reel",			panel_refresh_reel,	PSTICK_TR, PF_FBIGN,				0,		NULL },
+ /* 18 */ { "reel",	"Reel",			panel_refresh_reel,	PSTICK_TR, PIF_FBIGN,				0,		NULL },
  /* 19 */ { "pipe",	"Pipe Mode",		panel_refresh_pipe,	PSTICK_TR, 0,					0,		NULL },
  /* 20 */ { "sstar",	"Seastar",		panel_refresh_sstar,	PSTICK_TR, 0,					0,		NULL },
  /* 21 */ { "wiadj",	"Wired Controls",	panel_refresh_wiadj,	PSTICK_TR, 0,					0,		NULL },
  /* 22 */ { "rt",	"Route Controls",	panel_refresh_rt,	PSTICK_TR, 0,					0,		NULL },
- /* 23 */ { "fbcho",	"Flyby Chooser",	panel_refresh_fbcho,	PSTICK_TR, PF_FBIGN,				0,		NULL },
- /* 24 */ { "fbcreat",	"Flyby Creator",	panel_refresh_fbnew,	PSTICK_TR, PF_FBIGN | PF_UINP,			0,		uinpcb_fbnew },
- /* 25 */ { "compass",	"Compass",		panel_refresh_cmp,	PSTICK_BL, PF_FBIGN,				0,		NULL },
+ /* 23 */ { "fbcho",	"Flyby Chooser",	panel_refresh_fbcho,	PSTICK_TR, PIF_FBIGN,				0,		NULL },
+ /* 24 */ { "fbcreat",	"Flyby Creator",	panel_refresh_fbnew,	PSTICK_TR, PIF_FBIGN | PIF_UINP,		0,		uinpcb_fbnew },
+ /* 25 */ { "compass",	"Compass",		panel_refresh_cmp,	PSTICK_BL, PIF_FBIGN,				0,		NULL },
  /* 26 */ { "keyh",	"Key Handler",		panel_refresh_keyh,	PSTICK_BL, 0,					0,		NULL },
- /* 27 */ { "dxcho",	"Deus Ex Chooser",	panel_refresh_dxcho,	PSTICK_TR, PF_FBIGN,				0,		NULL }
+ /* 27 */ { "dxcho",	"Deus Ex Chooser",	panel_refresh_dxcho,	PSTICK_TR, PIF_FBIGN,				0,		NULL }
 };
 
 #define PVOFF_TL 0
@@ -360,7 +360,7 @@ draw_panel(struct panel *p, int toff)
 		}
 		pw->pw_flags &= ~PWF_HIDE;
 
-		if ((p->p_info->pi_opts & PF_XPARENT) == 0) {
+		if ((p->p_info->pi_flags & PIF_XPARENT) == 0) {
 			if (fp->f_flags & FF_SKEL)
 				frame_fp = fp;
 			else {
@@ -413,13 +413,13 @@ next:
 			break;
 	}
 
-	if ((p->p_info->pi_opts & PF_XPARENT) == 0) {
+	if ((p->p_info->pi_flags & PIF_XPARENT) == 0) {
 		struct fill *fp;
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		fp = (p->p_info->pi_opts & PF_UINP) ? &fill_ipanel : &fill_panel;
+		fp = (p->p_info->pi_flags & PIF_UINP) ? &fill_ipanel : &fill_panel;
 
 		/* Draw background. */
 		glBegin(GL_QUADS);
@@ -705,7 +705,7 @@ panel_tremove(struct panel *p)
 {
 	struct panel *t;
 
-	if (p->p_info->pi_opts & PF_UINP && uinp.uinp_panel != NULL) {
+	if (p->p_info->pi_flags & PIF_UINP && uinp.uinp_panel != NULL) {
 		buf_reset(&uinp.uinp_buf);
 		buf_append(&uinp.uinp_buf, '\0');
 		glutKeyboardFunc(gl_keyh_default);
@@ -764,7 +764,7 @@ panel_toggle(int panel)
 		break;
 	}
 
-	if (p->p_info->pi_opts & PF_UINP) {
+	if (p->p_info->pi_flags & PIF_UINP) {
 		if (uinp.uinp_panel != NULL) {
 			struct panel *oldp;
 
@@ -829,18 +829,19 @@ panels_flip(int ps)
  * Show only the specified panels.
  */
 void
-panels_set(int start)
+panels_set(int set)
 {
 	struct panel *p;
-	int cur;
+	int j, diff, cur;
 
 	cur = 0;
 	TAILQ_FOREACH(p, &panels, p_link)
-		if (p->p_info->pi_opts & PF_FBIGN)
-			start &= ~p->p_id;
-		else
-			cur |= p->p_id;
-	panels_flip(cur ^ start);
+		cur |= p->p_id;
+	diff = cur ^ set;
+	for (j = 0; j < NPANELS; j++)
+		if (pinfo[j].pi_flags & PIF_FBIGN)
+			diff &= ~(1 << j);
+	panels_flip(diff);
 }
 
 void

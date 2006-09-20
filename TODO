@@ -57,7 +57,7 @@ todo
 - fix crash when revolve position = st.st_v
 - make select node glow/fade color?
 - use a different font.png for matrix egg (katonese chars)
-- kill PF_XPARENT and just set fill differently
+- kill PIF_XPARENT and just set fill differently
 - implement FF_OPAQUE everywhere
 - watch out for server mode, dmode=temp then setting hl=free
 - add table for service node hostnames to ssh/command
@@ -92,7 +92,6 @@ todo
 - sort panels panel widgets alphabetically
 - add symlinks for files in reel data capture when states are the same,
   skip symlinks in processing to obtain current functionality
-- rename PF_* to PIF_* (pinfo vs. p.opts)
 
 tweening
 - ensure tweening leaves normalized vectors

@@ -146,7 +146,7 @@ gl_keyh_panel(unsigned char key, __unused int u, __unused int v)
 	switch (key) {
 	case 'a':
 		for (j = 0; j < NPANELS; j++)
-			if ((pinfo[j].pi_opts & PF_UINP) == 0)
+			if ((pinfo[j].pi_flags & PIF_UINP) == 0)
 				panel_toggle(1 << j);
 		break;
 	case 'c':
