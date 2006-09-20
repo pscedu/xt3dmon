@@ -335,6 +335,10 @@ parse_node(const struct datasrc *ds)
 				node->n_state = SC_USED;
 			node->n_job = obj_get(&jobid, &job_list);
 			node->n_job->j_id = jobid;
+			if (strcmp(node->n_job->j_name, "") == 0)
+				snprintf(node->n_job->j_name,
+				    sizeof(node->n_job->j_name),
+				    "job %d", jobid);
 		}
 
 		if (yodid) {
