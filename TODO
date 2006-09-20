@@ -89,6 +89,9 @@ todo
 - use epoll to in server to avoid many sleep wakeups
 - check dsc_clone to ensure that a new file is created even if master
   is empty (open() ... close() with no intervening write())
+- when the xtwmon server is down, it still creates session files,
+  whereas the xt3dmon server is unable, creating the anomaly of
+  no files
 
 tweening
 - ensure tweening leaves normalized vectors
