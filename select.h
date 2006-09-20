@@ -59,6 +59,13 @@ struct glname {
 #define PWFF_OPEN	4
 #define PWFF_NEW	5
 
+#define SPWDN_COMBINE(dm, nc)		(((dm) << 16) | (nc))
+#define SPWDN_SPLIT(spwdn, dm, nc)		\
+	do {					\
+		(dm) = (spwdn) >> 16;		\
+		(nc) = (spwdn) & 0xffff;	\
+	} while (0)
+
 void		 sel_begin(void);
 int		 sel_end(void);
 int		 sel_process(int, int, int);
@@ -86,3 +93,4 @@ void		 gscb_pw_rt(struct glname *, int);
 void		 gscb_pw_fbcho(struct glname *, int);
 void		 gscb_pw_keyh(struct glname *, int);
 void		 gscb_pw_dxcho(struct glname *, int);
+void		 gscb_pw_dmnc(struct glname *, int);

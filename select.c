@@ -320,6 +320,31 @@ gscb_pw_hlnc(struct glname *gn, int flags)
 }
 
 void
+gscb_pw_dmnc(struct glname *gn, int flags)
+{
+	int dm, nc, spwdn = gn->gn_id;
+
+	if (flags & SPF_PROBE)
+		cursor_set(GLUT_CURSOR_INFO);
+	else if (flags == 0) {
+		SPWDN_SPLIT(spwdn, dm, nc);
+		spkey = glutGetModifiers();
+
+		if (st.st_dmode != dm) {
+			st.st_dmode = dm;
+			st.st_rf |= RF_DMODE;
+		}
+
+		/* nc will not be NC_* */
+		if (nc_getfp(nc) != NULL) {
+			if ((spkey & GLUT_ACTIVE_SHIFT) == 0)
+				nc_runall(fill_setxparent);
+			nc_apply(fill_togglevis, nc);
+		}
+	}
+}
+
+void
 gscb_pw_opt(struct glname *gn, int flags)
 {
 	int opt = gn->gn_id;
