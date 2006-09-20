@@ -89,7 +89,6 @@ todo
 - use epoll to in server to avoid small sleeps
 - check dsc_clone to ensure that a new file is created even if master
   is empty (open() ... close() with no intervening write())
-- sort panels panel widgets alphabetically
 
 tweening
 - ensure tweening leaves normalized vectors

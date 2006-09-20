@@ -119,6 +119,34 @@ panel_ready(struct panel *p)
 	return ((p->p_opts & POPT_REFRESH) == 0 && p->p_str != NULL);
 }
 
+int
+pwidget_cmp(const void *a, const void *b)
+{
+	const struct pwidget * const *pwa, * const *pwb;
+	pwa = a;
+	pwb = b;
+	return (strcmp((*pwa)->pw_str, (*pwb)->pw_str));
+}
+
+void
+pwidget_sortlist(struct panel *p, int (*cmp)(const void *a, const void *b))
+{
+	struct pwidget *pw, **pws;
+	int j;
+
+	if ((pws = malloc(p->p_nwidgets * sizeof(*pws))) == NULL)
+		err(1, "malloc");
+	j = 0;
+	SLIST_FOREACH(pw, &p->p_widgets, pw_next)
+		pws[j++] = pw;
+	qsort(pws, p->p_nwidgets, sizeof(*pws), cmp);
+	pw = SLIST_FIRST(&p->p_widgets) = pws[0];
+	for (j = 1; j < p->p_nwidgets; j++)
+		pw = SLIST_NEXT(pw, pw_next) = pws[j];
+	SLIST_NEXT(pw, pw_next) = NULL;
+	free(pws);
+}
+
 void
 pwidget_startlist(struct panel *p)
 {
@@ -140,6 +168,7 @@ pwidget_endlist(struct panel *p)
 	pw = *p->p_nextwidget;
 	*p->p_nextwidget = NULL;
 
+	/* Free old widgets not replaced with new ones. */
 	for (; pw; pw = nextp) {
 		nextp = SLIST_NEXT(pw, pw_next);
 		free(pw);
@@ -207,6 +236,7 @@ panel_refresh_cmd(struct panel *p)
 void
 panel_refresh_legend(struct panel *p)
 {
+	int (*cmp)(const void *, const void *);
 	size_t j;
 	int i;
 
@@ -216,6 +246,7 @@ panel_refresh_legend(struct panel *p)
 	dmode_data_clean |= PANEL_LEGEND;
 	hlnc_clean |= PANEL_LEGEND;
 
+	cmp = NULL;
 	pwidget_startlist(p);
 	switch (st.st_dmode) {
 	case DM_JOB:
@@ -234,6 +265,7 @@ panel_refresh_legend(struct panel *p)
 		for (j = 0; j < job_list.ol_cur; j++)
 			pwidget_add(p, &job_list.ol_jobs[j]->j_fill,
 			    job_list.ol_jobs[j]->j_name, gscb_pw_hlnc, NSC + j);
+		cmp = pwidget_cmp;
 		break;
 	case DM_FAIL:
 		panel_set_content(p, "- Failure Legend -\n"
@@ -278,6 +310,7 @@ panel_refresh_legend(struct panel *p)
 		for (j = 0; j < yod_list.ol_cur; j++)
 			pwidget_add(p, &yod_list.ol_yods[j]->y_fill,
 			    yod_list.ol_yods[j]->y_cmd, gscb_pw_hlnc, NSC + j);
+		cmp = pwidget_cmp;
 		break;
 	case DM_RTUNK:
 		panel_set_content(p, "- Routing Legend -");
@@ -328,6 +361,8 @@ panel_refresh_legend(struct panel *p)
 		break;
 	}
 	pwidget_endlist(p);
+	if (cmp)
+		pwidget_sortlist(p, cmp);
 }
 
 #define NINFO_MAXNIDS 30
@@ -855,6 +890,7 @@ panel_refresh_opts(struct panel *p)
 		    gscb_pw_opt, i);
 	}
 	pwidget_endlist(p);
+	pwidget_sortlist(p, pwidget_cmp);
 }
 
 void
@@ -883,6 +919,7 @@ panel_refresh_panels(struct panel *p)
 		    gscb_pw_panel, i);
 	}
 	pwidget_endlist(p);
+	pwidget_sortlist(p, pwidget_cmp);
 }
 
 void
