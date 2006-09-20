@@ -92,6 +92,7 @@ todo
 - sort panels panel widgets alphabetically
 - add symlinks for files in reel data capture when states are the same,
   skip symlinks in processing to obtain current functionality
+- rename PF_* to PIF_* (pinfo vs. p.opts)
 
 tweening
 - ensure tweening leaves normalized vectors
