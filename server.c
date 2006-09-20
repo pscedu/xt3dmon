@@ -125,7 +125,7 @@ serv_init(void)
 		err(1, "listen");
 
 	st.st_opts &= ~(OP_TWEEN | OP_NODEANIM);
-	st.st_opts |= OP_NLABELS | OP_CAPTION;
+	st.st_opts |= OP_NLABELS;
 
 	panel_toggle(PANEL_DATE);
 	if ((p = panel_for_id(PANEL_DATE)) != NULL) {
