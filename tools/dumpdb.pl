@@ -253,7 +253,6 @@ if (!-e $lastdir || `diff -qr $lastdir $outdir | grep -v ^Only`) {
 } else {
 	my $lastreal = readlink $lastdir;
 	`ln -s $lastreal $ardir`;
-print "ran: ln -s $lastreal $ardir\n";
 }
 
 sub dberr {
