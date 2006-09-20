@@ -354,10 +354,11 @@ panel_refresh_ninfo(struct panel *p)
 	dmode_data_clean |= PANEL_NINFO;
 	selnode_clean |= PANEL_NINFO;
 
+	pwidget_startlist(p);
 	if (SLIST_EMPTY(&selnodes)) {
 		panel_set_content(p, "- Node Information -\n"
 		    "No node(s) selected");
-		return;
+		goto done;
 	}
 
 	if (nselnodes > 1) {
@@ -439,7 +440,7 @@ panel_refresh_ninfo(struct panel *p)
 
 		buf_free(&bw_nids);
 		buf_free(&bw_data);
-		return;
+		goto done;
 	}
 
 	/* Only one selected node. */
@@ -570,6 +571,29 @@ panel_refresh_ninfo(struct panel *p)
 	    n->n_sstar.ss_cnt[SSCNT_NPKT][2],
 	    n->n_sstar.ss_cnt[SSCNT_NPKT][3]);
 #endif
+
+	pwidget_startlist(p);
+	if (n->n_temp != DV_NODATA) {
+		j = roundclass(n->n_temp, TEMP_MIN, TEMP_MAX, NTEMPC);
+		pwidget_add(p, &tempclass[j].nc_fill,
+		    "Show temp range", gscb_pw_dmnc,
+		    SPWDN_COMBINE(DM_TEMP, j));
+	}
+	if (n->n_yod) {
+		yod_findbyid(n->n_yod->y_id, &j);
+		pwidget_add(p, &n->n_yod->y_fill, "Show yod",
+		    gscb_pw_dmnc, SPWDN_COMBINE(DM_YOD, NSC + j));
+	}
+	if (n->n_job) {
+		job_findbyid(n->n_job->j_id, &j);
+		pwidget_add(p, &n->n_job->j_fill, "Show job",
+		    gscb_pw_dmnc, SPWDN_COMBINE(DM_JOB, NSC + j));
+	} else
+		pwidget_add(p, &statusclass[n->n_state].nc_fill,
+		    "Show class", gscb_pw_dmnc,
+		    SPWDN_COMBINE(DM_JOB, n->n_state));
+done:
+	pwidget_endlist(p);
 }
 
 void
@@ -1165,41 +1189,21 @@ panel_refresh_rt(struct panel *p)
 	sav_rtepset = st.st_rtepset;
 	sav_rtetype = st.st_rtetype;
 
-	panel_set_content(p,
-	    "- Routing Error Controls -\n"
-	    "Port set: %s\n"
-	    "Error type: %s",
-	    st.st_rtepset ? "Positive" : "Negative",
-	    rtetypelabels[st.st_rtetype]);
+	panel_set_content(p, "- Routing Error Controls -");
 
-	panel_add_content(p, "\nMax errors:");
 	if (memcmp(&rt_max, &rt_zero, sizeof(rt_zero)) == 0)
-		panel_add_content(p, " none");
+		panel_add_content(p, "\nNo error statistics.");
 	else {
+		panel_add_content(p, "\nMax errors: recover fatal router");
 		for (i = 0; i < NRP; i++) {
 			if (rt_max.rt_err[i][RT_RECOVER] ||
 			    rt_max.rt_err[i][RT_FATAL] ||
 			    rt_max.rt_err[i][RT_ROUTER]) {
-				int needcomma = 0;
-
-				panel_add_content(p, "\n  port %d: ", i);
-				if (rt_max.rt_err[i][RT_RECOVER]) {
-					panel_add_content(p, "%d recover",
-					    rt_max.rt_err[i][RT_RECOVER]);
-					needcomma = 1;
-				}
-				if (rt_max.rt_err[i][RT_FATAL]) {
-					panel_add_content(p, "%s%d fatal",
-					    (needcomma ? ", " : ""),
-					    rt_max.rt_err[i][RT_RECOVER]);
-					needcomma = 1;
-				}
-				if (rt_max.rt_err[i][RT_ROUTER]) {
-					panel_add_content(p, "%s%d router",
-					    (needcomma ? ", " : ""),
-					    rt_max.rt_err[i][RT_ROUTER]);
-					needcomma = 1;
-				}
+				panel_add_content(p,
+				    "\n  port %d:   %7d %5d %6d", i,
+				    rt_max.rt_err[i][RT_RECOVER],
+				    rt_max.rt_err[i][RT_FATAL],
+				    rt_max.rt_err[i][RT_ROUTER]);
 			}
 		}
 	}
