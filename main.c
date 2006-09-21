@@ -88,8 +88,9 @@ struct xoption opts[] = {
  /* 16 */ { "autofb",	"Auto flyby mode",		OPF_FBIGN },
  /* 17 */ { "reel",	"Reel mode",			OPF_FBIGN },
  /* 18 */ { "cabskel",	"Cabinet skeletons",		0 },
- /* 20 */ { "caption",	"Captions",			OPF_FBIGN },
- /* 21 */ { "subset",	"Subset mode",			0 }
+ /* 19 */ { "caption",	"Captions",			OPF_FBIGN },
+ /* 20 */ { "subset",	"Subset mode",			0 },
+ /* 21 */ { "selnlbls",	"Selected node labels",		0 }
 };
 
 struct vmode vmodes[] = {
@@ -116,14 +117,15 @@ struct state st = {
 	{ { STARTLX, STARTLY, STARTLZ } },		/* (lx,ly,lz) */
 	{ { STARTUX, STARTUY, STARTUZ } },		/* (ux,uy,uz) */
 	OP_FRAMES | OP_TWEEN | OP_GROUND | \
-	    OP_DISPLAY | OP_NODEANIM | OP_CAPTION,	/* options */
+	    OP_DISPLAY | OP_NODEANIM | OP_CAPTION |
+	    OP_SELNLABELS,				/* options */
 	DM_JOB,						/* which data to show */
 	VM_PHYS,					/* viewing mode */
 	PM_DIR,						/* pipe mode */
 	SSCNT_NBLK,					/* seastar mode */
 	0,						/* seastar vc */
-	RPS_NEG,					/* rterr port set */
-	RT_RECOVER,					/* rterr type */
+	RPS_NEG,					/* rte port set */
+	RT_RECOVER,					/* rte type */
 	0,						/* eggs */
 	{ { 0, 0, 0 } },				/* wired mode offset */
 	{ { 4, 4, 4 } },				/* wired node spacing */
@@ -215,6 +217,7 @@ opt_flip(int fopts)
 		case OP_FRAMES:
 		case OP_SELPIPES:
 		case OP_NLABELS:
+		case OP_SELNLABELS:
 		case OP_PIPES:
 			st.st_rf |= RF_CLUSTER | RF_SELNODE;
 			break;

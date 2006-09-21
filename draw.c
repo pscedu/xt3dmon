@@ -1044,6 +1044,9 @@ draw_selnodes(void)
 		glPushMatrix();
 		glTranslatef(fvp->fv_x, fvp->fv_y, fvp->fv_z);
 		draw_node(n, NDF_ATORIGIN);
+		if (st.st_opts & OP_SELNLABELS &&
+		    (st.st_opts & OP_NLABELS) == 0)
+			draw_node_label(n);
 		glPopMatrix();
 
 		n->n_fillp = ofp;
