@@ -1,5 +1,9 @@
 /* $Id$ */
 
+/*
+ * Routing error utility routines.
+ */
+
 #include "mon.h"
 
 #include <err.h>
