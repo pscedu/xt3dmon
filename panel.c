@@ -50,14 +50,15 @@
 #include "uinp.h"
 #include "util.h"
 
-#define LETTER_HEIGHT	13
 #define LETTER_WIDTH	8
+#define LETTER_HEIGHT	13
 #define PANEL_PADDING	3
 #define PANEL_BWIDTH	1
 #define PWIDGET_LENGTH	16
 #define PWIDGET_HEIGHT	LETTER_HEIGHT
 #define PWLABEL_MAXLEN	((winv.iv_w - 1) / 2 / 2 - PWIDGET_PADDING)
 #define PWIDGET_PADDING	2
+#define PFONT		GLUT_BITMAP_8_BY_13
 
 void uinpcb_ss(void);
 void uinpcb_eggs(void);
@@ -318,7 +319,7 @@ draw_panel(struct panel *p, int toff)
 			if (*s == '\n')
 				continue;
 		}
-		glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
+		glutBitmapCharacter(PFONT, *s);
 	}
 
 	/* Text shadow. */
@@ -335,7 +336,7 @@ draw_panel(struct panel *p, int toff)
 			if (*s == '\n')
 				continue;
 		}
-		glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
+		glutBitmapCharacter(PFONT, *s);
 	}
 	uoff--;
 	voff++;
@@ -388,7 +389,7 @@ draw_panel(struct panel *p, int toff)
 		for (s = pw->pw_str; *s != '\0' &&
 		    (s - pw->pw_str + 1) * LETTER_WIDTH + PWIDGET_LENGTH +
 		    PWIDGET_PADDING < p->p_w / nc - PANEL_PADDING - PANEL_BWIDTH; s++)
-			glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
+			glutBitmapCharacter(PFONT, *s);
 
 		glColor4f(0.0, 0.0, 0.2, 0.0);
 		glRasterPos2d(uoff + PWIDGET_LENGTH + PWIDGET_PADDING + 1,
@@ -396,7 +397,7 @@ draw_panel(struct panel *p, int toff)
 		for (s = pw->pw_str; *s != '\0' &&
 		    (s - pw->pw_str + 1) * LETTER_WIDTH + PWIDGET_LENGTH +
 		    PWIDGET_PADDING < p->p_w / nc - PANEL_PADDING - PANEL_BWIDTH; s++)
-			glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *s);
+			glutBitmapCharacter(PFONT, *s);
 
 		pw->pw_u = uoff;
 		pw->pw_v = voff;
