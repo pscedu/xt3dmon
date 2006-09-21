@@ -28,10 +28,10 @@ struct fill fill_bg		= FILL_INIT  (0.1f, 0.2f, 0.3f);
 struct fill fill_font		= FILL_INIT  (0.0f, 0.0f, 0.0f);
 struct fill fill_nodata		= FILL_INITF (1.0f, 1.0f, 0.0f, FF_SKEL);
 struct fill fill_rtesnd		= FILL_INITF (1.0f, 1.0f, 0.0f, FF_SKEL);
-struct fill fill_rtercv		= FILL_INITF (0.0f, 0.2f, 1.0f, FF_SKEL);
+struct fill fill_rtercv		= FILL_INITF (1.0f, 0.0f, 1.0f, FF_SKEL);
 struct fill fill_same		= FILL_INIT  (1.0f, 1.0f, 1.0f);
 struct fill fill_selnode	= FILL_INIT  (0.2f, 0.4f, 0.6f);
-struct fill fill_clskel		= FILL_INITFA(1.0f, 0.6f, 0.6f, 0.6f, FF_SKEL);
+struct fill fill_clskel		= FILL_INITFA(0.6f, 1.0f, 0.6f, 0.8f, FF_SKEL);
 struct fill fill_ground		= FILL_INITAB(0.3f, 0.3f, 0.3f, 0.1f, GL_ONE_MINUS_SRC_COLOR);
 struct fill fill_showall	= FILL_INITA (1.0f, 1.0f, 1.0f, 0.0f);
 
