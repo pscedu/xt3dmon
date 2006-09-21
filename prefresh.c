@@ -122,10 +122,14 @@ panel_ready(struct panel *p)
 int
 pwidget_cmp(const void *a, const void *b)
 {
-	const struct pwidget * const *pwa, * const *pwb;
-	pwa = a;
-	pwb = b;
-	return (strcmp((*pwa)->pw_str, (*pwb)->pw_str));
+	const struct pwidget *pwa, *pwb;
+	pwa = *(struct pwidget **)a;
+	pwb = *(struct pwidget **)b;
+	if (pwa->pw_sprio > pwb->pw_sprio)
+		return (-1);
+	else if (pwa->pw_sprio < pwb->pw_sprio)
+		return (1);
+	return (strcmp(pwa->pw_str, pwb->pw_str));
 }
 
 void
@@ -175,9 +179,12 @@ pwidget_endlist(struct panel *p)
 	}
 }
 
+#define pwidget_add(p, fp, s, cb, arg) \
+	pwidget_add_sp(p, fp, s, 0, cb, arg)
+
 void
-pwidget_add(struct panel *p, struct fill *fp, const char *s,
-    void (*cb)(struct glname *, int), int cbarg)
+pwidget_add_sp(struct panel *p, struct fill *fp, const char *s,
+    int sprio, void (*cb)(struct glname *, int), int cbarg)
 {
 	struct pwidget *pw;
 
@@ -196,6 +203,7 @@ pwidget_add(struct panel *p, struct fill *fp, const char *s,
 	pw->pw_cb = cb;
 	pw->pw_cbarg = cbarg;
 	pw->pw_str = s;
+	pw->pw_sprio = sprio;
 	p->p_maxwlen = MAX(p->p_maxwlen, strlen(s));
 }
 
@@ -253,18 +261,20 @@ panel_refresh_legend(struct panel *p)
 		panel_set_content(p, "- Job Legend -\n"
 		    "Total jobs: %lu", job_list.ol_cur);
 
-		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, NC_ALL);
+		pwidget_add_sp(p, &fill_showall, "Show all", NSC + 1,
+		    gscb_pw_hlnc, NC_ALL);
 
 		for (j = 0; j < NSC; j++) {
 			if (j == SC_USED ||
 			    statusclass[j].nc_nmemb == 0)
 				continue;
-			pwidget_add(p, &statusclass[j].nc_fill,
-			    statusclass[j].nc_name, gscb_pw_hlnc, j);
+			pwidget_add_sp(p, &statusclass[j].nc_fill,
+			    statusclass[j].nc_name, NSC - j, gscb_pw_hlnc, j);
 		}
 		for (j = 0; j < job_list.ol_cur; j++)
-			pwidget_add(p, &job_list.ol_jobs[j]->j_fill,
-			    job_list.ol_jobs[j]->j_name, gscb_pw_hlnc, NSC + j);
+			pwidget_add_sp(p, &job_list.ol_jobs[j]->j_fill,
+			    job_list.ol_jobs[j]->j_name, 0, gscb_pw_hlnc,
+			    NSC + j);
 		cmp = pwidget_cmp;
 		break;
 	case DM_FAIL:
@@ -298,18 +308,19 @@ panel_refresh_legend(struct panel *p)
 		panel_set_content(p, "- Yod Legend -\n"
 		    "Total yods: %lu", yod_list.ol_cur);
 
-		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, NC_ALL);
+		pwidget_add_sp(p, &fill_showall, "Show all", NSC + 1,
+		    gscb_pw_hlnc, NC_ALL);
 
 		for (j = 0; j < NSC; j++) {
 			if (j == SC_USED ||
 			    statusclass[j].nc_nmemb == 0)
 				continue;
-			pwidget_add(p, &statusclass[j].nc_fill,
-			    statusclass[j].nc_name, gscb_pw_hlnc, j);
+			pwidget_add_sp(p, &statusclass[j].nc_fill,
+			    statusclass[j].nc_name, NSC - j, gscb_pw_hlnc, j);
 		}
 		for (j = 0; j < yod_list.ol_cur; j++)
-			pwidget_add(p, &yod_list.ol_yods[j]->y_fill,
-			    yod_list.ol_yods[j]->y_cmd, gscb_pw_hlnc, NSC + j);
+			pwidget_add_sp(p, &yod_list.ol_yods[j]->y_fill,
+			    yod_list.ol_yods[j]->y_cmd, 0, gscb_pw_hlnc, NSC + j);
 		cmp = pwidget_cmp;
 		break;
 	case DM_RTUNK:
@@ -519,6 +530,8 @@ panel_refresh_ninfo(struct panel *p)
 						pset = RPS_POS;
 
 					panel_add_content(p, "\n %sport %d: ",
+					    st.st_pipemode == PM_RTE &&
+					    st.st_opts & OP_PIPES &&
 					    pset == st.st_rtepset ? "*" : " ", j);
 					if (n->n_route.rt_err[j][RT_RECOVER]) {
 						panel_add_content(p, "%d recover",
@@ -1254,7 +1267,7 @@ panel_refresh_rt(struct panel *p)
 	pwidget_add(p, (st.st_rtetype == RT_RECOVER ? &fill_white :
 	    &fill_nodata), "Recoverable", gscb_pw_rt, SRF_RECOVER);
 	pwidget_add(p, (st.st_rtetype == RT_FATAL ? &fill_white :
-	    &fill_nodata), "Fatal",  gscb_pw_rt, SRF_FATAL);
+	    &fill_nodata), "Fatal", gscb_pw_rt, SRF_FATAL);
 	pwidget_add(p, (st.st_rtetype == RT_ROUTER ? &fill_white :
 	    &fill_nodata), "Router", gscb_pw_rt, SRF_ROUTER);
 
@@ -1265,7 +1278,7 @@ panel_refresh_rt(struct panel *p)
 	pwidget_add(p, (st.st_rtepset == RPS_NEG ?  &fill_white :
 	    &fill_nodata), "Negative", gscb_pw_rt, SRF_NEG);
 	pwidget_add(p, (st.st_rtepset == RPS_POS ?  &fill_white :
-	    &fill_nodata), "Positive",  gscb_pw_rt, SRF_POS);
+	    &fill_nodata), "Positive", gscb_pw_rt, SRF_POS);
 	pwidget_endlist(p);
 }
 
