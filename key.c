@@ -613,6 +613,23 @@ gl_keyh_default(unsigned char key, int u, int v)
 	case 'a':
 		glutKeyboardFunc(gl_keyh_alpha);
 		break;
+	case 'b': {
+		static int flag;
+
+		if (flag) {
+			fill_bg.f_r = 0.1;
+			fill_bg.f_g = 0.2;
+			fill_bg.f_b = 0.3;
+		} else {
+			fill_bg.f_r = 0.8;
+			fill_bg.f_g = 0.8;
+			fill_bg.f_b = 0.8;
+		}
+		glClearColor(fill_bg.f_r, fill_bg.f_g, fill_bg.f_b,
+		    1.0);
+		flag = !flag;
+		break;
+	    }
 	case 'C':
 		st.st_rf |= RF_CLUSTER | RF_WIREP | RF_SELNODE;
 		break;
@@ -649,7 +666,19 @@ gl_keyh_default(unsigned char key, int u, int v)
 		glutKeyboardFunc(gl_keyh_keyh);
 		break;
 	case 'M':
-		glutFullScreen();
+		if (stereo_mode == STM_NONE) {
+			static int maxed;
+
+			if (maxed)
+				glutReshapeWindow(
+				    glutGet(GLUT_SCREEN_WIDTH) - 50,
+				    glutGet(GLUT_SCREEN_HEIGHT) - 50);
+			else {
+				glutFullScreen();
+				glutFullScreen();
+			}
+			maxed = !maxed;
+		}
 		break;
 	case 'm':
 		glutKeyboardFunc(gl_keyh_dmode);
