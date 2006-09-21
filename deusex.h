@@ -38,6 +38,8 @@ struct dx_action {
 #define dxa_panel_mode	dxa_intg
 #define dxa_panels	dxa_intg2
 
+#define dxa_pstick	dxa_intg
+
 #define dxa_orbit_dir	dxa_intg
 #define dxa_orbit_dim	dxa_intg2
 

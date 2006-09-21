@@ -30,6 +30,7 @@ move					{ return (DGT_MOVE); }
 opt					{ return (DGT_OPT); }
 orbit					{ return (DGT_ORBIT); }
 panel					{ return (DGT_PANEL); }
+pstick					{ return (DGT_PSTICK); }
 refocus					{ return (DGT_REFOCUS); }
 refresh					{ return (DGT_REFRESH); }
 seljob					{ return (DGT_SELJOB); }

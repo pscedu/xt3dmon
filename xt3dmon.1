@@ -409,6 +409,28 @@ Node class legend.
 .It Ic Help
 Help.
 .El
+.It Xo
+.Ic pstick
+.Ar stick
+.Ar panel Op , Ar ...
+.Xc
+Change the panel
+.Dq stick
+i.e. position of the given panels.
+Recognized
+.Ar stick
+values are:
+.Pp
+.Bl -tag -width Ds -offset indent -compact
+.It Ic tl
+Top-left.
+.It Ic tr
+Top-right.
+.It Ic bl
+Bottom-left.
+.It Ic br
+Bottom-right.
+.El
 .It Ic refocus
 Move the camera view to point to the current focus, which will
 be the center of all selected nodes, if there are any, or otherwise

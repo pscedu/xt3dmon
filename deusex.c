@@ -521,6 +521,23 @@ dxp_panel(struct dx_action *dxa)
 }
 
 int
+dxp_pstick(struct dx_action *dxa)
+{
+	struct panel *p;
+	int pid;
+
+	while (dxa->dxa_panels) {
+		pid = 1 << (ffs(dxa->dxa_panels) - 1);
+		dxa->dxa_panels &= ~pid;
+		if ((p = panel_for_id(pid)) != NULL) {
+			p->p_info->pi_stick = dxa->dxa_pstick;
+			p->p_opts |= POPT_REFRESH;
+		}
+	}
+	return (1);
+}
+
+int
 dxp_camsync(__unused struct dx_action *dxa)
 {
 	if (st.st_opts & OP_TWEEN)
@@ -769,6 +786,7 @@ struct dxent {
 	{ DGT_OPT,	dxp_opt },
 	{ DGT_ORBIT,	dxp_orbit },
 	{ DGT_PANEL,	dxp_panel },
+	{ DGT_PSTICK,	dxp_pstick },
 	{ DGT_REFOCUS,	dxp_refocus },
 	{ DGT_REFRESH,	dxp_refresh },
 	{ DGT_SELJOB,	dxp_seljob },

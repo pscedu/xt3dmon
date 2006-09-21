@@ -39,6 +39,7 @@ struct dxlist dxlist = TAILQ_HEAD_INITIALIZER(dxlist);
 %token DGT_OPT
 %token DGT_ORBIT
 %token DGT_PANEL
+%token DGT_PSTICK
 %token DGT_REFOCUS
 %token DGT_REFRESH
 %token DGT_SELJOB
@@ -273,6 +274,37 @@ conf		: DGT_BIRD {
 			dxa.dxa_type = DGT_PANEL;
 			dxa.dxa_panel_mode = $2;
 			dxa.dxa_panels = $3;
+			dxa_add(&dxa);
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_STALL;
+			dxa_add(&dxa);
+		}
+		| DGT_PSTICK STRING panels_l {
+			struct dx_action dxa;
+			int pstick;
+
+			pstick = 0;
+			if (strcasecmp($2, "tl"))
+				pstick = PSTICK_TL;
+			else if (strcasecmp($2, "tr"))
+				pstick = PSTICK_TR;
+			else if (strcasecmp($2, "bl"))
+				pstick = PSTICK_BL;
+			else if (strcasecmp($2, "br"))
+				pstick = PSTICK_BR;
+			else
+				yyerror("invalid pstick: %s", $2);
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_PSTICK;
+			dxa.dxa_pstick = pstick;
+			dxa.dxa_panels = $3;
+			dxa_add(&dxa);
+			free($2);
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_STALL;
 			dxa_add(&dxa);
 
 			memset(&dxa, 0, sizeof(dxa));
