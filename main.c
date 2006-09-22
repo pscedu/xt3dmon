@@ -6,7 +6,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
 #include "cdefs.h"
 #include "buf.h"
@@ -572,10 +571,8 @@ wirep_update(void)
 int
 rebuild(int opts)
 {
-	static char capfmt[BUFSIZ], capbuf[BUFSIZ];
 	static int rebuild_wirep;
 	struct panel *p;
-	struct tm tm;
 
 	if (opts & RF_DATASRC) {
 		ds_refresh(DS_NODE, dsflags);
@@ -590,15 +587,7 @@ rebuild(int opts)
 		if ((p = panel_for_id(PANEL_DATE)) != NULL)
 			p->p_opts |= POPT_REFRESH;
 
-		if (mach_drain) {
-			localtime_r(&mach_drain, &tm);
-			strftime(capfmt, sizeof(capfmt),
-			    date_fmt, &tm);
-			snprintf(capbuf, sizeof(capbuf),
-			    "Drain set for %s", capfmt);
-			caption_set(capbuf);
-		} else
-			caption_set(NULL);
+		caption_setdrain(mach_drain);
 	}
 	if (opts & RF_DMODE) {
 		dmode_change();

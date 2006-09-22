@@ -3,6 +3,7 @@
 #include "mon.h"
 
 #include <math.h>
+#include <time.h>
 
 #include "cdefs.h"
 #include "env.h"
@@ -150,4 +151,21 @@ __inline const char *
 caption_get(void)
 {
 	return (caption);
+}
+
+void
+caption_setdrain(time_t t)
+{
+	static char capfmt[BUFSIZ], capbuf[BUFSIZ];
+	struct tm tm;
+
+	if (t) {
+		localtime_r(&t, &tm);
+		strftime(capfmt, sizeof(capfmt),
+		    date_fmt, &tm);
+		snprintf(capbuf, sizeof(capbuf),
+		    "Drain set for %s", capfmt);
+		caption_set(capbuf);
+	} else
+		caption_set(NULL);
 }

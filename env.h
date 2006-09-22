@@ -98,6 +98,7 @@ void focus_cluster(struct fvec *);
 void focus_selnodes(struct fvec *);
 
 void		 caption_set(const char *);
+void		 caption_setdrain(time_t);
 const char	*caption_get(void);
 
 /* Loop through wired repetitions. */
