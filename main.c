@@ -584,6 +584,7 @@ rebuild(int opts)
 
 		opts |= RF_DMODE | RF_CLUSTER;
 
+		/* XXX save mtime and check in panel_refresh_date */
 		if ((p = panel_for_id(PANEL_DATE)) != NULL)
 			p->p_opts |= POPT_REFRESH;
 
