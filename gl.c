@@ -252,8 +252,7 @@ gl_displayh_stereo(void)
 	/* XXX: capture frame */
 	if (st.st_opts & OP_CAPTURE)
 		capture_frame(capture_mode);
-	if (st.st_opts & OP_DISPLAY)
-		glutSwapBuffers();
+	glutSwapBuffers();
 
 	/* Restore camera position after stereo adjustment. */
 	st.st_v = oldfv;
@@ -295,8 +294,7 @@ gl_displayh_default(void)
 
 	if (st.st_opts & OP_CAPTURE)
 		capture_frame(capture_mode);
-	if (st.st_opts & OP_DISPLAY)
-		glutSwapBuffers();
+	glutSwapBuffers();
 }
 
 struct glname *

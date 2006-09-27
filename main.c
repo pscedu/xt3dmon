@@ -73,23 +73,22 @@ struct xoption opts[] = {
  /*  2 */ { "ground",	"Ground/axes",			0 },
  /*  3 */ { "tween",	"Camera tweening",		OPF_FBIGN },
  /*  4 */ { "capture",	"Capture mode",			OPF_HIDE | OPF_FBIGN },
- /*  5 */ { "display",	"Display mode",			OPF_HIDE | OPF_FBIGN },
- /*  6 */ { "govern",	"Govern mode",			OPF_FBIGN },
- /*  7 */ { "loop",	"Flyby loop mode",		OPF_FBIGN },
- /*  8 */ { "nlabels",	"Node labels",			0 },
- /*  9 */ { "modskel",	"Blade skeletons",		0 },
- /* 10 */ { "pipes",	"Pipe mode",			0 },
- /* 11 */ { "selpipes",	"Selected node pipes",		0 },
- /* 12 */ { "pause",	"Pause",			OPF_HIDE | OPF_FBIGN },
- /* 13 */ { "tour",	"Job tour mode",		OPF_FBIGN },
- /* 14 */ { "skel",	"Skeletons",			0 },
- /* 15 */ { "nodeanim",	"Node animation",		0 },
- /* 16 */ { "autofb",	"Auto flyby mode",		OPF_FBIGN },
- /* 17 */ { "reel",	"Reel mode",			OPF_FBIGN },
- /* 18 */ { "cabskel",	"Cabinet skeletons",		0 },
- /* 19 */ { "caption",	"Captions",			OPF_FBIGN },
- /* 20 */ { "subset",	"Subset mode",			0 },
- /* 21 */ { "selnlbls",	"Selected node labels",		0 }
+ /*  5 */ { "govern",	"Govern mode",			OPF_FBIGN },
+ /*  6 */ { "loop",	"Flyby loop mode",		OPF_FBIGN },
+ /*  7 */ { "nlabels",	"Node labels",			0 },
+ /*  8 */ { "modskel",	"Blade skeletons",		0 },
+ /*  9 */ { "pipes",	"Pipe mode",			0 },
+ /* 10 */ { "selpipes",	"Selected node pipes",		0 },
+ /* 11 */ { "pause",	"Pause",			OPF_HIDE | OPF_FBIGN },
+ /* 12 */ { "tour",	"Job tour mode",		OPF_FBIGN },
+ /* 13 */ { "skel",	"Skeletons",			0 },
+ /* 14 */ { "nodeanim",	"Node animation",		0 },
+ /* 15 */ { "autofb",	"Auto flyby mode",		OPF_FBIGN },
+ /* 16 */ { "reel",	"Reel mode",			OPF_FBIGN },
+ /* 17 */ { "cabskel",	"Cabinet skeletons",		0 },
+ /* 18 */ { "caption",	"Captions",			OPF_FBIGN },
+ /* 19 */ { "subset",	"Subset mode",			0 },
+ /* 20 */ { "selnlbls",	"Selected node labels",		0 }
 };
 
 struct vmode vmodes[] = {
@@ -116,8 +115,7 @@ struct state st = {
 	{ { STARTLX, STARTLY, STARTLZ } },		/* (lx,ly,lz) */
 	{ { STARTUX, STARTUY, STARTUZ } },		/* (ux,uy,uz) */
 	OP_FRAMES | OP_TWEEN | OP_GROUND | \
-	    OP_DISPLAY | OP_NODEANIM | OP_CAPTION |
-	    OP_SELNLABELS,				/* options */
+	    OP_NODEANIM | OP_CAPTION | OP_SELNLABELS,	/* options */
 	DM_JOB,						/* which data to show */
 	VM_PHYS,					/* viewing mode */
 	PM_DIR,						/* pipe mode */

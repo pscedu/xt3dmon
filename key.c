@@ -262,9 +262,6 @@ gl_keyh_option(unsigned char key, __unused int u, __unused int v)
 	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
-	case 'D':
-		opts |= OP_DISPLAY;
-		break;
 	case 'd':
 		opts |= OP_CAPTURE;
 		break;
