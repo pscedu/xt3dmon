@@ -11,17 +11,19 @@
 #define SPF_SQUIRE	(1<<2)
 #define SPF_DESQUIRE	(1<<3)
 
-/* Selection processing return values. */
-#define SP_MISS		(INT_MIN)
-#define SP_NONE		(INT_MIN + 1)
+typedef void (*gscb_t)(struct glname *, int);
 
 struct glname {
 	struct objhdr	  gn_oh;
-	int		  gn_id;	/* Underlying object ID. */
 	unsigned int 	  gn_name;	/* GL name. */
 	int		  gn_flags;
 	struct fvec	  gn_offv;
-	void		(*gn_cb)(struct glname *, int);
+	gscb_t		  gn_cb;
+
+	int		  gn_arg_int;	/* Callback "args". */
+	int		  gn_arg_int2;
+	void		 *gn_arg_ptr;
+	void		 *gn_arg_ptr2;
 
 	/* Hack around GL's unwillingness to do 2D selection. */
 	int		  gn_u;
@@ -59,38 +61,31 @@ struct glname {
 #define PWFF_OPEN	4
 #define PWFF_NEW	5
 
-#define SPWDN_COMBINE(dm, nc)		(((dm) << 16) | (nc))
-#define SPWDN_SPLIT(spwdn, dm, nc)		\
-	do {					\
-		(dm) = (spwdn) >> 16;		\
-		(nc) = (spwdn) & 0xffff;	\
-	} while (0)
-
 void		 sel_begin(void);
 int		 sel_end(void);
-int		 sel_process(int, int, int);
+struct glname	*sel_process(int, int, int);
 
-int		 wi_shadow(int *, int, const struct fvec *);
-int		 phys_shadow(int *, int);
+struct glname	*wi_shadow(int *, int, const struct fvec *);
+struct glname	*phys_shadow(int *, int);
 
-unsigned int	 gsn_get(int, void (*)(struct glname *, int), int, const struct fvec *);
+unsigned int	 gsn_get(int, const struct fvec *, gscb_t, int, int, void *, void *);
 void		 gscb_miss(struct glname *, int);
 void		 gscb_node(struct glname *, int);
 void		 gscb_panel(struct glname *, int);
+void		 gscb_pw_dmnc(struct glname *, int);
+void		 gscb_pw_dmode(struct glname *, int);
+void		 gscb_pw_dxcho(struct glname *, int);
+void		 gscb_pw_fb(struct glname *, int);
+void		 gscb_pw_fbcho(struct glname *, int);
+void		 gscb_pw_help(struct glname *, int);
 void		 gscb_pw_hlnc(struct glname *, int);
+void		 gscb_pw_keyh(struct glname *, int);
 void		 gscb_pw_opt(struct glname *, int);
 void		 gscb_pw_panel(struct glname *, int);
-void		 gscb_pw_vmode(struct glname *, int);
-void		 gscb_pw_dmode(struct glname *, int);
-void		 gscb_pw_help(struct glname *, int);
-void		 gscb_pw_ssmode(struct glname *, int);
-void		 gscb_pw_ssvc(struct glname *, int);
 void		 gscb_pw_pipe(struct glname *, int);
 void		 gscb_pw_reel(struct glname *, int);
-void		 gscb_pw_fb(struct glname *, int);
-void		 gscb_pw_wiadj(struct glname *, int);
 void		 gscb_pw_rt(struct glname *, int);
-void		 gscb_pw_fbcho(struct glname *, int);
-void		 gscb_pw_keyh(struct glname *, int);
-void		 gscb_pw_dxcho(struct glname *, int);
-void		 gscb_pw_dmnc(struct glname *, int);
+void		 gscb_pw_ssmode(struct glname *, int);
+void		 gscb_pw_ssvc(struct glname *, int);
+void		 gscb_pw_vmode(struct glname *, int);
+void		 gscb_pw_wiadj(struct glname *, int);

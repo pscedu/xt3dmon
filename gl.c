@@ -299,14 +299,15 @@ gl_displayh_default(void)
 		glutSwapBuffers();
 }
 
-int
+struct glname *
 gl_select(int flags)
 {
-	int i, ret, nrecs;
+	struct glname *gn;
 	struct fvec v;
 	int dl[NGEOM];
+	int i, nrecs;
 
-	ret = 0; /* gcc */
+	gn = 0; /* gcc */
 	switch (stereo_mode) {
 	case STM_PASV:
 		gl_wid_update();
@@ -321,21 +322,21 @@ gl_select(int flags)
 	sel_begin();
 	draw_shadow_panels();
 	nrecs = sel_end();
-	if (nrecs && (ret = sel_process(nrecs, 0,
-	    SPF_2D | flags)) != SP_MISS)
+	if (nrecs && (gn = sel_process(nrecs, 0,
+	    SPF_2D | flags)) != NULL)
 		goto end;
 
 	switch (st.st_vmode) {
 	case VM_PHYS:
-		ret = phys_shadow(dl, flags);
+		gn = phys_shadow(dl, flags);
 		break;
 	case VM_WIRED:
 		WIREP_FOREACH(&v)
-			if ((ret = wi_shadow(dl, flags, &v)) != SP_MISS)
+			if ((gn = wi_shadow(dl, flags, &v)) != NULL)
 				goto end;
 		break;
 	case VM_WIONE:
-		ret = wi_shadow(dl, flags, &fv_zero);
+		gn = wi_shadow(dl, flags, &fv_zero);
 		break;
 	}
 end:
@@ -345,8 +346,8 @@ end:
 
 	st.st_rf |= RF_CAM;
 
-	if (ret == SP_MISS)
+	if (gn == NULL)
 		gscb_miss(NULL, flags);
-	return (ret);
+	return (gn);
 }
 

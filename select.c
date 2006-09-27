@@ -110,7 +110,7 @@ selrec_cmp(const void *a, const void *b)
 	return (retval);
 }
 
-int
+struct glname *
 sel_process(int nrecs, int rank, int flags)
 {
 	struct glname *gn, *gn2d;
@@ -122,7 +122,7 @@ sel_process(int nrecs, int rank, int flags)
 	for (i = 0, p = selbuf; i < nrecs; i++, p += 3 + p[SBI_LEN])
 		if (p[SBI_LEN] != 1) {
 			warnx("selection buffer contains uneven elements");
-			return (SP_MISS);
+			return (NULL);
 		}
 
 	qsort(selbuf, nrecs, sizeof(*sr), selrec_cmp);
@@ -163,7 +163,7 @@ sel_process(int nrecs, int rank, int flags)
 				 * else, process the best found.
 				 */
 				if (gn2d == NULL)
-					return (SP_MISS);
+					return (NULL);
 				else
 					break;
 			}
@@ -183,18 +183,14 @@ sel_process(int nrecs, int rank, int flags)
 	if (flags & SPF_2D)
 		gn = gn2d;
 	else if (i == nrecs)
-		return (SP_MISS);
+		return (NULL);
 
 	if (gn == NULL)
-		return (SP_MISS);
+		return (NULL);
 
 	if (gn->gn_cb != NULL)
 		gn->gn_cb(gn, flags & ~SPF_2D);
-
-	if (gn->gn_id == SP_MISS)
-		errx(1, "selected object uses reserved ID %d", SP_MISS);
-
-	return (gn->gn_id);
+	return (gn);
 }
 
 int
@@ -214,16 +210,19 @@ sel_end(void)
  * obj_batch_start/obj_batch_end combo.
  */
 unsigned int
-gsn_get(int id, void (*cb)(struct glname *, int), int flags,
-    const struct fvec *offv)
+gsn_get(int flags, const struct fvec *offv, void (*cb)(struct glname *, int),
+    int arg_int, int arg_int2, void *arg_ptr, void *arg_ptr2)
 {
 	struct glname *gn;
 	unsigned int cur = glname_list.ol_tcur + 100;
 
 	gn = obj_get(&cur, &glname_list);
 	gn->gn_name = cur;
-	gn->gn_id = id;
 	gn->gn_cb = cb;
+	gn->gn_arg_int = arg_int;
+	gn->gn_arg_int2 = arg_int2;
+	gn->gn_arg_ptr = arg_ptr;
+	gn->gn_arg_ptr2 = arg_ptr2;
 	gn->gn_flags = flags;
 	gn->gn_offv = *offv;
 	return (cur);
@@ -244,7 +243,7 @@ gscb_miss(__unused struct glname *gn, int flags)
 void
 gscb_panel(struct glname *gn, int flags)
 {
-	int id = gn->gn_id;
+	int id = gn->gn_arg_int;
 
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_RIGHT_ARROW);
@@ -260,7 +259,7 @@ gscb_panel(struct glname *gn, int flags)
 void
 gscb_node(struct glname *gn, int flags)
 {
-	int nid = gn->gn_id;
+	int nid = gn->gn_arg_int;
 	struct node *n;
 
 	if (flags & SPF_PROBE)
@@ -288,7 +287,7 @@ gscb_node(struct glname *gn, int flags)
 void
 gscb_pw_hlnc(struct glname *gn, int flags)
 {
-	int nc = gn->gn_id;
+	int nc = gn->gn_arg_int;
 	void (*f)(struct fill *);
 
 	if (flags & SPF_PROBE)
@@ -322,12 +321,11 @@ gscb_pw_hlnc(struct glname *gn, int flags)
 void
 gscb_pw_dmnc(struct glname *gn, int flags)
 {
-	int dm, nc, spwdn = gn->gn_id;
+	int dm = gn->gn_arg_int, nc = gn->gn_arg_int2;
 
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
 	else if (flags == 0) {
-		SPWDN_SPLIT(spwdn, dm, nc);
 		spkey = glutGetModifiers();
 
 		if (st.st_dmode != dm) {
@@ -347,7 +345,7 @@ gscb_pw_dmnc(struct glname *gn, int flags)
 void
 gscb_pw_opt(struct glname *gn, int flags)
 {
-	int opt = gn->gn_id;
+	int opt = gn->gn_arg_int;
 
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
@@ -358,7 +356,7 @@ gscb_pw_opt(struct glname *gn, int flags)
 void
 gscb_pw_panel(struct glname *gn, int flags)
 {
-	int pid = gn->gn_id;
+	int pid = gn->gn_arg_int;
 
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
@@ -369,7 +367,7 @@ gscb_pw_panel(struct glname *gn, int flags)
 void
 gscb_pw_vmode(struct glname *gn, int flags)
 {
-	int vm = gn->gn_id;
+	int vm = gn->gn_arg_int;
 
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
@@ -382,7 +380,7 @@ gscb_pw_vmode(struct glname *gn, int flags)
 void
 gscb_pw_help(struct glname *gn, int flags)
 {
-	int opt = gn->gn_id;
+	int opt = gn->gn_arg_int;
 	struct selnode *sn;
 
 	if (flags & SPF_PROBE) {
@@ -419,7 +417,7 @@ gscb_pw_help(struct glname *gn, int flags)
 void
 gscb_pw_dmode(struct glname *gn, int flags)
 {
-	int dm = gn->gn_id;
+	int dm = gn->gn_arg_int;
 
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
@@ -437,7 +435,7 @@ gscb_pw_dmode(struct glname *gn, int flags)
 void
 gscb_pw_ssvc(struct glname *gn, int flags)
 {
-	int vc = gn->gn_id;
+	int vc = gn->gn_arg_int;
 
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
@@ -450,7 +448,7 @@ gscb_pw_ssvc(struct glname *gn, int flags)
 void
 gscb_pw_ssmode(struct glname *gn, int flags)
 {
-	int m = gn->gn_id;
+	int m = gn->gn_arg_int;
 
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
@@ -463,7 +461,7 @@ gscb_pw_ssmode(struct glname *gn, int flags)
 void
 gscb_pw_pipe(struct glname *gn, int flags)
 {
-	int m = gn->gn_id;
+	int m = gn->gn_arg_int;
 
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
@@ -478,7 +476,7 @@ gscb_pw_pipe(struct glname *gn, int flags)
 void
 gscb_pw_reel(struct glname *gn, int flags)
 {
-	int i = gn->gn_id;
+	int i = gn->gn_arg_int;
 
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
@@ -492,7 +490,7 @@ gscb_pw_reel(struct glname *gn, int flags)
 void
 gscb_pw_fbcho(struct glname *gn, int flags)
 {
-	int i = gn->gn_id;
+	int i = gn->gn_arg_int;
 	struct panel *p;
 
 	if (flags & SPF_PROBE)
@@ -508,7 +506,7 @@ gscb_pw_fbcho(struct glname *gn, int flags)
 void
 gscb_pw_fb(struct glname *gn, int flags)
 {
-	int i = gn->gn_id;
+	int i = gn->gn_arg_int;
 
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
@@ -539,7 +537,7 @@ gscb_pw_fb(struct glname *gn, int flags)
 void
 gscb_pw_wiadj(struct glname *gn, int flags)
 {
-	int swf = gn->gn_id;
+	int swf = gn->gn_arg_int;
 	int adj = 1;
 
 	if (flags & SPF_PROBE)
@@ -579,7 +577,7 @@ gscb_pw_wiadj(struct glname *gn, int flags)
 void
 gscb_pw_rt(struct glname *gn, int flags)
 {
-	int srf = gn->gn_id;
+	int srf = gn->gn_arg_int;
 
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
@@ -608,7 +606,7 @@ gscb_pw_rt(struct glname *gn, int flags)
 void
 gscb_pw_keyh(struct glname *gn, int flags)
 {
-	int kh = gn->gn_id;
+	int kh = gn->gn_arg_int;
 
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
@@ -621,7 +619,7 @@ gscb_pw_keyh(struct glname *gn, int flags)
 void
 gscb_pw_dxcho(struct glname *gn, int flags)
 {
-	int i = gn->gn_id;
+	int i = gn->gn_arg_int;
 	struct panel *p;
 
 	if (flags & SPF_PROBE)

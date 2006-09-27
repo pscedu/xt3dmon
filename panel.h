@@ -42,7 +42,10 @@ struct pwidget {
 	struct fill		 *pw_fillp;
 	SLIST_ENTRY(pwidget)	  pw_next;
 	void			(*pw_cb)(struct glname *, int);
-	int			  pw_cbarg;
+	int			  pw_arg_int;
+	int			  pw_arg_int2;
+	void			 *pw_arg_ptr;
+	void			 *pw_arg_ptr2;
 	int			  pw_u;
 	int			  pw_v;
 	int			  pw_w;

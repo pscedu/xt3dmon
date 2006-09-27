@@ -179,12 +179,10 @@ pwidget_endlist(struct panel *p)
 	}
 }
 
-#define pwidget_add(p, fp, s, cb, arg) \
-	pwidget_add_sp(p, fp, s, 0, cb, arg)
-
 void
-pwidget_add_sp(struct panel *p, struct fill *fp, const char *s,
-    int sprio, void (*cb)(struct glname *, int), int cbarg)
+pwidget_add(struct panel *p, struct fill *fp, const char *s,
+    int sprio, void (*cb)(struct glname *, int), int arg_int,
+    int arg_int2, void *arg_ptr, void *arg_ptr2)
 {
 	struct pwidget *pw;
 
@@ -201,7 +199,10 @@ pwidget_add_sp(struct panel *p, struct fill *fp, const char *s,
 
 	pw->pw_fillp = fp;
 	pw->pw_cb = cb;
-	pw->pw_cbarg = cbarg;
+	pw->pw_arg_int = arg_int;
+	pw->pw_arg_int2 = arg_int2;
+	pw->pw_arg_ptr = arg_ptr;
+	pw->pw_arg_ptr2 = arg_ptr2;
 	pw->pw_str = s;
 	pw->pw_sprio = sprio;
 	p->p_maxwlen = MAX(p->p_maxwlen, strlen(s));
@@ -261,109 +262,127 @@ panel_refresh_legend(struct panel *p)
 		panel_set_content(p, "- Job Legend -\n"
 		    "Total jobs: %lu", job_list.ol_cur);
 
-		pwidget_add_sp(p, &fill_showall, "Show all", NSC + 1,
-		    gscb_pw_hlnc, NC_ALL);
+		pwidget_add(p, &fill_showall, "Show all", NSC + 1,
+		    gscb_pw_hlnc, NC_ALL, 0, NULL, NULL);
 
 		for (j = 0; j < NSC; j++) {
 			if (j == SC_USED ||
 			    statusclass[j].nc_nmemb == 0)
 				continue;
-			pwidget_add_sp(p, &statusclass[j].nc_fill,
-			    statusclass[j].nc_name, NSC - j, gscb_pw_hlnc, j);
+			pwidget_add(p, &statusclass[j].nc_fill,
+			    statusclass[j].nc_name, NSC - j,
+			    gscb_pw_hlnc, j, 0, NULL, NULL);
 		}
 		for (j = 0; j < job_list.ol_cur; j++)
-			pwidget_add_sp(p, &OLE(job_list, j, job)->j_fill,
-			    OLE(job_list, j, job)->j_name, 0, gscb_pw_hlnc,
-			    NSC + j);
+			pwidget_add(p, &OLE(job_list, j, job)->j_fill,
+			    OLE(job_list, j, job)->j_name, 0,
+			    gscb_pw_hlnc, NSC + j, 0, NULL, NULL);
 		cmp = pwidget_cmp;
 		break;
 	case DM_FAIL:
 		panel_set_content(p, "- Failure Legend -\n"
 		    "Total: %lu", total_failures);
 
-		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, NC_ALL);
-		pwidget_add(p, &fill_nodata, "No data", NULL, 0);
+		pwidget_add(p, &fill_showall, "Show all", 0,
+		    gscb_pw_hlnc, NC_ALL, 0, NULL, NULL);
+		pwidget_add(p, &fill_nodata, "No data", 0,
+		    NULL, 0, 0, NULL, NULL);
 
 		for (j = 0; j < NFAILC; j++) {
 			if (failclass[j].nc_nmemb == 0)
 				continue;
 			pwidget_add(p, &failclass[j].nc_fill,
-			    failclass[j].nc_name, gscb_pw_hlnc, j);
+			    failclass[j].nc_name, 0,
+			    gscb_pw_hlnc, j, 0, NULL, NULL);
 		}
 		break;
 	case DM_TEMP:
 		panel_set_content(p, "- Temperature Legend -");
 
-		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, NC_ALL);
-		pwidget_add(p, &fill_nodata, "No data", NULL, 0);
+		pwidget_add(p, &fill_showall, "Show all", 0,
+		    gscb_pw_hlnc, NC_ALL, 0, NULL, NULL);
+		pwidget_add(p, &fill_nodata, "No data", 0,
+		    NULL, 0, 0, NULL, NULL);
 
 		for (i = NTEMPC - 1; i >= 0; i--) {
 			if (tempclass[i].nc_nmemb == 0)
 				continue;
 			pwidget_add(p, &tempclass[i].nc_fill,
-			    tempclass[i].nc_name, gscb_pw_hlnc, i);
+			    tempclass[i].nc_name, 0,
+			    gscb_pw_hlnc, i, 0, NULL, NULL);
 		}
 		break;
 	case DM_YOD:
 		panel_set_content(p, "- Yod Legend -\n"
 		    "Total yods: %lu", yod_list.ol_cur);
 
-		pwidget_add_sp(p, &fill_showall, "Show all", NSC + 1,
-		    gscb_pw_hlnc, NC_ALL);
+		pwidget_add(p, &fill_showall, "Show all", NSC + 1,
+		    gscb_pw_hlnc, NC_ALL, 0, NULL, NULL);
 
 		for (j = 0; j < NSC; j++) {
 			if (j == SC_USED ||
 			    statusclass[j].nc_nmemb == 0)
 				continue;
-			pwidget_add_sp(p, &statusclass[j].nc_fill,
-			    statusclass[j].nc_name, NSC - j, gscb_pw_hlnc, j);
+			pwidget_add(p, &statusclass[j].nc_fill,
+			    statusclass[j].nc_name, NSC - j,
+			    gscb_pw_hlnc, j, 0, NULL, NULL);
 		}
 		for (j = 0; j < yod_list.ol_cur; j++)
-			pwidget_add_sp(p, &OLE(yod_list, j, yod)->y_fill,
-			    OLE(yod_list, j, yod)->y_cmd, 0, gscb_pw_hlnc, NSC + j);
+			pwidget_add(p, &OLE(yod_list, j, yod)->y_fill,
+			    OLE(yod_list, j, yod)->y_cmd, 0,
+			    gscb_pw_hlnc, NSC + j, 0, NULL, NULL);
 		cmp = pwidget_cmp;
 		break;
 	case DM_RTUNK:
 		panel_set_content(p, "- Routing Legend -");
 
-		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, NC_ALL);
-		pwidget_add(p, &fill_rtesnd, "Sender", gscb_pw_hlnc, RTC_SND);
-		pwidget_add(p, &fill_rtercv, "Target", gscb_pw_hlnc, RTC_RCV);
+		pwidget_add(p, &fill_showall, "Show all", 0,
+		    gscb_pw_hlnc, NC_ALL, 0, NULL, NULL);
+		pwidget_add(p, &fill_rtesnd, "Sender", 0,
+		    gscb_pw_hlnc, RTC_SND, 0, NULL, NULL);
+		pwidget_add(p, &fill_rtercv, "Target", 0,
+		    gscb_pw_hlnc, RTC_RCV, 0, NULL, NULL);
 
 		for (j = 0; j < NRTC; j++) {
 			if (rtclass[j].nc_nmemb == 0)
 				continue;
 			pwidget_add(p, &rtclass[j].nc_fill,
-			    rtclass[j].nc_name, gscb_pw_hlnc, j);
+			    rtclass[j].nc_name, 0,
+			    gscb_pw_hlnc, j, 0, NULL, NULL);
 		}
 		break;
 	case DM_SEASTAR:
 		panel_set_content(p, "- Seastar Legend -");
 
-		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, NC_ALL);
+		pwidget_add(p, &fill_showall, "Show all", 0,
+		    gscb_pw_hlnc, NC_ALL, 0, NULL, NULL);
 
 		for (j = 0; j < NSSC; j++) {
 			if (ssclass[j].nc_nmemb == 0)
 				continue;
 			pwidget_add(p, &ssclass[j].nc_fill,
-			    ssclass[j].nc_name, gscb_pw_hlnc, j);
+			    ssclass[j].nc_name, 0,
+			    gscb_pw_hlnc, j, 0, NULL, NULL);
 		}
 		break;
 	case DM_SAME:
 		panel_set_content(p, "- Legend -");
 
-		pwidget_add(p, &fill_same, "All nodes", gscb_pw_hlnc, NC_ALL);
+		pwidget_add(p, &fill_same, "All nodes", 0,
+		    gscb_pw_hlnc, NC_ALL, 0, NULL, NULL);
 		break;
 	case DM_LUSTRE:
 		panel_set_content(p, "- Lustre Legend -");
 
-		pwidget_add(p, &fill_showall, "Show all", gscb_pw_hlnc, NC_ALL);
+		pwidget_add(p, &fill_showall, "Show all", 0,
+		    gscb_pw_hlnc, NC_ALL, 0, NULL, NULL);
 
 		for (j = 0; j < NLUSTC; j++) {
 			if (lustreclass[j].nc_nmemb == 0)
 				continue;
 			pwidget_add(p, &lustreclass[j].nc_fill,
-			    lustreclass[j].nc_name, gscb_pw_hlnc, j);
+			    lustreclass[j].nc_name, 0,
+			    gscb_pw_hlnc, j, 0, NULL, NULL);
 		}
 		break;
 	default:
@@ -624,22 +643,22 @@ panel_refresh_ninfo(struct panel *p)
 	if (n->n_temp != DV_NODATA) {
 		j = roundclass(n->n_temp, TEMP_MIN, TEMP_MAX, NTEMPC);
 		pwidget_add(p, &tempclass[j].nc_fill,
-		    "Show temp range", gscb_pw_dmnc,
-		    SPWDN_COMBINE(DM_TEMP, j));
+		    "Show temp range", 0,
+		    gscb_pw_dmnc, DM_TEMP, j, NULL, NULL);
 	}
 	if (n->n_yod) {
 		yod_findbyid(n->n_yod->y_id, &j);
-		pwidget_add(p, &n->n_yod->y_fill, "Show yod",
-		    gscb_pw_dmnc, SPWDN_COMBINE(DM_YOD, NSC + j));
+		pwidget_add(p, &n->n_yod->y_fill, "Show yod", 0,
+		    gscb_pw_dmnc, DM_YOD, NSC + j, NULL, NULL);
 	}
 	if (n->n_job) {
 		job_findbyid(n->n_job->j_id, &j);
-		pwidget_add(p, &n->n_job->j_fill, "Show job",
-		    gscb_pw_dmnc, SPWDN_COMBINE(DM_JOB, NSC + j));
+		pwidget_add(p, &n->n_job->j_fill, "Show job", 0,
+		    gscb_pw_dmnc, DM_JOB, NSC + j, NULL, NULL);
 	} else
 		pwidget_add(p, &statusclass[n->n_state].nc_fill,
-		    "Show class", gscb_pw_dmnc,
-		    SPWDN_COMBINE(DM_JOB, n->n_state));
+		    "Show class", 0,
+		    gscb_pw_dmnc, DM_JOB, n->n_state, NULL, NULL);
 done:
 	pwidget_endlist(p);
 }
@@ -671,26 +690,22 @@ panel_refresh_flyby(struct panel *p)
 	case FBM_REC:
 		panel_add_content(p, "\nRecording new flyby");
 
-		pwidget_add(p, &fill_nodata, "Stop recording",
-		    gscb_pw_fb, PWFF_STOPREC);
+		pwidget_add(p, &fill_nodata, "Stop recording", 0,
+		    gscb_pw_fb, PWFF_STOPREC, 0, NULL, NULL);
 		break;
 	default:
-		pwidget_add(p, &fill_nodata, "Play",
-		    gscb_pw_fb, PWFF_PLAY);
-		pwidget_add(p, &fill_nodata, "Record",
-		    gscb_pw_fb, PWFF_REC);
-		pwidget_add(p, &fill_nodata, "Delete",
-		    gscb_pw_fb, PWFF_CLR);
-		pwidget_add(p,
-		    (panel_for_id(PANEL_FBNEW) ?
-		    &fill_white : &fill_nodata), "Create new",
-		    gscb_pw_fb, PWFF_NEW);
-		pwidget_add(p,
-		    (panel_for_id(PANEL_FBCHO) ?
-		    &fill_white : &fill_nodata),
-		    (panel_for_id(PANEL_FBCHO) == NULL ?
-		    "Open Chooser" : "Close Chooser"),
-		    gscb_pw_fb, PWFF_OPEN);
+		pwidget_add(p, &fill_nodata, "Play", 0,
+		    gscb_pw_fb, PWFF_PLAY, 0, NULL, NULL);
+		pwidget_add(p, &fill_nodata, "Record", 0,
+		    gscb_pw_fb, PWFF_REC, 0, NULL, NULL);
+		pwidget_add(p, &fill_nodata, "Delete", 0,
+		    gscb_pw_fb, PWFF_CLR, 0, NULL, NULL);
+		pwidget_add(p, (panel_for_id(PANEL_FBNEW) ?
+		    &fill_white : &fill_nodata), "Create new", 0,
+		    gscb_pw_fb, PWFF_NEW, 0, NULL, NULL);
+		pwidget_add(p, (panel_for_id(PANEL_FBCHO) ?
+		    &fill_white : &fill_nodata), "Chooser", 0,
+		    gscb_pw_fb, PWFF_OPEN, 0, NULL, NULL);
 		break;
 	}
 	pwidget_endlist(p);
@@ -719,7 +734,8 @@ panel_refresh_fbcho(struct panel *p)
 			err(1, "%s", _PATH_FLYBYDIR);
 		errno = 0;
 
-		pwidget_add(p, &fill_white, flyby_name, NULL, 0);
+		pwidget_add(p, &fill_white, flyby_name, 0,
+		    NULL, 0, 0, NULL, NULL);
 	} else {
 		obj_batch_start(&flyby_list);
 		while ((dent = readdir(dp)) != NULL) {
@@ -752,8 +768,8 @@ panel_refresh_fbcho(struct panel *p)
 			fe = OLE(flyby_list, i, fnent);
 
 			pwidget_add(p, (strcmp(flyby_name, fe->fe_name) ?
-			    &fill_nodata : &fill_white), fe->fe_name,
-			    gscb_pw_fbcho, i);
+			    &fill_nodata : &fill_white), fe->fe_name, 0,
+			    gscb_pw_fbcho, i, 0, NULL, NULL);
 		}
 	}
 	pwidget_endlist(p);
@@ -899,8 +915,8 @@ panel_refresh_opts(struct panel *p)
 		if (opts[i].opt_flags & OPF_HIDE)
 			continue;
 		pwidget_add(p, (st.st_opts & (1 << i) ?
-		    &fill_white : &fill_nodata), opts[i].opt_name,
-		    gscb_pw_opt, i);
+		    &fill_white : &fill_nodata), opts[i].opt_name, 0,
+		    gscb_pw_opt, i, 0, NULL, NULL);
 	}
 	pwidget_endlist(p);
 	pwidget_sortlist(p, pwidget_cmp);
@@ -928,8 +944,8 @@ panel_refresh_panels(struct panel *p)
 		if (pinfo[i].pi_flags & PIF_HIDE)
 			continue;
 		pwidget_add(p, (pids & (1 << i) ?
-		    &fill_white : &fill_nodata), pinfo[i].pi_name,
-		    gscb_pw_panel, i);
+		    &fill_white : &fill_nodata), pinfo[i].pi_name, 0,
+		    gscb_pw_panel, i, 0, NULL, NULL);
 	}
 	pwidget_endlist(p);
 	pwidget_sortlist(p, pwidget_cmp);
@@ -994,23 +1010,23 @@ panel_refresh_help(struct panel *p)
 	panel_set_content(p, "");
 	pwidget_startlist(p);
 	if (exthelp) {
-		pwidget_add(p, &fill_xparent, "Panels",
-		    gscb_pw_panel, baseconv(PANEL_PANELS) - 1);
-		pwidget_add(p, &fill_xparent, "Options",
-		    gscb_pw_panel, baseconv(PANEL_OPTS) - 1);
-		pwidget_add(p, &fill_xparent, "Reorient",
-		    gscb_pw_help, HF_REORIENT);
-		pwidget_add(p, &fill_xparent, "Update Data",
-		    gscb_pw_help, HF_UPDATE);
+		pwidget_add(p, &fill_xparent, "Panels", 0,
+		    gscb_pw_panel, baseconv(PANEL_PANELS) - 1, 0, NULL, NULL);
+		pwidget_add(p, &fill_xparent, "Options", 0,
+		    gscb_pw_panel, baseconv(PANEL_OPTS) - 1, 0, NULL, NULL);
+		pwidget_add(p, &fill_xparent, "Reorient", 0,
+		    gscb_pw_help, HF_REORIENT, 0, NULL, NULL);
+		pwidget_add(p, &fill_xparent, "Update Data", 0,
+		    gscb_pw_help, HF_UPDATE, 0, NULL, NULL);
 		if (nselnodes) {
-			pwidget_add(p, &fill_xparent, "Clear Selnodes",
-			    gscb_pw_help, HF_CLRSN);
-			pwidget_add(p, &fill_xparent, "Print Selnode IDs",
-			    gscb_pw_help, HF_PRTSN);
+			pwidget_add(p, &fill_xparent, "Clear Selnodes", 0,
+			    gscb_pw_help, HF_CLRSN, 0, NULL, NULL);
+			pwidget_add(p, &fill_xparent, "Print Selnode IDs", 0,
+			    gscb_pw_help, HF_PRTSN, 0, NULL, NULL);
 		}
 	} else {
-		pwidget_add(p, &fill_xparent, "Help <<",
-		    gscb_pw_help, HF_SHOWHELP);
+		pwidget_add(p, &fill_xparent, "Help <<", 0,
+		    gscb_pw_help, HF_SHOWHELP, 0, NULL, NULL);
 	}
 	pwidget_endlist(p);
 }
@@ -1029,8 +1045,8 @@ panel_refresh_vmode(struct panel *p)
 	pwidget_startlist(p);
 	for (i = 0; i < NVM; i++) {
 		pwidget_add(p, (st.st_vmode == i ?
-		    &fill_white : &fill_nodata), vmodes[i].vm_name,
-		    gscb_pw_vmode, i);
+		    &fill_white : &fill_nodata), vmodes[i].vm_name, 0,
+		    gscb_pw_vmode, i, 0, NULL, NULL);
 	}
 	pwidget_endlist(p);
 }
@@ -1051,8 +1067,8 @@ panel_refresh_dmode(struct panel *p)
 		if (dmodes[i].dm_name == NULL)
 			continue;
 		pwidget_add(p, (st.st_dmode == i ?
-		    &fill_white : &fill_nodata), dmodes[i].dm_name,
-		    gscb_pw_dmode, i);
+		    &fill_white : &fill_nodata), dmodes[i].dm_name, 0,
+		    gscb_pw_dmode, i, 0, NULL, NULL);
 	}
 	pwidget_endlist(p);
 }
@@ -1086,13 +1102,13 @@ panel_refresh_sstar(struct panel *p)
 	pwidget_startlist(p);
 	for (i = 0; i < NVC; i++) {
 		pwidget_add(p, (st.st_ssvc == i ?
-		    &fill_white : &fill_nodata), ssvclabels[i],
-		    gscb_pw_ssvc, i);
+		    &fill_white : &fill_nodata), ssvclabels[i], 0,
+		    gscb_pw_ssvc, i, 0, NULL, NULL);
 	}
 	for (i = 0; i < NSSCNT; i++) {
 		pwidget_add(p, (st.st_ssmode == i ?
-		    &fill_white : &fill_nodata), ssmodelabels[i],
-		    gscb_pw_ssmode, i);
+		    &fill_white : &fill_nodata), ssmodelabels[i], 0,
+		    gscb_pw_ssmode, i, 0, NULL, NULL);
 	}
 	pwidget_endlist(p);
 }
@@ -1116,8 +1132,8 @@ panel_refresh_pipe(struct panel *p)
 	pwidget_startlist(p);
 	for (i = 0; i < NPM; i++) {
 		pwidget_add(p, (st.st_pipemode == i ?
-		    &fill_white : &fill_nodata), pipemodelabels[i],
-		    gscb_pw_pipe, i);
+		    &fill_white : &fill_nodata), pipemodelabels[i], 0,
+		    gscb_pw_pipe, i, 0, NULL, NULL);
 	}
 	pwidget_endlist(p);
 }
@@ -1177,8 +1193,8 @@ panel_refresh_reel(struct panel *p)
 			rl = OLE(reel_list, i, reel);
 
 			pwidget_add(p, (strcmp(reel_fn, rl->rl_dirname) ?
-			    &fill_nodata : &fill_white), rl->rl_name,
-			    gscb_pw_reel, i);
+			    &fill_nodata : &fill_white), rl->rl_name, 0,
+			    gscb_pw_reel, i, 0, NULL, NULL);
 		}
 
 		if (i == 0)
@@ -1211,12 +1227,18 @@ panel_refresh_wiadj(struct panel *p)
 	    st.st_wioff.iv_z);
 
 	pwidget_startlist(p);
-	pwidget_add(p, &fill_nodata, "x Space",  gscb_pw_wiadj, SWF_NSPX);
-	pwidget_add(p, &fill_nodata, "y Space",  gscb_pw_wiadj, SWF_NSPY);
-	pwidget_add(p, &fill_nodata, "z Space",  gscb_pw_wiadj, SWF_NSPZ);
-	pwidget_add(p, &fill_nodata, "x Offset", gscb_pw_wiadj, SWF_OFFX);
-	pwidget_add(p, &fill_nodata, "y Offset", gscb_pw_wiadj, SWF_OFFY);
-	pwidget_add(p, &fill_nodata, "z Offset", gscb_pw_wiadj, SWF_OFFZ);
+	pwidget_add(p, &fill_nodata, "x Space", 0,
+	    gscb_pw_wiadj, SWF_NSPX, 0, NULL, NULL);
+	pwidget_add(p, &fill_nodata, "y Space", 0,
+	    gscb_pw_wiadj, SWF_NSPY, 0, NULL, NULL);
+	pwidget_add(p, &fill_nodata, "z Space", 0,
+	    gscb_pw_wiadj, SWF_NSPZ, 0, NULL, NULL);
+	pwidget_add(p, &fill_nodata, "x Offset", 0,
+	    gscb_pw_wiadj, SWF_OFFX, 0, NULL, NULL);
+	pwidget_add(p, &fill_nodata, "y Offset", 0,
+	    gscb_pw_wiadj, SWF_OFFY, 0, NULL, NULL);
+	pwidget_add(p, &fill_nodata, "z Offset", 0,
+	    gscb_pw_wiadj, SWF_OFFZ, 0, NULL, NULL);
 	pwidget_endlist(p);
 }
 
@@ -1262,23 +1284,30 @@ panel_refresh_rt(struct panel *p)
 
 	for (i = 0; i < NRTC / 2; i++)
 		pwidget_add(p, &rtpipeclass[i].nc_fill,
-		    rtpipeclass[i].nc_name, NULL, 0);
+		    rtpipeclass[i].nc_name, 0,
+		    NULL, 0, 0, NULL, NULL);
 
-	pwidget_add(p, (st.st_rtetype == RT_RECOVER ? &fill_white :
-	    &fill_nodata), "Recoverable", gscb_pw_rt, SRF_RECOVER);
-	pwidget_add(p, (st.st_rtetype == RT_FATAL ? &fill_white :
-	    &fill_nodata), "Fatal", gscb_pw_rt, SRF_FATAL);
-	pwidget_add(p, (st.st_rtetype == RT_ROUTER ? &fill_white :
-	    &fill_nodata), "Router", gscb_pw_rt, SRF_ROUTER);
+	pwidget_add(p, (st.st_rtetype == RT_RECOVER ?
+	    &fill_white : &fill_nodata), "Recoverable", 0,
+	    gscb_pw_rt, SRF_RECOVER, 0, NULL, NULL);
+	pwidget_add(p, (st.st_rtetype == RT_FATAL ?
+	    &fill_white : &fill_nodata), "Fatal", 0,
+	    gscb_pw_rt, SRF_FATAL, 0, NULL, NULL);
+	pwidget_add(p, (st.st_rtetype == RT_ROUTER ?
+	    &fill_white : &fill_nodata), "Router", 0,
+	    gscb_pw_rt, SRF_ROUTER, 0, NULL, NULL);
 
 	for (; i < NRTC; i++)
 		pwidget_add(p, &rtpipeclass[i].nc_fill,
-		    rtpipeclass[i].nc_name, NULL, 0);
+		    rtpipeclass[i].nc_name, 0,
+		    NULL, 0, 0, NULL, NULL);
 
-	pwidget_add(p, (st.st_rtepset == RPS_NEG ?  &fill_white :
-	    &fill_nodata), "Negative", gscb_pw_rt, SRF_NEG);
-	pwidget_add(p, (st.st_rtepset == RPS_POS ?  &fill_white :
-	    &fill_nodata), "Positive", gscb_pw_rt, SRF_POS);
+	pwidget_add(p, (st.st_rtepset == RPS_NEG ?
+	    &fill_white : &fill_nodata), "Negative", 0,
+	    gscb_pw_rt, SRF_NEG, 0, NULL, NULL);
+	pwidget_add(p, (st.st_rtepset == RPS_POS ?
+	    &fill_white : &fill_nodata), "Positive", 0,
+	    gscb_pw_rt, SRF_POS, 0, NULL, NULL);
 	pwidget_endlist(p);
 }
 
@@ -1315,7 +1344,7 @@ panel_refresh_keyh(struct panel *p)
 	pwidget_startlist(p);
 	for (j = 0; j < NKEYH; j++)
 		pwidget_add(p, (j == keyh ? &fill_white : &fill_nodata),
-		    keyhtab[j].kh_name, gscb_pw_keyh, j);
+		    keyhtab[j].kh_name, 0, gscb_pw_keyh, j, 0, NULL, NULL);
 	pwidget_endlist(p);
 }
 
@@ -1342,7 +1371,8 @@ panel_refresh_dxcho(struct panel *p)
 			err(1, "%s", _PATH_DXSCRIPTS);
 		errno = 0;
 
-		pwidget_add(p, &fill_white, dx_fn, NULL, 0);
+		pwidget_add(p, &fill_white, dx_fn, 0,
+		    NULL, 0, 0, NULL, NULL);
 	} else {
 		obj_batch_start(&dxscript_list);
 		while ((dent = readdir(dp)) != NULL) {
@@ -1376,8 +1406,8 @@ panel_refresh_dxcho(struct panel *p)
 			fe = OLE(dxscript_list, i, fnent);
 
 			pwidget_add(p, (strcmp(dx_fn, fe->fe_name) ?
-			    &fill_nodata : &fill_white), fe->fe_name,
-			    gscb_pw_dxcho, i);
+			    &fill_nodata : &fill_white), fe->fe_name, 0,
+			    gscb_pw_dxcho, i, 0, NULL, NULL);
 		}
 	}
 	pwidget_endlist(p);

@@ -20,7 +20,8 @@
 
 struct ivec	 mousev;
 int	 	 spkey;
-int		 motion_select_ret;
+int		 motion_select_id;
+int		 motion_select_reset;
 struct panel	*panel_mobile;
 
 
@@ -34,13 +35,15 @@ gl_mouseh_null(__unused int button, __unused int state, __unused int u, __unused
 void
 gl_mouseh_default(__unused int button, __unused int state, int u, int v)
 {
-	static int ret;
+	static int reset;
+	struct glname *gn;
 
 	spkey = glutGetModifiers();
 	if (button == GLUT_LEFT_BUTTON) {
 		switch (state) {
 		case GLUT_DOWN:
-			ret = gl_select(0);
+			gn = gl_select(0);
+			reset = (gn != NULL);
 
 			/*
 			 * If the user selected an object, do not
@@ -48,9 +51,10 @@ gl_mouseh_default(__unused int button, __unused int state, int u, int v)
 			 * (i.e. focus revolve) until declick.
 			 */
 			if (spkey & GLUT_ACTIVE_SHIFT &&
-			    ret != SP_MISS) {
+			    gn != NULL) {
 				glutMotionFunc(gl_motionh_select);
-				motion_select_ret = SP_NONE;
+				motion_select_reset = 1;
+				motion_select_id = gn->gn_arg_int;
 			}
 			break;
 		case GLUT_UP:
@@ -58,9 +62,8 @@ gl_mouseh_default(__unused int button, __unused int state, int u, int v)
 				panel_demobilize(panel_mobile);
 				panel_mobile = NULL;
 				glutMotionFunc(gl_motionh_default);
-			} else if (ret != SP_MISS) {
+			} else if (reset)
 				glutMotionFunc(gl_motionh_default);
-			}
 			break;
 		}
 	}
@@ -91,8 +94,8 @@ gl_motionh_panel(int u, int v)
 void
 gl_motionh_select(int u, int v)
 {
+	struct glname *gn;
 	double du, dv;
-	int ret;
 
 	du = u - mousev.iv_x;
 	dv = v - mousev.iv_y;
@@ -102,10 +105,13 @@ gl_motionh_select(int u, int v)
 	mousev.iv_x = u;
 	mousev.iv_y = v;
 
-	ret = gl_select(SPF_PROBE);
-	if (motion_select_ret != ret)
+	gn = gl_select(SPF_PROBE);
+	if (motion_select_reset ||
+	    (gn && motion_select_id != gn->gn_arg_int)) {
 		gl_select(0);
-	motion_select_ret = ret;
+		motion_select_reset = 0;
+		motion_select_id = gn->gn_arg_int;
+	}
 
 	flyby_rstautoto();
 }

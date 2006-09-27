@@ -43,7 +43,7 @@ draw_shadow_physcubes(int n, struct fvec *fvp, struct fvec *dimp,
 	for (pd = physdim_top; pd != NULL; pd = pd->contains) {
 		glPushMatrix();
 		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
-		glPushName(gsn_get(i, NULL, 0, &fv_zero));
+		glPushName(gsn_get(0, &fv_zero, NULL, i, 0, NULL, NULL));
 		draw_cube(dimp, &fill_black, 0);
 		glPopName();
 		glPopMatrix();
@@ -68,7 +68,7 @@ draw_shadow_rows(void)
 	for (r = 0; r < NROWS; r++, v.fv_z += ROWSPACE + ROWDEPTH) {
 		glPushMatrix();
 		glTranslatef(v.fv_x, v.fv_y, v.fv_z);
-		glPushName(gsn_get(r, NULL, 0, &fv_zero));
+		glPushName(gsn_get(0, &fv_zero, NULL, r, 0, NULL, NULL));
 		draw_cube(&dim, &fill_black, 0);
 		glPopName();
 		glPopMatrix();
@@ -92,7 +92,7 @@ draw_shadow_cabs(const struct physcoord *pc)
 	for (cb = 0; cb < NCABS; cb++, v.fv_x += CABWIDTH + CABSPACE) {
 		glPushMatrix();
 		glTranslatef(v.fv_x, v.fv_y, v.fv_z);
-		glPushName(gsn_get(cb, NULL, 0, &fv_zero));
+		glPushName(gsn_get(0, &fv_zero, NULL, cb, 0, NULL, NULL));
 		draw_cube(&dim, &fill_black, 0);
 		glPopName();
 		glPopMatrix();
@@ -116,7 +116,7 @@ draw_shadow_cages(const struct physcoord *pc)
 	for (cg = 0; cg < NCAGES; cg++, v.fv_y += CAGEHEIGHT + CAGESPACE) {
 		glPushMatrix();
 		glTranslatef(v.fv_x, v.fv_y, v.fv_z);
-		glPushName(gsn_get(cg, NULL, 0, &fv_zero));
+		glPushName(gsn_get(0, &fv_zero, NULL, cg, 0, NULL, NULL));
 		draw_cube(&dim, &fill_black, 0);
 		glPopName();
 		glPopMatrix();
@@ -159,7 +159,8 @@ draw_shadow_mods(const struct physcoord *pc, int *dl)
 			glPushMatrix();
 			glTranslatef(node->n_v->fv_x,
 			    node->n_v->fv_y, node->n_v->fv_z);
-			glPushName(gsn_get(node->n_nid, gscb_node, 0, &fv_zero));
+			glPushName(gsn_get(0, &fv_zero, gscb_node,
+			    node->n_nid, 0, NULL, NULL));
 			draw_shadow_node(dl, node);
 			glPopName();
 			glPopMatrix();
@@ -191,7 +192,8 @@ draw_shadow_winodes(int *dl, struct wiselstep *ws, const struct fvec *cloffp)
 				    node->n_v->fv_x + cloffp->fv_x,
 				    node->n_v->fv_y + cloffp->fv_y,
 				    node->n_v->fv_z + cloffp->fv_z);
-				glPushName(gsn_get(node->n_nid, gscb_node, 0, cloffp));
+				glPushName(gsn_get(0, cloffp, gscb_node,
+				    node->n_nid, 0, NULL, NULL));
 				draw_shadow_node(dl, node);
 				glPopName();
 				glPopMatrix();
@@ -280,7 +282,8 @@ draw_shadow_wisect(int *dl, struct wiselstep *ws, int cuts, int last,
 				    nv.fv_x + st.st_wioff.iv_x * st.st_winsp.iv_x + cloffp->fv_x,
 				    nv.fv_y + st.st_wioff.iv_y * st.st_winsp.iv_y + cloffp->fv_y,
 				    nv.fv_z + st.st_wioff.iv_z * st.st_winsp.iv_z + cloffp->fv_z);
-				glPushName(gsn_get(cubeno++, NULL, 0, &fv_zero));
+				glPushName(gsn_get(0, &fv_zero, NULL,
+				    cubeno++, 0, NULL, NULL));
 				draw_cube(&dim, &fill_black, 0);
 				glPopName();
 				glPopMatrix();
@@ -343,49 +346,54 @@ cubeno_to_v(int cubeno, int cuts, struct wiselstep *ws)
 		ws->ws_mag.iv_z += magp->iv_z - n;
 }
 
-__inline int
+__inline struct glname *
 phys_shadow(int *dl, int flags)
 {
 	struct physcoord pc, chance;
-	int nrecs, id;
+	struct glname *gn;
+	int nrecs;
 
 	for (chance.pc_r = 0; chance.pc_r < NROWS; chance.pc_r++) {
 		sel_begin();
 		draw_shadow_rows();
 		nrecs = sel_end();
-		if (nrecs == 0 || (pc.pc_r =
-		    sel_process(nrecs, chance.pc_r, flags)) == SP_MISS)
+		if (nrecs == 0 || (gn = sel_process(nrecs, chance.pc_r,
+		    flags)) == NULL)
 			break;
+		pc.pc_r = gn->gn_arg_int;
 		for (chance.pc_cb = 0; chance.pc_cb < NCABS; chance.pc_cb++) {
 			sel_begin();
 			draw_shadow_cabs(&pc);
 			nrecs = sel_end();
-			if (nrecs == 0 || (pc.pc_cb =
-			    sel_process(nrecs, chance.pc_cb, flags)) == SP_MISS)
+			if (nrecs == 0 || (gn = sel_process(nrecs, chance.pc_cb,
+			    flags)) == NULL)
 				break;
+			pc.pc_cb = gn->gn_arg_int;
 			for (chance.pc_cg = 0; chance.pc_cg < NCAGES; chance.pc_cg++) {
 				sel_begin();
 				draw_shadow_cages(&pc);
 				nrecs = sel_end();
-				if (nrecs == 0 || (pc.pc_cg =
-				    sel_process(nrecs, chance.pc_cg, flags)) == SP_MISS)
+				if (nrecs == 0 || (gn = sel_process(nrecs,
+				    chance.pc_cg, flags)) == NULL)
 					break;
+				pc.pc_cg = gn->gn_arg_int;
 				sel_begin();
 				draw_shadow_mods(&pc, dl);
 				nrecs = sel_end();
-				if (nrecs && (id = sel_process(nrecs, 0, flags)) != SP_MISS)
-					return (id);
+				if (nrecs && (gn = sel_process(nrecs, 0, flags)) != NULL)
+					return (gn);
 			}
 		}
 	}
-	return (SP_MISS);
+	return (NULL);
 }
 
-__inline int
+__inline struct glname *
 wi_shadow(int *dl, int flags, const struct fvec *offp)
 {
 	int nrecs, pos, lasttry, cubeno, nnodes, ncuts, tries;
 	struct wiselstep *ws;
+	struct glname *gn;
 
 	nnodes = widim.iv_w * widim.iv_h * widim.iv_d;
 	ncuts = 3; /* number of cuts of each dimension */
@@ -404,17 +412,18 @@ wi_shadow(int *dl, int flags, const struct fvec *offp)
 	ws[0].ws_off.iv_y = 0;
 	ws[0].ws_off.iv_z = 0;
 
-	cubeno = SP_MISS;
+	gn = NULL;
 	for (pos = 0; pos < tries; ) {
 		lasttry = (pos == tries - 1);
 
 		sel_begin();
 		draw_shadow_wisect(dl, &ws[pos], ncuts, lasttry, offp);
 		nrecs = sel_end();
-		if (nrecs && (cubeno =
-		    sel_process(nrecs, ws[pos].ws_chance, flags)) != SP_MISS) {
+		if (nrecs && (gn = sel_process(nrecs, ws[pos].ws_chance,
+		    flags)) != NULL) {
 		    	if (lasttry)
 				goto done;
+			cubeno = gn->gn_arg_int;
 			cubeno_to_v(cubeno, ncuts, &ws[++pos]);
 		} else {
 			ws[pos].ws_chance = 0;
@@ -425,5 +434,5 @@ wi_shadow(int *dl, int flags, const struct fvec *offp)
 	}
 done:
 	free(ws);
-	return (cubeno);
+	return (gn);
 }
