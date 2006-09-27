@@ -339,7 +339,7 @@ flyby_read(void)
 	opt_flip(optdiff);
 
 	if (st.st_opts & OP_REEL &&
-	    flyby_pos++ % (flyby_len / reelent_list.ol_cur) == 0)
+	    flyby_pos++ % (flyby_len / reelframe_list.ol_cur) == 0)
 		reel_advance();
 }
 

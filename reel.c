@@ -15,13 +15,14 @@
 #include "panel.h"
 #include "pathnames.h"
 #include "reel.h"
+#include "state.h"
 
 char reel_fn[PATH_MAX];
 int  reel_len;
 size_t reel_pos;
 
-struct objlist reelent_list = { NULL, 0, 0, 0, 0, 10, sizeof(struct fnent), fe_eq };
-struct objlist reel_list    = { NULL, 0, 0, 0, 0, 10, sizeof(struct fnent), fe_eq };
+struct objlist reelframe_list = { NULL, 0, 0, 0, 0, 10, sizeof(struct fnent), fe_eq };
+struct objlist reel_list      = { NULL, 0, 0, 0, 0, 10, sizeof(struct fnent), fe_eq };
 
 void
 reel_load(void)
@@ -70,7 +71,7 @@ reel_load(void)
 		if ((dp = opendir(reel_fn)) == NULL)
 			err(1, "opendir %s", reel_fn);
 	}
-	obj_batch_start(&reelent_list);
+	obj_batch_start(&reelframe_list);
 	for (n = 0; (dent = readdir(dp)) != NULL; n++) {
 		if (strcmp(dent->d_name, ".") == 0 ||
 		    strcmp(dent->d_name, "..") == 0 ||
@@ -79,16 +80,16 @@ reel_load(void)
 
 		/* XXX: check stat and ISFILE */
 
-		re = obj_get(dent->d_name, &reelent_list);
+		re = obj_get(dent->d_name, &reelframe_list);
 		strncpy(re->fe_name, dent->d_name,
 		    sizeof(re->fe_name) - 1);
 		re->fe_name[sizeof(re->fe_name) - 1] = '\0';
 	}
-	obj_batch_end(&reelent_list);
+	obj_batch_end(&reelframe_list);
 	/* XXX: check for error */
 	closedir(dp);
 
-	qsort(reelent_list.ol_data, reelent_list.ol_cur,
+	qsort(reelframe_list.ol_data, reelframe_list.ol_cur,
 	    sizeof(struct fnent *), fe_cmp);
 }
 
@@ -125,15 +126,15 @@ reel_advance(void)
 {
 	struct panel *p;
 
-	if (reel_pos >= reelent_list.ol_cur)
+	if (reel_pos >= reelframe_list.ol_cur)
 		return;
 
 	snprintf(fn_node, sizeof(fn_node), "%s/%s/node",
-	    reel_fn, OLE(reelent_list, reel_pos, fnent)->fe_name);
+	    reel_fn, OLE(reelframe_list, reel_pos, fnent)->fe_name);
 	snprintf(fn_job, sizeof(fn_job), "%s/%s/job",
-	    reel_fn, OLE(reelent_list, reel_pos, fnent)->fe_name);
+	    reel_fn, OLE(reelframe_list, reel_pos, fnent)->fe_name);
 	snprintf(fn_yod, sizeof(fn_yod), "%s/%s/yod",
-	    reel_fn, OLE(reelent_list, reel_pos, fnent)->fe_name);
+	    reel_fn, OLE(reelframe_list, reel_pos, fnent)->fe_name);
 
 	st.st_rf |= RF_DATASRC;
 	datasrcs[DS_NODE].ds_flags |= DSF_FORCE;

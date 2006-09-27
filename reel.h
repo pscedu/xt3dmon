@@ -9,4 +9,3 @@ void reel_end(void);
 
 extern char		reel_fn[PATH_MAX]; /* XXX */
 size_t			reel_pos;
-extern struct objlist	reelent_list;

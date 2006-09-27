@@ -1164,9 +1164,9 @@ panel_refresh_reel(struct panel *p)
 			fn = reel_fn;
 
 		panel_add_content(p, "\nFrame %d/%d\n%s %s",
-		    reel_pos, reelent_list.ol_cur, fn,
-		    reelent_list.ol_cur > 0 ?
-		    OLE(reelent_list, reel_pos, fnent)->fe_name : "N/A");
+		    reel_pos, reelframe_list.ol_cur, fn,
+		    reelframe_list.ol_cur > 0 ?
+		    OLE(reelframe_list, reel_pos, fnent)->fe_name : "N/A");
 	} else if ((dp = opendir(_PATH_ARCHIVE)) == NULL) {
 		panel_add_content(p, "\nNo archive reels available.");
 	} else {
