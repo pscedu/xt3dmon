@@ -1,5 +1,14 @@
 /* $Id$ */
 
+/*
+ * prefresh -- guts of per-panel contents building.
+ *
+ * This file name should probably be named pbuild.c
+ * or something instead to avoid confusion with the
+ * actual drawing calculations of panels which are
+ * instead done in panel.c.
+ */
+
 #include "mon.h"
 
 #include <sys/stat.h>
@@ -116,7 +125,15 @@ panel_add_content(struct panel *p, char *fmt, ...)
 __inline int
 panel_ready(struct panel *p)
 {
-	return ((p->p_opts & POPT_REFRESH) == 0 && p->p_str != NULL);
+	int ready = 1;
+
+	if (p->p_opts & POPT_REFRESH) {
+		ready = 0;
+		p->p_opts &= ~POPT_REFRESH;
+	}
+	if (p->p_str == NULL)
+		ready = 0;
+	return (ready);
 }
 
 int
@@ -180,9 +197,8 @@ pwidget_endlist(struct panel *p)
 }
 
 void
-pwidget_add(struct panel *p, struct fill *fp, const char *s,
-    int sprio, void (*cb)(struct glname *, int), int arg_int,
-    int arg_int2, void *arg_ptr, void *arg_ptr2)
+pwidget_add(struct panel *p, struct fill *fp, const char *s, int sprio,
+    gscb_t cb, int arg_int, int arg_int2, void *arg_ptr, void *arg_ptr2)
 {
 	struct pwidget *pw;
 
@@ -642,8 +658,7 @@ panel_refresh_ninfo(struct panel *p)
 	pwidget_startlist(p);
 	if (n->n_temp != DV_NODATA) {
 		j = roundclass(n->n_temp, TEMP_MIN, TEMP_MAX, NTEMPC);
-		pwidget_add(p, &tempclass[j].nc_fill,
-		    "Show temp range", 0,
+		pwidget_add(p, &tempclass[j].nc_fill, "Show temp range", 0,
 		    gscb_pw_dmnc, DM_TEMP, j, NULL, NULL);
 	}
 	if (n->n_yod) {
@@ -656,8 +671,7 @@ panel_refresh_ninfo(struct panel *p)
 		pwidget_add(p, &n->n_job->j_fill, "Show job", 0,
 		    gscb_pw_dmnc, DM_JOB, NSC + j, NULL, NULL);
 	} else
-		pwidget_add(p, &statusclass[n->n_state].nc_fill,
-		    "Show class", 0,
+		pwidget_add(p, &statusclass[n->n_state].nc_fill, "Show class", 0,
 		    gscb_pw_dmnc, DM_JOB, n->n_state, NULL, NULL);
 done:
 	pwidget_endlist(p);
