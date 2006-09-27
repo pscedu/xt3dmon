@@ -1143,7 +1143,7 @@ panel_refresh_reel(struct panel *p)
 {
 	static char sav_reel_fn[PATH_MAX];
 	struct dirent *dent;
-	struct reel *rl;
+	struct fnent *fe;
 	char *fn;
 	size_t i;
 	DIR *dp;
@@ -1177,23 +1177,21 @@ panel_refresh_reel(struct panel *p)
 
 			/* XXX: check stat & ISFILE */
 
-			rl = obj_get(dent->d_name, &reel_list);
-			snprintf(rl->rl_dirname, sizeof(rl->rl_dirname),
-			    "%s/%s", _PATH_ARCHIVE, dent->d_name);
-			snprintf(rl->rl_name, sizeof(rl->rl_name),
+			fe = obj_get(dent->d_name, &reel_list);
+			snprintf(fe->fe_name, sizeof(fe->fe_name),
 			    "%s", dent->d_name);
 		}
 		obj_batch_end(&reel_list);
 		closedir(dp);
 
 		qsort(reel_list.ol_data, reel_list.ol_cur,
-		    sizeof(struct reel *), reel_cmp);
+		    sizeof(struct fnent *), fe_cmp);
 
 		for (i = 0; i < reel_list.ol_cur; i++) {
-			rl = OLE(reel_list, i, reel);
+			fe = OLE(reel_list, i, fnent);
 
-			pwidget_add(p, (strcmp(reel_fn, rl->rl_dirname) ?
-			    &fill_nodata : &fill_white), rl->rl_name, 0,
+			pwidget_add(p, (strcmp(reel_fn, fe->fe_name) ?
+			    &fill_nodata : &fill_white), fe->fe_name, 0,
 			    gscb_pw_reel, i, 0, NULL, NULL);
 		}
 

@@ -21,24 +21,7 @@ int  reel_len;
 size_t reel_pos;
 
 struct objlist reelent_list = { NULL, 0, 0, 0, 0, 10, sizeof(struct fnent), fe_eq };
-struct objlist reel_list = { NULL, 0, 0, 0, 0, 10, sizeof(struct reel), reel_eq };
-
-int
-reel_eq(const void *elem, const void *arg)
-{
-	const struct reel *rl = elem;
-
-	return (strcmp(rl->rl_name, arg) == 0);
-}
-
-int
-reel_cmp(const void *a, const void *b)
-{
-	const struct reel **rla = (const struct reel **)a;
-	const struct reel **rlb = (const struct reel **)b;
-
-	return (strcmp((*rla)->rl_name, (*rlb)->rl_name));
-}
+struct objlist reel_list    = { NULL, 0, 0, 0, 0, 10, sizeof(struct fnent), fe_eq };
 
 void
 reel_load(void)
@@ -152,6 +135,7 @@ reel_advance(void)
 	snprintf(fn_yod, sizeof(fn_yod), "%s/%s/yod",
 	    reel_fn, OLE(reelent_list, reel_pos, fnent)->fe_name);
 
+	st.st_rf |= RF_DATASRC;
 	datasrcs[DS_NODE].ds_flags |= DSF_FORCE;
 	datasrcs[DS_JOB].ds_flags |= DSF_FORCE;
 	datasrcs[DS_YOD].ds_flags |= DSF_FORCE;
@@ -165,6 +149,7 @@ reel_advance(void)
 void
 reel_end(void)
 {
+	st.st_rf |= RF_DATASRC;
 	datasrcs[DS_NODE].ds_dsp = dsp_node;
 	datasrcs[DS_JOB].ds_dsp = dsp_job;
 	datasrcs[DS_YOD].ds_dsp = dsp_yod;

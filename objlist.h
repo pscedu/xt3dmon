@@ -6,7 +6,6 @@
 struct job;
 struct yod;
 struct glname;
-struct reel;
 struct fnent;
 struct color;
 

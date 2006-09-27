@@ -2,15 +2,7 @@
 
 #include "objlist.h"
 
-struct reel {
-	struct objhdr	rl_oh;
-	char		rl_dirname[PATH_MAX];
-	char		rl_name[40];
-};
-
 void reel_load(void);
-int  reel_eq(const void *, const void *);
-int  reel_cmp(const void *, const void *);
 void reel_advance(void);
 void reel_start(void);
 void reel_end(void);
