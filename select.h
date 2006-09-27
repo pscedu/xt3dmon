@@ -14,6 +14,7 @@
 #define SPF_SQUIRE	(1<<2)
 #define SPF_DESQUIRE	(1<<3)
 
+struct glname;
 typedef void (*gscb_t)(struct glname *, int);
 
 struct glname {
