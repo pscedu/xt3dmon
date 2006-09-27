@@ -1,10 +1,21 @@
 # $Id$
 
+# rte mode
+# yod mode
+# blade skels
+# physpipes
+# archive
+# selpipes
+# subset (view route errors of node in job)
+# VM_WIRED
+#
+
 vmode phys
 dmode temp
 refresh
-opt frames,tween,display,nodeanim,caption,ground
+opt frames,tween,nodeanim,caption,ground
 panel legend,help
+# pstick bl legend
 bird
 refocus
 setcap "CPU temperatures in physical machine layout"
