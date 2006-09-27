@@ -2,6 +2,7 @@
 
 #include "fill.h"
 #include "queue.h"
+#include "select.h"
 
 #define PANEL_FPS	(1<<0)
 #define PANEL_NINFO	(1<<1)
@@ -33,15 +34,13 @@
 #define PANEL_DXCHO	(1<<27)
 #define NPANELS		28
 
-struct glname;
-
 struct pwidget {
 	const char		 *pw_str;
 	int			  pw_flags;
 	int			  pw_sprio;	/* Sort priority. */
 	struct fill		 *pw_fillp;
 	SLIST_ENTRY(pwidget)	  pw_next;
-	void			(*pw_cb)(struct glname *, int);
+	gscb_t			  pw_cb;
 	int			  pw_arg_int;
 	int			  pw_arg_int2;
 	void			 *pw_arg_ptr;
