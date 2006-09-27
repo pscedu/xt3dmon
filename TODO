@@ -92,6 +92,8 @@ todo
 - when the xtwmon server is down, it still creates session files,
   whereas the xt3dmon server is unable, creating the anomaly of
   no files
+- rename POPT_REFRESH to POPT_REDRAW, POPT_DIRTY to POPT_REBUILD
+- use fill_checked/dechecked in place of white/nodata in pwidgets
 
 tweening
 - ensure tweening leaves normalized vectors
