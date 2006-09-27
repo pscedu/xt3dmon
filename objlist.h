@@ -11,43 +11,30 @@ struct fnent;
 struct color;
 
 struct objhdr {
-	int	  oh_flags;
+	int		  oh_flags;
 };
 
-#define OHF_TMP		(1<<0)		/* trashable temporary flag */
-#define OHF_OLD		(1<<1)		/* object has been around */
-#define OHF_USR1	(1<<2)		/* specific to object */
+#define OHF_TMP		(1<<0)		/* Trashable temporary flag */
+#define OHF_OLD		(1<<1)		/* Object has been around */
+#define OHF_USR1	(1<<2)		/* Type-specific flag */
 
 struct fnent {
-	struct objhdr	fe_oh;
-	char		fe_name[NAME_MAX];
+	struct objhdr	  fe_oh;
+	char		  fe_name[NAME_MAX];
 };
 
 struct objlist {
-	union {
-		void		**olu_data;
-		struct job	**olu_jobs;
-		struct yod	**olu_yods;
-		struct glname	**olu_glnames;
-		struct reel	**olu_reels;
-		struct fnent	**olu_fnents;
-		struct color	**olu_colors;
-	}	 		  ol_udata;
-	size_t	 		  ol_cur;
-	size_t	 		  ol_tcur;
-	size_t	 		  ol_max;
-	size_t	 		  ol_alloc;
-	size_t	 		  ol_incr;
-	size_t	 		  ol_objlen;
-	cmpf_t	 		  ol_eq;
-#define ol_data			  ol_udata.olu_data
-#define ol_jobs			  ol_udata.olu_jobs
-#define ol_yods			  ol_udata.olu_yods
-#define ol_glnames		  ol_udata.olu_glnames
-#define ol_reels		  ol_udata.olu_reels
-#define ol_fnents		  ol_udata.olu_fnents
-#define ol_colors		  ol_udata.olu_colors
+	void		**ol_data;
+	size_t		  ol_cur;
+	size_t 		  ol_tcur;
+	size_t 		  ol_max;
+	size_t 		  ol_alloc;
+	size_t 		  ol_incr;
+	size_t 		  ol_objlen;
+	cmpf_t 		  ol_eq;
 };
+
+#define OLE(list, pos, type) ((struct type *)(list).ol_data[pos])
 
 void	 obj_batch_start(struct objlist *);
 void	 obj_batch_end(struct objlist *);

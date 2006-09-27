@@ -12,7 +12,7 @@
 
 int yod_eq(const void *, const void *);
 
-struct objlist yod_list = { { NULL }, 0, 0, 0, 0, YINCR, sizeof(struct yod), yod_eq };
+struct objlist yod_list = { NULL, 0, 0, 0, 0, YINCR, sizeof(struct yod), yod_eq };
 
 int
 yod_cmp(const void *a, const void *b)
@@ -32,10 +32,10 @@ yod_findbyid(int id, int *pos)
 	size_t n;
 
 	for (n = 0; n < yod_list.ol_cur; n++)
-		if (yod_list.ol_yods[n]->y_id == id) {
+		if (OLE(yod_list, n, yod)->y_id == id) {
 			if (pos)
 				*pos = n;
-			return (yod_list.ol_yods[n]);
+			return (OLE(yod_list, n, yod));
 		}
 	if (pos)
 		*pos = -1;

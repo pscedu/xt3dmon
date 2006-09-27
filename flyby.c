@@ -75,7 +75,7 @@ int		 flyby_len;
 int		 flyby_pos;
 static FILE	*flyby_fp;
 struct state	 sav_st;			/* preserve old state during flyby */
-struct objlist	 flyby_list = { { NULL }, 0, 0, 0, 0, 10, sizeof(struct fnent), fe_eq };
+struct objlist	 flyby_list = { NULL, 0, 0, 0, 0, 10, sizeof(struct fnent), fe_eq };
 char 		 flyby_name[NAME_MAX] = FLYBY_DEFAULT;
 
 void

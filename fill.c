@@ -13,7 +13,7 @@
 
 int col_eq(const void *, const void *);
 
-struct objlist col_list = { { NULL }, 0, 0, 0, 0, CINCR, sizeof(struct color), col_eq };
+struct objlist col_list = { NULL, 0, 0, 0, 0, CINCR, sizeof(struct color), col_eq };
 
 struct fill fill_black		= FILL_INIT  (0.0f, 0.0f, 0.0f);
 struct fill fill_grey		= FILL_INIT  (0.2f, 0.2f, 0.2f);
@@ -148,7 +148,7 @@ col_get_hash(struct objhdr *oh, int id, struct fill *fp)
 	struct fill *scfp;
 	struct color *c;
 
-	c = col_list.ol_colors[id % col_list.ol_cur];
+	c = OLE(col_list, id % col_list.ol_cur, color);
 	fp->f_r = c->c_r / 255.0;
 	fp->f_g = c->c_g / 255.0;
 	fp->f_b = c->c_b / 255.0;

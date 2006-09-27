@@ -34,7 +34,7 @@ int		  dx_built;			/* Whether dx path is already built. */
 int		  dx_active;			/* Whether dx mode is running. */
 struct dx_action *dx_action;			/* Current dx action. */
 char		  dx_fn[NAME_MAX] = DX_DEFAULT;	/* Path to current dx script. */
-struct objlist	  dxscript_list = { { NULL }, 0, 0, 0, 0, 10, sizeof(struct fnent), fe_eq };
+struct objlist	  dxscript_list = { NULL, 0, 0, 0, 0, 10, sizeof(struct fnent), fe_eq };
 
 void
 dxa_add(struct dx_action *dxa)

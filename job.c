@@ -10,7 +10,7 @@
 
 int job_eq(const void *, const void *);
 
-struct objlist job_list = { { NULL }, 0, 0, 0, 0, JINCR, sizeof(struct job), job_eq };
+struct objlist job_list = { NULL, 0, 0, 0, 0, JINCR, sizeof(struct job), job_eq };
 
 int
 job_eq(const void *elem, const void *arg)
@@ -30,10 +30,10 @@ job_findbyid(int id, int *pos)
 	size_t n;
 
 	for (n = 0; n < job_list.ol_cur; n++)
-		if (job_list.ol_jobs[n]->j_id == id) {
+		if (OLE(job_list, n, job)->j_id == id) {
 			if (pos)
 				*pos = n;
-			return (job_list.ol_jobs[n]);
+			return (OLE(job_list, n, job));
 		}
 	if (pos)
 		*pos = -1;

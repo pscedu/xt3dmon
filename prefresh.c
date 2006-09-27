@@ -272,8 +272,8 @@ panel_refresh_legend(struct panel *p)
 			    statusclass[j].nc_name, NSC - j, gscb_pw_hlnc, j);
 		}
 		for (j = 0; j < job_list.ol_cur; j++)
-			pwidget_add_sp(p, &job_list.ol_jobs[j]->j_fill,
-			    job_list.ol_jobs[j]->j_name, 0, gscb_pw_hlnc,
+			pwidget_add_sp(p, &OLE(job_list, j, job)->j_fill,
+			    OLE(job_list, j, job)->j_name, 0, gscb_pw_hlnc,
 			    NSC + j);
 		cmp = pwidget_cmp;
 		break;
@@ -319,8 +319,8 @@ panel_refresh_legend(struct panel *p)
 			    statusclass[j].nc_name, NSC - j, gscb_pw_hlnc, j);
 		}
 		for (j = 0; j < yod_list.ol_cur; j++)
-			pwidget_add_sp(p, &yod_list.ol_yods[j]->y_fill,
-			    yod_list.ol_yods[j]->y_cmd, 0, gscb_pw_hlnc, NSC + j);
+			pwidget_add_sp(p, &OLE(yod_list, j, yod)->y_fill,
+			    OLE(yod_list, j, yod)->y_cmd, 0, gscb_pw_hlnc, NSC + j);
 		cmp = pwidget_cmp;
 		break;
 	case DM_RTUNK:
@@ -745,11 +745,11 @@ panel_refresh_fbcho(struct panel *p)
 
 		closedir(dp);
 
-		qsort(flyby_list.ol_fnents, flyby_list.ol_cur,
+		qsort(flyby_list.ol_data, flyby_list.ol_cur,
 		    sizeof(struct fnent *), fe_cmp);
 
 		for (i = 0; i < flyby_list.ol_cur; i++) {
-			fe = flyby_list.ol_fnents[i];
+			fe = OLE(flyby_list, i, fnent);
 
 			pwidget_add(p, (strcmp(flyby_name, fe->fe_name) ?
 			    &fill_nodata : &fill_white), fe->fe_name,
@@ -1150,7 +1150,7 @@ panel_refresh_reel(struct panel *p)
 		panel_add_content(p, "\nFrame %d/%d\n%s %s",
 		    reel_pos, reelent_list.ol_cur, fn,
 		    reelent_list.ol_cur > 0 ?
-		    reelent_list.ol_fnents[reel_pos]->fe_name : "N/A");
+		    OLE(reelent_list, reel_pos, fnent)->fe_name : "N/A");
 	} else if ((dp = opendir(_PATH_ARCHIVE)) == NULL) {
 		panel_add_content(p, "\nNo archive reels available.");
 	} else {
@@ -1170,11 +1170,11 @@ panel_refresh_reel(struct panel *p)
 		obj_batch_end(&reel_list);
 		closedir(dp);
 
-		qsort(reel_list.ol_reels, reel_list.ol_cur,
+		qsort(reel_list.ol_data, reel_list.ol_cur,
 		    sizeof(struct reel *), reel_cmp);
 
 		for (i = 0; i < reel_list.ol_cur; i++) {
-			rl = reel_list.ol_reels[i];
+			rl = OLE(reel_list, i, reel);
 
 			pwidget_add(p, (strcmp(reel_fn, rl->rl_dirname) ?
 			    &fill_nodata : &fill_white), rl->rl_name,
@@ -1369,11 +1369,11 @@ panel_refresh_dxcho(struct panel *p)
 
 		closedir(dp);
 
-		qsort(dxscript_list.ol_fnents, dxscript_list.ol_cur,
+		qsort(dxscript_list.ol_data, dxscript_list.ol_cur,
 		    sizeof(struct fnent *), fe_cmp);
 
 		for (i = 0; i < dxscript_list.ol_cur; i++) {
-			fe = dxscript_list.ol_fnents[i];
+			fe = OLE(dxscript_list, i, fnent);
 
 			pwidget_add(p, (strcmp(dx_fn, fe->fe_name) ?
 			    &fill_nodata : &fill_white), fe->fe_name,

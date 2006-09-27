@@ -57,7 +57,7 @@ nc_runall(void (*f)(struct fill *))
 	switch (st.st_dmode) {
 	case DM_JOB:
 		for (i = 0; i < job_list.ol_cur; i++)
-			f(&job_list.ol_jobs[i]->j_fill);
+			f(&OLE(job_list, i, job)->j_fill);
 		for (i = 0; i < NSC; i++)
 			f(&statusclass[i].nc_fill);
 		break;
@@ -71,7 +71,7 @@ nc_runall(void (*f)(struct fill *))
 		break;
 	case DM_YOD:
 		for (i = 0; i < yod_list.ol_cur; i++)
-			f(&yod_list.ol_yods[i]->y_fill);
+			f(&OLE(yod_list, i, yod)->y_fill);
 		for (i = 0; i < NSC; i++)
 			f(&statusclass[i].nc_fill);
 		break;
@@ -123,7 +123,7 @@ nc_getfp(size_t nc)
 		if (nc < NSC)
 			return (&statusclass[nc].nc_fill);
 		else if (nc - NSC < job_list.ol_cur)
-			return (&job_list.ol_jobs[nc - NSC]->j_fill);
+			return (&OLE(job_list, nc - NSC, job)->j_fill);
 		break;
 	case DM_FAIL:
 		if (nc < NFAILC)
@@ -137,7 +137,7 @@ nc_getfp(size_t nc)
 		if (nc < NSC)
 			return (&statusclass[nc].nc_fill);
 		else if (nc - NSC < yod_list.ol_cur)
-			return (&yod_list.ol_yods[nc - NSC]->y_fill);
+			return (&OLE(yod_list, nc - NSC, yod)->y_fill);
 		break;
 	case DM_RTUNK:
 		if (nc < NRTC)

@@ -27,7 +27,7 @@
 
 int glname_eq(const void *, const void *);
 
-struct objlist glname_list = { { NULL }, 0, 0, 0, 0, GINCR, sizeof(struct glname), glname_eq };
+struct objlist glname_list = { NULL, 0, 0, 0, 0, GINCR, sizeof(struct glname), glname_eq };
 
 GLuint	 selbuf[1000];
 
@@ -484,7 +484,7 @@ gscb_pw_reel(struct glname *gn, int flags)
 		cursor_set(GLUT_CURSOR_INFO);
 	else if (flags == 0) {
 		snprintf(reel_fn, sizeof(reel_fn), "%s",
-		    reel_list.ol_reels[i]->rl_dirname);
+		    OLE(reel_list, i, reel)->rl_dirname);
 		st.st_rf |= RF_REEL;
 	}
 }
@@ -499,7 +499,7 @@ gscb_pw_fbcho(struct glname *gn, int flags)
 		cursor_set(GLUT_CURSOR_INFO);
 	else if (flags == 0) {
 		snprintf(flyby_name, sizeof(flyby_name), "%s",
-		    flyby_list.ol_fnents[i]->fe_name);
+		    OLE(flyby_list, i, fnent)->fe_name);
 		if ((p = panel_for_id(PANEL_FLYBY)) != NULL)
 			p->p_opts |= POPT_REFRESH;
 	}
@@ -627,7 +627,7 @@ gscb_pw_dxcho(struct glname *gn, int flags)
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
 	else if (flags == 0) {
-		dx_setfn(dxscript_list.ol_fnents[i]->fe_name);
+		dx_setfn(OLE(dxscript_list, i, fnent)->fe_name);
 		if ((p = panel_for_id(PANEL_DXCHO)) != NULL)
 			p->p_opts |= POPT_REFRESH;
 	}

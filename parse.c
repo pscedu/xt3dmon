@@ -356,11 +356,11 @@ bad:
 	errno = 0;
 
 	for (j = 0; j < job_list.ol_tcur; j++) {
-		job = job_list.ol_jobs[j];
+		job = OLE(job_list, j, job);
 		col_get_hash(&job->j_oh, job->j_id, &job->j_fill);
 	}
 	for (j = 0; j < yod_list.ol_tcur; j++) {
-		yod = yod_list.ol_yods[j];
+		yod = OLE(yod_list, j, yod);
 		col_get_hash(&yod->y_oh, yod->y_id, &yod->y_fill);
 	}
 

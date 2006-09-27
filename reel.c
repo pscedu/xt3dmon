@@ -20,10 +20,8 @@ char reel_fn[PATH_MAX];
 int  reel_len;
 size_t reel_pos;
 
-struct objlist reelent_list = { { NULL }, 0, 0, 0, 0, 10,
-    sizeof(struct fnent), fe_eq };
-struct objlist reel_list = { { NULL }, 0, 0, 0, 0, 10,
-    sizeof(struct reel), reel_eq };
+struct objlist reelent_list = { NULL, 0, 0, 0, 0, 10, sizeof(struct fnent), fe_eq };
+struct objlist reel_list = { NULL, 0, 0, 0, 0, 10, sizeof(struct reel), reel_eq };
 
 int
 reel_eq(const void *elem, const void *arg)
@@ -107,7 +105,7 @@ reel_load(void)
 	/* XXX: check for error */
 	closedir(dp);
 
-	qsort(reelent_list.ol_fnents, reelent_list.ol_cur,
+	qsort(reelent_list.ol_data, reelent_list.ol_cur,
 	    sizeof(struct fnent *), fe_cmp);
 }
 
@@ -148,11 +146,11 @@ reel_advance(void)
 		return;
 
 	snprintf(fn_node, sizeof(fn_node), "%s/%s/node",
-	    reel_fn, reelent_list.ol_fnents[reel_pos]->fe_name);
+	    reel_fn, OLE(reelent_list, reel_pos, fnent)->fe_name);
 	snprintf(fn_job, sizeof(fn_job), "%s/%s/job",
-	    reel_fn, reelent_list.ol_fnents[reel_pos]->fe_name);
+	    reel_fn, OLE(reelent_list, reel_pos, fnent)->fe_name);
 	snprintf(fn_yod, sizeof(fn_yod), "%s/%s/yod",
-	    reel_fn, reelent_list.ol_fnents[reel_pos]->fe_name);
+	    reel_fn, OLE(reelent_list, reel_pos, fnent)->fe_name);
 
 	datasrcs[DS_NODE].ds_flags |= DSF_FORCE;
 	datasrcs[DS_JOB].ds_flags |= DSF_FORCE;
