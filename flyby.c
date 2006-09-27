@@ -335,7 +335,7 @@ flyby_read(void)
 			optdiff &= ~(1 << i);
 	st.st_opts = oldopts;
 	st.st_rf |= oldrf;
-	st.st_rf &= ~(RF_DATASRC | RF_REEL);
+	st.st_rf &= ~RF_DATASRC;
 	opt_flip(optdiff);
 
 	if (st.st_opts & OP_REEL &&

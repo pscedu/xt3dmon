@@ -483,7 +483,6 @@ gscb_pw_reel(struct glname *gn, int flags)
 	else if (flags == 0) {
 		snprintf(reel_fn, sizeof(reel_fn), "%s",
 		    OLE(reel_list, i, reel)->rl_dirname);
-		st.st_rf |= RF_REEL;
 	}
 }
 
