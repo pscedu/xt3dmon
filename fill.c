@@ -34,6 +34,8 @@ struct fill fill_selnode	= FILL_INIT  (0.2f, 0.4f, 0.6f);
 struct fill fill_clskel		= FILL_INITFA(0.6f, 1.0f, 0.6f, 0.8f, FF_SKEL);
 struct fill fill_ground		= FILL_INITAB(0.3f, 0.3f, 0.3f, 0.1f, GL_ONE_MINUS_SRC_COLOR);
 struct fill fill_showall	= FILL_INITA (1.0f, 1.0f, 1.0f, 0.0f);
+struct fill fill_checked	= FILL_INIT  (1.0f, 1.0f, 1.0f);
+struct fill fill_unchecked	= FILL_INITF (1.0f, 1.0f, 0.0f, FF_SKEL);
 
 struct fill fill_borg		= FILL_INIT  (0.0f, 0.0f, 0.0f);
 struct fill fill_matrix		= FILL_INITF (0.0f, 1.0f, 0.0f, FF_SKEL);
@@ -148,7 +150,7 @@ col_get_hash(struct objhdr *oh, int id, struct fill *fp)
 	struct fill *scfp;
 	struct color *c;
 
-	c = OLE(col_list, id % col_list.ol_cur, color);
+	c = col_list.ol_data[id % col_list.ol_cur];
 	fp->f_r = c->c_r / 255.0;
 	fp->f_g = c->c_g / 255.0;
 	fp->f_b = c->c_b / 255.0;
