@@ -55,18 +55,19 @@ struct dx_action {
 
 TAILQ_HEAD(dxlist, dx_action);
 
-void dxa_clear(void);
-void dxa_add(struct dx_action *);
+void  dxa_clear(void);
+void  dxa_add(struct dx_action *);
 
-void dx_parse(void);
-void dx_start(void);
-void dx_end(void);
-void dx_setfn(const char *);
-void dx_update(void);
-void dx_error(const char *, va_list);
-void dx_verror(const char *, ...);
+void  dx_parse(void);
+void  dx_start(void);
+void  dx_end(void);
+char *dx_set(const char *, int);
+void  dx_update(void);
+void  dx_error(const char *, va_list);
+void  dx_verror(const char *, ...);
 
 extern struct dxlist	dxlist;
 extern int		dx_built;
 extern char		dx_fn[];
+extern char		dx_dir[];
 int			dx_active;

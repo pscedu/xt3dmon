@@ -696,7 +696,8 @@ panel_refresh_flyby(struct panel *p)
 	sav_cpanels = cpanels;
 
 	pwidget_startlist(p);
-	panel_set_content(p, "- Flyby Controls -\nCurrent flyby: %s", flyby_name);
+	panel_set_content(p, "- Flyby Controls -\nCurrent flyby: %s",
+	    smart_basename(flyby_fn));
 	switch (flyby_mode) {
 	case FBM_PLAY:
 		panel_add_content(p, "\nPlaying back flyby");
@@ -721,70 +722,6 @@ panel_refresh_flyby(struct panel *p)
 		    &fill_white : &fill_nodata), "Chooser", 0,
 		    gscb_pw_fb, PWFF_OPEN, 0, NULL, NULL);
 		break;
-	}
-	pwidget_endlist(p);
-}
-
-void
-panel_refresh_fbcho(struct panel *p)
-{
-	static char sav_flyby_name[NAME_MAX];
-	char path[PATH_MAX];
-	struct dirent *dent;
-	struct fnent *fe;
-	struct stat stb;
-	size_t i;
-	DIR *dp;
-
-	if (panel_ready(p) && strcmp(sav_flyby_name, flyby_name) == 0)
-		return;
-	strncpy(sav_flyby_name, flyby_name, sizeof(sav_flyby_name) - 1);
-	sav_flyby_name[sizeof(sav_flyby_name) - 1] = '\0';
-
-	panel_set_content(p, "- Flyby Chooser -");
-	pwidget_startlist(p);
-	if ((dp = opendir(_PATH_FLYBYDIR)) == NULL) {
-		if (errno != ENOENT)
-			err(1, "%s", _PATH_FLYBYDIR);
-		errno = 0;
-
-		pwidget_add(p, &fill_white, flyby_name, 0,
-		    NULL, 0, 0, NULL, NULL);
-	} else {
-		obj_batch_start(&flyby_list);
-		while ((dent = readdir(dp)) != NULL) {
-			if (dent->d_name[0] == '.')
-				continue;
-
-			snprintf(path, sizeof(path), "%s/%s",
-			    _PATH_FLYBYDIR, dent->d_name);
-			if (stat(path, &stb) == -1) {
-				warn("%s", path);
-				continue;
-			}
-			if ((stb.st_mode & S_IFMT) != S_IFREG)
-				continue;
-
-			fe = obj_get(dent->d_name, &flyby_list);
-			snprintf(fe->fe_name, sizeof(fe->fe_name),
-			    "%s", dent->d_name);
-		}
-		obj_batch_end(&flyby_list);
-
-		/* XXX: check readdir NULL/errno */
-
-		closedir(dp);
-
-		qsort(flyby_list.ol_data, flyby_list.ol_cur,
-		    sizeof(struct fnent *), fe_cmp);
-
-		for (i = 0; i < flyby_list.ol_cur; i++) {
-			fe = OLE(flyby_list, i, fnent);
-
-			pwidget_add(p, (strcmp(flyby_name, fe->fe_name) ?
-			    &fill_nodata : &fill_white), fe->fe_name, 0,
-			    gscb_pw_fbcho, i, 0, NULL, NULL);
-		}
 	}
 	pwidget_endlist(p);
 }
@@ -1153,69 +1090,6 @@ panel_refresh_pipe(struct panel *p)
 }
 
 void
-panel_refresh_reel(struct panel *p)
-{
-	static char sav_reel_fn[PATH_MAX];
-	struct dirent *dent;
-	struct fnent *fe;
-	char *fn;
-	size_t i;
-	DIR *dp;
-
-	if (panel_ready(p) && strcmp(reel_fn, sav_reel_fn) == 0)
-		return;
-	strncpy(sav_reel_fn, reel_fn, sizeof(sav_reel_fn) - 1);
-	sav_reel_fn[sizeof(sav_reel_fn) - 1] = '\0';
-
-	panel_set_content(p, "- Reel -");
-	pwidget_startlist(p);
-	if (flyby_mode == FBM_PLAY &&
-	    st.st_opts & OP_REEL) {
-		/* basename(3) is too much work. */
-		if ((fn = strrchr(reel_fn, '/')) != NULL)
-			fn++;
-		else
-			fn = reel_fn;
-
-		panel_add_content(p, "\nFrame %d/%d\n%s %s",
-		    reel_pos, reelframe_list.ol_cur, fn,
-		    reelframe_list.ol_cur > 0 ?
-		    OLE(reelframe_list, reel_pos, fnent)->fe_name : "N/A");
-	} else if ((dp = opendir(_PATH_ARCHIVE)) == NULL) {
-		panel_add_content(p, "\nNo archive reels available.");
-	} else {
-		obj_batch_start(&reel_list);
-		while ((dent = readdir(dp)) != NULL) {
-			if (dent->d_name[0] == '.')
-				continue;
-
-			/* XXX: check stat & ISFILE */
-
-			fe = obj_get(dent->d_name, &reel_list);
-			snprintf(fe->fe_name, sizeof(fe->fe_name),
-			    "%s", dent->d_name);
-		}
-		obj_batch_end(&reel_list);
-		closedir(dp);
-
-		qsort(reel_list.ol_data, reel_list.ol_cur,
-		    sizeof(struct fnent *), fe_cmp);
-
-		for (i = 0; i < reel_list.ol_cur; i++) {
-			fe = OLE(reel_list, i, fnent);
-
-			pwidget_add(p, (strcmp(reel_fn, fe->fe_name) ?
-			    &fill_nodata : &fill_white), fe->fe_name, 0,
-			    gscb_pw_reel, i, 0, NULL, NULL);
-		}
-
-		if (i == 0)
-			panel_add_content(p, "\nNone available.");
-	}
-	pwidget_endlist(p);
-}
-
-void
 panel_refresh_wiadj(struct panel *p)
 {
 	static struct ivec sav_wioff, sav_winsp;
@@ -1296,8 +1170,7 @@ panel_refresh_rt(struct panel *p)
 
 	for (i = 0; i < NRTC / 2; i++)
 		pwidget_add(p, &rtpipeclass[i].nc_fill,
-		    rtpipeclass[i].nc_name, 0,
-		    NULL, 0, 0, NULL, NULL);
+		    rtpipeclass[i].nc_name, 0, NULL, 0, 0, NULL, NULL);
 
 	pwidget_add(p, (st.st_rtetype == RT_RECOVER ?
 	    &fill_white : &fill_nodata), "Recoverable", 0,
@@ -1311,8 +1184,7 @@ panel_refresh_rt(struct panel *p)
 
 	for (; i < NRTC; i++)
 		pwidget_add(p, &rtpipeclass[i].nc_fill,
-		    rtpipeclass[i].nc_name, 0,
-		    NULL, 0, 0, NULL, NULL);
+		    rtpipeclass[i].nc_name, 0, NULL, 0, 0, NULL, NULL);
 
 	pwidget_add(p, (st.st_rtepset == RPS_NEG ?
 	    &fill_white : &fill_nodata), "Negative", 0,
@@ -1360,67 +1232,143 @@ panel_refresh_keyh(struct panel *p)
 	pwidget_endlist(p);
 }
 
+#define PWDF_DIRSONLY (1<<0)
+
+/*
+ * Add pwidgets for all files in the given directory.
+ * 'cur' is the currently selected file name.
+ * 'dir' must point to a PATH_MAX-sized buffer.
+ */
 void
-panel_refresh_dxcho(struct panel *p)
+pwidgets_dir(struct panel *p, const char *dir, struct objlist *ol,
+    char *cur, void *cb, int flags)
 {
-	static char sav_dx_name[NAME_MAX];
 	char path[PATH_MAX];
 	struct dirent *dent;
 	struct fnent *fe;
 	struct stat stb;
-	size_t i;
+	int isdir;
 	DIR *dp;
 
-	if (panel_ready(p) && strcmp(sav_dx_name, dx_fn) == 0)
-		return;
-	strncpy(sav_dx_name, dx_fn, sizeof(sav_dx_name) - 1);
-	sav_dx_name[sizeof(sav_dx_name) - 1] = '\0';
-
-	panel_set_content(p, "- Deus Ex Chooser -");
-	pwidget_startlist(p);
-	if ((dp = opendir(_PATH_DXSCRIPTS)) == NULL) {
+	if ((dp = opendir(dir)) == NULL) {
 		if (errno != ENOENT)
-			err(1, "%s", _PATH_DXSCRIPTS);
+			err(1, "%s", dir);
 		errno = 0;
-
-		pwidget_add(p, &fill_white, dx_fn, 0,
-		    NULL, 0, 0, NULL, NULL);
-	} else {
-		obj_batch_start(&dxscript_list);
-		while ((dent = readdir(dp)) != NULL) {
-			if (strcmp(dent->d_name, ".") == 0 ||
-			    strcmp(dent->d_name, "..") == 0)
-				continue;
-
-			snprintf(path, sizeof(path), "%s/%s",
-			    _PATH_DXSCRIPTS, dent->d_name);
-			if (stat(path, &stb) == -1) {
-				warn("%s", path);
-				continue;
+		return;
+	}
+	obj_batch_start(ol);
+	while ((dent = readdir(dp)) != NULL) {
+		if (dent->d_name[0] == '.') {
+#if 0
+			/*
+			 * XXX: must clear out
+			 * save_*_dir to reload dir.
+			 */
+			if (strcmp(dent->d_name, ".") == 0) {
+				pe = obj_get(dent->d_name, ol);
+				snprintf(fe->fe_name,
+				    sizeof(fe->fe_name),
+				    "%s", dir);
+				pwidget_add(p, &fill_black,
+				    "Current Directory", 2,
+				    gscb_pw_dir, 1, 0,
+				    cb, fe->fe_name);
+			} else
+#endif
+			if (strcmp(dent->d_name, "..") == 0) {
+				fe = obj_get(dent->d_name, ol);
+				snprintf(fe->fe_name,
+				    sizeof(fe->fe_name), "..");
+				pwidget_add(p, &fill_xparent,
+				    "Parent Directory", 2,
+				    gscb_pw_dir, 1, 0,
+				    cb, fe->fe_name);
 			}
-			if ((stb.st_mode & S_IFMT) != S_IFREG)
-				continue;
-
-			fe = obj_get(dent->d_name, &dxscript_list);
-			snprintf(fe->fe_name, sizeof(fe->fe_name),
-			    "%s", dent->d_name);
+			continue;
 		}
-		obj_batch_end(&dxscript_list);
+		if (strcmp(dent->d_name, "CVS") == 0)
+			continue;
 
-		/* XXX: check readdir NULL/errno */
-
-		closedir(dp);
-
-		qsort(dxscript_list.ol_data, dxscript_list.ol_cur,
-		    sizeof(struct fnent *), fe_cmp);
-
-		for (i = 0; i < dxscript_list.ol_cur; i++) {
-			fe = OLE(dxscript_list, i, fnent);
-
-			pwidget_add(p, (strcmp(dx_fn, fe->fe_name) ?
-			    &fill_nodata : &fill_white), fe->fe_name, 0,
-			    gscb_pw_dxcho, i, 0, NULL, NULL);
+		snprintf(path, sizeof(path), "%s/%s",
+		    dir, dent->d_name);
+		if (stat(path, &stb) == -1) {
+			warn("stat %s", path);
+			continue;
 		}
+		isdir = S_ISDIR(stb.st_mode);
+		if (!isdir && !S_ISREG(stb.st_mode))
+			continue;
+		if (!isdir && (flags & PWDF_DIRSONLY))
+			continue;
+
+		fe = obj_get(dent->d_name, ol);
+		snprintf(fe->fe_name, sizeof(fe->fe_name), "%s%s",
+		    dent->d_name, isdir ? "/" : "");
+		pwidget_add(p, (strcmp(cur, path) ?
+		    &fill_nodata : &fill_white), fe->fe_name,
+		    isdir, gscb_pw_dir, isdir, 0, cb, fe->fe_name);
+	}
+	obj_batch_end(ol);
+//	if (ret == -1)
+//		err(1, "readdir %s", dir);
+	closedir(dp);
+}
+
+void
+panel_refresh_fbcho(struct panel *p)
+{
+	if (panel_ready(p))
+		return;
+
+	panel_set_content(p, "- Flyby Chooser -\n%s", flyby_dir);
+	pwidget_startlist(p);
+	pwidgets_dir(p, flyby_dir, &flyby_list, flyby_fn, flyby_set, 0);
+#if 0
+	if (panel->p_nwidgets == 0)
+		pwidget_add(p, &fill_white, FLYBY_DEFAULT, 0, );
+#endif
+	pwidget_endlist(p);
+	pwidget_sortlist(p, pwidget_cmp);
+}
+
+void
+panel_refresh_dxcho(struct panel *p)
+{
+	if (panel_ready(p))
+		return;
+
+	panel_set_content(p, "- Deus Ex Chooser -\n%s", dx_dir);
+	pwidget_startlist(p);
+	pwidgets_dir(p, dx_dir, &dxscript_list, dx_fn, dx_set, 0);
+	if (p->p_nwidgets == 0)
+		panel_add_content(p, "\nNo scripts available.");
+	pwidget_endlist(p);
+	pwidget_sortlist(p, pwidget_cmp);
+}
+
+void
+panel_refresh_reel(struct panel *p)
+{
+	static size_t save_reel_pos;
+
+	if (panel_ready(p) && save_reel_pos == reel_pos)
+		return;
+	save_reel_pos = reel_pos;
+
+	panel_set_content(p, "- Reel -\n");
+	pwidget_startlist(p);
+	if (flyby_mode == FBM_PLAY && st.st_opts & OP_REEL) {
+		panel_add_content(p, "\n%s\nFrame %d/%d\n%s",
+		    reel_dir, reel_pos, reelframe_list.ol_cur,
+		    reelframe_list.ol_cur > 0 ?
+		    OLE(reelframe_list, reel_pos, fnent)->fe_name : "N/A");
+	} else {
+		panel_add_content(p, "\n%s", reel_browsedir);
+		pwidgets_dir(p, reel_browsedir, &reel_list, reel_dir,
+		    reel_set, PWDF_DIRSONLY);
+		if (p->p_nwidgets == 0)
+			panel_add_content(p, "\nNo archive reels available.");
 	}
 	pwidget_endlist(p);
+	pwidget_sortlist(p, pwidget_cmp);
 }

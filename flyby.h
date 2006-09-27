@@ -16,8 +16,9 @@ struct state;
 #define FBHLOP_ALPHADEC		3
 #define FBHLOP_TOGGLEVIS	4
 
-#define FLYBY_DEFAULT	"default"
+#define FLYBY_DEFAULT		"default"
 
+char	*flyby_set(const char *, int);
 void 	 flyby_begin(int);
 void 	 flyby_beginauto(void);
 void 	 flyby_end(void);
@@ -33,4 +34,5 @@ void	 flyby_clear(void);
 
 extern int	flyby_mode;
 extern int 	flyby_nautoto;
-extern char 	flyby_name[NAME_MAX];
+extern char 	flyby_fn[];
+extern char 	flyby_dir[];

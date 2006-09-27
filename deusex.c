@@ -19,6 +19,7 @@
 #include "nodeclass.h"
 #include "objlist.h"
 #include "panel.h"
+#include "pathnames.h"
 #include "queue.h"
 #include "selnode.h"
 #include "state.h"
@@ -30,10 +31,11 @@
 	    SQUARE((a)->fv_y - (b)->fv_y) +		\
 	    SQUARE((a)->fv_z - (b)->fv_z)))
 
-int		  dx_built;			/* Whether dx path is already built. */
-int		  dx_active;			/* Whether dx mode is running. */
-struct dx_action *dx_action;			/* Current dx action. */
-char		  dx_fn[NAME_MAX] = DX_DEFAULT;	/* Path to current dx script. */
+int		  dx_built;		/* Whether dx path is parsed. */
+int		  dx_active;		/* Whether dx mode is running. */
+struct dx_action *dx_action;		/* Current dx action. */
+char		  dx_fn[NAME_MAX] = _PATH_DXSCRIPTS "/" DX_DEFAULT;
+char		  dx_dir[PATH_MAX] = _PATH_DXSCRIPTS;
 struct objlist	  dxscript_list = { NULL, 0, 0, 0, 0, 10, sizeof(struct fnent), fe_eq };
 
 void
@@ -64,12 +66,18 @@ dxa_clear(void)
 //	TAILQ_INIT(&dxlist);
 }
 
-void
-dx_setfn(const char *fn)
+char *
+dx_set(const char *fn, int flags)
 {
-	dx_built = 0;
-	strncpy(dx_fn, fn, sizeof(dx_fn) - 1);
-	dx_fn[sizeof(dx_fn) - 1] = '\0';
+	struct panel *p;
+
+	if ((flags & CHF_DIR) == 0) {
+		dx_built = 0;
+		snprintf(dx_fn, sizeof(dx_fn), "%s/%s", dx_dir, fn);
+	}
+	if ((p = panel_for_id(PANEL_DXCHO)) != NULL)
+		p->p_opts |= POPT_REFRESH;
+	return (dx_dir);
 }
 
 int

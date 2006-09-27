@@ -210,7 +210,7 @@ sel_end(void)
  * obj_batch_start/obj_batch_end combo.
  */
 unsigned int
-gsn_get(int flags, const struct fvec *offv, void (*cb)(struct glname *, int),
+gsn_get(int flags, const struct fvec *offv, gscb_t cb,
     int arg_int, int arg_int2, void *arg_ptr, void *arg_ptr2)
 {
 	struct glname *gn;
@@ -474,35 +474,6 @@ gscb_pw_pipe(struct glname *gn, int flags)
 }
 
 void
-gscb_pw_reel(struct glname *gn, int flags)
-{
-	int i = gn->gn_arg_int;
-
-	if (flags & SPF_PROBE)
-		cursor_set(GLUT_CURSOR_INFO);
-	else if (flags == 0) {
-		snprintf(reel_fn, sizeof(reel_fn), "%s",
-		    OLE(reel_list, i, fnent)->fe_name);
-	}
-}
-
-void
-gscb_pw_fbcho(struct glname *gn, int flags)
-{
-	int i = gn->gn_arg_int;
-	struct panel *p;
-
-	if (flags & SPF_PROBE)
-		cursor_set(GLUT_CURSOR_INFO);
-	else if (flags == 0) {
-		snprintf(flyby_name, sizeof(flyby_name), "%s",
-		    OLE(flyby_list, i, fnent)->fe_name);
-		if ((p = panel_for_id(PANEL_FLYBY)) != NULL)
-			p->p_opts |= POPT_REFRESH;
-	}
-}
-
-void
 gscb_pw_fb(struct glname *gn, int flags)
 {
 	int i = gn->gn_arg_int;
@@ -615,17 +586,58 @@ gscb_pw_keyh(struct glname *gn, int flags)
 	}
 }
 
+/*
+ * Callback for directory browser selection.
+ *
+ * We call the callback specified in the glname pointer argument.  For
+ * directories, that routine checks whether selection is acceptable for
+ * the new directory and returns a pointer to write the new path to if
+ * it is.
+ */
 void
-gscb_pw_dxcho(struct glname *gn, int flags)
+gscb_pw_dir(struct glname *gn, int flags)
 {
-	int i = gn->gn_arg_int;
-	struct panel *p;
+	char *(*cb)(const char *, int) = gn->gn_arg_ptr;
+	char *new = gn->gn_arg_ptr2;
+	int isdir = gn->gn_arg_int;
+	char *p, *t;
 
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
 	else if (flags == 0) {
-		dx_setfn(OLE(dxscript_list, i, fnent)->fe_name);
-		if ((p = panel_for_id(PANEL_DXCHO)) != NULL)
-			p->p_opts |= POPT_REFRESH;
+		if (isdir && (p = strchr(new, '/')) != NULL)
+			*p = '\0';
+		p = cb(new, isdir ? CHF_DIR : 0);
+		if (isdir && p != NULL) {
+			/*
+			 * OK, a directory was chosen and the callback
+			 * informed us that it is OK to change to that
+			 * directory.
+			 *
+			 * If we go up the file hierarchy past '.' of
+			 * the current working directory, change to the
+			 * current working directory.  Otherwise, strip
+			 * a component of the path off.
+			 */
+			if (strcmp(new, "..") == 0) {
+				if ((t = strrchr(p, '/')) == NULL) {
+					if (getcwd(p, PATH_MAX) == NULL)
+						err(1, "getcwd");
+				} else if (t != p)
+					*t = '\0';
+			} else if (strcmp(new, ".") != 0) {
+				/*
+				 * Descending into a subdirectory:
+				 * tack new component onto path.
+				 *
+				 * We hack around dumb snprintf
+				 * implementations by duplicating.
+				 */
+				if ((t = strdup(p)) == NULL)
+					err(1, "strdup");
+				snprintf(p, PATH_MAX, "%s/%s", t, new);
+				free(t);
+			}
+		}
 	}
 }

@@ -29,7 +29,7 @@ struct glname {
 	void		 *gn_arg_ptr;
 	void		 *gn_arg_ptr2;
 
-	/* Hack around GL's unwillingness to do 2D selection. */
+	/* Hack around OpenGL's unwillingness to mix 2D/3D selection. */
 	int		  gn_u;
 	int		  gn_v;
 	int		  gn_h;
@@ -76,18 +76,16 @@ unsigned int	 gsn_get(int, const struct fvec *, gscb_t, int, int, void *, void *
 void		 gscb_miss(struct glname *, int);
 void		 gscb_node(struct glname *, int);
 void		 gscb_panel(struct glname *, int);
+void		 gscb_pw_dir(struct glname *, int);
 void		 gscb_pw_dmnc(struct glname *, int);
 void		 gscb_pw_dmode(struct glname *, int);
-void		 gscb_pw_dxcho(struct glname *, int);
 void		 gscb_pw_fb(struct glname *, int);
-void		 gscb_pw_fbcho(struct glname *, int);
 void		 gscb_pw_help(struct glname *, int);
 void		 gscb_pw_hlnc(struct glname *, int);
 void		 gscb_pw_keyh(struct glname *, int);
 void		 gscb_pw_opt(struct glname *, int);
 void		 gscb_pw_panel(struct glname *, int);
 void		 gscb_pw_pipe(struct glname *, int);
-void		 gscb_pw_reel(struct glname *, int);
 void		 gscb_pw_rt(struct glname *, int);
 void		 gscb_pw_ssmode(struct glname *, int);
 void		 gscb_pw_ssvc(struct glname *, int);

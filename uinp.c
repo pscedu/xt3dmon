@@ -176,8 +176,7 @@ uinpcb_login(void)
 void
 uinpcb_fbnew(void)
 {
-	char path[PATH_MAX], *buf, *s;
-	struct stat stb;
+	char *buf, *s;
 	FILE *fp;
 
 	buf = buf_get(&uinp.uinp_buf);
@@ -190,19 +189,19 @@ uinpcb_fbnew(void)
 
 	/* Create a new flyby data file, and make it selected */
 	if (buf[0] != '\0' && buf[0] != '.') {
-		snprintf(flyby_name, sizeof(flyby_name), "%s", buf);
-		snprintf(path, sizeof(path), "%s/%s",
-		    _PATH_FLYBYDIR, flyby_name);
+		flyby_set(buf, 0);
 
-		if (stat(_PATH_FLYBYDIR, &stb) == -1) {
+		if (stat(dir, &stb) == -1) {
 			if (errno == ENOENT) {
 				if (mkdir(_PATH_FLYBYDIR, 0755) == -1)
 					err(1, "%s", _PATH_FLYBYDIR);
 			} else
 				err(1, "%s", _PATH_FLYBYDIR);
 		}
-		if ((fp = fopen(path, "a+")) == NULL)
-			err(1, "%s", path);
+
+		/* Touch the new flyby file. */
+		if ((fp = fopen(flyby_fn, "a+")) == NULL)
+			err(1, "%s", flyby_fn);
 		fclose(fp);
 		errno = 0;
 	}

@@ -7,6 +7,7 @@
 #define _PATH_SS	"data/ss"
 
 #define _PATH_ARCHIVE	"data/archive"
+#define _PATH_ISAR	".isar"
 #define _PATH_FLYBYDIR	"data/flybys"
 #define _PATH_DXSCRIPTS	"scripts"
 
