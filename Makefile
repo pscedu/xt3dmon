@@ -63,9 +63,6 @@ depend: ${CSRCS}
 clean:
 	rm -rf ${PROG} ${OBJS} ${CLEAN}
 
-obj:
-	mkdir obj
-
 lint:
 
 lines:
