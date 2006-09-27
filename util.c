@@ -2,6 +2,7 @@
 
 #include "mon.h"
 
+#include <libgen.h>
 #include <stdio.h>
 
 #include "util.h"
@@ -77,4 +78,22 @@ strnchr(const char *s, char c, size_t len)
 	if (pos == len)
 		return (NULL);
 	return ((char *)(s + pos));
+}
+
+const char *
+smart_basename(const char *fn)
+{
+	static char path[PATH_MAX];
+
+	snprintf(path, sizeof(path), "%s", fn);
+	return (basename(path));
+}
+
+const char *
+smart_dirname(const char *fn)
+{
+	static char path[PATH_MAX];
+
+	snprintf(path, sizeof(path), "%s", fn);
+	return (dirname(path));
 }
