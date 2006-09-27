@@ -3,12 +3,6 @@
 #ifndef _OBJLIST_H_
 #define _OBJLIST_H_
 
-struct job;
-struct yod;
-struct glname;
-struct fnent;
-struct color;
-
 struct objhdr {
 	int		  oh_flags;
 };
@@ -25,12 +19,12 @@ struct fnent {
 struct objlist {
 	void		**ol_data;
 	size_t		  ol_cur;
-	size_t 		  ol_tcur;
-	size_t 		  ol_max;
-	size_t 		  ol_alloc;
-	size_t 		  ol_incr;
-	size_t 		  ol_objlen;
-	cmpf_t 		  ol_eq;
+	size_t		  ol_tcur;
+	size_t		  ol_max;
+	size_t		  ol_alloc;
+	size_t		  ol_incr;
+	size_t		  ol_objlen;
+	cmpf_t		  ol_eq;
 };
 
 #define OLE(list, pos, type) ((struct type *)(list).ol_data[pos])
