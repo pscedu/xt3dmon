@@ -7,16 +7,22 @@
 
 #include <stdio.h>
 
+/* File chooser flags. */
+#define CHF_DIR		(1<<0)
+
+/* Physical machine dimensions -- XXX remove hardcode. */
 #define NROWS		2
 #define NCABS		11
 #define NCAGES		3
 #define NMODS		8
 #define NNODES		4
 
+/* Wired dimensions -- XXX remove hardcode. */
 #define WIDIM_WIDTH	11
 #define WIDIM_HEIGHT	12
 #define WIDIM_DEPTH	16
 
+/* Physical machine dimensions -- XXX remove hardcode. */
 #define ROWSPACE	(10.0f)
 #define CABSPACE	(5.0f)
 #define CAGESPACE	(2.0f)
