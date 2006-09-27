@@ -307,7 +307,7 @@ gl_select(int flags)
 	int dl[NGEOM];
 	int i, nrecs;
 
-	gn = 0; /* gcc */
+	gn = NULL; /* gcc */
 	switch (stereo_mode) {
 	case STM_PASV:
 		gl_wid_update();
