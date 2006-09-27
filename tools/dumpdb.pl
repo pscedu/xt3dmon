@@ -31,8 +31,9 @@ my $tmpsufx = ".new";
 my $oldsufx = ".bak";
 
 my @date = localtime(time);
-my $ardir = strftime("$outdir/archive/%Y-%m-%d/%H-%M", @date);
-my $lastdir = strftime("$outdir/archive/%Y-%m-%d/last", @date);
+my $ardir   = strftime("$outdir/archive/%Y-%m/%Y-%m-%d/%H-%M", @date);
+my $lastdir = strftime("$outdir/archive/%Y-%m/%Y-%m-%d/.last", @date);
+my $aridx   = strftime("$outdir/archive/%Y-%m/%Y-%m-%d/.isar", @date);
 
 # end config
 
@@ -254,6 +255,7 @@ if (!-e $lastdir || `diff -qr $lastdir $outdir | grep -v ^Only`) {
 	my $lastreal = readlink $lastdir;
 	`ln -s $lastreal $ardir`;
 }
+`touch $aridx`;
 
 sub dberr {
 	warn "$0: ", @_, ": $DBI::errstr\n" if $err;
