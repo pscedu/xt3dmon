@@ -191,6 +191,7 @@ uinpcb_fbnew(void)
 	if (buf[0] != '\0' && buf[0] != '.') {
 		flyby_set(buf, 0);
 
+#if 0
 		if (stat(dir, &stb) == -1) {
 			if (errno == ENOENT) {
 				if (mkdir(_PATH_FLYBYDIR, 0755) == -1)
@@ -198,6 +199,7 @@ uinpcb_fbnew(void)
 			} else
 				err(1, "%s", _PATH_FLYBYDIR);
 		}
+#endif
 
 		/* Touch the new flyby file. */
 		if ((fp = fopen(flyby_fn, "a+")) == NULL)
