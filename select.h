@@ -1,5 +1,8 @@
 /* $Id$ */
 
+#ifndef _SELECT_H_
+#define _SELECT_H_
+
 #include <limits.h>
 
 #include "objlist.h"
@@ -89,3 +92,5 @@ void		 gscb_pw_ssmode(struct glname *, int);
 void		 gscb_pw_ssvc(struct glname *, int);
 void		 gscb_pw_vmode(struct glname *, int);
 void		 gscb_pw_wiadj(struct glname *, int);
+
+#endif /* _SELECT_H_ */
