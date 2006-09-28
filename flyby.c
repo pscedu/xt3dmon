@@ -230,7 +230,7 @@ flyby_read(void)
 				if (st.st_opts & OP_LOOPFLYBY) {
 					rewind(flyby_fp);
 					flyby_pos = 0;
-					reel_pos = 0;
+					reel_pos = -1;
 					continue;
 				} else {
 					flyby_end();

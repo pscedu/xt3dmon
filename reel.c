@@ -28,7 +28,7 @@
 
 char	reel_dir[PATH_MAX];
 char	reel_browsedir[PATH_MAX] = _PATH_ARCHIVE;
-size_t	reel_pos;
+size_t	reel_pos = -1;
 
 struct objlist reelframe_list = { NULL, 0, 0, 0, 0, 10, sizeof(struct fnent), fe_eq };
 struct objlist reel_list      = { NULL, 0, 0, 0, 0, 10, sizeof(struct fnent), fe_eq };
@@ -95,7 +95,7 @@ reel_start(void)
 	datasrcs[DS_JOB].ds_lpath = fn_job;
 	datasrcs[DS_YOD].ds_lpath = fn_yod;
 
-	reel_pos = 0;
+	reel_pos = -1;
 	reel_advance();
 }
 
@@ -104,8 +104,9 @@ reel_advance(void)
 {
 	struct panel *p;
 
-	if (reel_pos >= reelframe_list.ol_cur)
+	if (reel_pos + 1 >= reelframe_list.ol_cur)
 		return;
+	reel_pos++;
 
 	snprintf(fn_node, sizeof(fn_node), "%s/%s/node",
 	    reel_dir, OLE(reelframe_list, reel_pos, fnent)->fe_name);
@@ -121,8 +122,6 @@ reel_advance(void)
 
 	if ((p = panel_for_id(PANEL_REEL)) != NULL)
 		p->p_opts |= POPT_REFRESH;
-
-	reel_pos++;
 }
 
 void
