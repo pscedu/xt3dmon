@@ -553,41 +553,33 @@ panel_refresh_ninfo(struct panel *p)
 		if (memcmp(&n->n_route.rt_err, &rt_zero, sizeof(rt_zero)) == 0)
 			panel_add_content(p, " none");
 		else {
+			int shown;
+
+			panel_add_content(p, "\n port recover fatal router");
 			for (j = 0; j < NRP; j++) {
-				if (n->n_route.rt_err[j][RT_RECOVER] ||
-				    n->n_route.rt_err[j][RT_FATAL] ||
-				    n->n_route.rt_err[j][RT_ROUTER]) {
-					int needcomma = 0;
-					int pset;
+				if (!n->n_route.rt_err[j][RT_RECOVER] &&
+				    !n->n_route.rt_err[j][RT_FATAL] &&
+				    !n->n_route.rt_err[j][RT_ROUTER])
+					continue;
 
-					if (j == RP_NEGX ||
-					    j == RP_NEGY ||
-					    j == RP_NEGZ)
-						pset = RPS_NEG;
-					else
-						pset = RPS_POS;
-
-					panel_add_content(p, "\n %sport %d: ",
+				if (j == RP_NEGX ||
+				    j == RP_NEGY ||
+				    j == RP_NEGZ)
+					shown = st.st_rtepset == RPS_NEG &&
 					    st.st_pipemode == PM_RTE &&
-					    st.st_opts & OP_PIPES &&
-					    pset == st.st_rtepset ? "*" : " ", j);
-					if (n->n_route.rt_err[j][RT_RECOVER]) {
-						panel_add_content(p, "%d recover",
-						    n->n_route.rt_err[j][RT_RECOVER]);
-						needcomma = 1;
-					}
-					if (n->n_route.rt_err[j][RT_FATAL]) {
-						panel_add_content(p, "%s%d fatal",
-						    needcomma ? ", " : "",
-						    n->n_route.rt_err[j][RT_FATAL]);
-						needcomma = 1;
-					}
-					if (n->n_route.rt_err[j][RT_ROUTER]) {
-						panel_add_content(p, "%s%d rtr",
-						    needcomma ? ", " : "",
-						    n->n_route.rt_err[j][RT_ROUTER]);
-					}
-				}
+					    (st.st_opts & OP_PIPES);
+				else if (j != RP_UNK)
+					shown = st.st_rtepset == RPS_POS &&
+					    st.st_pipemode == PM_RTE &&
+					    (st.st_opts & OP_PIPES);
+				else
+					shown = (st.st_dmode == DM_RTUNK);
+
+				panel_add_content(p, "\n  %s%d: %7d %5d %6d",
+				    shown ? "*" : " ", j,
+				    n->n_route.rt_err[j][RT_RECOVER],
+				    n->n_route.rt_err[j][RT_FATAL],
+				    n->n_route.rt_err[j][RT_ROUTER]);
 			}
 		}
 	}
@@ -1155,28 +1147,35 @@ panel_refresh_rt(struct panel *p)
 	if (memcmp(&rt_max, &rt_zero, sizeof(rt_zero)) == 0)
 		panel_add_content(p, "\nNo error statistics.");
 	else {
-		panel_add_content(p, "\nMax errors: recover fatal router");
+		int total[NRT];
+
+		memset(total, 0, sizeof(total));
+		panel_add_content(p, "\nTotal:\n port recover fatal router");
 		for (i = 0; i < NRP; i++) {
 			if (rt_max.rt_err[i][RT_RECOVER] ||
 			    rt_max.rt_err[i][RT_FATAL] ||
 			    rt_max.rt_err[i][RT_ROUTER]) {
 				panel_add_content(p,
-				    "\n  port %d:   %7d %5d %6d", i,
+				    "\n %3d: %7d %5d %6d", i,
 				    rt_max.rt_err[i][RT_RECOVER],
 				    rt_max.rt_err[i][RT_FATAL],
 				    rt_max.rt_err[i][RT_ROUTER]);
+				total[RT_RECOVER] += rt_max.rt_err[i][RT_RECOVER];
+				total[RT_FATAL]   += rt_max.rt_err[i][RT_FATAL];
+				total[RT_ROUTER]  += rt_max.rt_err[i][RT_ROUTER];
 			}
 		}
+		panel_add_content(p,
+		    "\n all: %7d %5d %6d",
+		    total[RT_RECOVER],
+		    total[RT_FATAL],
+		    total[RT_ROUTER]);
 	}
 
 	pwidget_startlist(p);
 
-	for (i = 0; i < NRTC / 2; i++)
-		pwidget_add(p, &rtpipeclass[i].nc_fill,
-		    rtpipeclass[i].nc_name, 0, NULL, 0, 0, NULL, NULL);
-
 	pwidget_add(p, (st.st_rtetype == RT_RECOVER ?
-	    &fill_white : &fill_nodata), "Recoverable", 0,
+	    &fill_white : &fill_nodata), "Recover", 0,
 	    gscb_pw_rt, SRF_RECOVER, 0, NULL, NULL);
 	pwidget_add(p, (st.st_rtetype == RT_FATAL ?
 	    &fill_white : &fill_nodata), "Fatal", 0,
@@ -1184,8 +1183,10 @@ panel_refresh_rt(struct panel *p)
 	pwidget_add(p, (st.st_rtetype == RT_ROUTER ?
 	    &fill_white : &fill_nodata), "Router", 0,
 	    gscb_pw_rt, SRF_ROUTER, 0, NULL, NULL);
+	pwidget_add(p, &fill_nopanel, "", 0, NULL, 0, 0, NULL, NULL);
+	pwidget_add(p, &fill_nopanel, "----- Pipe", 0, NULL, 0, 0, NULL, NULL);
 
-	for (; i < NRTC; i++)
+	for (i = 0; i < NRTC / 2; i++)
 		pwidget_add(p, &rtpipeclass[i].nc_fill,
 		    rtpipeclass[i].nc_name, 0, NULL, 0, 0, NULL, NULL);
 
@@ -1195,6 +1196,14 @@ panel_refresh_rt(struct panel *p)
 	pwidget_add(p, (st.st_rtepset == RPS_POS ?
 	    &fill_white : &fill_nodata), "Positive", 0,
 	    gscb_pw_rt, SRF_POS, 0, NULL, NULL);
+	pwidget_add(p, &fill_nopanel, "", 0, NULL, 0, 0, NULL, NULL);
+	pwidget_add(p, &fill_nopanel, "", 0, NULL, 0, 0, NULL, NULL);
+	pwidget_add(p, &fill_nopanel, "Legend ---", 0, NULL, 0, 0, NULL, NULL);
+
+	for (; i < NRTC; i++)
+		pwidget_add(p, &rtpipeclass[i].nc_fill,
+		    rtpipeclass[i].nc_name, 0, NULL, 0, 0, NULL, NULL);
+
 	pwidget_endlist(p);
 }
 
@@ -1365,12 +1374,12 @@ panel_refresh_reel(struct panel *p)
 		    reelframe_list.ol_cur > 0 ?
 		    OLE(reelframe_list, reel_pos, fnent)->fe_name : "N/A");
 	} else {
-		if (strcmp(reel_dir, "") != 0)
+		if (strcmp(reel_dir, "") == 0)
+			panel_add_content(p, "\nNo reel selected");
+		else
 			panel_add_content(p, "\n%s: %d frames",
 			    smart_basename(reel_dir),
 			    reelframe_list.ol_cur);
-		else
-			panel_add_content(p, "\nNo reel selected");
 		panel_add_content(p, "\n\n%s", reel_browsedir);
 		pwidgets_dir(p, reel_browsedir, &reel_list, reel_dir,
 		    reel_set, PWDF_DIRSONLY);
