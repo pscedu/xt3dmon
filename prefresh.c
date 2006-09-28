@@ -155,6 +155,9 @@ pwidget_sortlist(struct panel *p, int (*cmp)(const void *a, const void *b))
 	struct pwidget *pw, **pws;
 	int j;
 
+	if (p->p_nwidgets == 0)
+		return;
+
 	if ((pws = malloc(p->p_nwidgets * sizeof(*pws))) == NULL)
 		err(1, "malloc");
 	j = 0;
