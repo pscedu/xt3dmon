@@ -334,7 +334,7 @@ flyby_read(void)
 	st.st_rf &= ~RF_DATASRC;
 	opt_flip(optdiff);
 
-	if (st.st_opts & OP_REEL &&
+	if (st.st_opts & OP_REEL && reelframe_list.ol_cur > 0 &&
 	    flyby_pos++ % (flyby_len / reelframe_list.ol_cur) == 0)
 		reel_advance();
 }
