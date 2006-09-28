@@ -570,7 +570,6 @@ int
 rebuild(int opts)
 {
 	static int rebuild_wirep;
-	struct panel *p;
 
 	if (opts & RF_DATASRC) {
 		ds_refresh(DS_NODE, dsflags);
@@ -583,9 +582,7 @@ rebuild(int opts)
 		opts |= RF_DMODE | RF_CLUSTER;
 
 		/* XXX save mtime and check in panel_refresh_date */
-		if ((p = panel_for_id(PANEL_DATE)) != NULL)
-			p->p_opts |= POPT_REFRESH;
-
+		panel_rebuild(PANEL_DATE);
 		caption_setdrain(mach_drain);
 	}
 	if (opts & RF_DMODE) {

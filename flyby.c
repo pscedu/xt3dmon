@@ -431,15 +431,14 @@ flyby_clear(void)
 char *
 flyby_set(const char *fn, int flags)
 {
-	struct panel *p;
+	int pids;
 
+	pids = PANEL_FBCHO;
 	if ((flags & CHF_DIR) == 0) {
 		snprintf(flyby_fn, sizeof(flyby_fn),
 		    "%s/%s", flyby_dir, fn);
-		if ((p = panel_for_id(PANEL_FLYBY)) != NULL)
-			p->p_opts |= POPT_REFRESH;
+		pids |= PANEL_FLYBY;
 	}
-	if ((p = panel_for_id(PANEL_FBCHO)) != NULL)
-		p->p_opts |= POPT_REFRESH;
+	panel_rebuild(pids);
 	return (flyby_dir);
 }

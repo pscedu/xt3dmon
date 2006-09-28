@@ -69,14 +69,11 @@ dxa_clear(void)
 char *
 dx_set(const char *fn, int flags)
 {
-	struct panel *p;
-
 	if ((flags & CHF_DIR) == 0) {
 		dx_built = 0;
 		snprintf(dx_fn, sizeof(dx_fn), "%s/%s", dx_dir, fn);
 	}
-	if ((p = panel_for_id(PANEL_DXCHO)) != NULL)
-		p->p_opts |= POPT_REFRESH;
+	panel_rebuild(PANEL_DXCHO);
 	return (dx_dir);
 }
 

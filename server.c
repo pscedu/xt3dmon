@@ -265,7 +265,6 @@ snap:
 		vec_normalize(&st.st_uv);
 	}
 	if (ss.ss_sid) {
-		struct panel *p;
 		int dsm;
 
 		if (!dsc_exists(ss.ss_sid)) {
@@ -283,10 +282,8 @@ snap:
 				goto drop;
 		rf &= ~RF_DATASRC;
 
+		panel_rebuild(PANEL_DATE);
 		caption_setdrain(mach_drain);
-
-		if ((p = panel_for_id(PANEL_DATE)) != NULL)
-			p->p_opts |= POPT_REFRESH;
 	}
 
 	/* Have fresh data for (a) jobs and (b) node selection. */
