@@ -102,8 +102,6 @@ reel_start(void)
 void
 reel_advance(void)
 {
-	struct panel *p;
-
 	if (reel_pos + 1 >= reelframe_list.ol_cur)
 		return;
 	reel_pos++;
@@ -120,8 +118,7 @@ reel_advance(void)
 	datasrcs[DS_JOB].ds_flags |= DSF_FORCE;
 	datasrcs[DS_YOD].ds_flags |= DSF_FORCE;
 
-	if ((p = panel_for_id(PANEL_REEL)) != NULL)
-		p->p_opts |= POPT_REFRESH;
+	panel_rebuild(PANEL_REEL);
 }
 
 void
@@ -139,6 +136,8 @@ reel_end(void)
 	datasrcs[DS_NODE].ds_flags |= DSF_FORCE;
 	datasrcs[DS_JOB].ds_flags |= DSF_FORCE;
 	datasrcs[DS_YOD].ds_flags |= DSF_FORCE;
+
+	panel_rebuild(PANEL_REEL);
 }
 
 char *
@@ -146,14 +145,11 @@ reel_set(const char *fn, int flags)
 {
 	char path[PATH_MAX];
 	struct stat stb;
-	struct panel *p;
 
 	if ((flags & CHF_DIR) == 0)
 		errx(1, "file chosen when directory-only");
 
-	if ((p = panel_for_id(PANEL_REEL)) != NULL)
-		p->p_opts |= POPT_REFRESH;
-
+	panel_rebuild(PANEL_REEL);
 	snprintf(path, sizeof(path), "%s/%s/%s",
 	    reel_browsedir, fn, _PATH_ISAR);
 	if (stat(path, &stb) == -1) {
