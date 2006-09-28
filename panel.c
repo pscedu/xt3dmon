@@ -85,7 +85,7 @@ struct pinfo pinfo[] = {
  /* 18 */ { "reel",	"Reel",			panel_refresh_reel,	PSTICK_TR, PIF_FBIGN,				0,		NULL },
  /* 19 */ { "pipe",	"Pipe Mode",		panel_refresh_pipe,	PSTICK_TR, 0,					0,		NULL },
  /* 20 */ { "sstar",	"Seastar",		panel_refresh_sstar,	PSTICK_TR, 0,					0,		NULL },
- /* 21 */ { "wiadj",	"Wired Controls",	panel_refresh_wiadj,	PSTICK_TR, 0,					0,		NULL },
+ /* 21 */ { "wiadj",	"Wired Controls",	panel_refresh_wiadj,	PSTICK_BL, 0,					0,		NULL },
  /* 22 */ { "rt",	"Route Controls",	panel_refresh_rt,	PSTICK_TR, 0,					0,		NULL },
  /* 23 */ { "fbcho",	"Flyby Chooser",	panel_refresh_fbcho,	PSTICK_TR, PIF_FBIGN,				0,		NULL },
  /* 24 */ { "fbcreat",	"Flyby Creator",	panel_refresh_fbnew,	PSTICK_TR, PIF_FBIGN | PIF_UINP,		0,		uinpcb_fbnew },
@@ -100,9 +100,6 @@ struct pinfo pinfo[] = {
 #define PVOFF_BR 3
 #define NPVOFF 4
 
-struct fill	 fill_panel	= FILL_INITA(0.4, 0.6, 0.8, 0.8);
-struct fill	 fill_ipanel	= FILL_INITA(0.5, 0.7, 0.9, 0.9);
-struct fill	 fill_panelbd	= FILL_INITA(0.2, 0.4, 0.6, 1.0);
 struct panels	 panels;
 int		 panel_offset[NPVOFF];
 int		 exthelp;
@@ -374,16 +371,18 @@ draw_panel(struct panel *p, int toff)
 				draw_pwbg(fp, uoff, voff);
 			}
 
-			/* Draw widget border. */
-			glLineWidth(1.0f);
-			glBegin(GL_LINE_LOOP);
-			glColor4f(frame_fp->f_r, frame_fp->f_g,
-			    frame_fp->f_b, 1.00f);
-			glVertex2d(uoff,			voff);
-			glVertex2d(uoff + PWIDGET_LENGTH,	voff);
-			glVertex2d(uoff + PWIDGET_LENGTH - 1,	voff - PWIDGET_HEIGHT + 1);
-			glVertex2d(uoff,			voff - PWIDGET_HEIGHT + 1);
-			glEnd();
+			if (fp->f_a) {
+				/* Draw widget border. */
+				glLineWidth(1.0f);
+				glBegin(GL_LINE_LOOP);
+				glColor4f(frame_fp->f_r, frame_fp->f_g,
+				    frame_fp->f_b, frame_fp->f_a);
+				glVertex2d(uoff,			voff);
+				glVertex2d(uoff + PWIDGET_LENGTH,	voff);
+				glVertex2d(uoff + PWIDGET_LENGTH - 1,	voff - PWIDGET_HEIGHT + 1);
+				glVertex2d(uoff,			voff - PWIDGET_HEIGHT + 1);
+				glEnd();
+			}
 		}
 
 		glColor4f(p->p_fill.f_r, p->p_fill.f_g, p->p_fill.f_b, p->p_fill.f_a);

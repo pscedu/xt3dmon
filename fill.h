@@ -99,6 +99,11 @@ extern struct fill	 fill_clskel;
 extern struct fill	 fill_ground;
 extern struct fill	 fill_showall;
 
+extern struct fill	 fill_panel;
+extern struct fill	 fill_nopanel;
+extern struct fill	 fill_ipanel;
+extern struct fill	 fill_panelbd;
+
 extern struct fill	 fill_borg;
 extern struct fill	 fill_matrix;
 extern struct fill	 fill_matrix_reloaded;
