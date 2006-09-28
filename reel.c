@@ -40,46 +40,12 @@ reel_load(void)
 	struct dirent *dent;
 	struct fnent *fe;
 	struct stat stb;
-	char *rfn;
 	DIR *dp;
 	int n;
 
 	if ((dp = opendir(reel_dir)) == NULL) {
-		if (errno == ENOENT ||
-		    errno == EINVAL) {
-			reel_dir[0] = '\0';
-			/* User hasn't specified, so grab newest reel. */
-			if ((dp = opendir(_PATH_ARCHIVE)) == NULL) {
-				/*
-				 * Don't die if archive directory
-				 * doesn't exist at all.
-				 */
-				if (errno != ENOENT)
-					warn("opendir %s", _PATH_ARCHIVE);
-				return;
-			}
-			while ((dent = readdir(dp)) != NULL) {
-				if (strcmp(dent->d_name, ".") == 0 ||
-				    strcmp(dent->d_name, "..") == 0)
-					continue;
-				/* XXX: check stat and ISDIR */
-
-				if ((rfn = strrchr(reel_dir, '/')) == NULL ||
-				    strcmp(dent->d_name, rfn + 1) > 0)
-					snprintf(reel_dir,
-					    sizeof(reel_dir), "%s/%s",
-					    _PATH_ARCHIVE, dent->d_name);
-			}
-			/* XXX: check for error */
-			closedir(dp);
-		} else
-			err(1, "opendir %s", reel_dir);
-
-		if (reel_dir[0] == '\0')
-			return;
-
-		if ((dp = opendir(reel_dir)) == NULL)
-			err(1, "opendir %s", reel_dir);
+		warn("opendir %s", reel_dir);
+		return;
 	}
 	obj_batch_start(&reelframe_list);
 	for (n = 0; (dent = readdir(dp)) != NULL; n++) {
