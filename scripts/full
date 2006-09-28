@@ -8,7 +8,6 @@
 # selpipes
 # subset (view route errors of node in job)
 # VM_WIRED
-#
 
 vmode phys
 dmode temp
