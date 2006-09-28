@@ -165,6 +165,7 @@ reel_set(const char *fn, int flags)
 		if (strcmp(fn, "..") != 0) {
 			snprintf(reel_dir, sizeof(reel_dir),
 			    "%s/%s", reel_browsedir, fn);
+			reel_load();
 			return (NULL);
 		}
 	}
