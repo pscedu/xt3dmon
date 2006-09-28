@@ -94,6 +94,7 @@ todo
   no files
 - rename POPT_REFRESH to POPT_REDRAW, POPT_DIRTY to POPT_REBUILD
 - use fill_checked/dechecked in place of white/nodata in pwidgets
+- moving the cursor should not cause panel recompiles
 
 tweening
 - ensure tweening leaves normalized vectors
