@@ -1279,10 +1279,8 @@ pwidgets_dir(struct panel *p, const char *dir, struct objlist *ol,
 				fe = obj_get(dent->d_name, ol);
 				snprintf(fe->fe_name,
 				    sizeof(fe->fe_name), "..");
-				pwidget_add(p, &fill_xparent,
-				    "Parent Directory", 2,
-				    gscb_pw_dir, 1, 0,
-				    cb, fe->fe_name);
+				pwidget_add(p, &fill_xparent, "Up", 2,
+				    gscb_pw_dir, 1, 0, cb, fe->fe_name);
 			}
 			continue;
 		}
