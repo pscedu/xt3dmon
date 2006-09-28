@@ -75,7 +75,7 @@ struct pinfo pinfo[] = {
  /*  8 */ { "status",	"Status Log",		panel_refresh_status,	PSTICK_TR, 0,					0,		NULL },
  /*  9 */ { "eggs",	NULL,			panel_refresh_eggs,	PSTICK_TR, PIF_UINP | PIF_HIDE,			0,		uinpcb_eggs },
  /* 10 */ { "date",	"Date",			panel_refresh_date,	PSTICK_BL, PIF_XPARENT,				0,		NULL },
- /* 11 */ { "options",	"Option",		panel_refresh_opts,	PSTICK_TL, PIF_FBIGN,				0,		NULL },
+ /* 11 */ { "options",	"Options",		panel_refresh_opts,	PSTICK_TL, PIF_FBIGN,				0,		NULL },
  /* 12 */ { "gotojob",	"Goto Job",		panel_refresh_gotojob,	PSTICK_TR, PIF_UINP,				0,		uinpcb_gotojob },
  /* 13 */ { "panels",	NULL,			panel_refresh_panels,	PSTICK_TL, PIF_HIDE | PIF_FBIGN,		0,		NULL },
  /* 14 */ { "login",	"Login",		panel_refresh_login,	PSTICK_TR, PIF_UINP,				UINPO_LINGER,	uinpcb_login },
@@ -815,6 +815,20 @@ panel_demobilize(struct panel *p)
 	TAILQ_FOREACH(t, &panels, p_link)
 		if (t->p_info->pi_stick == p->p_info->pi_stick)
 			t->p_opts |= POPT_DIRTY;
+}
+
+__inline void
+panel_rebuild(int pids)
+{
+	struct panel *p;
+	int b;
+
+	while (pids) {
+		b = ffs(pids) - 1;
+		pids &= ~(1 << b);
+		if ((p = panel_for_id(1 << b)) != NULL)
+			p->p_opts |= POPT_REFRESH;
+	}
 }
 
 void

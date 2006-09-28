@@ -115,6 +115,7 @@ void		 panel_hide(int);
 struct panel	*panel_for_id(int);
 void		 panel_demobilize(struct panel *);
 void		 panel_draw_compass(struct panel *);
+void		 panel_rebuild(int);
 
 void		 panels_set(int);
 void		 panels_flip(int);
