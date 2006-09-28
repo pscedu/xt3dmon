@@ -1360,11 +1360,18 @@ panel_refresh_reel(struct panel *p)
 	pwidget_startlist(p);
 	if (flyby_mode == FBM_PLAY && st.st_opts & OP_REEL) {
 		panel_add_content(p, "\n%s\nFrame %d/%d\n%s",
-		    reel_dir, reel_pos, reelframe_list.ol_cur,
+		    smart_basename(reel_dir), reel_pos + 1,
+		    reelframe_list.ol_cur,
 		    reelframe_list.ol_cur > 0 ?
 		    OLE(reelframe_list, reel_pos, fnent)->fe_name : "N/A");
 	} else {
-		panel_add_content(p, "\n%s", reel_browsedir);
+		if (strcmp(reel_dir, "") != 0)
+			panel_add_content(p, "\n%s: %d frames",
+			    smart_basename(reel_dir),
+			    reelframe_list.ol_cur);
+		else
+			panel_add_content(p, "\nNo reel selected");
+		panel_add_content(p, "\n\n%s", reel_browsedir);
 		pwidgets_dir(p, reel_browsedir, &reel_list, reel_dir,
 		    reel_set, PWDF_DIRSONLY);
 		if (p->p_nwidgets == 0)
