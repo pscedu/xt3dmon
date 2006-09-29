@@ -1,7 +1,5 @@
 # $Id$
 
-# rte mode
-# yod mode
 # blade skels
 # physpipes
 # archive
@@ -10,19 +8,43 @@
 # VM_WIRED
 
 vmode phys
+setcap "CPU temperatures in physical machine layout"
 dmode temp
-refresh
 opt frames,tween,nodeanim,caption,ground
 panel legend,help
 # pstick bl legend
 bird
-refocus
-setcap "CPU temperatures in physical machine layout"
 orbit -x
+
+setcap "Changing to `wired' mode (virtual interconnect)"
+# rte mode
+vmode wione
+bird
+setcap "Routing errors over last 24 hours"
+dmode rte
+pstick tl legend
+panel +rt,pipe
+pipemode rte
+opt +pipes
+orbit -x
+opt -pipes
+pipemode torus
+panel -rt,pipe
+pstick tr legend
+
+# yod mode
+setcap "Viewing yod allocations"
+dmode yod
+orbit +x
+
+setcap "Changing to physical layout mode"
+vmode phys
+dmode temp
+setcap "Zoom while viewing nodes in temperature range"
+bird
 selnode random
 hl seldm
 opt +skel
-setcap "Zoom while viewing nodes in temperature range"
 refocus
 move forward 50
 opt +nlabels
@@ -39,7 +61,7 @@ setcap "Changing to 'wired' mode"
 vmode wione
 bird
 dmode job
-setcap "Jobs in wired mode (virtual interconnect)"
+setcap "Jobs in wired mode"
 orbit -x
 seljob random
 setcap "Viewing one job in wired mode"
@@ -95,3 +117,7 @@ setcap "Cycle through all node states/jobs"
 opt +skel
 cyclenc
 opt -skel
+
+setcap "Fetching latest node data...        "
+refresh
+setcap "Fetching latest node data... done"
