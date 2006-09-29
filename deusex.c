@@ -38,6 +38,10 @@ char		  dx_fn[PATH_MAX] = _PATH_DXSCRIPTS "/" DX_DEFAULT;
 char		  dx_dir[PATH_MAX] = _PATH_DXSCRIPTS;
 struct objlist	  dxscript_list = { NULL, 0, 0, 0, 0, 10, sizeof(struct fnent), fe_eq };
 
+int		  dx_cycle_nc = -1;
+int		  dxt_done;
+int		  dxt_set;
+
 void
 dxa_add(struct dx_action *dxa)
 {
@@ -570,13 +574,10 @@ dxp_camsync(__unused struct dx_action *dxa)
 		return (1);
 }
 
-int dx_stall_done;
-int dx_stall_timer;
-
 void
 dxpcb_stall(__unused int a)
 {
-	dx_stall_done = 1;
+	dxt_done = 1;
 }
 
 int
@@ -585,14 +586,14 @@ dxp_stall(__unused struct dx_action *dxa)
 	int ret;
 
 	ret = 0;
-	if (dx_stall_done) {
-		dx_stall_done = 0;
-		dx_stall_timer = 0;
+	if (dxt_done) {
+		dxt_done = 0;
+		dxt_set = 0;
 		ret = 1;
 	}
-	if (!ret && !dx_stall_timer) {
+	if (!ret && !dxt_set) {
 		glutTimerFunc(1000, dxpcb_stall, 0);
-		dx_stall_timer = 1;
+		dxt_set = 1;
 	}
 	return (ret);
 }
@@ -729,15 +730,11 @@ dxp_cam_move(struct dx_action *dxa)
 	return (dx_cam_move(dxa->dxa_move_amt, 3, dxa->dxa_move_dir));
 }
 
-int dx_cycle_nc = -1;
-int dx_cycle_done;
-int dx_cycle_timer;
-
 void
 dxpcb_cyclenc(__unused int a)
 {
 	dx_cycle_nc++;
-	dx_cycle_done = 1;
+	dxt_done = 1;
 }
 
 int
@@ -746,7 +743,7 @@ dxp_cyclenc(__unused struct dx_action *dxa)
 	int ret;
 
 	ret = 0;
-	if (dx_cycle_done) {
+	if (dxt_done) {
 		switch (st.st_dmode) {
 		case DM_JOB:
 			while (dx_cycle_nc < NSC &&
@@ -764,12 +761,12 @@ dxp_cyclenc(__unused struct dx_action *dxa)
 			nc_runall(fill_setopaque);
 			ret = 1;
 		}
-		dx_cycle_done = 0;
-		dx_cycle_timer = 0;
+		dxt_done = 0;
+		dxt_set = 0;
 	}
-	if (!ret && !dx_cycle_timer) {
+	if (!ret && !dxt_set) {
 		glutTimerFunc(1000, dxpcb_cyclenc, 0);
-		dx_cycle_timer = 1;
+		dxt_set = 1;
 	}
 	return (ret);
 }
