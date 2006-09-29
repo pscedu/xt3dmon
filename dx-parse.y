@@ -39,13 +39,14 @@ struct dxlist dxlist = TAILQ_HEAD_INITIALIZER(dxlist);
 %token DGT_OPT
 %token DGT_ORBIT
 %token DGT_PANEL
+%token DGT_PIPEMODE
 %token DGT_PSTICK
 %token DGT_REFOCUS
 %token DGT_REFRESH
 %token DGT_SELJOB
 %token DGT_SELNODE
 %token DGT_SETCAP
-%token DGT_STALL
+%token DGT_STALL	/* used in code, not language */
 %token DGT_VMODE
 %token DGT_WINSP
 %token DGT_WIOFF
@@ -128,10 +129,6 @@ conf		: DGT_BIRD {
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DGT_CAMSYNC;
 			dxa_add(&dxa);
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_STALL;
-			dxa_add(&dxa);
 		}
 		| DGT_SETCAP STRING  {
 			struct dx_action dxa;
@@ -140,20 +137,12 @@ conf		: DGT_BIRD {
 			dxa.dxa_type = DGT_SETCAP;
 			dxa.dxa_caption = $2;
 			dxa_add(&dxa);
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_STALL;
-			dxa_add(&dxa);
 		}
 		| DGT_CLRSN {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DGT_CLRSN;
-			dxa_add(&dxa);
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_STALL;
 			dxa_add(&dxa);
 		}
 		| DGT_CYCLENC {
@@ -170,6 +159,10 @@ conf		: DGT_BIRD {
 			dxa.dxa_type = DGT_DMODE;
 			if (strcasecmp($2, "job") == 0)
 				dxa.dxa_dmode = DM_JOB;
+			else if (strcasecmp($2, "rte") == 0)
+				dxa.dxa_dmode = DM_RTUNK;
+			else if (strcasecmp($2, "yod") == 0)
+				dxa.dxa_dmode = DM_YOD;
 			else if (strcasecmp($2, "temp") == 0 ||
 			    strcasecmp($2, "tmp") == 0 ||
 			    strcasecmp($2, "temperature") == 0)
@@ -192,18 +185,6 @@ conf		: DGT_BIRD {
 				yyerror("invalid hl: %s", $2);
 			free($2);
 			dxa_add(&dxa);
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_STALL;
-			dxa_add(&dxa);
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_STALL;
-			dxa_add(&dxa);
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_STALL;
-			dxa_add(&dxa);
 		}
 		| DGT_MOVE STRING dbl {
 			struct dx_action dxa;
@@ -224,10 +205,6 @@ conf		: DGT_BIRD {
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DGT_CAMSYNC;
 			dxa_add(&dxa);
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_STALL;
-			dxa_add(&dxa);
 		}
 		| DGT_OPT setmodifier opts_l {
 			struct dx_action dxa;
@@ -236,10 +213,6 @@ conf		: DGT_BIRD {
 			dxa.dxa_type = DGT_OPT;
 			dxa.dxa_opt_mode = $2;
 			dxa.dxa_opts = $3;
-			dxa_add(&dxa);
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_STALL;
 			dxa_add(&dxa);
 		}
 		| DGT_ORBIT setmodifier STRING {
@@ -262,10 +235,6 @@ conf		: DGT_BIRD {
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DGT_CAMSYNC;
 			dxa_add(&dxa);
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_STALL;
-			dxa_add(&dxa);
 		}
 		| DGT_PANEL setmodifier panels_l {
 			struct dx_action dxa;
@@ -275,40 +244,38 @@ conf		: DGT_BIRD {
 			dxa.dxa_panel_mode = $2;
 			dxa.dxa_panels = $3;
 			dxa_add(&dxa);
+		}
+		| DGT_PIPEMODE STRING {
+			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_STALL;
+			dxa.dxa_type = DGT_PIPEMODE;
+			if (strcasecmp($2, "torus") == 0)
+				dxa.dxa_pipemode = PM_DIR;
+			else if (strcasecmp($2, "rte") == 0)
+				dxa.dxa_pipemode = PM_RTE;
+			else
+				yyerror("invalid pipemode: %s", $2);
+			free($2);
 			dxa_add(&dxa);
 		}
 		| DGT_PSTICK STRING panels_l {
 			struct dx_action dxa;
-			int pstick;
 
-			pstick = 0;
-			if (strcasecmp($2, "tl"))
-				pstick = PSTICK_TL;
-			else if (strcasecmp($2, "tr"))
-				pstick = PSTICK_TR;
-			else if (strcasecmp($2, "bl"))
-				pstick = PSTICK_BL;
-			else if (strcasecmp($2, "br"))
-				pstick = PSTICK_BR;
+			memset(&dxa, 0, sizeof(dxa));
+			if (strcasecmp($2, "tl") == 0)
+				dxa.dxa_pstick = PSTICK_TL;
+			else if (strcasecmp($2, "tr") == 0)
+				dxa.dxa_pstick = PSTICK_TR;
+			else if (strcasecmp($2, "bl") == 0)
+				dxa.dxa_pstick = PSTICK_BL;
+			else if (strcasecmp($2, "br") == 0)
+				dxa.dxa_pstick = PSTICK_BR;
 			else
 				yyerror("invalid pstick: %s", $2);
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_PSTICK;
-			dxa.dxa_pstick = pstick;
-			dxa.dxa_panels = $3;
-			dxa_add(&dxa);
 			free($2);
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_STALL;
-			dxa_add(&dxa);
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_STALL;
+			dxa.dxa_type = DGT_PSTICK;
+			dxa.dxa_panels = $3;
 			dxa_add(&dxa);
 		}
 		| DGT_REFOCUS {
@@ -320,10 +287,6 @@ conf		: DGT_BIRD {
 
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DGT_CAMSYNC;
-			dxa_add(&dxa);
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_STALL;
 			dxa_add(&dxa);
 		}
 		| DGT_REFRESH {
@@ -382,10 +345,6 @@ conf		: DGT_BIRD {
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DGT_NODESYNC;
 			dxa_add(&dxa);
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_STALL;
-			dxa_add(&dxa);
 		}
 		| DGT_WINSP setmodifier INTG setmodifier INTG setmodifier INTG {
 			struct dx_action dxa;
@@ -402,10 +361,6 @@ conf		: DGT_BIRD {
 
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DGT_NODESYNC;
-			dxa_add(&dxa);
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_STALL;
 			dxa_add(&dxa);
 		}
 		| DGT_WIOFF setmodifier INTG setmodifier INTG setmodifier INTG {
@@ -424,10 +379,18 @@ conf		: DGT_BIRD {
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DGT_NODESYNC;
 			dxa_add(&dxa);
+		}
+		| STRING args_l {
+			yyerror("unrecognized action: %s", $1);
+			free($1);
+		}
+		;
 
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_STALL;
-			dxa_add(&dxa);
+args_l		: STRING {
+			free($1);
+		}
+		| args_l STRING {
+			free($2);
 		}
 		;
 
@@ -439,7 +402,7 @@ yyerror(const char *fmt, ...)
 	va_list ap;
 
 	va_start(ap, fmt);
-	fprintf(stderr, "%s:%d: ", progname, lineno);
+	fprintf(stderr, "%s: %s:%d: ", progname, dx_fn, lineno);
 	vfprintf(stderr, fmt, ap);
 	fprintf(stderr, "\n");
 	va_end(ap);
