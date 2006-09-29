@@ -247,9 +247,12 @@ nc_runsn(void (*f)(struct fill *))
 }
 
 /* Select the given node class -- hide all others. */
-void
+int
 nc_set(int nc)
 {
+	int ret;
+
+	ret = 1;
 	switch (nc) {
 	case NC_ALL:
 		nc_runall(fill_setopaque);
@@ -265,7 +268,9 @@ nc_set(int nc)
 		if (nc_getfp(nc) != NULL) {
 			nc_runall(fill_setxparent);
 			nc_apply(fill_setopaque, nc);
+			ret = 0;
 		}
 		break;
 	}
+	return (ret);
 }
