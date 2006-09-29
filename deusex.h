@@ -40,6 +40,8 @@ struct dx_action {
 
 #define dxa_pstick	dxa_intg
 
+#define dxa_pipemode	dxa_intg
+
 #define dxa_orbit_dir	dxa_intg
 #define dxa_orbit_dim	dxa_intg2
 
