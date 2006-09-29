@@ -41,12 +41,18 @@ struct objlist	  dxscript_list = { NULL, 0, 0, 0, 0, 10, sizeof(struct fnent), f
 void
 dxa_add(struct dx_action *dxa)
 {
-	struct dx_action *p;
+	struct dx_action stall, *p;
 
 	if ((p = malloc(sizeof(*p))) == NULL)
 		err(1, "malloc");
 	*p = *dxa;
 	TAILQ_INSERT_TAIL(&dxlist, p, dxa_link);
+
+	if (dxa->dxa_type != DGT_STALL) {
+		memset(&stall, 0, sizeof(stall));
+		stall.dxa_type = DGT_STALL;
+		dxa_add(&stall);
+	}
 }
 
 void
@@ -81,9 +87,13 @@ int
 dxp_orbit(struct dx_action *dxa)
 {
 	static double amt, adj;
-	static int t;
+	static int t, sample;
 	double wait, du, dv, max;
 	int ret;
+
+	/* Get a good FPS sample before we start. */
+	if (++sample < fps)
+		return (0);
 
 	max = 2 * M_PI;
 	if (t == 0) {
@@ -118,6 +128,7 @@ dxp_orbit(struct dx_action *dxa)
 	if (amt + 0.001 >= max) {
 		t = 0;
 		ret = 1;
+		sample = 0;
 	}
 	return (ret);
 }
@@ -526,6 +537,14 @@ dxp_panel(struct dx_action *dxa)
 }
 
 int
+dxp_pipemode(struct dx_action *dxa)
+{
+	st.st_pipemode = dxa->dxa_pipemode;
+	st.st_rf |= RF_CLUSTER | RF_SELNODE;
+	return (1);
+}
+
+int
 dxp_pstick(struct dx_action *dxa)
 {
 	struct panel *p;
@@ -536,7 +555,7 @@ dxp_pstick(struct dx_action *dxa)
 		dxa->dxa_panels &= ~pid;
 		if ((p = panel_for_id(pid)) != NULL) {
 			p->p_info->pi_stick = dxa->dxa_pstick;
-			p->p_opts |= POPT_REFRESH;
+			p->p_opts |= POPT_DIRTY;
 		}
 	}
 	return (1);
@@ -551,22 +570,29 @@ dxp_camsync(__unused struct dx_action *dxa)
 		return (1);
 }
 
+int dx_stall_done;
+int dx_stall_timer;
+
+void
+dxpcb_stall(__unused int a)
+{
+	dx_stall_done = 1;
+}
+
 int
 dxp_stall(__unused struct dx_action *dxa)
 {
-	static int t, ofps;
 	int ret;
 
-	if (ofps == 0)
-		ofps = fps;
-
 	ret = 0;
-	t++;
-	if (t >= 2 * fps ||
-	    (t >= fps && fps != ofps)) {
-		t = 0;
+	if (dx_stall_done) {
+		dx_stall_done = 0;
+		dx_stall_timer = 0;
 		ret = 1;
-		ofps = 0;
+	}
+	if (!ret && !dx_stall_timer) {
+		glutTimerFunc(1000, dxpcb_stall, 0);
+		dx_stall_timer = 1;
 	}
 	return (ret);
 }
@@ -703,68 +729,47 @@ dxp_cam_move(struct dx_action *dxa)
 	return (dx_cam_move(dxa->dxa_move_amt, 3, dxa->dxa_move_dir));
 }
 
+int dx_cycle_nc = -1;
+int dx_cycle_done;
+int dx_cycle_timer;
+
+void
+dxpcb_cyclenc(__unused int a)
+{
+	dx_cycle_nc++;
+	dx_cycle_done = 1;
+}
+
 int
 dxp_cyclenc(__unused struct dx_action *dxa)
 {
-	static int t, max, nnc, ncp, nc;
-	int ret, j, wait;
-
-	wait = 4;
-	if (t == 0) {
-		nnc = 0;
-		switch (st.st_dmode) {
-		case DM_JOB:
-			nnc = job_list.ol_cur;
-			for (j = 0; j < NSC; j++)
-				if (statusclass[j].nc_nmemb)
-					nnc++;
-			break;
-		case DM_TEMP:
-			for (j = 0; j < NTEMPC; j++)
-				if (tempclass[j].nc_nmemb)
-					nnc++;
-			break;
-		}
-
-		ncp = -1;
-		nc = -1;
-		max = nnc * fps;
-	}
+	int ret;
 
 	ret = 0;
-	if (ncp != ++t * nnc / max) {
-		ncp = t * nnc / max;
+	if (dx_cycle_done) {
 		switch (st.st_dmode) {
 		case DM_JOB:
-			while (++nc < NSC)
-				if (statusclass[nc].nc_nmemb) {
-					nc_set(nc);
-					break;
-				}
-			if (nc >= NSC) {
-				if (nc_getfp(nc) == NULL)
-					ret = 1;
-				else
-					nc_set(nc);
-			}
+			while (dx_cycle_nc < NSC &&
+			    statusclass[dx_cycle_nc].nc_nmemb == 0)
+				dx_cycle_nc++;
 			break;
 		case DM_TEMP:
-			while (++nc < NTEMPC)
-				if (tempclass[nc].nc_nmemb) {
-					nc_set(nc);
-					break;
-				}
-			if (nc >= NTEMPC)
-				ret = 1;
-			break;
-		default:
-			ret = 1;
+			while (dx_cycle_nc < NTEMPC &&
+			    tempclass[dx_cycle_nc].nc_nmemb == 0)
+				dx_cycle_nc++;
 			break;
 		}
+		if (nc_set(dx_cycle_nc)) {
+			dx_cycle_nc = -1;
+			nc_runall(fill_setopaque);
+			ret = 1;
+		}
+		dx_cycle_done = 0;
+		dx_cycle_timer = 0;
 	}
-	if (ret) {
-		t = 0;
-		nc_runall(fill_setopaque);
+	if (!ret && !dx_cycle_timer) {
+		glutTimerFunc(1000, dxpcb_cyclenc, 0);
+		dx_cycle_timer = 1;
 	}
 	return (ret);
 }
@@ -791,6 +796,7 @@ struct dxent {
 	{ DGT_OPT,	dxp_opt },
 	{ DGT_ORBIT,	dxp_orbit },
 	{ DGT_PANEL,	dxp_panel },
+	{ DGT_PIPEMODE,	dxp_pipemode },
 	{ DGT_PSTICK,	dxp_pstick },
 	{ DGT_REFOCUS,	dxp_refocus },
 	{ DGT_REFRESH,	dxp_refresh },
