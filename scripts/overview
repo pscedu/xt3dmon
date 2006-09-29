@@ -2,7 +2,6 @@
 
 vmode phys
 dmode temp
-refresh
 opt frames,tween,nodeanim,caption,ground
 panel legend,help
 bird
@@ -85,3 +84,7 @@ setcap "Cycle through all node states/jobs"
 opt +skel
 cyclenc
 opt -skel
+
+setcap "Fetching latest node data...        "
+refresh
+setcap "Fetching latest node data... done"
