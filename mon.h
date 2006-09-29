@@ -76,7 +76,6 @@ struct physcoord {				/* XXX: become just dynamic array */
 
 typedef int (*cmpf_t)(const void *, const void *);
 
-struct fill;
 struct buf;
 
 /* arch.c */
@@ -97,13 +96,6 @@ void		 dbg_crash(void);
 void		 egg_toggle(int);
 void		 egg_borg(void);
 void		 egg_matrix(void);
-
-/* hl.c */
-void		 nc_runall(void (*)(struct fill *));
-void		 nc_runsn(void (*)(struct fill *));
-void		 nc_apply(void (*)(struct fill *), size_t);
-void		 nc_set(int);
-struct fill	*nc_getfp(size_t);
 
 /* png.c */
 void 		*png_load(char *, unsigned int *, unsigned int *);

@@ -47,6 +47,12 @@ struct nodeclass {
 	int		 nc_nmemb;
 };
 
+void		 nc_runall(void (*)(struct fill *));
+void		 nc_runsn(void (*)(struct fill *));
+void		 nc_apply(void (*)(struct fill *), size_t);
+int		 nc_set(int);
+struct fill	*nc_getfp(size_t);
+
 extern struct nodeclass	 statusclass[];
 extern struct nodeclass	 tempclass[NTEMPC];	/* XXX SPOT */
 extern struct nodeclass	 failclass[NFAILC];	/* XXX SPOT */
