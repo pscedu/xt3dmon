@@ -278,7 +278,7 @@ panel_refresh_legend(struct panel *p)
 	pwidget_startlist(p);
 	switch (st.st_dmode) {
 	case DM_JOB:
-		panel_set_content(p, "- Job Legend -\n"
+		panel_set_content(p, "- Node Legend (Jobs) -\n"
 		    "Total jobs: %lu", job_list.ol_cur);
 
 		pwidget_add(p, &fill_showall, "Show all", NSC + 1,
@@ -299,7 +299,7 @@ panel_refresh_legend(struct panel *p)
 		cmp = pwidget_cmp;
 		break;
 	case DM_FAIL:
-		panel_set_content(p, "- Failure Legend -\n"
+		panel_set_content(p, "- Node Legend (Failures) -\n"
 		    "Total: %lu", total_failures);
 
 		pwidget_add(p, &fill_showall, "Show all", 0,
@@ -316,7 +316,7 @@ panel_refresh_legend(struct panel *p)
 		}
 		break;
 	case DM_TEMP:
-		panel_set_content(p, "- Temperature Legend -");
+		panel_set_content(p, "- Node Legend (Temperature) -");
 
 		pwidget_add(p, &fill_showall, "Show all", 0,
 		    gscb_pw_hlnc, NC_ALL, 0, NULL, NULL);
@@ -332,7 +332,7 @@ panel_refresh_legend(struct panel *p)
 		}
 		break;
 	case DM_YOD:
-		panel_set_content(p, "- Yod Legend -\n"
+		panel_set_content(p, "- Node Legend (Yods) -\n"
 		    "Total yods: %lu", yod_list.ol_cur);
 
 		pwidget_add(p, &fill_showall, "Show all", NSC + 1,
@@ -353,7 +353,7 @@ panel_refresh_legend(struct panel *p)
 		cmp = pwidget_cmp;
 		break;
 	case DM_RTUNK:
-		panel_set_content(p, "- Routing Legend -");
+		panel_set_content(p, "- Node Legend (Route Errors) -");
 
 		pwidget_add(p, &fill_showall, "Show all", 0,
 		    gscb_pw_hlnc, NC_ALL, 0, NULL, NULL);
@@ -371,7 +371,7 @@ panel_refresh_legend(struct panel *p)
 		}
 		break;
 	case DM_SEASTAR:
-		panel_set_content(p, "- Seastar Legend -");
+		panel_set_content(p, "- Node Legend (SeaStar) -");
 
 		pwidget_add(p, &fill_showall, "Show all", 0,
 		    gscb_pw_hlnc, NC_ALL, 0, NULL, NULL);
@@ -385,13 +385,13 @@ panel_refresh_legend(struct panel *p)
 		}
 		break;
 	case DM_SAME:
-		panel_set_content(p, "- Legend -");
+		panel_set_content(p, "- Node Legend -");
 
 		pwidget_add(p, &fill_same, "All nodes", 0,
 		    gscb_pw_hlnc, NC_ALL, 0, NULL, NULL);
 		break;
 	case DM_LUSTRE:
-		panel_set_content(p, "- Lustre Legend -");
+		panel_set_content(p, "- Node Legend (Lustre) -");
 
 		pwidget_add(p, &fill_showall, "Show all", 0,
 		    gscb_pw_hlnc, NC_ALL, 0, NULL, NULL);
@@ -405,7 +405,7 @@ panel_refresh_legend(struct panel *p)
 		}
 		break;
 	default:
-		panel_set_content(p, "- Legend -\n"
+		panel_set_content(p, "- Node Legend -\n"
 		    "Not available.");
 		break;
 	}
