@@ -371,7 +371,7 @@ draw_panel(struct panel *p, int toff)
 				draw_pwbg(fp, uoff, voff);
 			}
 
-			if (fp->f_a) {
+			if (frame_fp->f_a) {
 				/* Draw widget border. */
 				glLineWidth(1.0f);
 				glBegin(GL_LINE_LOOP);
