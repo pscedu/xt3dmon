@@ -535,12 +535,12 @@ panel_refresh_ninfo(struct panel *p)
 	panel_set_content(p,
 	    "- Node Information -\n"
 	    "Node ID: %d\n"
-	    "Wired position: (%d,%d,%d)\n"
 	    "Hardware name: c%d-%dc%ds%dn%d\n"
+	    "Wired position: <%d,%d,%d>\n"
 	    "Status: %s",
 	    n->n_nid,
-	    iv->iv_x, iv->iv_y, iv->iv_z,
 	    pc.pc_cb, pc.pc_r, pc.pc_cg, pc.pc_m, pc.pc_n,
+	    iv->iv_x, iv->iv_y, iv->iv_z,
 	    statusclass[n->n_state].nc_name);
 
 	if (n->n_temp == DV_NODATA)
