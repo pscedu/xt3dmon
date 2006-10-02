@@ -1,11 +1,7 @@
 # $Id$
 
-# blade skels
-# physpipes
+# modskels
 # archive
-# selpipes
-# subset (view route errors of node in job)
-# VM_WIRED
 
 vmode phys
 setcap "CPU temperatures in physical machine layout"
@@ -71,8 +67,18 @@ move forward 50
 orbit x
 move back 50
 opt -skel,nlabels
-hl all
+
+# subset (view yods of nodes allocated to a job)
+setcap "Viewing yods allocated to this job"
+subsel visible
 clrsn
+opt +subset
+dmode yod
+orbit +x
+dmode job
+opt -subset
+
+hl all
 refocus
 setcap "Preparing to zoom inside the interconnect"
 opt +pipes
@@ -110,6 +116,22 @@ bird
 clrsn
 opt -skel
 hl all
+
+setcap "Changing to wired-repeat mode"
+# VM_WIRED
+panel +compass
+vmode wired
+opt +selpipes,nlabels
+selnode 1230
+refocus
+move forward 100
+orbit -x
+move back 100
+clrsn
+opt -selpipes,nlabels
+panel -compass
+# selpipes
+
 setcap "Going back to physical layout mode viewing jobs"
 vmode phys
 bird
@@ -117,6 +139,17 @@ setcap "Cycle through all node states/jobs"
 opt +skel
 cyclenc
 opt -skel
+
+# physpipes
+setcap "Viewing pipes in physical mode"
+selnode 0
+refocus
+move forward 50
+opt +pipes
+orbit +x
+opt -pipes
+clrsn
+bird
 
 setcap "Fetching latest node data...        "
 refresh
