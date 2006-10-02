@@ -200,7 +200,8 @@ gl_displayh_stereo(void)
 		flyby_update();
 	else if (dx_active)
 		dx_update();
-	if (st.st_opts & OP_TWEEN)
+	if (st.st_opts & OP_TWEEN &&
+	    (st.st_opts & OP_STOP) == 0)
 		tween_update();
 	if (st.st_vmode == VM_WIRED)
 		wired_update();
@@ -267,7 +268,8 @@ gl_displayh_default(void)
 		flyby_update();
 	else if (dx_active)
 		dx_update();
-	if (st.st_opts & OP_TWEEN)
+	if (st.st_opts & OP_TWEEN &&
+	    (st.st_opts & OP_STOP) == 0)
 		tween_update();
 	if (st.st_vmode == VM_WIRED)
 		wired_update();

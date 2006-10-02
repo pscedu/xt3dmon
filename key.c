@@ -46,7 +46,7 @@ void
 gl_keyh_actflyby(__unused unsigned char key, __unused int u, __unused int v)
 {
 	if (key == ' ') {
-		st.st_opts ^= OP_STOP;
+		opt_flip(OP_STOP);
 		return;
 	}
 	flyby_end();
@@ -732,10 +732,7 @@ gl_keyh_default(unsigned char key, int u, int v)
 		glutKeyboardFunc(gl_keyh_incr);
 		break;
 	case ' ':
-		if (dx_active) {
-			opt_flip(OP_STOP);
-			st.st_opts ^= OP_TWEEN;
-		}
+		opt_flip(OP_STOP);
 		break;
 	default:
 		return;
