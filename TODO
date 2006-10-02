@@ -95,6 +95,7 @@ todo
 - rename POPT_REFRESH to POPT_REDRAW, POPT_DIRTY to POPT_REBUILD
 - use fill_checked/dechecked in place of white/nodata in pwidgets
 - moving the cursor should not cause panel recompiles
+- ensure nothing modifies st.st_opt and uses opt_flip() instead
 
 tweening
 - ensure tweening leaves normalized vectors
