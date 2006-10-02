@@ -407,6 +407,10 @@ gscb_pw_help(struct glname *gn, int flags)
 				printf("%d%s", sn->sn_nodep->n_nid,
 				    SLIST_NEXT(sn, sn_next) ? "," : "\n");
 			break;
+		case HF_SUBSN:
+			SLIST_FOREACH(sn, &selnodes, sn_next)
+				sn->sn_nodep->n_flags ^= NF_SHOW;
+			break;
 		case HF_UPDATE:
 			st.st_rf |= RF_DATASRC;
 			break;

@@ -44,6 +44,7 @@ struct glname {
 #define HF_UPDATE	3
 #define HF_PRTSN	4
 #define HF_REORIENT	5
+#define HF_SUBSN	6
 
 #define SWF_NSPX	0
 #define SWF_NSPY	1

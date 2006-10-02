@@ -966,6 +966,8 @@ panel_refresh_help(struct panel *p)
 			    gscb_pw_help, HF_CLRSN, 0, NULL, NULL);
 			pwidget_add(p, &fill_xparent, "Print Selnode IDs", 0,
 			    gscb_pw_help, HF_PRTSN, 0, NULL, NULL);
+			pwidget_add(p, &fill_xparent, "Subselect Selnodes", 0,
+			    gscb_pw_help, HF_SUBSN, 0, NULL, NULL);
 		}
 	} else {
 		pwidget_add(p, &fill_xparent, "Help <<", 0,
