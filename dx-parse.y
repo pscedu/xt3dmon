@@ -47,6 +47,7 @@ struct dxlist dxlist = TAILQ_HEAD_INITIALIZER(dxlist);
 %token DGT_SELNODE
 %token DGT_SETCAP
 %token DGT_STALL	/* used in code, not language */
+%token DGT_SUBSEL
 %token DGT_VMODE
 %token DGT_WINSP
 %token DGT_WIOFF
@@ -328,6 +329,18 @@ conf		: DGT_BIRD {
 			free($2);
 			dxa_add(&dxa);
 		}
+		| DGT_SUBSEL STRING {
+			struct dx_action dxa;
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_SUBSEL;
+			if (strcasecmp($2, "visible") == 0)
+				dxa.dxa_selnode = DXSN_VIS;
+			else
+				yyerror("invalid subselection: %s", $2);
+			free($2);
+			dxa_add(&dxa);
+		}
 		| DGT_VMODE STRING {
 			struct dx_action dxa;
 
@@ -335,6 +348,8 @@ conf		: DGT_BIRD {
 			dxa.dxa_type = DGT_VMODE;
 			if (strcasecmp($2, "phys") == 0)
 				dxa.dxa_vmode = VM_PHYS;
+			else if (strcasecmp($2, "wired") == 0)
+				dxa.dxa_vmode = VM_WIRED;
 			else if (strcasecmp($2, "wione") == 0)
 				dxa.dxa_vmode = VM_WIONE;
 			else

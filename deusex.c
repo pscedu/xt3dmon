@@ -438,18 +438,49 @@ dxp_selnode(struct dx_action *dxa)
 {
 	struct node *n;
 
-	if (dxa->dxa_selnode == DXSN_RND) {
+	switch (dxa->dxa_selnode) {
+	case DXSN_VIS:
+		/* XXX */
+		break;
+	case DXSN_RND:
 		do {
 			n = node_for_nid(random() % 1000);
 		} while (n == NULL);
-	} else {
-		n = node_for_nid(dxa->dxa_selnode);
-		if (n == NULL)
-			return (1);
-//			errx(1, "nid %d is NULL", nid);
+		sn_add(n, &fv_zero);
+		panel_show(PANEL_NINFO);
+		break;
+	default:
+		if ((n = node_for_nid(dxa->dxa_selnode)) != NULL) {
+			sn_add(n, &fv_zero);
+			panel_show(PANEL_NINFO);
+		}
 	}
-	sn_add(n, &fv_zero);
-	panel_show(PANEL_NINFO);
+	return (1);
+}
+
+int
+dxp_subsel(struct dx_action *dxa)
+{
+	struct node *n;
+	struct ivec iv;
+
+	switch (dxa->dxa_subselnode) {
+	case DXSN_RND:
+		/* XXX */
+		break;
+	case DXSN_VIS:
+		NODE_FOREACH(n, &iv)
+			if (n) {
+				if (n->n_fillp->f_a)
+					n->n_flags |= NF_SHOW;
+				else
+					n->n_flags &= ~NF_SHOW;
+			}
+		break;
+	default:
+		/* XXX */
+		break;
+	}
 	return (1);
 }
 
@@ -801,6 +832,7 @@ struct dxent {
 	{ DGT_SELNODE,	dxp_selnode },
 	{ DGT_SETCAP,	dxp_caption },
 	{ DGT_STALL,	dxp_stall },
+	{ DGT_SUBSEL,	dxp_subsel },
 	{ DGT_VMODE,	dxp_vmode },
 	{ DGT_WINSP,	dxp_winsp },
 	{ DGT_WIOFF,	dxp_wioff }

@@ -37,6 +37,7 @@ refresh					{ return (DGT_REFRESH); }
 seljob					{ return (DGT_SELJOB); }
 selnode					{ return (DGT_SELNODE); }
 setcap					{ return (DGT_SETCAP); }
+subsel					{ return (DGT_SUBSEL); }
 vmode					{ return (DGT_VMODE); }
 winsp					{ return (DGT_WINSP); }
 wioff					{ return (DGT_WIOFF); }

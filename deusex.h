@@ -15,6 +15,7 @@
 
 /* Selnode values. */
 #define DXSN_RND	(-1)
+#define DXSN_VIS	(-2)	/* All visible. */
 
 struct dx_action {
 	TAILQ_ENTRY(dx_action)	 dxa_link;
@@ -47,6 +48,7 @@ struct dx_action {
 
 #define dxa_seljob	dxa_intg
 #define dxa_selnode	dxa_intg
+#define dxa_subselnode	dxa_intg
 
 #define dxa_winsp_mode	dxa_iv
 #define dxa_winsp	dxa_iv2
