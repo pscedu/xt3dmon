@@ -32,6 +32,9 @@ struct dx_action {
 
 #define dxa_caption	dxa_str
 
+#define dxa_reel	dxa_str
+#define dxa_reel_delay	dxa_intg
+
 #define dxa_move_dir	dxa_intg
 #define dxa_move_amt	dxa_dbl
 

@@ -21,9 +21,11 @@
 #include "panel.h"
 #include "pathnames.h"
 #include "queue.h"
+#include "reel.h"
 #include "selnode.h"
 #include "state.h"
 #include "tween.h"
+#include "util.h"
 
 #define DST(a, b)					\
 	(sqrt(						\
@@ -411,6 +413,55 @@ dxp_bird(__unused struct dx_action *dxa)
 	cam_bird();
 	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
 	return (1);
+}
+
+void
+dxpcb_playreel(__unused int a)
+{
+	dxt_done = 1;
+	reel_advance();
+}
+
+int
+dxp_playreel(struct dx_action *dxa)
+{
+	static size_t save_reel_pos;
+	static int loaded;
+	int ret;
+
+	if (!loaded) {
+		snprintf(reel_browsedir, PATH_MAX,
+		    "%s", smart_dirname(dxa->dxa_reel));
+		if (reel_set(smart_basename(dxa->dxa_reel), CHF_DIR))
+			return (1);
+		reel_load();
+		if (reelframe_list.ol_cur == 0)
+			return (1);
+		reel_start();
+		loaded = 1;
+		opt_enable(OP_REEL);
+	}
+
+	if (reelframe_list.ol_cur == 0)
+		return (1);
+
+	ret = 0;
+	if (dxt_done) {
+		dxt_done = 0;
+		dxt_set = 0;
+		if (save_reel_pos == reel_pos) {
+			reel_end();
+			opt_disable(OP_REEL);
+			ret = 1;
+			loaded = 0;
+		}
+		save_reel_pos = reel_pos;
+	}
+	if (!ret && !dxt_set) {
+		glutTimerFunc(dxa->dxa_reel_delay, dxpcb_playreel, 0);
+		dxt_set = 1;
+	}
+	return (ret);
 }
 
 int
@@ -820,6 +871,7 @@ struct dxent {
 	{ DGT_PANEL,	dxp_panel },
 	{ DGT_PIPEMODE,	dxp_pipemode },
 	{ DGT_PSTICK,	dxp_pstick },
+	{ DGT_PLAYREEL,	dxp_playreel },
 	{ DGT_REFOCUS,	dxp_refocus },
 	{ DGT_REFRESH,	dxp_refresh },
 	{ DGT_SELJOB,	dxp_seljob },

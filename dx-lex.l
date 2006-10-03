@@ -31,6 +31,7 @@ opt					{ return (DGT_OPT); }
 orbit					{ return (DGT_ORBIT); }
 panel					{ return (DGT_PANEL); }
 pipemode				{ return (DGT_PIPEMODE); }
+playreel				{ return (DGT_PLAYREEL); }
 pstick					{ return (DGT_PSTICK); }
 refocus					{ return (DGT_REFOCUS); }
 refresh					{ return (DGT_REFRESH); }

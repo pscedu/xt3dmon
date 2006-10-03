@@ -403,6 +403,15 @@ Node class legend.
 .It Ic Help
 Help.
 .El
+.It Ic playreel Ar delay archive
+Play a data archive reel.
+Each frames is shown for
+.Ar delay
+milliseconds.
+.Ar archive
+specifies the reel directory and must be surrounding by double quote
+characters
+.Pq Dq .
 .It Xo
 .Ic pstick
 .Ar stick
@@ -447,6 +456,11 @@ changed to the given
 Captions may be optionally surrounded by double quotes
 .Pq Dq \&
 to allow spaces.
+.It Ic subsel visible
+Set the subselection to all currently visible nodes.
+Only nodes in the subselection will be visible when the
+.Em subset
+option is enabled.
 .It Ic vmode Ar vm
 Set the current cluster view mode.
 Recognized values are

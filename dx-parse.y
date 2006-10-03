@@ -40,6 +40,7 @@ struct dxlist dxlist = TAILQ_HEAD_INITIALIZER(dxlist);
 %token DGT_ORBIT
 %token DGT_PANEL
 %token DGT_PIPEMODE
+%token DGT_PLAYREEL
 %token DGT_PSTICK
 %token DGT_REFOCUS
 %token DGT_REFRESH
@@ -277,6 +278,15 @@ conf		: DGT_BIRD {
 			free($2);
 			dxa.dxa_type = DGT_PSTICK;
 			dxa.dxa_panels = $3;
+			dxa_add(&dxa);
+		}
+		| DGT_PLAYREEL INTG STRING {
+			struct dx_action dxa;
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_PLAYREEL;
+			dxa.dxa_reel_delay = $2;
+			dxa.dxa_reel = $3;
 			dxa_add(&dxa);
 		}
 		| DGT_REFOCUS {
