@@ -830,6 +830,20 @@ panel_rebuild(int pids)
 	}
 }
 
+__inline void
+panel_redraw(int pids)
+{
+	struct panel *p;
+	int b;
+
+	while (pids) {
+		b = ffs(pids) - 1;
+		pids &= ~(1 << b);
+		if ((p = panel_for_id(1 << b)) != NULL)
+			p->p_opts |= POPT_DIRTY;
+	}
+}
+
 void
 panels_flip(int ps)
 {
