@@ -252,7 +252,12 @@ opt_flip(int fopts)
 void
 load_state(struct state *nst)
 {
+	struct fvec sv, slv, suv;
 	int opts, rf;
+
+	sv = st.st_v;
+	slv = st.st_lv;
+	suv = st.st_uv;
 
 	rf = RF_CAM;
 	if (st.st_dmode != nst->st_dmode)
@@ -274,6 +279,16 @@ load_state(struct state *nst)
 	st.st_rf = rf;
 
 	opt_flip(st.st_opts ^ nst->st_opts);
+
+	if (st.st_opts & OP_TWEEN) {
+		tv = st.st_v;
+		tlv = st.st_lv;
+		tuv = st.st_uv;
+
+		st.st_v = sv;
+		st.st_lv = slv;
+		st.st_uv = suv;
+	}
 }
 
 #if 0
