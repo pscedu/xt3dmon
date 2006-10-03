@@ -1,10 +1,9 @@
 # $Id$
 
 # modskels
-# archive
 
 vmode phys
-setcap "CPU temperatures in physical machine layout"
+setcap "Viewing CPU temperatures in physical machine layout mode [1/22]"
 dmode temp
 opt frames,tween,nodeanim,caption,ground
 panel legend,help
@@ -12,11 +11,11 @@ panel legend,help
 bird
 orbit -x
 
-setcap "Changing to `wired' mode (virtual interconnect)"
+setcap "Changing to `wired' mode (virtual interconnect) [2/22]"
 # rte mode
 vmode wione
 bird
-setcap "Routing errors over last 24 hours"
+setcap "Viewing routing errors over last 24 hours [3/22]"
 dmode rte
 pstick tl legend
 panel +rt,pipe
@@ -29,14 +28,14 @@ panel -rt,pipe
 pstick tr legend
 
 # yod mode
-setcap "Viewing yod allocations"
+setcap "Viewing yod allocations [4/22]"
 dmode yod
 orbit +x
 
-setcap "Changing to physical layout mode"
+setcap "Changing to physical layout mode [5/22]"
 vmode phys
 dmode temp
-setcap "Zoom while viewing nodes in temperature range"
+setcap "Zoom while viewing nodes in temperature range [6/22]"
 bird
 selnode random
 hl seldm
@@ -50,17 +49,17 @@ clrsn
 move back 50
 bird
 hl all
-setcap "Cycle through all temperature ranges"
+setcap "Cycle through all temperature ranges [7/22]"
 cyclenc
 opt -skel
-setcap "Changing to 'wired' mode"
+setcap "Changing to 'wired' mode [8/22]"
 vmode wione
 bird
 dmode job
-setcap "Jobs in wired mode"
+setcap "Jobs in wired mode [9/22]"
 orbit -x
 seljob random
-setcap "Viewing one job in wired mode"
+setcap "Viewing one job in wired mode [10/22]"
 refocus
 opt +skel,nlabels
 move forward 50
@@ -69,7 +68,7 @@ move back 50
 opt -skel,nlabels
 
 # subset (view yods of nodes allocated to a job)
-setcap "Viewing yods allocated to this job"
+setcap "Viewing yods allocated to this job [11/22]"
 subsel visible
 clrsn
 opt +subset
@@ -80,7 +79,7 @@ opt -subset
 
 hl all
 refocus
-setcap "Preparing to zoom inside the interconnect"
+setcap "Preparing to zoom inside the interconnect [12/22]"
 opt +pipes
 panel +compass
 winsp +10 +10 +10
@@ -88,12 +87,12 @@ selnode 2600
 refocus
 move forward 100
 opt +nlabels
-setcap "Focus on one node"
+setcap "Focus on one node [13/22]"
 orbit x
 move back 100
 opt -nlabels
 clrsn
-setcap "Change node offset to show torus repetitions"
+setcap "Change node offset to show torus repetitions [14/22]"
 panel -compass
 winsp -10 -10 -10
 bird
@@ -106,42 +105,42 @@ wioff +0 +0 -8
 opt -pipes
 panel -wiadj
 seljob random
+clrsn
 refocus
 opt +skel
-setcap "Viewing job between physical and wired modes"
+setcap "Viewing job between physical and wired modes [15/22]"
 vmode phys
 bird
 vmode wione
 bird
-clrsn
 opt -skel
 hl all
 
-setcap "Changing to wired-repeat mode"
-# VM_WIRED
+# VM_WIRED, selpipes
+setcap "Changing to wired-repeat mode [16/22]"
 panel +compass
 vmode wired
-opt +selpipes,nlabels
+opt +selpipes
 selnode 1230
 refocus
 move forward 100
 orbit -x
 move back 100
 clrsn
-opt -selpipes,nlabels
+opt -selpipes
 panel -compass
-# selpipes
 
-setcap "Going back to physical layout mode viewing jobs"
+# cycle jobs
+setcap "Going back to physical layout mode viewing jobs [17/22]"
 vmode phys
 bird
-setcap "Cycle through all node states/jobs"
+setcap "Cycle through all node states/jobs [18/22]"
 opt +skel
 cyclenc
 opt -skel
 
 # physpipes
-setcap "Viewing pipes in physical mode"
+setcap "Viewing interconnect in physical mode [19/22]"
 selnode 0
 refocus
 move forward 50
@@ -151,6 +150,15 @@ opt -pipes
 clrsn
 bird
 
-setcap "Fetching latest node data...        "
+# archive
+setcap "Showing today's jobs [20/22]"
+pstick tl reel
+panel +reel
+playreel 250 "data/latest-archive"
+panel -reel
+pstick tr reel
+
+# grab latest data
+setcap "Fetching latest node data...         [21/22]"
 refresh
-setcap "Fetching latest node data... done"
+setcap "Fetching latest node data... done [22/22]"
