@@ -1366,7 +1366,8 @@ panel_refresh_reel(struct panel *p)
 
 	panel_set_content(p, "- Reel -\n");
 	pwidget_startlist(p);
-	if (flyby_mode == FBM_PLAY && st.st_opts & OP_REEL) {
+	if ((flyby_mode == FBM_PLAY || dx_active) &&
+	    st.st_opts & OP_REEL) {
 		panel_add_content(p, "\n%s\nFrame %d/%d\n%s",
 		    smart_basename(reel_dir), reel_pos + 1,
 		    reelframe_list.ol_cur,
