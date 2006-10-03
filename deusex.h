@@ -20,7 +20,7 @@
 struct dx_action {
 	TAILQ_ENTRY(dx_action)	 dxa_link;
 	int			 dxa_type;
-	char			*dxa_caption;
+	char			*dxa_str;
 	int			 dxa_intg;
 	int			 dxa_intg2;
 	double			 dxa_dbl;
@@ -29,6 +29,8 @@ struct dx_action {
 #define dxa_dmode	dxa_intg
 #define dxa_vmode	dxa_intg
 #define dxa_hl		dxa_intg
+
+#define dxa_caption	dxa_str
 
 #define dxa_move_dir	dxa_intg
 #define dxa_move_amt	dxa_dbl

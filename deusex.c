@@ -65,15 +65,11 @@ dxa_clear(void)
 	struct dx_action *dxa;
 
 	while ((dxa = TAILQ_FIRST(&dxlist)) != TAILQ_END(&dxlist)) {
-		switch (dxa->dxa_type) {
-		case DGT_SETCAP:
-			free(dxa->dxa_caption);
-			break;
-		}
+		free(dxa->dxa_str);
 		TAILQ_REMOVE(&dxlist, dxa, dxa_link);
 		free(dxa);
 	}
-//	TAILQ_INIT(&dxlist);
+	TAILQ_INIT(&dxlist);
 }
 
 char *
