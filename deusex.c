@@ -578,17 +578,15 @@ dxp_pipemode(struct dx_action *dxa)
 int
 dxp_pstick(struct dx_action *dxa)
 {
-	struct panel *p;
-	int pid;
+	int pids, b;
 
-	while (dxa->dxa_panels) {
-		pid = 1 << (ffs(dxa->dxa_panels) - 1);
-		dxa->dxa_panels &= ~pid;
-		if ((p = panel_for_id(pid)) != NULL) {
-			p->p_info->pi_stick = dxa->dxa_pstick;
-			p->p_opts |= POPT_DIRTY;
-		}
+	pids = dxa->dxa_panels;
+	while (pids) {
+		b = ffs(pids) - 1;
+		pids &= ~(1 << b);
+		pinfo[b].pi_stick = dxa->dxa_pstick;
 	}
+	panel_redraw(dxa->dxa_panels);
 	return (1);
 }
 
