@@ -35,6 +35,10 @@ my $ardir   = strftime("$outdir/archive/%Y-%m/%Y-%m-%d/%H-%M", @date);
 my $lastdir = strftime("$outdir/archive/%Y-%m/%Y-%m-%d/.last", @date);
 my $aridx   = strftime("$outdir/archive/%Y-%m/%Y-%m-%d/.isar", @date);
 
+my $reel_last_symlink = "$outdir/latest-archive";
+# relative to symlink location
+my $reel_last_actual  = strftime("archive/%Y-%m/%Y-%m-%d", @date);
+
 # end config
 
 my $fn = dirname($0) . "/cfg-loginhost";
@@ -247,15 +251,15 @@ foreach $t (keys %c_fn) {
 
 if (!-e $lastdir || `diff -qr $lastdir $outdir | grep -v ^Only`) {
 	my $files = join ",", keys %c_fn;
-	`mkdir -p $ardir`;
-	`cp -R $outdir/{$files} $ardir`;
-	`rm -f $lastdir`;
-	`ln -s \$(basename $ardir) $lastdir`;
+	`mkdir -p $ardir && cp -R $outdir/{$files} $ardir`;
+	`rm -f $lastdir && ln -s \$(basename $ardir) $lastdir`;
 } else {
 	my $lastreal = readlink $lastdir;
 	`ln -s $lastreal $ardir`;
 }
 `touch $aridx`;
+
+`rm -f $reel_last_symlink && ln -s $reel_last_actual $reel_last_symlink`;
 
 sub dberr {
 	warn "$0: ", @_, ": $DBI::errstr\n" if $err;
