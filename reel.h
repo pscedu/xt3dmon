@@ -2,6 +2,8 @@
 
 #include "objlist.h"
 
+#define LATEST_REEL	"data/latest-archive"
+
 char *reel_set(const char *, int);
 void  reel_load(void);
 void  reel_advance(void);

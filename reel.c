@@ -26,7 +26,7 @@
 #include "reel.h"
 #include "state.h"
 
-char	reel_dir[PATH_MAX];
+char	reel_dir[PATH_MAX] = LATEST_REEL;
 char	reel_browsedir[PATH_MAX] = _PATH_ARCHIVE;
 size_t	reel_pos = -1;
 
