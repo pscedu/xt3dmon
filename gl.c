@@ -291,7 +291,8 @@ gl_displayh_default(void)
 	st.st_rf = rf;
 	draw_scene();
 	if (st.st_rf != rf)
-		warnx("internal error: draw_scene() modified rf");
+		warnx("internal error: draw_scene() modified "
+		    "rebuild flags (%d<=>%d)", st.st_rf, rf);
 	st.st_rf = newrf;
 
 	if (st.st_opts & OP_CAPTURE)
