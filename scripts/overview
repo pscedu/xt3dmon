@@ -2,7 +2,7 @@
 
 vmode phys
 dmode temp
-opt frames,tween,nodeanim,caption,ground
+opt frames,tween,nodeanim,caption,ground,selnlbls
 panel legend,help
 bird
 refocus

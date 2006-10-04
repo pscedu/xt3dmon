@@ -5,7 +5,7 @@
 vmode phys
 setcap "Viewing CPU temperatures in physical machine layout mode [1/22]"
 dmode temp
-opt frames,tween,nodeanim,caption,ground
+opt frames,tween,nodeanim,caption,ground,selnlbls
 panel legend,help
 # pstick bl legend
 bird
