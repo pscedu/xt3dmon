@@ -239,41 +239,6 @@ draw_caption(void)
 #endif
 }
 
-__inline void
-draw_scene(void)
-{
-	static struct fvec v;
-
-	switch (st.st_vmode) {
-	case VM_WIRED:
-		WIREP_FOREACH(&v) {
-			glPushMatrix();
-			glTranslatef(v.fv_x, v.fv_y, v.fv_z);
-			if (dl_selnodes[wid])
-				glCallList(dl_selnodes[wid]);
-			glCallList(dl_cluster[wid]);
-			glPopMatrix();
-		}
-		break;
-	default:
-		if (dl_selnodes[wid])
-			glCallList(dl_selnodes[wid]);
-		glCallList(dl_cluster[wid]);
-		break;
-	}
-	if (st.st_opts & OP_GROUND)
-		glCallList(dl_ground[wid]);
-	if (!TAILQ_EMPTY(&panels))
-		draw_panels(wid);
-	if (!SLIST_EMPTY(&marks))
-		mark_draw();
-	if (!SLIST_EMPTY(&lnsegs))
-		lnseg_draw();
-	if (st.st_opts & OP_CAPTION)
-		draw_caption();
-// job_drawlabels();
-}
-
 #define FTX_TWIDTH	2048	/* Must be power of 2. */
 #define FTX_THEIGHT	64	/* Must be power of 2. */
 #define FTX_CWIDTH	17
@@ -402,6 +367,10 @@ draw_node(struct node *n, int flags)
 	if (st.st_opts & OP_NODEANIM &&
 	    st.st_vmode != VM_WIRED) {
 		fvp = &n->n_vcur;
+		/*
+		 * node_tween_dir only updates one direction at a time,
+		 * so we use a bitwise OR operator so they all run.
+		 */
 		if ((flags & NDF_NOTWEEN) == 0 &&
 		    (node_tween_dir(&n->n_vcur.fv_x, &n->n_v->fv_x) |
 		    node_tween_dir(&n->n_vcur.fv_y, &n->n_v->fv_y) |
@@ -999,6 +968,7 @@ draw_cluster(void)
 
 	switch (st.st_vmode) {
 	case VM_WIRED:
+		break;
 	case VM_WIONE:
 	case VM_PHYS:
 		if (st.st_opts & OP_PIPES)
@@ -1006,11 +976,10 @@ draw_cluster(void)
 		NODE_FOREACH(n, &iv)
 			if (n && node_show(n))
 				draw_node(n, 0);
+		if (st.st_opts & OP_SKEL)
+			draw_skel();
 		break;
 	}
-
-	if (st.st_opts & OP_SKEL)
-		draw_skel();
 }
 
 __inline void
@@ -1018,12 +987,18 @@ draw_selnodes(void)
 {
 	struct selnode *sn;
 
-	if (st.st_opts & OP_SELPIPES &&
-	    (st.st_opts & OP_PIPES) == 0)
-		draw_pipes(1);
-
-	SLIST_FOREACH(sn, &selnodes, sn_next)
-		draw_node(sn->sn_nodep, NDF_NOTWEEN);
+	switch (st.st_vmode) {
+	case VM_WIRED:
+		break;
+	case VM_WIONE:
+	case VM_PHYS:
+		if (st.st_opts & OP_SELPIPES &&
+		    (st.st_opts & OP_PIPES) == 0)
+			draw_pipes(1);
+		SLIST_FOREACH(sn, &selnodes, sn_next)
+			draw_node(sn->sn_nodep, NDF_NOTWEEN);
+		break;
+	}
 }
 
 void
@@ -1063,4 +1038,59 @@ make_selnodes(void)
 	glNewList(dl_selnodes[wid], GL_COMPILE);
 	draw_selnodes();
 	glEndList();
+}
+
+#define distance(start, end, offv)					\
+	sqrt(SQUARE((start)->fv_x - ((end)->fv_x + (offv)->fv_x)) +	\
+	     SQUARE((start)->fv_y - ((end)->fv_y + (offv)->fv_y)) +	\
+	     SQUARE((start)->fv_z - ((end)->fv_z + (offv)->fv_z)))
+
+__inline void
+draw_scene(void)
+{
+	static struct node *n;
+	static struct ivec iv;
+	static struct fvec v;
+	static double max;
+
+	switch (st.st_vmode) {
+	case VM_WIRED:
+		max = MAX3(
+		    vmodes[VM_WIRED].vm_ndim[GEOM_CUBE].fv_w,
+		    vmodes[VM_WIRED].vm_ndim[GEOM_CUBE].fv_h,
+		    vmodes[VM_WIRED].vm_ndim[GEOM_CUBE].fv_d);
+
+		WIREP_FOREACH(&v) {
+			glPushMatrix();
+			glTranslatef(v.fv_x, v.fv_y, v.fv_z);
+			if (st.st_opts & OP_PIPES)
+				draw_pipes(0);
+			else if (st.st_opts & OP_SELPIPES)
+				draw_pipes(1);
+			NODE_FOREACH(n, &iv)
+				if (n && node_show(n) &&
+				    distance(&st.st_v, n->n_v, &v) < clip - max)
+					draw_node(n, NDF_NOTWEEN);
+			if (st.st_opts & OP_SKEL)
+				draw_skel();
+			glPopMatrix();
+		}
+		break;
+	default:
+		if (dl_selnodes[wid])
+			glCallList(dl_selnodes[wid]);
+		glCallList(dl_cluster[wid]);
+		break;
+	}
+	if (st.st_opts & OP_GROUND)
+		glCallList(dl_ground[wid]);
+	if (!TAILQ_EMPTY(&panels))
+		draw_panels(wid);
+	if (!SLIST_EMPTY(&marks))
+		mark_draw();
+	if (!SLIST_EMPTY(&lnsegs))
+		lnseg_draw();
+	if (st.st_opts & OP_CAPTION)
+		draw_caption();
+// job_drawlabels();
 }
