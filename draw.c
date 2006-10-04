@@ -399,18 +399,18 @@ draw_node(struct node *n, int flags)
 		return;
 */
 
-	if ((flags & NDF_ATORIGIN) == 0) {
-		if (st.st_opts & OP_NODEANIM &&
+	if (st.st_opts & OP_NODEANIM &&
+	    st.st_vmode != VM_WIRED) {
+		fvp = &n->n_vcur;
+		if ((flags & NDF_NOTWEEN) == 0 &&
 		    (node_tween_dir(&n->n_vcur.fv_x, &n->n_v->fv_x) |
 		    node_tween_dir(&n->n_vcur.fv_y, &n->n_v->fv_y) |
-		    node_tween_dir(&n->n_vcur.fv_z, &n->n_v->fv_z))) {
+		    node_tween_dir(&n->n_vcur.fv_z, &n->n_v->fv_z)))
 			st.st_rf |= RF_CLUSTER | RF_SELNODE;
-			fvp = &n->n_vcur;
-		} else
-			fvp = n->n_v;
-		glPushMatrix();
-		glTranslatef(fvp->fv_x, fvp->fv_y, fvp->fv_z);
-	}
+	} else
+		fvp = n->n_v;
+	glPushMatrix();
+	glTranslatef(fvp->fv_x, fvp->fv_y, fvp->fv_z);
 
 	if (n->n_flags & NF_SELNODE)
 		fp = &fill_selnode;
@@ -431,8 +431,7 @@ draw_node(struct node *n, int flags)
 	    st.st_opts & OP_SELNLABELS))
 		draw_node_label(n, fp);
 
-	if ((flags & NDF_ATORIGIN) == 0)
-		glPopMatrix();
+	glPopMatrix();
 }
 
 __inline void
@@ -997,30 +996,16 @@ draw_cluster(void)
 {
 	struct ivec iv;
 	struct node *n;
-	int ndf;
 
-	ndf = 0;
 	switch (st.st_vmode) {
 	case VM_WIRED:
-		ndf |= NDF_ATORIGIN;
-		/* FALLTHROUGH */
 	case VM_WIONE:
 	case VM_PHYS:
 		if (st.st_opts & OP_PIPES)
 			draw_pipes(0);
 		NODE_FOREACH(n, &iv)
-			if (n && node_show(n)) {
-				if (ndf & NDF_ATORIGIN) {
-					glPushMatrix();
-					glTranslatef(
-					    n->n_v->fv_x,
-					    n->n_v->fv_y,
-					    n->n_v->fv_z);
-				}
-				draw_node(n, ndf);
-				if (ndf & NDF_ATORIGIN)
-					glPopMatrix();
-			}
+			if (n && node_show(n))
+				draw_node(n, 0);
 		break;
 	}
 
@@ -1032,27 +1017,13 @@ __inline void
 draw_selnodes(void)
 {
 	struct selnode *sn;
-	struct fvec *fvp;
-	struct node *n;
 
 	if (st.st_opts & OP_SELPIPES &&
 	    (st.st_opts & OP_PIPES) == 0)
 		draw_pipes(1);
 
-	SLIST_FOREACH(sn, &selnodes, sn_next) {
-		n = sn->sn_nodep;
-
-		if (st.st_opts & OP_NODEANIM &&
-		    st.st_vmode != VM_WIRED)
-			fvp = &n->n_vcur;
-		else
-			fvp = n->n_v;
-
-		glPushMatrix();
-		glTranslatef(fvp->fv_x, fvp->fv_y, fvp->fv_z);
-		draw_node(n, NDF_ATORIGIN);
-		glPopMatrix();
-	}
+	SLIST_FOREACH(sn, &selnodes, sn_next)
+		draw_node(sn->sn_nodep, NDF_NOTWEEN);
 }
 
 void
