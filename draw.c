@@ -390,12 +390,14 @@ draw_node(struct node *n, int flags)
 	struct fvec *fvp;
 	struct fill *fp;
 
-//	if (!node_show(n))
-//		return;
+/*
+	if (!node_show(n))
+		return;
 
 	if (st.st_opts & OP_SUBSET &&
 	    (n->n_flags & NF_SHOW) == 0)
 		return;
+*/
 
 	if ((flags & NDF_ATORIGIN) == 0) {
 		if (st.st_opts & OP_NODEANIM &&
