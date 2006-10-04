@@ -418,7 +418,9 @@ draw_node(struct node *n, int flags)
 		break;
 	}
 
-	if (st.st_opts & OP_NLABELS)
+	if (st.st_opts & OP_NLABELS ||
+	    (n->n_flags & NF_SELNODE &&
+	    st.st_opts & OP_SELNLABELS))
 		draw_node_label(n);
 
 	if ((flags & NDF_ATORIGIN) == 0)
@@ -1044,9 +1046,6 @@ draw_selnodes(void)
 		glPushMatrix();
 		glTranslatef(fvp->fv_x, fvp->fv_y, fvp->fv_z);
 		draw_node(n, NDF_ATORIGIN);
-		if (st.st_opts & OP_SELNLABELS &&
-		    (st.st_opts & OP_NLABELS) == 0)
-			draw_node_label(n);
 		glPopMatrix();
 
 		n->n_fillp = ofp;
