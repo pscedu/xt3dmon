@@ -93,17 +93,17 @@ struct xoption opts[] = {
 
 struct vmode vmodes[] = {
 	{ "Physical",		1000,	{ { { 0.2f, 1.2f, 1.2f } }, { { .4f, 1.0f, 1.0f } } } },
-	{ "Wired (repeat)",	5,	{ { { 0.5f, 0.5f, 0.5f } }, { { .4f, 1.0f, 1.0f } } } },
+	{ "Wired (repeat)",	7,	{ { { 0.5f, 0.5f, 0.5f } }, { { .4f, 1.0f, 1.0f } } } },
 	{ "Wired (single)",	1000,	{ { { 2.0f, 2.0f, 2.0f } }, { { .4f, 1.0f, 1.0f } } } }
 };
 
 struct dmode dmodes[] = {
  /* 0 */ { "Job" },
- /* 1 */ { NULL },
+ /* 1 */ { NULL },					/* Failure */
  /* 2 */ { "Temperature" },
  /* 3 */ { "Yod" },
- /* 4 */ { NULL },
- /* 5 */ { NULL },
+ /* 4 */ { NULL },					/* Egg */
+ /* 5 */ { NULL },					/* Egg */
  /* 6 */ { "Same" },
  /* 7 */ { "Routing Errors" },
  /* 8 */ { "Seastar" },
