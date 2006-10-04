@@ -283,12 +283,17 @@ Switch to the wired viewing mode with only one cluster drawn.
 Switch to the physical viewing mode (default).
 .It Ic vw
 Switch to the wired viewing mode with the cluster drawn continuously.
+.It Ic x
+Toggle
+.Em Deus Ex\&
+mode.
+See below.
 .El
 .Sh DEUS EX SYNTAX
 .Nm
 can have many of its actions scripted by loading a
 .Em deus ex
-script and running it with the Deus Ex option.
+script and running it with the Deus Ex mode.
 The syntax and grammar for these scripts are as follows:
 .Pp
 Empty lines and lines beginning with a
@@ -500,6 +505,8 @@ selected node texture
 font texture used for node labels
 .It Pa data/archive/
 top-level reel directory
+.It Pa data/latest-archive
+latest reel directory
 .It Pa data/phys.conf
 cluster physical description file
 .It Pa data/colors
