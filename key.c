@@ -456,8 +456,10 @@ gl_keyh_alpha(unsigned char key, __unused int u, __unused int v)
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
 	case 'j':
-		nc_runall(fill_setxparent);
-		nc_runsn(fill_setopaque);
+		if (nselnodes) {
+			nc_runall(fill_setxparent);
+			nc_runsn(fill_setopaque);
+		}
 		break;
 	case 'r':
 		nc_runall(fill_setopaque);
