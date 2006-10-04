@@ -285,8 +285,7 @@ panel_refresh_legend(struct panel *p)
 		    gscb_pw_hlnc, NC_ALL, 0, NULL, NULL);
 
 		for (j = 0; j < NSC; j++) {
-			if (j == SC_USED ||
-			    statusclass[j].nc_nmemb == 0)
+			if (statusclass[j].nc_nmemb == 0)
 				continue;
 			pwidget_add(p, &statusclass[j].nc_fill,
 			    statusclass[j].nc_name, NSC - j,
@@ -339,8 +338,7 @@ panel_refresh_legend(struct panel *p)
 		    gscb_pw_hlnc, NC_ALL, 0, NULL, NULL);
 
 		for (j = 0; j < NSC; j++) {
-			if (j == SC_USED ||
-			    statusclass[j].nc_nmemb == 0)
+			if (statusclass[j].nc_nmemb == 0)
 				continue;
 			pwidget_add(p, &statusclass[j].nc_fill,
 			    statusclass[j].nc_name, NSC - j,
