@@ -150,6 +150,9 @@ $sth = $dbh->prepare(<<SQL) or dberr("preparing sql");
 		p.processor_id = l.processor_id
 SQL
 
+printf { $fh{node} }
+    "# nid	r cb cg m n	x y z	stat	enabled	jobid	temp	yodid	nfails	lustat\n";
+
 $sth->execute();
 while ($row = $sth->fetchrow_hashref()) {
 	my $status = $row->{status} eq "down" ? "n" :
@@ -162,13 +165,13 @@ while ($row = $sth->fetchrow_hashref()) {
 	my $jobid = exists $jmap{$row->{nid}} ? $jmap{$row->{nid}} : 0;
 	my $yodid = exists $ymap{$row->{nid}} ? $ymap{$row->{nid}} : 0;
 
-	# 1	2  3 4  5 6	7 8 9	10	11	12	13	14	15	16
-	# nid	cb r cg m n	x y z	stat	enabled	jobid	temp	yodid	nfails	lustat
-	# 0	0  0 0  0 0	0 0 0	i	1	111	58	2	0	d
+	# 1	2 3  4  5 6	7 8 9	10	11	12	13	14	15	16
+	# nid	r cb cg m n	x y z	stat	enabled	jobid	temp	yodid	nfails	lustat
+	# 0	0 0  0  0 0	0 0 0	i	1	111	58	2	0	d
 
 	printf { $fh{node} }
-	#    1   2  3  4  5  6   7  8  9   10  11  12  13  14  15  16
-	    "%d\t%d %d %d %d %d\t%d %d %d\t%s\t%d\t%d\t%d\t%d\t%d\t%s\n",
+	#    1   2  3   4   5  6   7  8  9   10  11  12  13  14  15  16
+	    "%d\t%d %2d %2d %d %d\t%d %d %d\t%s\t%d\t%d\t%d\t%d\t%d\t%s\n",
 	    @$row{qw(nid r cb cg m n x y z)}, $status,
 	    1, $jobid, $temp, $yodid, 0, $lustat;
 }
