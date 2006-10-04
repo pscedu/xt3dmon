@@ -19,7 +19,7 @@ struct nodeclass statusclass[] = {
 	{ "Free",		FILL_INIT(1.00f, 1.00f, 1.00f), 0 },
 	{ "Disabled (PBS)",	FILL_INIT(1.00f, 0.00f, 0.00f), 0 },
 	{ "Down (CPA)",		FILL_INIT(0.66f, 0.66f, 0.66f), 0 },
-	{ "Allocated",		FILL_INIT(0.00f, 0.00f, 0.00f), 0 },
+	{ "Allocated",		FILL_INITF(1.00f, 0.00f, 0.00f, FF_SKEL), 0 },
 	{ "Service",		FILL_INIT(1.00f, 1.00f, 0.00f), 0 }
 };
 
