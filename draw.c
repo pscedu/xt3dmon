@@ -334,13 +334,13 @@ draw_text(const char *buf, struct fvec *dim, struct fill *fp)
 }
 
 __inline void
-draw_node_label(struct node *n)
+draw_node_label(struct node *n, struct fill *fp)
 {
 	char buf[BUFSIZ];
 	struct fvec dim;
 	struct fill c;
 
-	c = *n->n_fillp;
+	c = *fp;
 	if ((c.f_flags & FF_SKEL) == 0)
 		fill_contrast(&c);
 
@@ -388,6 +388,7 @@ __inline void
 draw_node(struct node *n, int flags)
 {
 	struct fvec *fvp;
+	struct fill *fp;
 
 //	if (!node_show(n))
 //		return;
@@ -409,6 +410,11 @@ draw_node(struct node *n, int flags)
 		glTranslatef(fvp->fv_x, fvp->fv_y, fvp->fv_z);
 	}
 
+	if (n->n_flags & NF_SELNODE)
+		fp = &fill_selnode;
+	else
+		fp = n->n_fillp;
+
 	switch (n->n_geom) {
 	case GEOM_CUBE:
 		draw_cube(n->n_dimp, n->n_fillp, DF_FRAME);
@@ -421,7 +427,7 @@ draw_node(struct node *n, int flags)
 	if (st.st_opts & OP_NLABELS ||
 	    (n->n_flags & NF_SELNODE &&
 	    st.st_opts & OP_SELNLABELS))
-		draw_node_label(n);
+		draw_node_label(n, fp);
 
 	if ((flags & NDF_ATORIGIN) == 0)
 		glPopMatrix();
@@ -1025,7 +1031,6 @@ draw_selnodes(void)
 {
 	struct selnode *sn;
 	struct fvec *fvp;
-	struct fill *ofp;
 	struct node *n;
 
 	if (st.st_opts & OP_SELPIPES &&
@@ -1034,8 +1039,6 @@ draw_selnodes(void)
 
 	SLIST_FOREACH(sn, &selnodes, sn_next) {
 		n = sn->sn_nodep;
-		ofp = n->n_fillp;
-		n->n_fillp = &fill_selnode;
 
 		if (st.st_opts & OP_NODEANIM &&
 		    st.st_vmode != VM_WIRED)
@@ -1047,8 +1050,6 @@ draw_selnodes(void)
 		glTranslatef(fvp->fv_x, fvp->fv_y, fvp->fv_z);
 		draw_node(n, NDF_ATORIGIN);
 		glPopMatrix();
-
-		n->n_fillp = ofp;
 	}
 }
 
