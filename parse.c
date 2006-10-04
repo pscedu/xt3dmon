@@ -322,7 +322,7 @@ parse_node(const struct datasrc *ds)
 			node->n_lustat = LS_RECOVER;
 			break;
 		default:
-			warnx("node %d: bad lustat %c",
+			warnx("node %d: invalid lustat %c",
 			    nid, lustat);
 			goto bad;
 		}
@@ -342,8 +342,14 @@ parse_node(const struct datasrc *ds)
 		}
 
 		if (yodid) {
+			if (node->n_state == SC_FREE)
+				node->n_state = SC_USED;
 			node->n_yod = obj_get(&yodid, &yod_list);
 			node->n_yod->y_id = yodid;
+			if (strcmp(node->n_yod->y_cmd, "") == 0)
+				snprintf(node->n_yod->y_cmd,
+				    sizeof(node->n_yod->y_cmd),
+				    "yod %d", yodid);
 		}
 
 		node->n_flags |= NF_VALID;
