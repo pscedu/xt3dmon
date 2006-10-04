@@ -417,10 +417,10 @@ draw_node(struct node *n, int flags)
 
 	switch (n->n_geom) {
 	case GEOM_CUBE:
-		draw_cube(n->n_dimp, n->n_fillp, DF_FRAME);
+		draw_cube(n->n_dimp, fp, DF_FRAME);
 		break;
 	case GEOM_SPHERE:
-		draw_sphere(n->n_dimp, n->n_fillp, DF_FRAME);
+		draw_sphere(n->n_dimp, fp, DF_FRAME);
 		break;
 	}
 
