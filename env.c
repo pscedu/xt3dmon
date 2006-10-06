@@ -17,7 +17,7 @@
 /* Stereo mode parameters. */
 #define FOCAL_POINT	(2.00f) /* Distance from cam to 3d focus */
 #define FOCAL_LENGTH	(5.00f) /* Length of 3D focus */
-#define ST_EYESEP	(0.30f) /* Distance between "eyes" */
+#define ST_EYESEP	(0.15f) /* Distance between "eyes" */
 
 int		gl_cursor[2];		/* Current cursors for each stereo win */
 int		cursor;			/* What the cursors will be */
@@ -39,7 +39,7 @@ __inline void
 frustum_init(struct frustum *fr)
 {
 	fr->fr_ratio = ASPECT;
-	fr->fr_radians = DEG_TO_RAD(FOVY / 2);
+	fr->fr_radians = DEG_TO_RAD(FOVY / 4.0);
 	fr->fr_wd2 = FOCAL_POINT * tan(fr->fr_radians);
 	fr->fr_ndfl = FOCAL_POINT / FOCAL_LENGTH;
 	fr->fr_eyesep = ST_EYESEP;
