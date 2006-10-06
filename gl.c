@@ -225,9 +225,8 @@ gl_stereo_eye(int frid)
 	cam_look();
 	draw_scene();
 
-	/* XXX: capture frame */
 	if (st.st_opts & OP_CAPTURE)
-		capture_frame(capture_mode);
+		capture_snap(capture_seqname(capture_mode), capture_mode);
 	glutSwapBuffers();
 
 	/* Restore camera position after stereo adjustment. */
@@ -331,7 +330,7 @@ gl_displayh_default(void)
 	st.st_rf = newrf;
 
 	if (st.st_opts & OP_CAPTURE)
-		capture_frame(capture_mode);
+		capture_snap(capture_seqname(capture_mode), capture_mode);
 	glutSwapBuffers();
 }
 

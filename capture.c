@@ -15,9 +15,6 @@
 #include "pathnames.h"
 #include "xmath.h"
 
-#define NUM_FRAMES	200
-#define MAX_FRAMES	25000
-
 void ppm_write(FILE *, unsigned char *, long, long);
 
 struct capture_format {
@@ -31,11 +28,8 @@ struct capture_format {
 	{ "ppm", 3, ppm_write, GL_RGB },
 };
 
-int		 capture_mode = CM_PPM;
-unsigned char	*fbuf[NUM_FRAMES];
-int		 stereo_left;
-int		 fbuf_pos;
-int		 capture_pos;
+int capture_mode = CM_PNG;
+int capture_pos;
 
 /* Save buffer as PPM. */
 void
@@ -47,64 +41,6 @@ ppm_write(FILE *fp, unsigned char *buf, long w, long h)
 	fprintf(fp, "P6 %ld %ld %d\n", w, h, 255);
 	if (fwrite(buf, 1, len, fp) != len)
 		err(1, "fwrite");
-}
-
-/* Write all buffered frames to disk. */
-void
-capture_writeback(int mode)
-{
-	char fn[PATH_MAX];
-	const char *ext;
-	FILE *fp;
-	int k;
-
-	ext = capture_formats[mode].cf_ext;
-	for (k = 0; k < fbuf_pos; k++, capture_pos++) {
-		if (stereo_mode) {
-			snprintf(fn, sizeof(fn), "%s/%c%07d.%s",
-			    _PATH_SSDIR, stereo_left ? 'l' : 'r',
-			    capture_pos / 2, ext);
-			stereo_left = !stereo_left;
-		} else
-			snprintf(fn, sizeof(fn), "%s/%07d.%s",
-			    _PATH_SSDIR, capture_pos, ext);
-		if ((fp = fopen(fn, "wb")) == NULL)
-			err(1, "%s", fn);
-		capture_formats[mode].cf_writef(fp, fbuf[k],
-		    winv.iv_w, winv.iv_h);
-		fclose(fp);
-	}
-}
-
-void
-capture_begin(int mode)
-{
-	long size = 0;
-	int i;
-
-	glMatrixMode(GL_PROJECTION);
-	glMatrixMode(GL_MODELVIEW);
-
-	/*
-	 * XXX: make sure this gets called whenever
-	 * the output file format changes.
-	 */
-	size = winv.iv_w * winv.iv_h * capture_formats[mode].cf_size;
-
-	for (i = 0; i < NUM_FRAMES; i++)
-		if ((fbuf[i] = malloc(size * sizeof(*fbuf[i]))) == NULL)
-			err(1, "malloc");
-	stereo_left = 1;
-}
-
-void
-capture_end(void)
-{
-	int i;
-
-	capture_writeback(capture_mode);
-	for (i = 0; i < NUM_FRAMES; i++)
-		free(fbuf[i]);
 }
 
 /* Copy frame buffer to another buffer. */
@@ -120,24 +56,22 @@ capture_copyfb(int mode, unsigned char *buf)
 	glMatrixMode(GL_MODELVIEW);
 }
 
-/* Capture a frame. */
-void
-capture_frame(int mode)
+const char *
+capture_seqname(int mode)
 {
-	/*
-	 * After we reach max frames, dump them.  NOTE: this is
-	 * nasty and will take awhile.
-	 */
-	if (fbuf_pos + 1 >= NUM_FRAMES) {
-		capture_writeback(mode);
-		fbuf_pos = 0;
-	}
-	capture_copyfb(mode, fbuf[fbuf_pos++]);
-	if (stereo_mode == STM_ACT) {
-		glDrawBuffer(GL_BACK_RIGHT);
-		capture_copyfb(mode, fbuf[fbuf_pos++]);
-		glDrawBuffer(GL_BACK_LEFT);
-	}
+	static char fn[PATH_MAX];
+	const char *ext;
+
+	capture_pos++;
+	ext = capture_formats[mode].cf_ext;
+	if (stereo_mode) {
+		snprintf(fn, sizeof(fn), "%s/%c%07d.%s",
+		    _PATH_SSDIR, wid == WINID_LEFT ? 'l' : 'r',
+		    capture_pos / 2, ext);
+	} else
+		snprintf(fn, sizeof(fn), "%s/%07d.%s",
+		    _PATH_SSDIR, capture_pos, ext);
+	return (fn);
 }
 
 /* Take a screenshot. */
@@ -155,6 +89,7 @@ capture_snap(const char *fn, int mode)
 	capture_copyfb(mode, buf);
 
 	/* Write data to buffer. */
+	/* XXX append file extension if not specified? */
 	if ((fp = fopen(fn, "wb")) == NULL)
 		err(1, "%s", fn);
 	capture_formats[mode].cf_writef(fp, buf, winv.iv_w, winv.iv_h);

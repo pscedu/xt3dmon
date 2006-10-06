@@ -195,12 +195,6 @@ opt_flip(int fopts)
 		case OP_GOVERN:
 			gl_setidleh();
 			break;
-		case OP_CAPTURE:
-			if (on)
-				capture_begin(capture_mode);
-			else
-				capture_end();
-			break;
 		case OP_TEX:
 			if (on) {
 				nc_runall(fill_tex);
