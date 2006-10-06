@@ -120,14 +120,14 @@ hl all
 setcap "Changing to wired-repeat mode [16/22]"
 panel +compass
 vmode wired
-opt +selpipes
+opt +selpipes,skel
 selnode 1230
 refocus
 move forward 100
 orbit -x
 move back 100
 clrsn
-opt -selpipes
+opt -selpipes,skel
 panel -compass
 
 # cycle jobs
