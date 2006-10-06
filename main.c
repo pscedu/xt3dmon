@@ -245,6 +245,30 @@ opt_flip(int fopts)
 			if (on)
 				reel_load();
 			break;
+		case OP_STOP: {
+			static struct fvec sv, slv, suv;
+
+			if (on) {
+				sv = tv;
+				slv = tlv;
+				suv = tuv;
+
+				tv = st.st_v;
+				tlv = st.st_lv;
+				tuv = st.st_uv;
+			} else {
+				tv = sv;
+				tlv = slv;
+				tuv = suv;
+
+				/*
+				 * Rebuild the cluster because
+				 * RF_CLUSTER would get cleared
+				 * during node tweening with OP_STOP.
+				 */
+				st.st_rf |= RF_CAM | RF_CLUSTER | RF_SELNODE;
+			}
+		    }
 		}
 	}
 }
