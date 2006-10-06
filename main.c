@@ -698,6 +698,7 @@ main(int argc, char *argv[])
 {
 	int Nflag, flags, c, sw, sh;
 	const char *cfgfn;
+	long l;
 
 	progname = argv[0];
 	sav_argv = argv;
@@ -711,7 +712,11 @@ main(int argc, char *argv[])
 	Nflag = 0;
 	flags = GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE;
 	glutInit(&argc, argv);
-	while ((c = getopt(argc, argv, "ac:dpv")) != -1)
+	sw = glutGet(GLUT_SCREEN_WIDTH);
+	sh = glutGet(GLUT_SCREEN_HEIGHT) - 30;
+	if (stereo_mode == STM_PASV)
+		sw /= 2;
+	while ((c = getopt(argc, argv, "ac:dH:pvW:")) != -1)
 		switch (c) {
 		case 'a':
 errx(1, "broken");
@@ -724,11 +729,23 @@ errx(1, "broken");
 		case 'd':
 			server_mode = 1;
 			break;
+		case 'H':
+			l = strtol(optarg, NULL, 10);
+			if (l < 0 || l > INT_MAX)
+				err(1, "invalid screen height: %s", optarg);
+			sh = (int)l;
+			break;
 		case 'p':
 			stereo_mode = STM_PASV;
 			break;
 		case 'v':
 			verbose++;
+			break;
+		case 'W':
+			l = strtol(optarg, NULL, 10);
+			if (l < 0 || l > INT_MAX)
+				err(1, "invalid screen width: %s", optarg);
+			sw = (int)l;
 			break;
 		default:
 			usage();
@@ -736,10 +753,6 @@ errx(1, "broken");
 		}
 
 	glutInitDisplayMode(flags);
-	sw = glutGet(GLUT_SCREEN_WIDTH);
-	sh = glutGet(GLUT_SCREEN_HEIGHT) - 30;
-	if (stereo_mode == STM_PASV)
-		sw /= 2;
 	glutInitWindowPosition(0, 0);
 	glutInitWindowSize(sw, sh);
 	if ((window_ids[0] = glutCreateWindow("XT3 Monitor")) == GL_FALSE)

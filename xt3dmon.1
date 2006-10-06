@@ -11,6 +11,8 @@
 .Nm xt3dmon
 .Op Fl dp
 .Op Fl c Ar physconf
+.Op Fl H Ar height
+.Op Fl W Ar width
 .Sh DESCRIPTION
 .Nm
 is a 3D program that graphically displays various data sets of
@@ -42,11 +44,19 @@ mode \(em that is,
 will listen on TCP connections to accept requests from clients to
 generate screen captures and send the resulting images as
 responses.
+.It Fl H Ar height
+Specify the
+.Nm
+window height in pixels.
 .It Fl p
 Enable passive stereo mode.
 In this mode, two windows are created and maintained individually,
 for use by a stereo projector overlaying the right side of the
 available screen space with the left.
+.It Fl W Ar width
+Specify the
+.Nm
+window width in pixels.
 .El
 .Pp
 There are a number of different data displays available:
