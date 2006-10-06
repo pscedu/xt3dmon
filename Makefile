@@ -12,20 +12,20 @@ SRCS+= prefresh.c reel.c rte.c select.c selnode.c server.c shadow.c
 SRCS+= ssl.c status.c tex.c text.c tween.c uinp.c ustrdtab.c ustream.c
 SRCS+= ustrop-file.c ustrop-ssl.c util.c vec.c widget.c yod.c
 
-CFLAGS += -Wall -W -g -D_LIVE_DSP=DSP_LOCAL
+CFLAGS += -Wall -W -g -D_GSS -D_LIVE_DSP=DSP_LOCAL
 #CFLAGS += -Wconversion
 CFLAGS += -O3 -Wuninitialized -fomit-frame-pointer
 CFLAGS += -fno-strict-aliasing
 
-LIBS += -lGL -lGLU -lglut -lssl -lpng
+LIBS += -lGL -lGLU -lglut -lssl -lpng -lz
 
 # static compiles:
 # LIBS += -lglut -lglx -lGL -lGLU -lXext -lglut -lX11 -lpng -lssl
 # LIBS += -lm -lcrypto -lkrb5 -lk5crypto -lz -lcom_err -lpthread
 # LIBS += -lresolv -ldl -lXxf86vm
-# LDFLAGS += -L/usr/X11R6/lib/modules/extensions -L/usr/X11R6/lib
+# LDFLAGS += -L/usr/X11R6/lib/modules/extensions
 
-LDFLAGS +=
+LDFLAGS += -L/usr/X11R6/lib
 
 YFLAGS += -d -b "$$(echo $@ | sed 's/-.*//')" \
 	     -p "$$(echo $@ | sed 's/-.*//')" \

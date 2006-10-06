@@ -197,9 +197,12 @@ ds_https(const char *path, struct http_res *res, int flags)
 	req.htreq_version = "HTTP/1.1";
 	req.htreq_url = path;
 
+#ifdef _GSS
 	if (flags & DHF_USEGSS)
 		req.htreq_extraf = gss_build_auth;
-	else {
+	else
+#endif
+	{
 		if ((req.htreq_extra = calloc(2, sizeof(char *))) == NULL)
 			err(1, "calloc");
 		if (asprintf(&req.htreq_extra[0],
@@ -238,10 +241,12 @@ ds_open(int type)
 
 		httpf = ds_http;
 		if (login_auth[0] == '\0') {
+#ifdef _GSS
 			if (gss_valid(RDS_HOST)) {
 				httpf = ds_https;
 				flg |= DHF_USEGSS;
 			}
+#endif
 		} else
 			httpf = ds_https;
 

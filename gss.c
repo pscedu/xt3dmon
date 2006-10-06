@@ -1,5 +1,7 @@
 /* $Id$ */
 
+#ifdef _GSS
+
 #include "mon.h"
 
 #include <err.h>
@@ -116,3 +118,5 @@ gss_valid(const char *host)
 	}
 	return (valid);
 }
+
+#endif
