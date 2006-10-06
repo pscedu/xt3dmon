@@ -47,10 +47,7 @@ uinpcb_ss(void)
 
 	if ((ext = strrchr(s, '.')) == NULL) {
 		buf_chop(&uinp.uinp_buf);
-		buf_append(&uinp.uinp_buf, '.');
-		buf_append(&uinp.uinp_buf, 'p');
-		buf_append(&uinp.uinp_buf, 'n');
-		buf_append(&uinp.uinp_buf, 'g');
+		buf_appendv(&uinp.uinp_buf, ".png");
 		buf_append(&uinp.uinp_buf, '\0');
 		cm = CM_PNG;
 	} else {
