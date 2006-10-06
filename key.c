@@ -736,8 +736,6 @@ gl_keyh_default(unsigned char key, int u, int v)
 	case ' ':
 		opt_flip(OP_STOP);
 		break;
-	default:
-		return;
 	}
 }
 
