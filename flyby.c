@@ -383,12 +383,11 @@ flyby_end(void)
 		glutMouseFunc(gl_mouseh_default);
 		cursor_set(GLUT_CURSOR_INHERIT);
 
+		caption_set(NULL);
 		load_state(&sav_st);
 
-		if (st.st_opts & OP_REEL) {
+		if (st.st_opts & OP_REEL)
 			reel_end();
-			st.st_rf |= RF_DATASRC;
-		}
 		break;
 	}
 	flyby_mode = FBM_OFF;
