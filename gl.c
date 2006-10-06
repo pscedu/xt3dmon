@@ -268,8 +268,7 @@ gl_displayh_default(void)
 		dx_update();
 	if (flyby_mode)
 		flyby_update();
-	if (st.st_opts & OP_TWEEN &&
-	    (st.st_opts & OP_STOP) == 0)
+	if (st.st_opts & OP_TWEEN)
 		tween_update();
 	if (st.st_vmode == VM_WIRED)
 		wired_update();
