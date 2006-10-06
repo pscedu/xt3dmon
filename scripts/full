@@ -15,7 +15,7 @@ setcap "Changing to `wired' mode (virtual interconnect) [2/22]"
 # rte mode
 vmode wione
 bird
-setcap "Viewing routing errors over last 24 hours [3/22]"
+setcap "Viewing routing errors accumulated over 24 hours [3/22]"
 dmode rte
 pstick tl legend
 panel +rt,pipe
@@ -34,9 +34,9 @@ orbit +x
 
 setcap "Changing to physical layout mode [5/22]"
 vmode phys
+bird
 dmode temp
 setcap "Zoom while viewing nodes in temperature range [6/22]"
-bird
 selnode random
 hl seldm
 opt +skel
@@ -68,11 +68,11 @@ move back 50
 opt -skel,nlabels
 
 # subset (view yods of nodes allocated to a job)
-setcap "Viewing yods allocated to this job [11/22]"
 subsel visible
 clrsn
 opt +subset
 dmode yod
+setcap "Viewing yods allocated to this job [11/22]"
 orbit +x
 dmode job
 opt -subset
