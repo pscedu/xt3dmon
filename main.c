@@ -714,8 +714,6 @@ main(int argc, char *argv[])
 	glutInit(&argc, argv);
 	sw = glutGet(GLUT_SCREEN_WIDTH);
 	sh = glutGet(GLUT_SCREEN_HEIGHT) - 30;
-	if (stereo_mode == STM_PASV)
-		sw /= 2;
 	while ((c = getopt(argc, argv, "ac:dH:pvW:")) != -1)
 		switch (c) {
 		case 'a':
@@ -752,6 +750,8 @@ errx(1, "broken");
 			/* NOTREACHED */
 		}
 
+	if (stereo_mode == STM_PASV)
+		sw /= 2;
 	glutInitDisplayMode(flags);
 	glutInitWindowPosition(0, 0);
 	glutInitWindowSize(sw, sh);
