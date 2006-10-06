@@ -226,7 +226,10 @@ gl_stereo_eye(int frid)
 	draw_scene();
 
 	if (st.st_opts & OP_CAPTURE)
-		capture_snap(capture_seqname(capture_mode), capture_mode);
+		if ((st.st_opts & OP_CAPFBONLY) == 0 ||
+		    flyby_mode == FBM_PLAY)
+			capture_snap(capture_seqname(capture_mode),
+			    capture_mode);
 	glutSwapBuffers();
 
 	/* Restore camera position after stereo adjustment. */
@@ -330,7 +333,10 @@ gl_displayh_default(void)
 	st.st_rf = newrf;
 
 	if (st.st_opts & OP_CAPTURE)
-		capture_snap(capture_seqname(capture_mode), capture_mode);
+		if ((st.st_opts & OP_CAPFBONLY) == 0 ||
+		    flyby_mode == FBM_PLAY)
+			capture_snap(capture_seqname(capture_mode),
+			    capture_mode);
 	glutSwapBuffers();
 }
 

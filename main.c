@@ -88,7 +88,8 @@ struct xoption opts[] = {
  /* 17 */ { "cabskel",	"Cabinet skeletons",		0 },
  /* 18 */ { "caption",	"Captions",			OPF_FBIGN },
  /* 19 */ { "subset",	"Subset mode",			0 },
- /* 20 */ { "selnlbls",	"Selected node labels",		0 }
+ /* 20 */ { "selnlbls",	"Selected node labels",		0 },
+ /* 21 */ { "capfb",	"Capture Flyby Only",		OPF_FBIGN }
 };
 
 struct vmode vmodes[] = {
@@ -114,8 +115,9 @@ struct state st = {
 	{ { STARTX,  STARTY,  STARTZ  } },		/* (x,y,z) */
 	{ { STARTLX, STARTLY, STARTLZ } },		/* (lx,ly,lz) */
 	{ { STARTUX, STARTUY, STARTUZ } },		/* (ux,uy,uz) */
-	OP_FRAMES | OP_TWEEN | OP_GROUND | \
-	    OP_NODEANIM | OP_CAPTION | OP_SELNLABELS,	/* options */
+	OP_FRAMES | OP_TWEEN | OP_GROUND | 		/* options */
+	    OP_NODEANIM | OP_CAPTION |
+	    OP_SELNLABELS | OP_CAPFBONLY,
 	DM_JOB,						/* which data to show */
 	VM_PHYS,					/* viewing mode */
 	PM_DIR,						/* pipe mode */
