@@ -7,6 +7,7 @@
 #include <ctype.h>
 #include <err.h>
 #include <stdarg.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "deusex.h"
