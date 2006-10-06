@@ -36,6 +36,7 @@
 #define FHT_SELNODE	3
 #define FHT_PANEL	4
 #define FHT_HLNC	5
+#define FHT_CAPTION	6
 
 struct fbhdr {
 	int		fbh_type;
@@ -61,11 +62,16 @@ struct fbhlnc {
 	int		fbhl_op;
 };
 
+struct fbcaption {
+	char		fbcap_caption[BUFSIZ];
+};
+
 union fbun {
 	struct fbinit		fbu_init;
 	struct fbpanel		fbu_panel;
 	struct fbselnode	fbu_sn;
 	struct fbhlnc		fbu_hlnc;
+	struct fbcaption	fbu_cap;
 };
 
 int		 flyby_mode = FBM_OFF;
@@ -210,6 +216,16 @@ flyby_writehlnc(int nc, int op)
 	flyby_writemsg(FHT_HLNC, &fbhl, sizeof(fbhl));
 }
 
+__inline void
+flyby_writecaption(const char *cap)
+{
+	struct fbcaption fbcap;
+
+	snprintf(fbcap.fbcap_caption, sizeof(fbcap.fbcap_caption),
+	    "%s", cap);
+	flyby_writemsg(FHT_CAPTION, &fbcap, sizeof(fbcap));
+}
+
 /* Read a set of flyby data. */
 void
 flyby_read(void)
@@ -317,6 +333,17 @@ flyby_read(void)
 				break;
 			}
 			break;
+		case FHT_CAPTION: {
+			static char caption[BUFSIZ];
+
+			if (fread(&fbun, 1, sizeof(struct fbcaption),
+			    flyby_fp) != sizeof(struct fbcaption))
+				err(1, "flyby read caption");
+			snprintf(caption, sizeof(caption), "%s",
+			    fbun.fbu_cap.fbcap_caption);
+			caption_set(caption);
+			break;
+		    }
 		default:
 			if (fseek(flyby_fp, fbh.fbh_len, SEEK_CUR) == -1)
 				err(1, "flyby fseek");

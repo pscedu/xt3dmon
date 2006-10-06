@@ -7,6 +7,7 @@
 
 #include "cdefs.h"
 #include "env.h"
+#include "flyby.h"
 #include "gl.h"
 #include "node.h"
 #include "queue.h"
@@ -145,6 +146,8 @@ __inline void
 caption_set(const char *s)
 {
 	caption = s;
+	if (flyby_mode == FBM_REC)
+		flyby_writecaption(s ? s : "");
 }
 
 __inline const char *

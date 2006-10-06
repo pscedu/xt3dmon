@@ -29,6 +29,7 @@ void	 flyby_writeseq(struct state *);
 void	 flyby_writepanel(int);
 void	 flyby_writeselnode(int, const struct fvec *);
 void	 flyby_writehlnc(int, int);
+void	 flyby_writecaption(const char *);
 void	 flyby_rstautoto(void);
 void	 flyby_clear(void);
 
