@@ -196,10 +196,10 @@ gl_displayh_stereo(void)
 	static struct fvec oldfv;
 	int frid, rf, newrf;
 
-	if (flyby_mode)
-		flyby_update();
 	if (dx_active)
 		dx_update();
+	if (flyby_mode)
+		flyby_update();
 	if (st.st_opts & OP_TWEEN &&
 	    (st.st_opts & OP_STOP) == 0)
 		tween_update();
@@ -264,10 +264,10 @@ gl_displayh_default(void)
 {
 	int rf, newrf;
 
-	if (flyby_mode)
-		flyby_update();
 	if (dx_active)
 		dx_update();
+	if (flyby_mode)
+		flyby_update();
 	if (st.st_opts & OP_TWEEN &&
 	    (st.st_opts & OP_STOP) == 0)
 		tween_update();
