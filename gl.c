@@ -106,8 +106,19 @@ gl_idleh_default(void)
 void
 gl_setup_core(void)
 {
+	if (server_mode)
+		glutDisplayFunc(serv_displayh);
+	else if (stereo_mode)
+		glutDisplayFunc(gl_displayh_stereo);
+	else
+		glutDisplayFunc(gl_displayh_default);
 	glutTimerFunc(1, cocb_fps, 0);
 	glutTimerFunc(1, cocb_clearstatus, 0); /* XXX: enable/disable when PANEL_STATUS? */
+}
+
+void
+gl_displayh_null(void)
+{
 }
 
 /* Per-window setup routine. */
@@ -122,14 +133,10 @@ gl_setup(void)
 	glutReshapeFunc(gl_reshapeh);
 	glutIdleFunc(gl_idleh_default);
 
+	glutDisplayFunc(gl_displayh_null);
 	if (server_mode) {
-		glutDisplayFunc(serv_displayh);
 		glutKeyboardFunc(gl_keyh_server);
 	} else {
-		if (stereo_mode)
-			glutDisplayFunc(gl_displayh_stereo);
-		else
-			glutDisplayFunc(gl_displayh_default);
 		glutKeyboardFunc(gl_keyh_default);
 		glutMotionFunc(gl_motionh_default);
 		glutMouseFunc(gl_mouseh_default);
@@ -189,41 +196,13 @@ wired_update(void)
 		st.st_rf |= RF_WIREP;
 }
 
-void
-gl_displayh_stereo(void)
+__inline void
+gl_stereo_eye(int frid)
 {
 	static struct frustum fr;
 	static struct fvec oldfv;
-	int frid, rf, newrf;
-
-	if (dx_active)
-		dx_update();
-	if (flyby_mode)
-		flyby_update();
-	if (st.st_opts & OP_TWEEN &&
-	    (st.st_opts & OP_STOP) == 0)
-		tween_update();
-	if (st.st_vmode == VM_WIRED)
-		wired_update();
-	rf = st.st_rf;
-	if (rf) {
-		st.st_rf = 0;
-		rf = rebuild(rf);
-	}
 
 	frustum_init(&fr);
-
-	frid = 0; /* gcc */
-	switch (stereo_mode) {
-	case STM_ACT:
-//		glDrawBuffer(GL_BACK_RIGHT);
-//		frid = (wid == WINID_LEFT) ? FRID_LEFT : FRID_RIGHT;
-		break;
-	case STM_PASV:
-		gl_wid_update();
-		frid = (wid == WINID_LEFT) ? FRID_LEFT : FRID_RIGHT;
-		break;
-	}
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -244,11 +223,7 @@ gl_displayh_stereo(void)
 		break;
 	}
 	cam_look();
-
-	newrf = st.st_rf;
-	st.st_rf = rf;
 	draw_scene();
-	st.st_rf = newrf;
 
 	/* XXX: capture frame */
 	if (st.st_opts & OP_CAPTURE)
@@ -257,6 +232,67 @@ gl_displayh_stereo(void)
 
 	/* Restore camera position after stereo adjustment. */
 	st.st_v = oldfv;
+}
+
+void
+gl_displayh_stereo(void)
+{
+	int lrf, lnewrf;
+	int rrf, rnewrf;
+
+	if (dx_active)
+		dx_update();
+	if (flyby_mode)
+		flyby_update();
+	if (st.st_opts & OP_TWEEN)
+		tween_update();
+	if (st.st_vmode == VM_WIRED)
+		wired_update();
+	lrf = st.st_rf;
+	rrf = 0;
+	if (lrf) {
+		st.st_rf = 0;
+		rrf = rf_deps(lrf) & RF_STEREO;
+		lrf = rebuild(rf_deps(lrf));
+	}
+	wid = WINID_LEFT;
+	switch (stereo_mode) {
+	case STM_ACT:
+//		glDrawBuffer(GL_BACK_LEFT);
+		break;
+	case STM_PASV:
+		glutSetWindow(window_ids[wid]);
+		break;
+	}
+	lnewrf = st.st_rf;
+	rnewrf = st.st_rf & RF_STEREO;
+	st.st_rf = lrf;
+	gl_stereo_eye(FRID_LEFT);
+	if (st.st_rf != lrf)
+		warnx("internal error: draw_scene() modified "
+		    "rebuild flags (%d<=>%d)", st.st_rf, lrf);
+
+	if (rrf) {
+		st.st_rf = 0;
+		rrf = rebuild(rrf);
+	}
+	wid = WINID_RIGHT;
+	switch (stereo_mode) {
+	case STM_ACT:
+//		glDrawBuffer(GL_BACK_RIGHT);
+		break;
+	case STM_PASV:
+		glutSetWindow(window_ids[wid]);
+		break;
+	}
+	rnewrf |= st.st_rf;
+	st.st_rf = rrf;
+	gl_stereo_eye(FRID_RIGHT);
+	if (st.st_rf != rrf)
+		warnx("internal error: draw_scene() modified "
+		    "rebuild flags (%d<=>%d)", st.st_rf, rrf);
+
+	st.st_rf = lnewrf;
 }
 
 void
@@ -275,7 +311,7 @@ gl_displayh_default(void)
 	rf = st.st_rf;
 	if (rf) {
 		st.st_rf = 0;
-		rf = rebuild(rf);
+		rf = rebuild(rf_deps(rf));
 	}
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
