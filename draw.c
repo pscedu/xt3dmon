@@ -369,7 +369,8 @@ draw_node(struct node *n, int flags)
 		 * node_tween_dir only updates one direction at a time,
 		 * so we use a bitwise OR operator so they all run.
 		 */
-		if ((flags & NDF_NOTWEEN) == 0 &&
+		if ((st.st_opts & OP_STOP) == 0 &&
+		    (flags & NDF_NOTWEEN) == 0 &&
 		    (node_tween_dir(&n->n_vcur.fv_x, &n->n_v->fv_x) |
 		    node_tween_dir(&n->n_vcur.fv_y, &n->n_v->fv_y) |
 		    node_tween_dir(&n->n_vcur.fv_z, &n->n_v->fv_z)))
