@@ -89,7 +89,7 @@ gl_idleh_govern(void)
 	if (diff.tv_sec * 1e6 + diff.tv_usec >= FPS_TO_USEC(GOVERN_FPS)) {
 		fps_cnt++;
 		gov_tv = tv;
-		gl_run(glutPostRedisplay);
+		glutPostRedisplay();
 	}
 }
 
@@ -99,7 +99,7 @@ gl_idleh_default(void)
 	fps_cnt++;
 	if (!visible)
 		usleep(100);
-	gl_run(glutPostRedisplay);
+	glutPostRedisplay();
 }
 
 /* Per-application setup routine. */

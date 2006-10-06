@@ -193,7 +193,7 @@ opt_flip(int fopts)
 			tuv = st.st_uv;
 			break;
 		case OP_GOVERN:
-			gl_run(gl_setidleh);
+			gl_setidleh();
 			break;
 		case OP_CAPTURE:
 			if (on)
