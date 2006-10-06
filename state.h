@@ -72,6 +72,7 @@ struct state {
 			 RF_SELNODE | RF_CAM | RF_DMODE | RF_DIM |	\
 			 RF_NODEPHYSV | RF_NODESWIV |  RF_VMODE |	\
 			 RF_FOCUS)
+#define RF_STEREO	(RF_CLUSTER | RF_GROUND | RF_SELNODE)
 
 #define EGG_BORG 	(1<<0)
 #define EGG_MATRIX 	(1<<1)
@@ -110,6 +111,7 @@ struct xoption {
 #define OPF_FBIGN	(1<<1)		/* ignore in flybys */
 
 int	 rebuild(int);
+int	 rf_deps(int);
 void	 load_state(struct state *);
 
 extern struct state	 st;

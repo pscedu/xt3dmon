@@ -288,7 +288,7 @@ snap:
 
 	/* Have fresh data for (a) jobs and (b) node selection. */
 	st.st_rf = 0;
-	rebuild(rf);
+	rebuild(rf_deps(rf));
 	if (rf & RF_CAM) {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -308,7 +308,7 @@ snap:
 			 * Cluster needs rebuilt
 			 * for clicking to work.
 			 */
-			rebuild(RF_CLUSTER);
+			rebuild(rf_deps(RF_CLUSTER));
 		}
 	}
 	memset(buf, 0, sizeof(buf));

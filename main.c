@@ -606,6 +606,25 @@ wirep_update(void)
 	wi_repdim.fv_d = dim.fv_d * (int)howmany(st.st_z + clip - z, dim.fv_d);
 }
 
+__inline int
+rf_deps(int opts)
+{
+	if (opts & RF_DATASRC)
+		opts |= RF_DMODE | RF_CLUSTER;
+	if (opts & RF_DMODE)
+		opts |= RF_CLUSTER;
+	if (opts & RF_VMODE)
+		opts |= RF_CLUSTER | RF_NODESWIV | RF_WIREP | RF_CAM | \
+		    RF_GROUND | RF_SELNODE | RF_DIM | RF_FOCUS;
+	if (opts & RF_DIM)
+		opts |= RF_CLUSTER | RF_SELNODE; /* RF_WIREP */
+	if (opts & RF_NODESWIV)
+		opts |= RF_WIREP | RF_FOCUS;
+	if (opts & RF_SELNODE)
+		opts |= RF_FOCUS;
+	return (opts);
+}
+
 int
 rebuild(int opts)
 {
@@ -619,22 +638,14 @@ rebuild(int opts)
 		ds_refresh(DS_SS, DSFF_IGN);
 		ds_refresh(DS_MEM, DSFF_IGN);
 
-		opts |= RF_DMODE | RF_CLUSTER;
-
 		/* XXX save mtime and check in panel_refresh_date */
 		panel_rebuild(PANEL_DATE);
 		caption_setdrain(mach_drain);
 	}
-	if (opts & RF_DMODE) {
+	if (opts & RF_DMODE)
 		dmode_change();
-		opts |= RF_CLUSTER;
-	}
-	if (opts & RF_VMODE) {
+	if (opts & RF_VMODE)
 		vmode_change();
-
-		opts |= RF_CLUSTER | RF_NODESWIV | RF_WIREP | RF_CAM | \
-		    RF_GROUND | RF_SELNODE | RF_DIM | RF_FOCUS;
-	}
 	if (opts & RF_CAM) {
 		switch (st.st_vmode) {
 		case VM_PHYS:
@@ -651,19 +662,13 @@ rebuild(int opts)
 		 */
 	}
 	if (opts & RF_GROUND)
-		gl_run(make_ground);
-	if (opts & RF_DIM) {
+		make_ground();
+	if (opts & RF_DIM)
 		dim_update();
-
-		opts |= RF_CLUSTER | RF_SELNODE; /* RF_WIREP */
-	}
 	if (opts & RF_NODEPHYSV)
 		rebuild_nodephysv();
-	if (opts & RF_NODESWIV) {
+	if (opts & RF_NODESWIV)
 		rebuild_nodeswiv();
-
-		opts |= RF_WIREP | RF_FOCUS;
-	}
 
 	if (opts & RF_WIREP)
 		rebuild_wirep = 1;
@@ -673,12 +678,9 @@ rebuild(int opts)
 	}
 
 	if (opts & RF_CLUSTER)
-		gl_run(make_cluster);
-	if (opts & RF_SELNODE) {
-		gl_run(make_selnodes);
-
-		opts |= RF_FOCUS;
-	}
+		make_cluster();
+	if (opts & RF_SELNODE)
+		make_selnodes();
 	if (opts & RF_FOCUS) {
 		if (SLIST_EMPTY(&selnodes))
 			focus_cluster(&focus);
