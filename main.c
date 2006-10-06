@@ -268,6 +268,7 @@ opt_flip(int fopts)
 				 */
 				st.st_rf |= RF_CAM | RF_CLUSTER | RF_SELNODE;
 			}
+			break;
 		    }
 		}
 	}
