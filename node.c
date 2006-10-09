@@ -274,10 +274,12 @@ node_goto(struct node *n)
 	struct physcoord pc;
 	int row, col;
 
-	tween_push(TWF_LOOK | TWF_POS);
+	tween_push(TWF_LOOK | TWF_POS | TWF_UP);
 	st.st_v = *n->n_v;
 	switch (st.st_vmode) {
 	case VM_PHYS:
+		vec_set(&st.st_uv, 0.0, 1.0, 0.0);
+
 		st.st_lx = 0.0f;
 		st.st_ly = 0.0f;
 
@@ -301,12 +303,11 @@ node_goto(struct node *n)
 		st.st_y += 0.5 * n->n_dimp->fv_h;
 		st.st_z += 0.5 * n->n_dimp->fv_w;
 
-		st.st_lx = 1.0f;
-		st.st_ly = 0.0f;
-		st.st_lz = 0.0f;
+		vec_set(&st.st_lv, 1.0, 0.0, 0.0);
+		vec_set(&st.st_uv, 0.0, 1.0, 0.0);
 		break;
 	}
-	tween_pop(TWF_LOOK | TWF_POS);
+	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
 }
 
 __inline int
