@@ -16,6 +16,7 @@ struct fill;
 
 /* Node drawing flags. */
 #define NDF_NOTWEEN	(1<<0)		/* don't perform node tweening */
+#define NDF_IGNSN	(1<<1)		/* ignore selnode mods */
 
 /* draw.c */
 void	 draw_scene(void);

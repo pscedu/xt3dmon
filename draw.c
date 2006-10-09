@@ -380,7 +380,7 @@ draw_node(struct node *n, int flags)
 	glPushMatrix();
 	glTranslatef(fvp->fv_x, fvp->fv_y, fvp->fv_z);
 
-	if (n->n_flags & NF_SELNODE)
+	if ((flags & NDF_IGNSN) == 0 && n->n_flags & NF_SELNODE)
 		fp = &fill_selnode;
 	else
 		fp = n->n_fillp;
@@ -396,6 +396,7 @@ draw_node(struct node *n, int flags)
 
 	if (st.st_opts & OP_NLABELS ||
 	    (n->n_flags & NF_SELNODE &&
+	    (flags & NDF_IGNSN) == 0 &&
 	    st.st_opts & OP_SELNLABELS))
 		draw_node_label(n, fp);
 
@@ -974,7 +975,7 @@ draw_cluster(void)
 			draw_pipes(0);
 		NODE_FOREACH(n, &iv)
 			if (n && node_show(n))
-				draw_node(n, 0);
+				draw_node(n, NDF_IGNSN);
 		if (st.st_opts & OP_SKEL)
 			draw_skel();
 		break;
