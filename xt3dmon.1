@@ -187,7 +187,13 @@ the file.
 Toggle the looping of flyby playback.
 .It Ic fp
 Playback a previously recorded flyby.
-Press any key to break out of playback mode.
+Press
+.Em space
+.Bk -words
+.Pq Dq " "
+.Ek
+to toggle suspension of playback.
+Press any other key to break out of playback.
 .It Ic fq
 Toggle the recording and saving of the live state, for use in flyby
 playbacks.
@@ -321,9 +327,12 @@ Cycle through each node class (such as jobs or temperature range)
 of the current data mode, displaying only one class at a time.
 .It Ic dmode Ar dm
 Set the data mode.
+Recognized values for
 .Ar dm
-may be one of:
-.Ic job , temp .
+are
+.Ic job , temp , rte ,
+and
+.Ic yod .
 .It Ic hl Ar class
 Highlight (i.e., only show) nodes in given node
 .Ar class .
@@ -362,22 +371,40 @@ options to only those specified.
 The following options are recognized:
 .Pp
 .Bl -tag -width nodeanimXX -offset indent -compact
-.It Ic nlabels
-Node labels.
-.It Ic pipes
-Wired mode pipes.
-.It Ic skel
-Cluster skeletons.
-.It Ic frames
-Show node wireframes.
-.It Ic tween
-Smooth camera movement with
-.Dq tween
-steps.
-.It Ic nodeanim
-Animate node movement.
+.It Ic cabskel
+Include cabinents in skeletons.
 .It Ic caption
 Show captions.
+.It Ic frames
+Show node wireframes.
+.It Ic ground
+Show the ground/axes.
+.It Ic modskel
+Include blades in skeletons.
+.It Ic nlabels
+Node labels.
+.It Ic nodeanim
+Animate node movement.
+.It Ic pause
+Pause until disabled (e.g. by pressing
+.Em space ) .
+.It Ic pipes
+Show pipes representing node interconnections.
+.It Ic selnlbls
+Node labels for selected nodes.
+.It Ic selpipes
+Show interconnect pipes for selected nodes.
+.It Ic skel
+Cluster skeletons.
+.It Ic subset
+Show a subset of the machine.
+See the
+.Ic subsel
+command.
+.It Ic tex
+Use textures of solid colors for node fills.
+.It Ic tween
+Smooth camera movement with .Dq tween steps.
 .El
 .It Ic orbit Ar dim Op Ar frac
 Orbit the current focus point, which will be the center of all
@@ -481,8 +508,12 @@ Only nodes in the subselection will be visible when the
 option is enabled.
 .It Ic vmode Ar vm
 Set the current cluster view mode.
-Recognized values are
-.Ic phys , wione .
+Recognized values for
+.Ar vm
+are
+.Ic phys , wione ,
+and
+.Ic wired .
 .It Ic winsp Ar x y z
 Set the wired-mode node spacing factor.
 Each of
