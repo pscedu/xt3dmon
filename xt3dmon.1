@@ -379,7 +379,7 @@ Animate node movement.
 .It Ic caption
 Show captions.
 .El
-.It Ic orbit Ar dim
+.It Ic orbit Ar dim Op Ar frac
 Orbit the current focus point, which will be the center of all
 selected nodes, if their are any, or otherwise the entire cluster
 view.
@@ -391,6 +391,9 @@ or
 and may be prefixed with a minus sign
 .Pq Sq -
 to specify reverse revolutions.
+.Ar frac
+specifies the number of revolutions, which may be fractional,
+and defaults to one if unspecified.
 .It Xo
 .Ic panel
 .Op Ar modifier

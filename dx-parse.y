@@ -218,12 +218,38 @@ conf		: DGT_BIRD {
 			dxa.dxa_opts = $3;
 			dxa_add(&dxa);
 		}
+		| DGT_ORBIT setmodifier STRING dbl {
+			struct dx_action dxa;
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_ORBIT;
+			dxa.dxa_orbit_dir = ($2 == DXV_OFF) ? -1 : 1;
+			if (strcasecmp($3, "x") == 0)
+				dxa.dxa_orbit_dim = DIM_X;
+			else if (strcasecmp($3, "y") == 0)
+				dxa.dxa_orbit_dim = DIM_Y;
+			else if (strcasecmp($3, "z") == 0)
+				dxa.dxa_orbit_dim = DIM_Z;
+			else
+				yyerror("invalid orbit dimension: %s", $3);
+			free($3);
+			dxa.dxa_orbit_frac = fabs($4);
+			/* Avoid any FPE. */
+			if (dxa.dxa_orbit_frac == 0.0)
+				dxa.dxa_orbit_frac = 0.1;
+			dxa_add(&dxa);
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_CAMSYNC;
+			dxa_add(&dxa);
+		}
 		| DGT_ORBIT setmodifier STRING {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DGT_ORBIT;
 			dxa.dxa_orbit_dir = ($2 == DXV_OFF) ? -1 : 1;
+			dxa.dxa_orbit_frac = 1.0;
 			if (strcasecmp($3, "x") == 0)
 				dxa.dxa_orbit_dim = DIM_X;
 			else if (strcasecmp($3, "y") == 0)

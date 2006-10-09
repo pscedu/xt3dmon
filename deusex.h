@@ -50,6 +50,7 @@ struct dx_action {
 
 #define dxa_orbit_dir	dxa_intg
 #define dxa_orbit_dim	dxa_intg2
+#define dxa_orbit_frac	dxa_dbl
 
 #define dxa_seljob	dxa_intg
 #define dxa_selnode	dxa_intg

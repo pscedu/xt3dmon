@@ -97,7 +97,7 @@ dxp_orbit(struct dx_action *dxa)
 	if (++sample < fps)
 		return (0);
 
-	max = 2 * M_PI;
+	max = 2 * M_PI * dxa->dxa_orbit_frac;
 	if (t == 0) {
 		wait = 1.1 * ceil(log(DST(&st.st_v, &focus) / log(1.1)));
 		adj = max / (fps * wait);
