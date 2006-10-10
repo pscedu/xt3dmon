@@ -1312,8 +1312,9 @@ pwidgets_dir(struct panel *p, const char *dir, struct objlist *ol,
 		snprintf(fe->fe_name, sizeof(fe->fe_name), "%s%s",
 		    dent->d_name, isdir ? "/" : "");
 		pwidget_add(p, (strcmp(cur, path) ?
-		    &fill_nodata : &fill_white), fe->fe_name,
-		    isdir, gscb_pw_dir, isdir, 0, cb, fe->fe_name);
+		    (isdir ? &fill_xparent : &fill_nodata) : &fill_white),
+		    fe->fe_name, isdir, gscb_pw_dir, isdir, 0, cb,
+		    fe->fe_name);
 	}
 	obj_batch_end(ol);
 //	if (ret == -1)
@@ -1362,7 +1363,7 @@ panel_refresh_reel(struct panel *p)
 		return;
 	save_reel_pos = reel_pos;
 
-	panel_set_content(p, "- Reel -\n");
+	panel_set_content(p, "- Reel -");
 	pwidget_startlist(p);
 	if ((flyby_mode == FBM_PLAY || dx_active) &&
 	    st.st_opts & OP_REEL) {
@@ -1381,8 +1382,8 @@ panel_refresh_reel(struct panel *p)
 		panel_add_content(p, "\n\n%s", reel_browsedir);
 		pwidgets_dir(p, reel_browsedir, &reel_list, reel_dir,
 		    reel_set, PWDF_DIRSONLY);
-		if (p->p_nwidgets == 0)
-			panel_add_content(p, "\nNo archive reels available.");
+//		if (p->p_nwidgets == 0)
+//			panel_add_content(p, "\nNo archive reels available.");
 	}
 	pwidget_endlist(p);
 	pwidget_sortlist(p, pwidget_cmp);
