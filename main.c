@@ -696,7 +696,7 @@ restart(void)
 int
 main(int argc, char *argv[])
 {
-	int Nflag, flags, c, sw, sh;
+	int flags, c, sw, sh;
 	const char *cfgfn;
 	long l;
 
@@ -709,7 +709,6 @@ main(int argc, char *argv[])
 
 	cfgfn = _PATH_PHYSCONF;
 
-	Nflag = 0;
 	flags = GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE;
 	glutInit(&argc, argv);
 	sw = glutGet(GLUT_SCREEN_WIDTH);
