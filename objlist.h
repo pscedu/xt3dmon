@@ -36,13 +36,13 @@ void	*obj_get(const void *, struct objlist *);
 int	 fe_eq(const void *, const void *);
 int	 fe_cmp(const void *, const void *);
 
-extern struct objlist	 job_list;
-extern struct objlist	 yod_list;
+extern struct objlist	 col_list;
+extern struct objlist	 dxscript_list;
+extern struct objlist	 flyby_list;
 extern struct objlist	 glname_list;
+extern struct objlist	 job_list;
 extern struct objlist	 reel_list;
 extern struct objlist	 reelframe_list;
-extern struct objlist	 flyby_list;
-extern struct objlist	 dxscript_list;
-extern struct objlist	 col_list;
+extern struct objlist	 yod_list;
 
 #endif /* _OBJLIST_H_ */
