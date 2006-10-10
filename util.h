@@ -17,3 +17,4 @@ void		 base64_encode(const void *, char *, size_t);
 char		*strnchr(const char *, char, size_t);
 const char	*smart_dirname(const char *);
 const char	*smart_basename(const char *);
+void		 escape_printf(struct buf *, const char *);

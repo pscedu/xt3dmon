@@ -5,6 +5,7 @@
 #include <libgen.h>
 #include <stdio.h>
 
+#include "buf.h"
 #include "util.h"
 
 /* Special case of base 2 to base 10. */
@@ -96,4 +97,19 @@ smart_dirname(const char *fn)
 
 	snprintf(path, sizeof(path), "%s", fn);
 	return (dirname(path));
+}
+
+void
+escape_printf(struct buf *bufp, const char *s)
+{
+	for (; *s != '\0'; s++) {
+		switch (*s) {
+		case '%':
+			buf_append(bufp, '%');
+			/* FALLTHROUGH */
+		default:
+			buf_append(bufp, *s);
+			break;
+		}
+	}
 }
