@@ -373,7 +373,7 @@ bad:
 	if (++widim.iv_w != WIDIM_WIDTH ||
 	    ++widim.iv_h != WIDIM_HEIGHT ||
 	    ++widim.iv_d != WIDIM_DEPTH) {
-		warnx("wired cluster dimensions have changed (%d,%d,%d)",
+		errx(1, "wired cluster dimensions have changed (%d,%d,%d)",
 		    widim.iv_w, widim.iv_y, widim.iv_z);
 		widim.iv_w = WIDIM_WIDTH;
 		widim.iv_h = WIDIM_HEIGHT;
