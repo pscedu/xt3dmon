@@ -97,6 +97,9 @@ todo
 - moving the cursor should not cause panel recompiles
 - ensure nothing modifies st.st_opt and uses opt_flip() instead
 
+xtwmon
+- rename data=nodes to data=node
+
 tweening
 - ensure tweening leaves normalized vectors
 - fix tween to real stack: once point is reached, pop it then move on
