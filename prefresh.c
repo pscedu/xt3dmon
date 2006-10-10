@@ -1388,3 +1388,20 @@ panel_refresh_reel(struct panel *p)
 	pwidget_endlist(p);
 	pwidget_sortlist(p, pwidget_cmp);
 }
+
+void
+panel_refresh_dscho(struct panel *p)
+{
+	if (panel_ready(p))
+		return;
+
+	panel_set_content(p, "- Dataset Chooser -\nCurrent: %s\n\n%s:",
+	    dsfopts & DSFO_LIVE ? "live" : ds_dir, ds_browsedir);
+	pwidget_startlist(p);
+	pwidget_add(p, (dsfopts & DSFO_LIVE ? &fill_white : &fill_nodata),
+	    "Live Data", 2, gscb_pw_dscho, 0, 0, NULL, NULL);
+	pwidgets_dir(p, ds_browsedir, &ds_list, ds_dir,
+	    ds_set, PWDF_DIRSONLY);
+	pwidget_endlist(p);
+	pwidget_sortlist(p, pwidget_cmp);
+}

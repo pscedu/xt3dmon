@@ -1,10 +1,7 @@
 /* $Id$ */
 
-#define _PATH_NODE	"data/node"
-#define _PATH_JOB	"data/job"
-#define _PATH_YOD	"data/yod"
-#define _PATH_RT	"data/rt"
-#define _PATH_SS	"data/ss"
+#define _PATH_DATA	"data/%s"
+#define _PATH_DATADIR	"data"
 
 #define _PATH_ARCHIVE	"data/archive"
 #define _PATH_ISAR	".isar"

@@ -91,7 +91,8 @@ struct pinfo pinfo[] = {
  /* 24 */ { "fbcreat",	"Flyby Creator",	panel_refresh_fbnew,	PSTICK_TR, PIF_FBIGN | PIF_UINP,		0,		uinpcb_fbnew },
  /* 25 */ { "compass",	"Compass",		panel_refresh_cmp,	PSTICK_BL, PIF_FBIGN,				0,		NULL },
  /* 26 */ { "keyh",	"Key Handler",		panel_refresh_keyh,	PSTICK_BL, 0,					0,		NULL },
- /* 27 */ { "dxcho",	"Deus Ex Chooser",	panel_refresh_dxcho,	PSTICK_TR, PIF_FBIGN,				0,		NULL }
+ /* 27 */ { "dxcho",	"Deus Ex Chooser",	panel_refresh_dxcho,	PSTICK_TR, PIF_FBIGN,				0,		NULL },
+ /* 28 */ { "dscho",	"Dataset Chooser",	panel_refresh_dscho,	PSTICK_TR, PIF_FBIGN,				0,		NULL }
 };
 
 #define PVOFF_TL 0

@@ -12,6 +12,7 @@
 
 #include "buf.h"
 #include "capture.h"
+#include "ds.h"
 #include "flyby.h"
 #include "gl.h"
 #include "job.h"
@@ -138,7 +139,6 @@ uinpcb_login(void)
 			authbuf[siz] = '\0';
 
 			panel_tremove(p);
-			st.st_rf |= RF_DATASRC;
 
 			if (strlen(authbuf) < 4 * sizeof(login_auth) / 3)
 {
@@ -147,6 +147,9 @@ uinpcb_login(void)
 				    strlen(authbuf));
 }
 			memset(authbuf, 0, sizeof(authbuf));
+
+			ds_liveproto = "https";
+			ds_setlive();
 		} else {
 			memset(login_auth, 0, sizeof(login_auth));
 

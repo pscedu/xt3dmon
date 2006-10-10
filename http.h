@@ -12,7 +12,7 @@ struct ustream;
 
 struct http_req {
 	const char	 *htreq_server;
-	in_port_t	  htreq_port;		/* host-byte order. */
+	const char	 *htreq_port;		/* host-byte order. */
 	int		  htreq_flags;
 
 	const char	 *htreq_method;

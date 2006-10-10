@@ -80,6 +80,7 @@ void		 gscb_panel(struct glname *, int);
 void		 gscb_pw_dir(struct glname *, int);
 void		 gscb_pw_dmnc(struct glname *, int);
 void		 gscb_pw_dmode(struct glname *, int);
+void		 gscb_pw_dscho(struct glname *, int);
 void		 gscb_pw_fb(struct glname *, int);
 void		 gscb_pw_help(struct glname *, int);
 void		 gscb_pw_hlnc(struct glname *, int);

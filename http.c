@@ -15,21 +15,17 @@
 #include "ustream.h"
 
 int
-net_connect(const char *host, in_port_t port)
+net_connect(const char *host, const char *port)
 {
 	struct addrinfo hints, *ai, *res0;
 	int error, s;
-	char *sport, *cause;
-
-	if (asprintf(&sport, "%d", port) == -1)
-		err(1, "asprintf");
+	char *cause;
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = PF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
-	if ((error = getaddrinfo(host, sport, &hints, &res0)) != 0)
+	if ((error = getaddrinfo(host, port, &hints, &res0)) != 0)
 		errx(1, "getaddrinfo %s: %s", host, gai_strerror(error));
-	free(sport);
 
 	s = -1;
 	cause = NULL; /* gcc */
@@ -48,7 +44,7 @@ net_connect(const char *host, in_port_t port)
 		break;
 	}
 	if (s == -1)
-		err(1, "%s", cause);
+		err(1, "%s: %s:%s", cause, host, port);
 	freeaddrinfo(res0);
 	return (s);
 }
@@ -64,7 +60,13 @@ http_open(struct http_req *req, struct http_res *res)
 	fd = net_connect(req->htreq_server, req->htreq_port);
 	if (fd == -1)
 		return (NULL);
-	ust = req->htreq_port == 443 ? UST_SSL : UST_REMOTE; /* XXX */
+
+	/* XXX make this better */
+	ust = UST_REMOTE;
+	if (strcmp(req->htreq_port, "https") == 0 ||
+	    strcmp(req->htreq_port, "443") == 0)
+		ust = UST_SSL;
+
 	if ((us = us_init(fd, ust, "rw")) == NULL)
 		return (NULL);
 

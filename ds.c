@@ -5,8 +5,7 @@
  *
  * Performs all file handling and such for retrieving data,
  * from various data sources (such as client sessions when
- * running in server mode).  Provides the convenient
- * ds_update() function.
+ * running in server mode).
  *
  * For server mode, routines are also provided for cloning
  * data sets (dsc_*).
@@ -25,6 +24,7 @@
 #include <time.h>
 
 #include "cdefs.h"
+#include "buf.h"
 #include "ds.h"
 #include "http.h"
 #include "objlist.h"
@@ -34,32 +34,73 @@
 #include "ustream.h"
 #include "util.h"
 
-#define _RPATH_NODE	"/arbiter-raw.pl?data=nodes"
-#define _RPATH_JOB	"/arbiter-raw.pl?data=jobs"
-#define _RPATH_YOD	"/arbiter-raw.pl?data=yods"
-#define _RPATH_RT	"/arbiter-raw.pl?data=rt"
-#define _RPATH_SS	"/arbiter-raw.pl?data=ss"
+#define MAX_PROTO_LEN 20
+#define MAX_PORT_LEN 6
+#define MAX_PATH_LEN BUFSIZ
 
-#define RDS_HOST	"bigben-monitor.psc.edu"
-#define RDS_PORT	80
-#define RDS_PORTSSL	443
+#ifndef _LIVE_PROTO
+# define _LIVE_PROTO "gssapi"
+#endif
 
-#ifndef _LIVE_DSP
-# define _LIVE_DSP DSP_REMOTE
+#ifndef _LIVE_PATH
+# define _LIVE_PATH "bigben-monitor.psc.edu/arbiter-raw.pl?data=%s"
 #endif
 
 /* Must match DS_* defines in ds.h. */
 struct datasrc datasrcs[] = {
-	{ "node", 0, _LIVE_DSP, _PATH_NODE, _RPATH_NODE, parse_node, DSF_AUTO | DSF_USESSL, dsfi_node,	dsff_node,  NULL },
-	{ "job",  0, _LIVE_DSP, _PATH_JOB,  _RPATH_JOB,  parse_job,  DSF_AUTO | DSF_USESSL, NULL,	NULL,	    NULL },
-	{ "yod",  0, _LIVE_DSP, _PATH_YOD,  _RPATH_YOD,  parse_yod,  DSF_AUTO | DSF_USESSL, NULL,	NULL,	    NULL },
-	{ "rt",   0, DSP_LOCAL, _PATH_RT,   _RPATH_RT,   parse_rt,   DSF_AUTO,		    NULL,	NULL,       NULL },
-	{ "mem",  0, DSP_LOCAL, _PATH_STAT, NULL,	 parse_mem,  DSF_AUTO,		    NULL,	NULL,	    NULL },
-	{ "ss",   0, DSP_LOCAL, _PATH_SS,   _RPATH_SS,   parse_ss,   DSF_AUTO,		    NULL,	NULL,       NULL }
+	{ "node", 0, "", parse_node, DSF_LIVE,	dsfi_node, dsff_node,	NULL },
+	{ "job",  0, "", parse_job,  DSF_LIVE,	NULL,	   NULL,	NULL },
+	{ "yod",  0, "", parse_yod,  DSF_LIVE,	NULL,	   NULL,	NULL },
+	{ "rt",   0, "", parse_rt,   0,		NULL,	   NULL,	NULL },
+	{ "ss",   0, "", parse_ss,   0,		NULL,	   NULL,	NULL }
 };
 
-int	 dsp = DSP_LOCAL;
-int	 dsflags = DSFF_ALERT;
+struct objlist ds_list = { NULL, 0, 0, 0, 0, 10, sizeof(struct fnent), fe_eq };
+
+int	 dsfopts = DSFO_ALERT | DSFO_LIVE;
+char	 ds_browsedir[PATH_MAX] = _PATH_ARCHIVE;
+char	 ds_dir[PATH_MAX] = _PATH_DATADIR;
+char	*ds_liveproto = _LIVE_PROTO;
+
+__inline int
+uri_has_proto(const char *uri, const char *proto)
+{
+	size_t len;
+
+	len = strlen(proto);
+	return (strncmp(uri, proto, len) == 0 && uri[len] == ':');
+}
+
+void
+ds_setlive(void)
+{
+	struct buf path, live;
+	int j;
+
+	buf_init(&path);
+	buf_appendv(&path, "file://");
+	escape_printf(&path, _PATH_DATA);
+	buf_appendv(&path, "/%s");
+	buf_nul(&path);
+
+	buf_init(&live);
+	escape_printf(&live, ds_liveproto);
+	buf_appendv(&live, "://");
+	buf_appendv(&live, _LIVE_PATH);
+	buf_nul(&live);
+
+	for (j = 0; j < NDS; j++)
+		snprintf(datasrcs[j].ds_uri, sizeof(datasrcs[j].ds_uri),
+		    buf_get(datasrcs[j].ds_flags & DSF_LIVE ? &live : &path),
+		    datasrcs[j].ds_name);
+
+	buf_free(&path);
+	buf_free(&live);
+
+	st.st_rf |= RF_DATASRC;
+	dsfopts |= DSFO_LIVE;
+	panel_rebuild(PANEL_DSCHO);
+}
 
 /*
  * Since parse_node uses obj_get() for creating/finding
@@ -86,6 +127,96 @@ ds_close(struct datasrc *ds)
 	us_close(ds->ds_us);
 }
 
+int
+uri_parse(const char *s, char *proto, char *host, char *port, char *path)
+{
+	int i;
+
+	for (i = 0; i < MAX_PROTO_LEN - 1 && isalpha(*s); s++, i++)
+		proto[i] = *s;
+	proto[i] = '\0';
+
+	if (*s++ != ':')
+		return (0);
+	if (*s++ != '/')
+		return (0);
+	if (*s++ != '/')
+		return (0);
+
+	if (strcmp(proto, "file") != 0) {
+		for (i = 0; i < MAXHOSTNAMELEN - 1 &&
+		    (isalnum(*s) || *s == '.' || *s == '-'); s++, i++)
+			host[i] = *s;
+		host[i] = '\0';
+
+		i = 0;
+		if (*s == ':') {
+			s++;
+			for (; i < MAX_PORT_LEN - 1 &&
+			    isdigit(*s); s++, i++)
+				port[i] = *s;
+		}
+		port[i] = '\0';
+	} else {
+		host[0] = '\0';
+		port[0] = '\0';
+	}
+
+	for (i = 0; i < MAX_PATH_LEN - 1; s++, i++)
+		path[i] = *s;
+	path[i] = '\0';
+
+	return (1);
+}
+
+void
+ds_seturi(int ds, const char *urifmt)
+{
+	snprintf(datasrcs[ds].ds_uri,
+	    sizeof(datasrcs[ds].ds_uri),
+	    urifmt, datasrcs[ds].ds_name);
+	datasrcs[ds].ds_flags |= DSF_FORCE;
+	st.st_rf |= RF_DATASRC;
+	dsfopts &= ~DSFO_LIVE;
+}
+
+char *
+ds_set(const char *fn, int flags)
+{
+	char path[PATH_MAX];
+	struct stat stb;
+	struct buf buf;
+	int j;
+
+	if ((flags & CHF_DIR) == 0)
+		errx(1, "file chosen when directory-only");
+
+	panel_rebuild(PANEL_DSCHO);
+	snprintf(path, sizeof(path), "%s/%s/%s",
+	    ds_browsedir, fn, datasrcs[0].ds_name);
+	if (stat(path, &stb) == -1) {
+		if (errno != ENOENT)
+			err(1, "stat %s", path);
+		errno = 0;
+	} else {
+		/* Dataset exists, don't descend. */
+		if (strcmp(fn, "..") != 0) {
+			snprintf(ds_dir, sizeof(ds_dir),
+			    "%s/%s", ds_browsedir, fn);
+			buf_init(&buf);
+			buf_appendv(&buf, "file://");
+			escape_printf(&buf, ds_dir);
+			buf_appendv(&buf, "/%s");
+			buf_nul(&buf);
+			for (j = 0; j < NDS; j++)
+				ds_seturi(j, buf_get(&buf));
+			buf_free(&buf);
+			return (NULL);
+		}
+	}
+	return (ds_browsedir);
+}
+
 void
 ds_read(struct datasrc *ds)
 {
@@ -96,81 +227,54 @@ ds_read(struct datasrc *ds)
 		ds->ds_finif(ds);
 }
 
-/* Change data source provider (e.g., local to remote). */
-void
-ds_chdsp(int type, int dsp)
-{
-	struct datasrc *ds;
-
-	ds = &datasrcs[type];
-	if (ds->ds_dsp == dsp)
-		return;
-	ds->ds_dsp = dsp;
-	ds->ds_mtime = 0;
-	ds->ds_flags = 0;
-}
-
 void
 ds_refresh(int type, int flags)
 {
 	struct datasrc *ds;
 	struct stat st;
-	int readit;
 
 	ds = ds_open(type);
 	if (ds == NULL) {
-		if (flags & DSFF_CRIT)
+		if (flags & DSFO_CRIT)
 			err(1, "datasrc (%d) open failed", type);
-		else if (flags & DSFF_ALERT) {
+		else if (flags & DSFO_ALERT) {
 			status_add("Unable to retrieve data: %s\n",
 			    strerror(errno));
 			panel_show(PANEL_STATUS);
-		} else if ((flags & DSFF_IGN) == 0)
+		} else if ((flags & DSFO_IGN) == 0)
 			warn("datasrc (%d) open failed", type);
 		return;
 	}
 
-	readit = 1;
-	switch (ds->ds_dsp) {
-	case DSP_LOCAL:
+	if (uri_has_proto(ds->ds_uri, "file")) {
 		if (fstat(ds->ds_us->us_fd, &st) == -1)
-			err(1, "fstat %s", ds->ds_lpath);
+			err(1, "fstat %s", ds->ds_uri);
 		/*
 		 * XXX: no way to tell if it was modified
 		 *	with <1 second resolution.
 		 */
 		if (st.st_mtime <= ds->ds_mtime &&
-		    (ds->ds_flags & DSF_FORCE) == 0) {
-			readit = 0;
-			break;
-		}
+		    (ds->ds_flags & DSF_FORCE) == 0)
+			goto done;
 		ds->ds_mtime = st.st_mtime;
-		if ((ds->ds_flags & DSF_AUTO) == 0) {
-//			ds->ds_flags |= DSF_READY;
-			status_add("New data available");
-			readit = 0;
-			break;
-		}
-		break;
 	}
-
-	if (readit) {
-		ds->ds_flags &= ~DSF_FORCE;
-		ds_read(ds);
-	}
+	ds->ds_flags &= ~DSF_FORCE;
+	ds_read(ds);
+done:
 	ds_close(ds);
 }
 
 struct ustream *
-ds_http(const char *path, struct http_res *res, __unused int flags)
+ds_http(const char *server, const char *port, const char *path,
+    struct http_res *res, __unused int flags)
 {
 	struct http_req req;
 
 	if (path == NULL)
 		errx(1, "no remote data available for datasrc type");
 	memset(&req, 0, sizeof(req));
-	req.htreq_server = RDS_HOST;
-	req.htreq_port = RDS_PORT;
+	req.htreq_server = server;
+	req.htreq_port = strcmp(port, "") ? port : "http";
 
 	req.htreq_method = "GET";
 	req.htreq_version = "HTTP/1.1";
@@ -182,7 +286,8 @@ ds_http(const char *path, struct http_res *res, __unused int flags)
 #define DHF_USEGSS	(1<<0)
 
 struct ustream *
-ds_https(const char *path, struct http_res *res, int flags)
+ds_https(const char *server, const char *port, const char *path,
+    struct http_res *res, int flags)
 {
 	struct ustream *usp;
 	struct http_req req;
@@ -190,8 +295,8 @@ ds_https(const char *path, struct http_res *res, int flags)
 	if (path == NULL)
 		errx(1, "no remote data available for datasrc type");
 	memset(&req, 0, sizeof(req));
-	req.htreq_server = RDS_HOST;
-	req.htreq_port = RDS_PORTSSL;
+	req.htreq_server = server;
+	req.htreq_port = strcmp(port, "") ? port : "https";
 
 	req.htreq_method = "GET";
 	req.htreq_version = "HTTP/1.1";
@@ -222,7 +327,12 @@ ds_https(const char *path, struct http_res *res, int flags)
 struct datasrc *
 ds_open(int type)
 {
-	struct ustream *(*httpf)(const char *, struct http_res *, int);
+	struct ustream *(*httpf)(const char *, const char *,
+	    const char *, struct http_res *, int);
+	char proto[MAX_PROTO_LEN];
+	char host[MAXHOSTNAMELEN];
+	char port[MAX_PORT_LEN];
+	char path[MAX_PATH_LEN];
 	struct http_res res;
 	struct datasrc *ds;
 	struct tm tm_zero;
@@ -230,28 +340,39 @@ ds_open(int type)
 
 	mod = 0;
 	ds = &datasrcs[type];
-	switch (ds->ds_dsp) {
-	case DSP_LOCAL:
-		if ((fd = open(ds->ds_lpath, O_RDONLY)) == -1)
+	if (!uri_parse(ds->ds_uri, proto, host, port, path))
+		return (NULL);
+	if (strcmp(proto, "file") == 0) {
+		if ((fd = open(path, O_RDONLY)) == -1)
 			return (NULL);
 		ds->ds_us = us_init(fd, UST_LOCAL, "r");
-		break;
-	case DSP_REMOTE:
+	} else if (strcmp(proto, "http") == 0 ||
+	    strcmp(proto, "https") == 0 ||
+	    strcmp(proto, "gssapi") == 0) {
 		flg = 0;
 
 		httpf = ds_http;
-		if (login_auth[0] == '\0') {
+		if (strcmp(proto, "gssapi") == 0) {
 #ifdef _GSS
-			if (gss_valid(RDS_HOST)) {
+			if (gss_valid(host)) {
 				httpf = ds_https;
 				flg |= DHF_USEGSS;
-			}
+			} else
 #endif
-		} else
+			{
+				ds_liveproto = "http";
+				snprintf(proto, sizeof(proto),
+				    "http");
+				port[0] = '\0';
+				ds_setlive();
+				st.st_rf &= ~RF_DATASRC;
+			}
+		} else if (strcmp(proto, "https") == 0)
 			httpf = ds_https;
 
 		memset(&res, 0, sizeof(res));
-		if ((ds->ds_us = httpf(ds->ds_rpath, &res, flg)) == NULL)
+		if ((ds->ds_us = httpf(host, port, path,
+		    &res, flg)) == NULL)
 			return (NULL);
 		memset(&tm_zero, 0, sizeof(tm_zero));
 		if (memcmp(&res.htres_mtime, &tm_zero,
@@ -272,7 +393,6 @@ ds_open(int type)
 			}
 			return (NULL);
 		}
-		break;
 	}
 	return (ds);
 }
@@ -343,15 +463,12 @@ dsc_clone(int type, const char *sid)
 	if ((fd = open(fn, O_RDWR | O_CREAT, 0644)) == -1)
 		err(1, "open: %s", fn);
 
-	switch (ds->ds_dsp) {
-	case DSP_LOCAL:
+	if (uri_has_proto(ds->ds_uri, "file")) {
 		/* XXX: use us_stat */
 		if (fstat(ds->ds_us->us_fd, &stb) == -1)
 			err(1, "fstat");
-		break;
-	case DSP_REMOTE:
+	} else {
 		stb.st_mtime = ds->ds_mtime;
-		break;
 	}
 
 	/* XXXXXXXX: use us_read */

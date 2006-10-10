@@ -32,7 +32,8 @@
 #define PANEL_CMP	(1<<25)
 #define PANEL_KEYH	(1<<26)
 #define PANEL_DXCHO	(1<<27)
-#define NPANELS		28
+#define PANEL_DSCHO	(1<<28)
+#define NPANELS		29
 
 struct pwidget {
 	const char		 *pw_str;
@@ -72,6 +73,7 @@ struct panel {
 	SLIST_HEAD(, pwidget)	  p_widgets;
 	struct pwidget		**p_nextwidget;
 	int			  p_nwidgets;
+	int			  p_nwcol;
 	size_t			  p_maxwlen;
 	void			(*p_extdrawf)(struct panel *);
 };
@@ -127,6 +129,7 @@ void panel_refresh_cmd(struct panel *);
 void panel_refresh_cmp(struct panel *);
 void panel_refresh_date(struct panel *);
 void panel_refresh_dmode(struct panel *);
+void panel_refresh_dscho(struct panel *);
 void panel_refresh_dxcho(struct panel *);
 void panel_refresh_eggs(struct panel *);
 void panel_refresh_fbcho(struct panel *);

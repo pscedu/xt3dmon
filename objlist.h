@@ -37,6 +37,7 @@ int	 fe_eq(const void *, const void *);
 int	 fe_cmp(const void *, const void *);
 
 extern struct objlist	 col_list;
+extern struct objlist	 ds_list;
 extern struct objlist	 dxscript_list;
 extern struct objlist	 flyby_list;
 extern struct objlist	 glname_list;

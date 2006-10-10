@@ -627,12 +627,12 @@ rebuild(int opts)
 	static int rebuild_wirep;
 
 	if (opts & RF_DATASRC) {
-		ds_refresh(DS_NODE, dsflags);
-		ds_refresh(DS_JOB, dsflags);
-		ds_refresh(DS_YOD, dsflags);
-		ds_refresh(DS_RT, DSFF_IGN);
-		ds_refresh(DS_SS, DSFF_IGN);
-		ds_refresh(DS_MEM, DSFF_IGN);
+		ds_refresh(DS_NODE, dsfopts);
+		ds_refresh(DS_JOB, dsfopts);
+		ds_refresh(DS_YOD, dsfopts);
+		ds_refresh(DS_RT, DSFO_IGN);
+		ds_refresh(DS_SS, DSFO_IGN);
+//		ds_refresh(DS_MEM, DSFO_IGN);
 
 		/* XXX save mtime and check in panel_refresh_date */
 		panel_rebuild(PANEL_DATE);
@@ -705,6 +705,7 @@ main(int argc, char *argv[])
 
 	arch_init();
 	ssl_init();
+	ds_setlive();
 	srandom(time(NULL));
 
 	cfgfn = _PATH_PHYSCONF;

@@ -9,6 +9,7 @@
 #include "cdefs.h"
 #include "cam.h"
 #include "deusex.h"
+#include "ds.h"
 #include "env.h"
 #include "flyby.h"
 #include "gl.h"
@@ -588,6 +589,15 @@ gscb_pw_keyh(struct glname *gn, int flags)
 		keyh = kh;
 		glutSpecialFunc(keyhtab[keyh].kh_spkeyh);
 	}
+}
+
+void
+gscb_pw_dscho(__unused struct glname *gn, int flags)
+{
+	if (flags & SPF_PROBE)
+		cursor_set(GLUT_CURSOR_INFO);
+	else if (flags == 0)
+		ds_setlive();
 }
 
 /*

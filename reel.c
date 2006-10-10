@@ -19,12 +19,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "buf.h"
 #include "ds.h"
 #include "objlist.h"
 #include "panel.h"
 #include "pathnames.h"
 #include "reel.h"
 #include "state.h"
+#include "util.h"
 
 char	reel_dir[PATH_MAX] = LATEST_REEL;
 char	reel_browsedir[PATH_MAX] = _PATH_ARCHIVE;
@@ -71,30 +73,9 @@ reel_load(void)
 	    sizeof(struct fnent *), fe_cmp);
 }
 
-/* XXX: bad */
-int dsp_node;
-int dsp_job;
-int dsp_yod;
-
-char fn_node[PATH_MAX];
-char fn_job[PATH_MAX];
-char fn_yod[PATH_MAX];
-
 void
 reel_start(void)
 {
-	dsp_node = datasrcs[DS_NODE].ds_dsp;
-	dsp_job = datasrcs[DS_JOB].ds_dsp;
-	dsp_yod = datasrcs[DS_YOD].ds_dsp;
-
-	datasrcs[DS_NODE].ds_dsp = DSP_LOCAL;
-	datasrcs[DS_JOB].ds_dsp = DSP_LOCAL;
-	datasrcs[DS_YOD].ds_dsp = DSP_LOCAL;
-
-	datasrcs[DS_NODE].ds_lpath = fn_node;
-	datasrcs[DS_JOB].ds_lpath = fn_job;
-	datasrcs[DS_YOD].ds_lpath = fn_yod;
-
 	reel_pos = -1;
 	reel_advance();
 }
@@ -102,41 +83,31 @@ reel_start(void)
 void
 reel_advance(void)
 {
+	struct buf uri;
+	int j;
+
 	if (reel_pos + 1 >= reelframe_list.ol_cur)
 		return;
 	reel_pos++;
 
-	snprintf(fn_node, sizeof(fn_node), "%s/%s/node",
-	    reel_dir, OLE(reelframe_list, reel_pos, fnent)->fe_name);
-	snprintf(fn_job, sizeof(fn_job), "%s/%s/job",
-	    reel_dir, OLE(reelframe_list, reel_pos, fnent)->fe_name);
-	snprintf(fn_yod, sizeof(fn_yod), "%s/%s/yod",
-	    reel_dir, OLE(reelframe_list, reel_pos, fnent)->fe_name);
-
-	st.st_rf |= RF_DATASRC;
-	datasrcs[DS_NODE].ds_flags |= DSF_FORCE;
-	datasrcs[DS_JOB].ds_flags |= DSF_FORCE;
-	datasrcs[DS_YOD].ds_flags |= DSF_FORCE;
-
+	buf_init(&uri);
+	buf_appendv(&uri, "file://");
+	escape_printf(&uri, reel_dir);
+	buf_append(&uri, '/');
+	escape_printf(&uri, OLE(reelframe_list, reel_pos, fnent)->fe_name);
+	buf_appendv(&uri, "/%s");
+	buf_nul(&uri);
+	for (j = 0; j < NDS; j++)
+		if (datasrcs[j].ds_flags & DSF_LIVE)
+			ds_seturi(j, buf_get(&uri));
+	buf_free(&uri);
 	panel_rebuild(PANEL_REEL);
 }
 
 void
 reel_end(void)
 {
-	st.st_rf |= RF_DATASRC;
-	datasrcs[DS_NODE].ds_dsp = dsp_node;
-	datasrcs[DS_JOB].ds_dsp = dsp_job;
-	datasrcs[DS_YOD].ds_dsp = dsp_yod;
-
-	datasrcs[DS_NODE].ds_lpath = _PATH_NODE;
-	datasrcs[DS_JOB].ds_lpath = _PATH_JOB;
-	datasrcs[DS_YOD].ds_lpath = _PATH_YOD;
-
-	datasrcs[DS_NODE].ds_flags |= DSF_FORCE;
-	datasrcs[DS_JOB].ds_flags |= DSF_FORCE;
-	datasrcs[DS_YOD].ds_flags |= DSF_FORCE;
-
+	ds_setlive();
 	panel_rebuild(PANEL_REEL);
 }
 
