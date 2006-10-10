@@ -1,5 +1,14 @@
 /* $Id$ */
 
+/*
+ * Simple routines for manipulating variable-sized
+ * buffers.
+ *
+ * TODO: add the following members:
+ *	- buf_opts with option BUFOPT_FATAL_ALLOC
+ *	- buf_growamt to control growth size
+ */
+
 #ifndef _BUF_H_
 #define _BUF_H_
 
@@ -8,9 +17,10 @@
 struct buf {
 	int	 buf_pos;
 	int	 buf_max;
-	int	 buf_opts; /* FATAL_ALLOCS */
 	char	*buf_buf;
 };
+
+#define buf_nul(buf) buf_append((buf), '\0')
 
 void	 buf_init(struct buf *);
 void	 buf_realloc(struct buf *);
