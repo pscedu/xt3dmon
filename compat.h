@@ -5,8 +5,8 @@
 
 #ifdef _MSC_VER
 
-#define WIN32_LEAN_AND_MEAN
-#define _USE_MATH_DEFINES
+# define WIN32_LEAN_AND_MEAN
+# define _USE_MATH_DEFINES
 
 # include <stdarg.h>
 
@@ -23,9 +23,9 @@
 # include "getopt.h"
 # include "dirent.h"
 
-#define strcasecmp stricmp
-#define random rand
-#define srandom srand
+# define strcasecmp stricmp
+# define random rand
+# define srandom srand
 
 # define atanf atan
 # define acosf acos
@@ -39,10 +39,11 @@
 # define write _write
 # define read _read
 
-#define round(a) floor((a) + 0.5)
+# define round(a) floor((a) + 0.5)
 
 # define NAME_MAX BUFSIZ
 # define PATH_MAX BUFSIZ
+# define MAXHOSTNAMELEN 256
 
 int asprintf(char **, const char *, ...);
 int vasprintf(char **, const char *, va_list);
@@ -50,6 +51,7 @@ int snprintf(char *, size_t, const char *, ...);
 int vsnprintf(char *, size_t, const char *, va_list);
 
 char *strptime(const char *, const char *, struct tm *);
+struct tm *gmtime_r(const time_t *, struct tm *);
 
 int futimes(int, const struct timeval *);
 
@@ -57,16 +59,19 @@ int execvp(const char *, const char *const *);
 int gettimeofday(struct timeval *, void *);
 int ffs(int);
 
+# define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
+# define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+
 /* Taken from sys/time.h */
-# define timersub(a, b, result)                                             \
-do {                                                                        \
-	(result)->tv_sec = (a)->tv_sec - (b)->tv_sec;                       \
-	(result)->tv_usec = (a)->tv_usec - (b)->tv_usec;                    \
-	if ((result)->tv_usec < 0) {                                        \
-		--(result)->tv_sec;                                         \
-		(result)->tv_usec += 1000000;                               \
-	}                                                                   \
-} while (0)
+# define timersub(a, b, result)						\
+	do {								\
+		(result)->tv_sec = (a)->tv_sec - (b)->tv_sec;		\
+		(result)->tv_usec = (a)->tv_usec - (b)->tv_usec;	\
+		if ((result)->tv_usec < 0) {				\
+			--(result)->tv_sec;				\
+			(result)->tv_usec += 1000000;			\
+		}							\
+	} while (0)
 
 # undef __inline
 # define __inline
