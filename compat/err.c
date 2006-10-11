@@ -1,12 +1,15 @@
 /* $Id$ */
 
+#include "mon.h"
+
+#include <err.h>
 #include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-void
+__dead void
 err(int code, const char *fmt, ...)
 {
 	va_list ap;
@@ -19,7 +22,7 @@ err(int code, const char *fmt, ...)
 	exit(code);
 }
 
-void
+__dead void
 errx(int code, const char *fmt, ...)
 {
 	va_list ap;
