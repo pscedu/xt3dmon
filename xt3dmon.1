@@ -338,7 +338,7 @@ Highlight (i.e., only show) nodes in given node
 .Ar class .
 The following symbolic names are recognized:
 .Pp
-.Bl -tag -offset indent -width Ds -compact
+.Bl -tag -offset indent -width 10n -compact
 .It Ic all
 Show all node classes.
 .It Ic seldm
@@ -370,7 +370,7 @@ options to only those specified.
 .Pp
 The following options are recognized:
 .Pp
-.Bl -tag -width nodeanimXX -offset indent -compact
+.Bl -tag -width 10n -offset indent -compact
 .It Ic cabskel
 Include cabinents in skeletons.
 .It Ic caption
@@ -397,10 +397,8 @@ Show interconnect pipes for selected nodes.
 .It Ic skel
 Cluster skeletons.
 .It Ic subset
-Show a subset of the machine.
-See the
-.Ic subsel
-command.
+Show only sub-selected nodes (see
+.Ic subsel ) .
 .It Ic tex
 Use textures of solid colors for node fills.
 .It Ic tween
@@ -438,15 +436,64 @@ show only the specified panels.
 .Pp
 The following panels are available:
 .Pp
-.Bl -tag -width compassXX -offset indent -compact
+.Bl -tag -width 10n -offset indent -compact
+.It Ic cam
+Camera position.
+.\" .It Ic cmd
+.\" Execute command to login node.
 .It Ic compass
 Compass.
-.It Ic wiadj
-Wired-mode spacing controls.
+.It Ic date
+date/time of dataset.
+.It Ic dmode
+Data mode selector.
+.It Ic dscho
+Custom/archive data set chooser.
+.It Ic dxcho
+Deus-ex script chooser.
+.\" .It Ic eggs
+.It Ic fbcho
+Flyby chooser.
+.It Ic fbcreat
+Interactive Flyby creator.
+.It Ic fbstat
+Flyby controls.
+.It Ic fps
+Frames-per-second meter.
+.It Ic gotojob
+Interactive go-to job controls.
+.It Ic gotonode
+Interactive go-to node controls.
+.It Ic help
+Help.
+.It Ic keyh
+Keyboard remapping controls.
 .It Ic legend
 Node class legend.
-.It Ic Help
-Help.
+.It Ic login
+Login for accessing job details.
+.It Ic ninfo
+Information about selected node(s).
+.It Ic options
+Program option controls.
+.It Ic panels
+Panel controls.
+.It Ic pipe
+Pipe mode controls.
+.It Ic reel
+Archive reel selector.
+.It Ic rt
+Route-mode controls.
+.It Ic sshot
+Interactive screenshot saver.
+.It Ic sstar
+Seastar-mode controls.
+.It Ic status
+Program status information.
+.It Ic vmode
+View mode selector.
+.It Ic wiadj
+Wired-mode spacing controls.
 .El
 .It Ic playreel Ar delay archive
 Play a data archive reel.
@@ -469,7 +516,7 @@ Recognized
 .Ar stick
 values are:
 .Pp
-.Bl -tag -width Ds -offset indent -compact
+.Bl -tag -width 10n -offset indent -compact
 .It Ic tl
 Top-left.
 .It Ic tr
