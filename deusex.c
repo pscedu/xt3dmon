@@ -476,8 +476,19 @@ dxp_refocus(__unused struct dx_action *dxa)
 int
 dxp_refresh(__unused struct dx_action *dxa)
 {
-	st.st_rf |= RF_DATASRC;
-	return (1);
+	static const char *cap;
+	int ret;
+
+	ret = 0;
+	if (cap) {
+		ret = 1;
+		caption_set(cap);
+		cap = NULL;
+	} else {
+		cap = caption_get();
+		st.st_rf |= RF_DATASRC;
+	}
+	return (ret);
 }
 
 int
@@ -814,12 +825,19 @@ dxpcb_cyclenc(__unused int a)
 }
 
 int
-dxp_cyclenc(__unused struct dx_action *dxa)
+dxp_cyclenc(struct dx_action *dxa)
 {
-	int ret;
+	int ret, error;
 
 	ret = 0;
 	if (dxt_done) {
+		if (dx_cycle_nc == 0)
+			switch (dxa->dxa_cycle_meth) {
+			case DACM_GROW:
+				nc_runall(fill_setxparent);
+				break;
+			}
+
 		switch (st.st_dmode) {
 		case DM_JOB:
 			while (dx_cycle_nc < NSC &&
@@ -832,7 +850,17 @@ dxp_cyclenc(__unused struct dx_action *dxa)
 				dx_cycle_nc++;
 			break;
 		}
-		if (nc_set(dx_cycle_nc)) {
+
+		error = 1;
+		switch (dxa->dxa_cycle_meth) {
+		case DACM_CYCLE:
+			error = nc_set(dx_cycle_nc);
+			break;
+		case DACM_GROW:
+			error = nc_apply(fill_setopaque, dx_cycle_nc);
+			break;
+		}
+		if (error) {
 			dx_cycle_nc = -1;
 			nc_runall(fill_setopaque);
 			ret = 1;

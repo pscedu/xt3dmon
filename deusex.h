@@ -10,6 +10,10 @@
 #define DXV_OFF		1
 #define DXV_SET		2
 
+/* Cycle action methods. */
+#define DACM_GROW	0
+#define DACM_CYCLE	1
+
 /* Seljob values. */
 #define DXSJ_RND	(-1)
 
@@ -31,6 +35,8 @@ struct dx_action {
 #define dxa_hl		dxa_intg
 
 #define dxa_caption	dxa_str
+
+#define dxa_cycle_meth	dxa_intg
 
 #define dxa_reel	dxa_str
 #define dxa_reel_delay	dxa_intg

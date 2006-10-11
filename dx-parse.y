@@ -148,11 +148,26 @@ conf		: DGT_BIRD {
 			dxa.dxa_type = DGT_CLRSN;
 			dxa_add(&dxa);
 		}
+		| DGT_CYCLENC STRING {
+			struct dx_action dxa;
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_CYCLENC;
+			if (strcmp($2, "grow") == 0)
+				dxa.dxa_cycle_meth = DACM_GROW;
+			else if (strcmp($2, "cycle") == 0)
+				dxa.dxa_cycle_meth = DACM_CYCLE;
+			else
+				yyerror("invalid cycle method: %s", $2);
+			free($2);
+			dxa_add(&dxa);
+		}
 		| DGT_CYCLENC {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DGT_CYCLENC;
+			dxa.dxa_cycle_meth = DACM_CYCLE;
 			dxa_add(&dxa);
 		}
 		| DGT_DMODE STRING {
