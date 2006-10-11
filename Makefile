@@ -18,6 +18,7 @@ CFLAGS += -D_LIVE_PROTO=\"file\" -D_LIVE_PATH=_PATH_DATA
 #CFLAGS += -Wconversion
 CFLAGS += -O3 -Wuninitialized -fomit-frame-pointer
 CFLAGS += -fno-strict-aliasing
+CFLAGS += -I/usr/X11R6/include
 
 LIBS += -lGL -lGLU -lglut -lssl -lpng -lz
 
