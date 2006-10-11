@@ -1,5 +1,5 @@
 .\" $Id$
-.Dd October 9, 2006
+.Dd October 11, 2006
 .Dt XT3DMON 1
 .ds volume Pittsburgh Supercomputing Center
 .\" .ds vT Pittsburgh Supercomputing Center
@@ -89,12 +89,12 @@ temperature class range.
 The seastar and routing error modes color the nodes based upon the
 relative performance of each node to the rest of the nodes.
 .Pp
-Some modes, such as job mode, provide information about user accounts
-on the XT3 system.
+Some modes, such as job mode, provide sensitive job details from the
+XT3 system.
 As such, accessing this information requires authenticating with a
 valid PSC/Kerberos account, which can be set with the
 .Ic pL
-command.
+command and will only be used over an OpenSSL connection.
 .Pp
 The legend panel (see the
 .Ic pl
@@ -283,8 +283,7 @@ Enter a job ID to view only that job.
 Toggle the keyboard remapping control panel.
 .It Ic pL
 Toggle the login panel.
-Prompts for a username/password combination to access account-specific
-information.
+Prompts for a username and password to access job details.
 .It Ic pl
 Toggle the legend panel.
 .It Ic pm
@@ -353,9 +352,14 @@ which may be any of the following:
 Move to a bird's eye view.
 .It Ic clrsn
 Clear any selected nodes.
-.It Ic cyclenc
+.It Ic cyclenc Op Ar method
 Cycle through each node class (such as jobs or temperature range)
 of the current data mode, displaying only one class at a time.
+.Ar method
+may be
+.Ic cycle
+(default if unspecified) or
+.Ic grow .
 .It Ic dmode Ar dm
 Set the data mode.
 Recognized values for
