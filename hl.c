@@ -168,7 +168,7 @@ nc_getfp(size_t nc)
 /*
  * Apply a fill operation on a node class.
  */
-void
+int
 nc_apply(void (*f)(struct fill *), size_t nc)
 {
 	struct fill *fp;
@@ -176,18 +176,18 @@ nc_apply(void (*f)(struct fill *), size_t nc)
 
 	fp = nc_getfp(nc);
 	if (fp == NULL)
-		return;
-
+		return (1);
 	f(fp);
 
 	hlnc_clean = 0;
 	st.st_rf |= RF_CLUSTER | RF_SELNODE;
 
 	if (flyby_mode != FBM_REC)
-		return;
+		return (0);
 	hlop = nc_gethlop(f);
 	if (hlop != FBHLOP_UNKNOWN)
 		flyby_writehlnc(nc, hlop);
+	return (0);
 }
 
 /*
