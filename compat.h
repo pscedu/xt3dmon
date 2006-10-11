@@ -41,6 +41,8 @@
 
 # define round(a) floor((a) + 0.5)
 
+# define usleep(x)
+
 # define NAME_MAX BUFSIZ
 # define PATH_MAX BUFSIZ
 # define MAXHOSTNAMELEN 256
