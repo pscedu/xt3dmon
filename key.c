@@ -144,6 +144,9 @@ gl_keyh_panel(unsigned char key, __unused int u, __unused int v)
 	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
+	case '0':
+		panels_hide(~0);
+		break;
 	case 'a':
 		for (j = 0; j < NPANELS; j++)
 			if ((pinfo[j].pi_flags & PIF_UINP) == 0)
@@ -175,6 +178,9 @@ gl_keyh_panel(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 'g':
 		panel_toggle(PANEL_GOTONODE);
+		break;
+	case 'h':
+		panel_toggle(PANEL_HELP);
 		break;
 	case 'j':
 		panel_toggle(PANEL_GOTOJOB);
