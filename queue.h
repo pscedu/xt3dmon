@@ -30,10 +30,9 @@
 	(((elem)->memb).sle_next)
 #endif
 
-#ifndef SLIST_INIT
+#undef SLIST_INIT
 #define SLIST_INIT(slh)							\
-	(SLIST_FIRST(slh) = NULL)
-#endif
+	(SLIST_FIRST(slh) = SLIST_END(slh))
 
 #ifndef SLIST_FOREACH
 #define SLIST_FOREACH(elem, slh, memb)					\
