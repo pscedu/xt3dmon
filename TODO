@@ -96,6 +96,7 @@ todo
 - use fill_checked/dechecked in place of white/nodata in pwidgets
 - moving the cursor should not cause panel recompiles
 - ensure nothing modifies st.st_opt and uses opt_flip() instead
+- add -D_GSS to macosx makefile
 
 xtwmon
 - rename data=nodes to data=node
