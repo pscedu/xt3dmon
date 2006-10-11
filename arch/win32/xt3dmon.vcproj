@@ -163,6 +163,9 @@
 				RelativePath="..\..\gl.c">
 			</File>
 			<File
+				RelativePath="..\..\gss.c">
+			</File>
+			<File
 				RelativePath="..\..\hl.c">
 			</File>
 			<File
@@ -215,6 +218,9 @@
 			</File>
 			<File
 				RelativePath="..\..\reel.c">
+			</File>
+			<File
+				RelativePath="..\..\rte.c">
 			</File>
 			<File
 				RelativePath="..\..\select.c">
@@ -277,6 +283,9 @@
 					RelativePath="..\..\compat\asprintf.c">
 				</File>
 				<File
+					RelativePath="..\..\compat\basename.c">
+				</File>
+				<File
 					RelativePath="..\..\compat\dirent.c">
 				</File>
 				<File
@@ -284,6 +293,9 @@
 				</File>
 				<File
 					RelativePath="..\..\compat\ffs.c">
+				</File>
+				<File
+					RelativePath="..\..\compat\futimes.c">
 				</File>
 				<File
 					RelativePath="..\..\compat\getopt.c">
