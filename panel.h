@@ -59,7 +59,7 @@ struct pinfo;
 struct panel {
 	int			  p_id;
 	struct pinfo		 *p_info;
-	int			  p_dl[2];
+	int			  p_dl[2];	/* GL display list. */
 	char			 *p_str;
 	size_t			  p_strlen;
 	int			  p_u;
@@ -71,10 +71,12 @@ struct panel {
 	struct fill		  p_fill;
 	TAILQ_ENTRY(panel)	  p_link;
 	SLIST_HEAD(, pwidget)	  p_widgets;
-	struct pwidget		**p_nextwidget;
+	struct pwidget		 *p_lastwidget;
+	SLIST_HEAD(, pwidget)	  p_freewidgets;
 	int			  p_nwidgets;
-	int			  p_nwcol;
-	size_t			  p_maxwlen;
+	int			  p_nwcol;	/* Number of widget columns. */
+	int			  p_totalwcw;	/* Total width of all columns combined. */
+	size_t			 *p_wcw;	/* Widths of individual columns. */
 	void			(*p_extdrawf)(struct panel *);
 };
 
@@ -119,6 +121,7 @@ void		 panel_demobilize(struct panel *);
 void		 panel_draw_compass(struct panel *);
 void		 panel_rebuild(int);
 void		 panel_redraw(int);
+void		 panel_calcwlens(struct panel *);
 
 void		 panels_set(int);
 void		 panels_flip(int);

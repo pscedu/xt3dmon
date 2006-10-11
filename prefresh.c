@@ -175,28 +175,30 @@ void
 pwidget_startlist(struct panel *p)
 {
 	p->p_nwidgets = 0;
-	p->p_maxwlen = 0;
-	p->p_nextwidget = &SLIST_FIRST(&p->p_widgets);
+	SLIST_FIRST(&p->p_freewidgets) = SLIST_FIRST(&p->p_widgets);
+	SLIST_INIT(&p->p_widgets);
+	p->p_lastwidget = NULL;
 }
 
 void
-pwidget_endlist(struct panel *p)
+pwidget_endlist(struct panel *p, int nwcol)
 {
 	struct pwidget *pw, *nextp;
 
+	p->p_nwcol = nwcol;
 	if (p->p_nwidgets == 0)
 		SLIST_INIT(&p->p_widgets);
+	else
+		panel_calcwlens(p);
 
-	if (*p->p_nextwidget == NULL)
+	if (SLIST_EMPTY(&p->p_freewidgets))
 		return;
-	pw = *p->p_nextwidget;
-	*p->p_nextwidget = NULL;
-
-	/* Free old widgets not replaced with new ones. */
-	for (; pw; pw = nextp) {
+	for (pw = SLIST_FIRST(&p->p_freewidgets);
+	    pw != SLIST_END(&p->p_freewidgets); pw = nextp) {
 		nextp = SLIST_NEXT(pw, pw_next);
 		free(pw);
 	}
+	SLIST_INIT(&p->p_freewidgets);
 }
 
 void
@@ -206,15 +208,20 @@ pwidget_add(struct panel *p, struct fill *fp, const char *s, int sprio,
 	struct pwidget *pw;
 
 	p->p_nwidgets++;
-	if (*p->p_nextwidget == NULL) {
+	if (SLIST_EMPTY(&p->p_freewidgets)) {
 		if ((pw = malloc(sizeof(*pw))) == NULL)
 			err(1, "malloc");
+		memset(pw, 0, sizeof(*pw));
+	} else {
+		pw = SLIST_FIRST(&p->p_freewidgets);
+		SLIST_REMOVE_HEAD(&p->p_freewidgets, pw_next);
 		SLIST_NEXT(pw, pw_next) = NULL;
-		*p->p_nextwidget = pw;
-	} else
-		pw = *p->p_nextwidget;
-
-	p->p_nextwidget = &SLIST_NEXT(pw, pw_next);
+	}
+	if (p->p_lastwidget)
+		SLIST_NEXT(p->p_lastwidget, pw_next) = pw;
+	else
+		SLIST_INSERT_HEAD(&p->p_widgets, pw, pw_next);
+	p->p_lastwidget = pw;
 
 	pw->pw_fillp = fp;
 	pw->pw_cb = cb;
@@ -224,7 +231,6 @@ pwidget_add(struct panel *p, struct fill *fp, const char *s, int sprio,
 	pw->pw_arg_ptr2 = arg_ptr2;
 	pw->pw_str = s;
 	pw->pw_sprio = sprio;
-	p->p_maxwlen = MAX(p->p_maxwlen, strlen(s));
 }
 
 void
@@ -407,9 +413,9 @@ panel_refresh_legend(struct panel *p)
 		    "Not available.");
 		break;
 	}
-	pwidget_endlist(p);
 	if (cmp)
 		pwidget_sortlist(p, cmp);
+	pwidget_endlist(p, 2);
 }
 
 #define NINFO_MAXNIDS 30
@@ -667,7 +673,7 @@ panel_refresh_ninfo(struct panel *p)
 		pwidget_add(p, &statusclass[n->n_state].nc_fill, "Show class", 0,
 		    gscb_pw_dmnc, DM_JOB, n->n_state, NULL, NULL);
 done:
-	pwidget_endlist(p);
+	pwidget_endlist(p, 2);
 }
 
 void
@@ -716,7 +722,7 @@ panel_refresh_flyby(struct panel *p)
 		    gscb_pw_fb, PWFF_OPEN, 0, NULL, NULL);
 		break;
 	}
-	pwidget_endlist(p);
+	pwidget_endlist(p, 2);
 }
 
 void
@@ -862,8 +868,8 @@ panel_refresh_opts(struct panel *p)
 		    &fill_white : &fill_nodata), opts[i].opt_name, 0,
 		    gscb_pw_opt, i, 0, NULL, NULL);
 	}
-	pwidget_endlist(p);
 	pwidget_sortlist(p, pwidget_cmp);
+	pwidget_endlist(p, 2);
 }
 
 void
@@ -891,8 +897,8 @@ panel_refresh_panels(struct panel *p)
 		    &fill_white : &fill_nodata), pinfo[i].pi_name, 0,
 		    gscb_pw_panel, i, 0, NULL, NULL);
 	}
-	pwidget_endlist(p);
 	pwidget_sortlist(p, pwidget_cmp);
+	pwidget_endlist(p, 2);
 }
 
 void
@@ -971,7 +977,7 @@ panel_refresh_help(struct panel *p)
 		pwidget_add(p, &fill_xparent, "Help <<", 0,
 		    gscb_pw_help, HF_SHOWHELP, 0, NULL, NULL);
 	}
-	pwidget_endlist(p);
+	pwidget_endlist(p, 2);
 }
 
 void
@@ -991,7 +997,7 @@ panel_refresh_vmode(struct panel *p)
 		    &fill_white : &fill_nodata), vmodes[i].vm_name, 0,
 		    gscb_pw_vmode, i, 0, NULL, NULL);
 	}
-	pwidget_endlist(p);
+	pwidget_endlist(p, 1);
 }
 
 void
@@ -1013,7 +1019,7 @@ panel_refresh_dmode(struct panel *p)
 		    &fill_white : &fill_nodata), dmodes[i].dm_name, 0,
 		    gscb_pw_dmode, i, 0, NULL, NULL);
 	}
-	pwidget_endlist(p);
+	pwidget_endlist(p, 2);
 }
 
 char *ssvclabels[] = {
@@ -1053,7 +1059,7 @@ panel_refresh_sstar(struct panel *p)
 		    &fill_white : &fill_nodata), ssmodelabels[i], 0,
 		    gscb_pw_ssmode, i, 0, NULL, NULL);
 	}
-	pwidget_endlist(p);
+	pwidget_endlist(p, 2);
 }
 
 char *pipemodelabels[] = {
@@ -1078,7 +1084,7 @@ panel_refresh_pipe(struct panel *p)
 		    &fill_white : &fill_nodata), pipemodelabels[i], 0,
 		    gscb_pw_pipe, i, 0, NULL, NULL);
 	}
-	pwidget_endlist(p);
+	pwidget_endlist(p, 1);
 }
 
 void
@@ -1117,7 +1123,7 @@ panel_refresh_wiadj(struct panel *p)
 	    gscb_pw_wiadj, SWF_OFFY, 0, NULL, NULL);
 	pwidget_add(p, &fill_nodata, "z Offset", 0,
 	    gscb_pw_wiadj, SWF_OFFZ, 0, NULL, NULL);
-	pwidget_endlist(p);
+	pwidget_endlist(p, 2);
 }
 
 char *rtetypelabels[] = {
@@ -1201,7 +1207,7 @@ panel_refresh_rt(struct panel *p)
 		pwidget_add(p, &rtpipeclass[i].nc_fill,
 		    rtpipeclass[i].nc_name, 0, NULL, 0, 0, NULL, NULL);
 
-	pwidget_endlist(p);
+	pwidget_endlist(p, 2);
 }
 
 void
@@ -1229,16 +1235,12 @@ panel_refresh_keyh(struct panel *p)
 		return;
 	sav_keyh = keyh;
 
-	panel_set_content(p,
-	    "- Key Controls -\n"
-	    "Current: %s",
-	    keyhtab[keyh].kh_name);
-
+	panel_set_content(p, "- Key Controls -");
 	pwidget_startlist(p);
 	for (j = 0; j < NKEYH; j++)
 		pwidget_add(p, (j == keyh ? &fill_white : &fill_nodata),
 		    keyhtab[j].kh_name, 0, gscb_pw_keyh, j, 0, NULL, NULL);
-	pwidget_endlist(p);
+	pwidget_endlist(p, 1);
 }
 
 #define PWDF_DIRSONLY (1<<0)
@@ -1335,8 +1337,8 @@ panel_refresh_fbcho(struct panel *p)
 	if (panel->p_nwidgets == 0)
 		pwidget_add(p, &fill_white, FLYBY_DEFAULT, 0, );
 #endif
-	pwidget_endlist(p);
 	pwidget_sortlist(p, pwidget_cmp);
+	pwidget_endlist(p, 2);
 }
 
 void
@@ -1350,8 +1352,8 @@ panel_refresh_dxcho(struct panel *p)
 	pwidgets_dir(p, dx_dir, &dxscript_list, dx_fn, dx_set, 0);
 	if (p->p_nwidgets == 0)
 		panel_add_content(p, "\nNo scripts available.");
-	pwidget_endlist(p);
 	pwidget_sortlist(p, pwidget_cmp);
+	pwidget_endlist(p, 2);
 }
 
 void
@@ -1385,23 +1387,26 @@ panel_refresh_reel(struct panel *p)
 //		if (p->p_nwidgets == 0)
 //			panel_add_content(p, "\nNo archive reels available.");
 	}
-	pwidget_endlist(p);
 	pwidget_sortlist(p, pwidget_cmp);
+	pwidget_endlist(p, 2);
 }
 
 void
 panel_refresh_dscho(struct panel *p)
 {
+	int live;
+
 	if (panel_ready(p))
 		return;
 
+	live = dsfopts & DSFO_LIVE;
 	panel_set_content(p, "- Dataset Chooser -\nCurrent: %s\n\n%s:",
-	    dsfopts & DSFO_LIVE ? "live" : ds_dir, ds_browsedir);
+	     live ? "live" : ds_dir, ds_browsedir);
 	pwidget_startlist(p);
-	pwidget_add(p, (dsfopts & DSFO_LIVE ? &fill_white : &fill_nodata),
+	pwidget_add(p, (live ? &fill_white : &fill_nodata),
 	    "Live Data", 2, gscb_pw_dscho, 0, 0, NULL, NULL);
-	pwidgets_dir(p, ds_browsedir, &ds_list, ds_dir,
+	pwidgets_dir(p, ds_browsedir, &ds_list, live ? "" : ds_dir,
 	    ds_set, PWDF_DIRSONLY);
-	pwidget_endlist(p);
 	pwidget_sortlist(p, pwidget_cmp);
+	pwidget_endlist(p, 3);
 }

@@ -122,6 +122,7 @@ panel_free(struct panel *p)
 		free(pw);
 	}
 	free(p->p_str);
+	free(p->p_wcw);
 	free(p);
 }
 
@@ -280,6 +281,37 @@ draw_pwbg(struct fill *fp, int uoff, int voff)
 		glDisable(GL_BLEND);
 }
 
+__inline void
+panel_calcwlens(struct panel *p)
+{
+	struct pwidget *pw;
+	int nc, j, col;
+	size_t siz;
+
+	nc = MIN(p->p_nwcol, p->p_nwidgets);
+	siz = sizeof(*p->p_wcw) * nc;
+	if ((p->p_wcw = realloc(p->p_wcw, siz)) == NULL)
+		err(1, "realloc");
+	memset(p->p_wcw, 0, siz);
+	j = 0;
+	SLIST_FOREACH(pw, &p->p_widgets, pw_next) {
+		col = j * nc / p->p_nwidgets;
+		p->p_wcw[col] = MAX(p->p_wcw[col],
+		    strlen(pw->pw_str));
+		j++;
+if (col > nc)
+  errx(1, "col > nc");
+	}
+	p->p_totalwcw = 0;
+	for (j = 0; j < nc; j++) {
+		p->p_wcw[j] = MIN(PWLABEL_MAXLEN,
+		    LETTER_WIDTH * (int)p->p_wcw[j] +
+		    PWIDGET_LENGTH + 2 * PWIDGET_PADDING);
+		p->p_totalwcw += p->p_wcw[j];
+	}
+	p->p_totalwcw -= PWIDGET_PADDING;
+}
+
 /*
  * The panel drawing API naming is horrible but is consistent:
  * draw_panel is the low-level function that draws an actual panel.
@@ -289,8 +321,8 @@ draw_pwbg(struct fill *fp, int uoff, int voff)
 void
 draw_panel(struct panel *p, int toff)
 {
+	int colwidth, col, nc, npw, uoff, voff, stwu, stwv;
 	struct fill *frame_fp;
-	int nc, npw, uoff, voff;
 	struct pwidget *pw;
 	const char *s;
 
@@ -345,16 +377,27 @@ draw_panel(struct panel *p, int toff)
 	/* First loop cuts into these. */
 //	uoff += p->p_w / 2 - toff;
 	voff += PWIDGET_HEIGHT - 1 - PWIDGET_PADDING;
+	stwu = uoff;
+	stwv = voff;
 
-	nc = MIN(2, p->p_nwidgets);
+	nc = MIN(p->p_nwcol, p->p_nwidgets);
 	npw = 0;
+	col = 0;
+	colwidth = 0; /* gcc */
 	SLIST_FOREACH(pw, &p->p_widgets, pw_next) {
 		struct fill *fp = pw->pw_fillp;
 
-		if (npw == (p->p_nwidgets + 1) / 2) {
-			uoff += p->p_w / 2 - toff;
-			voff += npw * (PWIDGET_HEIGHT + PWIDGET_PADDING);
+		/* Starting a new column? */
+		if (npw * nc / p->p_nwidgets != col) {
+			col++;
+			uoff += colwidth;
+			voff = stwv;
+if (col > nc)
+  errx(1, "col > nc");
 		}
+		if (voff == stwv)
+			colwidth = p->p_wcw[col] *
+			    (p->p_w - 2 * toff) / p->p_totalwcw;
 		voff -= PWIDGET_HEIGHT + PWIDGET_PADDING;
 		if (voff - PWIDGET_HEIGHT < p->p_v - p->p_h) {
 			pw->pw_flags |= PWF_HIDE;
@@ -390,16 +433,17 @@ draw_panel(struct panel *p, int toff)
 		glRasterPos2d(uoff + PWIDGET_LENGTH + PWIDGET_PADDING,
 		    voff - PWIDGET_HEIGHT + 3);
 		for (s = pw->pw_str; *s != '\0' &&
-		    (s - pw->pw_str + 1) * LETTER_WIDTH + PWIDGET_LENGTH +
-		    PWIDGET_PADDING < p->p_w / nc - PANEL_PADDING - PANEL_BWIDTH; s++)
+		    (s - pw->pw_str + 1) * LETTER_WIDTH +
+		    PWIDGET_LENGTH + PWIDGET_PADDING < colwidth; s++)
 			glutBitmapCharacter(PFONT, *s);
 
+		/* Text shadow. */
 		glColor4f(0.0, 0.0, 0.2, 0.0);
 		glRasterPos2d(uoff + PWIDGET_LENGTH + PWIDGET_PADDING + 1,
 		    voff - PWIDGET_HEIGHT + 3 - 1);
 		for (s = pw->pw_str; *s != '\0' &&
-		    (s - pw->pw_str + 1) * LETTER_WIDTH + PWIDGET_LENGTH +
-		    PWIDGET_PADDING < p->p_w / nc - PANEL_PADDING - PANEL_BWIDTH; s++)
+		    (s - pw->pw_str + 1) * LETTER_WIDTH +
+		    PWIDGET_LENGTH + PWIDGET_PADDING < colwidth; s++)
 			glutBitmapCharacter(PFONT, *s);
 
 		pw->pw_u = uoff;
@@ -409,12 +453,7 @@ draw_panel(struct panel *p, int toff)
 		pw->pw_h = PWIDGET_HEIGHT;
 
 next:
-		/*
-		 * We may have to break early because of the way
-		 * persistent memory allocations are performed.
-		 */
-		if (++npw >= p->p_nwidgets)
-			break;
+		npw++;
 	}
 
 	if ((p->p_info->pi_flags & PIF_XPARENT) == 0) {
@@ -552,19 +591,17 @@ panel_draw(struct panel *p, int wid)
 			lineno = 0;
 		if (curlen > w)
 			w = curlen;
-		w = w * LETTER_WIDTH + 2 * toff;
+		w = w * LETTER_WIDTH;
 		h = lineno * LETTER_HEIGHT + 2 * toff;
 		if (p->p_nwidgets) {
 			int nr, nc;
 
-			nc = MIN(2, p->p_nwidgets);
-			w = MAX(w, nc * (LETTER_WIDTH * (int)p->p_maxwlen +
-			    PWIDGET_LENGTH + 2 * PWIDGET_PADDING + toff));
-			w = MIN(w, nc * (PWLABEL_MAXLEN + toff));
-
-			nr = (p->p_nwidgets + 1) / 2;
+			nc = MIN(p->p_nwcol, p->p_nwidgets);
+			w = MAX(w, p->p_totalwcw);
+			nr = (p->p_nwidgets + nc - 1) / nc;
 			h += nr * (PWIDGET_HEIGHT + PWIDGET_PADDING);
 		}
+		w += 2 * toff;
 		switch (p->p_info->pi_stick) {
 		case PSTICK_TL:
 			u = 0;
