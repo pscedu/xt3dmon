@@ -79,7 +79,7 @@ ds_setlive(void)
 
 	buf_init(&path);
 	buf_appendv(&path, "file://");
-	escape_printf(&path, _PATH_DATA);
+	escape_printf(&path, _PATH_DATADIR);
 	buf_appendv(&path, "/%s");
 	buf_nul(&path);
 
