@@ -368,7 +368,7 @@
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Carbon.framework/Headers/Carbon.h";
 				INFOPLIST_FILE = "xt3dmon-Info.plist";
 				INSTALL_PATH = "$(USER_APPS_DIR)";
-				OTHER_CFLAGS = "-L/usr/local/lib";
+				OTHER_CFLAGS = "-L/usr/local/lib -D_GSS";
 				OTHER_LDFLAGS = (
 					"-framework",
 					Carbon,
@@ -527,7 +527,7 @@
 				HEADER_SEARCH_PATHS = /opt/local/include/libpng12;
 				INFOPLIST_FILE = "xt3dmon-Info.plist";
 				INSTALL_PATH = "$(USER_APPS_DIR)";
-				OTHER_CFLAGS = "-L/usr/local/lib";
+				OTHER_CFLAGS = "-L/usr/local/lib -D_GSS";
 				OTHER_LDFLAGS = (
 					"-framework",
 					Carbon,
@@ -565,7 +565,7 @@
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Carbon.framework/Headers/Carbon.h";
 				INFOPLIST_FILE = "xt3dmon-Info.plist";
 				INSTALL_PATH = "$(USER_APPS_DIR)";
-				OTHER_CFLAGS = "-L/usr/local/lib";
+				OTHER_CFLAGS = "-L/usr/local/lib -D_GSS";
 				OTHER_LDFLAGS = (
 					"-framework",
 					Carbon,
@@ -603,7 +603,7 @@
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Carbon.framework/Headers/Carbon.h";
 				INFOPLIST_FILE = "xt3dmon-Info.plist";
 				INSTALL_PATH = "$(USER_APPS_DIR)";
-				OTHER_CFLAGS = "-L/usr/local/lib";
+				OTHER_CFLAGS = "-L/usr/local/lib -D_GSS";
 				OTHER_LDFLAGS = (
 					"-framework",
 					Carbon,
