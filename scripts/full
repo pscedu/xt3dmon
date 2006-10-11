@@ -50,7 +50,7 @@ move back 50
 bird
 hl all
 setcap "Cycle through all temperature ranges [7/22]"
-cyclenc
+cyclenc grow
 opt -skel
 setcap "Changing to 'wired' mode [8/22]"
 vmode wione
@@ -92,8 +92,8 @@ orbit x
 move back 100
 opt -nlabels
 clrsn
-setcap "Change node offset to show torus repetitions [14/22]"
 panel -compass
+setcap "Change node offset to show torus repetitions [14/22]"
 winsp -10 -10 -10
 bird
 panel +wiadj
@@ -104,11 +104,12 @@ wioff -8 +0 +0
 wioff +0 +0 -8
 opt -pipes
 panel -wiadj
+
+setcap "Viewing job between physical and wired modes [15/22]"
 seljob random
 clrsn
 refocus
 opt +skel
-setcap "Viewing job between physical and wired modes [15/22]"
 vmode phys
 bird
 vmode wione
@@ -133,6 +134,7 @@ panel -compass
 # cycle jobs
 setcap "Going back to physical layout mode viewing jobs [17/22]"
 vmode phys
+refocus
 bird
 setcap "Cycle through all node states/jobs [18/22]"
 opt +skel
