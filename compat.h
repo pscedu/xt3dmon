@@ -51,6 +51,8 @@ int vsnprintf(char *, size_t, const char *, va_list);
 
 char *strptime(const char *, const char *, struct tm *);
 
+int futimes(int, const struct timeval *);
+
 int execvp(const char *, const char *const *);
 int gettimeofday(struct timeval *, void *);
 int ffs(int);
@@ -69,17 +71,20 @@ do {                                                                        \
 # undef __inline
 # define __inline
 
-#undef SLIST_ENTRY
+# undef __dead
+# define __dead volatile
+
+# undef SLIST_ENTRY
 
 typedef UINT16 u_int16_t;
 typedef UINT32 u_int32_t;
 typedef signed int ssize_t;
 typedef u_int16_t in_port_t;
 
-#define mkdir(path, mode) mkdir(path)
-#define SOCKETCLOSE(s) closesocket(s)
+# define mkdir(path, mode) mkdir(path)
+# define SOCKETCLOSE(s) closesocket(s)
 
-#define localtime_r(clock, result)	\
+# define localtime_r(clock, result)	\
 	do {				\
 		struct tm *_tm;		\
 					\
@@ -87,10 +92,10 @@ typedef u_int16_t in_port_t;
 		*result = *_tm;		\
 	} while (0)
 
-#define glutPostRedisplay post_redisplay
+# define glutPostRedisplay post_redisplay
 void post_redisplay(void);
 
-#define glutMouseWheelFunc(a)
+# define glutMouseWheelFunc(a)
 
 #elif defined(__APPLE_CC__)
 
