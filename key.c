@@ -149,6 +149,15 @@ gl_keyh_panel(unsigned char key, __unused int u, __unused int v)
 			if ((pinfo[j].pi_flags & PIF_UINP) == 0)
 				panel_toggle(1 << j);
 		break;
+	case 'B':
+		panel_toggle(PANEL_FBNEW);
+		break;
+	case 'b':
+		panel_toggle(PANEL_FBCHO);
+		break;
+	case 'C':
+		panel_toggle(PANEL_CMP);
+		break;
 	case 'c':
 		panel_toggle(PANEL_CMD);
 		break;
@@ -170,11 +179,17 @@ gl_keyh_panel(unsigned char key, __unused int u, __unused int v)
 	case 'j':
 		panel_toggle(PANEL_GOTOJOB);
 		break;
+	case 'k':
+		panel_toggle(PANEL_KEYH);
+		break;
 	case 'L':
 		panel_toggle(PANEL_LOGIN);
 		break;
 	case 'l':
 		panel_toggle(PANEL_LEGEND);
+		break;
+	case 'm':
+		panel_toggle(PANEL_PIPE);
 		break;
 	case 'n':
 		panel_toggle(PANEL_NINFO);
@@ -188,14 +203,32 @@ gl_keyh_panel(unsigned char key, __unused int u, __unused int v)
 	case 'p':
 		panel_toggle(PANEL_POS);
 		break;
-	case 's':
-		panel_toggle(PANEL_SS);
+	case 'R':
+		panel_toggle(PANEL_RT);
+		break;
+	case 'r':
+		panel_toggle(PANEL_REEL);
 		break;
 	case 'S':
 		panel_toggle(PANEL_STATUS);
 		break;
+	case 's':
+		panel_toggle(PANEL_SS);
+		break;
+	case 't':
+		panel_toggle(PANEL_SSTAR);
+		break;
 	case 'V':
 		panel_toggle(PANEL_VMODE);
+		break;
+	case 'w':
+		panel_toggle(PANEL_WIADJ);
+		break;
+	case 'x':
+		panel_toggle(PANEL_DXCHO);
+		break;
+	case 'z':
+		panel_toggle(PANEL_DSCHO);
 		break;
 	case '~':
 		panel_toggle(PANEL_EGGS);
@@ -209,11 +242,17 @@ gl_keyh_dmode(unsigned char key, __unused int u, __unused int v)
 	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
+	case 'f':
+		st.st_dmode = DM_FAIL;
+		break;
 	case 'j':
 		st.st_dmode = DM_JOB;
 		break;
-	case 'f':
-		st.st_dmode = DM_FAIL;
+	case 'l':
+		st.st_dmode = DM_LUSTRE;
+		break;
+	case 'r':
+		st.st_dmode = DM_RTUNK;
 		break;
 	case 's':
 		st.st_dmode = DM_SAME;
@@ -223,9 +262,6 @@ gl_keyh_dmode(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 'y':
 		st.st_dmode = DM_YOD;
-		break;
-	case 'r':
-		st.st_dmode = DM_RTUNK;
 		break;
 	default:
 		return;
@@ -262,6 +298,12 @@ gl_keyh_option(unsigned char key, __unused int u, __unused int v)
 	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
+	case 'a':
+		opts |= OP_AUTOFLYBY;
+		break;
+	case 'c':
+		opts |= OP_CAPTION;
+		break;
 	case 'd':
 		opts |= OP_CAPTURE;
 		break;
@@ -288,6 +330,12 @@ gl_keyh_option(unsigned char key, __unused int u, __unused int v)
 		break;
 	case 'p':
 		opts |= OP_PIPES;
+		break;
+	case 'r':
+		opts |= OP_REEL;
+		break;
+	case 'S':
+		opts |= OP_SUBSET;
 		break;
 	case 's':
 		opts |= OP_SKEL;
@@ -592,6 +640,9 @@ gl_keyh_default(unsigned char key, int u, int v)
 	case 1: /* ^A */
 		sn_addallvis();
 		break;
+	case 16: /* ^P */
+		glutKeyboardFunc(gl_keyh_pipes);
+		break;
 	case '2': case '4':
 	case '6': case '8': {
 		double du, dv;
@@ -652,7 +703,7 @@ gl_keyh_default(unsigned char key, int u, int v)
 		SLIST_FOREACH(sn, &selnodes, sn_next)
 			sn->sn_nodep->n_flags ^= NF_SHOW;
 		break;
-	}
+	    }
 	case 'i': {
 		struct selnode *sn;
 
@@ -691,8 +742,6 @@ gl_keyh_default(unsigned char key, int u, int v)
 		glutKeyboardFunc(gl_keyh_option);
 		break;
 	case 'P':
-		glutKeyboardFunc(gl_keyh_pipes);
-		break;
 	case 'p':
 		glutKeyboardFunc(gl_keyh_panel);
 		break;
