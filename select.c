@@ -119,6 +119,11 @@ sel_process(int nrecs, int rank, int flags)
 	int i, start;
 	GLuint *p;
 
+	if (nrecs < 0) {
+		warnx("negative nrecs");
+		return (NULL);
+	}
+
 	/* XXX:  sanity-check nrecs? */
 	for (i = 0, p = selbuf; i < nrecs; i++, p += 3 + p[SBI_LEN])
 		if (p[SBI_LEN] != 1) {
