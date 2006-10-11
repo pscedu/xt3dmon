@@ -1,5 +1,7 @@
 /* $Id$ */
 
+#include "mon.h"
+
 #include <sys/types.h>
 
 #include <err.h>
