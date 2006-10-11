@@ -231,7 +231,7 @@ draw_caption(void)
 		u = (winv.iv_w / 2.0) - (w / 2.0);
 		draw_string(u, 10, h, font, s);
 	}
-	s = (const unsigned char *)"Live BigBen/XT3 Monitor";
+	s = (const unsigned char *)"PSC BigBen/XT3 Monitor";
 	w = glutBitmapLength(font, s);
 	u = (winv.iv_w / 2.0) - (w / 2.0);
 	draw_string(u, winv.iv_h - h - 3, h, font, s);
