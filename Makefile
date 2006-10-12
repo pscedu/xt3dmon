@@ -23,10 +23,10 @@ CFLAGS += -I/usr/X11R6/include
 LIBS += -lGL -lGLU -lglut -lssl -lpng -lz
 
 # static compiles:
-# LIBS += -lglut -lglx -lGL -lGLU -lXext -lglut -lX11 -lpng -lssl
-# LIBS += -lm -lcrypto -lkrb5 -lk5crypto -lz -lcom_err -lpthread
-# LIBS += -lresolv -ldl -lXxf86vm
-# LDFLAGS += -L/usr/X11R6/lib/modules/extensions
+# LIBS += -lGL -lGLU -lglut -lssl -lpng12 -lz -lm -lgssapi_krb5
+# LIBS += -lcrypto -lXext -lX11 -ldl -lXxf86vm -lkrb5
+# LIBS += -lcom_err -lk5crypto -lresolv -lkrb5support -lpthread
+# LDFLAGS += -static -L/usr/X11R6/lib/modules/extensions
 
 LDFLAGS += -L/usr/X11R6/lib
 
@@ -76,6 +76,7 @@ lines:
 run: xt3dmon
 	./xt3dmon
 
+# -gldebug
 debug: xt3dmon
 	gdb -q ./xt3dmon
 
