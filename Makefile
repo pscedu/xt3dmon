@@ -13,8 +13,8 @@ SRCS+= ssl.c status.c tex.c text.c tween.c uinp.c ustrdtab.c ustream.c
 SRCS+= ustrop-file.c ustrop-ssl.c util.c vec.c widget.c yod.c
 
 CFLAGS += -Wall -W -g
-CFLAGS += -D_GSS
-CFLAGS += -D_LIVE_PROTO=\"file\" -D_LIVE_PATH=_PATH_DATA
+#CFLAGS += -D_GSS
+#CFLAGS += -D_LIVE_PROTO=\"file\" -D_LIVE_PATH=_PATH_DATA
 #CFLAGS += -Wconversion
 CFLAGS += -O3 -Wuninitialized -fomit-frame-pointer
 CFLAGS += -fno-strict-aliasing
@@ -24,9 +24,14 @@ LIBS += -lGL -lGLU -lglut -lssl -lpng -lz
 
 # static compiles:
 # LIBS += -lglut -lglx -lGL -lGLU -lXext -lglut -lX11 -lpng -lssl
-# LIBS += -lm -lcrypto -lkrb5 -lk5crypto -lz -lcom_err -lpthread
-# LIBS += -lresolv -ldl -lXxf86vm
-# LDFLAGS += -L/usr/X11R6/lib/modules/extensions
+# LIBS += -lm -lcrypto  -lgssapi_krb5 -lkrb5support -lkrb5 -lk5crypto
+# LIBS += -lz -lcom_err -lpthread -lresolv -ldl -lXxf86vm
+# LDFLAGS += -static -L/usr/X11R6/lib/modules/extensions
+
+LIBS += -lGL -lGLU -lglut -lssl -lpng12 -lz -lm -lgssapi_krb5
+LIBS += -lcrypto -lXext -lX11 -ldl -lXxf86vm -lkrb5
+LIBS += -lcom_err -lk5crypto -lresolv -lkrb5support -lpthread
+LDFLAGS += -static -L/usr/X11R6/lib/modules/extensions
 
 LDFLAGS += -L/usr/X11R6/lib
 
@@ -76,6 +81,7 @@ lines:
 run: xt3dmon
 	./xt3dmon
 
+# -gldebug
 debug: xt3dmon
 	gdb -q ./xt3dmon
 

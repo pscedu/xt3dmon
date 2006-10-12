@@ -98,6 +98,7 @@ todo
 - ensure nothing modifies st.st_opt and uses opt_flip() instead
 - add -D_GSS to macosx makefile
 - update libpng/libz on win32
+- add xt3dmon.pbxproj CFLAGS to our Makefile
 
 xtwmon
 - rename data=nodes to data=node
