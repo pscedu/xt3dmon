@@ -87,7 +87,7 @@ MACOS_DIR = arch/macosx/build/Development/xt3dmon.app/Contents/Resources
 macdirs:
 	for i in ${DIST_CP_DIRS}; do rm -rf ${MACOS_DIR}/$$i; done
 	mkdir -p ${MACOS_DIR}
-	for i in ${DIST_DIRS}; do mkdir ${MACOS_DIR}/$$i; done
+	for i in ${DIST_DIRS}; do mkdir -p ${MACOS_DIR}/$$i; done
 	cp -R ${DIST_CP_DIRS} ${MACOS_DIR}
 
 -include .depend
