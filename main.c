@@ -696,7 +696,7 @@ restart(void)
 int
 main(int argc, char *argv[])
 {
-	int flags, c, sw, sh, j;
+	int flags, c, sw, sh, j, Mflag;
 	const char *cfgfn;
 	long l;
 
@@ -710,11 +710,12 @@ main(int argc, char *argv[])
 
 	cfgfn = _PATH_PHYSCONF;
 
+	Mflag = 0;
 	flags = GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE;
 	glutInit(&argc, argv);
 	sw = glutGet(GLUT_SCREEN_WIDTH);
 	sh = glutGet(GLUT_SCREEN_HEIGHT) - 30;
-	while ((c = getopt(argc, argv, "ac:dH:pU:vW:x:")) != -1)
+	while ((c = getopt(argc, argv, "ac:dH:MpU:vW:x:")) != -1)
 		switch (c) {
 		case 'a':
 errx(1, "broken");
@@ -732,6 +733,9 @@ errx(1, "broken");
 			if (l < 0 || l > INT_MAX)
 				err(1, "invalid screen height: %s", optarg);
 			sh = (int)l;
+			break;
+		case 'M':
+			Mflag = 1;
 			break;
 		case 'p':
 			stereo_mode = STM_PASV;
@@ -794,6 +798,9 @@ errx(1, "broken");
 
 	if ((quadric = gluNewQuadric()) == NULL)
 		err(1, "gluNewQuadric");
+
+	if (Mflag)
+		glutFullScreen();
 
 	glutMainLoop();
 	/* NOTREACHED */
