@@ -13,6 +13,8 @@
 .Op Fl c Ar physconf
 .Op Fl H Ar height
 .Op Fl W Ar width
+.Op Fl U Ar urispec
+.Op Fl x Ar dxscript
 .Sh DESCRIPTION
 .Nm
 is a 3D program that graphically displays various data sets of
@@ -57,6 +59,22 @@ available screen space with the left.
 Specify the
 .Nm
 window width in pixels.
+.It Fl U Ar urispec
+Set the data source URIs according to the given
+.Ar urispec .
+The specification will be copied to each live data source retrieval URI
+with any
+.Sq %s
+replaced with the data source's name (e.g.
+.Dq node
+or
+.Dq job ) .
+Defaults to
+.Dq gssapi://bigben-monitor.psc.edu/arbiter-raw.pl?data=%s .
+.It Fl x Ar dxscript
+Load and run the given Deus Ex mode script
+.Ar dxscript
+at startup.
 .El
 .Pp
 There are a number of different data displays available:
