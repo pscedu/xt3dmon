@@ -696,7 +696,7 @@ restart(void)
 int
 main(int argc, char *argv[])
 {
-	int flags, c, sw, sh;
+	int flags, c, sw, sh, j;
 	const char *cfgfn;
 	long l;
 
@@ -714,7 +714,7 @@ main(int argc, char *argv[])
 	glutInit(&argc, argv);
 	sw = glutGet(GLUT_SCREEN_WIDTH);
 	sh = glutGet(GLUT_SCREEN_HEIGHT) - 30;
-	while ((c = getopt(argc, argv, "ac:dH:pvW:")) != -1)
+	while ((c = getopt(argc, argv, "ac:dH:pU:vW:x:")) != -1)
 		switch (c) {
 		case 'a':
 errx(1, "broken");
@@ -736,6 +736,11 @@ errx(1, "broken");
 		case 'p':
 			stereo_mode = STM_PASV;
 			break;
+		case 'U':
+			for (j = 0; j < NDS; j++)
+				if (datasrcs[j].ds_flags & DSF_LIVE)
+					ds_seturi(j, optarg);
+			break;
 		case 'v':
 			verbose++;
 			break;
@@ -744,6 +749,10 @@ errx(1, "broken");
 			if (l < 0 || l > INT_MAX)
 				err(1, "invalid screen width: %s", optarg);
 			sw = (int)l;
+			break;
+		case 'x':
+			snprintf(dx_fn, PATH_MAX, "%s", optarg);
+			dx_start();
 			break;
 		default:
 			usage();
