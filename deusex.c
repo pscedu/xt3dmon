@@ -882,6 +882,12 @@ dxp_caption(struct dx_action *dxa)
 	return (1);
 }
 
+int
+dxp_exit(__unused struct dx_action *dxa)
+{
+	exit(0);
+}
+
 struct dxent {
 	int	  de_val;
 	int	(*de_update)(struct dx_action *);
@@ -891,6 +897,7 @@ struct dxent {
 	{ DGT_CLRSN,	dxp_clrsn },
 	{ DGT_CYCLENC,	dxp_cyclenc },
 	{ DGT_DMODE,	dxp_dmode },
+	{ DGT_EXIT,	dxp_exit },
 	{ DGT_HL,	dxp_hl },
 	{ DGT_MOVE,	dxp_cam_move },
 	{ DGT_NODESYNC,	dxp_nodesync },

@@ -34,6 +34,7 @@ struct dxlist dxlist = TAILQ_HEAD_INITIALIZER(dxlist);
 %token DGT_CLRSN
 %token DGT_CYCLENC
 %token DGT_DMODE
+%token DGT_EXIT
 %token DGT_HL
 %token DGT_MOVE
 %token DGT_NODESYNC
@@ -188,6 +189,13 @@ conf		: DGT_BIRD {
 			else
 				yyerror("invalid dmode: %s", $2);
 			free($2);
+			dxa_add(&dxa);
+		}
+		| DGT_EXIT {
+			struct dx_action dxa;
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_EXIT;
 			dxa_add(&dxa);
 		}
 		| DGT_HL STRING {

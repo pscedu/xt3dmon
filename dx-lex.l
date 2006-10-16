@@ -25,6 +25,7 @@ bird					{ return (DGT_BIRD); }
 clrsn					{ return (DGT_CLRSN); }
 cyclenc					{ return (DGT_CYCLENC); }
 dmode					{ return (DGT_DMODE); }
+exit					{ return (DGT_EXIT); }
 hl					{ return (DGT_HL); }
 move					{ return (DGT_MOVE); }
 opt					{ return (DGT_OPT); }
