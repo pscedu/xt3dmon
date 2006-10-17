@@ -57,6 +57,7 @@ dxa_add(struct dx_action *dxa)
 	if (dxa->dxa_type != DGT_STALL) {
 		memset(&stall, 0, sizeof(stall));
 		stall.dxa_type = DGT_STALL;
+		stall.dxa_stall_secs = 1.0;
 		dxa_add(&stall);
 	}
 }
@@ -99,8 +100,12 @@ dxp_orbit(struct dx_action *dxa)
 
 	max = 2 * M_PI * dxa->dxa_orbit_frac;
 	if (t == 0) {
-		wait = 1.1 * ceil(log(DST(&st.st_v, &focus) / log(1.1)));
-		adj = max / (fps * wait);
+		if (dxa->dxa_orbit_secs)
+			wait = dxa->dxa_orbit_secs;
+		else
+			wait = 1.1 * ceil(log(DST(&st.st_v, &focus) /
+			    log(1.1)));
+		adj = 2 * M_PI / (fps * wait);
 		amt = 0.0;
 	}
 
@@ -668,7 +673,7 @@ dxpcb_stall(__unused int a)
 }
 
 int
-dxp_stall(__unused struct dx_action *dxa)
+dxp_stall(struct dx_action *dxa)
 {
 	int ret;
 
@@ -679,7 +684,7 @@ dxp_stall(__unused struct dx_action *dxa)
 		ret = 1;
 	}
 	if (!ret && !dxt_set) {
-		glutTimerFunc(1000, dxpcb_stall, 0);
+		glutTimerFunc(dxa->dxa_stall_secs, dxpcb_stall, 0);
 		dxt_set = 1;
 	}
 	return (ret);
@@ -785,36 +790,30 @@ dxp_wioff(struct dx_action *dxa)
 }
 
 int
-dx_cam_move(double max, int wait, int dir)
+dxp_cam_move(struct dx_action *dxa)
 {
 	static double amt, adj;
 	static int t;
 	int ret;
 
 	if (adj == 0.0)
-		adj = max / (wait * fps);
+		adj = dxa->dxa_move_amt / (dxa->dxa_move_secs * fps);
 
 	tween_push(TWF_POS);
-	cam_move(dir, adj);
+	cam_move(dxa->dxa_move_dir, adj);
 	tween_pop(TWF_POS);
 
 	amt += adj;
 
 	ret = 0;
 	t++;
-	if (amt >= max) {
+	if (amt >= dxa->dxa_move_amt) {
 		t = 0;
 		ret = 1;
 		amt = 0.0;
 		adj = 0.0;
 	}
 	return (ret);
-}
-
-int
-dxp_cam_move(struct dx_action *dxa)
-{
-	return (dx_cam_move(dxa->dxa_move_amt, 3, dxa->dxa_move_dir));
 }
 
 void

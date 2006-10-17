@@ -397,7 +397,7 @@ Show all node classes.
 .It Ic seldm
 Show all node classes of any selected node.
 .El
-.It Ic move Ar dir amt
+.It Ic move Ar dir amt Op Ar nsecs
 Pan the camera in the given direction
 .Ar dir
 the given amount
@@ -407,6 +407,8 @@ may be one of
 .Ic forward , back .
 .Ar amt
 is a floating-point or integer number of 3-space units.
+.Ar nsecs
+specifies the number of seconds to make the displacement over.
 .It Xo
 .Ic opt
 .Op Ar modifier
@@ -457,9 +459,12 @@ Use textures of solid colors for node fills.
 .It Ic tween
 Smooth camera movement with .Dq tween steps.
 .El
-.It Ic orbit Ar dim Op Ar frac
+.It Xo
+.Ic orbit Ar dim
+.Op Ar frac Op Ar nsecs
+.Xc
 Orbit the current focus point, which will be the center of all
-selected nodes, if their are any, or otherwise the entire cluster
+selected nodes, if there are any, or otherwise the entire cluster
 view.
 .Ar dim
 specifies which dimension (e.g.,
@@ -470,8 +475,14 @@ and may be prefixed with a minus sign
 .Pq Sq -
 to specify reverse revolutions.
 .Ar frac
-specifies the number of revolutions, which may be fractional,
-and defaults to one if unspecified.
+specifies the number of revolutions to make, which may be specified as a
+floating-point number, and defaults to one if unspecified.
+.Ar nsecs
+specifies the number of seconds over which to make the orbit,
+which may be specified as a floating-point number, and is calculated to
+be set
+.Dq comfortably
+according to distance from the focal point if unspecified.
 .It Xo
 .Ic panel
 .Op Ar modifier

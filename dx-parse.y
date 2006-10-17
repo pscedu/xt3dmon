@@ -49,7 +49,7 @@ struct dxlist dxlist = TAILQ_HEAD_INITIALIZER(dxlist);
 %token DGT_SELJOB
 %token DGT_SELNODE
 %token DGT_SETCAP
-%token DGT_STALL	/* used in code, not language */
+%token DGT_STALL
 %token DGT_SUBSEL
 %token DGT_VMODE
 %token DGT_WINSP
@@ -57,13 +57,16 @@ struct dxlist dxlist = TAILQ_HEAD_INITIALIZER(dxlist);
 
 %token COMMA LANGLE LBRACKET RANGLE RBRACKET LS_MINUS LS_PLUS
 
-%token <string> STRING
-%token <intg> INTG
-%token <dbl> DBL
+%token <string>	STRING
+%token <intg>	INTG
+%token <dbl>	DBL
 
-%type <dbl> dbl;
-%type <intg> setmodifier;
-%type <intg> opts opts_l panels panels_l;
+%type <dbl>	dbl;
+%type <dbl>	orbit_revs orbit_secs;
+%type <dbl>	move_secs;
+%type <string>	cycle_method;
+%type <intg>	setmodifier;
+%type <intg>	opts opts_l panels panels_l;
 
 %union {
 	char	*string;
@@ -123,6 +126,25 @@ panels_l	: panels		{ $$ = $1; }
 		| panels COMMA panels_l	{ $$ = $1 | $3; }
 		;
 
+cycle_method	: {
+			if (($$ = strdup("cycle")) == NULL)
+				yyerror("strdup");
+		}
+		| STRING		{ $$ = $1; }
+		;
+
+orbit_revs	:			{ $$ = 1.0; }
+		| dbl			{ $$ = $1; }
+		;
+
+orbit_secs	:			{ $$ = 0.0; }
+		| INTG 			{ $$ = $1; }
+		;
+
+move_secs	:			{ $$ = 3.0; }
+		| dbl			{ $$ = $1; }
+		;
+
 conf		: DGT_BIRD {
 			struct dx_action dxa;
 
@@ -149,7 +171,7 @@ conf		: DGT_BIRD {
 			dxa.dxa_type = DGT_CLRSN;
 			dxa_add(&dxa);
 		}
-		| DGT_CYCLENC STRING {
+		| DGT_CYCLENC cycle_method {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
@@ -161,14 +183,6 @@ conf		: DGT_BIRD {
 			else
 				yyerror("invalid cycle method: %s", $2);
 			free($2);
-			dxa_add(&dxa);
-		}
-		| DGT_CYCLENC {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_CYCLENC;
-			dxa.dxa_cycle_meth = DACM_CYCLE;
 			dxa_add(&dxa);
 		}
 		| DGT_DMODE STRING {
@@ -212,7 +226,7 @@ conf		: DGT_BIRD {
 			free($2);
 			dxa_add(&dxa);
 		}
-		| DGT_MOVE STRING dbl {
+		| DGT_MOVE STRING dbl move_secs {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
@@ -220,12 +234,16 @@ conf		: DGT_BIRD {
 			if (strcasecmp($2, "forward") == 0 ||
 			    strcasecmp($2, "forw") == 0)
 				dxa.dxa_move_dir = DIR_FORW;
-			else if (strcasecmp($2, "back") == 0)
+			else if (strcasecmp($2, "back") == 0 ||
+			    strcasecmp($2, "backward") == 0)
 				dxa.dxa_move_dir = DIR_BACK;
 			else
 				yyerror("invalid move direction: %s", $2);
 			free($2);
 			dxa.dxa_move_amt = $3;
+			if ($4 <= 0)
+				yyerror("invalid move #secs: %f", $4);
+			dxa.dxa_move_secs = $4;
 			dxa_add(&dxa);
 
 			memset(&dxa, 0, sizeof(dxa));
@@ -241,7 +259,7 @@ conf		: DGT_BIRD {
 			dxa.dxa_opts = $3;
 			dxa_add(&dxa);
 		}
-		| DGT_ORBIT setmodifier STRING dbl {
+		| DGT_ORBIT setmodifier STRING orbit_revs orbit_secs {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
@@ -256,32 +274,15 @@ conf		: DGT_BIRD {
 			else
 				yyerror("invalid orbit dimension: %s", $3);
 			free($3);
-			dxa.dxa_orbit_frac = fabs($4);
+
 			/* Avoid any FPE. */
-			if (dxa.dxa_orbit_frac == 0.0)
-				dxa.dxa_orbit_frac = 0.1;
-			dxa_add(&dxa);
+			if ($4 == 0.0)
+				yyerror("invalid orbit #revs: %f", $4);
+			dxa.dxa_orbit_frac = fabs($4);
 
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_CAMSYNC;
-			dxa_add(&dxa);
-		}
-		| DGT_ORBIT setmodifier STRING {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_ORBIT;
-			dxa.dxa_orbit_dir = ($2 == DXV_OFF) ? -1 : 1;
-			dxa.dxa_orbit_frac = 1.0;
-			if (strcasecmp($3, "x") == 0)
-				dxa.dxa_orbit_dim = DIM_X;
-			else if (strcasecmp($3, "y") == 0)
-				dxa.dxa_orbit_dim = DIM_Y;
-			else if (strcasecmp($3, "z") == 0)
-				dxa.dxa_orbit_dim = DIM_Z;
-			else
-				yyerror("invalid orbit dimension: %s", $3);
-			free($3);
+			if ($5 < 0)
+				yyerror("invalid orbit #secs: %d", $5);
+			dxa.dxa_orbit_secs = $5;
 			dxa_add(&dxa);
 
 			memset(&dxa, 0, sizeof(dxa));
@@ -387,6 +388,14 @@ conf		: DGT_BIRD {
 			else
 				yyerror("invalid node: %s", $2);
 			free($2);
+			dxa_add(&dxa);
+		}
+		| DGT_STALL dbl {
+			struct dx_action dxa;
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_STALL;
+			dxa.dxa_stall_secs = $2;
 			dxa_add(&dxa);
 		}
 		| DGT_SUBSEL STRING {

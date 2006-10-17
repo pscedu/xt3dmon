@@ -28,6 +28,7 @@ struct dx_action {
 	int			 dxa_intg;
 	int			 dxa_intg2;
 	double			 dxa_dbl;
+	double			 dxa_dbl2;
 	struct ivec		 dxa_iv;
 	struct ivec		 dxa_iv2;
 #define dxa_dmode	dxa_intg
@@ -42,6 +43,7 @@ struct dx_action {
 #define dxa_reel_delay	dxa_intg
 
 #define dxa_move_dir	dxa_intg
+#define dxa_move_secs	dxa_intg2
 #define dxa_move_amt	dxa_dbl
 
 #define dxa_opt_mode	dxa_intg
@@ -57,6 +59,9 @@ struct dx_action {
 #define dxa_orbit_dir	dxa_intg
 #define dxa_orbit_dim	dxa_intg2
 #define dxa_orbit_frac	dxa_dbl
+#define dxa_orbit_secs	dxa_dbl2
+
+#define dxa_stall_secs	dxa_dbl
 
 #define dxa_seljob	dxa_intg
 #define dxa_selnode	dxa_intg
