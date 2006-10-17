@@ -120,6 +120,9 @@ gl_keyh_uinput(unsigned char key, __unused int u, __unused int v)
 		uinp.uinp_panel = NULL;
 		panel_tremove(p);
 		break;
+	case 9:		/* tab */
+		p->p_u = 50000;
+		break;
 	case 127:	/* MacOS delete */
 	case 8:		/* backspace */
 		if (strlen(buf_get(&uinp.uinp_buf)) > 0) {
@@ -692,14 +695,17 @@ gl_keyh_default(unsigned char key, int u, int v)
 	case 'c':
 		sn_clear();
 		break;
-	case 'F': {
-		int t;
+	case 'F':
+		wid = WINID_LEFT;
+		glutSetWindow(window_ids[wid]);
+		glutPositionWindow(glutGet(GLUT_WINDOW_X) ?
+		    0 : glutGet(GLUT_WINDOW_WIDTH), 0);
 
-		t = window_ids[WINID_LEFT];
-		window_ids[WINID_LEFT] = window_ids[WINID_RIGHT];
-		window_ids[WINID_RIGHT] = t;
+		wid = WINID_RIGHT;
+		glutSetWindow(window_ids[wid]);
+		glutPositionWindow(glutGet(GLUT_WINDOW_X) ?
+		    0 : glutGet(GLUT_WINDOW_WIDTH), 0);
 		break;
-	    }
 	case 'f':
 		glutKeyboardFunc(gl_keyh_flyby);
 		break;
