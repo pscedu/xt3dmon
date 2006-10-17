@@ -459,6 +459,15 @@ Use textures of solid colors for node fills.
 .It Ic tween
 Smooth camera movement with .Dq tween steps.
 .El
+.Pp
+Example:
+.Bd -literal -offset Ds
+# have only these options set
+opt frames,nlabels
+
+# disable these options
+opt -skel,selpipes
+.Ed
 .It Xo
 .Ic orbit Ar dim
 .Op Ar frac Op Ar nsecs
@@ -483,6 +492,15 @@ which may be specified as a floating-point number, and is calculated to
 be set
 .Dq comfortably
 according to distance from the focal point if unspecified.
+.Pp
+Example:
+.Bd -literal -offset Ds
+# orbit x-dimension twice over 10 seconds
+orbit -x 2.0 10.0
+
+# simple half-circle orbit
+orbit +x 0.5
+.Ed
 .It Xo
 .Ic panel
 .Op Ar modifier
@@ -559,6 +577,15 @@ View mode selector.
 .It Ic wiadj
 Wired-mode spacing controls.
 .El
+.Pp
+Example:
+.Bd -literal -offset Ds
+# display only these panels
+panel vmode,dmode,legend
+
+# enable these panels
+panel +status,vmode,wiadj
+.Ed
 .It Ic playreel Ar delay archive
 Play a data archive reel.
 Each frames is shown for
@@ -590,6 +617,12 @@ Bottom-left.
 .It Ic br
 Bottom-right.
 .El
+.Pp
+Example:
+.Bd -literal -offset Ds
+# move legend and node info to top-left corner
+pstick tl legend,ninfo
+.Ed
 .It Ic refocus
 Move the camera view to point to the current focus, which will
 be the center of all selected nodes, if there are any, or otherwise
@@ -612,6 +645,10 @@ changed to the given
 Captions may be optionally surrounded by double quotes
 .Pq Dq \&
 to allow spaces.
+.It Ic stall Ar nsecs
+Remain still for the specified number of seconds
+.Ar nsecs ,
+which may be a floating-point number.
 .It Ic subsel visible
 Set the subselection to all currently visible nodes.
 Only nodes in the subselection will be visible when the
