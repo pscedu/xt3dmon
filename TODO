@@ -99,6 +99,7 @@ todo
 - add -D_GSS to macosx makefile
 - update libpng/libz on win32
 - add xt3dmon.pbxproj CFLAGS to our Makefile
+- make dx actions take const struct dx_action *
 
 xtwmon
 - rename data=nodes to data=node
