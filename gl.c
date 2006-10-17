@@ -64,6 +64,7 @@ gl_reshapeh(int w, int h)
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glViewport(0, 0, winv.iv_w, winv.iv_h);
+	/* XXX stereo */
 	gluPerspective(FOVY, ASPECT, NEARCLIP, clip);
 	glMatrixMode(GL_MODELVIEW);
 	st.st_rf |= RF_CAM;
@@ -89,6 +90,10 @@ gl_idleh_govern(void)
 	if (diff.tv_sec * 1e6 + diff.tv_usec >= FPS_TO_USEC(GOVERN_FPS)) {
 		fps_cnt++;
 		gov_tv = tv;
+		if (stereo_mode == STM_PASV) {
+			wid = WINID_MASTER;
+			glutSetWindow(window_ids[wid]);
+		}
 		glutPostRedisplay();
 	}
 }
@@ -99,6 +104,10 @@ gl_idleh_default(void)
 	fps_cnt++;
 	if (!visible)
 		usleep(100);
+	if (stereo_mode == STM_PASV) {
+		wid = WINID_MASTER;
+		glutSetWindow(window_ids[wid]);
+	}
 	glutPostRedisplay();
 }
 
@@ -106,6 +115,10 @@ gl_idleh_default(void)
 void
 gl_setup_core(void)
 {
+	wid = WINID_MASTER;
+	glutSetWindow(window_ids[wid]);
+
+	glutIdleFunc(gl_idleh_default);
 	if (server_mode)
 		glutDisplayFunc(serv_displayh);
 	else if (stereo_mode)
@@ -131,7 +144,6 @@ gl_setup(void)
 //	glDisable(GL_DITHER);
 
 	glutReshapeFunc(gl_reshapeh);
-	glutIdleFunc(gl_idleh_default);
 
 	glutDisplayFunc(gl_displayh_null);
 	if (server_mode) {
@@ -239,8 +251,7 @@ gl_stereo_eye(int frid)
 void
 gl_displayh_stereo(void)
 {
-	int lrf, lnewrf;
-	int rrf, rnewrf;
+	int t, rrf, lrf, lnewrf;
 
 	if (dx_active)
 		dx_update();
@@ -252,11 +263,7 @@ gl_displayh_stereo(void)
 		wired_update();
 	lrf = st.st_rf;
 	rrf = 0;
-	if (lrf) {
-		st.st_rf = 0;
-		rrf = rf_deps(lrf) & RF_STEREO;
-		lrf = rebuild(rf_deps(lrf));
-	}
+
 	wid = WINID_LEFT;
 	switch (stereo_mode) {
 	case STM_ACT:
@@ -266,18 +273,19 @@ gl_displayh_stereo(void)
 		glutSetWindow(window_ids[wid]);
 		break;
 	}
+
+	if (lrf) {
+		st.st_rf = 0;
+		rrf = rf_deps(lrf) & RF_STEREO;
+		lrf = rebuild(rf_deps(lrf));
+	}
 	lnewrf = st.st_rf;
-	rnewrf = st.st_rf & RF_STEREO;
 	st.st_rf = lrf;
 	gl_stereo_eye(FRID_LEFT);
 	if (st.st_rf != lrf)
 		warnx("internal error: draw_scene() modified "
 		    "rebuild flags (%d<=>%d)", st.st_rf, lrf);
 
-	if (rrf) {
-		st.st_rf = 0;
-		rrf = rebuild(rrf);
-	}
 	wid = WINID_RIGHT;
 	switch (stereo_mode) {
 	case STM_ACT:
@@ -287,7 +295,16 @@ gl_displayh_stereo(void)
 		glutSetWindow(window_ids[wid]);
 		break;
 	}
-	rnewrf |= st.st_rf;
+
+	if (rrf) {
+		st.st_rf = 0;
+
+		/* Hack: pause to avoid node anim. */
+		t = st.st_opts;
+		st.st_opts |= OP_STOP;
+		rrf = rebuild(rrf);
+		st.st_opts = t;
+	}
 	st.st_rf = rrf;
 	gl_stereo_eye(FRID_RIGHT);
 	if (st.st_rf != rrf)

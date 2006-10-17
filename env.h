@@ -47,6 +47,7 @@
 #define WINID_LEFT	0
 #define WINID_RIGHT	1
 
+#define WINID_MASTER	0
 #define WINID_DEF	0
 
 /* Key handlers. */
