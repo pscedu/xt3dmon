@@ -153,45 +153,6 @@ serv_init(void)
 #define TRYWAIT		50	/* microseconds */
 
 void
-serv_drawinfo(void)
-{
-	char *p, buf[BUFSIZ];
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	glPushAttrib(GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
-
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-
-	gluOrtho2D(0.0, winv.iv_w, 0.0, winv.iv_h);
-
-	glColor3f(1.0f, 1.0f, 1.0f);
-
-	snprintf(buf, sizeof(buf),
-	    "xt3dmon server, %d request(s), %d new session(s)",
-	    nreqs, nsessions);
-
-	glRasterPos2d(3, 12);
-	for (p = buf; *p != '\0'; p++)
-		glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *p);
-
-	/* End 2D mode. */
-	glPopMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-
-	glPopAttrib();
-
-	glutSwapBuffers();
-}
-
-void
 serv_displayh(void)
 {
 	struct sockaddr_in sin;
@@ -201,7 +162,11 @@ serv_displayh(void)
 	socklen_t sz;
 	ssize_t len;
 
-	serv_drawinfo();
+	snprintf(buf, sizeof(buf),
+	    "xt3dmon server, %d request(s), %d new session(s)",
+	    nreqs, nsessions);
+	draw_info(buf);
+	glutSwapBuffers();
 
 	/* Reset some things for the new session. */
 	st.st_opts &= ~(OP_SKEL);

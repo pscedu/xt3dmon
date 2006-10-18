@@ -42,6 +42,38 @@ unsigned int dl_cluster[2];
 unsigned int dl_ground[2];
 unsigned int dl_selnodes[2];
 
+void
+draw_info(const char *p)
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	/* Go into 2D mode. */
+	glPushAttrib(GL_TRANSFORM_BIT | GL_VIEWPORT_BIT);
+
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	gluOrtho2D(0.0, winv.iv_w, 0.0, winv.iv_h);
+
+	glColor3f(1.0f, 1.0f, 1.0f);
+
+	glRasterPos2d(3, 12);
+	while (*p)
+		glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *p++);
+
+	/* End 2D mode. */
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+
+	glPopAttrib();
+}
+
 __inline void
 draw_compass(int u, __unused int w, int v, __unused int h)
 {
