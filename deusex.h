@@ -91,4 +91,4 @@ extern struct dxlist	dxlist;
 extern int		dx_built;
 extern char		dx_fn[];
 extern char		dx_dir[];
-int			dx_active;
+extern int		dx_active;
