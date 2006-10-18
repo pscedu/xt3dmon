@@ -451,7 +451,7 @@ panel_refresh_ninfo(struct panel *p)
 
 	if (nselnodes > 1) {
 		struct buf b_nids, bw_nids, b_data, bw_data;
-		size_t j;
+		size_t i;
 
 		buf_init(&b_nids);
 		buf_init(&b_data);
@@ -496,8 +496,8 @@ panel_refresh_ninfo(struct panel *p)
 		text_wrap(&bw_nids, buf_get(&b_nids), 25, "\n  ", 2);
 		buf_free(&b_nids);
 
-		for (j = 0; ol && j < ol->ol_cur; j++) {
-			ohp = ol->ol_data[j];
+		for (i = 0; ol && i < ol->ol_cur; i++) {
+			ohp = ol->ol_data[i];
 			if (ohp->oh_flags & OHF_TMP) {
 				ohp->oh_flags &= ~OHF_TMP;
 				switch (st.st_dmode) {
@@ -862,10 +862,10 @@ panel_refresh_opts(struct panel *p)
 
 	pwidget_startlist(p);
 	for (i = 0; i < NOPS; i++) {
-		if (opts[i].opt_flags & OPF_HIDE)
+		if (options[i].opt_flags & OPF_HIDE)
 			continue;
 		pwidget_add(p, (st.st_opts & (1 << i) ?
-		    &fill_white : &fill_nodata), opts[i].opt_name, 0,
+		    &fill_white : &fill_nodata), options[i].opt_name, 0,
 		    gscb_pw_opt, i, 0, NULL, NULL);
 	}
 	pwidget_sortlist(p, pwidget_cmp);
