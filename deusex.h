@@ -61,6 +61,8 @@ struct dx_action {
 #define dxa_orbit_frac	dxa_dbl
 #define dxa_orbit_secs	dxa_dbl2
 
+#define dxa_cuban8_dim	dxa_intg
+
 #define dxa_stall_secs	dxa_dbl
 
 #define dxa_seljob	dxa_intg

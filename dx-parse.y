@@ -33,6 +33,7 @@ struct dxlist dxlist = TAILQ_HEAD_INITIALIZER(dxlist);
 %token DGT_BIRD
 %token DGT_CAMSYNC
 %token DGT_CLRSN
+%token DGT_CUBAN8
 %token DGT_CYCLENC
 %token DGT_DMODE
 %token DGT_EXIT
@@ -66,6 +67,7 @@ struct dxlist dxlist = TAILQ_HEAD_INITIALIZER(dxlist);
 %type <dbl>	orbit_revs orbit_secs;
 %type <dbl>	move_secs;
 %type <string>	cycle_method;
+%type <intg>	dim;
 %type <intg>	setmodifier;
 %type <intg>	opts opts_l panels panels_l;
 
@@ -146,6 +148,19 @@ move_secs	:			{ $$ = 3.0; }
 		| dbl			{ $$ = $1; }
 		;
 
+dim		: STRING {
+			if (strcasecmp($1, "x") == 0)
+				$$ = DIM_X;
+			else if (strcasecmp($1, "y") == 0)
+				$$ = DIM_Y;
+			else if (strcasecmp($1, "z") == 0)
+				$$ = DIM_Z;
+			else
+				yyerror("invalid dimension: %s", $1);
+			free($1);
+		}
+		;
+
 conf		: DGT_BIRD {
 			struct dx_action dxa;
 
@@ -170,6 +185,18 @@ conf		: DGT_BIRD {
 
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DGT_CLRSN;
+			dxa_add(&dxa);
+		}
+		| DGT_CUBAN8 dim {
+			struct dx_action dxa;
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_CUBAN8;
+			dxa.dxa_cuban8_dim = $2;
+			dxa_add(&dxa);
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_CAMSYNC;
 			dxa_add(&dxa);
 		}
 		| DGT_CYCLENC cycle_method {
@@ -260,21 +287,13 @@ conf		: DGT_BIRD {
 			dxa.dxa_opts = $3;
 			dxa_add(&dxa);
 		}
-		| DGT_ORBIT setmodifier STRING orbit_revs orbit_secs {
+		| DGT_ORBIT setmodifier dim orbit_revs orbit_secs {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DGT_ORBIT;
 			dxa.dxa_orbit_dir = ($2 == DXV_OFF) ? -1 : 1;
-			if (strcasecmp($3, "x") == 0)
-				dxa.dxa_orbit_dim = DIM_X;
-			else if (strcasecmp($3, "y") == 0)
-				dxa.dxa_orbit_dim = DIM_Y;
-			else if (strcasecmp($3, "z") == 0)
-				dxa.dxa_orbit_dim = DIM_Z;
-			else
-				yyerror("invalid orbit dimension: %s", $3);
-			free($3);
+			dxa.dxa_orbit_dim = $3;
 
 			/* Avoid any FPE. */
 			if ($4 == 0.0)

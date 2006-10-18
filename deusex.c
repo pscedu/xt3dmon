@@ -168,7 +168,7 @@ dxp_curlyq(const struct dx_action *dxa)
 }
 
 int
-dxp_cuban8(int dim)
+dxp_cuban8(const struct dx_action *dxa)
 {
 	static double t;
 
@@ -178,7 +178,7 @@ dxp_cuban8(int dim)
 	int ret;
 
 	a = b = 0.0; /* gcc */
-	switch (dim) {
+	switch (dxa->dxa_cuban8_dim) {
 	case DIM_X:
 		a = CABHEIGHT / 4.0;
 		b = ROWDEPTH / 4.0;
@@ -216,7 +216,7 @@ dxp_cuban8(int dim)
 
 	tween_push(TWF_LOOK | TWF_POS | TWF_UP);
 
-	switch (dim) {
+	switch (dxa->dxa_cuban8_dim) {
 	case DIM_X:
 		st.st_x = 0;
 		st.st_y = sv.fv_x;
