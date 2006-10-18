@@ -96,16 +96,14 @@ todo
 - use fill_checked/dechecked in place of white/nodata in pwidgets
 - moving the cursor should not cause panel recompiles
 - ensure nothing modifies st.st_opt and uses opt_flip() instead
-- add -D_GSS to macosx makefile
 - update libpng/libz on win32
-- add xt3dmon.pbxproj CFLAGS to our Makefile
 - make dx actions take const struct dx_action *
 
 xtwmon
 - rename data=nodes to data=node
 
 tweening
-- ensure tweening leaves normalized vectors
 - fix tween to real stack: once point is reached, pop it then move on
 - increase tween limit when fps is high, or when "stack" contains many layers
 - use vec_rotate() instead of fractional values for up/look when spinning around
+	- ensure tweening leaves normalized vectors
