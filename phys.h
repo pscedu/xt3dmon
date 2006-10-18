@@ -19,4 +19,4 @@ struct physdim {
 
 #define PDF_SKEL (1<<0)
 
-struct physdim *physdim_top;
+extern struct physdim *physdim_top;
