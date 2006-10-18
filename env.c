@@ -16,7 +16,7 @@
 #include "xmath.h"
 
 /* Stereo mode parameters. */
-#define FOCAL_POINT	(2.00f) /* Distance from cam to 3d focus */
+#define FOCAL_POINT	(1.00f) /* Distance from cam to 3d focus */
 #define FOCAL_LENGTH	(5.00f) /* Length of 3D focus */
 #define ST_EYESEP	(0.15f) /* Distance between "eyes" */
 
@@ -40,7 +40,7 @@ __inline void
 frustum_init(struct frustum *fr)
 {
 	fr->fr_ratio = ASPECT;
-	fr->fr_radians = DEG_TO_RAD(FOVY / 4.0);
+	fr->fr_radians = DEG_TO_RAD(FOVY / 2.0);
 	fr->fr_wd2 = FOCAL_POINT * tan(fr->fr_radians);
 	fr->fr_ndfl = FOCAL_POINT / FOCAL_LENGTH;
 	fr->fr_eyesep = ST_EYESEP;
@@ -69,6 +69,27 @@ frustum_calc(int frid, struct frustum *fr)
 		fr->fr_bottom = -fr->fr_wd2;
 		break;
 	}
+}
+
+void
+frustum_virtual(int x, int xdraws, int y, int ydraws)
+{
+	double total_horz, total_vert, chunk_horz, chunk_vert;
+	double wd2, left, right, bottom, top;
+
+	wd2 = 1.0 * tan(DEG_TO_RAD(FOVY / 2.0));
+	total_horz = 2 * ASPECT * wd2;
+	total_vert = 2 * wd2;
+
+	chunk_horz = total_horz / xdraws;
+	chunk_vert = total_vert / ydraws;
+
+	left = x * chunk_horz - total_horz / 2.0;
+	right = left + chunk_horz;
+
+	bottom = y * chunk_vert - total_vert / 2.0;
+	top = bottom + chunk_vert;
+	glFrustum(left, right, bottom, top, NEARCLIP, clip);
 }
 
 void

@@ -10,9 +10,12 @@
 
 #include <png.h>
 
+#include "cam.h"
 #include "capture.h"
+#include "draw.h"
 #include "env.h"
 #include "pathnames.h"
+#include "state.h"
 #include "xmath.h"
 
 void ppm_write(FILE *, unsigned char *, long, long);
@@ -118,4 +121,70 @@ capture_snapfd(int fd, int mode)
 		err(1, "fd %d", fd);
 	capture_formats[mode].cf_writef(fp, buf, winv.iv_w, winv.iv_h);
 	fclose(fp);
+}
+
+struct ivec virtwinv = { { 7200, 5400, 0 } };
+
+void
+capture_virtual(void)
+{
+	int mode, rf, x, y, xdraws, ydraws, h, pos, fact;
+	unsigned char *buf;
+	size_t size;
+	char *fn;
+	FILE *fp;
+
+	if (virtwinv.iv_w % winv.iv_w ||
+	    virtwinv.iv_h % winv.iv_h)
+		errx(1, "window size must be factor of virtual window size");
+
+	mode = CM_PNG;
+	fact = capture_formats[mode].cf_size;
+	size = fact * virtwinv.iv_w * virtwinv.iv_h;
+	if ((buf = calloc(size, sizeof(*buf))) == NULL)
+		err(1, "calloc");
+
+	xdraws = virtwinv.iv_w / winv.iv_w;
+	ydraws = virtwinv.iv_w / winv.iv_w;
+
+	for (x = 0; x < xdraws; x++)
+		for (y = 0; y < ydraws; y++) {
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			glMatrixMode(GL_PROJECTION);
+			glLoadIdentity();
+			frustum_virtual(x, xdraws, y, ydraws);
+			glMatrixMode(GL_MODELVIEW);
+			cam_look();
+
+			rf = st.st_rf;
+			draw_scene();
+			if (st.st_rf != rf)
+				errx(1, "internal error: draw_scene() modified "
+			    	"rebuild flags (%d<=>%d)", st.st_rf, rf);
+
+			glMatrixMode(GL_PROJECTION);
+
+			pos = fact * (x * winv.iv_w + y * winv.iv_h * virtwinv.iv_w);
+			for (h = 0; h < winv.iv_h; h++, pos += virtwinv.iv_w * fact)
+				glReadPixels(0, h, winv.iv_w, 1,
+				    capture_formats[mode].cf_glmode,
+				    GL_UNSIGNED_BYTE,
+				    &buf[pos]);
+
+			glMatrixMode(GL_MODELVIEW);
+			glutSwapBuffers();
+		}
+
+	draw_info("Saving, please wait...");
+	glutSwapBuffers();
+
+	fn = "virt.png";
+	if ((fp = fopen(fn, "wb")) == NULL)
+		err(1, "%s", fn);
+	capture_formats[mode].cf_writef(fp, buf,
+	    virtwinv.iv_w, virtwinv.iv_h);
+	fclose(fp);
+	free(buf);
+
+	st.st_rf |= RF_CAM;
 }

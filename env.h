@@ -90,6 +90,7 @@ struct frustum {
 
 void frustum_init(struct frustum *);
 void frustum_calc(int, struct frustum *);
+void frustum_virtual(int, int, int, int);
 
 void geom_setall(int);
 

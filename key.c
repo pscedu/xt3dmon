@@ -10,6 +10,7 @@
 #include "cdefs.h"
 #include "buf.h"
 #include "cam.h"
+#include "capture.h"
 #include "deusex.h"
 #include "env.h"
 #include "flyby.h"
@@ -765,6 +766,9 @@ gl_keyh_default(unsigned char key, int u, int v)
 		break;
 	case 'r':
 		glutKeyboardFunc(gl_keyh_route);
+		break;
+	case 's':
+		capture_virtual();
 		break;
 	case 'v':
 		glutKeyboardFunc(gl_keyh_vmode);
