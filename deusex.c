@@ -158,46 +158,26 @@ dxp_orbit3(struct dx_action *dxa)
 }
 
 int
-dxp_curlyq(void)
+dxp_curlyq(struct dx_action *dxa)
 {
-	static double fwadj, adj, amt;
+	static double fwadj;
 	static int t;
-	int ret, dim, sign;
-	double max, du, dv, wait;
+	double wait;
+	int ret;
 
-	max = 3 * 2 * M_PI;
 	if (t == 0) {
 		wait = 1.1 * ceil(log(DST(&st.st_v, &focus) / log(1.1)));
 		fwadj = DST(&st.st_v, &focus) / (fps * wait);
-		adj = max / (fps * wait);
-		amt = 0.0;
 	}
-
-	sign = 1;
-	dim = DIM_X;
-
-	du = dv = 0.0;
-	switch (dim) {
-	case DIM_X:
-		du = sign * adj;
-		break;
-	case DIM_Y:
-		dv = sign * -adj;
-		break;
-	}
-
-	amt += fabs(adj);
 
 	tween_push(TWF_POS | TWF_LOOK | TWF_UP);
 	cam_move(DIR_FORW, fwadj);
-	cam_revolvefocus(du, dv, REVT_LKAVG);
 	tween_pop(TWF_POS | TWF_LOOK | TWF_UP);
 
 	ret = 0;
-	t++;
-	if (amt >= max) {
-		t = 0;
+	if (dxp_orbit(dxa)) {
 		ret = 1;
+		t = 0;
 	}
 	return (ret);
 }
