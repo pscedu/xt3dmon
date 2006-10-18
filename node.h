@@ -52,7 +52,7 @@ struct node {
 			    (iv)->iv_z < widim.iv_d &&			\
 			    (((n) = wimap[(iv)->iv_x][(iv)->iv_y]	\
 			        [(iv)->iv_z]) || 1);			\
-			    (iv)->iv_z++)				\
+			    (iv)->iv_z++)
 
 struct node	*node_neighbor(int, struct node *, int, int *);
 void		 node_physpos(struct node *, struct physcoord *);
