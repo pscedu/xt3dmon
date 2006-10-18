@@ -33,7 +33,6 @@
 #define USLEEP	100
 #define MSGSIZ	1024
 
-void serv_displayh(void);
 int serv_parse(char *, struct session *);
 
 int svc_sw(char *, int *, struct session *);
