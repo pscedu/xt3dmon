@@ -83,13 +83,13 @@ gl_visible(int state)
 void
 gl_idleh_govern(void)
 {
-	static struct timeval gov_tv, tv, diff;
+	static struct timeval gov_tv, tmv, diff;
 
-	gettimeofday(&tv, NULL);
-	timersub(&tv, &gov_tv, &diff);
+	gettimeofday(&tmv, NULL);
+	timersub(&tmv, &gov_tv, &diff);
 	if (diff.tv_sec * 1e6 + diff.tv_usec >= FPS_TO_USEC(GOVERN_FPS)) {
 		fps_cnt++;
-		gov_tv = tv;
+		gov_tv = tmv;
 		if (stereo_mode == STM_PASV) {
 			wid = WINID_MASTER;
 			glutSetWindow(window_ids[wid]);
