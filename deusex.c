@@ -4,6 +4,7 @@
 
 #include <err.h>
 #include <float.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,6 +27,7 @@
 #include "state.h"
 #include "tween.h"
 #include "util.h"
+#include "xmath.h"
 
 #define DST(a, b)					\
 	(sqrt(						\
