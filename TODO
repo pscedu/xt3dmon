@@ -97,7 +97,6 @@ todo
 - moving the cursor should not cause panel recompiles
 - ensure nothing modifies st.st_opt and uses opt_flip() instead
 - update libpng/libz on win32
-- make dx actions take const struct dx_action *
 
 xtwmon
 - rename data=nodes to data=node

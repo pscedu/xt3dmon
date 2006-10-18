@@ -77,7 +77,7 @@ struct dx_action {
 TAILQ_HEAD(dxlist, dx_action);
 
 void  dxa_clear(void);
-void  dxa_add(struct dx_action *);
+void  dxa_add(const struct dx_action *);
 
 void  dx_parse(void);
 void  dx_start(void);
