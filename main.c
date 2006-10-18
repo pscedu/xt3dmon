@@ -67,7 +67,7 @@ const char		*progname;
 
 char			**sav_argv;
 
-struct xoption opts[] = {
+struct xoption options[] = {
  /*  0 */ { "tex",	"Texture mapping",		0 },
  /*  1 */ { "frames",	"Node wireframes",		0 },
  /*  2 */ { "ground",	"Ground/axes",			0 },
@@ -185,7 +185,7 @@ opt_flip(int fopts)
 		fopts &= ~(1 << i);
 
 		on = st.st_opts & (1 << i);
-		status_add("%s %s", opts[i].opt_name,
+		status_add("%s %s", options[i].opt_name,
 		    on ? "enabled\n" : "disabled\n");
 
 		switch (1 << i) {
@@ -560,11 +560,11 @@ vmode_change(void)
 
 /* Snap to nearest space on grid. */
 __inline float
-snap(float n, float size, float clip)
+snap(float n, float size, float clipval)
 {
 	float adj;
 
-	adj = fmod(n - clip, size);
+	adj = fmod(n - clipval, size);
 //	while (adj < 0)
 	if (adj < 0)
 		adj += size;

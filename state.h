@@ -116,4 +116,4 @@ int	 rf_deps(int);
 void	 load_state(struct state *);
 
 extern struct state	 st;
-extern struct xoption	 opts[];
+extern struct xoption	 options[];

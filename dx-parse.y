@@ -94,7 +94,7 @@ opts		: STRING {
 			int j;
 
 			for (j = 0; j < NOPS; j++)
-				if (strcasecmp(opts[j].opt_abbr, $1) == 0) {
+				if (strcasecmp(options[j].opt_abbr, $1) == 0) {
 					$$ = 1 << j;
 					break;
 				}
