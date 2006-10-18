@@ -56,7 +56,7 @@ sel_begin(void)
 
 	switch (stereo_mode) {
 	case STM_NONE:
-		gluPerspective(FOVY, ASPECT, NEARCLIP, clip); /* XXX wrong */
+		gluPerspective(FOVY, ASPECT, NEARCLIP, clip);
 		break;
 	case STM_PASV:
 	case STM_ACT:
