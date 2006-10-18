@@ -283,7 +283,7 @@ gl_displayh_stereo(void)
 	st.st_rf = lrf;
 	gl_stereo_eye(FRID_LEFT);
 	if (st.st_rf != lrf)
-		warnx("internal error: draw_scene() modified "
+		errx(1, "internal error: draw_scene() modified "
 		    "rebuild flags (%d<=>%d)", st.st_rf, lrf);
 
 	wid = WINID_RIGHT;
@@ -308,7 +308,7 @@ gl_displayh_stereo(void)
 	st.st_rf = rrf;
 	gl_stereo_eye(FRID_RIGHT);
 	if (st.st_rf != rrf)
-		warnx("internal error: draw_scene() modified "
+		errx(1, "internal error: draw_scene() modified "
 		    "rebuild flags (%d<=>%d)", st.st_rf, rrf);
 
 	st.st_rf = lnewrf;
@@ -345,7 +345,7 @@ gl_displayh_default(void)
 	st.st_rf = rf;
 	draw_scene();
 	if (st.st_rf != rf)
-		warnx("internal error: draw_scene() modified "
+		errx(1, "internal error: draw_scene() modified "
 		    "rebuild flags (%d<=>%d)", st.st_rf, rf);
 	st.st_rf = newrf;
 
@@ -408,4 +408,3 @@ end:
 		gscb_miss(NULL, flags);
 	return (gn);
 }
-
