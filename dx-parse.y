@@ -33,6 +33,7 @@ struct dxlist dxlist = TAILQ_HEAD_INITIALIZER(dxlist);
 %token DGT_BIRD
 %token DGT_CAMSYNC
 %token DGT_CLRSN
+%token DGT_CORKSCREW
 %token DGT_CUBAN8
 %token DGT_CURLYQ
 %token DGT_CYCLENC
@@ -186,6 +187,18 @@ conf		: DGT_BIRD {
 
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DGT_CLRSN;
+			dxa_add(&dxa);
+		}
+		| DGT_CORKSCREW dim {
+			struct dx_action dxa;
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_CORKSCREW;
+			dxa.dxa_screw_dim = $2;
+			dxa_add(&dxa);
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_CAMSYNC;
 			dxa_add(&dxa);
 		}
 		| DGT_CUBAN8 dim {

@@ -303,7 +303,7 @@ dxp_cuban8(const struct dx_action *dxa)
 }
 
 int
-dxp_corkscrew(int dim)
+dxp_corkscrew(const struct dx_action *dxa)
 {
 	static double t;
 	double a, b, c;
@@ -312,7 +312,7 @@ dxp_corkscrew(int dim)
 
 	ret = 0;
 	a = b = c = 0.0; /* gcc */
-	switch (dim) {
+	switch (dxa->dxa_screw_dim) {
 	case DIM_X:
 		a = CABHEIGHT / 4.0;
 		b = CL_DEPTH / 4.0;
@@ -336,7 +336,7 @@ dxp_corkscrew(int dim)
 
 	tween_push(TWF_LOOK | TWF_POS | TWF_UP);
 
-	switch (dim) {
+	switch (dxa->dxa_screw_dim) {
 	case DIM_X:
 		st.st_x = t;
 		st.st_y = YCENTER + sv.fv_y;
@@ -863,6 +863,7 @@ struct dxent {
 	{ DGT_BIRD,	dxp_bird },
 	{ DGT_CAMSYNC,	dxp_camsync },
 	{ DGT_CLRSN,	dxp_clrsn },
+	{ DGT_CORKSCREW,dxp_corkscrew },
 	{ DGT_CUBAN8,	dxp_cuban8 },
 	{ DGT_CURLYQ,	dxp_curlyq },
 	{ DGT_CYCLENC,	dxp_cyclenc },

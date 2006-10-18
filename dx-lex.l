@@ -23,6 +23,7 @@ extern int lineno;
 
 bird					{ return (DGT_BIRD); }
 clrsn					{ return (DGT_CLRSN); }
+corkscrew				{ return (DGT_CORKSCREW); }
 cuban8					{ return (DGT_CUBAN8); }
 curlyq					{ return (DGT_CURLYQ); }
 cyclenc					{ return (DGT_CYCLENC); }

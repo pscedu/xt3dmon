@@ -37,6 +37,8 @@ struct dx_action {
 
 #define dxa_caption	dxa_str
 
+#define dxa_screw_dim	dxa_intg
+
 #define dxa_cycle_meth	dxa_intg
 
 #define dxa_reel	dxa_str
