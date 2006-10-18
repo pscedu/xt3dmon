@@ -499,13 +499,13 @@ next:
 }
 
 __inline void
-make_panel(struct panel *p, int wid, int compile, int toff)
+make_panel(struct panel *p, int winid, int compile, int toff)
 {
 	if (compile) {
-		if (p->p_dl[wid])
-			glDeleteLists(p->p_dl[wid], 1);
-		p->p_dl[wid] = glGenLists(1);
-		glNewList(p->p_dl[wid], GL_COMPILE);
+		if (p->p_dl[winid])
+			glDeleteLists(p->p_dl[winid], 1);
+		p->p_dl[winid] = glGenLists(1);
+		glNewList(p->p_dl[winid], GL_COMPILE);
 	}
 
 	draw_panel(p, toff);
@@ -514,12 +514,12 @@ make_panel(struct panel *p, int wid, int compile, int toff)
 		glEndList();
 		p->p_opts &= ~POPT_DIRTY;
 		p->p_opts |= POPT_COMPILE;
-		glCallList(p->p_dl[wid]);
+		glCallList(p->p_dl[winid]);
 	}
 }
 
 void
-panel_draw(struct panel *p, int wid)
+panel_draw(struct panel *p, int winid)
 {
 	int compile, tweenadj, u, v, w, h;
 	int lineno, curlen;
@@ -539,13 +539,13 @@ panel_draw(struct panel *p, int wid)
 		 * make_panel() on the first window
 		 * will have cleared the dirty bit.
 		 */
-		make_panel(p, wid, p->p_opts & POPT_COMPILE, toff);
+		make_panel(p, winid, p->p_opts & POPT_COMPILE, toff);
 		p->p_opts &= ~(POPT_COMPILE | POPT_CANSYNC);
 		return;
 	}
 
-	if ((p->p_opts & POPT_DIRTY) == 0 && p->p_dl[wid]) {
-		glCallList(p->p_dl[wid]);
+	if ((p->p_opts & POPT_DIRTY) == 0 && p->p_dl[winid]) {
+		glCallList(p->p_dl[winid]);
 		goto done;
 	}
 	p->p_opts |= POPT_CANSYNC;
@@ -664,7 +664,7 @@ panel_draw(struct panel *p, int wid)
 		}
 	}
 
-	make_panel(p, wid, compile, toff);
+	make_panel(p, winid, compile, toff);
 
 done:
 	/* spacing */
@@ -685,7 +685,7 @@ done:
 }
 
 void
-draw_panels(int wid)
+draw_panels(int winid)
 {
 	struct panel *p, *np;
 
@@ -699,7 +699,7 @@ draw_panels(int wid)
 		if (stereo_mode != STM_PASV ||
 		   (p->p_opts & POPT_CANSYNC) == 0)
 			p->p_refresh(p);
-		panel_draw(p, wid);
+		panel_draw(p, winid);
 	}
 }
 
