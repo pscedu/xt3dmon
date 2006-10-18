@@ -169,19 +169,19 @@ flyby_writemsg(int type, const void *data, size_t len)
 
 /* Write current data for flyby. */
 void
-flyby_writeseq(struct state *st)
+flyby_writeseq(struct state *stp)
 {
-	flyby_writemsg(FHT_SEQ, st, sizeof(*st));
+	flyby_writemsg(FHT_SEQ, stp, sizeof(*stp));
 }
 
 void
-flyby_writeinit(struct state *st)
+flyby_writeinit(struct state *stp)
 {
 	struct fbinit fbi;
 	struct panel *p;
 
 	/* One copy per init msg should be okay. */
-	fbi.fbi_state = *st;
+	fbi.fbi_state = *stp;
 	fbi.fbi_panels = 0;
 
 	TAILQ_FOREACH(p, &panels, p_link)
@@ -354,7 +354,7 @@ flyby_read(void)
 	optdiff = oldopts ^ st.st_opts;
 	for (i = 0; i < NOPS; i++)
 		if (optdiff & (1 << i) &&
-		    opts[i].opt_flags & OPF_FBIGN)
+		    options[i].opt_flags & OPF_FBIGN)
 			optdiff &= ~(1 << i);
 	st.st_opts = oldopts;
 	st.st_rf |= oldrf;
