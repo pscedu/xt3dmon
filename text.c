@@ -12,7 +12,7 @@ void
 text_wrap(struct buf *bufp, const char *s, size_t maxlen, const char *ins,
     size_t mocklen)
 {
-	const char *p, *t, *brk, *sp;
+	const char *p, *t, *brkp, *sp;
 	size_t linelen, inslen;
 	long i;
 
@@ -30,10 +30,10 @@ text_wrap(struct buf *bufp, const char *s, size_t maxlen, const char *ins,
 			p--;
 		} else if (++linelen > maxlen) {
 			/* First attempt: try to break on whitespace. */
-			brk = NULL;
+			brkp = NULL;
 			for (t = p - 1; p - t < (long)(linelen - mocklen) && *t != '\n'; t--) {
-				if (!isalnum(*t) && brk == NULL)
-					brk = t + 1;
+				if (!isalnum(*t) && brkp == NULL)
+					brkp = t + 1;
 				if (isspace(*t)) {
 					for (sp = t - 1; sp > s && isspace(*sp); sp--)
 						;
@@ -53,10 +53,10 @@ text_wrap(struct buf *bufp, const char *s, size_t maxlen, const char *ins,
 			 * If no suitable break position was found,
 			 * force break at current end.
 			 */
-			if (brk == NULL)
+			if (brkp == NULL)
 				t = p;
 			else
-				t = brk;
+				t = brkp;
 
 			for (i = 0; i < p - t; i++)
 				buf_chop(bufp);
