@@ -151,7 +151,11 @@ dxp_curlyq(const struct dx_action *dxa)
 	int ret;
 
 	if (t == 0) {
-		wait = 1.1 * ceil(log(DST(&st.st_v, &focus) / log(1.1)));
+		if (dxa->dxa_orbit_secs)
+			wait = dxa->dxa_orbit_secs;
+		else
+			wait = 1.1 * ceil(log(DST(&st.st_v, &focus) /
+			    log(1.1)));
 		fwadj = DST(&st.st_v, &focus) / (fps * wait);
 	}
 
@@ -859,6 +863,8 @@ struct dxent {
 	{ DGT_BIRD,	dxp_bird },
 	{ DGT_CAMSYNC,	dxp_camsync },
 	{ DGT_CLRSN,	dxp_clrsn },
+	{ DGT_CUBAN8,	dxp_cuban8 },
+	{ DGT_CURLYQ,	dxp_curlyq },
 	{ DGT_CYCLENC,	dxp_cyclenc },
 	{ DGT_DMODE,	dxp_dmode },
 	{ DGT_EXIT,	dxp_exit },

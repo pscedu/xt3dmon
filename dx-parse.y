@@ -34,6 +34,7 @@ struct dxlist dxlist = TAILQ_HEAD_INITIALIZER(dxlist);
 %token DGT_CAMSYNC
 %token DGT_CLRSN
 %token DGT_CUBAN8
+%token DGT_CURLYQ
 %token DGT_CYCLENC
 %token DGT_DMODE
 %token DGT_EXIT
@@ -193,6 +194,28 @@ conf		: DGT_BIRD {
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DGT_CUBAN8;
 			dxa.dxa_cuban8_dim = $2;
+			dxa_add(&dxa);
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_CAMSYNC;
+			dxa_add(&dxa);
+		}
+		| DGT_CURLYQ setmodifier dim orbit_revs orbit_secs {
+			struct dx_action dxa;
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_CURLYQ;
+			dxa.dxa_orbit_dir = ($2 == DXV_OFF) ? -1 : 1;
+			dxa.dxa_orbit_dim = $3;
+
+			/* Avoid any FPE. */
+			if ($4 == 0.0)
+				yyerror("invalid curlyq #revs: %f", $4);
+			dxa.dxa_orbit_frac = fabs($4);
+
+			if ($5 < 0)
+				yyerror("invalid curlyq #secs: %d", $5);
+			dxa.dxa_orbit_secs = $5;
 			dxa_add(&dxa);
 
 			memset(&dxa, 0, sizeof(dxa));
