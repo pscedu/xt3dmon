@@ -406,7 +406,7 @@ draw_node(struct node *n, int flags)
 __inline void
 draw_ground(void)
 {
-	struct fvec fv, fdim, *ndim;
+	struct fvec fv, dim, *ndim;
 	struct fill *fp;
 
 	/* Anti-aliasing */
@@ -446,13 +446,13 @@ draw_ground(void)
 		fv.fv_z = st.st_winsp.iv_z * (st.st_wioff.iv_z - 1);
 
 		ndim = &vmodes[VM_WIONE].vm_ndim[GEOM_CUBE];
-		fdim.fv_w = (widim.iv_w + 1) * st.st_winsp.iv_w + ndim->fv_w;
-		fdim.fv_y = -0.2f / 2.0f;
-		fdim.fv_d = (widim.iv_d + 1) * st.st_winsp.iv_d + ndim->fv_d;
+		dim.fv_w = (widim.iv_w + 1) * st.st_winsp.iv_w + ndim->fv_w;
+		dim.fv_y = -0.2f / 2.0f;
+		dim.fv_d = (widim.iv_d + 1) * st.st_winsp.iv_d + ndim->fv_d;
 
 		glPushMatrix();
 		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
-		draw_cube(&fdim, &fill_ground, DF_FRAME);
+		draw_cube(&dim, &fill_ground, DF_FRAME);
 		glPopMatrix();
 		break;
 	case VM_PHYS:
@@ -460,14 +460,14 @@ draw_ground(void)
 		fv.fv_y = -0.2f;
 		fv.fv_z = -5.0f;
 
-		fdim.fv_w = physdim_top->pd_size.fv_w - 2 * fv.fv_x;
-		fdim.fv_h = -fv.fv_y / 2.0f;
-		fdim.fv_d = 2 * physdim_top->pd_size.fv_d +
+		dim.fv_w = physdim_top->pd_size.fv_w - 2 * fv.fv_x;
+		dim.fv_h = -fv.fv_y / 2.0f;
+		dim.fv_d = 2 * physdim_top->pd_size.fv_d +
 		    physdim_top->pd_space - 2 * fv.fv_z;
 
 		glPushMatrix();
 		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
-		draw_cube(&fdim, &fill_ground, DF_FRAME);
+		draw_cube(&dim, &fill_ground, DF_FRAME);
 		glPopMatrix();
 		break;
 	}
