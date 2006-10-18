@@ -3,8 +3,6 @@
 #ifndef _XMATH_H_
 #define _XMATH_H_
 
-#include <math.h>
-
 #include "mon.h"
 
 #define SQUARE(x)	((x) * (x))
