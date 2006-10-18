@@ -232,7 +232,7 @@ void
 ds_refresh(int type, int flags)
 {
 	struct datasrc *ds;
-	struct stat st;
+	struct stat stb;
 
 	ds = ds_open(type);
 	if (ds == NULL) {
@@ -248,16 +248,16 @@ ds_refresh(int type, int flags)
 	}
 
 	if (uri_has_proto(ds->ds_uri, "file")) {
-		if (fstat(ds->ds_us->us_fd, &st) == -1)
+		if (fstat(ds->ds_us->us_fd, &stb) == -1)
 			err(1, "fstat %s", ds->ds_uri);
 		/*
 		 * XXX: no way to tell if it was modified
 		 *	with <1 second resolution.
 		 */
-		if (st.st_mtime <= ds->ds_mtime &&
+		if (stb.st_mtime <= ds->ds_mtime &&
 		    (ds->ds_flags & DSF_FORCE) == 0)
 			goto done;
-		ds->ds_mtime = st.st_mtime;
+		ds->ds_mtime = stb.st_mtime;
 	}
 	ds->ds_flags &= ~DSF_FORCE;
 	ds_read(ds);
@@ -431,10 +431,10 @@ int
 dsc_exists(const char *sid)
 {
 	char fn[PATH_MAX];
-	struct stat st;
+	struct stat stb;
 
 	snprintf(fn, sizeof(fn), "%s/%s", _PATH_SESSIONS, sid);
-	if (stat(fn, &st) == -1) {
+	if (stat(fn, &stb) == -1) {
 		/* XXX: more robust, check structure & dir */
 		if (errno == ENOENT)
 			return (0);
