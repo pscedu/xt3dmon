@@ -18,6 +18,7 @@
 #include "cdefs.h"
 #include "cam.h"
 #include "capture.h"
+#include "draw.h"
 #include "ds.h"
 #include "env.h"
 #include "gl.h"
