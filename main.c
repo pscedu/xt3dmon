@@ -28,6 +28,7 @@
 #include "selnode.h"
 #include "server.h"
 #include "state.h"
+#include "status.h"
 #include "uinp.h"
 #include "xmath.h"
 #include "xssl.h"
@@ -80,16 +81,15 @@ struct xoption options[] = {
  /*  9 */ { "pipes",	"Pipe mode",			0 },
  /* 10 */ { "selpipes",	"Selected node pipes",		0 },
  /* 11 */ { "pause",	"Pause",			OPF_HIDE | OPF_FBIGN },
- /* 12 */ { "tour",	"Job tour mode",		OPF_FBIGN },
- /* 13 */ { "skel",	"Skeletons",			0 },
- /* 14 */ { "nodeanim",	"Node animation",		0 },
- /* 15 */ { "autofb",	"Auto flyby mode",		OPF_FBIGN },
- /* 16 */ { "reel",	"Reel mode",			OPF_FBIGN },
- /* 17 */ { "cabskel",	"Cabinet skeletons",		0 },
- /* 18 */ { "caption",	"Captions",			OPF_FBIGN },
- /* 19 */ { "subset",	"Subset mode",			0 },
- /* 20 */ { "selnlbls",	"Selected node labels",		0 },
- /* 21 */ { "capfb",	"Capture Flyby Only",		OPF_FBIGN }
+ /* 12 */ { "skel",	"Skeletons",			0 },
+ /* 13 */ { "nodeanim",	"Node animation",		0 },
+ /* 14 */ { "autofb",	"Auto flyby mode",		OPF_FBIGN },
+ /* 15 */ { "reel",	"Reel mode",			OPF_FBIGN },
+ /* 16 */ { "cabskel",	"Cabinet skeletons",		0 },
+ /* 17 */ { "caption",	"Captions",			OPF_FBIGN },
+ /* 18 */ { "subset",	"Subset mode",			0 },
+ /* 19 */ { "selnlbls",	"Selected node labels",		0 },
+ /* 20 */ { "capfb",	"Capture Flyby Only",		OPF_FBIGN }
 };
 
 struct vmode vmodes[] = {
@@ -185,7 +185,8 @@ opt_flip(int fopts)
 		fopts &= ~(1 << i);
 
 		on = st.st_opts & (1 << i);
-		status_add("%s %s", options[i].opt_name,
+		status_add(SLP_NOTICE,
+		    "%s %s", options[i].opt_name,
 		    on ? "enabled\n" : "disabled\n");
 
 		switch (1 << i) {

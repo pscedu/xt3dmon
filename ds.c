@@ -32,6 +32,7 @@
 #include "panel.h"
 #include "pathnames.h"
 #include "state.h"
+#include "status.h"
 #include "ustream.h"
 #include "util.h"
 
@@ -239,7 +240,8 @@ ds_refresh(int type, int flags)
 		if (flags & DSFO_CRIT)
 			err(1, "datasrc (%d) open failed", type);
 		else if (flags & DSFO_ALERT) {
-			status_add("Unable to retrieve data: %s\n",
+			status_add(SLP_URGENT,
+			    "Unable to retrieve data: %s\n",
 			    strerror(errno));
 			panel_show(PANEL_STATUS);
 		} else if ((flags & DSFO_IGN) == 0)

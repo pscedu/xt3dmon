@@ -39,6 +39,7 @@
 #include "selnode.h"
 #include "server.h"
 #include "state.h"
+#include "status.h"
 #include "uinp.h"
 #include "util.h"
 #include "yod.h"
@@ -904,15 +905,16 @@ panel_refresh_panels(struct panel *p)
 void
 panel_refresh_status(struct panel *p)
 {
-	const char *s;
+	struct status_log *sl;
 
 	if (panel_ready(p))
 		return;
 
-	s = status_get();
-	if (s[0] == '\0')
-		s = "(empty)";
-	panel_set_content(p, "- Status Log -\n%s", s);
+	panel_set_content(p, "- Status Log -");
+	TAILQ_FOREACH(sl, &status_hd, sl_link)
+		panel_add_content(p, "\n%s", sl->sl_str);
+	if (TAILQ_EMPTY(&status_hd))
+		panel_add_content(p, "\n(empty)");
 }
 
 void
