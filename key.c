@@ -643,12 +643,39 @@ gl_keyh_server(unsigned char key, __unused int u, __unused int v)
 }
 
 void
+gl_keyh_bird(unsigned char key, __unused int u, __unused int v)
+{
+	flyby_rstautoto();
+	glutKeyboardFunc(gl_keyh_default);
+
+	switch (key) {
+	case '1':
+		tween_push(TWF_LOOK | TWF_POS | TWF_UP);
+		vec_set(&st.st_v, -56.40, 23.00, 31.00);
+		vec_set(&st.st_lv,  1.00,  0.00,  0.00);
+		vec_set(&st.st_uv,  0.00,  1.00,  0.00);
+		tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
+		break;
+	case '2':
+		tween_push(TWF_LOOK | TWF_POS | TWF_UP);
+		vec_set(&st.st_v,  98.40, 23.00, 31.00);
+		vec_set(&st.st_lv, -1.00,  0.00,  0.00);
+		vec_set(&st.st_uv,  0.00,  1.00,  0.00);
+		tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
+		break;
+	}
+}
+
+void
 gl_keyh_default(unsigned char key, int u, int v)
 {
 	flyby_rstautoto();
 	switch (key) {
 	case 1: /* ^A */
 		sn_addallvis();
+		break;
+	case 15: /* ^O */
+		glutKeyboardFunc(gl_keyh_bird);
 		break;
 	case 16: /* ^P */
 		glutKeyboardFunc(gl_keyh_pipes);
