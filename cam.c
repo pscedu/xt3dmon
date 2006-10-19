@@ -177,9 +177,14 @@ cam_revolvefocus(double dt, double dp, int type)
 			{ { NODESPACE + CL_WIDTH, NODESPACE + CL_HEIGHT / 2.0, CL_DEPTH / 2.0 } }
 		};
 
-		if (type == REVT_LKAVG &&
-		    DST(&st.st_v, &focus) < CL_WIDTH / 2.0)
-			type = REVT_LKCEN;
+		if (type == REVT_LKAVG) {
+			dst = DST(&st.st_v, &focus);
+			if (dst < CL_WIDTH / 2.0) {
+				if (CL_WIDTH / 2.0 - dst < 0.1)
+					cam_move(DIR_FORW, 0.05);
+				type = REVT_LKCEN;
+			}
+		}
 
 		cam_revolve(nfv, 2, dt, dp, type);
 	} else
