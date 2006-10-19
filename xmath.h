@@ -3,11 +3,19 @@
 #ifndef _XMATH_H_
 #define _XMATH_H_
 
+#include <math.h>
+
 #include "mon.h"
 
 #define SQUARE(x)	((x) * (x))
 #define SIGN(x)		(x < 0 ? -1 : 1)
 #define SIGNF(a)	(a < 0.0f ? -1.0f : 1.0f)
+
+#define DST(a, b)					\
+	(sqrt(						\
+	    SQUARE((a)->fv_x - (b)->fv_x) +		\
+	    SQUARE((a)->fv_y - (b)->fv_y) +		\
+	    SQUARE((a)->fv_z - (b)->fv_z)))
 
 #define DEG_TO_RAD(x)	((x) * M_PI / 180)
 

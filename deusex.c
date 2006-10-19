@@ -29,12 +29,6 @@
 #include "util.h"
 #include "xmath.h"
 
-#define DST(a, b)					\
-	(sqrt(						\
-	    SQUARE((a)->fv_x - (b)->fv_x) +		\
-	    SQUARE((a)->fv_y - (b)->fv_y) +		\
-	    SQUARE((a)->fv_z - (b)->fv_z)))
-
 int		  dx_built;		/* Whether dx path is parsed. */
 int		  dx_active;		/* Whether dx mode is running. */
 struct dx_action *dx_action;		/* Current dx action. */
