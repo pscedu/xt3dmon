@@ -925,9 +925,10 @@ const char *oldcap;
 void
 dx_start(void)
 {
+	if (!dx_built && !dx_parse())
+		return;
+	dx_built = 1;
 	dx_active = 1;
-	if (!dx_built)
-		dx_parse();
 	dx_action = NULL;
 	dx_save_state = st;
 	oldcap = caption_get();

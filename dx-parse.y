@@ -17,6 +17,7 @@
 #include "panel.h"
 #include "pathnames.h"
 #include "state.h"
+#include "status.h"
 
 #define yyin dxin
 
@@ -539,19 +540,20 @@ args_l		: STRING {
 int
 yyerror(const char *fmt, ...)
 {
+	char errmsg[BUFSIZ];
 	va_list ap;
 
 	va_start(ap, fmt);
-	fprintf(stderr, "%s: %s:%d: ", progname, dx_fn, lineno);
-	vfprintf(stderr, fmt, ap);
-	fprintf(stderr, "\n");
+	vsnprintf(errmsg, sizeof(errmsg), fmt, ap);
 	va_end(ap);
+
+	status_add(SLP_URGENT, "%s:%d: %s\n", dx_fn, lineno, errmsg);
 
 	errors++;
 	return (0);
 }
 
-void
+int
 dx_parse(void)
 {
 	extern FILE *yyin;
@@ -566,7 +568,7 @@ dx_parse(void)
 	fclose(fp);
 
 	if (errors)
-		errx(1, "%s: %d error(s) encountered", dx_fn, errors);
-
-	dx_built = 1;
+		status_add(SLP_URGENT, "%s: %d error(s)",
+		    dx_fn, errors);
+	return (!errors);
 }
