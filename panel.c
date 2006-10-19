@@ -322,7 +322,8 @@ if (col > nc)
 void
 draw_panel(struct panel *p, int toff)
 {
-	int colwidth, col, nc, npw, uoff, voff, stwu, stwv;
+	int contwidth, uoff, voff, stwu, stwv;
+	int colwidth, col, nc, npw;
 	struct fill *frame_fp;
 	struct pwidget *pw;
 	const char *s;
@@ -342,6 +343,7 @@ draw_panel(struct panel *p, int toff)
 
 	glColor4f(p->p_fill.f_r, p->p_fill.f_g, p->p_fill.f_b, p->p_fill.f_a);
 	/* Panel content. */
+	contwidth = 0;
 	uoff = p->p_u + toff;
 	voff = p->p_v - toff + 3;
 	for (s = p->p_str; *s != '\0'; s++) {
@@ -350,14 +352,19 @@ draw_panel(struct panel *p, int toff)
 			if (voff < p->p_v - p->p_h)
 				break;
 			glRasterPos2d(uoff, voff);
+			contwidth = 0;
 			if (*s == '\n')
 				continue;
 		}
-		glutBitmapCharacter(PFONT, *s);
+		contwidth += LETTER_WIDTH;
+		if (contwidth < p->p_w)
+			glutBitmapCharacter(PFONT, *s);
 	}
 
 	/* Text shadow. */
 	glColor3f(0.0, 0.0, 0.2);
+
+	contwidth = 0;
 	voff = p->p_v - toff + 3;
 	uoff++;
 	voff--;
@@ -367,10 +374,13 @@ draw_panel(struct panel *p, int toff)
 			if (voff < p->p_v - p->p_h)
 				break;
 			glRasterPos2d(uoff, voff);
+			contwidth = 0;
 			if (*s == '\n')
 				continue;
 		}
-		glutBitmapCharacter(PFONT, *s);
+		contwidth += LETTER_WIDTH;
+		if (contwidth < p->p_w)
+			glutBitmapCharacter(PFONT, *s);
 	}
 	uoff--;
 	voff++;
