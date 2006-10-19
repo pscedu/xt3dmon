@@ -126,7 +126,6 @@ gl_setup_core(void)
 	else
 		glutDisplayFunc(gl_displayh_default);
 	glutTimerFunc(1, cocb_fps, 0);
-	glutTimerFunc(1, cocb_clearstatus, 0); /* XXX: enable/disable when PANEL_STATUS? */
 }
 
 void

@@ -84,7 +84,6 @@ void		 arch_init(void);
 /* callout.c */
 void		 cocb_fps(int);
 void		 cocb_datasrc(int);
-void		 cocb_clearstatus(int);
 void		 cocb_tourjob(int);
 void		 cocb_autoto(int);
 
@@ -112,12 +111,6 @@ int		 roundclass(double, double, double, int);
 
 /* parse-phys.y */
 void		 parse_physconf(const char *);
-
-/* status.c */
-void		 status_add(const char *, ...);
-void		 status_set(const char *, ...);
-void		 status_clear(void);
-const char	*status_get(void);
 
 /* tex.c */
 void		 tex_load(void);

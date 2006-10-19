@@ -23,31 +23,6 @@ cocb_datasrc(__unused int a)
 	glutTimerFunc(1000, cocb_datasrc, 0);
 }
 
-void
-cocb_clearstatus(__unused int a)
-{
-	status_clear();
-	glutTimerFunc(30000, cocb_clearstatus, 0);
-}
-
-#if 0
-void
-cocb_tourjob(__unused int a)
-{
-	size_t j;
-
-	if ((st.st_opts & OP_TOURJOB) == 0)
-		return;
-	for (j = 0; j < job_list.ol_cur; j++)
-		if ((job_list.ol_jobs[j]->j_oh.oh_flags & JOHF_TOURED) == 0) {
-			job_list.ol_jobs[j]->j_oh.oh_flags |= JOHF_TOURED;
-			job_goto(job_list.ol_jobs[j]);
-			break;
-		}
-	glutTimerFunc(15000, cocb_tourjob, 0);
-}
-#endif
-
 /* Reset auto-flyby timeout. */
 void
 cocb_autoto(__unused int a)

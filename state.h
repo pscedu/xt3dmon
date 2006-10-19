@@ -90,17 +90,16 @@ struct state {
 #define OP_PIPES	(1<<9)
 #define OP_SELPIPES	(1<<10)
 #define OP_STOP		(1<<11)
-#define OP_TOURJOB	(1<<12)
-#define OP_SKEL		(1<<13)
-#define OP_NODEANIM	(1<<14)
-#define OP_AUTOFLYBY	(1<<15)
-#define OP_REEL		(1<<16)
-#define OP_CABSKELS	(1<<17)
-#define OP_CAPTION	(1<<18)
-#define OP_SUBSET	(1<<19)
-#define OP_SELNLABELS	(1<<20)
-#define OP_CAPFBONLY	(1<<21)
-#define NOPS		22
+#define OP_SKEL		(1<<12)
+#define OP_NODEANIM	(1<<13)
+#define OP_AUTOFLYBY	(1<<14)
+#define OP_REEL		(1<<15)
+#define OP_CABSKELS	(1<<16)
+#define OP_CAPTION	(1<<17)
+#define OP_SUBSET	(1<<18)
+#define OP_SELNLABELS	(1<<19)
+#define OP_CAPFBONLY	(1<<20)
+#define NOPS		21
 
 struct xoption {
 	const char	*opt_abbr;
