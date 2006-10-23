@@ -672,6 +672,22 @@ changed to the given
 Captions may be optionally surrounded by double quotes
 .Pq Dq \&
 to allow spaces.
+.It Ic ssctl Ar type value
+Set the value of a SeaStar-mode control.
+Recognized types and their values are:
+.Bl -tag -offset indent -width Ds
+.It Ic vc
+Set the SeaStar VC being viewed to one of
+.Ic 0 , 1 , 2 ,
+or
+.Ic 3 .
+.It Ic mode
+Set which SeaStar counter value to display.
+May be one of
+.Ic blocked , packets ,
+or
+.Ic flits .
+.El
 .It Ic stall Ar nsecs
 Remain still for the specified number of seconds
 .Ar nsecs ,

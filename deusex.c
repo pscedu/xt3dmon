@@ -636,6 +636,21 @@ dxpcb_stall(__unused int a)
 }
 
 int
+dxp_ssctl(const struct dx_action *dxa)
+{
+	switch (dxa->dxa_ssctl_type) {
+	case DXSST_VC:
+		st.st_ssvc = dxa->dxa_ssctl_value;
+		break;
+	case DXSST_MODE:
+		st.st_ssmode = dxa->dxa_ssctl_value;
+		break;
+	}
+	st.st_rf |= RF_DMODE;
+	return (1);
+}
+
+int
 dxp_stall(const struct dx_action *dxa)
 {
 	int ret;
@@ -877,6 +892,7 @@ struct dxent {
 	{ DGT_SELJOB,	dxp_seljob },
 	{ DGT_SELNODE,	dxp_selnode },
 	{ DGT_SETCAP,	dxp_caption },
+	{ DGT_SSCTL,	dxp_ssctl },
 	{ DGT_STALL,	dxp_stall },
 	{ DGT_SUBSEL,	dxp_subsel },
 	{ DGT_VMODE,	dxp_vmode },
