@@ -25,11 +25,6 @@
 #define DXSST_VC	0
 #define DXSST_MODE	1
 
-/* SeaStar modes. */
-#define DXSSM_CYCLES	0
-#define DXSSM_PKTS	1
-#define DXSSM_FLTS	2
-
 struct dx_action {
 	TAILQ_ENTRY(dx_action)	 dxa_link;
 	int			 dxa_type;
