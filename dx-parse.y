@@ -244,20 +244,17 @@ conf		: DGT_BIRD {
 		}
 		| DGT_DMODE STRING {
 			struct dx_action dxa;
+			int i;
 
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DGT_DMODE;
-			if (strcasecmp($2, "job") == 0)
-				dxa.dxa_dmode = DM_JOB;
-			else if (strcasecmp($2, "rte") == 0)
-				dxa.dxa_dmode = DM_RTUNK;
-			else if (strcasecmp($2, "yod") == 0)
-				dxa.dxa_dmode = DM_YOD;
-			else if (strcasecmp($2, "temp") == 0 ||
-			    strcasecmp($2, "tmp") == 0 ||
-			    strcasecmp($2, "temperature") == 0)
-				dxa.dxa_dmode = DM_TEMP;
-			else
+			for (i = 0; i < NDM; i++)
+				if (dmodes[i].dm_name &&
+				    strcasecmp(dmodes[i].dm_abbr, $2) == 0) {
+					dxa.dxa_dmode = i;
+					break;
+				}
+			if (i >= NDM)
 				yyerror("invalid dmode: %s", $2);
 			free($2);
 			dxa_add(&dxa);
