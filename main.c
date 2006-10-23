@@ -99,16 +99,16 @@ struct vmode vmodes[] = {
 };
 
 struct dmode dmodes[] = {
- /* 0 */ { "Job" },
- /* 1 */ { NULL },					/* Failure */
- /* 2 */ { "Temperature" },
- /* 3 */ { "Yod" },
- /* 4 */ { NULL },					/* Egg */
- /* 5 */ { NULL },					/* Egg */
- /* 6 */ { "Same" },
- /* 7 */ { "Routing Errors" },
- /* 8 */ { "Seastar" },
- /* 9 */ { "Lustre Status" }
+ /* 0 */ { "job",	"Job" },
+ /* 1 */ { NULL,	NULL },				/* Failure */
+ /* 2 */ { "temp",	"Temperature" },
+ /* 3 */ { "yod",	"Yod" },
+ /* 4 */ { NULL,	NULL },				/* Egg */
+ /* 5 */ { NULL,	NULL },				/* Egg */
+ /* 6 */ { NULL,	"Same" },
+ /* 7 */ { "rte",	"Routing Errors" },
+ /* 8 */ { "seastar",	"Seastar" },
+ /* 9 */ { NULL,	"Lustre Status" }
 };
 
 struct state st = {

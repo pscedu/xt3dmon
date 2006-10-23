@@ -63,6 +63,7 @@ struct vmode {
 };
 
 struct dmode {
+	const char	*dm_abbr;
 	const char	*dm_name;
 };
 
