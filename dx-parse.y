@@ -175,14 +175,6 @@ conf		: DGT_BIRD {
 			dxa.dxa_type = DGT_CAMSYNC;
 			dxa_add(&dxa);
 		}
-		| DGT_SETCAP STRING  {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_SETCAP;
-			dxa.dxa_caption = $2;
-			dxa_add(&dxa);
-		}
 		| DGT_CLRSN {
 			struct dx_action dxa;
 
@@ -369,6 +361,15 @@ conf		: DGT_BIRD {
 			free($2);
 			dxa_add(&dxa);
 		}
+		| DGT_PLAYREEL INTG STRING {
+			struct dx_action dxa;
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_PLAYREEL;
+			dxa.dxa_reel_delay = $2;
+			dxa.dxa_reel = $3;
+			dxa_add(&dxa);
+		}
 		| DGT_PSTICK STRING panels_l {
 			struct dx_action dxa;
 
@@ -386,15 +387,6 @@ conf		: DGT_BIRD {
 			free($2);
 			dxa.dxa_type = DGT_PSTICK;
 			dxa.dxa_panels = $3;
-			dxa_add(&dxa);
-		}
-		| DGT_PLAYREEL INTG STRING {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_PLAYREEL;
-			dxa.dxa_reel_delay = $2;
-			dxa.dxa_reel = $3;
 			dxa_add(&dxa);
 		}
 		| DGT_REFOCUS {
@@ -445,6 +437,14 @@ conf		: DGT_BIRD {
 			else
 				yyerror("invalid node: %s", $2);
 			free($2);
+			dxa_add(&dxa);
+		}
+		| DGT_SETCAP STRING  {
+			struct dx_action dxa;
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_SETCAP;
+			dxa.dxa_caption = $2;
 			dxa_add(&dxa);
 		}
 		| DGT_STALL dbl {
