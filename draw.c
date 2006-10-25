@@ -1028,7 +1028,9 @@ draw_selnodes(void)
 		    (st.st_opts & OP_PIPES) == 0)
 			draw_pipes(1);
 		SLIST_FOREACH(sn, &selnodes, sn_next)
-			draw_node(sn->sn_nodep, NDF_NOTWEEN);
+			draw_node(sn->sn_nodep,
+			    sn->sn_nodep->n_fillp->f_a ?
+			    NDF_NOTWEEN : 0);
 		break;
 	}
 }
