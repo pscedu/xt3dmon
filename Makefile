@@ -81,7 +81,7 @@ run: xt3dmon
 debug: xt3dmon
 	gdb -q ./xt3dmon
 
-DIST_CP_DIRS = img data scripts
+DIST_LN_DIRS = img data scripts
 DIST_DIRS = snaps
 MACOS_DIR = arch/macosx/build/Development/xt3dmon.app/Contents/Resources
 
@@ -89,6 +89,8 @@ macdirs:
 	for i in ${DIST_CP_DIRS}; do rm -rf ${MACOS_DIR}/$$i; done
 	mkdir -p ${MACOS_DIR}
 	for i in ${DIST_DIRS}; do mkdir -p ${MACOS_DIR}/$$i; done
-	cp -R ${DIST_CP_DIRS} ${MACOS_DIR}
+	for i in ${DIST_LN_DIRS}; do						\
+		[ -e ${MACOS_DIR}/$$i ] || ln -s `pwd`/$$i ${MACOS_DIR};	\
+	done
 
 -include .depend
