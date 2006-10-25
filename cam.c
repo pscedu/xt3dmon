@@ -211,6 +211,7 @@ cam_bird(void)
 		break;
 	case VM_WIRED:
 	case VM_WIONE:
+		vec_set(&st.st_uv, 0.0, 1.0, 0.0);
 		vec_set(&cen,
 		    1.0 * widim.iv_x * st.st_winsp.iv_x,
 		    1.0 * widim.iv_y * st.st_winsp.iv_y,
