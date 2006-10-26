@@ -795,9 +795,6 @@ gl_keyh_default(unsigned char key, int u, int v)
 	case 'r':
 		glutKeyboardFunc(gl_keyh_route);
 		break;
-	case 's':
-		capture_virtual();
-		break;
 	case 'v':
 		glutKeyboardFunc(gl_keyh_vmode);
 		break;
