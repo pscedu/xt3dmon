@@ -42,7 +42,6 @@ uinpcb_ss(void)
 	int cm;
 
 	s = buf_get(&uinp.uinp_buf);
-
 	if (s[0] == '\0')
 		return;
 
@@ -58,7 +57,7 @@ uinpcb_ss(void)
 			/* XXX: status_add("unsupported"); */
 			cm = CM_PPM;
 	}
-	capture_usevirtual ? capture_virtual(s) : capture_snap(s, cm);
+	capture_usevirtual ? capture_virtual(s, cm) : capture_snap(s, cm);
 }
 
 void

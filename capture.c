@@ -3,6 +3,7 @@
 #include "mon.h"
 
 #include <err.h>
+#include <errno.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -81,7 +82,6 @@ capture_seqname(int mode)
 	return (fn);
 }
 
-/* Take a screenshot. */
 void
 capture_snap(const char *fn, int mode)
 {
@@ -97,8 +97,10 @@ capture_snap(const char *fn, int mode)
 
 	/* Write data to buffer. */
 	/* XXX append file extension if not specified? */
-	if ((fp = fopen(fn, "wb")) == NULL)
-		err(1, "%s", fn);
+	if ((fp = fopen(fn, "wb")) == NULL) {
+		status_add(SLP_URGENT, "%s: %s", fn, strerror(errno));
+		return;
+	}
 	capture_formats[mode].cf_writef(fp, buf, winv.iv_w, winv.iv_h);
 	fclose(fp);
 }
@@ -128,9 +130,9 @@ capture_snapfd(int fd, int mode)
 }
 
 void
-capture_virtual(const char *fn)
+capture_virtual(const char *fn, int mode)
 {
-	int mode, rf, x, y, xdraws, ydraws, h, pos, fact;
+	int rf, x, y, xdraws, ydraws, h, pos, fact;
 	unsigned char *buf;
 	size_t size;
 	FILE *fp;
@@ -149,7 +151,6 @@ capture_virtual(const char *fn)
 		return;
 	}
 
-	mode = CM_PNG;
 	fact = capture_formats[mode].cf_size;
 	size = fact * virtwinv.iv_w * virtwinv.iv_h;
 	if ((buf = calloc(size, sizeof(*buf))) == NULL)
@@ -190,7 +191,7 @@ capture_virtual(const char *fn)
 	glutSwapBuffers();
 
 	if ((fp = fopen(fn, "wb")) == NULL) {
-		status_add(SLP_URGENT, "%s", fn);
+		status_add(SLP_URGENT, "%s: %s", fn, strerror(errno));
 		goto done;
 	}
 	capture_formats[mode].cf_writef(fp, buf,
