@@ -608,7 +608,7 @@ __inline int
 rf_deps(int opts)
 {
 	if (opts & RF_DATASRC)
-		opts |= RF_VMODE | RF_DMODE | RF_CLUSTER;
+		opts |= RF_NODEPHYSV | RF_VMODE | RF_DMODE | RF_CLUSTER;
 	if (opts & RF_DMODE)
 		opts |= RF_CLUSTER;
 	if (opts & RF_VMODE)
