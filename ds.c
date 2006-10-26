@@ -30,6 +30,7 @@
 #include "http.h"
 #include "objlist.h"
 #include "panel.h"
+#include "parse.h"
 #include "pathnames.h"
 #include "state.h"
 #include "status.h"
