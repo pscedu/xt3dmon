@@ -57,7 +57,10 @@ uinpcb_ss(void)
 			/* XXX: status_add("unsupported"); */
 			cm = CM_PPM;
 	}
-	capture_usevirtual ? capture_virtual(s, cm) : capture_snap(s, cm);
+	if (capture_usevirtual)
+		capture_virtual(s, cm);
+	else
+		capture_snap(s, cm);
 }
 
 void
