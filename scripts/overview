@@ -8,7 +8,7 @@ bird
 refocus
 setcap "CPU temperatures in physical machine layout"
 orbit -x
-selnode random
+selnode "random"
 hl seldm
 opt +skel
 setcap "Zoom while viewing nodes in temperature range"
@@ -45,7 +45,7 @@ setcap "Preparing to zoom inside the interconnect"
 opt +pipes
 panel +compass
 winsp +10 +10 +10
-selnode 2600
+selnode "2600"
 refocus
 move forward 100
 opt +nlabels

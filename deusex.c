@@ -58,6 +58,19 @@ dxa_add(const struct dx_action *dxa)
 	}
 }
 
+__inline void
+nidlist_free(struct nidlist *nl)
+{
+	struct nid *n, *np;
+
+	for (n = SLIST_FIRST(nl);
+	    n != SLIST_END(nl); n = np) {
+		np = SLIST_NEXT(n, n_link);
+		free(n);
+	}
+	free(nl);
+}
+
 void
 dxa_clear(void)
 {
@@ -65,6 +78,8 @@ dxa_clear(void)
 
 	while ((dxa = TAILQ_FIRST(&dxlist)) != TAILQ_END(&dxlist)) {
 		free(dxa->dxa_str);
+		if (dxa->dxa_nidlist)
+			nidlist_free(dxa->dxa_nidlist);
 		TAILQ_REMOVE(&dxlist, dxa, dxa_link);
 		free(dxa);
 	}
@@ -459,54 +474,119 @@ dxp_refresh(__unused const struct dx_action *dxa)
 	return (ret);
 }
 
+__inline void
+dx_selnode(struct node *n, int off)
+{
+	if (off)
+		sn_del(n);
+	else
+		sn_add(n, &fv_zero);
+}
+
 int
 dxp_selnode(const struct dx_action *dxa)
 {
+	struct selnode *sn;
+	struct nid *nid;
 	struct node *n;
+	struct ivec iv;
+	int off;
 
-	switch (dxa->dxa_selnode) {
-	case DXSN_VIS:
-		/* XXX */
-		break;
-	case DXSN_RND:
-		do {
-			n = node_for_nid(random() % 1000);
-		} while (n == NULL);
-		sn_add(n, &fv_zero);
-		panel_show(PANEL_NINFO);
-		break;
-	default:
-		if ((n = node_for_nid(dxa->dxa_selnode)) != NULL) {
-			sn_add(n, &fv_zero);
-			panel_show(PANEL_NINFO);
+	off = (dxa->dxa_selnode_mode == DXV_OFF);
+	if (dxa->dxa_selnode_mode == DXV_SET)
+		sn_clear();
+	SLIST_FOREACH(nid, dxa->dxa_selnode_list, n_link)
+		switch (nid->n_nid) {
+		case DXN_ALL:
+			NODE_FOREACH(n, &iv)
+				if (n)
+					dx_selnode(n, off);
+			break;
+		case DXN_VIS:
+			NODE_FOREACH(n, &iv)
+				if (n && n->n_fillp->f_a)
+					dx_selnode(n, off);
+			break;
+		case DXN_SEL:
+			SLIST_FOREACH(sn, &selnodes, sn_next)
+				/* XXX: use sn->sn_offv */
+				dx_selnode(sn->sn_nodep, off);
+			break;
+		case DXN_RND:
+			do {
+				n = node_for_nid(random() % 1000);
+			} while (n == NULL);
+			dx_selnode(n, off);
+			break;
+		default:
+			if ((n = node_for_nid(nid->n_nid)) != NULL)
+				dx_selnode(n, off);
+			break;
 		}
-	}
+	if (nselnodes)
+		panel_show(PANEL_NINFO);
+	else
+		panel_hide(PANEL_NINFO);
 	return (1);
+}
+
+__inline void
+dx_subsel(struct node *n, int off)
+{
+	if (off)
+		n->n_flags &= ~NF_SHOW;
+	else
+		n->n_flags |= NF_SHOW;
 }
 
 int
 dxp_subsel(const struct dx_action *dxa)
 {
+	struct nid *nid;
 	struct node *n;
 	struct ivec iv;
+	int off;
 
-	switch (dxa->dxa_subselnode) {
-	case DXSN_RND:
-		/* XXX */
-		break;
-	case DXSN_VIS:
+	off = (dxa->dxa_subsel_mode == DXV_OFF);
+	if (dxa->dxa_subsel_mode == DXV_SET)
 		NODE_FOREACH(n, &iv)
-			if (n) {
-				if (n->n_fillp->f_a)
-					n->n_flags |= NF_SHOW;
-				else
+			if (n)
+				n->n_flags &= ~NF_SHOW;
+	SLIST_FOREACH(nid, dxa->dxa_subsel_list, n_link)
+		switch (nid->n_nid) {
+		case DXN_ALL:
+			NODE_FOREACH(n, &iv)
+				if (n)
 					n->n_flags &= ~NF_SHOW;
-			}
-		break;
-	default:
-		/* XXX */
-		break;
-	}
+				else
+					n->n_flags |= NF_SHOW;
+			break;
+		case DXN_RND:
+			do {
+				n = node_for_nid(random() % 1000);
+			} while (n == NULL);
+			if (off)
+				n->n_flags &= ~NF_SHOW;
+			else
+				n->n_flags |= NF_SHOW;
+			break;
+		case DXN_VIS:
+			NODE_FOREACH(n, &iv)
+				if (n && n->n_fillp->f_a)
+					if (off)
+						n->n_flags &= ~NF_SHOW;
+					else
+						n->n_flags |= NF_SHOW;
+			break;
+		default:
+			if ((n = node_for_nid(nid->n_nid)) != NULL)
+				if (off)
+					n->n_flags &= ~NF_SHOW;
+				else
+					n->n_flags |= NF_SHOW;
+			break;
+		}
+	st.st_rf |= RF_CLUSTER | RF_SELNODE;
 	return (1);
 }
 
@@ -518,12 +598,12 @@ dxp_hl(const struct dx_action *dxa)
 }
 
 int
-dxp_seljob(const struct dx_action *dxa)
+dxp_selnc(const struct dx_action *dxa)
 {
 	struct node *n;
 //	struct job *j;
 
-	if (dxa->dxa_seljob == DXSJ_RND) {
+	if (dxa->dxa_selnc == DXNC_RND) {
 		if (job_list.ol_cur > 0) {
 			do {
 				n = node_for_nid(random() % NID_MAX);
@@ -889,7 +969,7 @@ struct dxent {
 	{ DGT_PLAYREEL,	dxp_playreel },
 	{ DGT_REFOCUS,	dxp_refocus },
 	{ DGT_REFRESH,	dxp_refresh },
-	{ DGT_SELJOB,	dxp_seljob },
+	{ DGT_SELNC,	dxp_selnc },
 	{ DGT_SELNODE,	dxp_selnode },
 	{ DGT_SETCAP,	dxp_caption },
 	{ DGT_SSCTL,	dxp_ssctl },

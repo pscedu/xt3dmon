@@ -9,13 +9,12 @@
 #include <string.h>
 
 #include "dx-parse.h"
+#include "deusex.h"
 
 #define yyerror dxerror
 #define yylval dxlval
 
 int yyerror(const char *, ...);
-
-extern int lineno;
 
 %}
 
@@ -39,7 +38,7 @@ playreel				{ return (DGT_PLAYREEL); }
 pstick					{ return (DGT_PSTICK); }
 refocus					{ return (DGT_REFOCUS); }
 refresh					{ return (DGT_REFRESH); }
-seljob					{ return (DGT_SELJOB); }
+seljob					{ return (DGT_SELNC); }
 selnode					{ return (DGT_SELNODE); }
 setcap					{ return (DGT_SETCAP); }
 ssctl					{ return (DGT_SSCTL); }
@@ -82,7 +81,7 @@ wioff					{ return (DGT_WIOFF); }
 						return (STRING);
 					}
 #.*					{ ; }
-\n					{ lineno++; }
+\n					{ dx_lineno++; }
 [\t ]+					{ ; }
 .					{ yyerror("%s: invalid token", yytext); }
 

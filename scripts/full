@@ -37,7 +37,7 @@ vmode phys
 bird
 dmode temp
 setcap "Zoom while viewing nodes in temperature range [6/22]"
-selnode random
+selnode "random"
 hl seldm
 opt +skel
 refocus
@@ -68,7 +68,7 @@ move back 50
 opt -skel,nlabels
 
 # subset (view yods of nodes allocated to a job)
-subsel visible
+subsel "visible"
 clrsn
 opt +subset
 dmode yod
@@ -83,7 +83,7 @@ setcap "Preparing to zoom inside the interconnect [12/22]"
 opt +pipes
 panel +compass
 winsp +10 +10 +10
-selnode 2600
+selnode "2600"
 refocus
 move forward 100
 opt +nlabels
@@ -122,7 +122,7 @@ setcap "Changing to wired-repeat mode [16/22]"
 panel +compass
 vmode wired
 opt +selpipes,skel
-selnode 1230
+selnode "1230"
 refocus
 move forward 100
 orbit -x
@@ -143,7 +143,7 @@ opt -skel
 
 # physpipes
 setcap "Viewing interconnect in physical mode [19/22]"
-selnode 0
+selnode "0"
 refocus
 move forward 50
 opt +pipes

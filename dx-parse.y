@@ -13,6 +13,7 @@
 
 #include "deusex.h"
 #include "env.h"
+#include "node.h"
 #include "nodeclass.h"
 #include "panel.h"
 #include "pathnames.h"
@@ -26,8 +27,10 @@ int yylex(void);
 int yyparse(void);
 int yyerror(const char *, ...);
 
-extern int lineno;
-int errors;
+void nidlist_add(struct nidlist *, int);
+
+int dx_lineno;
+static int errors;
 struct dxlist dxlist = TAILQ_HEAD_INITIALIZER(dxlist);
 
 %}
@@ -52,7 +55,7 @@ struct dxlist dxlist = TAILQ_HEAD_INITIALIZER(dxlist);
 %token DGT_PSTICK
 %token DGT_REFOCUS
 %token DGT_REFRESH
-%token DGT_SELJOB
+%token DGT_SELNC
 %token DGT_SELNODE
 %token DGT_SETCAP
 %token DGT_SSCTL
@@ -71,15 +74,17 @@ struct dxlist dxlist = TAILQ_HEAD_INITIALIZER(dxlist);
 %type <dbl>	dbl;
 %type <dbl>	orbit_revs orbit_secs;
 %type <dbl>	move_secs;
-%type <string>	cycle_method;
+%type <intg>	cycle_method;
 %type <intg>	dim;
 %type <intg>	setmodifier;
 %type <intg>	opts opts_l panels panels_l;
+%type <nidlist>	nidlist subsel_list selnode_list;
 
 %union {
-	char	*string;
-	int	 intg;
-	double	 dbl;
+	char		*string;
+	int		 intg;
+	double		 dbl;
+	struct nidlist	*nidlist;
 };
 
 %%
@@ -134,11 +139,16 @@ panels_l	: panels		{ $$ = $1; }
 		| panels COMMA panels_l	{ $$ = $1 | $3; }
 		;
 
-cycle_method	: {
-			if (($$ = strdup("cycle")) == NULL)
-				yyerror("strdup");
+cycle_method	:			{ $$ = DACM_CYCLE; }
+		| STRING {
+			if (strcasecmp($1, "grow") == 0)
+				$$ = DACM_GROW;
+			else if (strcasecmp($1, "cycle") == 0)
+				$$ = DACM_CYCLE;
+			else
+				yyerror("invalid cycle method: %s", $1);
+			free($1);
 		}
-		| STRING		{ $$ = $1; }
 		;
 
 orbit_revs	:			{ $$ = 1.0; }
@@ -163,6 +173,56 @@ dim		: STRING {
 			else
 				yyerror("invalid dimension: %s", $1);
 			free($1);
+		}
+		;
+
+subsel_list	: nidlist		{ $$ = $1; }
+		;
+
+selnode_list	: nidlist		{ $$ = $1; }
+		;
+
+nidlist		: STRING {
+			struct nidlist *nl;
+			char *p, *t, *s;
+			long l;
+
+			if ((nl = malloc(sizeof(*nl))) == NULL)
+				err(1, "malloc");
+			SLIST_INIT(nl);
+
+			if (strcasecmp($1, "selected") == 0)
+				nidlist_add(nl, DXN_SEL);
+			else if (strcasecmp($1, "all") == 0)
+				nidlist_add(nl, DXN_ALL);
+			else if (strcasecmp($1, "visible") == 0)
+				nidlist_add(nl, DXN_VIS);
+			else if (strcasecmp($1, "random") == 0)
+				nidlist_add(nl, DXN_RND);
+			else {
+				for (p = $1; p != NULL; p = t) {
+					if ((t = strchr(p, ',')) != NULL)
+						*t++ = '\0';
+					s = p;
+					while (isdigit(*s))
+						s++;
+					if (*s == '\0' &&
+					    (l = strtol(p, NULL, 10)) >= 0 &&
+					    l < NID_MAX)
+						nidlist_add(nl, l);
+					else
+						yyerror("invalid node ID: %s", p);
+				}
+			}
+			free($1);
+			$$ = nl;
+
+			if (SLIST_EMPTY(nl)) {
+				yyerror("no nodes specified");
+				free(nl);
+				$$ = NULL;
+			} else
+				$$ = nl;
 		}
 		;
 
@@ -235,13 +295,7 @@ conf		: DGT_BIRD {
 
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DGT_CYCLENC;
-			if (strcmp($2, "grow") == 0)
-				dxa.dxa_cycle_meth = DACM_GROW;
-			else if (strcmp($2, "cycle") == 0)
-				dxa.dxa_cycle_meth = DACM_CYCLE;
-			else
-				yyerror("invalid cycle method: %s", $2);
-			free($2);
+			dxa.dxa_cycle_meth = $2;;
 			dxa_add(&dxa);
 		}
 		| DGT_DMODE STRING {
@@ -251,7 +305,7 @@ conf		: DGT_BIRD {
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DGT_DMODE;
 			for (i = 0; i < NDM; i++)
-				if (dmodes[i].dm_name &&
+				if (dmodes[i].dm_abbr &&
 				    strcasecmp(dmodes[i].dm_abbr, $2) == 0) {
 					dxa.dxa_dmode = i;
 					break;
@@ -406,36 +460,25 @@ conf		: DGT_BIRD {
 			dxa.dxa_type = DGT_REFRESH;
 			dxa_add(&dxa);
 		}
-		| DGT_SELJOB STRING {
+		| DGT_SELNC STRING {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_SELJOB;
+			dxa.dxa_type = DGT_SELNC;
 			if (strcasecmp($2, "random") == 0)
-				dxa.dxa_seljob = DXSJ_RND;
+				dxa.dxa_selnc = DXNC_RND;
 			else
-				yyerror("invalid job: %s", $2);
+				yyerror("invalid node class: %s", $2);
 			free($2);
 			dxa_add(&dxa);
 		}
-		| DGT_SELNODE INTG {
+		| DGT_SELNODE setmodifier selnode_list {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DGT_SELNODE;
-			dxa.dxa_selnode = $2;
-			dxa_add(&dxa);
-		}
-		| DGT_SELNODE STRING {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_SELNODE;
-			if (strcasecmp($2, "random") == 0)
-				dxa.dxa_selnode = DXSN_RND;
-			else
-				yyerror("invalid node: %s", $2);
-			free($2);
+			dxa.dxa_selnode_mode = $2;
+			dxa.dxa_selnode_list = $3;
 			dxa_add(&dxa);
 		}
 		| DGT_SETCAP STRING  {
@@ -488,16 +531,13 @@ conf		: DGT_BIRD {
 			free($3);
 			dxa_add(&dxa);
 		}
-		| DGT_SUBSEL STRING {
+		| DGT_SUBSEL setmodifier subsel_list {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DGT_SUBSEL;
-			if (strcasecmp($2, "visible") == 0)
-				dxa.dxa_selnode = DXSN_VIS;
-			else
-				yyerror("invalid subselection: %s", $2);
-			free($2);
+			dxa.dxa_subsel_mode = $2;
+			dxa.dxa_subsel_list = $3;
 			dxa_add(&dxa);
 		}
 		| DGT_VMODE STRING {
@@ -570,6 +610,19 @@ args_l		: STRING {
 
 %%
 
+void
+nidlist_add(struct nidlist *nl, int nid)
+{
+	struct nid *n;
+
+	if ((n = malloc(sizeof(*n))) == NULL)
+		err(1, "malloc");
+	memset(n, 0, sizeof(*n));
+	n->n_nid = nid;
+	SLIST_INSERT_HEAD(nl, n, n_link);
+}
+
+
 int
 yyerror(const char *fmt, ...)
 {
@@ -580,7 +633,7 @@ yyerror(const char *fmt, ...)
 	vsnprintf(errmsg, sizeof(errmsg), fmt, ap);
 	va_end(ap);
 
-	status_add(SLP_URGENT, "%s:%d: %s\n", dx_fn, lineno, errmsg);
+	status_add(SLP_URGENT, "%s:%d: %s\n", dx_fn, dx_lineno, errmsg);
 
 	errors++;
 	return (0);
@@ -591,17 +644,20 @@ dx_parse(void)
 {
 	extern FILE *yyin;
 	FILE *fp;
+	int ret;
 
 	dxa_clear();
 	if ((fp = fopen(dx_fn, "r")) == NULL)
 		err(1, "%s", dx_fn);
 	yyin = fp;
-	lineno = 1;
+	dx_lineno = 1;
 	yyparse();
 	fclose(fp);
 
+	ret = (errors == 0);
 	if (errors)
 		status_add(SLP_URGENT, "%s: %d error(s)",
 		    dx_fn, errors);
-	return (!errors);
+	errors = 0;
+	return (ret);
 }

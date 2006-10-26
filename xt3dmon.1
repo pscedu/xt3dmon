@@ -658,13 +658,43 @@ the entire cluster view.
 Grab new data.
 .It Ic seljob random
 Select a random job-allocated node and highlight its respective job.
-.It Ic selnode Ar nid
-Select the node with the given node ID
-.Ar nid .
+.It Xo
+.Ic selnode
+.Op Ar modifier
+.Dq Ar nid Op , Ar ...
+.Xc
+Modify the participation of the node with the given node ID
 .Ar nid
-may also be
-.Ic random ,
-in which case a random node will be selected.
+in the current selection.
+Multiple
+.Ar nid
+arguments may be specified, separated by commas, with no intervening
+whitespace.
+The double quote characters
+.Pq Dq
+are always required and will result in parse errors if unspecified.
+.Pp
+.Ar modifier
+may be
+.Sq + ,
+which adds the specified nodes to the current selection,
+.Sq - ,
+which removes the specified nodes from the current selection,
+of left blank, which makes the current selection consist of only the
+nodes specified.
+.Pp
+The following
+.Ar nid
+pseudo-classes are also recognized:
+.Pp
+.Bl -tag -width "visibleX" -offset Ds -compact
+.It Ic all
+All visible nodes will be chosen.
+.It Ic random
+A node will be chosen at random.
+.It Ic visible
+All visible nodes will be chosen.
+.El
 .It Ic setcap Ar caption
 If the caption option is enabled, the caption displayed will be
 changed to the given
@@ -692,9 +722,47 @@ or
 Remain still for the specified number of seconds
 .Ar nsecs ,
 which may be a floating-point number.
-.It Ic subsel visible
-Set the subselection to all currently visible nodes.
-Only nodes in the subselection will be visible when the
+.It Xo
+.Ic subsel
+.Op Ar modifier
+.Dq Ar nid Op , Ar ...
+.Xc
+Modify the participation of the node with the given node ID
+.Ar nid
+in the current cluster subset.
+Multiple
+.Ar nid
+arguments may be specified, separated by commas, with no intervening
+whitespace.
+The double quote characters
+.Pq Dq
+are always required and will result in parse errors if unspecified.
+.Pp
+.Ar modifier
+may be
+.Sq + ,
+which adds the specified nodes to the current subset,
+.Sq - ,
+which removes the specified nodes from the current subset,
+of left blank, which makes the current subset consist of only the
+nodes specified.
+.Pp
+The following
+.Ar nid
+pseudo-classes are also recognized:
+.Pp
+.Bl -tag -width "visibleX" -offset Ds -compact
+.It Ic all
+All visible nodes will be chosen.
+.It Ic random
+A node will be chosen at random.
+.It Ic selected
+All selected nodes will be chosen.
+.It Ic visible
+All visible nodes will be chosen.
+.El
+.Pp
+Only nodes in the current subset will be visible when the
 .Em subset
 option is enabled.
 .It Ic vmode Ar vm
