@@ -21,7 +21,7 @@ int yyparse(void);
 
 struct physdim *physdim_get(const char *);
 
-int lineno = 1;
+int phys_lineno = 1;
 static int errors;
 
 struct physdim *physdim;
@@ -123,7 +123,7 @@ yyerror(const char *fmt, ...)
 	va_list ap;
 
 	va_start(ap, fmt);
-	fprintf(stderr, "%s:%d: ", progname, lineno);
+	fprintf(stderr, "%s:%d: ", progname, phys_lineno);
 	vfprintf(stderr, fmt, ap);
 	fprintf(stderr, "\n");
 	va_end(ap);
@@ -185,7 +185,7 @@ parse_physconf(const char *fn)
 	if ((fp = fopen(fn, "r")) == NULL)
 		err(1, "%s", fn);
 	yyin = fp;
-	lineno = 1;
+	phys_lineno = 1;
 	yyparse();
 	fclose(fp);
 

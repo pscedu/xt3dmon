@@ -9,13 +9,12 @@
 #include <string.h>
 
 #include "phys-parse.h"
+#include "phys.h"
 
 #define yyerror physerror
 #define yylval physlval
 
 int yyerror(const char *, ...);
-
-extern int lineno;
 
 %}
 
@@ -53,7 +52,7 @@ skel				{ return (SKEL); }
 					return (STRING);
 				}
 #.*				{ ; }
-\n				{ lineno++; }
+\n				{ phys_lineno++; }
 [\t ]+				{ ; }
 .				{ yyerror("%s: invalid token", yytext); }
 
