@@ -98,6 +98,8 @@ extern struct fill	 fill_selnode;
 extern struct fill	 fill_clskel;
 extern struct fill	 fill_ground;
 extern struct fill	 fill_showall;
+extern struct fill	 fill_checked;
+extern struct fill	 fill_unchecked;
 
 extern struct fill	 fill_panel;
 extern struct fill	 fill_nopanel;
