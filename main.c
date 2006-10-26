@@ -21,6 +21,7 @@
 #include "node.h"
 #include "nodeclass.h"
 #include "panel.h"
+#include "parse.h"
 #include "pathnames.h"
 #include "phys.h"
 #include "queue.h"
@@ -607,7 +608,7 @@ __inline int
 rf_deps(int opts)
 {
 	if (opts & RF_DATASRC)
-		opts |= RF_DMODE | RF_CLUSTER;
+		opts |= RF_VMODE | RF_DMODE | RF_CLUSTER;
 	if (opts & RF_DMODE)
 		opts |= RF_CLUSTER;
 	if (opts & RF_VMODE)
