@@ -89,6 +89,7 @@ void		 gscb_pw_opt(struct glname *, int);
 void		 gscb_pw_panel(struct glname *, int);
 void		 gscb_pw_pipe(struct glname *, int);
 void		 gscb_pw_rt(struct glname *, int);
+void		 gscb_pw_snap(struct glname *, int);
 void		 gscb_pw_ssmode(struct glname *, int);
 void		 gscb_pw_ssvc(struct glname *, int);
 void		 gscb_pw_vmode(struct glname *, int);

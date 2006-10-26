@@ -16,6 +16,7 @@
 #include "env.h"
 #include "pathnames.h"
 #include "state.h"
+#include "status.h"
 #include "xmath.h"
 
 void ppm_write(FILE *, unsigned char *, long, long);
@@ -31,7 +32,10 @@ struct capture_format {
 	{ "ppm", 3, ppm_write, GL_RGB },
 };
 
+struct ivec virtwinv = { { 7200, 5400, 0 } };
+
 int capture_mode = CM_PNG;
+int capture_usevirtual;
 int capture_pos;
 
 /* Save buffer as PPM. */
@@ -123,20 +127,27 @@ capture_snapfd(int fd, int mode)
 	fclose(fp);
 }
 
-struct ivec virtwinv = { { 7200, 5400, 0 } };
-
 void
-capture_virtual(void)
+capture_virtual(const char *fn)
 {
 	int mode, rf, x, y, xdraws, ydraws, h, pos, fact;
 	unsigned char *buf;
 	size_t size;
-	char *fn;
 	FILE *fp;
 
 	if (virtwinv.iv_w % winv.iv_w ||
-	    virtwinv.iv_h % winv.iv_h)
-		errx(1, "window size must be factor of virtual window size");
+	    virtwinv.iv_h % winv.iv_h) {
+		status_add(SLP_URGENT,
+		    "virtual size not a factor of window size");
+		return;
+	}
+
+	if (virtwinv.iv_w <= winv.iv_w ||
+	    virtwinv.iv_h <= winv.iv_h) {
+		status_add(SLP_URGENT,
+		    "window size greater than virtual size");
+		return;
+	}
 
 	mode = CM_PNG;
 	fact = capture_formats[mode].cf_size;
@@ -160,7 +171,7 @@ capture_virtual(void)
 			draw_scene();
 			if (st.st_rf != rf)
 				errx(1, "internal error: draw_scene() modified "
-			    	"rebuild flags (%d<=>%d)", st.st_rf, rf);
+				    "rebuild flags (%d<=>%d)", st.st_rf, rf);
 
 			glMatrixMode(GL_PROJECTION);
 
@@ -178,12 +189,14 @@ capture_virtual(void)
 	draw_info("Saving, please wait...");
 	glutSwapBuffers();
 
-	fn = "virt.png";
-	if ((fp = fopen(fn, "wb")) == NULL)
-		err(1, "%s", fn);
+	if ((fp = fopen(fn, "wb")) == NULL) {
+		status_add(SLP_URGENT, "%s", fn);
+		goto done;
+	}
 	capture_formats[mode].cf_writef(fp, buf,
 	    virtwinv.iv_w, virtwinv.iv_h);
 	fclose(fp);
+done:
 	free(buf);
 
 	st.st_rf |= RF_CAM;

@@ -22,6 +22,7 @@
 
 #include "cdefs.h"
 #include "buf.h"
+#include "capture.h"
 #include "deusex.h"
 #include "ds.h"
 #include "env.h"
@@ -47,31 +48,6 @@
 int	 dmode_data_clean;
 int	 selnode_clean;
 int	 hlnc_clean;
-
-/* Blink panel text (swap between two strings during interval). */
-int
-panel_blink(struct timeval *pre, char **s, int size, int *i, long interval)
-{
-	struct timeval tv, diff;
-	char *str = s[*i];
-	int tog = 0;
-
-	gettimeofday(&tv, NULL);
-	timersub(&tv, pre, &diff);
-
-	/* Make it blink once per second */
-	if (diff.tv_sec * 1e6 + diff.tv_usec > interval) {
-		*pre = tv;
-
-		/* Swap */
-		if(++(*i) == size)
-			*i = 0;
-		str = s[*i];
-		tog = 1;
-	}
-
-	return tog;
-}
 
 void
 panel_set_content(struct panel *p, char *fmt, ...)
@@ -131,6 +107,11 @@ panel_ready(struct panel *p)
 	if (p->p_opts & POPT_REFRESH) {
 		ready = 0;
 		p->p_opts &= ~POPT_REFRESH;
+	}
+	if (p->p_info->pi_flags & PIF_UINP &&
+	    uinp.uinp_opts & UINPO_DIRTY) {
+		ready = 0;
+		uinp.uinp_opts &= ~UINPO_DIRTY;
 	}
 	if (p->p_str == NULL)
 		ready = 0;
@@ -249,11 +230,8 @@ void
 panel_refresh_cmd(struct panel *p)
 {
 	/* XXX:  is the mode_data_clean check correct? */
-	if ((uinp.uinp_opts & UINPO_DIRTY) == 0 &&
-	    selnode_clean & PANEL_CMD &&
-	    panel_ready(p))
+	if (selnode_clean & PANEL_CMD && panel_ready(p))
 		return;
-	uinp.uinp_opts &= ~UINPO_DIRTY;
 	selnode_clean |= PANEL_CMD;
 
 	if (SLIST_EMPTY(&selnodes))
@@ -729,9 +707,8 @@ panel_refresh_flyby(struct panel *p)
 void
 panel_refresh_fbnew(struct panel *p)
 {
-	if ((uinp.uinp_opts & UINPO_DIRTY) == 0 && panel_ready(p))
+	if (panel_ready(p))
 		return;
-	uinp.uinp_opts &= ~UINPO_DIRTY;
 
 	panel_set_content(p, "- Flyby Creator -\n"
 	    "Flyby name: %s", buf_get(&uinp.uinp_buf));
@@ -740,9 +717,8 @@ panel_refresh_fbnew(struct panel *p)
 void
 panel_refresh_gotonode(struct panel *p)
 {
-	if ((uinp.uinp_opts & UINPO_DIRTY) == 0 && panel_ready(p))
+	if (panel_ready(p))
 		return;
-	uinp.uinp_opts &= ~UINPO_DIRTY;
 
 	panel_set_content(p, "- Go to Node -\n"
 	    "Node ID: %s", buf_get(&uinp.uinp_buf));
@@ -751,9 +727,8 @@ panel_refresh_gotonode(struct panel *p)
 void
 panel_refresh_gotojob(struct panel *p)
 {
-	if ((uinp.uinp_opts & UINPO_DIRTY) == 0 && panel_ready(p))
+	if (panel_ready(p))
 		return;
-	uinp.uinp_opts &= ~UINPO_DIRTY;
 
 	panel_set_content(p, "- Go to Job -\n"
 	    "Job ID: %s", buf_get(&uinp.uinp_buf));
@@ -784,31 +759,30 @@ panel_refresh_pos(struct panel *p)
 void
 panel_refresh_ss(struct panel *p)
 {
-	if ((uinp.uinp_opts & UINPO_DIRTY) == 0 && panel_ready(p))
+	static char res[20];
+
+	if (panel_ready(p))
 		return;
-	uinp.uinp_opts &= ~UINPO_DIRTY;
 
 	panel_set_content(p, "- Record Screenshot -\n"
 	    "File name: %s", buf_get(&uinp.uinp_buf));
+	pwidget_startlist(p);
+	snprintf(res, sizeof(res), "Virtual %dx%d",
+	    virtwinv.iv_w, virtwinv.iv_h);
+	pwidget_add(p, capture_usevirtual ?
+	    &fill_checked : &fill_unchecked, res, 0,
+	    gscb_pw_snap, 0, 0, NULL, NULL);
+	pwidget_endlist(p, 2);
 }
 
-#define BLINK_INTERVAL 1000000
 void
 panel_refresh_eggs(struct panel *p)
 {
-	char *s[] = {"Follow the white rabbit...\n  %s",
-			"Follow the white rabbit...\n> %s"};
-	static struct timeval pre = {0,0};
-	static int i = 0;
-	int dirty;
-
-	dirty = panel_blink(&pre, s, 2, &i, BLINK_INTERVAL);
-
-	if ((uinp.uinp_opts & UINPO_DIRTY) == 0 && panel_ready(p) && !dirty)
+	if (panel_ready(p))
 		return;
-	uinp.uinp_opts &= ~UINPO_DIRTY;
 
-	panel_set_content(p, s[i], buf_get(&uinp.uinp_buf));
+	panel_set_content(p, "Follow the white rabbit...\n\n> %s",
+	    buf_get(&uinp.uinp_buf));
 }
 
 #define TMBUF_SIZ 30
@@ -924,9 +898,8 @@ panel_refresh_login(struct panel *p)
 	int atpass, len;
 	char *s;
 
-	if ((uinp.uinp_opts & UINPO_DIRTY) == 0 && panel_ready(p))
+	if (panel_ready(p))
 		return;
-	uinp.uinp_opts &= ~UINPO_DIRTY;
 
 	atpass = (p->p_opts & POPT_LOGIN_ATPASS);
 

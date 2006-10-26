@@ -8,6 +8,7 @@
 
 #include "cdefs.h"
 #include "cam.h"
+#include "capture.h"
 #include "deusex.h"
 #include "ds.h"
 #include "env.h"
@@ -658,5 +659,44 @@ gscb_pw_dir(struct glname *gn, int flags)
 				free(t);
 			}
 		}
+	}
+}
+
+void
+gscb_pw_snap(__unused struct glname *gn, int flags)
+{
+	static size_t pos = 0;
+	struct ivec res[] = {
+		{ { 7200, 5400, 0 } },
+		{ { 5600, 4200, 0 } },
+		{ { 3600, 2400, 0 } },
+		{ { 2048, 1536, 0 } },
+		{ { 2560, 1600, 0 } },
+		{ { 2048, 1536, 0 } },
+		{ { 1920, 1440, 0 } },
+		{ { 1600, 1200, 0 } },
+		{ { 1280, 1024, 0 } },
+		{ { 1024,  768, 0 } },
+		{ {  800,  600, 0 } },
+		{ {  640,  480, 0 } }
+	};
+
+	if (flags & SPF_PROBE)
+		cursor_set(GLUT_CURSOR_INFO);
+	else if (flags & (SPF_SQUIRE | SPF_DESQUIRE)) {
+		capture_usevirtual = 1;
+		if (flags & SPF_SQUIRE) {
+			if (pos > 0)
+				pos--;
+		} else {
+			if (pos < NENTRIES(res) - 1)
+				pos++;
+		}
+		virtwinv.iv_w = res[pos].iv_w;
+		virtwinv.iv_h = res[pos].iv_h;
+		panel_rebuild(PANEL_SS);
+	} else if (flags == 0) {
+		capture_usevirtual = !capture_usevirtual;
+		panel_rebuild(PANEL_SS);
 	}
 }
