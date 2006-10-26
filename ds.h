@@ -47,16 +47,6 @@ void		 dsff_node(const struct datasrc *);
 
 int		 st_dsmode(void);
 
-/* parse.c */
-void		 parse_job(const struct datasrc *);
-void		 parse_mem(const struct datasrc *);
-void		 parse_node(const struct datasrc *);
-void		 parse_yod(const struct datasrc *);
-void		 parse_rt(const struct datasrc *);
-void		 parse_ss(const struct datasrc *);
-
-void		 parse_colors(const char *);
-
 int		 gss_valid(const char *);
 void		 gss_build_auth(const struct ustream *);
 
