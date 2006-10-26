@@ -36,7 +36,7 @@ sn_replace(struct selnode *sn, struct node *n)
  * "Low-level" add: does the nitty-gritty of the data structure for
  * adding a specific node to the list of selected nodes.
  */
-void
+static void
 sn_insert(struct node *n, const struct fvec *offv)
 {
 	struct selnode *sn;

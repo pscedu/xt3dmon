@@ -14,7 +14,6 @@ SLIST_HEAD(selnodes, selnode);
 void	sn_add(struct node *, const struct fvec *);
 void	sn_clear(void);
 int	sn_del(struct node *);
-void	sn_insert(struct node *, const struct fvec *);
 void	sn_replace(struct selnode *, struct node *);
 void	sn_set(struct node *, const struct fvec *);
 void	sn_toggle(struct node *, const struct fvec *);
