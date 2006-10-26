@@ -18,6 +18,7 @@
 #include "job.h"
 #include "node.h"
 #include "nodeclass.h"
+#include "parse.h"
 #include "state.h"
 #include "ustream.h"
 #include "yod.h"
@@ -225,6 +226,8 @@ parse_node(const struct datasrc *ds)
 	size_t j;
 
 	widim.iv_w = widim.iv_h = widim.iv_d = 0;
+	memset(invmap, 0, sizeof(invmap));
+	memset(wimap, 0, sizeof(wimap));
 	mach_drain = 0;
 
 	/* Explicitly initialize all nodes. */
