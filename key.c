@@ -756,6 +756,9 @@ gl_keyh_default(unsigned char key, int u, int v)
 	case 'k':
 		glutKeyboardFunc(gl_keyh_keyh);
 		break;
+	case 'L':
+		selnid_load();
+		break;
 	case 'M':
 		if (stereo_mode == STM_NONE) {
 			static int maxed;
@@ -794,6 +797,9 @@ gl_keyh_default(unsigned char key, int u, int v)
 		break;
 	case 'r':
 		glutKeyboardFunc(gl_keyh_route);
+		break;
+	case 'S':
+		selnid_save();
 		break;
 	case 'v':
 		glutKeyboardFunc(gl_keyh_vmode);

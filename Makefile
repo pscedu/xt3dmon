@@ -8,9 +8,9 @@ SRCS = arch.c buf.c callout.c cam.c capture.c dbg.c deusex.c draw.c ds.c
 SRCS+= dx-lex.l dx-parse.y eggs.c env.c fill.c flyby.c gl.c gss.c hl.c
 SRCS+= http.c job.c key.c lnseg.c main.c mark.c math.c mouse.c node.c
 SRCS+= objlist.c panel.c parse.c phys-lex.l phys-parse.y png.c
-SRCS+= prefresh.c reel.c rte.c select.c selnode.c server.c shadow.c
-SRCS+= ssl.c status.c tex.c text.c tween.c uinp.c ustrdtab.c ustream.c
-SRCS+= ustrop-file.c ustrop-ssl.c util.c vec.c widget.c yod.c
+SRCS+= prefresh.c reel.c rte.c select.c selnid.c selnode.c server.c
+SRCS+= shadow.c ssl.c status.c tex.c text.c tween.c uinp.c ustrdtab.c
+SRCS+= ustream.c ustrop-file.c ustrop-ssl.c util.c vec.c widget.c yod.c
 
 CFLAGS += -Wall -W -g
 CFLAGS += -Wno-parentheses -Wshadow -Wredundant-decls

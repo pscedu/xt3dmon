@@ -10,6 +10,7 @@
 
 #define _PATH_PHYSCONF	"data/phys.conf"
 #define _PATH_COLORS	"data/colors"
+#define _PATH_SELNIDS	"data/selnids"
 
 #define _PATH_TEX_SC	"img/tex-sc%d.png"
 #define _PATH_TEX_SN	"img/tex-selnode.png"

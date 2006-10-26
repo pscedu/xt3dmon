@@ -96,10 +96,6 @@ void		 egg_toggle(int);
 void		 egg_borg(void);
 void		 egg_matrix(void);
 
-/* png.c */
-void 		*png_load(char *, unsigned int *, unsigned int *);
-void		 png_write(FILE *, unsigned char *, long, long);
-
 /* main.c */
 void		 opt_flip(int);
 void		 opt_enable(int);
@@ -111,6 +107,14 @@ int		 roundclass(double, double, double, int);
 
 /* parse-phys.y */
 void		 parse_physconf(const char *);
+
+/* png.c */
+void 		*png_load(char *, unsigned int *, unsigned int *);
+void		 png_write(FILE *, unsigned char *, long, long);
+
+/* selnid.c */
+void		 selnid_load(void);
+void		 selnid_save(void);
 
 /* tex.c */
 void		 tex_load(void);
