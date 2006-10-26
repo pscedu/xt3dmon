@@ -742,6 +742,7 @@ gl_keyh_default(unsigned char key, int u, int v)
 
 		SLIST_FOREACH(sn, &selnodes, sn_next)
 			sn->sn_nodep->n_flags ^= NF_SHOW;
+		st.st_rf |= RF_CLUSTER | RF_SELNODE;
 		break;
 	    }
 	case 'i': {
