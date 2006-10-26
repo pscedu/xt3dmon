@@ -1,5 +1,8 @@
 /* $Id$ */
 
+#ifndef __SEASTAR_H__
+#define __SEASTAR_H__
+
 #include "mon.h"
 
 #define NVC		4
@@ -14,3 +17,5 @@ struct seastar {
 };
 
 extern struct seastar ss_max;
+
+#endif
