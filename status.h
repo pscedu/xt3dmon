@@ -1,5 +1,7 @@
 /* $Id$ */
 
+#include "queue.h"
+
 #define SLP_URGENT	0
 #define SLP_NOTICE	1
 
