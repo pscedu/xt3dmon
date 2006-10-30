@@ -38,12 +38,26 @@ uinpcb_cmd(void)
 void
 uinpcb_ss(void)
 {
-	const char *s, *ext;
+	const char *s, *ext, *home;
+	struct buf buf;
 	int cm;
 
 	s = buf_get(&uinp.uinp_buf);
 	if (s[0] == '\0')
 		return;
+
+	if (s[0] == '~' && s[1] == '/' &&
+	    (home = getenv("HOME")) != NULL) {
+		buf_init(&buf);
+		buf_appendv(&buf, home);
+		buf_appendv(&buf, &s[1]);
+		buf_nul(&buf);
+
+		buf_free(&uinp.uinp_buf);
+		uinp.uinp_buf = buf;
+
+		s = buf_get(&uinp.uinp_buf);
+	}
 
 	if ((ext = strrchr(s, '.')) == NULL) {
 		buf_chop(&uinp.uinp_buf);
