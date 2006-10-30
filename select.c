@@ -120,17 +120,12 @@ sel_process(int nrecs, int rank, int flags)
 	int i, start;
 	GLuint *p;
 
-	if (nrecs < 0) {
-		warnx("negative nrecs");
-		return (NULL);
-	}
+	if (nrecs < 0)
+		errx(1, "negative nrecs: stack overflow");
 
-	/* XXX:  sanity-check nrecs? */
 	for (i = 0, p = selbuf; i < nrecs; i++, p += 3 + p[SBI_LEN])
-		if (p[SBI_LEN] != 1) {
-			warnx("selection buffer contains uneven elements");
-			return (NULL);
-		}
+		if (p[SBI_LEN] != 1)
+			errx(1, "selection buffer contains uneven elements");
 
 	qsort(selbuf, nrecs, sizeof(*sr), selrec_cmp);
 
@@ -665,38 +660,18 @@ gscb_pw_dir(struct glname *gn, int flags)
 void
 gscb_pw_snap(__unused struct glname *gn, int flags)
 {
-	static size_t pos = 0;
-	struct ivec res[] = {
-		{ { 7200, 5400, 0 } },
-		{ { 5600, 4200, 0 } },
-		{ { 3600, 2400, 0 } },
-		{ { 2048, 1536, 0 } },
-		{ { 2560, 1600, 0 } },
-		{ { 2048, 1536, 0 } },
-		{ { 1920, 1440, 0 } },
-		{ { 1600, 1200, 0 } },
-		{ { 1280, 1024, 0 } },
-		{ { 1024,  768, 0 } },
-		{ {  800,  600, 0 } },
-		{ {  640,  480, 0 } }
-	};
+	int w = gn->gn_arg_int;
+	int h = gn->gn_arg_int2;
 
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
-	else if (flags & (SPF_SQUIRE | SPF_DESQUIRE)) {
-		capture_usevirtual = 1;
-		if (flags & SPF_SQUIRE) {
-			if (pos > 0)
-				pos--;
-		} else {
-			if (pos < NENTRIES(res) - 1)
-				pos++;
-		}
-		virtwinv.iv_w = res[pos].iv_w;
-		virtwinv.iv_h = res[pos].iv_h;
-		panel_rebuild(PANEL_SS);
-	} else if (flags == 0) {
-		capture_usevirtual = !capture_usevirtual;
+	else if (flags == 0) {
+		if (w) {
+			capture_usevirtual = 1;
+			virtwinv.iv_w = w;
+			virtwinv.iv_h = h;
+		} else
+			capture_usevirtual = 0;
 		panel_rebuild(PANEL_SS);
 	}
 }

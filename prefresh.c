@@ -759,19 +759,31 @@ panel_refresh_pos(struct panel *p)
 void
 panel_refresh_ss(struct panel *p)
 {
-	static char res[20];
-
 	if (panel_ready(p))
 		return;
 
 	panel_set_content(p, "- Record Screenshot -\n"
 	    "File name: %s", buf_get(&uinp.uinp_buf));
 	pwidget_startlist(p);
-	snprintf(res, sizeof(res), "Virtual %dx%d",
-	    virtwinv.iv_w, virtwinv.iv_h);
 	pwidget_add(p, capture_usevirtual ?
-	    &fill_checked : &fill_unchecked, res, 0,
+	    &fill_unchecked : &fill_checked, "Window Size", 0,
 	    gscb_pw_snap, 0, 0, NULL, NULL);
+
+#define pwssres(w, h)						\
+	pwidget_add(p, capture_usevirtual &&			\
+	    virtwinv.iv_w == (w) && virtwinv.iv_h == (h) ?	\
+	    &fill_checked : &fill_unchecked, #w "x" #h, 0,	\
+	    gscb_pw_snap, (w), (h), NULL, NULL);
+	pwssres(7200, 5400);
+	pwssres(5600, 4200);
+	pwssres(3600, 2400);
+	pwssres(2048, 1536);
+	pwssres(2560, 1600);
+	pwssres(2048, 1536);
+	pwssres(1920, 1440);
+	pwssres(1600, 1200);
+#undef pwssres
+
 	pwidget_endlist(p, 2);
 }
 
