@@ -28,7 +28,6 @@ void	 buf_append(struct buf *, char);
 void	 buf_appendv(struct buf *, const char *);
 void	 buf_appendfv(struct buf *, const char *, ...);
 char	*buf_get(const struct buf *);
-void	 buf_set(struct buf *, char *);
 void	 buf_free(struct buf *);
 void	 buf_reset(struct buf *);
 void	 buf_chop(struct buf *);

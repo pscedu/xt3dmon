@@ -70,13 +70,6 @@ buf_get(const struct buf *buf)
 }
 
 __inline void
-buf_set(struct buf *buf, char *s)
-{
-	/* XXX:  adjust pos and max. */
-	buf->buf_buf = s;
-}
-
-__inline void
 buf_free(struct buf *buf)
 {
 	free(buf->buf_buf);
