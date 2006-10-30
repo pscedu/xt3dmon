@@ -1381,7 +1381,7 @@ panel_refresh_reel(struct panel *p)
 void
 panel_refresh_dscho(struct panel *p)
 {
-	int live;
+	int live, ncols;
 
 	if (panel_ready(p))
 		return;
@@ -1395,5 +1395,13 @@ panel_refresh_dscho(struct panel *p)
 	pwidgets_dir(p, ds_browsedir, &ds_list, live ? "" : ds_dir,
 	    ds_set, PWDF_DIRSONLY);
 	pwidget_sortlist(p, pwidget_cmp);
-	pwidget_endlist(p, 3);
+	if (ds_list.ol_tcur < 35)
+		ncols = 2;
+	else if (ds_list.ol_tcur < 100)
+		ncols = 3;
+	else if (ds_list.ol_tcur < 160)
+		ncols = 4;
+	else
+		ncols = 5;
+	pwidget_endlist(p, ncols);
 }
