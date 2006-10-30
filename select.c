@@ -31,7 +31,7 @@ int glname_eq(const void *, const void *);
 
 struct objlist glname_list = { NULL, 0, 0, 0, 0, GINCR, sizeof(struct glname), glname_eq };
 
-GLuint	 selbuf[1000];
+GLuint	 selbuf[2048];
 
 int
 glname_eq(const void *elem, const void *arg)
@@ -120,12 +120,14 @@ sel_process(int nrecs, int rank, int flags)
 	int i, start;
 	GLuint *p;
 
-	if (nrecs < 0)
-		errx(1, "negative nrecs: stack overflow");
+	if (nrecs < 0) {
+		warnx("hit record overflow: bump select buffer size");
+		return (NULL);
+	}
 
 	for (i = 0, p = selbuf; i < nrecs; i++, p += 3 + p[SBI_LEN])
 		if (p[SBI_LEN] != 1)
-			errx(1, "selection buffer contains uneven elements");
+			errx(1, "selection buffer contains partial elements");
 
 	qsort(selbuf, nrecs, sizeof(*sr), selrec_cmp);
 
