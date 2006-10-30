@@ -848,13 +848,13 @@ panel_demobilize(struct panel *p)
 
 	p->p_opts &= ~POPT_MOBILE;
 	p->p_opts |= POPT_DIRTY;
-	if (p->p_u + p->p_w / 2 < winv.iv_w / 2) {
-		if (winv.iv_h - p->p_v + p->p_h / 2 < winv.iv_h / 2)
+	if (mousev.iv_u < winv.iv_w / 2) {
+		if (mousev.iv_v < winv.iv_h / 2)
 			p->p_info->pi_stick = PSTICK_TL;
 		else
 			p->p_info->pi_stick = PSTICK_BL;
 	} else {
-		if (winv.iv_h - p->p_v + p->p_h / 2 < winv.iv_h / 2)
+		if (mousev.iv_v < winv.iv_h / 2)
 			p->p_info->pi_stick = PSTICK_TR;
 		else
 			p->p_info->pi_stick = PSTICK_BR;
