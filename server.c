@@ -97,7 +97,7 @@ svc_findcmp(const void *k, const void *elem)
 void
 serv_init(void)
 {
-	struct sockaddr_in sin;
+	struct sockaddr_in sa_in;
 	struct panel *p;
 	socklen_t sz;
 	int optval;
@@ -112,15 +112,15 @@ serv_init(void)
 	if (fcntl(sock, F_SETFL, O_NONBLOCK) == -1)
 		err(1, "fcntl F_SETFL");
 
-	memset(&sin, 0, sizeof(sin));
+	memset(&sa_in, 0, sizeof(sa_in));
 #ifdef HAVE_SA_LEN
-	sin.sin_len = sizeof(sin);
+	sa_in.sin_len = sizeof(sa_in);
 #endif
-	sin.sin_family = AF_INET;
-	sin.sin_port = htons(PORT);
-	sin.sin_addr.s_addr = htonl(INADDR_ANY);
-	sz = sizeof(sin);
-	if (bind(sock, (struct sockaddr *)&sin, sz) == -1)
+	sa_in.sin_family = AF_INET;
+	sa_in.sin_port = htons(PORT);
+	sa_in.sin_addr.s_addr = htonl(INADDR_ANY);
+	sz = sizeof(sa_in);
+	if (bind(sock, (struct sockaddr *)&sa_in, sz) == -1)
 		err(1, "bind");
 	if (listen(sock, BACKLOG) == -1)
 		err(1, "listen");
@@ -156,7 +156,7 @@ serv_init(void)
 void
 serv_displayh(void)
 {
-	struct sockaddr_in sin;
+	struct sockaddr_in sa_in;
 	struct session ss;
 	char buf[MSGSIZ];
 	int i, clifd, rf;
@@ -174,7 +174,7 @@ serv_displayh(void)
 
 	sz = 0;
 	memset(&ss, 0, sizeof(ss));
-	if ((clifd = accept(sock, (struct sockaddr *)&sin, &sz)) == -1) {
+	if ((clifd = accept(sock, (struct sockaddr *)&sa_in, &sz)) == -1) {
 		if (errno != EWOULDBLOCK &&
 		    errno != EAGAIN &&
 		    errno != EINTR)
