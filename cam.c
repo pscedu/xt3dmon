@@ -25,6 +25,8 @@
 #include "state.h"
 #include "xmath.h"
 
+int revolve_type = REVT_LKFIT;
+
 /*
  *	y
  *	| Up/Down /\
@@ -94,6 +96,34 @@ cam_revolve(struct fvec *focuspts, int nfocus, double dt, double dp, int revt)
 
 //		if ()
 //			revt = REVT_LKCEN;
+
+
+
+
+#if 0
+
+			/*
+			 * Manually change the revolution type
+			 * to avoid jumps around extremes and
+			 * move the camera slightly so we don't
+			 * continually toggle this manual switch.
+			 */
+			if (type == REVT_LKAVG) {
+				dst = DST(&st.st_v, &focus);
+				if (dst < CL_WIDTH / 2.0) {
+					if (CL_WIDTH / 2.0 - dst < 0.1)
+						cam_move(DIR_FORW, 0.05);
+					type = REVT_LKCEN;
+				}
+			}
+#endif
+
+
+
+
+
+
+
 	}
 	center.fv_x /= nfocus;
 	center.fv_y /= nfocus;
@@ -200,7 +230,7 @@ cam_revolve(struct fvec *focuspts, int nfocus, double dt, double dp, int revt)
  * (using revolvefocus should be the standard revolve case).
  */
 __inline void
-cam_revolvefocus(double dt, double dp, int type)
+cam_revolvefocus(double dt, double dp)
 {
 	struct fvec nfv[8], fv, *fvp, *ndim;
 	struct selnode *sn;
@@ -212,8 +242,11 @@ cam_revolvefocus(double dt, double dp, int type)
 			err(1, "calloc");
 		j = 0;
 		SLIST_FOREACH(sn, &selnodes, sn_next)
-			vec_copyto(sn->sn_nodep->n_v, &fvp[j++]);
-		cam_revolve(fvp, j, dt, dp, type);
+			vec_copyto(st.st_opts & OP_NODEANIM &&
+			    st.st_vmode != VM_WIRED ?
+			    &sn->sn_nodep->n_vcur :
+			    sn->sn_nodep->n_v, &fvp[j++]);
+		cam_revolve(fvp, j, dt, dp, revolve_type);
 		free(fvp);
 	} else {
 		switch (st.st_vmode) {
@@ -223,7 +256,7 @@ cam_revolvefocus(double dt, double dp, int type)
 			fv.fv_y = st.st_y + st.st_ly * dst;
 			fv.fv_z = st.st_z + st.st_lz * dst;
 			fvp = &fv;
-			cam_revolve(fvp, 1, dt, dp, type);
+			cam_revolve(fvp, 1, dt, dp, revolve_type);
 			break;
 		case VM_WIONE:
 			ndim = &vmodes[st.st_vmode].vm_ndim[GEOM_CUBE];
@@ -239,7 +272,7 @@ cam_revolvefocus(double dt, double dp, int type)
 			vec_set(&nfv[5], fv.fv_w,	0.0,		fv.fv_d);
 			vec_set(&nfv[6], 0.0,		fv.fv_h,	fv.fv_d);
 			vec_set(&nfv[7], fv.fv_w,	fv.fv_h,	fv.fv_d);
-			cam_revolve(nfv, NENTRIES(nfv), dt, dp, type);
+			cam_revolve(nfv, NENTRIES(nfv), dt, dp, revolve_type);
 			break;
 		case VM_PHYS:
 			vec_set(&nfv[0], 0.0,		0.0,		0.0);
@@ -250,22 +283,7 @@ cam_revolvefocus(double dt, double dp, int type)
 			vec_set(&nfv[5], CL_WIDTH,	0.0,		CL_DEPTH);
 			vec_set(&nfv[6], 0.0,		CL_HEIGHT,	CL_DEPTH);
 			vec_set(&nfv[7], CL_WIDTH,	CL_HEIGHT,	CL_DEPTH);
-
-			/*
-			 * Manually change the revolution type
-			 * to avoid jumps around extremes and
-			 * move the camera slightly so we don't
-			 * continually toggle this manual switch.
-			 */
-			if (type == REVT_LKAVG) {
-				dst = DST(&st.st_v, &focus);
-				if (dst < CL_WIDTH / 2.0) {
-					if (CL_WIDTH / 2.0 - dst < 0.1)
-						cam_move(DIR_FORW, 0.05);
-					type = REVT_LKCEN;
-				}
-			}
-			cam_revolve(nfv, NENTRIES(nfv), dt, dp, type);
+			cam_revolve(nfv, NENTRIES(nfv), dt, dp, revolve_type);
 			break;
 		}
 	}
@@ -284,7 +302,7 @@ cam_bird(void)
 
 	switch (st.st_vmode) {
 	case VM_PHYS:
-		/* XXX: move to fit CL_WIDTH/HEIGHT/DEPTH in view? */
+		/* XXX: depend on CL_WIDTH/HEIGHT/DEPTH */
 		vec_set(&st.st_v, -17.80, 30.76, 51.92);
 		vec_set(&st.st_lv,  0.71, -0.34, -0.62);
 		vec_set(&st.st_uv,  0.25,  0.94, -0.22);
@@ -303,7 +321,7 @@ cam_bird(void)
 		st.st_v.fv_x += st.st_wioff.iv_x * st.st_winsp.iv_x + cen.fv_w / 2.0;
 		st.st_v.fv_y += st.st_wioff.iv_y * st.st_winsp.iv_y + cen.fv_h / 2.0;
 		st.st_v.fv_z += st.st_wioff.iv_z * st.st_winsp.iv_z + cen.fv_d / 2.0;
-		cam_revolvefocus(0.0, 0.01, REVT_LKAVG);
+		cam_revolvefocus(0.0, 0.01);
 		break;
 	}
 }

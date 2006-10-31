@@ -134,7 +134,7 @@ dxp_orbit(const struct dx_action *dxa)
 	amt += fabs(adj);
 
 	tween_push(TWF_POS | TWF_LOOK | TWF_UP);
-	cam_revolvefocus(du, dv, REVT_LKAVG);
+	cam_revolvefocus(du, dv);
 	tween_pop(TWF_POS | TWF_LOOK | TWF_UP);
 
 	/*
@@ -451,7 +451,7 @@ int
 dxp_refocus(__unused const struct dx_action *dxa)
 {
 	tween_push(TWF_POS | TWF_UP | TWF_LOOK);
-	cam_revolvefocus(0.0, 0.001, REVT_LKAVG);
+	cam_revolvefocus(0.0, 0.001);
 	tween_pop(TWF_POS | TWF_UP | TWF_LOOK);
 	return (1);
 }

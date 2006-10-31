@@ -4,7 +4,7 @@ struct fvec;
 
 void	 cam_move(int, double);
 void	 cam_revolve(struct fvec *, int, double, double, int);
-void	 cam_revolvefocus(double, double, int);
+void	 cam_revolvefocus(double, double);
 void	 cam_rotate(const struct fvec *, const struct fvec *, int, int);
 void	 cam_roll(double);
 void	 cam_look(void);
