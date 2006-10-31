@@ -2,6 +2,7 @@
 
 #include "mon.h"
 
+#include <err.h>
 #include <errno.h>
 #include <math.h>
 #include <stdlib.h>
@@ -667,6 +668,75 @@ gl_keyh_bird(unsigned char key, __unused int u, __unused int v)
 }
 
 void
+gl_keyh_recpos(unsigned char key, __unused int u, __unused int v)
+{
+	char fn[PATH_MAX];
+	FILE *fp;
+
+	flyby_rstautoto();
+	glutKeyboardFunc(gl_keyh_default);
+
+	if (key < '0' || key > '9')
+		return;
+	snprintf(fn, sizeof(fn), _PATH_HOTKEY, key);
+	if ((fp = fopen(fn, "w")) == NULL) {
+		if (errno != ENOENT)
+			warn("%s", fn);
+		return;
+	}
+	fprintf(fp, "%f %f %f\n%f %f %f\n%f %f %f\n",
+	    st.st_v.fv_x, st.st_v.fv_y, st.st_v.fv_z,
+	    st.st_lv.fv_x, st.st_lv.fv_y, st.st_lv.fv_z,
+	    st.st_uv.fv_x, st.st_uv.fv_y, st.st_uv.fv_z);
+	fclose(fp);
+}
+
+void
+gl_keyh_loadpos(unsigned char key, __unused int cu, __unused int cv)
+{
+	struct fvec v, lv, uv;
+	char fn[PATH_MAX];
+	FILE *fp;
+	int ret;
+
+	flyby_rstautoto();
+	glutKeyboardFunc(gl_keyh_default);
+
+	if (key < '0' || key > '9')
+		return;
+	snprintf(fn, sizeof(fn), _PATH_HOTKEY, key);
+	if ((fp = fopen(fn, "r")) == NULL) {
+		if (errno != ENOENT)
+			warn("%s", fn);
+		return;
+	}
+	ret = fscanf(fp, "%f %f %f\n%f %f %f\n%f %f %f",
+	    &v.fv_x,  &v.fv_y,  &v.fv_z,
+	    &lv.fv_x, &lv.fv_y, &lv.fv_z,
+	    &uv.fv_x, &uv.fv_y, &uv.fv_z);
+	if (ferror(fp))
+		warn("%s", fn);
+	fclose(fp);
+
+	if (ret != 9)
+		return;
+
+	tween_push(TWF_LOOK | TWF_POS | TWF_UP);
+	vec_copyto(&v, &st.st_v);
+	vec_copyto(&lv, &st.st_lv);
+	vec_copyto(&uv, &st.st_uv);
+	if (vec_eq(&st.st_lv, &fv_zero))
+		vec_set(&st.st_lv, 1.0, 0.0, 0.0);
+	else
+		vec_normalize(&st.st_lv);
+	if (vec_eq(&st.st_uv, &fv_zero))
+		vec_set(&st.st_uv, 0.0, 1.0, 0.0);
+	else
+		vec_normalize(&st.st_uv);
+	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
+}
+
+void
 gl_keyh_default(unsigned char key, int u, int v)
 {
 	flyby_rstautoto();
@@ -679,6 +749,12 @@ gl_keyh_default(unsigned char key, int u, int v)
 		break;
 	case 16: /* ^P */
 		glutKeyboardFunc(gl_keyh_pipes);
+		break;
+	case 17: /* ^Q */
+		glutKeyboardFunc(gl_keyh_recpos);
+		break;
+	case 23: /* ^W */
+		glutKeyboardFunc(gl_keyh_loadpos);
 		break;
 	case '2': case '4':
 	case '6': case '8': {

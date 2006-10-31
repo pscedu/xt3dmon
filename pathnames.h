@@ -7,6 +7,7 @@
 #define _PATH_ISAR	".isar"
 #define _PATH_FLYBYDIR	"data/flybys"
 #define _PATH_DXSCRIPTS	"scripts"
+#define _PATH_HOTKEY	"data/hotkey-%c"
 
 #define _PATH_PHYSCONF	"data/phys.conf"
 #define _PATH_COLORS	"data/colors"
