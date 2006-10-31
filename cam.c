@@ -14,6 +14,7 @@
 #include "mon.h"
 
 #include <err.h>
+#include <float.h>
 #include <math.h>
 #include <stdlib.h>
 
@@ -74,7 +75,8 @@ cam_move(int dir, double amt)
 void
 cam_revolve(struct fvec *focuspts, int nfocus, double dt, double dp, int revt)
 {
-	struct fvec center, diff, sph, sphfocus;
+	struct fvec minv, maxv, center, diff, sph, sphfocus;
+	double maxdiff, dst;
 	int upinv, j;
 
 	upinv = 0;
@@ -88,46 +90,44 @@ cam_revolve(struct fvec *focuspts, int nfocus, double dt, double dp, int revt)
 		dt *= -1.0;
 	}
 
+	vec_set(&maxv, -DBL_MAX, -DBL_MAX, -DBL_MAX);
+	vec_set(&minv, DBL_MAX, DBL_MAX, DBL_MAX);
+
 	vec_set(&center, 0.0, 0.0, 0.0);
 	for (j = 0; j < nfocus; j++) {
 		center.fv_x += focuspts[j].fv_x;
 		center.fv_y += focuspts[j].fv_y;
 		center.fv_z += focuspts[j].fv_z;
 
-//		if ()
-//			revt = REVT_LKCEN;
-
-
-
-
-#if 0
-
-			/*
-			 * Manually change the revolution type
-			 * to avoid jumps around extremes and
-			 * move the camera slightly so we don't
-			 * continually toggle this manual switch.
-			 */
-			if (type == REVT_LKAVG) {
-				dst = DST(&st.st_v, &focus);
-				if (dst < CL_WIDTH / 2.0) {
-					if (CL_WIDTH / 2.0 - dst < 0.1)
-						cam_move(DIR_FORW, 0.05);
-					type = REVT_LKCEN;
-				}
-			}
-#endif
-
-
-
-
-
-
-
+		minv.fv_x = MIN(minv.fv_x, focuspts[j].fv_x);
+		maxv.fv_x = MAX(maxv.fv_x, focuspts[j].fv_x);
+		minv.fv_y = MIN(minv.fv_y, focuspts[j].fv_y);
+		maxv.fv_y = MAX(maxv.fv_y, focuspts[j].fv_y);
+		minv.fv_z = MIN(minv.fv_z, focuspts[j].fv_z);
+		maxv.fv_z = MAX(maxv.fv_z, focuspts[j].fv_z);
 	}
 	center.fv_x /= nfocus;
 	center.fv_y /= nfocus;
 	center.fv_z /= nfocus;
+
+	/*
+	 * Manually change the revolution type
+	 * to avoid jumps around extremes and
+	 * move the camera slightly so we don't
+	 * continually toggle this manual switch.
+	 */
+	if (revt == REVT_LKAVG || revt == REVT_LKFIT) {
+		dst = -1.0 + DST(&st.st_v, &center);
+		maxdiff = MAX3(
+		    maxv.fv_x - minv.fv_x,
+		    maxv.fv_y - minv.fv_y,
+		    maxv.fv_z - minv.fv_z) / 2.0;
+		if (dst < maxdiff) {
+			if (maxdiff - dst < 0.1)
+				cam_move(DIR_FORW, 0.05);
+			revt = REVT_LKCEN;
+		}
+	}
 
 	vec_sub(&diff, &st.st_v, &center);
 	vec_cart2sphere(&diff, &sph);
@@ -180,10 +180,8 @@ cam_revolve(struct fvec *focuspts, int nfocus, double dt, double dp, int revt)
 		double mint, minp, maxt, maxp;
 		struct fvec lv;
 
-		mint =  100.0;
-		maxt = -100.0;
-		minp =  100.0;
-		maxp = -100.0;
+		mint = minp = DBL_MAX;
+		maxt = maxp = -DBL_MAX;
 
 		lv.fv_x = center.fv_x - st.st_v.fv_x;
 		lv.fv_y = center.fv_y - st.st_v.fv_y;
