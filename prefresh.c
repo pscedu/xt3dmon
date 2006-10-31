@@ -776,8 +776,8 @@ panel_refresh_ss(struct panel *p)
 	    gscb_pw_snap, (w), (h), NULL, NULL);
 	pwssres(7200, 5400);
 	pwssres(5600, 4200);
+	pwssres(3600, 2700);
 	pwssres(3600, 2400);
-	pwssres(2048, 1536);
 	pwssres(2560, 1600);
 	pwssres(2048, 1536);
 	pwssres(1920, 1440);
