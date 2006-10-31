@@ -15,6 +15,15 @@ ivec_eq(const struct ivec *a, const struct ivec *b)
 	    a->iv_z == b->iv_z);
 }
 
+int
+vec_eq(const struct fvec *a, const struct fvec *b)
+{
+	return (
+	    a->fv_x == b->fv_x &&
+	    a->fv_y == b->fv_y &&
+	    a->fv_z == b->fv_z);
+}
+
 void
 vec_normalize(struct fvec *fvp)
 {
