@@ -6,10 +6,10 @@
 .Os http://www.psc.edu/
 .Sh NAME
 .Nm xt3dmon
-.Nd XT3 monitor
+.Nd graphical XT3 monitor
 .Sh SYNOPSIS
 .Nm xt3dmon
-.Op Fl dp
+.Op Fl dMp
 .Op Fl c Ar physconf
 .Op Fl H Ar height
 .Op Fl W Ar width
@@ -50,6 +50,10 @@ responses.
 Specify the
 .Nm
 window height in pixels.
+.It Fl M
+Start the
+.Nm
+window in full-screen (maximized) mode.
 .It Fl p
 Enable passive stereo mode.
 In this mode, two windows are created and maintained individually,
@@ -69,12 +73,16 @@ replaced with the data source's name (e.g.
 .Dq node
 or
 .Dq job ) .
-Defaults to
-.Dq gssapi://bigben-monitor.psc.edu/arbiter-raw.pl?data=%s .
+Defaults to:
+.Pp
+.D1 gssapi://bigben-monitor.psc.edu/arbiter-raw.pl?data=%s
 .It Fl x Ar dxscript
-Load and run the given Deus Ex mode script
+Load and run
 .Ar dxscript
 at startup.
+See
+.Sx Deus Ex\& Mode
+below.
 .El
 .Pp
 There are a number of different data displays available:
@@ -218,6 +226,10 @@ Press any other key to break out of playback.
 .It Ic fq
 Toggle the recording and saving of the live state, for use in flyby
 playbacks.
+.It Ic I
+Toggle the cluster subset membership of all selected nodes.
+When the subset option is enabled, only nodes in the subset will be
+shown.
 .It Ic i
 Print the node IDs (nids) of all selected nodes to standard output.
 .It Ic kd
@@ -233,6 +245,11 @@ nodes.
 .It Ic kw
 Remap the arrow keys to modify the wired cluster viewing mode node
 offset factor.
+.It Ic L
+Load the list of previously saved selected nodes.
+See the
+.Ic S
+command.
 .It Ic M
 Maximize window.
 .It Ic mj
@@ -339,6 +356,14 @@ Toggle the wired-mode control panel.
 Toggle the Deus Ex script chooser panel.
 .It Ic pz
 Toggle the custom dataset chooser panel.
+.It Ic ^Q Ns Ar n
+Save the current camera position into the hotkey
+.Ar n ,
+which may be in the range
+.Bq 0 , Ns 9 .
+.It Ic ^W Ns Ar n
+Load the hotkey camera position
+.Ar n .
 .It Ic R
 Refresh current data set.
 .It Ic r+ , r- , rr
@@ -346,6 +371,10 @@ Cycle through the port sets in the routing error data mode.
 .It Ic rR , rF , rT
 Change the routing error data mode to display recoverable, fatal,
 or router errors.
+.It Ic S
+Save the list of currently selected nodes for later restoration via the
+.Ic L
+command.
 .It Ic vo
 Switch to the wired viewing mode with only one cluster drawn.
 .It Ic vp
@@ -358,7 +387,7 @@ Toggle
 mode.
 See below.
 .El
-.Sh DEUS EX SYNTAX
+.Sh DEUS EX MODE
 .Nm
 can have many of its actions scripted by loading a
 .Em deus ex
@@ -554,7 +583,7 @@ The following panels are available:
 .It Ic cam
 Camera position.
 .\" .It Ic cmd
-.\" Execute command to login node.
+.\" Execute command on login node.
 .It Ic compass
 Compass.
 .It Ic date
@@ -620,7 +649,7 @@ panel +status,vmode,wiadj
 .Ed
 .It Ic playreel Ar delay archive
 Play a data archive reel.
-Each frames is shown for
+Each frame is shown for
 .Ar delay
 milliseconds.
 .Ar archive
@@ -803,40 +832,56 @@ which will increase the offset,
 which will decrease the offset, or nothing, in which case the
 offset in that dimension will be set to the given value.
 .El
+.Sh DATA FILES
+.Nm
+gathers its data from the following files, accessed through the
+URI specification set by the
+.Fl U
+flag:
+.Pp
+.Bl -tag -width Pa -compact
+.It Pa node
+node information
+.It Pa job
+job information
+.It Pa yod
+yod information
+.It Pa ss
+SeaStar register data
+.It Pa rt
+.Xr xtnetwatch 1
+routing error data
+.El
 .Sh FILES
 .Bl -tag -width Pa -compact
+.It Pa img/font.png
+font texture used for node labels
 .It Pa img/tex-sc Ns Em %d Ns Pa .png
 node state textures
 .It Pa img/tex-selnode.png
 selected node texture
-.It Pa img/font.png
-font texture used for node labels
 .It Pa data/archive/
-top-level reel directory
-.It Pa data/latest-archive
-latest reel directory
-.It Pa data/phys.conf
-cluster physical description file
+default archive index directory
 .It Pa data/colors
 job color table
-.It Pa data/node
-node information
-.It Pa data/job
-job information
-.It Pa data/yod
-yod information
-.It Pa data/ss
-seastar data
-.It Pa data/rt
-routing data
 .It Pa data/flybys/
 flyby data files
 .It Pa data/flybys/default
 default flyby file
+.It Pa data/hotkey- Ns Em %c
+hotkey camera positions
+.It Pa data/latest-archive
+default archive reel directory
+.It Pa data/phys.conf
+cluster physical description file
+.It Pa data/selnids
+saved selected node ID list
 .It Pa scripts/
-deus-ex scripts
+default deus-ex script directory
 .It Pa snaps/ Ns Em %08d Ns Pa .png
 capture output files
+.It Pa /tmp/xtsess/
+server-mode client sessions
 .El
 .Sh COPYRIGHT
 Copyright
