@@ -13,3 +13,4 @@ void	 cam_bird(void);
 
 #define REVT_LKAVG	0	/* Average look across center. */
 #define REVT_LKCEN	1	/* Always look at center. */
+#define REVT_LKFIT	2	/* Fit all points. */

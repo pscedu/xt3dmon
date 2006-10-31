@@ -5,15 +5,22 @@
  * These functions all deal directly with the current
  * camera position, so make sure you surround any calls
  * to them with tween_push/pop.
+ *
+ * Notes:
+ *	theta ranges from [-pi, pi]
+ *	phi ranges from [0, pi]
  */
 
 #include "mon.h"
 
+#include <err.h>
 #include <math.h>
+#include <stdlib.h>
 
 #include "cdefs.h"
 #include "cam.h"
 #include "env.h"
+#include "node.h"
 #include "selnode.h"
 #include "state.h"
 #include "xmath.h"
@@ -63,9 +70,9 @@ cam_move(int dir, double amt)
 }
 
 void
-cam_revolve(struct fvec *center, int nfocus, double dt, double dp, int revt)
+cam_revolve(struct fvec *focuspts, int nfocus, double dt, double dp, int revt)
 {
-	struct fvec focuspt, diff, sph;
+	struct fvec center, diff, sph, sphfocus;
 	int upinv, j;
 
 	upinv = 0;
@@ -79,19 +86,20 @@ cam_revolve(struct fvec *center, int nfocus, double dt, double dp, int revt)
 		dt *= -1.0;
 	}
 
-	focuspt.fv_x = 0.0;
-	focuspt.fv_y = 0.0;
-	focuspt.fv_z = 0.0;
+	vec_set(&center, 0.0, 0.0, 0.0);
 	for (j = 0; j < nfocus; j++) {
-		focuspt.fv_x += center[j].fv_x;
-		focuspt.fv_y += center[j].fv_y;
-		focuspt.fv_z += center[j].fv_z;
-	}
-	focuspt.fv_x /= nfocus;
-	focuspt.fv_y /= nfocus;
-	focuspt.fv_z /= nfocus;
+		center.fv_x += focuspts[j].fv_x;
+		center.fv_y += focuspts[j].fv_y;
+		center.fv_z += focuspts[j].fv_z;
 
-	vec_sub(&diff, &st.st_v, &focuspt);
+//		if ()
+//			revt = REVT_LKCEN;
+	}
+	center.fv_x /= nfocus;
+	center.fv_y /= nfocus;
+	center.fv_z /= nfocus;
+
+	vec_sub(&diff, &st.st_v, &center);
 	vec_cart2sphere(&diff, &sph);
 
 	sph.fv_t += dt;
@@ -112,7 +120,7 @@ cam_revolve(struct fvec *center, int nfocus, double dt, double dp, int revt)
 //	sph.fv_p = negmodf(sph.fv_p, M_PI);
 
 	vec_sphere2cart(&sph, &st.st_v);
-	vec_addto(&focuspt, &st.st_v);
+	vec_addto(&center, &st.st_v);
 
 	st.st_lv.fv_x = 0.0;
 	st.st_lv.fv_y = 0.0;
@@ -122,9 +130,9 @@ cam_revolve(struct fvec *center, int nfocus, double dt, double dp, int revt)
 		for (j = 0; j < nfocus; j++) {
 			struct fvec lv;
 
-			lv.fv_x = center[j].fv_x - st.st_v.fv_x;
-			lv.fv_y = center[j].fv_y - st.st_v.fv_y;
-			lv.fv_z = center[j].fv_z - st.st_v.fv_z;
+			lv.fv_x = focuspts[j].fv_x - st.st_v.fv_x;
+			lv.fv_y = focuspts[j].fv_y - st.st_v.fv_y;
+			lv.fv_z = focuspts[j].fv_z - st.st_v.fv_z;
 			vec_normalize(&lv);
 
 			vec_addto(&lv, &st.st_lv);
@@ -134,10 +142,46 @@ cam_revolve(struct fvec *center, int nfocus, double dt, double dp, int revt)
 		st.st_lv.fv_z /= nfocus;
 		break;
 	case REVT_LKCEN:
-		st.st_lv.fv_x = focuspt.fv_x - st.st_v.fv_x;
-		st.st_lv.fv_y = focuspt.fv_y - st.st_v.fv_y;
-		st.st_lv.fv_z = focuspt.fv_z - st.st_v.fv_z;
+		st.st_lv.fv_x = center.fv_x - st.st_v.fv_x;
+		st.st_lv.fv_y = center.fv_y - st.st_v.fv_y;
+		st.st_lv.fv_z = center.fv_z - st.st_v.fv_z;
 		break;
+	case REVT_LKFIT: {
+		double mint, minp, maxt, maxp;
+		struct fvec lv;
+
+		mint =  100.0;
+		maxt = -100.0;
+		minp =  100.0;
+		maxp = -100.0;
+
+		lv.fv_x = center.fv_x - st.st_v.fv_x;
+		lv.fv_y = center.fv_y - st.st_v.fv_y;
+		lv.fv_z = center.fv_z - st.st_v.fv_z;
+		vec_normalize(&lv);
+		vec_cart2sphere(&lv, &sphfocus);
+
+		for (j = 0; j < nfocus; j++) {
+			lv.fv_x = focuspts[j].fv_x - st.st_v.fv_x;
+			lv.fv_y = focuspts[j].fv_y - st.st_v.fv_y;
+			lv.fv_z = focuspts[j].fv_z - st.st_v.fv_z;
+			vec_normalize(&lv);
+
+			vec_cart2sphere(&lv, &sph);
+			if (sph.fv_t - sphfocus.fv_t > M_PI)
+				sph.fv_t -= 2.0 * M_PI;
+			else if (sph.fv_t - sphfocus.fv_t < -M_PI)
+				sph.fv_t += 2.0 * M_PI;
+			mint = MIN(mint, sph.fv_t);
+			maxt = MAX(maxt, sph.fv_t);
+			minp = MIN(minp, sph.fv_p);
+			maxp = MAX(maxp, sph.fv_p);
+		}
+		sph.fv_t = (mint + maxt) / 2.0;
+		sph.fv_p = (minp + maxp) / 2.0;
+		vec_sphere2cart(&sph, &st.st_lv);
+		break;
+	    }
 	}
 	vec_normalize(&st.st_lv);
 
@@ -158,37 +202,73 @@ cam_revolve(struct fvec *center, int nfocus, double dt, double dp, int revt)
 __inline void
 cam_revolvefocus(double dt, double dp, int type)
 {
-	struct fvec *fvp;
-	struct fvec fv;
+	struct fvec nfv[8], fv, *fvp, *ndim;
+	struct selnode *sn;
 	double dst;
+	int j;
 
-	fvp = &focus;
-	if (st.st_vmode == VM_WIRED && nselnodes == 0) {
-		dst = MAX3(WIV_SWIDTH, WIV_SHEIGHT, WIV_SDEPTH) / 4.0;
-		fv.fv_x = st.st_x + st.st_lx * dst;
-		fv.fv_y = st.st_y + st.st_ly * dst;
-		fv.fv_z = st.st_z + st.st_lz * dst;
-		fvp = &fv;
-	}
+	if (nselnodes) {
+		if ((fvp = calloc(nselnodes, sizeof(struct fvec))) == NULL)
+			err(1, "calloc");
+		j = 0;
+		SLIST_FOREACH(sn, &selnodes, sn_next)
+			vec_copyto(sn->sn_nodep->n_v, &fvp[j++]);
+		cam_revolve(fvp, j, dt, dp, type);
+		free(fvp);
+	} else {
+		switch (st.st_vmode) {
+		case VM_WIRED:
+			dst = MAX3(WIV_SWIDTH, WIV_SHEIGHT, WIV_SDEPTH) / 4.0;
+			fv.fv_x = st.st_x + st.st_lx * dst;
+			fv.fv_y = st.st_y + st.st_ly * dst;
+			fv.fv_z = st.st_z + st.st_lz * dst;
+			fvp = &fv;
+			cam_revolve(fvp, 1, dt, dp, type);
+			break;
+		case VM_WIONE:
+			ndim = &vmodes[st.st_vmode].vm_ndim[GEOM_CUBE];
+			fv.fv_w = (widim.iv_w - 1) * st.st_winsp.iv_x + ndim->fv_w;
+			fv.fv_h = (widim.iv_h - 1) * st.st_winsp.iv_y + ndim->fv_h;
+			fv.fv_d = (widim.iv_d - 1) * st.st_winsp.iv_z + ndim->fv_d;
 
-	if (st.st_vmode == VM_PHYS && nselnodes == 0) {
-		struct fvec nfv[2] = {
-			{ { NODESPACE, NODESPACE + CL_HEIGHT / 2.0, CL_DEPTH / 2.0 } },
-			{ { NODESPACE + CL_WIDTH, NODESPACE + CL_HEIGHT / 2.0, CL_DEPTH / 2.0 } }
-		};
+			vec_set(&nfv[0], 0.0,		0.0,		0.0);
+			vec_set(&nfv[1], fv.fv_w,	0.0,		0.0);
+			vec_set(&nfv[2], 0.0,		fv.fv_h,	0.0);
+			vec_set(&nfv[3], 0.0,		0.0,		fv.fv_d);
+			vec_set(&nfv[4], fv.fv_w,	fv.fv_h,	0.0);
+			vec_set(&nfv[5], fv.fv_w,	0.0,		fv.fv_d);
+			vec_set(&nfv[6], 0.0,		fv.fv_h,	fv.fv_d);
+			vec_set(&nfv[7], fv.fv_w,	fv.fv_h,	fv.fv_d);
+			cam_revolve(nfv, NENTRIES(nfv), dt, dp, type);
+			break;
+		case VM_PHYS:
+			vec_set(&nfv[0], 0.0,		0.0,		0.0);
+			vec_set(&nfv[1], CL_WIDTH,	0.0,		0.0);
+			vec_set(&nfv[2], 0.0,		CL_HEIGHT,	0.0);
+			vec_set(&nfv[3], 0.0,		0.0,		CL_DEPTH);
+			vec_set(&nfv[4], CL_WIDTH,	CL_HEIGHT,	0.0);
+			vec_set(&nfv[5], CL_WIDTH,	0.0,		CL_DEPTH);
+			vec_set(&nfv[6], 0.0,		CL_HEIGHT,	CL_DEPTH);
+			vec_set(&nfv[7], CL_WIDTH,	CL_HEIGHT,	CL_DEPTH);
 
-		if (type == REVT_LKAVG) {
-			dst = DST(&st.st_v, &focus);
-			if (dst < CL_WIDTH / 2.0) {
-				if (CL_WIDTH / 2.0 - dst < 0.1)
-					cam_move(DIR_FORW, 0.05);
-				type = REVT_LKCEN;
+			/*
+			 * Manually change the revolution type
+			 * to avoid jumps around extremes and
+			 * move the camera slightly so we don't
+			 * continually toggle this manual switch.
+			 */
+			if (type == REVT_LKAVG) {
+				dst = DST(&st.st_v, &focus);
+				if (dst < CL_WIDTH / 2.0) {
+					if (CL_WIDTH / 2.0 - dst < 0.1)
+						cam_move(DIR_FORW, 0.05);
+					type = REVT_LKCEN;
+				}
 			}
+			cam_revolve(nfv, NENTRIES(nfv), dt, dp, type);
+			break;
 		}
-
-		cam_revolve(nfv, 2, dt, dp, type);
-	} else
-		cam_revolve(fvp, 1, dt, dp, type);
+	}
 }
 
 void
