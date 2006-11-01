@@ -26,7 +26,7 @@
 #include "state.h"
 #include "xmath.h"
 
-int revolve_type = REVT_LKFIT;
+int revolve_type = REVT_LKAVG;
 
 /*
  *	y
