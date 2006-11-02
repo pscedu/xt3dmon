@@ -227,6 +227,7 @@ gsn_get(int flags, const struct fvec *offv, gscb_t cb,
 	gn->gn_arg_int2 = arg_int2;
 	gn->gn_arg_ptr = arg_ptr;
 	gn->gn_arg_ptr2 = arg_ptr2;
+	gn->gn_arg_ptr3 = NULL;
 	gn->gn_flags = flags;
 	gn->gn_offv = *offv;
 	return (cur);
