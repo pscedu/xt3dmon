@@ -548,7 +548,7 @@ svc_sid(char *t, int *used, __unused struct session *ss)
 {
 	char fmtbuf[10];
 
-	snprintf(fmtbuf, sizeof(fmtbuf), "%%%ds%%n",
+	snprintf(fmtbuf, sizeof(fmtbuf), "%%%zds%%n",
 	    sizeof(ss->ss_sid) - 1);
 	if (sscanf(t, fmtbuf, ss->ss_sid, used) != 1)
 		return (0);

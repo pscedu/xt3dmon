@@ -45,7 +45,7 @@ gss_build_auth(const struct ustream *us)
 	char *p;
 
 	bsiz = (gss_otoken.length + 3) * 4 / 3 + 1;
- printf("base64: have %d chars\n", bsiz);
+ printf("base64: have %zd chars\n", bsiz);
 	if ((p = malloc(bsiz)) == NULL)
 		err(1, "malloc");
 	base64_encode(gss_otoken.value, p, gss_otoken.length);

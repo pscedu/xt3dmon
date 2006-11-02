@@ -158,7 +158,7 @@ uinpcb_login(void)
 
 			if (strlen(authbuf) < 4 * sizeof(login_auth) / 3)
 {
- printf("base64: have %d chars\n", sizeof(login_auth));
+ printf("base64: have %zd chars\n", sizeof(login_auth));
 				base64_encode(authbuf, login_auth,
 				    strlen(authbuf));
 }
