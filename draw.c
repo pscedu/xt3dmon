@@ -453,18 +453,18 @@ draw_ground(void)
 	fp = &fill_dim[DIM_X];
 	glColor3f(fp->f_r, fp->f_g, fp->f_b);
 	glColor3f(0.0f, 0.0f, 1.0f);
-	glVertex3f(-500.0f, 0.0f, 0.0f);
-	glVertex3f(500.0f, 0.0f, 0.0f);
+	glVertex3f(-5000.0f, 0.0f, 0.0f);
+	glVertex3f(5000.0f, 0.0f, 0.0f);
 
 	fp = &fill_dim[DIM_Y];
 	glColor3f(fp->f_r, fp->f_g, fp->f_b);
-	glVertex3f(0.0f, -500.0f, 0.0f);
-	glVertex3f(0.0f, 500.0f, 0.0f);
+	glVertex3f(0.0f, -5000.0f, 0.0f);
+	glVertex3f(0.0f, 5000.0f, 0.0f);
 
 	fp = &fill_dim[DIM_Z];
 	glColor3f(fp->f_r, fp->f_g, fp->f_b);
-	glVertex3f(0.0f, 0.0f, -500.0f);
-	glVertex3f(0.0f, 0.0f, 500.0f);
+	glVertex3f(0.0f, 0.0f, -5000.0f);
+	glVertex3f(0.0f, 0.0f, 5000.0f);
 	glEnd();
 
 	glDisable(GL_BLEND);
@@ -1060,7 +1060,6 @@ make_cluster(void)
 void
 make_selnodes(void)
 {
-	selnode_clean = 0;
 	if (dl_selnodes[wid])
 		glDeleteLists(dl_selnodes[wid], 1);
 	if (SLIST_EMPTY(&selnodes)) {

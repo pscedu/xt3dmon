@@ -30,6 +30,7 @@ sn_replace(struct selnode *sn, struct node *n)
 		flyby_writeselnode(n->n_nid, &fv_zero);
 	}
 	st.st_rf |= RF_SELNODE;
+	selnode_clean = 0;
 }
 
 /*
@@ -57,8 +58,6 @@ sn_insert(struct node *n, const struct fvec *offv)
 		break;
 	case DM_TEMP:
 		break;
-	case DM_FAIL:
-		break;
 	}
 #endif
 	st.st_rf |= RF_SELNODE;
@@ -77,6 +76,7 @@ sn_add(struct node *n, const struct fvec *offv)
 		if (sn->sn_nodep == n)
 			return;
 	sn_insert(n, offv);
+	selnode_clean = 0;
 }
 
 void
@@ -100,6 +100,7 @@ sn_clear(void)
 	nselnodes = 0;
 
 	panel_hide(PANEL_NINFO);
+	selnode_clean = 0;
 }
 
 int
@@ -115,7 +116,9 @@ sn_del(struct node *n)
 			if (flyby_mode == FBM_REC)
 				flyby_writeselnode(n->n_nid, &fv_zero);
 			st.st_rf |= RF_SELNODE;
-			nselnodes--;
+			if (--nselnodes == 0)
+				panel_hide(PANEL_NINFO);
+			selnode_clean = 0;
 			return (1);
 		}
 	return (0);
