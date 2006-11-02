@@ -70,7 +70,6 @@ capture_seqname(int mode)
 	static char fn[PATH_MAX];
 	const char *ext;
 
-	capture_pos++;
 	ext = capture_formats[mode].cf_ext;
 	if (stereo_mode) {
 		snprintf(fn, sizeof(fn), "%s/%c%07d.%s",
@@ -79,6 +78,7 @@ capture_seqname(int mode)
 	} else
 		snprintf(fn, sizeof(fn), "%s/%07d.%s",
 		    _PATH_SSDIR, capture_pos, ext);
+	capture_pos++;
 	return (fn);
 }
 
