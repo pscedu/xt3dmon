@@ -35,12 +35,24 @@
 #define PANEL_DSCHO	(1<<28)
 #define NPANELS		29
 
+struct pwidget;
+TAILQ_HEAD(pwidget_group_list, pwidget);
+
+struct pwidget_group {
+	struct pwidget_group_list  pwg_widgets;
+	SLIST_ENTRY(pwidget_group) pwg_link;
+	struct pwidget		  *pwg_checkedwidget;
+};
+
 struct pwidget {
 	const char		 *pw_str;
 	int			  pw_flags;
 	int			  pw_sprio;	/* Sort priority. */
 	struct fill		 *pw_fillp;
 	SLIST_ENTRY(pwidget)	  pw_next;
+	struct pwidget_group	 *pw_group;
+	TAILQ_ENTRY(pwidget)	  pw_group_link;
+	struct glname		 *pw_gn;
 	gscb_t			  pw_cb;
 	int			  pw_arg_int;
 	int			  pw_arg_int2;
@@ -73,6 +85,8 @@ struct panel {
 	SLIST_HEAD(, pwidget)	  p_widgets;
 	struct pwidget		 *p_lastwidget;
 	SLIST_HEAD(, pwidget)	  p_freewidgets;
+	SLIST_HEAD(, pwidget_group) p_widgetgroups;
+	struct pwidget_group	 *p_curwidgetgroup;
 	int			  p_nwidgets;
 	int			  p_nwcol;	/* Number of widget columns. */
 	int			  p_totalwcw;	/* Total width of all columns combined. */
@@ -111,6 +125,8 @@ struct pinfo {
 #define PSTICK_TR	2
 #define PSTICK_BL	3
 #define PSTICK_BR	4
+
+void		 pwidget_grouplist_free(struct panel *);
 
 void		 panel_toggle(int);
 void		 panel_tremove(struct panel *);

@@ -253,9 +253,6 @@ gl_keyh_dmode(unsigned char key, __unused int u, __unused int v)
 	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
 	switch (key) {
-	case 'f':
-		st.st_dmode = DM_FAIL;
-		break;
 	case 'j':
 		st.st_dmode = DM_JOB;
 		break;
@@ -637,6 +634,7 @@ void
 gl_keyh_server(unsigned char key, __unused int u, __unused int v)
 {
 	switch (key) {
+	case 'Q':
 	case 'q':
 		exit(0);
 		/* NOTREACHED */
@@ -865,6 +863,7 @@ gl_keyh_default(unsigned char key, int u, int v)
 	case 'p':
 		glutKeyboardFunc(gl_keyh_panel);
 		break;
+	case 'Q':
 	case 'q':
 		exit(0);
 		/* NOTREACHED */
@@ -912,12 +911,52 @@ gl_keyh_default(unsigned char key, int u, int v)
 }
 
 void
+pwidget_rel(struct pwidget_group *pwg, int key)
+{
+	struct pwidget *pw, *npw;
+
+	pw = pwg->pwg_checkedwidget;
+	if (pw == NULL)
+		return;
+
+	npw = NULL;
+	switch (key) {
+	case GLUT_KEY_UP:
+	case GLUT_KEY_LEFT:
+		do {
+			npw = TAILQ_PREV(pw, pwidget_group_list, pw_group_link);
+		} while (npw &&
+		    (npw->pw_cb == NULL || npw->pw_gn == NULL));
+		break;
+
+	case GLUT_KEY_DOWN:
+	case GLUT_KEY_RIGHT:
+		do {
+			npw = TAILQ_NEXT(pw, pw_group_link);
+		} while (npw &&
+		    (npw->pw_cb == NULL || npw->pw_gn == NULL));
+		break;
+	}
+	if (npw && npw->pw_cb && npw->pw_gn)
+		npw->pw_cb(npw->pw_gn, 0);
+}
+
+void
 gl_spkeyh_default(int key, __unused int u, __unused int v)
 {
+	struct pwidget *pw;
+	struct glname *gn;
 	float r, adj, amt;
 	int dir;
 
 	flyby_rstautoto();
+
+	gn = gl_select(SPF_2D | SPF_LOOKUP);
+	if (gn && gn->gn_flags & GNF_PWIDGET &&
+	    (pw = gn->gn_arg_ptr3) && pw->pw_group) {
+		pwidget_rel(pw->pw_group, key);
+		return;
+	}
 
 	amt = 0.0f; /* gcc */
 	dir = 0; /* gcc */

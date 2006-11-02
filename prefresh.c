@@ -7,6 +7,21 @@
  * or something instead to avoid confusion with the
  * actual drawing calculations of panels which are
  * instead done in panel.c.
+ *
+ * Panel Widget Groups
+ *	Pwidgets can optionallly be sorted into groups
+ * 	where the only added functionality is the use of
+ *	the arrow keys to flip between choices.  In order
+ * 	to specify this functionality in the refresh
+ * 	routines, the following API is provided:
+ *
+ *	  pwidget_group_start()
+ *		Start a new group.  All widgets added
+ *		between this and its corresponding end()
+ *		call will be in the group.
+ *
+ *	  pwidget_group_end()
+ *		End the current widget group.
  */
 
 #include "mon.h"
@@ -118,6 +133,38 @@ panel_ready(struct panel *p)
 	return (ready);
 }
 
+void
+pwidget_group_start(struct panel *p)
+{
+	struct pwidget_group *pwg;
+
+	if ((pwg = malloc(sizeof(*pwg))) == NULL)
+		err(1, "malloc");
+	memset(pwg, 0, sizeof(*pwg));
+	TAILQ_INIT(&pwg->pwg_widgets);
+	SLIST_INSERT_HEAD(&p->p_widgetgroups, pwg, pwg_link);
+	p->p_curwidgetgroup = pwg;
+}
+
+void
+pwidget_group_end(struct panel *p)
+{
+	p->p_curwidgetgroup = NULL;
+}
+
+void
+pwidget_grouplist_free(struct panel *p)
+{
+	struct pwidget_group *pwg, *npwg;
+
+	for (pwg = SLIST_FIRST(&p->p_widgetgroups);
+	    pwg != SLIST_END(&p->p_widget); pwg = npwg) {
+		npwg = SLIST_NEXT(pwg, pwg_link);
+		free(pwg);
+	}
+	SLIST_INIT(&p->p_widgetgroups);
+}
+
 int
 pwidget_cmp(const void *a, const void *b)
 {
@@ -160,6 +207,8 @@ pwidget_startlist(struct panel *p)
 	SLIST_FIRST(&p->p_freewidgets) = SLIST_FIRST(&p->p_widgets);
 	SLIST_INIT(&p->p_widgets);
 	p->p_lastwidget = NULL;
+
+	pwidget_grouplist_free(p);
 }
 
 void
@@ -167,62 +216,112 @@ pwidget_endlist(struct panel *p, int nwcol)
 {
 	struct pwidget *pw, *nextp;
 
+	/* Build panel widget group links. */
+	SLIST_FOREACH(pw, &p->p_widgets, pw_next)
+		if (pw->pw_group)
+			TAILQ_INSERT_TAIL(&pw->pw_group->pwg_widgets,
+			    pw, pw_group_link);
+
+	/* Calculate panel widget column widths. */
 	p->p_nwcol = nwcol;
 	if (p->p_nwidgets == 0)
 		SLIST_INIT(&p->p_widgets);
 	else
 		panel_calcwlens(p);
 
-	if (SLIST_EMPTY(&p->p_freewidgets))
-		return;
-	for (pw = SLIST_FIRST(&p->p_freewidgets);
-	    pw != SLIST_END(&p->p_freewidgets); pw = nextp) {
-		nextp = SLIST_NEXT(pw, pw_next);
-		free(pw);
+
+	/* Free previously allocated widgets. */
+	if (!SLIST_EMPTY(&p->p_freewidgets)) {
+		for (pw = SLIST_FIRST(&p->p_freewidgets);
+		    pw != SLIST_END(&p->p_freewidgets); pw = nextp) {
+			nextp = SLIST_NEXT(pw, pw_next);
+			free(pw);
+		}
+		SLIST_INIT(&p->p_freewidgets);
 	}
-	SLIST_INIT(&p->p_freewidgets);
 }
 
+#define PWARG_GSCB		0
+#define PWARG_SPRIO		1
+#define PWARG_CBARG_INT		2
+#define PWARG_CBARG_INT2	3
+#define PWARG_CBARG_PTR		4
+#define PWARG_CBARG_PTR2	5
+#define PWARG_GRP_CHECKED	6
+#define PWARG_GRP_MEMBER	7
+#define PWARG_LAST		8
+
 void
-pwidget_add(struct panel *p, struct fill *fp, const char *s, int sprio,
-    gscb_t cb, int arg_int, int arg_int2, void *arg_ptr, void *arg_ptr2)
+pwidget_add(struct panel *p, struct fill *fp, const char *s, ...)
 {
+	int argt, grp_member, grp_checked;
 	struct pwidget *pw;
+	va_list ap;
 
 	p->p_nwidgets++;
 	if (SLIST_EMPTY(&p->p_freewidgets)) {
 		if ((pw = malloc(sizeof(*pw))) == NULL)
 			err(1, "malloc");
-		memset(pw, 0, sizeof(*pw));
 	} else {
 		pw = SLIST_FIRST(&p->p_freewidgets);
 		SLIST_REMOVE_HEAD(&p->p_freewidgets, pw_next);
-		SLIST_NEXT(pw, pw_next) = NULL;
 	}
+	memset(pw, 0, sizeof(*pw));
 	if (p->p_lastwidget)
-		SLIST_NEXT(p->p_lastwidget, pw_next) = pw;
+		SLIST_INSERT_AFTER(p->p_lastwidget, pw, pw_next);
 	else
 		SLIST_INSERT_HEAD(&p->p_widgets, pw, pw_next);
 	p->p_lastwidget = pw;
 
 	pw->pw_fillp = fp;
-	pw->pw_cb = cb;
-	pw->pw_arg_int = arg_int;
-	pw->pw_arg_int2 = arg_int2;
-	pw->pw_arg_ptr = arg_ptr;
-	pw->pw_arg_ptr2 = arg_ptr2;
 	pw->pw_str = s;
-	pw->pw_sprio = sprio;
+
+	grp_member = 1;
+	grp_checked = 0;
+	va_start(ap, s);
+	do {
+		argt = va_arg(ap, int);
+		switch (argt) {
+		case PWARG_GSCB:
+			pw->pw_cb = va_arg(ap, void *);
+			break;
+		case PWARG_SPRIO:
+			pw->pw_sprio = va_arg(ap, int);
+			break;
+		case PWARG_CBARG_INT:
+			pw->pw_arg_int = va_arg(ap, int);
+			break;
+		case PWARG_CBARG_INT2:
+			pw->pw_arg_int2 = va_arg(ap, int);
+			break;
+		case PWARG_CBARG_PTR:
+			pw->pw_arg_ptr = va_arg(ap, void *);
+			break;
+		case PWARG_CBARG_PTR2:
+			pw->pw_arg_ptr2 = va_arg(ap, void *);
+			break;
+		case PWARG_GRP_CHECKED:
+			grp_checked = va_arg(ap, int);
+			break;
+		case PWARG_GRP_MEMBER:
+			grp_member = va_arg(ap, int);
+			break;
+		}
+	} while (argt != PWARG_LAST);
+	va_end(ap);
+
+	if (grp_member) {
+		pw->pw_group = p->p_curwidgetgroup;
+		if (grp_checked)
+			p->p_curwidgetgroup->pwg_checkedwidget = pw;
+	}
 }
 
 void
 panel_refresh_fps(struct panel *p)
 {
-	static long ofps = -1;
-
-	if (ofps == fps && panel_ready(p))
+	if (panel_ready(p))
 		return;
-	ofps = fps;
 	panel_set_content(p, "FPS: %d", fps);
 }
 
@@ -266,125 +365,130 @@ panel_refresh_legend(struct panel *p)
 		panel_set_content(p, "- Node Legend (Jobs) -\n"
 		    "Total jobs: %lu", job_list.ol_cur);
 
-		pwidget_add(p, &fill_showall, "Show all", NSC + 1,
-		    gscb_pw_hlnc, NC_ALL, 0, NULL, NULL);
+		pwidget_add(p, &fill_showall, "Show all",
+		    PWARG_SPRIO, NSC + 1,
+		    PWARG_GSCB, gscb_pw_hlnc,
+		    PWARG_CBARG_INT, NC_ALL, PWARG_LAST);
 
 		for (j = 0; j < NSC; j++) {
 			if (statusclass[j].nc_nmemb == 0)
 				continue;
 			pwidget_add(p, &statusclass[j].nc_fill,
-			    statusclass[j].nc_name, NSC - j,
-			    gscb_pw_hlnc, j, 0, NULL, NULL);
+			    statusclass[j].nc_name,
+			    PWARG_SPRIO, NSC - j,
+			    PWARG_GSCB, gscb_pw_hlnc,
+			    PWARG_CBARG_INT, j, PWARG_LAST);
 		}
 		for (j = 0; j < job_list.ol_cur; j++)
 			pwidget_add(p, &OLE(job_list, j, job)->j_fill,
-			    OLE(job_list, j, job)->j_name, 0,
-			    gscb_pw_hlnc, NSC + j, 0, NULL, NULL);
+			    OLE(job_list, j, job)->j_name,
+			    PWARG_SPRIO, 0,
+			    PWARG_GSCB, gscb_pw_hlnc,
+			    PWARG_CBARG_INT, NSC + j, PWARG_LAST);
 		cmp = pwidget_cmp;
-		break;
-	case DM_FAIL:
-		panel_set_content(p, "- Node Legend (Failures) -\n"
-		    "Total: %lu", total_failures);
-
-		pwidget_add(p, &fill_showall, "Show all", 0,
-		    gscb_pw_hlnc, NC_ALL, 0, NULL, NULL);
-		pwidget_add(p, &fill_nodata, "No data", 0,
-		    NULL, 0, 0, NULL, NULL);
-
-		for (j = 0; j < NFAILC; j++) {
-			if (failclass[j].nc_nmemb == 0)
-				continue;
-			pwidget_add(p, &failclass[j].nc_fill,
-			    failclass[j].nc_name, 0,
-			    gscb_pw_hlnc, j, 0, NULL, NULL);
-		}
 		break;
 	case DM_TEMP:
 		panel_set_content(p, "- Node Legend (Temperature) -");
 
-		pwidget_add(p, &fill_showall, "Show all", 0,
-		    gscb_pw_hlnc, NC_ALL, 0, NULL, NULL);
-		pwidget_add(p, &fill_nodata, "No data", 0,
-		    NULL, 0, 0, NULL, NULL);
+		pwidget_add(p, &fill_showall, "Show all",
+		    PWARG_GSCB, gscb_pw_hlnc,
+		    PWARG_CBARG_INT, NC_ALL, PWARG_LAST);
+		pwidget_add(p, &fill_nodata, "No data", PWARG_LAST);
 
 		for (i = NTEMPC - 1; i >= 0; i--) {
 			if (tempclass[i].nc_nmemb == 0)
 				continue;
 			pwidget_add(p, &tempclass[i].nc_fill,
-			    tempclass[i].nc_name, 0,
-			    gscb_pw_hlnc, i, 0, NULL, NULL);
+			    tempclass[i].nc_name,
+			    PWARG_GSCB, gscb_pw_hlnc,
+			    PWARG_CBARG_INT, i, PWARG_LAST);
 		}
 		break;
 	case DM_YOD:
 		panel_set_content(p, "- Node Legend (Yods) -\n"
 		    "Total yods: %lu", yod_list.ol_cur);
 
-		pwidget_add(p, &fill_showall, "Show all", NSC + 1,
-		    gscb_pw_hlnc, NC_ALL, 0, NULL, NULL);
+		pwidget_add(p, &fill_showall, "Show all",
+		    PWARG_SPRIO, NSC + 1,
+		    PWARG_GSCB, gscb_pw_hlnc,
+		    PWARG_CBARG_INT, NC_ALL, PWARG_LAST);
 
 		for (j = 0; j < NSC; j++) {
 			if (statusclass[j].nc_nmemb == 0)
 				continue;
 			pwidget_add(p, &statusclass[j].nc_fill,
-			    statusclass[j].nc_name, NSC - j,
-			    gscb_pw_hlnc, j, 0, NULL, NULL);
+			    statusclass[j].nc_name,
+			    PWARG_SPRIO, NSC - j,
+			    PWARG_GSCB, gscb_pw_hlnc,
+			    PWARG_CBARG_INT, j, PWARG_LAST);
 		}
 		for (j = 0; j < yod_list.ol_cur; j++)
 			pwidget_add(p, &OLE(yod_list, j, yod)->y_fill,
-			    OLE(yod_list, j, yod)->y_cmd, 0,
-			    gscb_pw_hlnc, NSC + j, 0, NULL, NULL);
+			    OLE(yod_list, j, yod)->y_cmd,
+			    PWARG_SPRIO, 0,
+			    PWARG_GSCB, gscb_pw_hlnc,
+			    PWARG_CBARG_INT, NSC + j, PWARG_LAST);
 		cmp = pwidget_cmp;
 		break;
 	case DM_RTUNK:
 		panel_set_content(p, "- Node Legend (Route Errors) -");
 
-		pwidget_add(p, &fill_showall, "Show all", 0,
-		    gscb_pw_hlnc, NC_ALL, 0, NULL, NULL);
-		pwidget_add(p, &fill_rtesnd, "Sender", 0,
-		    gscb_pw_hlnc, RTC_SND, 0, NULL, NULL);
-		pwidget_add(p, &fill_rtercv, "Target", 0,
-		    gscb_pw_hlnc, RTC_RCV, 0, NULL, NULL);
+		pwidget_add(p, &fill_showall, "Show all",
+		    PWARG_GSCB, gscb_pw_hlnc,
+		    PWARG_CBARG_INT, NC_ALL, PWARG_LAST);
+		pwidget_add(p, &fill_rtesnd, "Sender",
+		    PWARG_GSCB, gscb_pw_hlnc,
+		    PWARG_CBARG_INT, RTC_SND, PWARG_LAST);
+		pwidget_add(p, &fill_rtercv, "Target",
+		    PWARG_GSCB, gscb_pw_hlnc,
+		    PWARG_CBARG_INT, RTC_RCV, PWARG_LAST);
 
 		for (j = 0; j < NRTC; j++) {
 			if (rtclass[j].nc_nmemb == 0)
 				continue;
 			pwidget_add(p, &rtclass[j].nc_fill,
-			    rtclass[j].nc_name, 0,
-			    gscb_pw_hlnc, j, 0, NULL, NULL);
+			    rtclass[j].nc_name,
+			    PWARG_GSCB, gscb_pw_hlnc,
+			    PWARG_CBARG_INT, j, PWARG_LAST);
 		}
 		break;
 	case DM_SEASTAR:
 		panel_set_content(p, "- Node Legend (SeaStar) -");
 
-		pwidget_add(p, &fill_showall, "Show all", 0,
-		    gscb_pw_hlnc, NC_ALL, 0, NULL, NULL);
+		pwidget_add(p, &fill_showall, "Show all",
+		    PWARG_GSCB, gscb_pw_hlnc,
+		    PWARG_CBARG_INT, NC_ALL, PWARG_LAST);
 
 		for (j = 0; j < NSSC; j++) {
 			if (ssclass[j].nc_nmemb == 0)
 				continue;
 			pwidget_add(p, &ssclass[j].nc_fill,
-			    ssclass[j].nc_name, 0,
-			    gscb_pw_hlnc, j, 0, NULL, NULL);
+			    ssclass[j].nc_name,
+			    PWARG_GSCB, gscb_pw_hlnc,
+			    PWARG_CBARG_INT, j, PWARG_LAST);
 		}
 		break;
 	case DM_SAME:
 		panel_set_content(p, "- Node Legend -");
 
-		pwidget_add(p, &fill_same, "All nodes", 0,
-		    gscb_pw_hlnc, NC_ALL, 0, NULL, NULL);
+		pwidget_add(p, &fill_same, "All nodes",
+		    PWARG_GSCB, gscb_pw_hlnc,
+		    PWARG_CBARG_INT, NC_ALL, PWARG_LAST);
 		break;
 	case DM_LUSTRE:
 		panel_set_content(p, "- Node Legend (Lustre) -");
 
-		pwidget_add(p, &fill_showall, "Show all", 0,
-		    gscb_pw_hlnc, NC_ALL, 0, NULL, NULL);
+		pwidget_add(p, &fill_showall, "Show all",
+		    PWARG_GSCB, gscb_pw_hlnc,
+		    PWARG_CBARG_INT, NC_ALL, PWARG_LAST);
 
 		for (j = 0; j < NLUSTC; j++) {
 			if (lustreclass[j].nc_nmemb == 0)
 				continue;
 			pwidget_add(p, &lustreclass[j].nc_fill,
-			    lustreclass[j].nc_name, 0,
-			    gscb_pw_hlnc, j, 0, NULL, NULL);
+			    lustreclass[j].nc_name,
+			    PWARG_GSCB, gscb_pw_hlnc,
+			    PWARG_CBARG_INT, j, PWARG_LAST);
 		}
 		break;
 	default:
@@ -636,21 +740,29 @@ panel_refresh_ninfo(struct panel *p)
 	pwidget_startlist(p);
 	if (n->n_temp != DV_NODATA) {
 		j = roundclass(n->n_temp, TEMP_MIN, TEMP_MAX, NTEMPC);
-		pwidget_add(p, &tempclass[j].nc_fill, "Show temp range", 0,
-		    gscb_pw_dmnc, DM_TEMP, j, NULL, NULL);
+		pwidget_add(p, &tempclass[j].nc_fill, "Show temp range",
+		    PWARG_GSCB, gscb_pw_dmnc,
+		    PWARG_CBARG_INT, DM_TEMP,
+		    PWARG_CBARG_INT2, j, PWARG_LAST);
 	}
 	if (n->n_yod) {
 		yod_findbyid(n->n_yod->y_id, &j);
-		pwidget_add(p, &n->n_yod->y_fill, "Show yod", 0,
-		    gscb_pw_dmnc, DM_YOD, NSC + j, NULL, NULL);
+		pwidget_add(p, &n->n_yod->y_fill, "Show yod",
+		    PWARG_GSCB, gscb_pw_dmnc,
+		    PWARG_CBARG_INT, DM_YOD,
+		    PWARG_CBARG_INT2, NSC + j, PWARG_LAST);
 	}
 	if (n->n_job) {
 		job_findbyid(n->n_job->j_id, &j);
-		pwidget_add(p, &n->n_job->j_fill, "Show job", 0,
-		    gscb_pw_dmnc, DM_JOB, NSC + j, NULL, NULL);
+		pwidget_add(p, &n->n_job->j_fill, "Show job",
+		    PWARG_GSCB, gscb_pw_dmnc,
+		    PWARG_CBARG_INT, DM_JOB,
+		    PWARG_CBARG_INT2, NSC + j, PWARG_LAST);
 	} else
-		pwidget_add(p, &statusclass[n->n_state].nc_fill, "Show class", 0,
-		    gscb_pw_dmnc, DM_JOB, n->n_state, NULL, NULL);
+		pwidget_add(p, &statusclass[n->n_state].nc_fill, "Show class",
+		    PWARG_GSCB, gscb_pw_dmnc,
+		    PWARG_CBARG_INT, DM_JOB,
+		    PWARG_CBARG_INT2, n->n_state, PWARG_LAST);
 done:
 	pwidget_endlist(p, 2);
 }
@@ -683,22 +795,28 @@ panel_refresh_flyby(struct panel *p)
 	case FBM_REC:
 		panel_add_content(p, "\nRecording new flyby");
 
-		pwidget_add(p, &fill_nodata, "Stop recording", 0,
-		    gscb_pw_fb, PWFF_STOPREC, 0, NULL, NULL);
+		pwidget_add(p, &fill_nodata, "Stop recording",
+		    PWARG_GSCB, gscb_pw_fb,
+		    PWARG_CBARG_INT, PWFF_STOPREC, PWARG_LAST);
 		break;
 	default:
-		pwidget_add(p, &fill_nodata, "Play", 0,
-		    gscb_pw_fb, PWFF_PLAY, 0, NULL, NULL);
-		pwidget_add(p, &fill_nodata, "Record", 0,
-		    gscb_pw_fb, PWFF_REC, 0, NULL, NULL);
-		pwidget_add(p, &fill_nodata, "Delete", 0,
-		    gscb_pw_fb, PWFF_CLR, 0, NULL, NULL);
+		pwidget_add(p, &fill_nodata, "Play",
+		    PWARG_GSCB, gscb_pw_fb,
+		    PWARG_CBARG_INT, PWFF_PLAY, PWARG_LAST);
+		pwidget_add(p, &fill_nodata, "Record",
+		    PWARG_GSCB, gscb_pw_fb,
+		    PWARG_CBARG_INT, PWFF_REC, PWARG_LAST);
+		pwidget_add(p, &fill_nodata, "Delete",
+		    PWARG_GSCB, gscb_pw_fb,
+		    PWARG_CBARG_INT, PWFF_CLR, PWARG_LAST);
 		pwidget_add(p, (panel_for_id(PANEL_FBNEW) ?
-		    &fill_white : &fill_nodata), "Create new", 0,
-		    gscb_pw_fb, PWFF_NEW, 0, NULL, NULL);
+		    &fill_white : &fill_nodata), "Create new",
+		    PWARG_GSCB, gscb_pw_fb,
+		    PWARG_CBARG_INT, PWFF_NEW, PWARG_LAST);
 		pwidget_add(p, (panel_for_id(PANEL_FBCHO) ?
-		    &fill_white : &fill_nodata), "Chooser", 0,
-		    gscb_pw_fb, PWFF_OPEN, 0, NULL, NULL);
+		    &fill_white : &fill_nodata), "Chooser",
+		    PWARG_GSCB, gscb_pw_fb,
+		    PWARG_CBARG_INT, PWFF_OPEN, PWARG_LAST);
 		break;
 	}
 	pwidget_endlist(p, 2);
@@ -766,14 +884,18 @@ panel_refresh_ss(struct panel *p)
 	    "File name: %s", buf_get(&uinp.uinp_buf));
 	pwidget_startlist(p);
 	pwidget_add(p, capture_usevirtual ?
-	    &fill_unchecked : &fill_checked, "Window Size", 0,
-	    gscb_pw_snap, 0, 0, NULL, NULL);
+	    &fill_unchecked : &fill_checked, "Window Size",
+	    PWARG_GSCB, gscb_pw_snap,
+	    PWARG_CBARG_INT, 0,
+	    PWARG_CBARG_INT2, 0, PWARG_LAST);
 
 #define pwssres(w, h)						\
 	pwidget_add(p, capture_usevirtual &&			\
 	    virtwinv.iv_w == (w) && virtwinv.iv_h == (h) ?	\
-	    &fill_checked : &fill_unchecked, #w "x" #h, 0,	\
-	    gscb_pw_snap, (w), (h), NULL, NULL);
+	    &fill_checked : &fill_unchecked, #w "x" #h,		\
+	    PWARG_GSCB, gscb_pw_snap,				\
+	    PWARG_CBARG_INT, (w),				\
+	    PWARG_CBARG_INT2, (h), PWARG_LAST)
 	pwssres(7200, 5400);
 	pwssres(5600, 4200);
 	pwssres(3600, 2700);
@@ -852,8 +974,10 @@ panel_refresh_opts(struct panel *p)
 		if (options[i].opt_flags & OPF_HIDE)
 			continue;
 		pwidget_add(p, (st.st_opts & (1 << i) ?
-		    &fill_white : &fill_nodata), options[i].opt_name, 0,
-		    gscb_pw_opt, i, 0, NULL, NULL);
+		    &fill_white : &fill_nodata),
+		    options[i].opt_name,
+		    PWARG_GSCB, gscb_pw_opt,
+		    PWARG_CBARG_INT, i, PWARG_LAST);
 	}
 	pwidget_sortlist(p, pwidget_cmp);
 	pwidget_endlist(p, 2);
@@ -881,8 +1005,9 @@ panel_refresh_panels(struct panel *p)
 		if (pinfo[i].pi_flags & PIF_HIDE)
 			continue;
 		pwidget_add(p, (pids & (1 << i) ?
-		    &fill_white : &fill_nodata), pinfo[i].pi_name, 0,
-		    gscb_pw_panel, i, 0, NULL, NULL);
+		    &fill_white : &fill_nodata), pinfo[i].pi_name,
+		    PWARG_GSCB, gscb_pw_panel,
+		    PWARG_CBARG_INT, i, PWARG_LAST);
 	}
 	pwidget_sortlist(p, pwidget_cmp);
 	pwidget_endlist(p, 2);
@@ -944,25 +1069,36 @@ panel_refresh_help(struct panel *p)
 	panel_set_content(p, "");
 	pwidget_startlist(p);
 	if (exthelp) {
-		pwidget_add(p, &fill_xparent, "Panels", 0,
-		    gscb_pw_panel, baseconv(PANEL_PANELS) - 1, 0, NULL, NULL);
-		pwidget_add(p, &fill_xparent, "Options", 0,
-		    gscb_pw_panel, baseconv(PANEL_OPTS) - 1, 0, NULL, NULL);
-		pwidget_add(p, &fill_xparent, "Reorient", 0,
-		    gscb_pw_help, HF_REORIENT, 0, NULL, NULL);
-		pwidget_add(p, &fill_xparent, "Update Data", 0,
-		    gscb_pw_help, HF_UPDATE, 0, NULL, NULL);
+		pwidget_add(p, &fill_xparent, "Panels",
+		    PWARG_GSCB, gscb_pw_panel,
+		    PWARG_CBARG_INT, baseconv(PANEL_PANELS) - 1, PWARG_LAST);
+		pwidget_add(p, &fill_xparent, "Options",
+		    PWARG_GSCB, gscb_pw_panel,
+		    PWARG_CBARG_INT, baseconv(PANEL_OPTS) - 1, PWARG_LAST);
+		pwidget_add(p, &fill_xparent, "Reorient",
+		    PWARG_GSCB, gscb_pw_help,
+		    PWARG_CBARG_INT, HF_REORIENT, PWARG_LAST);
+		pwidget_add(p, &fill_xparent, "Update Data",
+		    PWARG_GSCB, gscb_pw_help,
+		    PWARG_CBARG_INT, HF_UPDATE, PWARG_LAST);
 		if (nselnodes) {
-			pwidget_add(p, &fill_xparent, "Clear Selnodes", 0,
-			    gscb_pw_help, HF_CLRSN, 0, NULL, NULL);
-			pwidget_add(p, &fill_xparent, "Print Selnode IDs", 0,
-			    gscb_pw_help, HF_PRTSN, 0, NULL, NULL);
-			pwidget_add(p, &fill_xparent, "Subselect Selnodes", 0,
-			    gscb_pw_help, HF_SUBSN, 0, NULL, NULL);
+			pwidget_add(p, &fill_xparent, "Clear Selnodes",
+			    PWARG_GSCB, gscb_pw_help,
+			    PWARG_CBARG_INT, HF_CLRSN, PWARG_LAST);
+			pwidget_add(p, &fill_xparent, "Print Selnode IDs",
+			    PWARG_GSCB, gscb_pw_help,
+			    PWARG_CBARG_INT, HF_PRTSN, PWARG_LAST);
+			pwidget_add(p, &fill_xparent, "Subselect Selnodes",
+			    PWARG_GSCB, gscb_pw_help,
+			    PWARG_CBARG_INT, HF_SUBSN, PWARG_LAST);
 		}
 	} else {
-		pwidget_add(p, &fill_xparent, "Help <<", 0,
-		    gscb_pw_help, HF_SHOWHELP, 0, NULL, NULL);
+		pwidget_add(p, &fill_xparent,
+		    (p->p_info->pi_stick == PSTICK_TL ||
+		     p->p_info->pi_stick == PSTICK_BL) ?
+		    ">> Help" : "Help <<",
+		    PWARG_GSCB, gscb_pw_help,
+		    PWARG_CBARG_INT, HF_SHOWHELP, PWARG_LAST);
 	}
 	pwidget_endlist(p, 2);
 }
@@ -979,11 +1115,17 @@ panel_refresh_vmode(struct panel *p)
 
 	panel_set_content(p, "- View Mode -");
 	pwidget_startlist(p);
+	pwidget_group_start(p);
 	for (i = 0; i < NVM; i++) {
 		pwidget_add(p, (st.st_vmode == i ?
-		    &fill_white : &fill_nodata), vmodes[i].vm_name, 0,
-		    gscb_pw_vmode, i, 0, NULL, NULL);
+		    &fill_checked : &fill_unchecked),
+		    vmodes[i].vm_name,
+		    PWARG_GSCB, gscb_pw_vmode,
+		    PWARG_CBARG_INT, i,
+		    PWARG_GRP_CHECKED, st.st_vmode == i,
+		    PWARG_LAST);
 	}
+	pwidget_group_end(p);
 	pwidget_endlist(p, 1);
 }
 
@@ -999,13 +1141,19 @@ panel_refresh_dmode(struct panel *p)
 
 	panel_set_content(p, "- Data Mode -");
 	pwidget_startlist(p);
+	pwidget_group_start(p);
 	for (i = 0; i < NDM; i++) {
 		if (dmodes[i].dm_name == NULL)
 			continue;
 		pwidget_add(p, (st.st_dmode == i ?
-		    &fill_white : &fill_nodata), dmodes[i].dm_name, 0,
-		    gscb_pw_dmode, i, 0, NULL, NULL);
+		    &fill_checked : &fill_unchecked),
+		    dmodes[i].dm_name,
+		    PWARG_GSCB, gscb_pw_dmode,
+		    PWARG_CBARG_INT, i,
+		    PWARG_GRP_CHECKED, st.st_dmode == i,
+		    PWARG_LAST);
 	}
+	pwidget_group_end(p);
 	pwidget_endlist(p, 2);
 }
 
@@ -1038,13 +1186,15 @@ panel_refresh_sstar(struct panel *p)
 	pwidget_startlist(p);
 	for (i = 0; i < NVC; i++) {
 		pwidget_add(p, (st.st_ssvc == i ?
-		    &fill_white : &fill_nodata), ssvclabels[i], 0,
-		    gscb_pw_ssvc, i, 0, NULL, NULL);
+		    &fill_white : &fill_nodata), ssvclabels[i],
+		    PWARG_GSCB, gscb_pw_ssvc,
+		    PWARG_CBARG_INT, i, PWARG_LAST);
 	}
 	for (i = 0; i < NSSCNT; i++) {
 		pwidget_add(p, (st.st_ssmode == i ?
-		    &fill_white : &fill_nodata), ssmodelabels[i], 0,
-		    gscb_pw_ssmode, i, 0, NULL, NULL);
+		    &fill_white : &fill_nodata), ssmodelabels[i],
+		    PWARG_GSCB, gscb_pw_ssmode,
+		    PWARG_CBARG_INT, i, PWARG_LAST);
 	}
 	pwidget_endlist(p, 2);
 }
@@ -1068,8 +1218,9 @@ panel_refresh_pipe(struct panel *p)
 	pwidget_startlist(p);
 	for (i = 0; i < NPM; i++) {
 		pwidget_add(p, (st.st_pipemode == i ?
-		    &fill_white : &fill_nodata), pipemodelabels[i], 0,
-		    gscb_pw_pipe, i, 0, NULL, NULL);
+		    &fill_white : &fill_nodata), pipemodelabels[i],
+		    PWARG_GSCB, gscb_pw_pipe,
+		    PWARG_CBARG_INT, i, PWARG_LAST);
 	}
 	pwidget_endlist(p, 1);
 }
@@ -1098,18 +1249,24 @@ panel_refresh_wiadj(struct panel *p)
 	    st.st_wioff.iv_z);
 
 	pwidget_startlist(p);
-	pwidget_add(p, &fill_nodata, "x Space", 0,
-	    gscb_pw_wiadj, SWF_NSPX, 0, NULL, NULL);
-	pwidget_add(p, &fill_nodata, "y Space", 0,
-	    gscb_pw_wiadj, SWF_NSPY, 0, NULL, NULL);
-	pwidget_add(p, &fill_nodata, "z Space", 0,
-	    gscb_pw_wiadj, SWF_NSPZ, 0, NULL, NULL);
-	pwidget_add(p, &fill_nodata, "x Offset", 0,
-	    gscb_pw_wiadj, SWF_OFFX, 0, NULL, NULL);
-	pwidget_add(p, &fill_nodata, "y Offset", 0,
-	    gscb_pw_wiadj, SWF_OFFY, 0, NULL, NULL);
-	pwidget_add(p, &fill_nodata, "z Offset", 0,
-	    gscb_pw_wiadj, SWF_OFFZ, 0, NULL, NULL);
+	pwidget_add(p, &fill_nodata, "x Space",
+	    PWARG_GSCB, gscb_pw_wiadj,
+	    PWARG_CBARG_INT, SWF_NSPX, PWARG_LAST);
+	pwidget_add(p, &fill_nodata, "y Space",
+	    PWARG_GSCB, gscb_pw_wiadj,
+	    PWARG_CBARG_INT, SWF_NSPY, PWARG_LAST);
+	pwidget_add(p, &fill_nodata, "z Space",
+	    PWARG_GSCB, gscb_pw_wiadj,
+	    PWARG_CBARG_INT, SWF_NSPZ, PWARG_LAST);
+	pwidget_add(p, &fill_nodata, "x Offset",
+	    PWARG_GSCB, gscb_pw_wiadj,
+	    PWARG_CBARG_INT, SWF_OFFX, PWARG_LAST);
+	pwidget_add(p, &fill_nodata, "y Offset",
+	    PWARG_GSCB, gscb_pw_wiadj,
+	    PWARG_CBARG_INT, SWF_OFFY, PWARG_LAST);
+	pwidget_add(p, &fill_nodata, "z Offset",
+	    PWARG_GSCB, gscb_pw_wiadj,
+	    PWARG_CBARG_INT, SWF_OFFZ, PWARG_LAST);
 	pwidget_endlist(p, 2);
 }
 
@@ -1165,34 +1322,39 @@ panel_refresh_rt(struct panel *p)
 	pwidget_startlist(p);
 
 	pwidget_add(p, (st.st_rtetype == RT_RECOVER ?
-	    &fill_white : &fill_nodata), "Recover", 0,
-	    gscb_pw_rt, SRF_RECOVER, 0, NULL, NULL);
+	    &fill_white : &fill_nodata), "Recover",
+	    PWARG_GSCB, gscb_pw_rt,
+	    PWARG_CBARG_INT, SRF_RECOVER, PWARG_LAST);
 	pwidget_add(p, (st.st_rtetype == RT_FATAL ?
-	    &fill_white : &fill_nodata), "Fatal", 0,
-	    gscb_pw_rt, SRF_FATAL, 0, NULL, NULL);
+	    &fill_white : &fill_nodata), "Fatal",
+	    PWARG_GSCB, gscb_pw_rt,
+	    PWARG_CBARG_INT, SRF_FATAL, PWARG_LAST);
 	pwidget_add(p, (st.st_rtetype == RT_ROUTER ?
-	    &fill_white : &fill_nodata), "Router", 0,
-	    gscb_pw_rt, SRF_ROUTER, 0, NULL, NULL);
-	pwidget_add(p, &fill_nopanel, "", 0, NULL, 0, 0, NULL, NULL);
-	pwidget_add(p, &fill_nopanel, "----- Pipe", 0, NULL, 0, 0, NULL, NULL);
+	    &fill_white : &fill_nodata), "Router",
+	    PWARG_GSCB, gscb_pw_rt,
+	    PWARG_CBARG_INT, SRF_ROUTER, PWARG_LAST);
+	pwidget_add(p, &fill_nopanel, "", PWARG_LAST);
+	pwidget_add(p, &fill_nopanel, "----- Pipe", PWARG_LAST);
 
 	for (i = 0; i < NRTC / 2; i++)
 		pwidget_add(p, &rtpipeclass[i].nc_fill,
-		    rtpipeclass[i].nc_name, 0, NULL, 0, 0, NULL, NULL);
+		    rtpipeclass[i].nc_name, PWARG_LAST);
 
 	pwidget_add(p, (st.st_rtepset == RPS_NEG ?
-	    &fill_white : &fill_nodata), "Negative", 0,
-	    gscb_pw_rt, SRF_NEG, 0, NULL, NULL);
+	    &fill_white : &fill_nodata), "Negative",
+	    PWARG_GSCB, gscb_pw_rt,
+	    PWARG_CBARG_INT, SRF_NEG, PWARG_LAST);
 	pwidget_add(p, (st.st_rtepset == RPS_POS ?
-	    &fill_white : &fill_nodata), "Positive", 0,
-	    gscb_pw_rt, SRF_POS, 0, NULL, NULL);
-	pwidget_add(p, &fill_nopanel, "", 0, NULL, 0, 0, NULL, NULL);
-	pwidget_add(p, &fill_nopanel, "", 0, NULL, 0, 0, NULL, NULL);
-	pwidget_add(p, &fill_nopanel, "Legend ---", 0, NULL, 0, 0, NULL, NULL);
+	    &fill_white : &fill_nodata), "Positive",
+	    PWARG_GSCB, gscb_pw_rt,
+	    PWARG_CBARG_INT, SRF_POS, PWARG_LAST);
+	pwidget_add(p, &fill_nopanel, "", PWARG_LAST);
+	pwidget_add(p, &fill_nopanel, "", PWARG_LAST);
+	pwidget_add(p, &fill_nopanel, "Legend ---", PWARG_LAST);
 
 	for (; i < NRTC; i++)
 		pwidget_add(p, &rtpipeclass[i].nc_fill,
-		    rtpipeclass[i].nc_name, 0, NULL, 0, 0, NULL, NULL);
+		    rtpipeclass[i].nc_name, PWARG_LAST);
 
 	pwidget_endlist(p, 2);
 }
@@ -1225,8 +1387,11 @@ panel_refresh_keyh(struct panel *p)
 	panel_set_content(p, "- Key Controls -");
 	pwidget_startlist(p);
 	for (j = 0; j < NKEYH; j++)
-		pwidget_add(p, (j == keyh ? &fill_white : &fill_nodata),
-		    keyhtab[j].kh_name, 0, gscb_pw_keyh, j, 0, NULL, NULL);
+		pwidget_add(p, (j == keyh ?
+		    &fill_white : &fill_nodata),
+		    keyhtab[j].kh_name,
+		    PWARG_GSCB, gscb_pw_keyh,
+		    PWARG_CBARG_INT, j, PWARG_LAST);
 	pwidget_endlist(p, 1);
 }
 
@@ -1236,16 +1401,18 @@ panel_refresh_keyh(struct panel *p)
  * Add pwidgets for all files in the given directory.
  * 'cur' is the currently selected file name.
  * 'dir' must point to a PATH_MAX-sized buffer.
+ *
+ * This must be called within a pwidget group.
  */
 void
 pwidgets_dir(struct panel *p, const char *dir, struct objlist *ol,
-    char *cur, void *cb, int flags)
+    char *cur, void *cb, int flags, int (*checkable)(const char *))
 {
+	int grp_member, isdir;
 	char path[PATH_MAX];
 	struct dirent *dent;
 	struct fnent *fe;
 	struct stat stb;
-	int isdir;
 	DIR *dp;
 
 	if ((dp = opendir(dir)) == NULL) {
@@ -1268,17 +1435,27 @@ pwidgets_dir(struct panel *p, const char *dir, struct objlist *ol,
 				    sizeof(fe->fe_name),
 				    "%s", dir);
 				pwidget_add(p, &fill_black,
-				    "Current Directory", 2,
-				    gscb_pw_dir, 1, 0,
-				    cb, fe->fe_name);
+				    "Current Directory",
+				    PWARG_SPRIO, 2,
+				    PWARG_GSCB, gscb_pw_dir,
+				    PWARG_CBARG_INT, 1,
+				    PWARG_CBARG_PTR, cb,
+				    PWARG_CBARG_PTR2, fe->fe_name,
+				    PWARG_LAST);
 			} else
 #endif
 			if (strcmp(dent->d_name, "..") == 0) {
 				fe = obj_get(dent->d_name, ol);
 				snprintf(fe->fe_name,
 				    sizeof(fe->fe_name), "..");
-				pwidget_add(p, &fill_xparent, "Up", 2,
-				    gscb_pw_dir, 1, 0, cb, fe->fe_name);
+				pwidget_add(p, &fill_xparent, "Up",
+				    PWARG_SPRIO, 2,
+				    PWARG_GSCB, gscb_pw_dir,
+				    PWARG_CBARG_INT, 1,
+				    PWARG_CBARG_PTR, cb,
+				    PWARG_CBARG_PTR2, fe->fe_name,
+				    PWARG_GRP_MEMBER, 0,
+				    PWARG_LAST);
 			}
 			continue;
 		}
@@ -1294,21 +1471,68 @@ pwidgets_dir(struct panel *p, const char *dir, struct objlist *ol,
 		isdir = S_ISDIR(stb.st_mode);
 		if (!isdir && !S_ISREG(stb.st_mode))
 			continue;
-		if (!isdir && (flags & PWDF_DIRSONLY))
+		if (!isdir && flags & PWDF_DIRSONLY)
 			continue;
+
+		/*
+		 * Assign group membership: if we are browsing
+		 * directories and a "checkable" callback was
+		 * provided, use it; otherwise, assign based on
+		 * whether it is a regular file or not.
+		 */
+		if (flags & PWDF_DIRSONLY && checkable)
+			grp_member = checkable(path);
+		else
+			grp_member = !isdir;
 
 		fe = obj_get(dent->d_name, ol);
 		snprintf(fe->fe_name, sizeof(fe->fe_name), "%s%s",
 		    dent->d_name, isdir ? "/" : "");
 		pwidget_add(p, (strcmp(cur, path) ?
-		    (isdir ? &fill_xparent : &fill_nodata) : &fill_white),
-		    fe->fe_name, isdir, gscb_pw_dir, isdir, 0, cb,
-		    fe->fe_name);
+		    (isdir ? &fill_xparent : &fill_unchecked) : &fill_checked),
+		    fe->fe_name,
+		    PWARG_SPRIO, isdir,
+		    PWARG_GSCB, gscb_pw_dir,
+		    PWARG_CBARG_INT, isdir,
+		    PWARG_CBARG_PTR, cb,
+		    PWARG_CBARG_PTR2, fe->fe_name,
+		    PWARG_GRP_MEMBER, grp_member,
+		    PWARG_GRP_CHECKED, strcmp(cur, path) == 0, PWARG_LAST);
 	}
 	obj_batch_end(ol);
 //	if (ret == -1)
 //		err(1, "readdir %s", dir);
 	closedir(dp);
+}
+
+int
+dir_isreel(const char *fn)
+{
+	char path[PATH_MAX];
+	struct stat stb;
+
+	snprintf(path, sizeof(path), "%s/.isar", fn);
+	if (stat(path, &stb) == -1) {
+		if (errno != ENOENT)
+			errx(1, "stat %s", path);
+		return (0);
+	}
+	return (1);
+}
+
+int
+dir_isarchive(const char *fn)
+{
+	char path[PATH_MAX];
+	struct stat stb;
+
+	snprintf(path, sizeof(path), "%s/%s", fn, datasrcs[0].ds_name);
+	if (stat(path, &stb) == -1) {
+		if (errno != ENOENT)
+			errx(1, "stat %s", path);
+		return (0);
+	}
+	return (1);
 }
 
 void
@@ -1319,11 +1543,14 @@ panel_refresh_fbcho(struct panel *p)
 
 	panel_set_content(p, "- Flyby Chooser -\n%s", flyby_dir);
 	pwidget_startlist(p);
-	pwidgets_dir(p, flyby_dir, &flyby_list, flyby_fn, flyby_set, 0);
+	pwidget_group_start(p);
+	pwidgets_dir(p, flyby_dir, &flyby_list, flyby_fn, flyby_set, 0,
+	    NULL);
 #if 0
 	if (panel->p_nwidgets == 0)
 		pwidget_add(p, &fill_white, FLYBY_DEFAULT, 0, );
 #endif
+	pwidget_group_end(p);
 	pwidget_sortlist(p, pwidget_cmp);
 	pwidget_endlist(p, 2);
 }
@@ -1336,11 +1563,14 @@ panel_refresh_dxcho(struct panel *p)
 
 	panel_set_content(p, "- Deus Ex Chooser -\n%s", dx_dir);
 	pwidget_startlist(p);
-	pwidgets_dir(p, dx_dir, &dxscript_list, dx_fn, dx_set, 0);
-	if (p->p_nwidgets == 0)
-		panel_add_content(p, "\nNo scripts available.");
+	pwidget_group_start(p);
+	pwidgets_dir(p, dx_dir, &dxscript_list, dx_fn, dx_set, 0, NULL);
+	pwidget_group_end(p);
 	pwidget_sortlist(p, pwidget_cmp);
 	pwidget_endlist(p, 2);
+
+	if (p->p_nwidgets == 0)
+		panel_add_content(p, "\nNo scripts available.");
 }
 
 void
@@ -1369,8 +1599,11 @@ panel_refresh_reel(struct panel *p)
 			    smart_basename(reel_dir),
 			    reelframe_list.ol_cur);
 		panel_add_content(p, "\n\n%s", reel_browsedir);
+
+		pwidget_group_start(p);
 		pwidgets_dir(p, reel_browsedir, &reel_list, reel_dir,
-		    reel_set, PWDF_DIRSONLY);
+		    reel_set, PWDF_DIRSONLY, dir_isreel);
+		pwidget_group_end(p);
 //		if (p->p_nwidgets == 0)
 //			panel_add_content(p, "\nNo archive reels available.");
 	}
@@ -1390,10 +1623,14 @@ panel_refresh_dscho(struct panel *p)
 	panel_set_content(p, "- Dataset Chooser -\n%s\n\n%s:",
 	     live ? "live" : ds_dir, ds_browsedir);
 	pwidget_startlist(p);
-	pwidget_add(p, (live ? &fill_white : &fill_nodata),
-	    "Live", 2, gscb_pw_dscho, 0, 0, NULL, NULL);
+	pwidget_group_start(p);
+	pwidget_add(p, (live ? &fill_white : &fill_nodata), "Live",
+	    PWARG_SPRIO, 2,
+	    PWARG_GSCB, gscb_pw_dscho,
+	    PWARG_GRP_CHECKED, live, PWARG_LAST);
 	pwidgets_dir(p, ds_browsedir, &ds_list, live ? "" : ds_dir,
-	    ds_set, PWDF_DIRSONLY);
+	    ds_set, PWDF_DIRSONLY, dir_isarchive);
+	pwidget_group_end(p);
 	pwidget_sortlist(p, pwidget_cmp);
 	if (ds_list.ol_tcur < 35)
 		ncols = 2;

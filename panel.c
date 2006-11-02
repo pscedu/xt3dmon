@@ -124,6 +124,7 @@ panel_free(struct panel *p)
 	}
 	free(p->p_str);
 	free(p->p_wcw);
+	pwidget_grouplist_free(p);
 	free(p);
 }
 
@@ -149,9 +150,11 @@ draw_shadow_panels(void)
 
 	TAILQ_FOREACH(p, &panels, p_link) {
 		SLIST_FOREACH(pw, &p->p_widgets, pw_next) {
+			pw->pw_gn = NULL;
 			if (pw->pw_cb == NULL || pw->pw_flags & PWF_HIDE)
 				continue;
-			name = gsn_get(GNF_2D, &fv_zero, pw->pw_cb,
+			name = gsn_get(GNF_2D | GNF_PWIDGET,
+			    &fv_zero, pw->pw_cb,
 			    pw->pw_arg_int, pw->pw_arg_int2,
 			    pw->pw_arg_ptr, pw->pw_arg_ptr2);
 			gn = obj_get(&name, &glname_list);
@@ -159,6 +162,8 @@ draw_shadow_panels(void)
 			gn->gn_v = pw->pw_v;
 			gn->gn_h = pw->pw_h;
 			gn->gn_w = pw->pw_w;
+			gn->gn_arg_ptr3 = pw;
+			pw->pw_gn = gn;
 
 			glPushMatrix();
 			glPushName(name);
