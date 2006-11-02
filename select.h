@@ -13,6 +13,7 @@
 #define SPF_PROBE	(1<<1)
 #define SPF_SQUIRE	(1<<2)
 #define SPF_DESQUIRE	(1<<3)
+#define SPF_LOOKUP	(1<<4)
 
 struct glname;
 typedef void (*gscb_t)(struct glname *, int);
@@ -28,6 +29,7 @@ struct glname {
 	int		  gn_arg_int2;
 	void		 *gn_arg_ptr;
 	void		 *gn_arg_ptr2;
+	void		 *gn_arg_ptr3;
 
 	/* Hack around OpenGL's unwillingness to mix 2D/3D selection. */
 	int		  gn_u;
@@ -37,6 +39,7 @@ struct glname {
 };
 
 #define GNF_2D		(1<<0)
+#define GNF_PWIDGET	(1<<1)		/* is panel widget */
 
 #define HF_HIDEHELP	0
 #define HF_SHOWHELP	1
