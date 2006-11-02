@@ -29,7 +29,6 @@ struct route	 rt_max;
 struct route	 rt_zero;
 struct seastar	 ss_max;
 struct ivec	 widim;
-int		 total_failures;
 unsigned long	 vmem;
 long		 rmem;
 
@@ -211,7 +210,7 @@ prerror(const char *fn, int lineno, const char *bufp, const char *s)
 
 /*
  * Example line:
- *	nid	r cb cb m n	x y z	stat	enabled	jobid	temp	yodid	nfails	lustat
+ *	nid	r cb cb m n	x y z	stat	enabled	jobid	temp	yodid	UNUSED	lustat
  *	1848	0 7  0  1 6	7 0 9	c	1	6036	45	10434	0	c
  */
 void
@@ -331,7 +330,6 @@ parse_node(const struct datasrc *ds)
 		}
 
 		node->n_temp = temp ? temp : DV_NODATA;
-		node->n_fails = nfails ? nfails : DV_NODATA;
 
 		if (jobid) {
 			if (node->n_state == SC_FREE)

@@ -101,15 +101,14 @@ struct vmode vmodes[] = {
 
 struct dmode dmodes[] = {
  /* 0 */ { "job",	"Job" },
- /* 1 */ { NULL,	NULL },				/* Failure */
- /* 2 */ { "temp",	"Temperature" },
- /* 3 */ { "yod",	"Yod" },
+ /* 1 */ { "temp",	"Temperature" },
+ /* 2 */ { "yod",	"Yod" },
+ /* 3 */ { NULL,	NULL },				/* Egg */
  /* 4 */ { NULL,	NULL },				/* Egg */
- /* 5 */ { NULL,	NULL },				/* Egg */
- /* 6 */ { NULL,	"Same" },
- /* 7 */ { "rte",	"Routing Errors" },
- /* 8 */ { "seastar",	"Seastar" },
- /* 9 */ { NULL,	"Lustre Status" }
+ /* 5 */ { NULL,	"Same" },
+ /* 6 */ { "rte",	"Routing Errors" },
+ /* 7 */ { "seastar",	"Seastar" },
+ /* 8 */ { NULL,	"Lustre Status" }
 };
 
 struct state st = {
@@ -374,10 +373,6 @@ dmode_change(void)
 		for (i = 0; i < NTEMPC; i++)
 			tempclass[i].nc_nmemb = 0;
 		break;
-	case DM_FAIL:
-		for (i = 0; i < NFAILC; i++)
-			failclass[i].nc_nmemb = 0;
-		break;
 	case DM_RTUNK:
 		for (i = 0; i < NRTC; i++)
 			rtclass[i].nc_nmemb = 0;
@@ -425,15 +420,6 @@ dmode_change(void)
 				i = roundclass(n->n_temp, TEMP_MIN, TEMP_MAX, NTEMPC);
 				n->n_fillp = &tempclass[i].nc_fill;
 				tempclass[i].nc_nmemb++;
-			}
-			break;
-		case DM_FAIL:
-			if (n->n_fails == DV_NODATA)
-				n->n_fillp = &fill_nodata;
-			else {
-				i = roundclass(n->n_fails, FAIL_MIN, FAIL_MAX, NFAILC);
-				n->n_fillp = &failclass[i].nc_fill;
-				failclass[i].nc_nmemb++;
 			}
 			break;
 		case DM_BORG:

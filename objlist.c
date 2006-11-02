@@ -40,15 +40,6 @@ struct nodeclass tempclass[] = {
 	{ ">69C",		FILL_INIT(1.0f, 0.0f, 0.0f), 0 }
 };
 
-struct nodeclass failclass[] = {
-	{ "0",			FILL_INIT(0.0f, 0.2f, 0.4f), 0 },
-	{ "1-5",		FILL_INIT(0.2f, 0.4f, 0.6f), 0 },
-	{ "6-10",		FILL_INIT(0.4f, 0.6f, 0.8f), 0 },
-	{ "11-15",		FILL_INIT(0.6f, 0.8f, 1.0f), 0 },
-	{ "15-20",		FILL_INIT(0.8f, 1.0f, 1.0f), 0 },
-	{ ">20",		FILL_INIT(1.0f, 1.0f, 1.0f), 0 }
-};
-
 struct nodeclass rtclass[] = {
 	{ "<10%",		FILL_INIT(1.0f, 1.0f, 0.4f), 0 },
 	{ "10-20%",		FILL_INIT(1.0f, 0.9f, 0.4f), 0 },

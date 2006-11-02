@@ -520,7 +520,6 @@ svc_dmode(char *t, int *used, __unused struct session *ss)
 		{ "temp",	DM_TEMP },
 		{ "jobs",	DM_JOB },
 		{ "yods",	DM_YOD },
-		{ "fail",	DM_FAIL },
 		{ NULL,		0 }
 	};
 

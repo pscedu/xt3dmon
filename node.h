@@ -21,7 +21,6 @@ struct node {
 	struct job	*n_job;
 	struct yod	*n_yod;
 	int		 n_temp;
-	int		 n_fails;
 	struct route	 n_route;
 	struct seastar	 n_sstar;
 
@@ -67,5 +66,3 @@ void		 node_center(const struct node *, struct fvec *);
 extern struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 extern struct node	*invmap[NID_MAX];
 extern struct node	*wimap[WIDIM_WIDTH][WIDIM_HEIGHT][WIDIM_DEPTH];
-
-extern int		 total_failures;	/* total among all nodes */

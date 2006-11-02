@@ -61,10 +61,6 @@ nc_runall(void (*f)(struct fill *))
 		for (i = 0; i < NSC; i++)
 			f(&statusclass[i].nc_fill);
 		break;
-	case DM_FAIL:
-		for (i = 0; i < NFAILC; i++)
-			f(&failclass[i].nc_fill);
-		break;
 	case DM_TEMP:
 		for (i = 0; i < NTEMPC; i++)
 			f(&tempclass[i].nc_fill);
@@ -124,10 +120,6 @@ nc_getfp(size_t nc)
 			return (&statusclass[nc].nc_fill);
 		else if (nc - NSC < job_list.ol_cur)
 			return (&OLE(job_list, nc - NSC, job)->j_fill);
-		break;
-	case DM_FAIL:
-		if (nc < NFAILC)
-			return (&failclass[nc].nc_fill);
 		break;
 	case DM_TEMP:
 		if (nc < NTEMPC)
@@ -208,10 +200,6 @@ nc_runsn(void (*f)(struct fill *))
 		case DM_JOB:
 			if (n->n_job != NULL)
 				f(&n->n_job->j_fill);
-			break;
-		case DM_FAIL:
-			if (n->n_fails != DV_NODATA)
-				f(n->n_fillp);
 			break;
 		case DM_TEMP:
 			if (n->n_temp != DV_NODATA)

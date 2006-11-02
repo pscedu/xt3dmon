@@ -25,11 +25,6 @@
 #define TEMP_MAX	73
 #define NTEMPC		14
 
-/* Failure class constants. */
-#define FAIL_MIN	0
-#define FAIL_MAX	20
-#define NFAILC		6
-
 /* Route error class constants. */
 #define NRTC		10
 #define RTC_SND		11
@@ -55,7 +50,6 @@ struct fill	*nc_getfp(size_t);
 
 extern struct nodeclass	 statusclass[];
 extern struct nodeclass	 tempclass[NTEMPC];	/* XXX SPOT */
-extern struct nodeclass	 failclass[NFAILC];	/* XXX SPOT */
 extern struct nodeclass	 rtclass[NRTC];		/* XXX SPOT */
 extern struct nodeclass	 rtpipeclass[NRTC];	/* XXX SPOT */
 extern struct nodeclass	 ssclass[NSSC];		/* XXX SPOT */

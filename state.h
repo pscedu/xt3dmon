@@ -4,16 +4,15 @@
 
 /* Data mode. */
 #define DM_JOB		0
-#define DM_FAIL		1
-#define DM_TEMP		2
-#define DM_YOD		3
-#define DM_BORG		4
-#define DM_MATRIX	5
-#define DM_SAME		6
-#define DM_RTUNK	7
-#define DM_SEASTAR	8
-#define DM_LUSTRE	9
-#define NDM		10
+#define DM_TEMP		1
+#define DM_YOD		2
+#define DM_BORG		3
+#define DM_MATRIX	4
+#define DM_SAME		5
+#define DM_RTUNK	6
+#define DM_SEASTAR	7
+#define DM_LUSTRE	8
+#define NDM		9
 
 /* View mode. */
 #define VM_PHYS		0
