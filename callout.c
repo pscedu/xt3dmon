@@ -5,6 +5,7 @@
 #include "cdefs.h"
 #include "flyby.h"
 #include "job.h"
+#include "panel.h"
 #include "queue.h"
 #include "state.h"
 
@@ -13,6 +14,7 @@ cocb_fps(__unused int a)
 {
 	fps = fps_cnt;
 	fps_cnt = 0;
+	panel_rebuild(PANEL_FPS);
 	glutTimerFunc(1000, cocb_fps, 0);
 }
 
