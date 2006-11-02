@@ -96,6 +96,8 @@ todo
 - moving the cursor should not cause panel recompiles
 - ensure nothing modifies st.st_opt and uses opt_flip() instead
 - update libpng/libz on win32
+- add "focus mark positioning" mode, where you lay a focus mark
+  and up/left/down/pgup/etc. move the mark in 3-space
 
 xtwmon
 - rename data=nodes to data=node
