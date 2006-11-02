@@ -162,6 +162,11 @@
 	((elem)->memb.tqe_next)
 #endif
 
+#ifndef TAILQ_PREV
+#define TAILQ_PREV(elem, headname, memb)				\
+	(*(((struct headname *)((elem)->memb.tqe_prev))->tqh_last))
+#endif
+
 #ifndef TAILQ_EMPTY
 #define TAILQ_EMPTY(tqh)						\
 	(TAILQ_FIRST(tqh) == TAILQ_END(tqh))
