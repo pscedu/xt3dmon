@@ -381,7 +381,7 @@ flyby_end(void)
 		glutMotionFunc(gl_motionh_default);
 		glutPassiveMotionFunc(gl_pasvmotionh_default);
 		glutMouseFunc(gl_mouseh_default);
-		cursor_set(GLUT_CURSOR_INHERIT);
+		cursor_set(GLUT_CURSOR_LEFT_ARROW); /* XXX INHERIT */
 
 		caption_set(NULL);
 		load_state(&sav_st);
