@@ -98,7 +98,9 @@ struct state {
 #define OP_SUBSET	(1<<18)
 #define OP_SELNLABELS	(1<<19)
 #define OP_CAPFBONLY	(1<<20)
-#define NOPS		21
+#define OP_EDITFOCUS	(1<<21)
+#define OP_FORCEFOCUS	(1<<22)
+#define NOPS		23
 
 struct xoption {
 	const char	*opt_abbr;

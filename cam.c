@@ -235,7 +235,9 @@ cam_revolvefocus(double dt, double dp)
 	double dst;
 	int j;
 
-	if (nselnodes) {
+	if (st.st_opts & OP_FORCEFOCUS)
+		cam_revolve(&focus, 1, dt, dp, revolve_type);
+	else if (nselnodes) {
 		if ((fvp = calloc(nselnodes, sizeof(struct fvec))) == NULL)
 			err(1, "calloc");
 		j = 0;

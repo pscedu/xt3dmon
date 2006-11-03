@@ -996,6 +996,30 @@ gl_spkeyh_default(int key, __unused int u, __unused int v)
 		return;
 	}
 
+	if (st.st_opts & OP_EDITFOCUS) {
+		switch (dir) {
+		case DIR_UP:
+			focus.fv_y += 0.2;
+			break;
+		case DIR_DOWN:
+			focus.fv_y -= 0.2;
+			break;
+		case DIR_LEFT:
+			focus.fv_z -= 0.2;
+			break;
+		case DIR_RIGHT:
+			focus.fv_z += 0.2;
+			break;
+		case DIR_FORW:
+			focus.fv_x += 0.2;
+			break;
+		case DIR_BACK:
+			focus.fv_x -= 0.2;
+			break;
+		}
+		return;
+	}
+
 	amt = 0.3f;
 	switch (st.st_vmode) {
 	case VM_PHYS:

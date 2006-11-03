@@ -1125,5 +1125,12 @@ draw_scene(void)
 		lnseg_draw();
 	if (st.st_opts & OP_CAPTION)
 		draw_caption();
+	if (st.st_opts & OP_EDITFOCUS) {
+		glPointSize(10.0);
+		glBegin(GL_POINTS);
+		glColor3f(1.0, 1.0, 1.0);
+		glVertex3d(focus.fv_x, focus.fv_y, focus.fv_z);
+		glEnd();
+	}
 // job_drawlabels();
 }
