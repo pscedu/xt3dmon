@@ -317,7 +317,7 @@ node_show(const struct node *n)
 	    (n->n_flags & NF_SHOW) == 0)
 		return (0);
 	if (n->n_flags & NF_VALID &&
-	    n->n_fillp->f_a != 0.0f)
+	    n->n_fillp->f_a > 0.01f)
 		return (1);
 	return (0);
 }
