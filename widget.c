@@ -229,7 +229,10 @@ draw_cube(const struct fvec *dimp, const struct fill *fp, int flags)
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE); // GL_NICEST
 
-		glLineWidth(0.6f);
+		if (fp->f_flags & FF_SKEL)
+			glLineWidth(1.6f);
+		else
+			glLineWidth(0.6f);
 		glColor4f(f_frame.f_r, f_frame.f_g, f_frame.f_b,
 		    f_frame.f_a);
 		glBegin(GL_LINE_STRIP);
