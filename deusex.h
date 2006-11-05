@@ -37,12 +37,14 @@ struct dx_action {
 	double			 dxa_dbl2;
 	struct ivec		 dxa_iv;
 	struct ivec		 dxa_iv2;
+	struct fvec		 dxa_fv;
 	struct nidlist		*dxa_nidlist;
 
 #define dxa_caption		dxa_str
 #define dxa_cuban8_dim		dxa_intg
 #define dxa_cycle_meth		dxa_intg
 #define dxa_dmode		dxa_intg
+#define dxa_focus		dxa_fv
 #define dxa_hl			dxa_intg
 
 #define dxa_move_amt		dxa_dbl

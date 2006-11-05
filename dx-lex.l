@@ -28,6 +28,7 @@ curlyq					{ return (DGT_CURLYQ); }
 cyclenc					{ return (DGT_CYCLENC); }
 dmode					{ return (DGT_DMODE); }
 exit					{ return (DGT_EXIT); }
+focus					{ return (DGT_FOCUS); }
 hl					{ return (DGT_HL); }
 move					{ return (DGT_MOVE); }
 opt					{ return (DGT_OPT); }

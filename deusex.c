@@ -945,6 +945,13 @@ dxp_exit(__unused const struct dx_action *dxa)
 	exit(0);
 }
 
+int
+dxp_focus(const struct dx_action *dxa)
+{
+	focus = dxa->dxa_focus;
+	return (1);
+}
+
 struct dxent {
 	int	  de_val;
 	int	(*de_update)(const struct dx_action *);
@@ -958,6 +965,7 @@ struct dxent {
 	{ DGT_CYCLENC,	dxp_cyclenc },
 	{ DGT_DMODE,	dxp_dmode },
 	{ DGT_EXIT,	dxp_exit },
+	{ DGT_FOCUS,	dxp_focus },
 	{ DGT_HL,	dxp_hl },
 	{ DGT_MOVE,	dxp_cam_move },
 	{ DGT_NODESYNC,	dxp_nodesync },
