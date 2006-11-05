@@ -866,12 +866,14 @@ panel_refresh_pos(struct panel *p)
 	panel_set_content(p, "- Camera -\n"
 	    "Position (%.2f,%.2f,%.2f)\n"
 	    "Look (%.2f,%.2f,%.2f) (t=%.3f,p=%.3f)\n"
-	    "Up (%.2f,%.2f,%.2f) (t=%.3f,p=%.3f)",
+	    "Up (%.2f,%.2f,%.2f) (t=%.3f,p=%.3f)\n"
+	    "Focus (%.2f,%.2f,%.2f)",
 	    st.st_x, st.st_y, st.st_z,
 	    st.st_lx, st.st_ly, st.st_lz,
 	    lsph.fv_t, lsph.fv_p,
 	    st.st_ux, st.st_uy, st.st_uz,
-	    usph.fv_t, usph.fv_p);
+	    usph.fv_t, usph.fv_p,
+	    focus.fv_x, focus.fv_y, focus.fv_z);
 }
 
 void
