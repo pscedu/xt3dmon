@@ -705,7 +705,7 @@ main(int argc, char *argv[])
 	glutInit(&argc, argv);
 	sw = glutGet(GLUT_SCREEN_WIDTH);
 	sh = glutGet(GLUT_SCREEN_HEIGHT) - 30;
-	while ((c = getopt(argc, argv, "ac:dH:MpU:vW:x:")) != -1)
+	while ((c = getopt(argc, argv, "ac:dH:MpU:vW:X:x:")) != -1)
 		switch (c) {
 		case 'a':
 errx(1, "broken");
@@ -744,9 +744,12 @@ errx(1, "broken");
 				err(1, "invalid screen width: %s", optarg);
 			sw = (int)l;
 			break;
+		case 'X':
 		case 'x':
 			snprintf(dx_fn, PATH_MAX, "%s", optarg);
 			dx_start();
+if (c == 'X')
+ exit(0);
 			break;
 		default:
 			usage();
@@ -756,12 +759,14 @@ errx(1, "broken");
 	if (stereo_mode == STM_PASV)
 		sw /= 2;
 	glutInitDisplayMode(flags);
-	glutInitWindowPosition(0, 0);
+//	glutInitWindowPosition(0, 0);
+glutInitWindowPosition(sw, 0);
 	glutInitWindowSize(sw, sh);
 	if ((window_ids[0] = glutCreateWindow("XT3 Monitor")) == GL_FALSE)
 		errx(1, "glutCreateWindow");
 	if (stereo_mode == STM_PASV) {
-		glutInitWindowPosition(sw, 0);
+//		glutInitWindowPosition(sw, 0);
+glutInitWindowPosition(0, 0);
 		if ((window_ids[WINID_RIGHT] =
 		    glutCreateWindow("XT3 Monitor")) == GL_FALSE)
 			errx(1, "glutCreateWindow");
