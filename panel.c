@@ -102,7 +102,7 @@ struct pinfo pinfo[] = {
 #define PVOFF_BR 3
 #define NPVOFF 4
 
-struct panels	 panels;
+struct panels	 panels = TAILQ_HEAD_INITIALIZER(panels);
 int		 panel_offset[NPVOFF];
 int		 exthelp;
 
