@@ -997,24 +997,28 @@ gl_spkeyh_default(int key, __unused int u, __unused int v)
 	}
 
 	if (st.st_opts & OP_EDITFOCUS) {
+		amt = 0.2;
+		spkey = glutGetModifiers();
+		if (spkey & GLUT_ACTIVE_SHIFT)
+			amt *= 3;
 		switch (dir) {
 		case DIR_UP:
-			focus.fv_y += 0.2;
+			focus.fv_y += amt;
 			break;
 		case DIR_DOWN:
-			focus.fv_y -= 0.2;
+			focus.fv_y -= amt;
 			break;
 		case DIR_LEFT:
-			focus.fv_z -= 0.2;
+			focus.fv_z -= amt;
 			break;
 		case DIR_RIGHT:
-			focus.fv_z += 0.2;
+			focus.fv_z += amt;
 			break;
 		case DIR_FORW:
-			focus.fv_x += 0.2;
+			focus.fv_x += amt;
 			break;
 		case DIR_BACK:
-			focus.fv_x -= 0.2;
+			focus.fv_x -= amt;
 			break;
 		}
 		return;
