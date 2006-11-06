@@ -36,7 +36,10 @@ struct dxlist dxlist = TAILQ_HEAD_INITIALIZER(dxlist);
 %}
 
 %token DGT_BIRD
-%token DGT_CAMSYNC
+%token DGT_CAMSYNC		/* no grammar */
+%token DGT_CAMLOOK
+%token DGT_CAMPOS
+%token DGT_CAMUP
 %token DGT_CLRSN
 %token DGT_CORKSCREW
 %token DGT_CUBAN8
@@ -236,6 +239,38 @@ conf		: DGT_BIRD {
 
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DGT_CAMSYNC;
+			dxa_add(&dxa);
+		}
+		| DGT_CAMLOOK dbl COMMA dbl COMMA dbl {
+			struct dx_action dxa;
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_CAMLOOK;
+			vec_set(&dxa.dxa_cam_lv, $2, $4, $6);
+			if (vec_mag(&dxa.dxa_cam_lv) == 0.0)
+				vec_set(&dxa.dxa_cam_lv, 1.0, 0.0, 0.0);
+			else
+				vec_normalize(&dxa.dxa_cam_lv);
+			dxa_add(&dxa);
+		}
+		| DGT_CAMPOS dbl COMMA dbl COMMA dbl {
+			struct dx_action dxa;
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_CAMPOS;
+			vec_set(&dxa.dxa_cam_v, $2, $4, $6);
+			dxa_add(&dxa);
+		}
+		| DGT_CAMUP dbl COMMA dbl COMMA dbl {
+			struct dx_action dxa;
+
+			memset(&dxa, 0, sizeof(dxa));
+			dxa.dxa_type = DGT_CAMUP;
+			vec_set(&dxa.dxa_cam_uv, $2, $4, $6);
+			if (vec_mag(&dxa.dxa_cam_uv) == 0.0)
+				vec_set(&dxa.dxa_cam_uv, 0.0, 1.0, 0.0);
+			else
+				vec_normalize(&dxa.dxa_cam_uv);
 			dxa_add(&dxa);
 		}
 		| DGT_CLRSN {

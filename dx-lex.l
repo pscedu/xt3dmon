@@ -21,6 +21,9 @@ int yyerror(const char *, ...);
 %%
 
 bird					{ return (DGT_BIRD); }
+camlook					{ return (DGT_CAMLOOK); }
+campos					{ return (DGT_CAMPOS); }
+camup					{ return (DGT_CAMUP); }
 clrsn					{ return (DGT_CLRSN); }
 corkscrew				{ return (DGT_CORKSCREW); }
 cuban8					{ return (DGT_CUBAN8); }

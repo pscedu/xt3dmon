@@ -709,6 +709,33 @@ dxp_camsync(__unused const struct dx_action *dxa)
 		return (1);
 }
 
+int
+dxp_camlook(const struct dx_action *dxa)
+{
+	tween_push(TWF_LOOK);
+	st.st_lv = dxa->dxa_cam_lv;
+	tween_pop(TWF_LOOK);
+	return (1);
+}
+
+int
+dxp_campos(const struct dx_action *dxa)
+{
+	tween_push(TWF_POS);
+	st.st_v = dxa->dxa_cam_v;
+	tween_pop(TWF_POS);
+	return (1);
+}
+
+int
+dxp_camup(const struct dx_action *dxa)
+{
+	tween_push(TWF_UP);
+	st.st_v = dxa->dxa_cam_v;
+	tween_pop(TWF_UP);
+	return (1);
+}
+
 void
 dxpcb_stall(__unused int a)
 {
@@ -958,6 +985,9 @@ struct dxent {
 } dxtab[] = {
 	{ DGT_BIRD,	dxp_bird },
 	{ DGT_CAMSYNC,	dxp_camsync },
+	{ DGT_CAMLOOK,	dxp_camlook },
+	{ DGT_CAMPOS,	dxp_campos },
+	{ DGT_CAMUP,	dxp_camup },
 	{ DGT_CLRSN,	dxp_clrsn },
 	{ DGT_CORKSCREW,dxp_corkscrew },
 	{ DGT_CUBAN8,	dxp_cuban8 },
