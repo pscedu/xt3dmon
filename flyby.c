@@ -107,53 +107,6 @@ flyby_calclen(void)
 	rewind(flyby_fp);
 }
 
-/* Open the flyby data file appropriately. */
-void
-flyby_begin(int mode)
-{
-	if (flyby_fp != NULL)
-		return;
-
-	switch (mode) {
-	case FBM_PLAY:
-		if ((flyby_fp = fopen(flyby_fn, "rb")) == NULL) {
-			if (errno == ENOENT)
-				return;
-			err(1, "%s", flyby_fn);
-		}
-		flyby_mode = FBM_PLAY;
-
-		/*
-		 * Backup current options and enable/disable
-		 * special options for the flyby duration.
-		 */
-		sav_st = st;
-		st.st_opts &= ~OP_TWEEN;
-
-//		panel_show(PANEL_FLYBY);
-		if (st.st_opts & OP_REEL) {
-//			panel_show(PANEL_REEL);
-			flyby_calclen();
-			flyby_pos = 0;
-			reel_start();
-		}
-
-		glutMotionFunc(gl_motionh_null);
-		glutPassiveMotionFunc(gl_pasvmotionh_null);
-		glutKeyboardFunc(gl_keyh_actflyby);
-		glutSpecialFunc(gl_spkeyh_actflyby);
-		glutMouseFunc(gl_mouseh_null);
-		cursor_set(GLUT_CURSOR_WAIT);
-		break;
-	case FBM_REC:
-		if ((flyby_fp = fopen(flyby_fn, "ab")) == NULL)
-			err(1, "%s", flyby_fn);
-		flyby_mode = FBM_REC;
-		flyby_writeinit(&st);
-		break;
-	}
-}
-
 void
 flyby_writemsg(int type, const void *data, size_t len)
 {
@@ -224,6 +177,58 @@ flyby_writecaption(const char *cap)
 	snprintf(fbcap.fbcap_caption, sizeof(fbcap.fbcap_caption),
 	    "%s", cap);
 	flyby_writemsg(FHT_CAPTION, &fbcap, sizeof(fbcap));
+}
+
+/* Open the flyby data file appropriately. */
+void
+flyby_begin(int mode)
+{
+	struct selnode *sn;
+
+	if (flyby_fp != NULL)
+		return;
+
+	switch (mode) {
+	case FBM_PLAY:
+		if ((flyby_fp = fopen(flyby_fn, "rb")) == NULL) {
+			if (errno == ENOENT)
+				return;
+			err(1, "%s", flyby_fn);
+		}
+		flyby_mode = FBM_PLAY;
+
+		/*
+		 * Backup current options and enable/disable
+		 * special options for the flyby duration.
+		 */
+		sav_st = st;
+		st.st_opts &= ~OP_TWEEN;
+
+//		panel_show(PANEL_FLYBY);
+		if (st.st_opts & OP_REEL) {
+//			panel_show(PANEL_REEL);
+			flyby_calclen();
+			flyby_pos = 0;
+			reel_start();
+		}
+
+		glutMotionFunc(gl_motionh_null);
+		glutPassiveMotionFunc(gl_pasvmotionh_null);
+		glutKeyboardFunc(gl_keyh_actflyby);
+		glutSpecialFunc(gl_spkeyh_actflyby);
+		glutMouseFunc(gl_mouseh_null);
+		cursor_set(GLUT_CURSOR_WAIT);
+		sn_clear();
+		break;
+	case FBM_REC:
+		if ((flyby_fp = fopen(flyby_fn, "ab")) == NULL)
+			err(1, "%s", flyby_fn);
+		flyby_mode = FBM_REC;
+		flyby_writeinit(&st);
+		SLIST_FOREACH(sn, &selnodes, sn_next)
+			flyby_writeselnode(sn->sn_nodep->n_nid, &sn->sn_offv);
+		break;
+	}
 }
 
 /* Read a set of flyby data. */
