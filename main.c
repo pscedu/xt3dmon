@@ -705,7 +705,7 @@ main(int argc, char *argv[])
 	glutInit(&argc, argv);
 	sw = glutGet(GLUT_SCREEN_WIDTH);
 	sh = glutGet(GLUT_SCREEN_HEIGHT) - 30;
-	while ((c = getopt(argc, argv, "ac:dH:MpU:vW:X:x:")) != -1)
+	while ((c = getopt(argc, argv, "ac:dH:MpU:vW:x:")) != -1)
 		switch (c) {
 		case 'a':
 errx(1, "broken");
@@ -744,12 +744,9 @@ errx(1, "broken");
 				err(1, "invalid screen width: %s", optarg);
 			sw = (int)l;
 			break;
-		case 'X':
 		case 'x':
 			snprintf(dx_fn, PATH_MAX, "%s", optarg);
 			dx_start();
-if (c == 'X')
- exit(0);
 			break;
 		default:
 			usage();
