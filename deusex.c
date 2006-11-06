@@ -116,7 +116,7 @@ dxp_orbit(const struct dx_action *dxa)
 		else
 			wait = 1.1 * ceil(log(DST(&st.st_v, &focus) /
 			    log(1.1)));
-		adj = 2 * M_PI / (fps * wait);
+		adj = max / (fps * wait);
 		amt = 0.0;
 	}
 
