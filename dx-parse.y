@@ -157,7 +157,7 @@ orbit_revs	:			{ $$ = 1.0; }
 		;
 
 orbit_secs	:			{ $$ = 0.0; }
-		| INTG 			{ $$ = $1; }
+		| dbl 			{ $$ = $1; }
 		;
 
 move_secs	:			{ $$ = 3.0; }
