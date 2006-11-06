@@ -132,7 +132,7 @@ flyby_begin(int mode)
 
 //		panel_show(PANEL_FLYBY);
 		if (st.st_opts & OP_REEL) {
-			panel_show(PANEL_REEL);
+//			panel_show(PANEL_REEL);
 			flyby_calclen();
 			flyby_pos = 0;
 			reel_start();
