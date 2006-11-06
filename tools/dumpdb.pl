@@ -11,7 +11,7 @@ use warnings;
 my $err = 0;
 # start config
 
-my $smwhost = "laserloop";
+my $smwhost = "smw";
 my $port = 3306;
 my $user = "sys_mgmt";
 my $pass = "sys_mgmt";
