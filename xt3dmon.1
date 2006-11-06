@@ -24,7 +24,7 @@ cluster.
 Data about the cluster nodes are read at startup and can be continually
 refreshed so that the display reflects reality.
 .Pp
-The options are as follows:
+The command-line options are as follows:
 .Bl -tag -width Ds
 .\" .It Fl a
 .\" Enable active stereo mode.
@@ -140,6 +140,10 @@ The following is a quick reference of the most useful key bindings:
 .It left, right, up, down
 Pan the camera to the left, right, forward, or backward along its
 view.
+.Pp
+If the cursor is over a panel widget that is a part of a logical
+collection of related widgets, the camera will not be moved and
+instead an adjacent panel widget will become checked.
 .Pp
 .It home, end
 .Dq Barrel roll
@@ -402,6 +406,30 @@ which may be any of the following:
 .Bl -tag -width Ds
 .It Ic bird
 Move to a bird's eye view.
+.It Xo
+.Ic camlook
+.Fa x , Ns Fa y , Ns Fa z
+.Xc
+Set the camera look vector to
+.Po
+.Fa x , Ns Fa y , Ns Fa z
+.Pc .
+.It Xo
+.Ic campos
+.Fa x , Ns Fa y , Ns Fa z
+.Xc
+Set the camera position vector to
+.Po
+.Fa x , Ns Fa y , Ns Fa z
+.Pc .
+.It Xo
+.Ic camup
+.Fa x , Ns Fa y , Ns Fa z
+.Xc
+Set the camera up vector to
+.Po
+.Fa x , Ns Fa y , Ns Fa z
+.Pc .
 .It Ic clrsn
 Clear any selected nodes.
 .It Ic corkscrew Ar dim
@@ -447,6 +475,15 @@ are
 .Ic job , temp , rte ,
 and
 .Ic yod .
+.It Xo
+.Ic focus
+.Fa x , Ns Fa y , Ns Fa z
+.Xc
+Set the camera focus point to
+.Po
+.Fa x , Ns Fa y , Ns Fa z
+.Pc .
+During camera movement, this point will always be centered in view.
 .It Ic hl Ar class
 Highlight (i.e., only show) nodes in given node
 .Ar class .
@@ -491,6 +528,10 @@ The following options are recognized:
 Include cabinents in skeletons.
 .It Ic caption
 Show captions.
+.It Ic forcefocus
+During camera movement, view the
+.Ic focus
+point.
 .It Ic frames
 Show node wireframes.
 .It Ic ground
