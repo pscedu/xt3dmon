@@ -760,7 +760,10 @@ if (c == 'X')
 		sw /= 2;
 	glutInitDisplayMode(flags);
 //	glutInitWindowPosition(0, 0);
-glutInitWindowPosition(sw, 0);
+if (stereo_mode == STM_PASV)
+ glutInitWindowPosition(sw, 0);
+else
+ glutInitWindowPosition(0, 0);
 	glutInitWindowSize(sw, sh);
 	if ((window_ids[0] = glutCreateWindow("XT3 Monitor")) == GL_FALSE)
 		errx(1, "glutCreateWindow");
