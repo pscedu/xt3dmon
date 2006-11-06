@@ -99,7 +99,8 @@ sn_clear(void)
 	st.st_rf |= RF_SELNODE;
 	nselnodes = 0;
 
-	panel_hide(PANEL_NINFO);
+	if (flyby_mode != FBM_PLAY)
+		panel_hide(PANEL_NINFO);
 	selnode_clean = 0;
 }
 
@@ -116,7 +117,7 @@ sn_del(struct node *n)
 			if (flyby_mode == FBM_REC)
 				flyby_writeselnode(n->n_nid, &fv_zero);
 			st.st_rf |= RF_SELNODE;
-			if (--nselnodes == 0)
+			if (--nselnodes == 0 && flyby_mode != FBM_PLAY)
 				panel_hide(PANEL_NINFO);
 			selnode_clean = 0;
 			return (1);
