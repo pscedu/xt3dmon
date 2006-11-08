@@ -98,6 +98,7 @@ todo
 - update libpng/libz on win32
 - add "focus mark positioning" mode, where you lay a focus mark
   and up/left/down/pgup/etc. move the mark in 3-space
+- delint
 
 xtwmon
 - rename data=nodes to data=node
