@@ -230,7 +230,7 @@ cam_revolve(struct fvec *focuspts, int nfocus, double dt, double dp, int revt)
 __inline void
 cam_revolvefocus(double dt, double dp)
 {
-	struct fvec nfv[8], fv, *fvp, *ndim;
+	struct fvec nfv[8], fv, *fvp, *ndim, *nfvp;
 	struct selnode *sn;
 	double dst;
 	int j;
@@ -238,14 +238,20 @@ cam_revolvefocus(double dt, double dp)
 	if (st.st_opts & OP_FORCEFOCUS)
 		cam_revolve(&focus, 1, dt, dp, revolve_type);
 	else if (nselnodes) {
-		if ((fvp = calloc(nselnodes, sizeof(struct fvec))) == NULL)
-			err(1, "calloc");
+		if ((fvp = malloc(nselnodes * sizeof(struct fvec))) == NULL)
+			err(1, "malloc");
 		j = 0;
-		SLIST_FOREACH(sn, &selnodes, sn_next)
-			vec_copyto(st.st_opts & OP_NODEANIM &&
-			    st.st_vmode != VM_WIRED ?
-			    &sn->sn_nodep->n_vcur :
-			    sn->sn_nodep->n_v, &fvp[j++]);
+		SLIST_FOREACH(sn, &selnodes, sn_next) {
+			if (st.st_opts & OP_NODEANIM &&
+			    st.st_vmode != VM_WIRED)
+				nfvp = &sn->sn_nodep->n_vcur;
+			else
+				nfvp = sn->sn_nodep->n_v;
+			fvp[j].fv_x = nfvp->fv_x + sn->sn_nodep->n_dimp->fv_w / 2.0;
+			fvp[j].fv_y = nfvp->fv_y + sn->sn_nodep->n_dimp->fv_y / 2.0;
+			fvp[j].fv_z = nfvp->fv_z + sn->sn_nodep->n_dimp->fv_z / 2.0;
+			j++;
+		}
 		cam_revolve(fvp, j, dt, dp, revolve_type);
 		free(fvp);
 	} else {
