@@ -70,7 +70,7 @@ clean:
 	rm -rf ${PROG} ${OBJS} ${CLEAN}
 
 lint:
-	${LINT} ${CSRCS}
+	${LINT} ${INC} ${CSRCS}
 
 lines:
 	@shopt -s extglob && eval 'wc -l !(phys-parse|dx-parse).h \
