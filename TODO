@@ -99,6 +99,8 @@ todo
 - add "focus mark positioning" mode, where you lay a focus mark
   and up/left/down/pgup/etc. move the mark in 3-space
 - delint
+- add "fancy graphics" mode for rendering doing things like
+  increase sphere smoothness and GL lighting
 
 xtwmon
 - rename data=nodes to data=node
@@ -108,3 +110,4 @@ tweening
 - increase tween limit when fps is high, or when "stack" contains many layers
 - use vec_rotate() instead of fractional values for up/look when spinning around
 	- ensure tweening leaves normalized vectors
+- make a tween stack of like 30 states
