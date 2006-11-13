@@ -796,17 +796,19 @@ gl_keyh_default(unsigned char key, int u, int v)
 	case 'c':
 		sn_clear();
 		break;
-	case 'F':
+	case 'F': {
+		int left;
+
 		wid = WINID_LEFT;
 		glutSetWindow(window_ids[wid]);
-		glutPositionWindow(glutGet(GLUT_WINDOW_X) ?
-		    0 : glutGet(GLUT_WINDOW_WIDTH), 0);
+		left = (glutGet(GLUT_WINDOW_X) == 1);
+		glutPositionWindow(left ? glutGet(GLUT_WINDOW_WIDTH) : 0, 0);
 
 		wid = WINID_RIGHT;
 		glutSetWindow(window_ids[wid]);
-		glutPositionWindow(glutGet(GLUT_WINDOW_X) ?
-		    0 : glutGet(GLUT_WINDOW_WIDTH), 0);
+		glutPositionWindow(left ? 0 : glutGet(GLUT_WINDOW_WIDTH), 0);
 		break;
+	    }
 	case 'f':
 		glutKeyboardFunc(gl_keyh_flyby);
 		break;
