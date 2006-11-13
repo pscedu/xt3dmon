@@ -11,6 +11,7 @@ void		 gl_setup_core(void);
 void		 gl_wid_update(void);
 void		 gl_displayh_default(void);
 void		 gl_displayh_stereo(void);
+void		 gl_setbg(void);
 struct glname	*gl_select(int);
 
 /* key.c */

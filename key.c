@@ -786,8 +786,7 @@ gl_keyh_default(unsigned char key, int u, int v)
 			fill_bg.f_g = 0.8;
 			fill_bg.f_b = 0.8;
 		}
-		glClearColor(fill_bg.f_r, fill_bg.f_g, fill_bg.f_b,
-		    1.0);
+		gl_run(gl_setbg);
 		flag = !flag;
 		break;
 	    }

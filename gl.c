@@ -407,3 +407,9 @@ end:
 		gscb_miss(NULL, flags);
 	return (gn);
 }
+
+void
+gl_setbg(void)
+{
+	glClearColor(fill_bg.f_r, fill_bg.f_g, fill_bg.f_b, 1.0);
+}
