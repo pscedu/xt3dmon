@@ -100,6 +100,7 @@ extern struct fill	 fill_ground;
 extern struct fill	 fill_showall;
 extern struct fill	 fill_checked;
 extern struct fill	 fill_unchecked;
+extern struct fill	 fill_button;
 
 extern struct fill	 fill_panel;
 extern struct fill	 fill_nopanel;

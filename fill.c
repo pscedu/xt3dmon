@@ -36,6 +36,7 @@ struct fill fill_ground		= FILL_INITAB(0.3f, 0.3f, 0.3f, 0.1f, GL_ONE_MINUS_SRC_
 struct fill fill_showall	= FILL_INITA (1.0f, 1.0f, 1.0f, 0.0f);
 struct fill fill_checked	= FILL_INIT  (1.0f, 1.0f, 1.0f);
 struct fill fill_unchecked	= FILL_INITF (1.0f, 1.0f, 0.0f, FF_SKEL);
+struct fill fill_button		= FILL_INITF (1.0f, 1.0f, 0.0f, FF_SKEL);
 
 struct fill fill_panel		= FILL_INITA (0.1f, 0.7f, 0.4f, 0.8f);
 struct fill fill_ipanel		= FILL_INITA (0.5f, 0.7f, 0.9f, 0.9f);

@@ -795,26 +795,26 @@ panel_refresh_flyby(struct panel *p)
 	case FBM_REC:
 		panel_add_content(p, "\nRecording new flyby");
 
-		pwidget_add(p, &fill_nodata, "Stop recording",
+		pwidget_add(p, &fill_button, "Stop recording",
 		    PWARG_GSCB, gscb_pw_fb,
 		    PWARG_CBARG_INT, PWFF_STOPREC, PWARG_LAST);
 		break;
 	default:
-		pwidget_add(p, &fill_nodata, "Play",
+		pwidget_add(p, &fill_button, "Play",
 		    PWARG_GSCB, gscb_pw_fb,
 		    PWARG_CBARG_INT, PWFF_PLAY, PWARG_LAST);
-		pwidget_add(p, &fill_nodata, "Record",
+		pwidget_add(p, &fill_button, "Record",
 		    PWARG_GSCB, gscb_pw_fb,
 		    PWARG_CBARG_INT, PWFF_REC, PWARG_LAST);
-		pwidget_add(p, &fill_nodata, "Delete",
+		pwidget_add(p, &fill_button, "Delete",
 		    PWARG_GSCB, gscb_pw_fb,
 		    PWARG_CBARG_INT, PWFF_CLR, PWARG_LAST);
 		pwidget_add(p, (panel_for_id(PANEL_FBNEW) ?
-		    &fill_white : &fill_nodata), "Create new",
+		    &fill_checked : &fill_unchecked), "Create new",
 		    PWARG_GSCB, gscb_pw_fb,
 		    PWARG_CBARG_INT, PWFF_NEW, PWARG_LAST);
 		pwidget_add(p, (panel_for_id(PANEL_FBCHO) ?
-		    &fill_white : &fill_nodata), "Chooser",
+		    &fill_checked : &fill_unchecked), "Chooser",
 		    PWARG_GSCB, gscb_pw_fb,
 		    PWARG_CBARG_INT, PWFF_OPEN, PWARG_LAST);
 		break;
@@ -976,7 +976,7 @@ panel_refresh_opts(struct panel *p)
 		if (options[i].opt_flags & OPF_HIDE)
 			continue;
 		pwidget_add(p, (st.st_opts & (1 << i) ?
-		    &fill_white : &fill_nodata),
+		    &fill_checked : &fill_unchecked),
 		    options[i].opt_name,
 		    PWARG_GSCB, gscb_pw_opt,
 		    PWARG_CBARG_INT, i, PWARG_LAST);
@@ -1007,7 +1007,7 @@ panel_refresh_panels(struct panel *p)
 		if (pinfo[i].pi_flags & PIF_HIDE)
 			continue;
 		pwidget_add(p, (pids & (1 << i) ?
-		    &fill_white : &fill_nodata), pinfo[i].pi_name,
+		    &fill_checked : &fill_unchecked), pinfo[i].pi_name,
 		    PWARG_GSCB, gscb_pw_panel,
 		    PWARG_CBARG_INT, i, PWARG_LAST);
 	}
@@ -1188,13 +1188,13 @@ panel_refresh_sstar(struct panel *p)
 	pwidget_startlist(p);
 	for (i = 0; i < NVC; i++) {
 		pwidget_add(p, (st.st_ssvc == i ?
-		    &fill_white : &fill_nodata), ssvclabels[i],
+		    &fill_checked : &fill_unchecked), ssvclabels[i],
 		    PWARG_GSCB, gscb_pw_ssvc,
 		    PWARG_CBARG_INT, i, PWARG_LAST);
 	}
 	for (i = 0; i < NSSCNT; i++) {
 		pwidget_add(p, (st.st_ssmode == i ?
-		    &fill_white : &fill_nodata), ssmodelabels[i],
+		    &fill_checked : &fill_unchecked), ssmodelabels[i],
 		    PWARG_GSCB, gscb_pw_ssmode,
 		    PWARG_CBARG_INT, i, PWARG_LAST);
 	}
@@ -1220,7 +1220,7 @@ panel_refresh_pipe(struct panel *p)
 	pwidget_startlist(p);
 	for (i = 0; i < NPM; i++) {
 		pwidget_add(p, (st.st_pipemode == i ?
-		    &fill_white : &fill_nodata), pipemodelabels[i],
+		    &fill_checked : &fill_unchecked), pipemodelabels[i],
 		    PWARG_GSCB, gscb_pw_pipe,
 		    PWARG_CBARG_INT, i, PWARG_LAST);
 	}
@@ -1251,22 +1251,22 @@ panel_refresh_wiadj(struct panel *p)
 	    st.st_wioff.iv_z);
 
 	pwidget_startlist(p);
-	pwidget_add(p, &fill_nodata, "x Space",
+	pwidget_add(p, &fill_button, "x Space",
 	    PWARG_GSCB, gscb_pw_wiadj,
 	    PWARG_CBARG_INT, SWF_NSPX, PWARG_LAST);
-	pwidget_add(p, &fill_nodata, "y Space",
+	pwidget_add(p, &fill_button, "y Space",
 	    PWARG_GSCB, gscb_pw_wiadj,
 	    PWARG_CBARG_INT, SWF_NSPY, PWARG_LAST);
-	pwidget_add(p, &fill_nodata, "z Space",
+	pwidget_add(p, &fill_button, "z Space",
 	    PWARG_GSCB, gscb_pw_wiadj,
 	    PWARG_CBARG_INT, SWF_NSPZ, PWARG_LAST);
-	pwidget_add(p, &fill_nodata, "x Offset",
+	pwidget_add(p, &fill_button, "x Offset",
 	    PWARG_GSCB, gscb_pw_wiadj,
 	    PWARG_CBARG_INT, SWF_OFFX, PWARG_LAST);
-	pwidget_add(p, &fill_nodata, "y Offset",
+	pwidget_add(p, &fill_button, "y Offset",
 	    PWARG_GSCB, gscb_pw_wiadj,
 	    PWARG_CBARG_INT, SWF_OFFY, PWARG_LAST);
-	pwidget_add(p, &fill_nodata, "z Offset",
+	pwidget_add(p, &fill_button, "z Offset",
 	    PWARG_GSCB, gscb_pw_wiadj,
 	    PWARG_CBARG_INT, SWF_OFFZ, PWARG_LAST);
 	pwidget_endlist(p, 2);
@@ -1324,15 +1324,15 @@ panel_refresh_rt(struct panel *p)
 	pwidget_startlist(p);
 
 	pwidget_add(p, (st.st_rtetype == RT_RECOVER ?
-	    &fill_white : &fill_nodata), "Recover",
+	    &fill_checked : &fill_unchecked), "Recover",
 	    PWARG_GSCB, gscb_pw_rt,
 	    PWARG_CBARG_INT, SRF_RECOVER, PWARG_LAST);
 	pwidget_add(p, (st.st_rtetype == RT_FATAL ?
-	    &fill_white : &fill_nodata), "Fatal",
+	    &fill_checked : &fill_unchecked), "Fatal",
 	    PWARG_GSCB, gscb_pw_rt,
 	    PWARG_CBARG_INT, SRF_FATAL, PWARG_LAST);
 	pwidget_add(p, (st.st_rtetype == RT_ROUTER ?
-	    &fill_white : &fill_nodata), "Router",
+	    &fill_checked : &fill_unchecked), "Router",
 	    PWARG_GSCB, gscb_pw_rt,
 	    PWARG_CBARG_INT, SRF_ROUTER, PWARG_LAST);
 	pwidget_add(p, &fill_nopanel, "", PWARG_LAST);
@@ -1343,11 +1343,11 @@ panel_refresh_rt(struct panel *p)
 		    rtpipeclass[i].nc_name, PWARG_LAST);
 
 	pwidget_add(p, (st.st_rtepset == RPS_NEG ?
-	    &fill_white : &fill_nodata), "Negative",
+	    &fill_unchecked : &fill_unchecked), "Negative",
 	    PWARG_GSCB, gscb_pw_rt,
 	    PWARG_CBARG_INT, SRF_NEG, PWARG_LAST);
 	pwidget_add(p, (st.st_rtepset == RPS_POS ?
-	    &fill_white : &fill_nodata), "Positive",
+	    &fill_checked : &fill_unchecked), "Positive",
 	    PWARG_GSCB, gscb_pw_rt,
 	    PWARG_CBARG_INT, SRF_POS, PWARG_LAST);
 	pwidget_add(p, &fill_nopanel, "", PWARG_LAST);
@@ -1390,7 +1390,7 @@ panel_refresh_keyh(struct panel *p)
 	pwidget_startlist(p);
 	for (j = 0; j < NKEYH; j++)
 		pwidget_add(p, (j == keyh ?
-		    &fill_white : &fill_nodata),
+		    &fill_checked : &fill_unchecked),
 		    keyhtab[j].kh_name,
 		    PWARG_GSCB, gscb_pw_keyh,
 		    PWARG_CBARG_INT, j, PWARG_LAST);
@@ -1626,7 +1626,7 @@ panel_refresh_dscho(struct panel *p)
 	     live ? "live" : ds_dir, ds_browsedir);
 	pwidget_startlist(p);
 	pwidget_group_start(p);
-	pwidget_add(p, (live ? &fill_white : &fill_nodata), "Live",
+	pwidget_add(p, (live ? &fill_checked : &fill_unchecked), "Live",
 	    PWARG_SPRIO, 2,
 	    PWARG_GSCB, gscb_pw_dscho,
 	    PWARG_GRP_CHECKED, live, PWARG_LAST);
