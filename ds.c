@@ -340,9 +340,8 @@ ds_open(int type)
 	struct http_res res;
 	struct datasrc *ds;
 	struct tm tm_zero;
-	int mod, fd, flg;
+	int fd, flg;
 
-	mod = 0;
 	ds = &datasrcs[type];
 	if (!uri_parse(ds->ds_uri, proto, host, port, path))
 		return (NULL);
