@@ -10,11 +10,12 @@ reminders:
 - don't use continue/break/etc. in WIREP/NODE_FOREACH
 - dont use RF_INIT except in main.c
 - remove some size_t's (pointer sizes)
+- delint
 
 maybe not:
 - keybinding to enable rebuild flags
 - move the id into ohp instead of maintaing separate vars
-- sigcatch USR1 to reload datasrc and pkill in cron
+- (server mode) sigcatch USR1 to reload datasrc and pkill in cron
 - flyby_writecam() 'camera moved' frame -> set RF_CAM?
 - compile node/nodeclass draw lists?
 - default the logid goto user input buffer to selnode
@@ -92,13 +93,9 @@ todo
   whereas the xt3dmon server is unable, creating the anomaly of
   no files
 - rename POPT_REFRESH to POPT_REDRAW, POPT_DIRTY to POPT_REBUILD
-- use fill_checked/dechecked in place of white/nodata in pwidgets
 - moving the cursor should not cause panel recompiles
 - ensure nothing modifies st.st_opt and uses opt_flip() instead
 - update libpng/libz on win32
-- add "focus mark positioning" mode, where you lay a focus mark
-  and up/left/down/pgup/etc. move the mark in 3-space
-- delint
 - add "fancy graphics" mode for rendering doing things like
   increase sphere smoothness and GL lighting
 
