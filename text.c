@@ -8,15 +8,23 @@
 #include "cdefs.h"
 #include "buf.h"
 
+/*
+ * Insert newlines throughout the given buffer.
+ * Original string and length are specified in `s' and `maxlen'.
+ * Result is placed in `bufp' with full lines joined together
+ * with the content in `ins' with the given mock length.
+ *
+ * For example, setting ins='\n  ' and mocklen=2 will treat
+ * given all broken lines a starting length of 2 for even
+ * wrapping.
+ */
 void
 text_wrap(struct buf *bufp, const char *s, size_t maxlen, const char *ins,
     size_t mocklen)
 {
 	const char *p, *t, *brkp, *sp;
-	size_t linelen, inslen;
+	size_t linelen;
 	long i;
-
-	inslen = strlen(ins);
 
 	buf_init(bufp);
 
