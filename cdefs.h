@@ -6,7 +6,9 @@
 # endif
 #endif
 
+#ifndef __unused
 #define __unused __attribute__((__unused__))
+#endif
 
 #define MID(max, min) (((max) + (min)) / 2.0)
 
