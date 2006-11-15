@@ -11,6 +11,7 @@ reminders:
 - dont use RF_INIT except in main.c
 - remove some size_t's (pointer sizes)
 - delint
+- ensure nothing modifies st.st_opt and uses opt_flip() instead
 
 maybe not:
 - keybinding to enable rebuild flags
@@ -53,15 +54,13 @@ todo
 - add recursive check to gl_run() to protect against that kind of
   invocation
   update intervals when no new data is available/check for new data
-- for tweening, calculate the % moved by one (e.g. move), then apply
-  that % to the others, instead of use MAX_{LOOK,TWEEN} values
 - fix crash when revolve position = st.st_v
 - make select node glow/fade color?
 - use a different font.png for matrix egg (katonese chars)
 - kill PIF_XPARENT and just set fill differently
 - implement FF_OPAQUE everywhere
 - watch out for server mode, dmode=temp then setting hl=free
-- add table for service node hostnames to ssh/command
+- finish send-command-to-login-node-panel
 - merge gl and env files?
 - bring back option for SEL_GAP things
 - add flag to NODE_FOREACH for wired/physical ordered traversal (fix phys alpha problem)
@@ -71,13 +70,13 @@ todo
 - rename NODEWIDTH/HEIGHT/DEPTH cause its phys-only
 - kill job_findbyid, just use obj_get with a flag that prevents creation
 - make job searching bsearch again, since it is sorted
-- merge reel, fbcho, dxcho code - .cvsignore/dirs
 - add subtitle for when machine down
 - add cam_refocus() and factor the code out of cam_revolve()
 - add "extended help" panel -- contents description get updated on each item moused over
 - modify the pipe code to determine absolute points based on
 	(node->n_wiv + wioff) * winsp
   instead of using node->n_v at all
+	- disadvantage: won't work when nodes are moving
 - need a way in the script files to report a problem with the
   data fetch script cannot do there job -- when getting data fails,
   set_caption("ssh connection to phantom prohibited?") won't work,
@@ -94,7 +93,6 @@ todo
   no files
 - rename POPT_REFRESH to POPT_REDRAW, POPT_DIRTY to POPT_REBUILD
 - moving the cursor should not cause panel recompiles
-- ensure nothing modifies st.st_opt and uses opt_flip() instead
 - update libpng/libz on win32
 - add "fancy graphics" mode for rendering doing things like
   increase sphere smoothness and GL lighting
@@ -108,3 +106,5 @@ tweening
 - use vec_rotate() instead of fractional values for up/look when spinning around
 	- ensure tweening leaves normalized vectors
 - make a tween stack of like 30 states
+- for tweening, calculate the % moved by one (e.g. move), then apply
+  that % to the others, instead of use MAX_{LOOK,TWEEN} values
