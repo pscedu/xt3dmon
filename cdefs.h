@@ -1,7 +1,9 @@
 /* $Id$ */
 
 #if !defined __GNUC__ || __GNUC__ < 2
-# define __attribute__(x) 
+# ifndef __attribute__
+# define __attribute__(x)
+# endif
 #endif
 
 #define __unused __attribute__((__unused__))
