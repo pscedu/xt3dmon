@@ -327,7 +327,7 @@ if (col > nc)
 void
 draw_panel(struct panel *p, int toff)
 {
-	int contwidth, uoff, voff, stwu, stwv;
+	int contwidth, uoff, voff, stwv;
 	int colwidth, col, nc, npw;
 	struct fill *frame_fp;
 	struct pwidget *pw;
@@ -393,7 +393,6 @@ draw_panel(struct panel *p, int toff)
 	/* First loop cuts into these. */
 //	uoff += p->p_w / 2 - toff;
 	voff += PWIDGET_HEIGHT - 1 - PWIDGET_PADDING;
-	stwu = uoff;
 	stwv = voff;
 
 	nc = MIN(p->p_nwcol, p->p_nwidgets);
