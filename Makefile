@@ -1,7 +1,7 @@
 # $Id$
 
 MKDEP = `type -t mkdep >/dev/null 2>&1 && echo mkdep || echo makedepend -f.depend`
-LINT = splint
+LINT = splint -posix-lib -nestcomment -retvalint -nullstate -mustfreeonly -D__GNUC__
 
 PROG = xt3dmon
 
