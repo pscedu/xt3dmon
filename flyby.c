@@ -203,6 +203,7 @@ flyby_begin(int mode)
 		 */
 		sav_st = st;
 		st.st_opts &= ~OP_TWEEN;
+//		opt_disable(OP_TWEEN);		/* save tween */
 
 //		panel_show(PANEL_FLYBY);
 		if (st.st_opts & OP_REEL) {
