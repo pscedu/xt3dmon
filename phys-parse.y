@@ -136,7 +136,6 @@ void
 physdim_check(void)
 {
 	struct physdim *pd, *spd, *lpd;
-	struct fvec fv;
 
 	if (LIST_EMPTY(&physdims))
 		yyerror("no dimensions specified");
@@ -158,7 +157,6 @@ physdim_check(void)
 			 * Now propagate spacing measurements up through
 			 * the dimensions.
 			 */
-			fv = lpd->pd_size;
 			pd = lpd;
 			for (; pd != NULL && pd->pd_containedby != NULL;
 			    pd = spd) {
