@@ -1,5 +1,22 @@
 /* $Id$ */
 
+/*
+ * This file contains routines related to "tweening"
+ * movement, or the code that calculates small intervals
+ * of change for smoother animation between one large
+ * jump.
+ *
+ * Tweening is applied to camera position, look, and up
+ * orientation vectors.  Tweening is broken into two
+ * concepts:
+ *
+ *	(o) interval -- or the amount of movement of
+ *	    between each frame, and
+ *	(o) thresold -- when to stop tweening since
+ *	    the object is close enough to its destination
+ *	    and should finally take on the absolute position.
+ */
+
 #include "mon.h"
 
 #include "cdefs.h"
@@ -51,6 +68,21 @@ tween_update(void)
 	static struct fvec sc, sc_l, sc_u;
 	static float scale, scale_l, scale_u;
 
+#if 0
+	/*
+	 * If we have already surpassed more frames
+	 * this second than last second, try more
+	 * fine-grained movement by decreasing the
+	 * tweening interval and increasing the
+	 * tween threshold.
+	 */
+	if (fps_cnt > fps) {
+		tween_intv *= fps_cnt / fps;
+		tween_thres *= fps / fps_cnt;
+	}
+
+#endif
+
 	want.fv_w = want.fv_h = want.fv_d = 0.0f;
 	want_l.fv_w = want_l.fv_h = want_l.fv_d = 0.0f;
 	want_u.fv_w = want_u.fv_h = want_u.fv_d = 0.0f;
@@ -91,6 +123,10 @@ tween_update(void)
 	    want_l.fv_w || want_l.fv_h || want_l.fv_d ||
 	    want_u.fv_w || want_u.fv_h || want_u.fv_d)
 		st.st_rf |= RF_CAM;
+	if (want_l.fv_w || want_l.fv_h || want_l.fv_d)
+		vec_normalize(&st.st_lv);
+	if (want_u.fv_w || want_u.fv_h || want_u.fv_d)
+		vec_normalize(&st.st_uv);
 }
 
 static struct fvec sv, slv, suv;

@@ -12,6 +12,20 @@
 void
 cocb_fps(__unused int a)
 {
+#if 0
+	/*
+	 * If the frame rate over the last second was
+	 * significantly lower than the second before,
+	 * increase the tweening interval and decrease
+	 * the tweening threshold so the animation
+	 * isn't so slow.
+	 */
+	if (fps_cnt < fps) {
+		tween_intv *= fps / fps_cnt;
+		tween_thres *= fps_cnt / fps;
+	}
+#endif
+
 	fps = fps_cnt;
 	fps_cnt = 0;
 	panel_rebuild(PANEL_FPS);
