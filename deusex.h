@@ -3,6 +3,8 @@
 #include "queue.h"
 #include "xmath.h"
 
+#include <stdarg.h>
+
 #define DX_DEFAULT "full"
 
 /* Set mode values. */
