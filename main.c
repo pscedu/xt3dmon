@@ -216,6 +216,7 @@ opt_flip(int fopts)
 		case OP_NLABELS:
 		case OP_SELNLABELS:
 		case OP_PIPES:
+		case OP_FANCY:
 			st.st_rf |= RF_CLUSTER | RF_SELNODE;
 			break;
 		case OP_MODSKELS:
@@ -233,7 +234,6 @@ opt_flip(int fopts)
 			break;
 		case OP_SKEL:
 		case OP_SUBSET:
-		case OP_FANCY:
 			st.st_rf |= RF_CLUSTER;
 			break;
 		case OP_AUTOFLYBY:
