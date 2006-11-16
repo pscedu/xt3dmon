@@ -318,6 +318,9 @@ gl_keyh_option(unsigned char key, __unused int u, __unused int v)
 	case 'e':
 		opts |= OP_TWEEN;
 		break;
+	case 'f':
+		opts |= OP_FANCY;
+		break;
 	case 'G':
 		opts |= OP_GOVERN;
 		break;

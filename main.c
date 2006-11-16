@@ -92,7 +92,8 @@ struct xoption options[] = {
  /* 19 */ { "selnlbls",	"Selected node labels",	0 },
  /* 20 */ { "capfb",	"Capture Flyby Only",	OPF_FBIGN },
  /* 21 */ { "editfocus","Edit Focus",		0 },
- /* 22 */ { "forcefocus","Force Focus",		0 }
+ /* 22 */ { "forcefocus","Force Focus",		0 },
+ /* 23 */ { "fancy",	"Fancy Drawing",	OPF_FBIGN }
 };
 
 struct vmode vmodes[] = {
@@ -232,6 +233,7 @@ opt_flip(int fopts)
 			break;
 		case OP_SKEL:
 		case OP_SUBSET:
+		case OP_FANCY:
 			st.st_rf |= RF_CLUSTER;
 			break;
 		case OP_AUTOFLYBY:

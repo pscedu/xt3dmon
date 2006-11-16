@@ -94,8 +94,6 @@ todo
 - rename POPT_REFRESH to POPT_REDRAW, POPT_DIRTY to POPT_REBUILD
 - moving the cursor should not cause panel recompiles
 - update libpng/libz on win32
-- add "fancy graphics" mode for rendering doing things like
-  increase sphere smoothness and GL lighting
 
 xtwmon
 - rename data=nodes to data=node
