@@ -24,18 +24,18 @@
 #include "tween.h"
 #include "xmath.h"
 
-#define TWEEN_AMT		(0.05f)
-#define TWEEN_THRES		(0.001f)
-
 #define TWEEN_MAX_POS		(2.00f)
 #define TWEEN_MAX_LOOK		(0.06f)
 #define TWEEN_MAX_UP		(0.10f)
+
+double tween_intv = 0.5;
+double tween_thres = 0.001;
 
 __inline void
 tween_probe(float *cur, float stop, float max, float *scale, float *want)
 {
 	if (stop != *cur) {
-		*want = (stop - *cur) * TWEEN_AMT;
+		*want = (stop - *cur) * tween_intv;
 		if (*want == 0.0f) {
 			/* recalc() won't get called. */
 			*cur = stop;
@@ -54,8 +54,8 @@ tween_recalc(float *cur, float stop, float scale, float want)
 		if (scale < 0.001)
 			scale = 0.001;
 		*cur += want * scale;
-		if (stop - *cur < TWEEN_THRES &&
-		    stop - *cur > -TWEEN_THRES)
+		if (stop - *cur < tween_thres &&
+		    stop - *cur > -tween_thres)
 			*cur = stop;
 	}
 }
