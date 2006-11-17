@@ -106,7 +106,7 @@ dxp_orbit(const struct dx_action *dxa)
 	int ret;
 
 	/* Get a good FPS sample before we start. */
-	if (++sample < fps)
+	if (t == 0 && ++sample < fps)
 		return (0);
 
 	max = 2 * M_PI * dxa->dxa_orbit_frac;
