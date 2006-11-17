@@ -8,6 +8,4 @@ void	 tween_pop(int);
 void	 tween_push(int);
 void	 tween_update(void);
 
-extern double		 tween_intv;
-extern double		 tween_threshold;
 extern struct fvec	 tv, tlv, tuv;		/* tween vectors */

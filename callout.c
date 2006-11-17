@@ -8,21 +8,23 @@
 #include "panel.h"
 #include "queue.h"
 #include "state.h"
+#include "tween.h"
 
 void
 cocb_fps(__unused int a)
 {
 #if 0
-	/*
-	 * If the frame rate over the last second was
-	 * significantly lower than the second before,
-	 * increase the tweening interval and decrease
-	 * the tweening threshold so the animation
-	 * isn't so slow.
-	 */
-	if (fps_cnt < fps) {
-		tween_intv *= fps / fps_cnt;
-		tween_thres *= fps_cnt / fps;
+	double fact;
+
+	if (fps && fps_cnt && fps != fps_cnt) {
+		fact = fps / (double)fps_cnt;
+		if (fact > 1.1)
+			fact = 1.1;
+		else if (fact < 0.9)
+			fact = 0.9;
+		tween_intv *= fact;
+		tween_thres *= fact;
+printf("adjusting by %.3f ->[%.3f %.3f]\n", fact, tween_intv, tween_thres);
 	}
 #endif
 
