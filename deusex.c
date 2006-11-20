@@ -731,7 +731,7 @@ int
 dxp_camup(const struct dx_action *dxa)
 {
 	tween_push(TWF_UP);
-	st.st_v = dxa->dxa_cam_v;
+	st.st_uv = dxa->dxa_cam_uv;
 	tween_pop(TWF_UP);
 	return (1);
 }
