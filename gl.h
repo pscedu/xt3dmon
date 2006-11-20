@@ -35,3 +35,5 @@ void		 gl_mouseh_null(int, int, int, int);
 void		 gl_pasvmotionh_default(int, int);
 void		 gl_pasvmotionh_null(int, int);
 void		 gl_mwheel_default(int, int, int, int);
+
+extern int gl_drawhint;

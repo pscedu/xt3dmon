@@ -26,6 +26,7 @@ long	 fps = 50;			/* Last FPS sample. */
 long	 fps_cnt = 0;			/* Current FPS counter. */
 int	 stereo_mode;
 int	 visible;
+int	 gl_drawhint = GL_DONT_CARE;
 
 /*
  * Run a function in both GL stereo environments.
@@ -159,7 +160,7 @@ gl_setup(void)
 
 	glClearColor(fill_bg.f_r, fill_bg.f_g, fill_bg.f_b, 1.0);
 //	glClearDepth(1.0f);
-//	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, gl_drawhint);
 
 	tex_load();
 }
@@ -330,7 +331,8 @@ gl_displayh_default(void)
 	if (rf) {
 		st.st_rf = 0;
 		rf = rebuild(rf_deps(rf));
-	}
+	} else
+		usleep(100);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	if (rf & RF_CAM) {

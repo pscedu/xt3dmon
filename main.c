@@ -211,12 +211,18 @@ opt_flip(int fopts)
 			}
 			st.st_rf |= RF_CLUSTER | RF_SELNODE;
 			break;
+		case OP_FANCY:
+			if (on)
+				gl_drawhint = GL_NICEST;
+			else
+				gl_drawhint = GL_DONT_CARE;
+			glHint(GL_PERSPECTIVE_CORRECTION_HINT, gl_drawhint);
+			/* FALLTHROUGH */
 		case OP_FRAMES:
 		case OP_SELPIPES:
 		case OP_NLABELS:
 		case OP_SELNLABELS:
 		case OP_PIPES:
-		case OP_FANCY:
 			st.st_rf |= RF_CLUSTER | RF_SELNODE;
 			break;
 		case OP_MODSKELS:

@@ -9,6 +9,7 @@
 #include "draw.h"
 #include "env.h"
 #include "fill.h"
+#include "gl.h"
 #include "state.h"
 #include "xmath.h"
 
@@ -300,6 +301,7 @@ draw_cube(const struct fvec *dimp, const struct fill *fp, int flags)
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, fp->f_blfunc ?
 		    fp->f_blfunc : GL_DST_COLOR);
+		glHint(GL_POLYGON_SMOOTH_HINT, gl_drawhint);
 	}
 
 	if (fp->f_flags & FF_TEX) {
@@ -361,12 +363,13 @@ draw_cube(const struct fvec *dimp, const struct fill *fp, int flags)
 		glDisable(GL_COLOR_MATERIAL);
 		glDisable(GL_LIGHTING);
 	}
+
 	if (flags & DF_FRAME) {
 		/* Anti-aliasing */
 		glEnable(GL_LINE_SMOOTH);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE); // GL_NICEST
+		glHint(GL_LINE_SMOOTH_HINT, gl_drawhint);
 
 		if (fp->f_flags & FF_SKEL)
 			glLineWidth(1.6f);
@@ -417,7 +420,7 @@ draw_sphere(const struct fvec *dimp, const struct fill *fp, int flags)
 		}
 
 //		glEnable(GL_POLYGON_SMOOTH);
-//		glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
+//		glHint(GL_POLYGON_SMOOTH_HINT, gl_drawhint);
 
 		gluQuadricDrawStyle(quadric, GLU_FILL);
 		glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
@@ -438,7 +441,7 @@ draw_sphere(const struct fvec *dimp, const struct fill *fp, int flags)
 		glEnable(GL_BLEND);
 		glEnable(GL_LINE_SMOOTH);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
+		glHint(GL_LINE_SMOOTH_HINT, gl_drawhint);
 
 		if (ldflags & LDF_SHIFT) {
 			r += SHIFT_OFFSET;
