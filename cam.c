@@ -230,7 +230,7 @@ cam_revolve(struct fvec *focuspts, int nfocus, double dt, double dp, int revt)
 __inline void
 cam_revolvefocus(double dt, double dp)
 {
-	struct fvec nfv[8], fv, *fvp, *ndim, *nfvp;
+	struct fvec nfv[8], fv, dim, *fvp, *ndim, *nfvp;
 	struct selnode *sn;
 	double dst;
 	int j;
@@ -266,18 +266,21 @@ cam_revolvefocus(double dt, double dp)
 			break;
 		case VM_WIONE:
 			ndim = &vmodes[st.st_vmode].vm_ndim[GEOM_CUBE];
-			fv.fv_w = (widim.iv_w - 1) * st.st_winsp.iv_x + ndim->fv_w;
-			fv.fv_h = (widim.iv_h - 1) * st.st_winsp.iv_y + ndim->fv_h;
-			fv.fv_d = (widim.iv_d - 1) * st.st_winsp.iv_z + ndim->fv_d;
+			fv.fv_x = st.st_wioff.iv_x * st.st_winsp.iv_x;
+			fv.fv_y = st.st_wioff.iv_y * st.st_winsp.iv_y;
+			fv.fv_z = st.st_wioff.iv_z * st.st_winsp.iv_z;
+			dim.fv_x = (widim.iv_w - 1) * st.st_winsp.iv_x + ndim->fv_w;
+			dim.fv_y = (widim.iv_h - 1) * st.st_winsp.iv_y + ndim->fv_h;
+			dim.fv_z = (widim.iv_d - 1) * st.st_winsp.iv_z + ndim->fv_d;
 
-			vec_set(&nfv[0], 0.0,		0.0,		0.0);
-			vec_set(&nfv[1], fv.fv_w,	0.0,		0.0);
-			vec_set(&nfv[2], 0.0,		fv.fv_h,	0.0);
-			vec_set(&nfv[3], 0.0,		0.0,		fv.fv_d);
-			vec_set(&nfv[4], fv.fv_w,	fv.fv_h,	0.0);
-			vec_set(&nfv[5], fv.fv_w,	0.0,		fv.fv_d);
-			vec_set(&nfv[6], 0.0,		fv.fv_h,	fv.fv_d);
-			vec_set(&nfv[7], fv.fv_w,	fv.fv_h,	fv.fv_d);
+			vec_set(&nfv[0], fv.fv_x,		fv.fv_y,		fv.fv_z);
+			vec_set(&nfv[1], fv.fv_x + dim.fv_w,	fv.fv_y,		fv.fv_z);
+			vec_set(&nfv[2], fv.fv_x,		fv.fv_y + dim.fv_h,	fv.fv_z);
+			vec_set(&nfv[3], fv.fv_x,		fv.fv_y,		fv.fv_z + dim.fv_d);
+			vec_set(&nfv[4], fv.fv_x + dim.fv_w,	fv.fv_y + dim.fv_h,	fv.fv_z);
+			vec_set(&nfv[5], fv.fv_x + dim.fv_w,	fv.fv_y,		fv.fv_z + dim.fv_d);
+			vec_set(&nfv[6], fv.fv_x,		fv.fv_y + dim.fv_h,	fv.fv_z + dim.fv_d);
+			vec_set(&nfv[7], fv.fv_x + dim.fv_w,	fv.fv_y + dim.fv_h,	fv.fv_z + dim.fv_d);
 			cam_revolve(nfv, NENTRIES(nfv), dt, dp, revolve_type);
 			break;
 		case VM_PHYS:
