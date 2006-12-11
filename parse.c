@@ -419,9 +419,8 @@ parse_yod(const struct datasrc *ds)
 
 		if ((y = yod_findbyid(y_fake.y_id, NULL)) == NULL)
 			continue;
-		else
-			y_fake = *y;
 
+		y_fake = *y;
 		PARSENUM(s, y_fake.y_partid, INT_MAX);
 		PARSENUM(s, y_fake.y_ncpus, INT_MAX);
 		if (parsestr(&s, y_fake.y_cmd, sizeof(y_fake.y_cmd),
@@ -429,6 +428,7 @@ parse_yod(const struct datasrc *ds)
 			goto bad;
 
 		*y = y_fake;
+		yod_init(y);
 		continue;
 bad:
 		prerror("yod", lineno, buf, s);

@@ -13,7 +13,9 @@ struct yod {
 	int		 y_partid;
 	char		 y_cmd[YFL_CMD];
 	int		 y_ncpus;
+	int		 y_single;
 };
 
+void		 yod_init(struct yod *);
 struct yod	*yod_findbyid(int, int *);
 int		 yod_cmp(const void *, const void *);
