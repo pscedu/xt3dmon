@@ -17,7 +17,9 @@
 .Op Fl x Ar dxscript
 .Sh DESCRIPTION
 .Nm
-is a 3D program that graphically displays various data sets of
+is a
+.Tn 3D
+program that graphically displays various data sets of
 information about the BigBen Cray
 .Tn XT3
 cluster.
@@ -43,9 +45,10 @@ Enable
 .Dq daemon
 mode \(em that is,
 .Nm
-will listen on TCP connections to accept requests from clients to
-generate screen captures and send the resulting images as
-responses.
+will listen on
+.Tn TCP
+connections to accept requests from clients to generate screen captures
+and send the resulting images as responses.
 .It Fl H Ar height
 Specify the
 .Nm
@@ -64,9 +67,12 @@ Specify the
 .Nm
 window width in pixels.
 .It Fl U Ar urispec
-Set the data source URIs according to the given
+Set the data source
+.Tn URI Ns s
+according to the given
 .Ar urispec .
-The specification will be copied to each live data source retrieval URI
+The specification will be copied to each live data source retrieval
+.Tn URI
 with any
 .Sq %s
 replaced with the data source's name (e.g.
@@ -99,9 +105,11 @@ states, differentiated by color/texture:
 .It Free
 The node is available to run jobs.
 .It Disabled (PBS)
-The node is not being used to run jobs via PBS.
+The node is not being used to run jobs via
+.Tn PBS .
 .It Down (CPA)
-The node is marked down by CPA.
+The node is marked down by
+.Tn CPA .
 .It Used
 A job is assigned to and is running on the node.
 These nodes are colored by their respective job.
@@ -116,11 +124,16 @@ The seastar and routing error modes color the nodes based upon the
 relative performance of each node to the rest of the nodes.
 .Pp
 Some modes, such as job mode, provide sensitive job details from the
-XT3 system.
+.Tn XT3
+system.
 As such, accessing this information requires authenticating with a
-valid PSC/Kerberos account, which can be set with the
+valid
+.Tn PSC Ns /Kerberos
+account, which can be set with the
 .Ic pL
-command and will only be used over an OpenSSL connection.
+command and will only be used over an
+.Tn OpenSSL
+connection.
 .Pp
 The legend panel (see the
 .Ic pl
@@ -235,7 +248,9 @@ Toggle the cluster subset membership of all selected nodes.
 When the subset option is enabled, only nodes in the subset will be
 shown.
 .It Ic i
-Print the node IDs (nids) of all selected nodes to standard output.
+Print the node
+.Tn ID Ns s
+(nids) of all selected nodes to standard output.
 .It Ic kd
 Restore the arrow keys to camera movement (see
 .Ic kn
@@ -559,7 +574,8 @@ Show only sub-selected nodes (see
 .It Ic tex
 Use textures of solid colors for node fills.
 .It Ic tween
-Smooth camera movement with .Dq tween steps.
+Smooth camera movement with
+.Dq tween steps.
 .El
 .Pp
 Example:
@@ -782,7 +798,9 @@ Set the value of a SeaStar-mode control.
 Recognized types and their values are:
 .Bl -tag -offset indent -width Ds
 .It Ic vc
-Set the SeaStar VC being viewed to one of
+Set the SeaStar
+.Tn VC
+being viewed to one of
 .Ic 0 , 1 , 2 ,
 or
 .Ic 3 .
