@@ -1,0 +1,5 @@
+# $Id$
+
+*/10 * * * *    sh ~/code/proj/xt3dmon/tools/update.sh
+@daily          perl ~/code/proj/xt3dmon/tools/update-admins.pl
+
