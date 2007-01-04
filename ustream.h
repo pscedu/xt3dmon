@@ -20,6 +20,7 @@ struct ustream {
 
 	int		 us_fd;
 	FILE		*us_fp;
+	void		*us_zfp;
 	ssize_t		 us_lastread;
 	char		 us_buf[BUFSIZ];
 	char		*us_bufstart;
