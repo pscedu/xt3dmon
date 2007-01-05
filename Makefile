@@ -2,6 +2,7 @@
 
 MKDEP = `type -t mkdep >/dev/null 2>&1 && echo mkdep || echo makedepend -f.depend`
 LINT = splint -posix-lib -nestcomment -retvalint -nullstate -mustfreeonly -D__GNUC__ -D_GNU_SOURCE
+CTAGS = ctags
 
 PROG = xt3dmon
 
@@ -120,6 +121,9 @@ clean:
 
 lint:
 	${LINT} ${INCS} ${CSRCS}
+
+tags: ${SRCS}
+	${CTAGS} ${SRCS}
 
 lines:
 	@shopt -s extglob && eval 'wc -l !(phys-parse|dx-parse).h \
