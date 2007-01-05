@@ -12,6 +12,7 @@
 #include "draw.h"
 #include "env.h"
 #include "fill.h"
+#include "gl.h"
 #include "lnseg.h"
 #include "mark.h"
 #include "node.h"
@@ -109,7 +110,7 @@ draw_compass(int u, __unused int w, int v, __unused int h)
 	glEnable(GL_POLYGON_SMOOTH);
 	glEnable(GL_LINE_SMOOTH);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
+	glHint(GL_POLYGON_SMOOTH_HINT, gl_drawhint);
 
 	cl = 0.05;
 #define CMP_ATHK (0.005)
@@ -445,7 +446,7 @@ draw_ground(void)
 	glEnable(GL_BLEND);
 	glEnable(GL_LINE_SMOOTH);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
+	glHint(GL_LINE_SMOOTH_HINT, gl_drawhint);
 
 	glLineWidth(1.0);
 	glBegin(GL_LINES);
@@ -592,7 +593,7 @@ draw_pipe(struct ivec *iv, int dim)
 	glEnable(GL_BLEND);
 	glEnable(GL_POLYGON_SMOOTH);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
+	glHint(GL_POLYGON_SMOOTH_HINT, gl_drawhint);
 
 	fp = &fill_dim[dim];
 	dimp = &vmodes[st.st_vmode].vm_ndim[GEOM_CUBE];
@@ -634,7 +635,7 @@ draw_node_pipes(struct node *n, int is_sel)
 	glEnable(GL_BLEND);
 	glEnable(GL_POLYGON_SMOOTH);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
+	glHint(GL_POLYGON_SMOOTH_HINT, gl_drawhint);
 
 	node_center(n, &cen);
 
