@@ -95,6 +95,5 @@ yod_init(struct yod *y)
 			while (isalnum(p[1]) || p[1] == '=' ||
 			    p[1] == '_')
 				p++;
-		} else if (isspace(*p)) {
 		}
 }
