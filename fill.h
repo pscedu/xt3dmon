@@ -44,21 +44,21 @@ struct color {
 #define FF_OPAQUE	(1<<2)			/* Ignore alpha channel. */
 
 #define FILL_INIT(r, g, b)				\
-	FILL_INITFAB((r), (g), (b), 1.0, 0, 0)
+	FILL_INITAFB((r), (g), (b), 1.0, 0, 0)
 
 #define FILL_INITA(r, g, b, a)				\
-	FILL_INITFAB((r), (g), (b), (a), 0, 0)
+	FILL_INITAFB((r), (g), (b), (a), 0, 0)
 
 #define FILL_INITAB(r, g, b, a, blf)			\
-	FILL_INITFAB((r), (g), (b), (a), 0, (blf))
+	FILL_INITAFB((r), (g), (b), (a), 0, (blf))
 
 #define FILL_INITF(r, g, b, flags)			\
-	FILL_INITFAB((r), (g), (b), 1.0, (flags), 0)
+	FILL_INITAFB((r), (g), (b), 1.0, (flags), 0)
 
-#define FILL_INITFA(r, g, b, a, flags)			\
-	FILL_INITFAB((r), (g), (b), (a), (flags), 0)
+#define FILL_INITAF(r, g, b, a, flags)			\
+	FILL_INITAFB((r), (g), (b), (a), (flags), 0)
 
-#define FILL_INITFAB(r, g, b, a, flags, blf)		\
+#define FILL_INITAFB(r, g, b, a, flags, blf)		\
 	{ { (r), (g), (b), (a) }, (flags), (blf), { 0, 0 }, { 0, 0 } }
 
 struct objhdr;
