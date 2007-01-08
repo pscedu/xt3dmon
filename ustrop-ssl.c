@@ -103,7 +103,7 @@ ustrop_ssl_sawerror(const struct ustream *usp)
 }
 
 __inline const char *
-ustrop_ssl_errstr(const struct ustream *usp)
+ustrop_ssl_errstr(__unused const struct ustream *usp)
 {
 	return (NULL);
 }
