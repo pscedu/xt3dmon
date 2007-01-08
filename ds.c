@@ -146,7 +146,10 @@ uri_parse(const char *s, char *proto, char *host, char *port, char *path)
 	if (*s++ != '/')
 		return (0);
 
-	if (strcmp(proto, "file") != 0) {
+	if (strcmp(proto, "file") == 0) {
+		host[0] = '\0';
+		port[0] = '\0';
+	} else {
 		for (i = 0; i < MAXHOSTNAMELEN - 1 &&
 		    (isalnum(*s) || *s == '.' || *s == '-'); s++, i++)
 			host[i] = *s;
@@ -160,9 +163,6 @@ uri_parse(const char *s, char *proto, char *host, char *port, char *path)
 				port[i] = *s;
 		}
 		port[i] = '\0';
-	} else {
-		host[0] = '\0';
-		port[0] = '\0';
 	}
 
 	for (i = 0; i < MAX_PATH_LEN - 1; s++, i++)
@@ -173,12 +173,13 @@ uri_parse(const char *s, char *proto, char *host, char *port, char *path)
 }
 
 void
-ds_seturi(int ds, const char *urifmt)
+ds_seturi(int dsid, const char *urifmt)
 {
-	snprintf(datasrcs[ds].ds_uri,
-	    sizeof(datasrcs[ds].ds_uri),
-	    urifmt, datasrcs[ds].ds_name);
-	datasrcs[ds].ds_flags |= DSF_FORCE;
+	struct datasrc *ds;
+
+	ds = &datasrcs[dsid];
+	snprintf(ds->ds_uri, sizeof(ds->ds_uri), urifmt, ds->ds_name);
+	ds->ds_flags |= DSF_FORCE;
 	st.st_rf |= RF_DATASRC;
 	dsfopts &= ~DSFO_LIVE;
 }
@@ -196,7 +197,7 @@ ds_set(const char *fn, int flags)
 
 	panel_rebuild(PANEL_DSCHO);
 	snprintf(path, sizeof(path), "%s/%s/%s",
-	    ds_browsedir, fn, datasrcs[0].ds_name);
+	    ds_browsedir, fn, _PATH_ISDUMP);
 	if (stat(path, &stb) == -1) {
 		if (errno != ENOENT)
 			err(1, "stat %s", path);
@@ -340,15 +341,22 @@ ds_open(int type)
 	struct http_res res;
 	struct datasrc *ds;
 	struct tm tm_zero;
-	int fd, flg;
+	int ust, fd, flg;
 
 	ds = &datasrcs[type];
 	if (!uri_parse(ds->ds_uri, proto, host, port, path))
 		return (NULL);
 	if (strcmp(proto, "file") == 0) {
-		if ((fd = open(path, O_RDONLY)) == -1)
-			return (NULL);
-		ds->ds_us = us_init(fd, UST_LOCAL, "r");
+		ust = UST_LOCAL;
+		if ((fd = open(path, O_RDONLY)) == -1) {
+			strncat(path, ".gz",			/* XXX */
+			    sizeof(path) - strlen(path) - 1);
+			path[sizeof(path) - 1] = '\0';
+			if ((fd = open(path, O_RDONLY)) == -1)
+				return (NULL);
+			ust = UST_GZIP;
+		}
+		ds->ds_us = us_init(fd, ust, "r");
 	} else if (strcmp(proto, "http") == 0 ||
 	    strcmp(proto, "https") == 0 ||
 	    strcmp(proto, "gssapi") == 0) {
@@ -364,8 +372,7 @@ ds_open(int type)
 #endif
 			{
 				ds_liveproto = "http";
-				snprintf(proto, sizeof(proto),
-				    "http");
+				snprintf(proto, sizeof(proto), "http");
 				port[0] = '\0';
 				ds_setlive();
 				st.st_rf &= ~RF_DATASRC;
@@ -507,6 +514,7 @@ dsc_open(int type, const char *sid)
 	    ds->ds_name);
 	if ((fd = open(fn, O_RDONLY, 0)) == -1)
 		return (NULL);
+	/* XXX try .gz */
 	ds->ds_us = us_init(fd, UST_LOCAL, "r");
 	return (ds);
 }
