@@ -5,6 +5,7 @@
 
 #define _PATH_ARCHIVE	"data/archive"
 #define _PATH_ISAR	".isar"
+#define _PATH_ISDUMP	".isdump"
 #define _PATH_FLYBYDIR	"data/flybys"
 #define _PATH_DXSCRIPTS	"scripts"
 #define _PATH_HOTKEY	"data/hotkey-%c"
