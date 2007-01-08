@@ -32,6 +32,7 @@ my $oldsufx = ".bak";
 
 my @date = localtime(time);
 my $ardir   = strftime("$outdir/archive/%Y-%m/%Y-%m-%d/%H-%M", @date);
+my $isdumpfn= strftime("$outdir/archive/%Y-%m/%Y-%m-%d/%H-%M/.isdump", @date);
 my $lastdir = strftime("$outdir/archive/%Y-%m/%Y-%m-%d/.last", @date);
 my $aridx   = strftime("$outdir/archive/%Y-%m/%Y-%m-%d/.isar", @date);
 
@@ -263,7 +264,7 @@ if (!-e $lastdir || `diff -qr $lastdir $outdir | grep -v ^Only`) {
 	my $lastreal = readlink $lastdir;
 	`ln -s $lastreal $ardir`;
 }
-`touch $aridx`;
+`touch $aridx $isdumpfn`; # XXX move inside first "if" branch above.
 
 `rm -f $reel_last_symlink && ln -s $reel_last_actual $reel_last_symlink`;
 
