@@ -952,9 +952,9 @@ panel_refresh_date(struct panel *p)
 		char fn[PATH_MAX];
 		struct stat stb;
 
-		snprintf(fn, sizeof(fn), "%s/%s/%s",
-		    _PATH_SESSIONS, ssp->ss_sid,
-		    datasrcs[DS_NODE].ds_name);
+		/* XXX save stat info in ds_open */
+		snprintf(fn, sizeof(fn), "%s/%s",
+		    _PATH_SESSIONS, ssp->ss_sid);
 		if (stat(fn, &stb) == -1)
 			err(1, "stat %s", fn);
 		now = stb.st_mtime;
@@ -1534,12 +1534,12 @@ dir_isreel(const char *fn)
 }
 
 int
-dir_isarchive(const char *fn)
+dir_isdump(const char *fn)
 {
 	char path[PATH_MAX];
 	struct stat stb;
 
-	snprintf(path, sizeof(path), "%s/%s", fn, datasrcs[0].ds_name);
+	snprintf(path, sizeof(path), "%s/%s", fn, _PATH_ISDUMP);
 	if (stat(path, &stb) == -1) {
 		if (errno != ENOENT)
 			errx(1, "stat %s", path);
@@ -1642,7 +1642,7 @@ panel_refresh_dscho(struct panel *p)
 	    PWARG_GSCB, gscb_pw_dscho,
 	    PWARG_GRP_CHECKED, live, PWARG_LAST);
 	pwidgets_dir(p, ds_browsedir, &ds_list, live ? "" : ds_dir,
-	    ds_set, PWDF_DIRSONLY, dir_isarchive);
+	    ds_set, PWDF_DIRSONLY, dir_isdump);
 	pwidget_group_end(p);
 	pwidget_sortlist(p, pwidget_cmp);
 	if (ds_list.ol_tcur < 35)
