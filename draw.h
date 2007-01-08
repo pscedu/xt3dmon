@@ -33,6 +33,7 @@ void	 make_selnodes(void);
 /* widget.c */
 void	 draw_cube(const struct fvec *, const struct fill *, int);
 void	 draw_sphere(const struct fvec *, const struct fill *, int);
+void	 draw_square(const struct fvec *, const struct fill *);
 
 extern unsigned int dl_cluster[2];
 extern unsigned int dl_ground[2];

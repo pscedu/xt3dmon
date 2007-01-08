@@ -25,6 +25,7 @@
 #include "state.h"
 #include "util.h"
 #include "xmath.h"
+#include "yod.h"
 
 #define SELNODE_IF_NEEDED(n, selpipes) \
 	((selpipes) ? (n)->n_flags & NF_SELNODE : 1)
@@ -383,17 +384,8 @@ node_tween_dir(float *curpos, float *targetpos)
 __inline void
 draw_node(struct node *n, int flags)
 {
-	struct fvec *fvp;
+	struct fvec *fvp, *dimp, dim;
 	struct fill *fp;
-
-/*
-	if (!node_show(n))
-		return;
-
-	if (st.st_opts & OP_SUBSET &&
-	    (n->n_flags & NF_SHOW) == 0)
-		return;
-*/
 
 	if (st.st_opts & OP_NODEANIM &&
 	    st.st_vmode != VM_WIRED) {
@@ -420,7 +412,22 @@ draw_node(struct node *n, int flags)
 
 	switch (n->n_geom) {
 	case GEOM_CUBE:
-		draw_cube(n->n_dimp, fp, DF_FRAME);
+		if (n->n_yod && n->n_yod->y_single) {
+			dim = *n->n_dimp;
+			dim.fv_d *= 0.5;
+			dimp = &dim;
+		} else {
+			dimp = n->n_dimp;
+			if (st.st_dmode == DM_JOB ||
+			    st.st_dmode == DM_YOD) {
+				glPushMatrix();
+				glTranslatef(-0.001, 0.0,
+				    dimp->fv_d * 0.5);
+				draw_square(dimp, &fill_black);
+				glPopMatrix();
+			}
+		}
+		draw_cube(dimp, fp, DF_FRAME);
 		break;
 	case GEOM_SPHERE:
 		draw_sphere(n->n_dimp, fp, DF_FRAME);
