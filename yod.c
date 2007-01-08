@@ -54,7 +54,7 @@ yod_findbyid(int id, int *pos)
  * Initialize a yod structure.
  * - Determine if the allocation uses single or dual cores
  *   for each of the nodes in the yod.  To do this, we must
- *   parse the yod command and see if "-sn" was specified.
+ *   parse the yod command and see if "-SN" was specified.
  */
 void
 yod_init(struct yod *y)
@@ -84,7 +84,7 @@ yod_init(struct yod *y)
 			    p[1] == '.')
 				p++;
 		} else if (*p == '-') {
-			if (strncmp(p + 1, "sn", 2) == 0 &&
+			if (strncmp(p + 1, "SN", 2) == 0 &&
 			    (isspace(p[3]) || p[3] == '\0')) {
 				y->y_single = 1;
 				break;
