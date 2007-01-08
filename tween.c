@@ -28,7 +28,7 @@
 #define TWEEN_MAX_LOOK		(0.06f)
 #define TWEEN_MAX_UP		(0.10f)
 
-double tween_intv = 0.5;
+double tween_intv = 0.05;
 double tween_thres = 0.001;
 
 __inline void
