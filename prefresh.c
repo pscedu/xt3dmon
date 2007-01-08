@@ -506,6 +506,7 @@ panel_refresh_legend(struct panel *p)
 void
 panel_refresh_ninfo(struct panel *p)
 {
+	const char *coreusage;
 	struct physcoord pc;
 	struct objhdr *ohp;
 	struct objlist *ol;
@@ -619,16 +620,23 @@ panel_refresh_ninfo(struct panel *p)
 	node_physpos(n, &pc);
 	iv = &n->n_wiv;
 
+	coreusage = "";
+	if (n->n_state == SC_USED)
+		if (n->n_yod && n->n_yod->y_single)
+			coreusage = ", single-core";
+		else
+			coreusage = ", dual-core";
+
 	panel_set_content(p,
 	    "- Node Information -\n"
 	    "Node ID: %d\n"
 	    "Hardware name: c%d-%dc%ds%dn%d\n"
 	    "Wired position: <%d,%d,%d>\n"
-	    "Status: %s",
+	    "Status: %s%s",
 	    n->n_nid,
 	    pc.pc_cb, pc.pc_r, pc.pc_cg, pc.pc_m, pc.pc_n,
 	    iv->iv_x, iv->iv_y, iv->iv_z,
-	    statusclass[n->n_state].nc_name);
+	    statusclass[n->n_state].nc_name, coreusage);
 
 	if (n->n_temp == DV_NODATA)
 		panel_add_content(p, "\nTemperature: N/A");
@@ -692,10 +700,13 @@ panel_refresh_ninfo(struct panel *p)
 		      (n->n_job->j_tmdur ?
 		       n->n_job->j_tmdur : 1),
 		    n->n_job->j_ncpus);
-		if (n->n_job->j_mem)
+		if (n->n_job->j_mem) {
+			char membuf[FMT_SCALED_BUFSIZ];
+
+			fmt_scaled(n->n_job->j_mem * 1024, membuf);
 			panel_add_content(p,
-			    "\nJob Login Node Memory: %dKB",
-			    n->n_job->j_mem);
+			    "\nJob Login Node Memory: %s", membuf);
+		}
 	}
 
 	if (n->n_yod) {
