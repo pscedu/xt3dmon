@@ -460,3 +460,24 @@ draw_sphere(const struct fvec *dimp, const struct fill *fp, int flags)
 
 	glPopMatrix();
 }
+
+void
+draw_square(const struct fvec *dimp, const struct fill *fp)
+{
+	glEnable(GL_LINE_SMOOTH);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glHint(GL_LINE_SMOOTH_HINT, gl_drawhint);
+
+	glLineWidth(0.6f);
+	glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
+	glBegin(GL_LINE_LOOP);
+	glVertex3d(0.0, 0.0, 0.0);
+	glVertex3d(0.0 + dimp->fv_w, 0.0, 0.0);
+	glVertex3d(0.0 + dimp->fv_w, 0.0 + dimp->fv_h, 0.0);
+	glVertex3d(0.0, 0.0 + dimp->fv_h, 0.0);
+	glEnd();
+
+	glDisable(GL_LINE_SMOOTH);
+	glDisable(GL_BLEND);
+}
