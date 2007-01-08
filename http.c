@@ -130,8 +130,8 @@ http_open(struct http_req *req, struct http_res *res)
 			}
 		}
 	}
-	if (us_error(us))
-		err(1, "us_gets");
+	if (us_sawerror(us))
+		errx(1, "us_gets: %s", us_errstr(us));
 	errno = 0;
 	return (us);
 }

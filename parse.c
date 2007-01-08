@@ -358,8 +358,8 @@ parse_node(const struct datasrc *ds)
 bad:
 		prerror("node", lineno, buf, s);
 	}
-	if (us_error(ds->ds_us))
-		warn("us_gets");
+	if (us_sawerror(ds->ds_us))
+		warnx("us_gets: %s", us_errstr(ds->ds_us));
 	errno = 0;
 
 	for (j = 0; j < job_list.ol_tcur; j++) {
@@ -433,8 +433,8 @@ parse_yod(const struct datasrc *ds)
 bad:
 		prerror("yod", lineno, buf, s);
 	}
-	if (us_error(ds->ds_us))
-		warn("us_gets");
+	if (us_sawerror(ds->ds_us))
+		warnx("us_gets: %s", us_errstr(ds->ds_us));
 	errno = 0;
 }
 
@@ -486,8 +486,8 @@ parse_job(const struct datasrc *ds)
 bad:
 		prerror("job", lineno, buf, s);
 	}
-	if (us_error(ds->ds_us))
-		warn("us_gets");
+	if (us_sawerror(ds->ds_us))
+		warnx("us_gets: %s", us_errstr(ds->ds_us));
 	errno = 0;
 }
 
@@ -546,8 +546,8 @@ parse_rt(const struct datasrc *ds)
 bad:
 		prerror("rt", lineno, buf, s);
 	}
-	if (us_error(ds->ds_us))
-		warn("us_gets");
+	if (us_sawerror(ds->ds_us))
+		warnx("us_gets: %s", us_errstr(ds->ds_us));
 	errno = 0;
 }
 
@@ -601,8 +601,8 @@ parse_ss(const struct datasrc *ds)
 bad:
 		warnx("rt:%d: malformed line [%s] [%s]", lineno, buf, s);
 	}
-	if (us_error(ds->ds_us))
-		warn("us_gets");
+	if (us_sawerror(ds->ds_us))
+		warnx("us_gets: %s", us_errstr(ds->ds_us));
 	errno = 0;
 }
 
