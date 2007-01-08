@@ -45,7 +45,7 @@ us_close(struct ustream *usp)
  * for socket communication.
  */
 __inline ssize_t
-us_write(const struct ustream *usp, const void *buf, size_t siz)
+us_write(struct ustream *usp, const void *buf, size_t siz)
 {
 	return (usp->us_dtab->ust_write(usp, buf, siz));
 }
@@ -57,9 +57,15 @@ us_gets(struct ustream *usp, char *s, int siz)
 }
 
 __inline int
-us_error(const struct ustream *usp)
+us_sawerror(const struct ustream *usp)
 {
-	return (usp->us_dtab->ust_error(usp));
+	return (usp->us_dtab->ust_sawerror(usp));
+}
+
+__inline const char *
+us_errstr(const struct ustream *usp)
+{
+	return (usp->us_dtab->ust_errstr(usp));
 }
 
 __inline int

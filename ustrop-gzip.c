@@ -34,7 +34,7 @@ ustrop_gzip_close(const struct ustream *usp)
 }
 
 __inline ssize_t
-ustrop_gzip_write(__unused const struct ustream *usp,
+ustrop_gzip_write(__unused struct ustream *usp,
     __unused const void *buf, __unused size_t siz)
 {
 	errx(1, "not supported"); /* XXX */
@@ -47,12 +47,20 @@ ustrop_gzip_gets(struct ustream *usp, char *s, int siz)
 }
 
 __inline int
-ustrop_gzip_error(const struct ustream *usp)
+ustrop_gzip_sawerror(const struct ustream *usp)
 {
 	int error;
 
 	gzerror(usp->us_zfp, &error);
-	return (error);
+	return (error != Z_OK && error != Z_STREAM_END);
+}
+
+__inline const char *
+ustrop_gzip_errstr(const struct ustream *usp)
+{
+	int error;
+
+	return (gzerror(usp->us_zfp, &error));
 }
 
 __inline int
@@ -66,6 +74,7 @@ struct ustrdtab ustrdtab_gzip = {
 	ustrop_gzip_close,
 	ustrop_gzip_write,
 	ustrop_gzip_gets,
-	ustrop_gzip_error,
+	ustrop_gzip_sawerror,
+	ustrop_gzip_errstr,
 	ustrop_gzip_eof
 };

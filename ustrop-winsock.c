@@ -24,9 +24,14 @@ ustrop_winsock_close(const struct ustream *usp)
 }
 
 ssize_t
-ustrop_winsock_write(const struct ustream *usp, const void *buf, size_t siz)
+ustrop_winsock_write(struct ustream *usp, const void *buf, size_t siz)
 {
-	return (send(usp->us_fd, buf, siz, 0));
+	ssize_t rc;
+
+	rc = send(usp->us_fd, buf, siz, 0);
+	if (rc == -1)
+		usp->usp_error = rc;
+	return (rc);
 }
 
 char *
@@ -66,8 +71,11 @@ ustrop_winsock_gets(struct ustream *usp, char *s, int siz)
 		nr = recv(usp->us_fd, usp->us_buf, chunksiz, 0);
 		usp->us_lastread = nr;
 
-		if (nr == -1 || nr == 0)
+		if (nr == -1 || nr == 0) {
+			if (nr == -1)
+				usp->us_error = errno;
 			return (NULL);
+		}
 
 		usp->us_bufstart = usp->us_buf;
 		usp->us_bufend = usp->us_buf + nr - 1;
@@ -81,9 +89,15 @@ ustrop_winsock_gets(struct ustream *usp, char *s, int siz)
 }
 
 __inline int
-ustrop_winsock_error(const struct ustream *usp)
+ustrop_winsock_sawerror(const struct ustream *usp)
 {
 	return (usp->us_lastread == -1);
+}
+
+__inline const char *
+ustrop_winsock_errstr(const struct ustream *usp)
+{
+	return (strerror(usp->usp_error));
 }
 
 __inline int

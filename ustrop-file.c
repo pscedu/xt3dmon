@@ -3,6 +3,7 @@
 #include "compat.h"
 
 #include <err.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -32,21 +33,35 @@ ustrop_file_close(const struct ustream *usp)
  * Yes, this shouldn't be here, but it's needed for sockets.
  */
 __inline ssize_t
-ustrop_file_write(const struct ustream *usp, const void *buf, size_t siz)
+ustrop_file_write(struct ustream *usp, const void *buf, size_t siz)
 {
-	return (write(usp->us_fd, buf, siz));
+	ssize_t rc;
+
+	rc = write(usp->us_fd, buf, siz);
+	usp->us_error = errno;
+	return (rc);
 }
 
 __inline char *
 ustrop_file_gets(struct ustream *usp, char *s, int siz)
 {
-	return (fgets(s, siz, usp->us_fp));
+	char *p;
+
+	p = fgets(s, siz, usp->us_fp);
+	usp->us_error = errno;
+	return (p);
 }
 
 __inline int
-ustrop_file_error(const struct ustream *usp)
+ustrop_file_sawerror(const struct ustream *usp)
 {
 	return (ferror(usp->us_fp));
+}
+
+__inline const char *
+ustrop_file_errstr(const struct ustream *usp)
+{
+	return (strerror(usp->us_error));
 }
 
 __inline int
@@ -60,6 +75,7 @@ struct ustrdtab ustrdtab_file = {
 	ustrop_file_close,
 	ustrop_file_write,
 	ustrop_file_gets,
-	ustrop_file_error,
+	ustrop_file_sawerror,
+	ustrop_file_errstr,
 	ustrop_file_eof
 };

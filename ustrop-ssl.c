@@ -40,7 +40,7 @@ ustrop_ssl_close(const struct ustream *usp)
 }
 
 ssize_t
-ustrop_ssl_write(const struct ustream *usp, const void *buf, size_t siz)
+ustrop_ssl_write(struct ustream *usp, const void *buf, size_t siz)
 {
 	return (SSL_write(usp->us_ssl, buf, siz));
 }
@@ -97,9 +97,15 @@ ustrop_ssl_gets(struct ustream *usp, char *s, int siz)
 }
 
 __inline int
-ustrop_ssl_error(const struct ustream *usp)
+ustrop_ssl_sawerror(const struct ustream *usp)
 {
 	return (usp->us_lastread == -1);
+}
+
+__inline const char *
+ustrop_ssl_errstr(const struct ustream *usp)
+{
+	return (NULL);
 }
 
 __inline int
@@ -113,6 +119,7 @@ struct ustrdtab ustrdtab_ssl = {
 	ustrop_ssl_close,
 	ustrop_ssl_write,
 	ustrop_ssl_gets,
-	ustrop_ssl_error,
+	ustrop_ssl_sawerror,
+	ustrop_ssl_errstr,
 	ustrop_ssl_eof
 };

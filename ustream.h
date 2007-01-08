@@ -20,6 +20,7 @@ struct ustream {
 	const char	*us_modes;
 
 	int		 us_fd;
+	int		 us_error;
 	FILE		*us_fp;
 	void		*us_zfp;
 	ssize_t		 us_lastread;
@@ -33,17 +34,19 @@ struct ustream {
 struct ustrdtab {
 	int		 (*ust_init)(struct ustream *);
 	int		 (*ust_close)(const struct ustream *);
-	ssize_t		 (*ust_write)(const struct ustream *, const void *, size_t);
+	ssize_t		 (*ust_write)(struct ustream *, const void *, size_t);
 	char		*(*ust_gets)(struct ustream *, char *, int);
-	int		 (*ust_error)(const struct ustream *);
+	int		 (*ust_sawerror)(const struct ustream *);
+	const char	*(*ust_errstr)(const struct ustream *);
 	int		 (*ust_eof)(const struct ustream *);
 };
 
 struct ustream	*us_init(int, int, const char *);
 int		 us_close(struct ustream *);
-ssize_t		 us_write(const struct ustream *, const void *, size_t);
+ssize_t		 us_write(struct ustream *, const void *, size_t);
 char		*us_gets(struct ustream *, char *, int);
-int		 us_error(const struct ustream *);
+int		 us_sawerror(const struct ustream *);
+const char	*us_errstr(const struct ustream *);
 int		 us_eof(const struct ustream *);
 
 extern struct ustrdtab	*ustrdtabs[NUST];
