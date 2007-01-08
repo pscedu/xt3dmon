@@ -107,6 +107,10 @@ reel_advance(void)
 void
 reel_end(void)
 {
+	/*
+	 * XXX restore to last dataset, which may
+	 * not be possible if it was a URI.
+	 */
 	ds_setlive();
 	panel_rebuild(PANEL_REEL);
 }
