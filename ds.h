@@ -13,7 +13,7 @@ struct datasrc {
 
 /* Data source flags. */
 #define DSF_FORCE	(1<<0)
-#define DSF_LIVE	(1<<1)
+#define DSF_LIVE	(1<<1)		/* Real-time data (not interval). */
 
 /* Data source fetching options. */
 #define DSFO_CRIT	(1<<0)
