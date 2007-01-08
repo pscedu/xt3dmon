@@ -128,8 +128,10 @@ sn_del(struct node *n)
 void
 sn_toggle(struct node *n, const struct fvec *offv)
 {
-	if (!sn_del(n))
+	if (!sn_del(n)) {
 		sn_insert(n, offv);
+		selnode_clean = 0;
+	}
 }
 
 void
