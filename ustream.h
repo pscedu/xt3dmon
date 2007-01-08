@@ -9,7 +9,8 @@
 #define UST_LOCAL	0
 #define UST_REMOTE	1
 #define UST_SSL		2
-#define NUST		3
+#define UST_GZIP	3
+#define NUST		4
 
 struct ustrdtab;
 
