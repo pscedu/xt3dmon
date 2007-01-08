@@ -3,7 +3,9 @@
 #include "mon.h"
 
 #include <libgen.h>
+#include <math.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "buf.h"
 #include "util.h"
@@ -112,4 +114,20 @@ escape_printf(struct buf *bufp, const char *s)
 			break;
 		}
 	}
+}
+
+void
+fmt_scaled(size_t bytes, char *buf)
+{
+	const char tab[] = "KMGTE";
+	int lvl;
+	double siz;
+
+	lvl = -1;
+	siz = bytes;
+	do {
+		lvl++;
+		siz /= 1024.0;
+	} while (round(siz * 100.0) >= 100000.0 && lvl < (int)strlen(tab));
+	snprintf(buf, FMT_SCALED_BUFSIZ, "%.2f%cB", siz, tab[lvl]);
 }
