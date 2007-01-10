@@ -8,7 +8,7 @@ use POSIX;
 use strict;
 use warnings;
 
-my $err = 0;
+my $err = 1;
 # start config
 
 my $smwhost = "smw";
@@ -152,6 +152,7 @@ $sth = $dbh->prepare(<<SQL) or dberr("preparing sql");
 SQL
 
 printf { $fh{node} }
+    "# ", strftime("%Y-%m-%d %H:%M", @date), "\n",
     "# 1	2  3  4 5 6	7 8 9	10	11	12	13	14	15		16\n",
     "# nid	r cb cg m n	x y z	stat	enabled	jobid	temp	yodid	<UNUSED>	lustat\n";
 
@@ -204,6 +205,11 @@ $sth->finish;
 
 $dbh->disconnect;
 
+printf { $fh{job} }
+    "# ", strftime("%Y-%m-%d %H:%M", @date), "\n",
+    "# 1	2	3	4	5	6	7	8\n",
+    "# id	owner	tmdur	tmuse	mem	ncpus	queue	name\n";
+
 # Gather data from qstat(1) and print job data file.
 my %j = (state => "");
 open CONNFH, "ssh $login_host \"perl -We 'my \\\$pid = fork; " .
@@ -217,6 +223,7 @@ for (;;) {
 	}
 	if (eof CONNFH or $line =~ /^Job Id: (\d+)/) {
 		if ($j{state} eq "R") {
+			$j{owner} .= "\t" if length $j{owner} < 8;
 			printf { $fh{job} } "%d\t%s\t%d\t%d\t%d\t%d\t%s\t%s\n",
 			    @j{qw(id owner tmdur tmuse mem ncpus queue name)};
 		}
