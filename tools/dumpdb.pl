@@ -151,7 +151,7 @@ $sth = $dbh->prepare(<<SQL) or dberr("preparing sql");
 		p.processor_id = l.processor_id
 SQL
 
-printf { $fh{node} }
+print { $fh{node} }
     "# ", strftime("%Y-%m-%d %H:%M", @date), "\n",
     "# 1	2  3  4 5 6	7 8 9	10	11	12	13	14	15		16\n",
     "# nid	r cb cg m n	x y z	stat	enabled	jobid	temp	yodid	<UNUSED>	lustat\n";
@@ -205,7 +205,7 @@ $sth->finish;
 
 $dbh->disconnect;
 
-printf { $fh{job} }
+print { $fh{job} }
     "# ", strftime("%Y-%m-%d %H:%M", @date), "\n",
     "# 1	2	3	4	5	6	7	8\n",
     "# id	owner	tmdur	tmuse	mem	ncpus	queue	name\n";
