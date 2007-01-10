@@ -207,8 +207,8 @@ $dbh->disconnect;
 
 print { $fh{job} }
     "# ", strftime("%Y-%m-%d %H:%M", @date), "\n",
-    "# 1	2	3	4	5	6	7	8\n",
-    "# id	owner	tmdur	tmuse	mem	ncpus	queue	name\n";
+    "# 1	2		3	4	5	6	7	8\n",
+    "# id	owner		tmdur	tmuse	mem	ncpus	queue	name\n";
 
 # Gather data from qstat(1) and print job data file.
 my %j = (state => "");
