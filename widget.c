@@ -13,7 +13,7 @@
 #include "state.h"
 #include "xmath.h"
 
-#define SHIFT_OFFSET (0.001)
+#define SHIFT_OFFSET (0.0001)
 
 #define LDF_SHIFT (1<<0)
 
