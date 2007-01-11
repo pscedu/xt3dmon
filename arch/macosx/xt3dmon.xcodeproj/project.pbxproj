@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6D0818630B56226100BBEAE2 /* selnid.c in Sources */ = {isa = PBXBuildFile; fileRef = 6D0818620B56226100BBEAE2 /* selnid.c */; };
 		6DBE1E4A0919605200AFFCDC /* buf.c in Sources */ = {isa = PBXBuildFile; fileRef = 6DBE1E250919605200AFFCDC /* buf.c */; };
 		6DBE1E4B0919605200AFFCDC /* callout.c in Sources */ = {isa = PBXBuildFile; fileRef = 6DBE1E270919605200AFFCDC /* callout.c */; };
 		6DBE1E4C0919605200AFFCDC /* cam.c in Sources */ = {isa = PBXBuildFile; fileRef = 6DBE1E280919605200AFFCDC /* cam.c */; };
@@ -36,6 +37,7 @@
 		6DBE1E650919605200AFFCDC /* tween.c in Sources */ = {isa = PBXBuildFile; fileRef = 6DBE1E460919605200AFFCDC /* tween.c */; };
 		6DBE1E660919605200AFFCDC /* uinp.c in Sources */ = {isa = PBXBuildFile; fileRef = 6DBE1E470919605200AFFCDC /* uinp.c */; };
 		6DBE1E670919605200AFFCDC /* vec.c in Sources */ = {isa = PBXBuildFile; fileRef = 6DBE1E480919605200AFFCDC /* vec.c */; };
+		6DF424570B55AAD60021806F /* ustrop-gzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 6DF424560B55AAD60021806F /* ustrop-gzip.c */; };
 		6DFABA6F096ECF12001374A0 /* arch.c in Sources */ = {isa = PBXBuildFile; fileRef = 6DFABA66096ECF12001374A0 /* arch.c */; };
 		6DFABA71096ECF12001374A0 /* gl.c in Sources */ = {isa = PBXBuildFile; fileRef = 6DFABA68096ECF12001374A0 /* gl.c */; };
 		6DFABA72096ECF12001374A0 /* math.c in Sources */ = {isa = PBXBuildFile; fileRef = 6DFABA69096ECF12001374A0 /* math.c */; };
@@ -67,28 +69,10 @@
 		D3E2780808BB676000B4B44E /* xt3dmon-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D3E2780708BB676000B4B44E /* xt3dmon-Info.plist */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXBuildStyle section */
-		D37C167E0833BE1100B1AA74 /* Development */ = {
-			isa = PBXBuildStyle;
-			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				HEADER_SEARCH_PATHS = /opt/local/include/libpng12;
-			};
-			name = Development;
-		};
-		D37C167F0833BE1100B1AA74 /* Deployment */ = {
-			isa = PBXBuildStyle;
-			buildSettings = {
-				COPY_PHASE_STRIP = YES;
-				GCC_OPTIMIZATION_LEVEL = 3;
-			};
-			name = Deployment;
-		};
-/* End PBXBuildStyle section */
-
 /* Begin PBXFileReference section */
+		6D0818620B56226100BBEAE2 /* selnid.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = selnid.c; path = ../../selnid.c; sourceTree = SOURCE_ROOT; };
 		6D1A30320976C79A008279F3 /* xmath.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = xmath.h; path = ../../xmath.h; sourceTree = SOURCE_ROOT; };
-		6DBE1E0B09195F5800AFFCDC /* xt3dmon.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = xt3dmon.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6DBE1E0B09195F5800AFFCDC /* xt3dmon.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = xt3dmon.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6DBE1E250919605200AFFCDC /* buf.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = buf.c; path = ../../buf.c; sourceTree = SOURCE_ROOT; };
 		6DBE1E260919605200AFFCDC /* buf.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = buf.h; path = ../../buf.h; sourceTree = SOURCE_ROOT; };
 		6DBE1E270919605200AFFCDC /* callout.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = callout.c; path = ../../callout.c; sourceTree = SOURCE_ROOT; };
@@ -124,6 +108,7 @@
 		6DBE1E460919605200AFFCDC /* tween.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = tween.c; path = ../../tween.c; sourceTree = SOURCE_ROOT; };
 		6DBE1E470919605200AFFCDC /* uinp.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = uinp.c; path = ../../uinp.c; sourceTree = SOURCE_ROOT; };
 		6DBE1E480919605200AFFCDC /* vec.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = vec.c; path = ../../vec.c; sourceTree = SOURCE_ROOT; };
+		6DF424560B55AAD60021806F /* ustrop-gzip.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = "ustrop-gzip.c"; path = "../../ustrop-gzip.c"; sourceTree = SOURCE_ROOT; };
 		6DFABA57096ECEC2001374A0 /* phys.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = phys.h; path = ../../phys.h; sourceTree = SOURCE_ROOT; };
 		6DFABA5A096ECEC2001374A0 /* ustream.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = ustream.h; path = ../../ustream.h; sourceTree = SOURCE_ROOT; };
 		6DFABA66096ECF12001374A0 /* arch.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = arch.c; path = ../../arch.c; sourceTree = SOURCE_ROOT; };
@@ -287,6 +272,8 @@
 		D37C16CA0833BF9400B1AA74 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				6D0818620B56226100BBEAE2 /* selnid.c */,
+				6DF424560B55AAD60021806F /* ustrop-gzip.c */,
 				9B61524F0A7940D60008CDA2 /* gss.c */,
 				9B9C2C400A713AD600D00D18 /* dx-lex.c */,
 				9B9C2C410A713AD600D00D18 /* dx-parse.c */,
@@ -358,62 +345,11 @@
 			);
 			buildRules = (
 			);
-			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				GCC_DEBUGGING_SYMBOLS = full;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_MODEL_TUNING = G4;
-				GCC_OPTIMIZATION_LEVEL = 3;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Carbon.framework/Headers/Carbon.h";
-				INFOPLIST_FILE = "xt3dmon-Info.plist";
-				INSTALL_PATH = "$(USER_APPS_DIR)";
-				OTHER_CFLAGS = "-L/usr/local/lib -D_GSS";
-				OTHER_LDFLAGS = (
-					"-framework",
-					Carbon,
-					"-lpng",
-					"-L/opt/local/lib",
-					"-lncurses",
-					"-lz",
-					"-lm",
-				);
-				OTHER_REZFLAGS = "";
-				PREBINDING = NO;
-				PRODUCT_NAME = xt3dmon;
-				SECTORDER_FLAGS = "";
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wno-four-char-constants",
-					"-Wno-unknown-pragmas",
-				);
-			};
 			dependencies = (
 			);
 			name = xt3dmon;
 			productName = carbon_mon;
 			productReference = 6DBE1E0B09195F5800AFFCDC /* xt3dmon.app */;
-			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
-<plist version=\"1.0\">
-<dict>
-	<key>CFBundleDevelopmentRegion</key>
-	<string>English</string>
-	<key>CFBundleExecutable</key>
-	<string>carbon_mon</string>
-	<key>CFBundleIdentifier</key>
-	<string>com.yourcompany.carbon_mon</string>
-	<key>CFBundleInfoDictionaryVersion</key>
-	<string>6.0</string>
-	<key>CFBundlePackageType</key>
-	<string>APPL</string>
-	<key>CFBundleSignature</key>
-	<string>????</string>
-	<key>CFBundleVersion</key>
-	<string>1.0</string>
-</dict>
-</plist>
-";
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -422,12 +358,6 @@
 		D37C16800833BE1100B1AA74 /* Project object */ = {
 			isa = PBXProject;
 			buildConfigurationList = 6D787DEF09280CED00D59424 /* Build configuration list for PBXProject "xt3dmon" */;
-			buildSettings = {
-			};
-			buildStyles = (
-				D37C167E0833BE1100B1AA74 /* Development */,
-				D37C167F0833BE1100B1AA74 /* Deployment */,
-			);
 			hasScannedForEncodings = 0;
 			mainGroup = D37C167C0833BE1100B1AA74;
 			productRefGroup = D37C168D0833BE3600B1AA74 /* Products */;
@@ -508,6 +438,8 @@
 				9B9C2C430A713AD600D00D18 /* dx-parse.c in Sources */,
 				9B61523F0A7922110008CDA2 /* rte.c in Sources */,
 				9B6152500A7940D60008CDA2 /* gss.c in Sources */,
+				6DF424570B55AAD60021806F /* ustrop-gzip.c in Sources */,
+				6D0818630B56226100BBEAE2 /* selnid.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -527,7 +459,10 @@
 				HEADER_SEARCH_PATHS = /opt/local/include/libpng12;
 				INFOPLIST_FILE = "xt3dmon-Info.plist";
 				INSTALL_PATH = "$(USER_APPS_DIR)";
-				OTHER_CFLAGS = "-L/usr/local/lib -D_GSS";
+				OTHER_CFLAGS = (
+					"-L/usr/local/lib",
+					"-D_GSS",
+				);
 				OTHER_LDFLAGS = (
 					"-framework",
 					Carbon,
@@ -565,7 +500,10 @@
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Carbon.framework/Headers/Carbon.h";
 				INFOPLIST_FILE = "xt3dmon-Info.plist";
 				INSTALL_PATH = "$(USER_APPS_DIR)";
-				OTHER_CFLAGS = "-L/usr/local/lib -D_GSS";
+				OTHER_CFLAGS = (
+					"-L/usr/local/lib",
+					"-D_GSS",
+				);
 				OTHER_LDFLAGS = (
 					"-framework",
 					Carbon,
@@ -603,7 +541,10 @@
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Carbon.framework/Headers/Carbon.h";
 				INFOPLIST_FILE = "xt3dmon-Info.plist";
 				INSTALL_PATH = "$(USER_APPS_DIR)";
-				OTHER_CFLAGS = "-L/usr/local/lib -D_GSS";
+				OTHER_CFLAGS = (
+					"-L/usr/local/lib",
+					"-D_GSS",
+				);
 				OTHER_LDFLAGS = (
 					"-framework",
 					Carbon,
