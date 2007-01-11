@@ -34,7 +34,8 @@ double tween_thres = 0.001;
 __inline void
 tween_probe(float *cur, float stop, float max, float *scale, float *want)
 {
-	if (stop != *cur) {
+	if (stop - *cur > tween_thres ||
+	    stop - *cur < -tween_thres) {
 		*want = (stop - *cur) * tween_intv;
 		if (*want == 0.0f) {
 			/* recalc() won't get called. */
@@ -48,15 +49,12 @@ tween_probe(float *cur, float stop, float max, float *scale, float *want)
 }
 
 __inline void
-tween_recalc(float *cur, float stop, float scale, float want)
+tween_recalc(float *cur, float scale, float want)
 {
 	if (want) {
 		if (scale < 0.001)
 			scale = 0.001;
 		*cur += want * scale;
-		if (stop - *cur < tween_thres &&
-		    stop - *cur > -tween_thres)
-			*cur = stop;
 	}
 }
 
@@ -107,17 +105,17 @@ tween_update(void)
 	scale_l = MIN3(sc_l.fv_x, sc_l.fv_y, sc_l.fv_z);
 	scale_u = MIN3(sc_u.fv_x, sc_u.fv_y, sc_u.fv_z);
 
-	tween_recalc(&st.st_x, tv.fv_x, scale, want.fv_w);
-	tween_recalc(&st.st_y, tv.fv_y, scale, want.fv_h);
-	tween_recalc(&st.st_z, tv.fv_z, scale, want.fv_d);
+	tween_recalc(&st.st_x, scale, want.fv_w);
+	tween_recalc(&st.st_y, scale, want.fv_h);
+	tween_recalc(&st.st_z, scale, want.fv_d);
 
-	tween_recalc(&st.st_lx, tlv.fv_x, scale_l, want_l.fv_w);
-	tween_recalc(&st.st_ly, tlv.fv_y, scale_l, want_l.fv_h);
-	tween_recalc(&st.st_lz, tlv.fv_z, scale_l, want_l.fv_d);
+	tween_recalc(&st.st_lx, scale_l, want_l.fv_w);
+	tween_recalc(&st.st_ly, scale_l, want_l.fv_h);
+	tween_recalc(&st.st_lz, scale_l, want_l.fv_d);
 
-	tween_recalc(&st.st_ux, tuv.fv_x, scale_u, want_u.fv_w);
-	tween_recalc(&st.st_uy, tuv.fv_y, scale_u, want_u.fv_h);
-	tween_recalc(&st.st_uz, tuv.fv_z, scale_u, want_u.fv_d);
+	tween_recalc(&st.st_ux, scale_u, want_u.fv_w);
+	tween_recalc(&st.st_uy, scale_u, want_u.fv_h);
+	tween_recalc(&st.st_uz, scale_u, want_u.fv_d);
 
 	if (want.fv_w || want.fv_h || want.fv_d ||
 	    want_l.fv_w || want_l.fv_h || want_l.fv_d ||
