@@ -384,7 +384,6 @@ draw_cube(const struct fvec *dimp, const struct fill *fp, int flags)
 		glDisable(GL_LINE_SMOOTH);
 		glDisable(GL_BLEND);
 	}
-
 }
 
 #define SPH_CUTS 7
