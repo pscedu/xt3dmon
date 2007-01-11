@@ -412,20 +412,55 @@ draw_node(struct node *n, int flags)
 
 	switch (n->n_geom) {
 	case GEOM_CUBE:
-		if (n->n_yod && n->n_yod->y_single) {
+		dimp = n->n_dimp;
+
+		if (st.st_dmode == DM_JOB || st.st_dmode == DM_YOD) {
 			dim = *n->n_dimp;
+			dim.fv_w += 0.0002;
+			dim.fv_h += 0.0002;
 			dim.fv_d *= 0.5;
-			dimp = &dim;
-		} else {
-			dimp = n->n_dimp;
-			if (st.st_dmode == DM_JOB ||
-			    st.st_dmode == DM_YOD) {
-				glPushMatrix();
-				glTranslatef(-0.001, 0.0,
-				    dimp->fv_d * 0.5);
-				draw_square(dimp, &fill_black);
-				glPopMatrix();
+
+			glPushMatrix();
+			glTranslatef(-0.0001, -0.0001, dim.fv_d);
+			if (n->n_yod && n->n_yod->y_single) {
+				dimp = &dim;
+
+				glEnable(GL_LINE_SMOOTH);
+				glEnable(GL_BLEND);
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+				glHint(GL_LINE_SMOOTH_HINT, gl_drawhint);
+
+				glBegin(GL_LINES);
+				glLineWidth(0.6f);
+				glColor4f(fill_singlecore.f_r,
+				    fill_singlecore.f_g,
+				    fill_singlecore.f_b,
+				    fill_singlecore.f_a);
+
+				glVertex3d(0.0, 0.0, 0.0);
+				glVertex3d(0.0, 0.0, dim.fv_d);
+
+				glVertex3d(0.0, dim.fv_h, 0.0);
+				glVertex3d(0.0, dim.fv_h, dim.fv_d);
+
+				glVertex3d(dim.fv_w, 0.0, 0.0);
+				glVertex3d(dim.fv_w, 0.0, dim.fv_d);
+
+				glVertex3d(dim.fv_w, dim.fv_h, 0.0);
+				glVertex3d(dim.fv_w, dim.fv_h, dim.fv_d);
+				glEnd();
+
+				glDisable(GL_LINE_SMOOTH);
+				glDisable(GL_BLEND);
+
+				/* Single-core:  draw outline of unused core. */
+				glTranslatef(0.0, 0.0, dim.fv_d);
+				draw_square(&dim, &fill_singlecore);
+			} else if ((fp->f_flags & FF_SKEL) == 0) {
+				/* Dual-core:  draw core divider "line". */
+				draw_square(&dim, &fill_frame);
 			}
+			glPopMatrix();
 		}
 		draw_cube(dimp, fp, DF_FRAME);
 		break;
