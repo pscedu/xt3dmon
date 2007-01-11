@@ -79,6 +79,7 @@ void	 col_get_hash(struct objhdr *, int, struct fill *);
 
 extern struct objlist	 col_list;
 
+/* Common colors. */
 extern struct fill	 fill_black;
 extern struct fill	 fill_grey;
 extern struct fill	 fill_light_blue;
@@ -88,6 +89,7 @@ extern struct fill	 fill_yellow;
 extern struct fill	 fill_pink;
 extern struct fill	 fill_green;
 
+/* Environment object colors. */
 extern struct fill	 fill_bg;
 extern struct fill	 fill_font;
 extern struct fill	 fill_nodata;
@@ -102,12 +104,15 @@ extern struct fill	 fill_checked;
 extern struct fill	 fill_unchecked;
 extern struct fill	 fill_button;
 extern struct fill	 fill_frame;
+extern struct fill	 fill_singlecore;
 
+/* Interface object colors. */
 extern struct fill	 fill_panel;
 extern struct fill	 fill_nopanel;
 extern struct fill	 fill_ipanel;
 extern struct fill	 fill_panelbd;
 
+/* Textures. */
 extern struct fill	 fill_borg;
 extern struct fill	 fill_matrix;
 extern struct fill	 fill_matrix_reloaded;
