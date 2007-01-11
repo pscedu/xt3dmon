@@ -47,8 +47,6 @@
 #define STARTUY		( 0.94)
 #define STARTUZ		(-0.22)
 
-void	usage(void);
-
 struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 struct node		*invmap[NID_MAX];
 struct node		*wimap[WIDIM_WIDTH][WIDIM_HEIGHT][WIDIM_DEPTH];
@@ -691,6 +689,15 @@ restart(void)
 	err(1, "execvp");
 }
 
+void
+usage(void)
+{
+	fprintf(stderr,
+	    "usage: %s [-dMp] [-c physconf] [-H height] [-W width] [-U uri]\n"
+	    "    [-x script]\n", progname);
+	exit(1);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -808,11 +815,4 @@ glutInitWindowPosition(0, 0);
 	glutMainLoop();
 	/* NOTREACHED */
 	exit(0);
-}
-
-void
-usage(void)
-{
-	fprintf(stderr, "usage: %s [-dp] [-c physconf]\n", progname);
-	exit(1);
 }
