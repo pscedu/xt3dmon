@@ -37,7 +37,7 @@ gss_finish(void)
 }
 
 void
-gss_build_auth(const struct ustream *us)
+gss_build_auth(struct ustream *us)
 {
 	const char authline[] = "Authorization: Negotiate ";
 	const char nl[] = "\r\n";

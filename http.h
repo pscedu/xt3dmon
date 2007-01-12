@@ -19,7 +19,7 @@ struct http_req {
 	const char	 *htreq_version;
 	const char	 *htreq_url;
 	char		**htreq_extra;		/* NULL-terminate. */
-	void		(*htreq_extraf)(const struct ustream *);
+	void		(*htreq_extraf)(struct ustream *);
 };
 
 struct http_res {

@@ -48,7 +48,7 @@ void		 dsff_node(const struct datasrc *);
 int		 st_dsmode(void);
 
 int		 gss_valid(const char *);
-void		 gss_build_auth(const struct ustream *);
+void		 gss_build_auth(struct ustream *);
 
 extern int	 	 dsfopts;
 extern struct datasrc	 datasrcs[];
