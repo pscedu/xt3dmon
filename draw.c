@@ -386,6 +386,7 @@ draw_node(struct node *n, int flags)
 {
 	struct fvec *fvp, *dimp, dim;
 	struct fill *fp;
+	int df;
 
 	if (st.st_opts & OP_NODEANIM &&
 	    st.st_vmode != VM_WIRED) {
@@ -405,9 +406,16 @@ draw_node(struct node *n, int flags)
 	glPushMatrix();
 	glTranslatef(fvp->fv_x, fvp->fv_y, fvp->fv_z);
 
-	if ((flags & NDF_IGNSN) == 0 && n->n_flags & NF_SELNODE)
+	df = DF_FRAME;
+	if ((flags & NDF_IGNSN) == 0 && n->n_flags & NF_SELNODE) {
 		fp = &fill_selnode;
-	else
+
+		/*
+		 * If the actual color of this node is a skeleton,
+		 * don't draw a frame cause it will enshroud ours.
+		 */
+		df = (n->n_fillp->f_flags & FF_SKEL) ? 0 : DF_FRAME;
+	} else
 		fp = n->n_fillp;
 
 	switch (n->n_geom) {
@@ -462,10 +470,10 @@ draw_node(struct node *n, int flags)
 			}
 			glPopMatrix();
 		}
-		draw_cube(dimp, fp, DF_FRAME);
+		draw_cube(dimp, fp, df);
 		break;
 	case GEOM_SPHERE:
-		draw_sphere(n->n_dimp, fp, DF_FRAME);
+		draw_sphere(n->n_dimp, fp, df);
 		break;
 	}
 
