@@ -53,8 +53,8 @@ struct ustream *
 http_open(struct http_req *req, struct http_res *res)
 {
 	char *s, *p, **hdr, buf[BUFSIZ];
+	int flags, fd, ust, len;
 	struct ustream *us;
-	int fd, ust, len;
 	long l;
 
 	fd = net_connect(req->htreq_server, req->htreq_port);
@@ -92,6 +92,7 @@ http_open(struct http_req *req, struct http_res *res)
 	if (us_write(us, buf, strlen(buf)) != (ssize_t)strlen(buf))
 		err(1, "us_write");
 
+	flags = 0;
 	while (us_gets(us, buf, sizeof(buf)) != NULL) {
 		if (strcmp(buf, "\r\n") == 0)
 			break;
@@ -129,9 +130,15 @@ http_open(struct http_req *req, struct http_res *res)
 				localtime_r(&t, &res->htres_mtime);
 			}
 		}
+
+		s = "Transfer-Encoding: chunked";
+		len = strlen(s);
+		if (strncmp(buf, s, len) == 0)
+			flags |= USF_HTTP_CHUNK;
 	}
 	if (us_sawerror(us))
 		errx(1, "us_gets: %s", us_errstr(us));
+	us->us_flags = flags;
 	errno = 0;
 	return (us);
 }

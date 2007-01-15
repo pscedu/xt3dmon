@@ -29,7 +29,15 @@ struct ustream {
 	char		*us_bufend;
 	SSL_CTX		*us_ctx;
 	SSL		*us_ssl;
+	int		 us_flags;	/* ustream-specific flags */
+
+	/* HTTP-specific XXX put in union */
+	unsigned int	 us_chunksiz;
 };
+
+#define USF_USR1	(1<<0)
+
+#define USF_HTTP_CHUNK	USF_USR1	/* length-prefixed chunks */
 
 struct ustrdtab {
 	int		 (*ust_init)(struct ustream *);
