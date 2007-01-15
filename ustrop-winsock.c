@@ -34,58 +34,16 @@ ustrop_winsock_write(struct ustream *usp, const void *buf, size_t siz)
 	return (rc);
 }
 
-char *
+__inline ssize_t
+my_recv(struct ustream *usp, size_t len)
+{
+	return (recv(usp->us_ssl, usp->us_buf, len, 0));
+}
+
+__inline char *
 ustrop_winsock_gets(struct ustream *usp, char *s, int siz)
 {
-	size_t total, chunksiz;
-	char *ret, *nl, *endp;
-	int remaining;
-	ssize_t nr;
-
-	remaining = siz - 1;		/* NUL termination. */
-	total = 0;
-	ret = s;
-	while (remaining > 0) {
-		/* Look for newline in current buffer. */
-		if (usp->us_bufstart) {
-			if ((nl = strnchr(usp->us_bufstart, '\n',
-			    usp->us_bufend - usp->us_bufstart + 1)) != NULL)
-				endp = nl;
-			else
-				endp = usp->us_bufend;
-			chunksiz = MIN(endp - usp->us_bufstart + 1, remaining);
-
-			/* Copy all data up to any newline. */
-			memcpy(s + total, usp->us_bufstart, chunksiz);
-			remaining -= chunksiz;
-			total += chunksiz;
-			usp->us_bufstart += chunksiz;
-			if (usp->us_bufstart > usp->us_bufend)
-				usp->us_bufstart = NULL;
-			if (nl)
-				break;
-		}
-
-		/* Not found, read more. */
-		chunksiz = MIN(remaining, sizeof(usp->us_buf));
-		nr = recv(usp->us_fd, usp->us_buf, chunksiz, 0);
-		usp->us_lastread = nr;
-
-		if (nr == -1 || nr == 0) {
-			if (nr == -1)
-				usp->us_error = errno;
-			return (NULL);
-		}
-
-		usp->us_bufstart = usp->us_buf;
-		usp->us_bufend = usp->us_buf + nr - 1;
-	}
-	/*
-	 * This should be safe because total is
-	 * bound by siz - 1.
-	 */
-	s[total] = '\0';
-	return (ret);
+	return (my_fgets(usp, s, siz, my_recv));
 }
 
 __inline int

@@ -45,55 +45,16 @@ ustrop_ssl_write(struct ustream *usp, const void *buf, size_t siz)
 	return (SSL_write(usp->us_ssl, buf, siz));
 }
 
+__inline ssize_t
+my_ssl_read(struct ustream *usp, size_t len)
+{
+	return (SSL_read(usp->us_ssl, usp->us_buf, len));
+}
+
 char *
 ustrop_ssl_gets(struct ustream *usp, char *s, int siz)
 {
-	size_t total, chunksiz;
-	char *ret, *nl, *endp;
-	int remaining;
-	ssize_t nr;
-
-	remaining = siz - 1;		/* NUL termination. */
-	total = 0;
-	ret = s;
-	while (remaining > 0) {
-		/* Look for newline in current buffer. */
-		if (usp->us_bufstart) {
-			if ((nl = strnchr(usp->us_bufstart, '\n',
-			    usp->us_bufend - usp->us_bufstart + 1)) != NULL)
-				endp = nl;
-			else
-				endp = usp->us_bufend;
-			chunksiz = MIN(endp - usp->us_bufstart + 1, remaining);
-
-			/* Copy all data up to any newline. */
-			memcpy(s + total, usp->us_bufstart, chunksiz);
-			remaining -= chunksiz;
-			total += chunksiz;
-			usp->us_bufstart += chunksiz;
-			if (usp->us_bufstart > usp->us_bufend)
-				usp->us_bufstart = NULL;
-			if (nl)
-				break;
-		}
-
-		/* Not found, read more. */
-		chunksiz = MIN(remaining, (int)sizeof(usp->us_buf));
-		nr = SSL_read(usp->us_ssl, usp->us_buf, chunksiz);
-		usp->us_lastread = nr;
-
-		if (nr == -1 || nr == 0)
-			return (NULL);
-
-		usp->us_bufstart = usp->us_buf;
-		usp->us_bufend = usp->us_buf + nr - 1;
-	}
-	/*
-	 * This should be safe because total is
-	 * bound by siz - 1.
-	 */
-	s[total] = '\0';
-	return (ret);
+	return (my_fgets(usp, s, siz, my_ssl_read));
 }
 
 __inline int
