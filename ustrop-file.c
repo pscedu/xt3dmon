@@ -45,10 +45,44 @@ ustrop_file_write(struct ustream *usp, const void *buf, size_t siz)
 __inline char *
 ustrop_file_gets(struct ustream *usp, char *s, int siz)
 {
+	size_t len;
 	char *p;
+	char c;
+
+	if (usp->us_type == UST_REMOTE && usp->us_flags & USF_HTTP_CHUNK &&
+	    usp->us_chunksiz == 0) {
+		if (fscanf(usp->us_fp, "%x", &usp->us_chunksiz) != 1) {
+			warnx("cannot read chunk size");
+			usp->us_error = EPROTO;
+			return (NULL);
+		}
+		/* Test if at EOF. */
+		if ((c = fgetc(usp->us_fp)) != '\r')
+			ungetc(c, usp->us_fp);
+		else if ((c = fgetc(usp->us_fp)) != '\n')
+			ungetc(c, usp->us_fp);
+		else if ((c = fgetc(usp->us_fp)) != '\r')
+			ungetc(c, usp->us_fp);
+		else if ((c = fgetc(usp->us_fp)) != '\n')
+			ungetc(c, usp->us_fp);
+		else if ((c = fgetc(usp->us_fp)) != EOF)
+			ungetc(c, usp->us_fp);
+		if (usp->us_chunksiz == 0)
+			return (NULL);
+	}
 
 	p = fgets(s, siz, usp->us_fp);
 	usp->us_error = errno;
+
+	if (usp->us_type == UST_REMOTE && usp->us_flags & USF_HTTP_CHUNK) {
+		len = strlen(s);
+		if (usp->us_chunksiz < len) {
+			warnx("error: chunk exceeds length (have=%d, want=%d)",
+			    usp->us_chunksiz, len);
+			usp->us_chunksiz = 0;
+		} else
+			usp->us_chunksiz -= len;
+	}
 	return (p);
 }
 
