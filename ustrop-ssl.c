@@ -3,6 +3,7 @@
 #include "compat.h"
 
 #include <err.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -54,7 +55,39 @@ my_ssl_read(struct ustream *usp, size_t len)
 char *
 ustrop_ssl_gets(struct ustream *usp, char *s, int siz)
 {
-	return (my_fgets(usp, s, siz, my_ssl_read));
+	char *p, *endp;
+	size_t len;
+	long l;
+
+	if (usp->us_flags & USF_HTTP_CHUNK && usp->us_chunksiz == 0) {
+		char lenbuf[50];
+
+ readlen:
+		if (my_fgets(usp, lenbuf, sizeof(lenbuf),
+		    my_ssl_read) == NULL)
+			return (NULL);
+		if ((l = strtol(lenbuf, &endp, 16)) < 0 || l > INT_MAX) {
+			errno = EBADE;
+			return (NULL);
+		}
+		if (lenbuf == endp)
+			goto readlen;
+		usp->us_chunksiz = (int)l;
+		if (usp->us_chunksiz == 0)
+			return (NULL);
+	}
+
+	p = my_fgets(usp, s, siz, my_ssl_read);
+	if (usp->us_flags & USF_HTTP_CHUNK) {
+		len = strlen(s);
+		if (usp->us_chunksiz < len) {
+			warnx("error: chunk exceeds length (have=%d, want=%d)",
+			    usp->us_chunksiz, len);
+			usp->us_chunksiz = 0;
+		} else
+			usp->us_chunksiz -= len;
+	}
+	return (p);
 }
 
 __inline int
