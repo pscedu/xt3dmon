@@ -68,6 +68,7 @@ CFLAGS += -Wno-parentheses -Wshadow -Wredundant-decls
 CFLAGS += -D_GSS
 CFLAGS += -D_LIVE_PROTO=\"file\" -D_LIVE_PATH=_PATH_DATA
 #CFLAGS += -Wconversion
+CFLAGS += -DYY_NO_UNPUT
 CFLAGS += -O3 -Wuninitialized -fomit-frame-pointer
 CFLAGS += -fno-strict-aliasing
 CFLAGS += -I/usr/X11R6/include
