@@ -2,6 +2,8 @@
 
 #include <sys/types.h>
 
+struct ustream;
+
 /* 1000.00KB */
 #define FMT_SCALED_BUFSIZ	12
 
@@ -22,3 +24,5 @@ const char	*smart_dirname(const char *);
 const char	*smart_basename(const char *);
 void		 escape_printf(struct buf *, const char *);
 void		 fmt_scaled(size_t, char *);
+char *		 my_fgets(struct ustream *, char *, int,
+		    ssize_t (*)(struct ustream *, size_t));
