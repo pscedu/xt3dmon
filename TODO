@@ -94,10 +94,10 @@ todo
 - rename POPT_REFRESH to POPT_REDRAW, POPT_DIRTY to POPT_REBUILD
 - moving the cursor should not cause panel recompiles
 - update libpng/libz on win32
-- show singlecore nodes differently
+- use buf.c routines in base64 routines instead of bufsize guesswork
 
 xtwmon
-- rename data=nodes to data=node
+- rename arbiter-raw.pl?data=nodes to data=node
 
 tweening
 - fix tween to real stack: once point is reached, pop it then move on
