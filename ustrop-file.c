@@ -53,7 +53,7 @@ ustrop_file_gets(struct ustream *usp, char *s, int siz)
 	    usp->us_chunksiz == 0) {
 		if (fscanf(usp->us_fp, "%x", &usp->us_chunksiz) != 1) {
 			warnx("cannot read chunk size");
-			usp->us_error = EPROTO;
+			usp->us_error = EBADE; /* XXX */
 			return (NULL);
 		}
 		/* Test if at EOF. */
