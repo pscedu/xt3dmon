@@ -226,6 +226,9 @@
 				RelativePath="..\..\select.c">
 			</File>
 			<File
+				RelativePath="..\..\selnid.c">
+			</File>
+			<File
 				RelativePath="..\..\selnode.c">
 			</File>
 			<File
@@ -254,6 +257,9 @@
 			</File>
 			<File
 				RelativePath="..\..\ustrop-file.c">
+			</File>
+			<File
+				RelativePath="..\..\ustrop-gzip.c">
 			</File>
 			<File
 				RelativePath="..\..\ustrop-ssl.c">
@@ -329,7 +335,7 @@
 					Name="libpng"
 					Filter="">
 					<File
-						RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\png.c">
+						RelativePath="\Documents and Settings\Admin\Desktop\deps\libpng-1.2.15\png.c">
 						<FileConfiguration
 							Name="Debug|Win32">
 							<Tool
@@ -343,24 +349,24 @@
 								ObjectFile="$(IntDir)/$(InputName)1.obj"/>
 						</FileConfiguration>
 					</File>
-					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\png.h"> </File>
-					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngconf.h"> </File>
-					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngerror.c"> </File>
-					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pnggccrd.c"> </File>
-					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngget.c"> </File>
-					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngmem.c"> </File>
-					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngpread.c"> </File>
-					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngread.c"> </File>
-					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngrio.c"> </File>
-					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngrtran.c"> </File>
-					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngrutil.c"> </File>
-					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngset.c"> </File>
-					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngtrans.c"> </File>
-					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngvcrd.c"> </File>
-					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngwio.c"> </File>
-					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngwrite.c"> </File>
-					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngwtran.c"> </File>
-					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\lpng1212\pngwutil.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\libpng-1.2.15\png.h"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\libpng-1.2.15\pngconf.h"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\libpng-1.2.15\pngerror.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\libpng-1.2.15\pnggccrd.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\libpng-1.2.15\pngget.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\libpng-1.2.15\pngmem.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\libpng-1.2.15\pngpread.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\libpng-1.2.15\pngread.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\libpng-1.2.15\pngrio.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\libpng-1.2.15\pngrtran.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\libpng-1.2.15\pngrutil.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\libpng-1.2.15\pngset.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\libpng-1.2.15\pngtrans.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\libpng-1.2.15\pngvcrd.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\libpng-1.2.15\pngwio.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\libpng-1.2.15\pngwrite.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\libpng-1.2.15\pngwtran.c"> </File>
+					<File RelativePath="\Documents and Settings\Admin\Desktop\deps\libpng-1.2.15\pngwutil.c"> </File>
 				</Filter>
 				<Filter
 					Name="zlib"
