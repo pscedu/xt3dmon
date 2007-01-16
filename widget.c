@@ -191,6 +191,7 @@ draw_cube(const struct fvec *dimp, const struct fill *fp, int flags)
 		GLfloat look5[] = { -SQRT3,  SQRT3, -SQRT3, 1.0f };
 		GLfloat look6[] = {  SQRT3, -SQRT3, -SQRT3, 1.0f };
 		GLfloat look7[] = { -SQRT3, -SQRT3, -SQRT3, 1.0f };
+		int param;
 
 		float materialLight[] = { 0.8f, 0.8f, 0.8f, 1.0f };
 		{ struct fill f = *fp;
@@ -205,7 +206,7 @@ draw_cube(const struct fvec *dimp, const struct fill *fp, int flags)
 		specularLight[2] = f.f_b * 1.1;
 		}
 
-		int param = GL_AMBIENT_AND_DIFFUSE;
+		param = GL_AMBIENT_AND_DIFFUSE;
 
 		if (fp->f_r > .8 || fp->f_g > .8 || fp->f_b > .8)
 			param = GL_SPECULAR;
