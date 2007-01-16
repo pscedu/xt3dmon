@@ -3,6 +3,7 @@
 #include "compat.h"
 
 #include <err.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,14 +31,14 @@ ustrop_winsock_write(struct ustream *usp, const void *buf, size_t siz)
 
 	rc = send(usp->us_fd, buf, siz, 0);
 	if (rc == -1)
-		usp->usp_error = rc;
+		usp->us_error = rc;
 	return (rc);
 }
 
 __inline ssize_t
 my_recv(struct ustream *usp, size_t len)
 {
-	return (recv(usp->us_ssl, usp->us_buf, len, 0));
+	return (recv(usp->us_fd, usp->us_buf, len, 0));
 }
 
 __inline char *
@@ -87,7 +88,7 @@ ustrop_winsock_sawerror(const struct ustream *usp)
 __inline const char *
 ustrop_winsock_errstr(const struct ustream *usp)
 {
-	return (strerror(usp->usp_error));
+	return (strerror(usp->us_error));
 }
 
 __inline int
@@ -101,6 +102,7 @@ struct ustrdtab ustrdtab_winsock = {
 	ustrop_winsock_close,
 	ustrop_winsock_write,
 	ustrop_winsock_gets,
-	ustrop_winsock_error,
+	ustrop_winsock_sawerror,
+	ustrop_winsock_errstr,
 	ustrop_winsock_eof
 };
