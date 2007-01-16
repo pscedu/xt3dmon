@@ -60,6 +60,8 @@ int futimes(int, const struct timeval *);
 int execvp(const char *, const char *const *);
 int gettimeofday(struct timeval *, void *);
 int ffs(int);
+const char *basename(char *);
+char *dirname(char *);
 
 # define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 # define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
@@ -141,6 +143,10 @@ void post_redisplay(void);
 
 #define SOCKETCLOSE(s) close(s)
 
+#endif /* UNIX */
+
+#ifndef EBADE
+#define EBADE 1001
 #endif
 
 #endif /* _COMPAT_H */
