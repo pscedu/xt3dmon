@@ -10,6 +10,7 @@
 #include "buf.h"
 #include "ustream.h"
 #include "util.h"
+#include "cdefs.h"
 
 /* Special case of base 2 to base 10. */
 int
