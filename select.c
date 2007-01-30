@@ -414,7 +414,7 @@ gscb_pw_help(struct glname *gn, int flags)
 			break;
 		case HF_SUBSN:
 			SLIST_FOREACH(sn, &selnodes, sn_next)
-				sn->sn_nodep->n_flags ^= NF_SHOW;
+				sn->sn_nodep->n_flags ^= NF_SUBSEL;
 			break;
 		case HF_UPDATE:
 			st.st_rf |= RF_DATASRC;
@@ -545,7 +545,7 @@ gscb_pw_wiadj(struct glname *gn, int flags)
 			break;
 		}
 		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_CAM |
-		    RF_SELNODE | RF_NODESWIV;
+		    RF_SELNODE | RF_VMODE;
 
 		tween_push(TWF_POS | TWF_LOOK | TWF_UP);
 		cam_revolvefocus(0.0, 0.001);

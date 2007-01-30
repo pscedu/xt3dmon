@@ -300,9 +300,9 @@ load_state(struct state *nst)
 	if (st.st_pipemode != nst->st_pipemode)
 		rf |= RF_CLUSTER | RF_SELNODE;
 	if (!ivec_eq(&st.st_wioff, &nst->st_wioff))
-		rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND | RF_NODESWIV;
+		rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND | RF_VMODE;
 	if (!ivec_eq(&st.st_winsp, &nst->st_winsp))
-		rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND | RF_NODESWIV | RF_CAM;
+		rf |= RF_CLUSTER | RF_SELNODE | RF_GROUND | RF_VMODE | RF_CAM;
 /* XXX: preserve hlnc */
 	egg_toggle(st.st_eggs ^ nst->st_eggs);
 
@@ -480,47 +480,6 @@ dmode_change(void)
 	}
 }
 
-__inline void
-rebuild_nodephysv(void)
-{
-	struct node *n;
-	struct ivec iv;
-
-	NODE_FOREACH(n, &iv)
-		if (n)
-			node_setphyspos(n, &n->n_physv);
-}
-
-__inline void
-rebuild_nodeswiv(void)
-{
-	struct fvec spdim, wrapv;
-	struct ivec iv, adjv;
-	struct node *n;
-
-	/* Spaced cluster dimensions. */
-	spdim.fv_w = widim.iv_w * st.st_winsp.iv_x;
-	spdim.fv_h = widim.iv_h * st.st_winsp.iv_y;
-	spdim.fv_d = widim.iv_d * st.st_winsp.iv_z;
-
-	IVEC_FOREACH(&iv, &widim) {
-		adjv.iv_x = negmod(iv.iv_x + st.st_wioff.iv_x, widim.iv_w);
-		adjv.iv_y = negmod(iv.iv_y + st.st_wioff.iv_y, widim.iv_h);
-		adjv.iv_z = negmod(iv.iv_z + st.st_wioff.iv_z, widim.iv_d);
-		n = wimap[adjv.iv_x][adjv.iv_y][adjv.iv_z];
-		if (n == NULL)
-			continue;
-
-		wrapv.fv_x = floor((iv.iv_x + st.st_wioff.iv_x) / (double)widim.iv_w) * spdim.fv_w;
-		wrapv.fv_y = floor((iv.iv_y + st.st_wioff.iv_y) / (double)widim.iv_h) * spdim.fv_h;
-		wrapv.fv_z = floor((iv.iv_z + st.st_wioff.iv_z) / (double)widim.iv_d) * spdim.fv_d;
-
-		n->n_swiv.fv_x = n->n_wiv.iv_x * st.st_winsp.iv_x + wrapv.fv_x;
-		n->n_swiv.fv_y = n->n_wiv.iv_y * st.st_winsp.iv_y + wrapv.fv_y;
-		n->n_swiv.fv_z = n->n_wiv.iv_z * st.st_winsp.iv_z + wrapv.fv_z;
-	}
-}
-
 void
 geom_setall(int mode)
 {
@@ -548,13 +507,112 @@ dim_update(void)
 void
 vmode_change(void)
 {
-	struct node *n;
-	struct ivec iv;
+	int maxhops, nhops, *nneighbors, *ncnt;
+	struct fvec spdim, wrapv, fv;
+	struct node *n, *nodep;
+	struct ivec iv, adjv;
+	struct selnode *sn;
+
+	maxhops = 0; /* gcc */
+	ncnt = NULL;
+	nodep = NULL;
+	nneighbors = NULL;
+	memset(&spdim, 0, sizeof(spdim));
+	switch (st.st_vmode) {
+	case VM_VNEIGHBOR:
+		/*
+		 * As the machine architecture is toruses in three dimensions,
+		 * we'll only have to traverse at most half of the cube.
+		 */
+		maxhops = (widim.iv_w + widim.iv_h + widim.iv_d) / 2 + 1;
+		nneighbors = calloc(maxhops, sizeof(*nneighbors));
+		if (nneighbors == NULL)
+			err(1, "calloc");
+		ncnt = calloc(maxhops, sizeof(*ncnt));
+		if (ncnt == NULL)
+			err(1, "calloc");
+
+		SLIST_FOREACH(sn, &selnodes, sn_next)
+			if (sn->sn_nodep->n_job) {
+				nodep = sn->sn_nodep;
+				break;
+			}
+
+		/*
+		 * The user does not have a valid one selected, so
+		 * traverse each node until we find one we can use.
+		 */
+		NODE_FOREACH(n, &iv)
+			if (n) {
+				if (n->n_job == NULL)
+					continue;
+				if (nodep == NULL)
+					nodep = n;
+				else if (nodep->n_job == n->n_job) {
+					nhops = node_wineighbor_nhops(nodep, n);
+					if (nhops >= maxhops)
+						errx(1, "hops greater than max");
+					nneighbors[nhops]++;
+				}
+			}
+		if (nodep == NULL)
+			errx(1, "XXX no nodes");
+		break;
+	case VM_WIONE:
+	case VM_WIRED:
+		/* Spaced cluster dimensions. */
+		spdim.fv_w = widim.iv_w * st.st_winsp.iv_x;
+		spdim.fv_h = widim.iv_h * st.st_winsp.iv_y;
+		spdim.fv_d = widim.iv_d * st.st_winsp.iv_z;
+		break;
+	}
 
 	NODE_FOREACH(n, &iv)
 		if (n)
-			n->n_v = (st.st_vmode == VM_PHYS) ?
-			    &n->n_physv : &n->n_swiv;
+			switch (st.st_vmode) {
+			case VM_PHYS:
+				n->n_flags |= NF_VMVIS;
+				node_setphyspos(n, &n->n_vfin);
+				break;
+			case VM_VNEIGHBOR:
+				if (n == nodep)
+					vec_set(&n->n_vfin, 0.0, 0.0, 0.0);
+				else if (n->n_job == nodep->n_job) {
+					n->n_flags |= NF_VMVIS;
+
+					nhops = node_wineighbor_nhops(nodep, n);
+					if (nhops >= maxhops)
+						errx(1, "hops greater than max");
+					fv.fv_r = nhops * 8.0;
+					fv.fv_t = ncnt[nhops]++ *
+					    2.0 * M_PI / nneighbors[nhops];
+					fv.fv_p = M_PI * 0.5 - nhops * 0.01;
+
+					vec_sphere2cart(&fv, &n->n_vfin);
+				} else
+					n->n_flags &= ~NF_VMVIS;
+				break;
+			case VM_WIONE:
+			case VM_WIRED:
+				adjv.iv_x = negmod(iv.iv_x + st.st_wioff.iv_x, widim.iv_w);
+				adjv.iv_y = negmod(iv.iv_y + st.st_wioff.iv_y, widim.iv_h);
+				adjv.iv_z = negmod(iv.iv_z + st.st_wioff.iv_z, widim.iv_d);
+				n = wimap[adjv.iv_x][adjv.iv_y][adjv.iv_z];
+				if (n == NULL)
+					continue;
+				n->n_flags |= NF_VMVIS;
+
+				wrapv.fv_x = floor((iv.iv_x + st.st_wioff.iv_x) / (double)widim.iv_w) * spdim.fv_w;
+				wrapv.fv_y = floor((iv.iv_y + st.st_wioff.iv_y) / (double)widim.iv_h) * spdim.fv_h;
+				wrapv.fv_z = floor((iv.iv_z + st.st_wioff.iv_z) / (double)widim.iv_d) * spdim.fv_d;
+
+				n->n_vfin.fv_x = n->n_wiv.iv_x * st.st_winsp.iv_x + wrapv.fv_x;
+				n->n_vfin.fv_y = n->n_wiv.iv_y * st.st_winsp.iv_y + wrapv.fv_y;
+				n->n_vfin.fv_z = n->n_wiv.iv_z * st.st_winsp.iv_z + wrapv.fv_z;
+				break;
+			}
+	free(nneighbors);
+	free(ncnt);
 }
 
 /* Snap to nearest space on grid. */
@@ -605,16 +663,14 @@ __inline int
 rf_deps(int opts)
 {
 	if (opts & RF_DATASRC)
-		opts |= RF_NODEPHYSV | RF_VMODE | RF_DMODE | RF_CLUSTER;
+		opts |= RF_VMODE | RF_DMODE | RF_CLUSTER;
 	if (opts & RF_DMODE)
 		opts |= RF_CLUSTER;
 	if (opts & RF_VMODE)
-		opts |= RF_CLUSTER | RF_NODESWIV | RF_WIREP | RF_CAM | \
+		opts |= RF_CLUSTER | RF_WIREP | RF_CAM | \
 		    RF_GROUND | RF_SELNODE | RF_DIM | RF_FOCUS;
 	if (opts & RF_DIM)
 		opts |= RF_CLUSTER | RF_SELNODE; /* RF_WIREP */
-	if (opts & RF_NODESWIV)
-		opts |= RF_WIREP | RF_FOCUS;
 	if (opts & RF_SELNODE)
 		opts |= RF_FOCUS;
 	return (opts);
@@ -661,10 +717,6 @@ rebuild(int opts)
 		make_ground();
 	if (opts & RF_DIM)
 		dim_update();
-	if (opts & RF_NODEPHYSV)
-		rebuild_nodephysv();
-	if (opts & RF_NODESWIV)
-		rebuild_nodeswiv();
 
 	if (opts & RF_WIREP)
 		rebuild_wirep = 1;

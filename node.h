@@ -25,16 +25,15 @@ struct node {
 	struct seastar	 n_sstar;
 
 	struct ivec	 n_wiv;			/* wired view position */
-	struct fvec	 n_swiv;		/* scaled */
-	struct fvec	 n_physv;		/* position in phys vmode */
-	struct fvec	 n_vcur;		/* node tweening */
-	struct fvec	*n_v;			/* points to any above */
+	struct fvec	 n_vfin;		/* where the node should be */
+	struct fvec	 n_vcur;		/* where the node is (tweening) */
 	struct fvec	*n_dimp;		/* dimensions */
 };
 
 #define NF_VALID	(1<<0)			/* valid node */
 #define NF_SELNODE	(1<<1)			/* is selected */
-#define NF_SHOW		(1<<2)			/* visible */
+#define NF_SUBSEL	(1<<2)			/* subselection membership */
+#define NF_VMVIS	(1<<3)			/* visibility in vmode */
 
 #define LS_CLEAN	0
 #define LS_DIRTY	1
@@ -55,6 +54,7 @@ struct node {
 //				if (n)
 
 struct node	*node_neighbor(int, struct node *, int, int *);
+int		 node_wineighbor_nhops(const struct node *, const struct node *);
 void		 node_physpos(struct node *, struct physcoord *);
 void		 node_getmodpos(int, int *, int *);
 void		 node_adjmodpos(int, struct fvec *);

@@ -63,15 +63,12 @@ struct state {
 #define RF_GROUND	(1<<4)
 #define RF_DMODE	(1<<5)
 #define RF_DIM		(1<<6)
-#define RF_NODEPHYSV	(1<<7)
-#define RF_NODESWIV	(1<<8)
 #define RF_VMODE	(1<<9)
 #define RF_WIREP	(1<<10)
 #define RF_FOCUS	(1<<11)
 #define RF_INIT		(RF_DATASRC | RF_CLUSTER | RF_GROUND |		\
 			 RF_SELNODE | RF_CAM | RF_DMODE | RF_DIM |	\
-			 RF_NODEPHYSV | RF_NODESWIV |  RF_VMODE |	\
-			 RF_FOCUS)
+			 RF_VMODE | RF_FOCUS)
 #define RF_STEREO	(RF_CLUSTER | RF_GROUND | RF_SELNODE)
 
 #define EGG_BORG 	(1<<0)

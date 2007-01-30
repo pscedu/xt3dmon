@@ -534,9 +534,9 @@ __inline void
 dx_subsel(struct node *n, int off)
 {
 	if (off)
-		n->n_flags &= ~NF_SHOW;
+		n->n_flags &= ~NF_SUBSEL;
 	else
-		n->n_flags |= NF_SHOW;
+		n->n_flags |= NF_SUBSEL;
 }
 
 int
@@ -551,39 +551,39 @@ dxp_subsel(const struct dx_action *dxa)
 	if (dxa->dxa_subsel_mode == DXV_SET)
 		NODE_FOREACH(n, &iv)
 			if (n)
-				n->n_flags &= ~NF_SHOW;
+				n->n_flags &= ~NF_SUBSEL;
 	SLIST_FOREACH(nid, dxa->dxa_subsel_list, n_link)
 		switch (nid->n_nid) {
 		case DXN_ALL:
 			NODE_FOREACH(n, &iv)
 				if (n)
-					n->n_flags &= ~NF_SHOW;
+					n->n_flags &= ~NF_SUBSEL;
 				else
-					n->n_flags |= NF_SHOW;
+					n->n_flags |= NF_SUBSEL;
 			break;
 		case DXN_RND:
 			do {
 				n = node_for_nid(random() % 1000);
 			} while (n == NULL);
 			if (off)
-				n->n_flags &= ~NF_SHOW;
+				n->n_flags &= ~NF_SUBSEL;
 			else
-				n->n_flags |= NF_SHOW;
+				n->n_flags |= NF_SUBSEL;
 			break;
 		case DXN_VIS:
 			NODE_FOREACH(n, &iv)
 				if (n && n->n_fillp->f_a)
 					if (off)
-						n->n_flags &= ~NF_SHOW;
+						n->n_flags &= ~NF_SUBSEL;
 					else
-						n->n_flags |= NF_SHOW;
+						n->n_flags |= NF_SUBSEL;
 			break;
 		default:
 			if ((n = node_for_nid(nid->n_nid)) != NULL)
 				if (off)
-					n->n_flags &= ~NF_SHOW;
+					n->n_flags &= ~NF_SUBSEL;
 				else
-					n->n_flags |= NF_SHOW;
+					n->n_flags |= NF_SUBSEL;
 			break;
 		}
 	st.st_rf |= RF_CLUSTER | RF_SELNODE;
@@ -813,7 +813,7 @@ dxp_winsp(const struct dx_action *dxa)
 					break;
 				}
 				st.st_rf |= RF_CLUSTER | RF_SELNODE | \
-				    RF_GROUND | RF_NODESWIV | RF_CAM;
+				    RF_GROUND | RF_VMODE | RF_CAM;
 			}
 
 	t++;
@@ -859,7 +859,7 @@ dxp_wioff(const struct dx_action *dxa)
 					break;
 				}
 				st.st_rf |= RF_CLUSTER | RF_SELNODE | \
-				    RF_GROUND | RF_NODESWIV;
+				    RF_GROUND | RF_VMODE;
 				dxp_refocus(NULL);
 			}
 

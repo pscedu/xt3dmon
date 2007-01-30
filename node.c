@@ -275,7 +275,7 @@ node_goto(struct node *n)
 	int row, col;
 
 	tween_push(TWF_LOOK | TWF_POS | TWF_UP);
-	st.st_v = *n->n_v;
+	st.st_v = n->n_vcur;
 	switch (st.st_vmode) {
 	case VM_PHYS:
 		vec_set(&st.st_uv, 0.0, 1.0, 0.0);
@@ -314,11 +314,9 @@ node_goto(struct node *n)
 __inline int
 node_show(const struct node *n)
 {
-	if (st.st_opts & OP_SUBSET &&
-	    (n->n_flags & NF_SHOW) == 0)
+	if (st.st_opts & OP_SUBSET && (n->n_flags & NF_SUBSEL) == 0)
 		return (0);
-	if (n->n_flags & NF_VALID &&
-	    n->n_fillp->f_a > 0.01f)
+	if (n->n_flags & NF_VALID && n->n_fillp->f_a > 0.01f)
 		return (1);
 	return (0);
 }
@@ -326,12 +324,30 @@ node_show(const struct node *n)
 void
 node_center(const struct node *n, struct fvec *fvp)
 {
-	if (st.st_opts & OP_NODEANIM &&
-	    st.st_vmode != VM_WIRED)
-		*fvp = n->n_vcur;
-	else
-		*fvp = *n->n_v;
+	*fvp = n->n_vcur;
 	fvp->fv_x += n->n_dimp->fv_w / 2.0;
 	fvp->fv_y += n->n_dimp->fv_h / 2.0;
 	fvp->fv_z += n->n_dimp->fv_d / 2.0;
+}
+
+int
+node_wineighbor_nhops(const struct node *a, const struct node *b)
+{
+	int nhops, i, step;
+
+	nhops = 0;
+	for (i = 0; i < NDIM; i++) {
+		step = abs(a->n_wiv.iv_val[i] - b->n_wiv.iv_val[i]);
+
+		/*
+		 * If we are travelling further than half way,
+		 * go to a different iteration of the cube, which
+		 * will be shorter.
+		 */
+		if (step > widim.iv_val[i] / 2)
+			nhops += abs(widim.iv_val[i] - step);
+		else
+			nhops += step;
+	}
+	return (nhops);
 }

@@ -145,9 +145,9 @@ focus_selnodes(struct fvec *cen)
 	vec_set(cen, 0.0, 0.0, 0.0);
 	SLIST_FOREACH(sn, &selnodes, sn_next) {
 		n = sn->sn_nodep;
-		cen->fv_x += n->n_v->fv_x + n->n_dimp->fv_w / 2;
-		cen->fv_y += n->n_v->fv_y + n->n_dimp->fv_h / 2;
-		cen->fv_z += n->n_v->fv_z + n->n_dimp->fv_d / 2;
+		cen->fv_x += n->n_vcur.fv_x + n->n_dimp->fv_w / 2;
+		cen->fv_y += n->n_vcur.fv_y + n->n_dimp->fv_h / 2;
+		cen->fv_z += n->n_vcur.fv_z + n->n_dimp->fv_d / 2;
 
 		/*
 		 * In wired mode, add the offsets which determine
