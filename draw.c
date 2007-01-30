@@ -13,6 +13,7 @@
 #include "env.h"
 #include "fill.h"
 #include "gl.h"
+#include "job.h"
 #include "lnseg.h"
 #include "mark.h"
 #include "node.h"
@@ -382,9 +383,98 @@ node_tween_dir(float *curpos, float *targetpos)
 }
 
 __inline void
+draw_node_cores(const struct node *n, const struct fill *fp)
+{
+	struct fvec dim, adj;
+	struct ivec iv, lvl;
+
+	/* Draw core-separating lines. */
+	glEnable(GL_LINE_SMOOTH);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glHint(GL_LINE_SMOOTH_HINT, gl_drawhint);
+
+	dim = *n->n_dimp;
+
+	glPushMatrix();
+	glTranslatef(0.0001, 0.0001, 0.0001);
+	glLineWidth(0.01f);
+	glColor4f(fill_frame.f_r, fill_frame.f_g,
+	    fill_frame.f_b, fill_frame.f_a);
+	glBegin(GL_LINES);
+	/* Draw core-separating lines in X. */
+	for (iv.iv_y = 0; iv.iv_y <= coredim.iv_h; iv.iv_y++)
+		for (iv.iv_z = 0; iv.iv_z <= coredim.iv_d; iv.iv_z++) {
+			glVertex3d(-0.0002, iv.iv_y * dim.fv_h / coredim.iv_h,
+			    iv.iv_z * dim.fv_d / coredim.iv_d);
+			glVertex3d(dim.fv_w, iv.iv_y * dim.fv_h / coredim.iv_h,
+			    iv.iv_z * dim.fv_d / coredim.iv_d);
+		}
+
+	/* Draw core-separating lines in Y. */
+	for (iv.iv_x = 0; iv.iv_x <= coredim.iv_w; iv.iv_x++)
+		for (iv.iv_z = 0; iv.iv_z <= coredim.iv_d; iv.iv_z++) {
+			glVertex3d(iv.iv_x * dim.fv_w / coredim.iv_w,
+			    -0.0002, iv.iv_z * dim.fv_d / coredim.iv_z);
+			glVertex3d(iv.iv_x * dim.fv_w / coredim.iv_w,
+			    dim.fv_h, iv.iv_z * dim.fv_d / coredim.iv_z);
+		}
+
+	/* Draw core-separating lines in Z. */
+	for (iv.iv_x = 0; iv.iv_x <= coredim.iv_w; iv.iv_x++)
+		for (iv.iv_y = 0; iv.iv_y <= coredim.iv_h; iv.iv_y++) {
+			glVertex3d(iv.iv_x * dim.fv_w / coredim.iv_w,
+			    iv.iv_y * dim.fv_h / coredim.iv_h, -0.0002);
+			glVertex3d(iv.iv_x * dim.fv_w / coredim.iv_w,
+			    iv.iv_y * dim.fv_h / coredim.iv_h, dim.fv_d);
+		}
+	glEnd();
+	glPopMatrix();
+	glDisable(GL_LINE_SMOOTH);
+	glDisable(GL_BLEND);
+
+	/* Geometry for core size in each dimension. */
+	adj.fv_w = n->n_dimp->fv_w / coredim.iv_w;
+	adj.fv_h = n->n_dimp->fv_h / coredim.iv_h;
+	adj.fv_d = n->n_dimp->fv_d / coredim.iv_d;
+
+	lvl.iv_x = (n->n_job->j_ncores %
+	    (coredim.iv_x * coredim.iv_z)) / coredim.iv_z;
+	lvl.iv_y = n->n_job->j_ncores / (coredim.iv_x * coredim.iv_z);
+	lvl.iv_z = n->n_job->j_ncores % coredim.iv_z;
+
+	/* Draw at most three cubes to represent the cores. */
+	dim.fv_w = n->n_dimp->fv_w;
+	dim.fv_h = lvl.iv_y * adj.fv_h;
+	dim.fv_d = n->n_dimp->fv_d;
+	draw_cube(&dim, fp, 0);
+
+	if (lvl.iv_x) {
+		dim.fv_w = lvl.iv_x * adj.fv_w;
+		dim.fv_h = (lvl.iv_y + 1) * adj.fv_h;
+		dim.fv_d = n->n_dimp->fv_d;
+		glPushMatrix();
+		glTranslatef(0.0, lvl.iv_y * adj.fv_h, 0.0);
+		draw_cube(&dim, fp, 0);
+		glPopMatrix();
+	}
+
+	if (lvl.iv_z) {
+		dim.fv_w = (lvl.iv_x + 1) * adj.fv_w;
+		dim.fv_h = (lvl.iv_y + 1) * adj.fv_h;
+		dim.fv_d = lvl.iv_z * adj.fv_d;
+		glPushMatrix();
+		glTranslatef(lvl.iv_x * adj.fv_w,
+		    lvl.iv_y * adj.fv_h, 0.0);
+		draw_cube(&dim, fp, 0);
+		glPopMatrix();
+	}
+}
+
+__inline void
 draw_node(struct node *n, int flags)
 {
-	struct fvec *fvp, *dimp, dim;
+	struct fvec *fvp;
 	struct fill *fp;
 	int df;
 
@@ -420,57 +510,10 @@ draw_node(struct node *n, int flags)
 
 	switch (n->n_geom) {
 	case GEOM_CUBE:
-		dimp = n->n_dimp;
-
-		if (st.st_dmode == DM_JOB || st.st_dmode == DM_YOD) {
-			dim = *n->n_dimp;
-			dim.fv_w += 0.0002;
-			dim.fv_h += 0.0002;
-			dim.fv_d *= 0.5;
-
-			glPushMatrix();
-			glTranslatef(-0.0001, -0.0001, dim.fv_d);
-			if (n->n_yod && n->n_yod->y_single) {
-				dimp = &dim;
-
-				glEnable(GL_LINE_SMOOTH);
-				glEnable(GL_BLEND);
-				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-				glHint(GL_LINE_SMOOTH_HINT, gl_drawhint);
-
-				glBegin(GL_LINES);
-				glLineWidth(0.6f);
-				glColor4f(fill_singlecore.f_r,
-				    fill_singlecore.f_g,
-				    fill_singlecore.f_b,
-				    fill_singlecore.f_a);
-
-				glVertex3d(0.0, 0.0, 0.0);
-				glVertex3d(0.0, 0.0, dim.fv_d);
-
-				glVertex3d(0.0, dim.fv_h, 0.0);
-				glVertex3d(0.0, dim.fv_h, dim.fv_d);
-
-				glVertex3d(dim.fv_w, 0.0, 0.0);
-				glVertex3d(dim.fv_w, 0.0, dim.fv_d);
-
-				glVertex3d(dim.fv_w, dim.fv_h, 0.0);
-				glVertex3d(dim.fv_w, dim.fv_h, dim.fv_d);
-				glEnd();
-
-				glDisable(GL_LINE_SMOOTH);
-				glDisable(GL_BLEND);
-
-				/* Single-core:  draw outline of unused core. */
-				glTranslatef(0.0, 0.0, dim.fv_d);
-				draw_square(&dim, &fill_singlecore);
-			} else if ((fp->f_flags & FF_SKEL) == 0) {
-				/* Dual-core:  draw core divider "line". */
-				draw_square(&dim, &fill_frame);
-			}
-			glPopMatrix();
-		}
-		draw_cube(dimp, fp, df);
+		if (st.st_opts & OP_CORES && n->n_job)
+			draw_node_cores(n, fp);
+		else
+			draw_cube(n->n_dimp, fp, df);
 		break;
 	case GEOM_SPHERE:
 		draw_sphere(n->n_dimp, fp, df);
@@ -543,10 +586,10 @@ draw_ground(void)
 		fv.fv_y = -0.2f;
 		fv.fv_z = -5.0f;
 
-		dim.fv_w = physdim_top->pd_size.fv_w - 2 * fv.fv_x;
+		dim.fv_w = physdim_top->pd_size.fv_w - 2.0 * fv.fv_x;
 		dim.fv_h = -fv.fv_y / 2.0f;
-		dim.fv_d = 2 * physdim_top->pd_size.fv_d +
-		    physdim_top->pd_space - 2 * fv.fv_z;
+		dim.fv_d = physdim_top->pd_mag *
+		    (physdim_top->pd_size.fv_d + physdim_top->pd_space);
 
 		glPushMatrix();
 		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);

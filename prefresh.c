@@ -506,7 +506,6 @@ panel_refresh_legend(struct panel *p)
 void
 panel_refresh_ninfo(struct panel *p)
 {
-	const char *coreusage;
 	struct physcoord pc;
 	struct objhdr *ohp;
 	struct objlist *ol;
@@ -620,23 +619,21 @@ panel_refresh_ninfo(struct panel *p)
 	node_physpos(n, &pc);
 	iv = &n->n_wiv;
 
-	coreusage = "";
-	if (n->n_state == SC_USED)
-		if (n->n_yod && n->n_yod->y_single)
-			coreusage = ", single-core";
-		else
-			coreusage = ", dual-core";
-
 	panel_set_content(p,
 	    "- Node Information -\n"
 	    "Node ID: %d\n"
 	    "Hardware name: c%d-%dc%ds%dn%d\n"
 	    "Wired position: <%d,%d,%d>\n"
-	    "Status: %s%s",
+	    "Status: %s",
 	    n->n_nid,
 	    pc.pc_cb, pc.pc_r, pc.pc_cg, pc.pc_m, pc.pc_n,
 	    iv->iv_x, iv->iv_y, iv->iv_z,
-	    statusclass[n->n_state].nc_name, coreusage);
+	    statusclass[n->n_state].nc_name);
+
+	if (n->n_job)
+		panel_add_content(p, "\nCores in use: %d/%d",
+		    n->n_job->j_ncores,
+		    coredim.iv_x * coredim.iv_y * coredim.iv_z);
 
 	if (n->n_temp == DV_NODATA)
 		panel_add_content(p, "\nTemperature: N/A");

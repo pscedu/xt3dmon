@@ -309,6 +309,9 @@ gl_keyh_option(unsigned char key, __unused int u, __unused int v)
 	case 'a':
 		opts |= OP_AUTOFLYBY;
 		break;
+	case 'C':
+		opts |= OP_CORES;
+		break;
 	case 'c':
 		opts |= OP_CAPTION;
 		break;

@@ -67,3 +67,4 @@ void		 node_center(const struct node *, struct fvec *);
 extern struct node	 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 extern struct node	*invmap[NID_MAX];
 extern struct node	*wimap[WIDIM_WIDTH][WIDIM_HEIGHT][WIDIM_DEPTH];
+extern struct ivec	 coredim;

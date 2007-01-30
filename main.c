@@ -50,6 +50,7 @@
 struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 struct node		*invmap[NID_MAX];
 struct node		*wimap[WIDIM_WIDTH][WIDIM_HEIGHT][WIDIM_DEPTH];
+struct ivec		 coredim = {{ 2, 4, 4 }};	/* 2x4x4 CPU cores per node */
 
 struct fvec		 tv  = { { STARTX,  STARTY,  STARTZ } };
 struct fvec		 tlv = { { STARTLX, STARTLY, STARTLZ } };
@@ -91,7 +92,8 @@ struct xoption options[] = {
  /* 20 */ { "capfb",	"Capture Flyby Only",	OPF_FBIGN },
  /* 21 */ { "editfocus","Edit Focus",		0 },
  /* 22 */ { "forcefocus","Force Focus",		0 },
- /* 23 */ { "fancy",	"Fancy Drawing",	OPF_FBIGN }
+ /* 23 */ { "fancy",	"Fancy Drawing",	OPF_FBIGN },
+ /* 24 */ { "cores",	"Active Node Cores",	0 }
 };
 
 struct vmode vmodes[] = {
@@ -221,6 +223,7 @@ opt_flip(int fopts)
 		case OP_NLABELS:
 		case OP_SELNLABELS:
 		case OP_PIPES:
+		case OP_CORES:
 			st.st_rf |= RF_CLUSTER | RF_SELNODE;
 			break;
 		case OP_MODSKELS:
