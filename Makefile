@@ -120,6 +120,9 @@ depend: ${CSRCS}
 clean:
 	rm -rf ${PROG} ${OBJS} ${CLEAN}
 
+build:
+	${MAKE} clean && ${MAKE} depend && ${MAKE} all
+
 lint:
 	${LINT} ${INCS} ${CSRCS}
 
