@@ -1097,6 +1097,7 @@ draw_cluster(void)
 		break;
 	case VM_WIONE:
 	case VM_PHYS:
+	case VM_VNEIGHBOR:
 		if (st.st_opts & OP_PIPES)
 			draw_pipes(0);
 		NODE_FOREACH(n, &iv)
@@ -1118,6 +1119,7 @@ draw_selnodes(void)
 		break;
 	case VM_WIONE:
 	case VM_PHYS:
+	case VM_VNEIGHBOR:
 		if (st.st_opts & OP_SELPIPES &&
 		    (st.st_opts & OP_PIPES) == 0)
 			draw_pipes(1);

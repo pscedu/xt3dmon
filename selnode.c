@@ -30,6 +30,8 @@ sn_replace(struct selnode *sn, struct node *n)
 		flyby_writeselnode(n->n_nid, &fv_zero);
 	}
 	st.st_rf |= RF_SELNODE;
+	if (st.st_vmode == VM_VNEIGHBOR)
+		st.st_rf |= RF_CLUSTER;
 	selnode_clean = 0;
 }
 
@@ -61,6 +63,8 @@ sn_insert(struct node *n, const struct fvec *offv)
 	}
 #endif
 	st.st_rf |= RF_SELNODE;
+	if (st.st_vmode == VM_VNEIGHBOR)
+		st.st_rf |= RF_CLUSTER;
 	nselnodes++;
 }
 
@@ -96,7 +100,10 @@ sn_clear(void)
 		free(sn);
 	}
 	SLIST_INIT(&selnodes);
+
 	st.st_rf |= RF_SELNODE;
+	if (st.st_vmode == VM_VNEIGHBOR)
+		st.st_rf |= RF_CLUSTER;
 	nselnodes = 0;
 
 	if (flyby_mode != FBM_PLAY)
@@ -117,6 +124,8 @@ sn_del(struct node *n)
 			if (flyby_mode == FBM_REC)
 				flyby_writeselnode(n->n_nid, &fv_zero);
 			st.st_rf |= RF_SELNODE;
+			if (st.st_vmode == VM_VNEIGHBOR)
+				st.st_rf |= RF_CLUSTER;
 			if (--nselnodes == 0 && flyby_mode != FBM_PLAY)
 				panel_hide(PANEL_NINFO);
 			selnode_clean = 0;

@@ -292,6 +292,9 @@ gl_keyh_vmode(unsigned char key, __unused int u, __unused int v)
 	case 'p':
 		st.st_vmode = VM_PHYS;
 		break;
+	case 'n':
+		st.st_vmode = VM_VNEIGHBOR;
+		break;
 	default:
 		return;
 	}

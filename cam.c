@@ -294,6 +294,9 @@ cam_revolvefocus(double dt, double dp)
 			vec_set(&nfv[7], CL_WIDTH,	CL_HEIGHT,	CL_DEPTH);
 			cam_revolve(nfv, NENTRIES(nfv), dt, dp, revolve_type);
 			break;
+		case VM_VNEIGHBOR:
+			cam_revolve(&focus, 1, dt, dp, REVT_LKCEN);
+			break;
 		}
 	}
 }
@@ -331,6 +334,15 @@ cam_bird(void)
 		st.st_v.fv_y += st.st_wioff.iv_y * st.st_winsp.iv_y + cen.fv_h / 2.0;
 		st.st_v.fv_z += st.st_wioff.iv_z * st.st_winsp.iv_z + cen.fv_d / 2.0;
 		cam_revolvefocus(0.0, 0.01);
+		break;
+	case VM_VNEIGHBOR:
+		sph.fv_r = 8.0 * ((widim.iv_w + widim.iv_h + widim.iv_d) / 2 + 8);
+		sph.fv_t = 5.5 * M_PI * 0.5;
+		sph.fv_p = M_PI * 0.25;
+		vec_sphere2cart(&sph, &st.st_v);
+		vec_set(&st.st_lv, -st.st_v.fv_x, -st.st_v.fv_y, -st.st_v.fv_z);
+		vec_normalize(&st.st_lv);
+		vec_set(&st.st_uv, 0.0, 1.0, 0.0);
 		break;
 	}
 }

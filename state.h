@@ -18,7 +18,8 @@
 #define VM_PHYS		0
 #define VM_WIRED	1
 #define VM_WIONE	2
-#define NVM		3
+#define VM_VNEIGHBOR	3
+#define NVM		4
 
 struct state {
 	struct fvec	 st_v;			/* camera position */

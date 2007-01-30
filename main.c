@@ -645,6 +645,7 @@ rebuild(int opts)
 		switch (st.st_vmode) {
 		case VM_PHYS:
 		case VM_WIONE:
+		case VM_VNEIGHBOR:
 			clip = vmodes[st.st_vmode].vm_clip;
 			break;
 		case VM_WIRED:

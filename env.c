@@ -114,6 +114,9 @@ focus_cluster(struct fvec *cen)
 	double dist;
 
 	switch (st.st_vmode) {
+	case VM_VNEIGHBOR:
+		vec_set(cen, 0.0, 0.0, 0.0);
+		break;
 	case VM_PHYS:
 		cen->fv_x = XCENTER;
 		cen->fv_y = YCENTER;

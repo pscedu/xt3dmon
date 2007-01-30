@@ -298,6 +298,7 @@ node_goto(struct node *n)
 		break;
 	case VM_WIRED:
 	case VM_WIONE:
+	case VM_VNEIGHBOR:
 		/* Set to the front where the label is. */
 		st.st_x -= GOTO_DIST_LOG;
 		st.st_y += 0.5 * n->n_dimp->fv_h;
