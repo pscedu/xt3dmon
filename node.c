@@ -316,7 +316,8 @@ node_show(const struct node *n)
 {
 	if (st.st_opts & OP_SUBSET && (n->n_flags & NF_SUBSEL) == 0)
 		return (0);
-	if (n->n_flags & NF_VALID && n->n_fillp->f_a > 0.01f)
+	if ((n->n_flags & (NF_VALID | NF_VMVIS)) == (NF_VALID | NF_VMVIS) &&
+	    n->n_fillp->f_a > 0.01f)
 		return (1);
 	return (0);
 }
