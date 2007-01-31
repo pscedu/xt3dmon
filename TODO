@@ -99,6 +99,9 @@ todo
 - only flag RF_CLUSTER on sn_remove() when the node to remove is at the
   front of the list (it otherwise won't need to be rebuilt)
 - tween bug when holding <home> or <end>
+- text_wrap has a bug:
+	char buf[BUFSIZ] = "yod -size 3072 -small_pages -stack 8000000 /usr/users/8/quinnt/src/pkdgrav/gasoline.noiob -wall 460 drgas.param";
+	text_wrap(buf, 40)
 
 xtwmon
 - rename arbiter-raw.pl?data=nodes to data=node
