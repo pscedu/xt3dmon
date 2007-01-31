@@ -249,6 +249,16 @@ opt_flip(int fopts)
 				flyby_rstautoto();
 			}
 			break;
+		case OP_NODEANIM: {
+			struct node *n;
+			struct ivec iv;
+
+			NODE_FOREACH(n, &iv)
+				if (n)
+					n->n_vcur = n->n_vfin;
+			st.st_rf |= RF_CLUSTER;
+			break;
+		    }
 		case OP_REEL:
 			if (on)
 				reel_load();
