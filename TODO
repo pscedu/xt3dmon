@@ -98,6 +98,7 @@ todo
 - rename phys.conf to mach.conf
 - only flag RF_CLUSTER on sn_remove() when the node to remove is at the
   front of the list (it otherwise won't need to be rebuilt)
+- tween bug when holding <home> or <end>
 
 xtwmon
 - rename arbiter-raw.pl?data=nodes to data=node
