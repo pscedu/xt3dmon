@@ -35,15 +35,17 @@
 
 float	 snap_to_grid(float, float, float);
 
-struct fvec wi_repstart;
-struct fvec wi_repdim;
-float clip;
+struct ivec	coredim = {{ 1, 1, 2 }};	/* 0x0x2 CPU cores per node */
 
-GLUquadric *quadric;
+struct fvec	wi_repstart;
+struct fvec	wi_repdim;
+float		clip;
 
-unsigned int dl_cluster[2];
-unsigned int dl_ground[2];
-unsigned int dl_selnodes[2];
+GLUquadric	*quadric;
+
+unsigned int	dl_cluster[2];
+unsigned int	dl_ground[2];
+unsigned int	dl_selnodes[2];
 
 void
 draw_info(const char *p)
@@ -387,6 +389,9 @@ draw_node_cores(const struct node *n, const struct fill *fp)
 {
 	struct fvec dim, adj;
 	struct ivec iv, lvl;
+	int ncores;
+
+	ncores = n->n_yod && n->n_yod->y_single ? 1 : 2;
 
 	/* Draw core-separating lines. */
 	glEnable(GL_LINE_SMOOTH);
@@ -438,10 +443,9 @@ draw_node_cores(const struct node *n, const struct fill *fp)
 	adj.fv_h = n->n_dimp->fv_h / coredim.iv_h;
 	adj.fv_d = n->n_dimp->fv_d / coredim.iv_d;
 
-	lvl.iv_x = (n->n_job->j_ncores %
-	    (coredim.iv_x * coredim.iv_z)) / coredim.iv_z;
-	lvl.iv_y = n->n_job->j_ncores / (coredim.iv_x * coredim.iv_z);
-	lvl.iv_z = n->n_job->j_ncores % coredim.iv_z;
+	lvl.iv_x = (ncores % (coredim.iv_x * coredim.iv_z)) / coredim.iv_z;
+	lvl.iv_y = ncores / (coredim.iv_x * coredim.iv_z);
+	lvl.iv_z = ncores % coredim.iv_z;
 
 	/* Draw at most three cubes to represent the cores. */
 	dim.fv_w = n->n_dimp->fv_w;
@@ -506,7 +510,7 @@ draw_node(struct node *n, int flags)
 
 	switch (n->n_geom) {
 	case GEOM_CUBE:
-		if (st.st_opts & OP_CORES && n->n_job)
+		if (st.st_opts & OP_CORES && n->n_yod)
 			draw_node_cores(n, fp);
 		else
 			draw_cube(n->n_dimp, fp, df);

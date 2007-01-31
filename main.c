@@ -47,7 +47,6 @@
 struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 struct node		*invmap[NID_MAX];
 struct node		*wimap[WIDIM_WIDTH][WIDIM_HEIGHT][WIDIM_DEPTH];
-struct ivec		 coredim = {{ 2, 4, 4 }};	/* 2x4x4 CPU cores per node */
 
 char			 login_auth[BUFSIZ];
 
