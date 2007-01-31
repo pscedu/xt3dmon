@@ -474,13 +474,10 @@ draw_node_cores(const struct node *n, const struct fill *fp)
 __inline void
 draw_node(struct node *n, int flags)
 {
-	struct fvec *fvp;
 	struct fill *fp;
 	int df;
 
-	if (st.st_opts & OP_NODEANIM &&
-	    st.st_vmode != VM_WIRED) {
-		fvp = &n->n_vcur;
+	if (st.st_opts & OP_NODEANIM && st.st_vmode != VM_WIRED) {
 		/*
 		 * node_tween_dir only updates one direction at a time,
 		 * so we use a bitwise OR operator so they all run.
@@ -491,10 +488,9 @@ draw_node(struct node *n, int flags)
 		     node_tween_dir(&n->n_vcur.fv_y, &n->n_vfin.fv_y) |
 		     node_tween_dir(&n->n_vcur.fv_z, &n->n_vfin.fv_z)))
 			st.st_rf |= RF_CLUSTER | RF_SELNODE;
-	} else
-		fvp = &n->n_vfin;
+	}
 	glPushMatrix();
-	glTranslatef(fvp->fv_x, fvp->fv_y, fvp->fv_z);
+	glTranslatef(n->n_vcur.fv_x, n->n_vcur.fv_y, n->n_vcur.fv_z);
 
 	df = DF_FRAME;
 	if ((flags & NDF_IGNSN) == 0 && n->n_flags & NF_SELNODE) {
