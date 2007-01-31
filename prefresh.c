@@ -630,9 +630,9 @@ panel_refresh_ninfo(struct panel *p)
 	    iv->iv_x, iv->iv_y, iv->iv_z,
 	    statusclass[n->n_state].nc_name);
 
-	if (n->n_job)
+	if (n->n_job || n->n_yod)
 		panel_add_content(p, "\nCores in use: %d/%d",
-		    n->n_job->j_ncores,
+		    n->n_yod && n->n_yod->y_single ? 1 : 2,
 		    coredim.iv_x * coredim.iv_y * coredim.iv_z);
 
 	if (n->n_temp == DV_NODATA)
