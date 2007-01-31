@@ -393,6 +393,42 @@ draw_node_cores(const struct node *n, const struct fill *fp)
 
 	ncores = n->n_yod && n->n_yod->y_single ? 1 : 2;
 
+	/* Geometry for core size in each dimension. */
+	adj.fv_w = n->n_dimp->fv_w / coredim.iv_w;
+	adj.fv_h = n->n_dimp->fv_h / coredim.iv_h;
+	adj.fv_d = n->n_dimp->fv_d / coredim.iv_d;
+
+	lvl.iv_x = (ncores % (coredim.iv_x * coredim.iv_z)) / coredim.iv_z;
+	lvl.iv_y = ncores / (coredim.iv_x * coredim.iv_z);
+	lvl.iv_z = ncores % coredim.iv_z;
+
+	/* Draw at most three cubes to represent the cores. */
+	dim.fv_w = n->n_dimp->fv_w;
+	dim.fv_h = lvl.iv_y * adj.fv_h;
+	dim.fv_d = n->n_dimp->fv_d;
+	draw_cube(&dim, fp, 0);
+
+	if (lvl.iv_x) {
+		dim.fv_w = lvl.iv_x * adj.fv_w;
+		dim.fv_h = (lvl.iv_y + 1) * adj.fv_h;
+		dim.fv_d = n->n_dimp->fv_d;
+		glPushMatrix();
+		glTranslatef(0.0, lvl.iv_y * adj.fv_h, 0.0);
+		draw_cube(&dim, fp, 0);
+		glPopMatrix();
+	}
+
+	if (lvl.iv_z) {
+		dim.fv_w = (lvl.iv_x + 1) * adj.fv_w;
+		dim.fv_h = (lvl.iv_y + 1) * adj.fv_h;
+		dim.fv_d = lvl.iv_z * adj.fv_d;
+		glPushMatrix();
+		glTranslatef(lvl.iv_x * adj.fv_w,
+		    lvl.iv_y * adj.fv_h, 0.0);
+		draw_cube(&dim, fp, 0);
+		glPopMatrix();
+	}
+
 	/* Draw core-separating lines. */
 	glEnable(GL_LINE_SMOOTH);
 	glEnable(GL_BLEND);
@@ -438,41 +474,6 @@ draw_node_cores(const struct node *n, const struct fill *fp)
 	glDisable(GL_LINE_SMOOTH);
 	glDisable(GL_BLEND);
 
-	/* Geometry for core size in each dimension. */
-	adj.fv_w = n->n_dimp->fv_w / coredim.iv_w;
-	adj.fv_h = n->n_dimp->fv_h / coredim.iv_h;
-	adj.fv_d = n->n_dimp->fv_d / coredim.iv_d;
-
-	lvl.iv_x = (ncores % (coredim.iv_x * coredim.iv_z)) / coredim.iv_z;
-	lvl.iv_y = ncores / (coredim.iv_x * coredim.iv_z);
-	lvl.iv_z = ncores % coredim.iv_z;
-
-	/* Draw at most three cubes to represent the cores. */
-	dim.fv_w = n->n_dimp->fv_w;
-	dim.fv_h = lvl.iv_y * adj.fv_h;
-	dim.fv_d = n->n_dimp->fv_d;
-	draw_cube(&dim, fp, 0);
-
-	if (lvl.iv_x) {
-		dim.fv_w = lvl.iv_x * adj.fv_w;
-		dim.fv_h = (lvl.iv_y + 1) * adj.fv_h;
-		dim.fv_d = n->n_dimp->fv_d;
-		glPushMatrix();
-		glTranslatef(0.0, lvl.iv_y * adj.fv_h, 0.0);
-		draw_cube(&dim, fp, 0);
-		glPopMatrix();
-	}
-
-	if (lvl.iv_z) {
-		dim.fv_w = (lvl.iv_x + 1) * adj.fv_w;
-		dim.fv_h = (lvl.iv_y + 1) * adj.fv_h;
-		dim.fv_d = lvl.iv_z * adj.fv_d;
-		glPushMatrix();
-		glTranslatef(lvl.iv_x * adj.fv_w,
-		    lvl.iv_y * adj.fv_h, 0.0);
-		draw_cube(&dim, fp, 0);
-		glPopMatrix();
-	}
 }
 
 __inline void
