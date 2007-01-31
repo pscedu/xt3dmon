@@ -876,10 +876,10 @@ panel_refresh_pos(struct panel *p)
 	    "Look (%.2f,%.2f,%.2f) (t=%.3f,p=%.3f)\n"
 	    "Up (%.2f,%.2f,%.2f) (t=%.3f,p=%.3f)\n"
 	    "Focus (%.2f,%.2f,%.2f)",
-	    st.st_x, st.st_y, st.st_z,
-	    st.st_lx, st.st_ly, st.st_lz,
+	    st.st_v.fv_x, st.st_v.fv_y, st.st_v.fv_z,
+	    st.st_lv.fv_x, st.st_lv.fv_y, st.st_lv.fv_z,
 	    lsph.fv_t, lsph.fv_p,
-	    st.st_ux, st.st_uy, st.st_uz,
+	    st.st_uv.fv_x, st.st_uv.fv_y, st.st_uv.fv_z,
 	    usph.fv_t, usph.fv_p,
 	    focus.fv_x, focus.fv_y, focus.fv_z);
 }

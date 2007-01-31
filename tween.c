@@ -89,33 +89,33 @@ tween_update(void)
 	sc_l.fv_x = sc_l.fv_y = sc_l.fv_z = 1.0f;
 	sc_u.fv_x = sc_u.fv_y = sc_u.fv_z = 1.0f;
 
-	tween_probe(&st.st_x, tv.fv_x, TWEEN_MAX_POS, &sc.fv_x, &want.fv_w);
-	tween_probe(&st.st_y, tv.fv_y, TWEEN_MAX_POS, &sc.fv_y, &want.fv_h);
-	tween_probe(&st.st_z, tv.fv_z, TWEEN_MAX_POS, &sc.fv_z, &want.fv_d);
+	tween_probe(&st.st_v.fv_x, tv.fv_x, TWEEN_MAX_POS, &sc.fv_x, &want.fv_w);
+	tween_probe(&st.st_v.fv_y, tv.fv_y, TWEEN_MAX_POS, &sc.fv_y, &want.fv_h);
+	tween_probe(&st.st_v.fv_z, tv.fv_z, TWEEN_MAX_POS, &sc.fv_z, &want.fv_d);
 
-	tween_probe(&st.st_lx, tlv.fv_x, TWEEN_MAX_LOOK, &sc_l.fv_x, &want_l.fv_w);
-	tween_probe(&st.st_ly, tlv.fv_y, TWEEN_MAX_LOOK, &sc_l.fv_y, &want_l.fv_h);
-	tween_probe(&st.st_lz, tlv.fv_z, TWEEN_MAX_LOOK, &sc_l.fv_z, &want_l.fv_d);
+	tween_probe(&st.st_lv.fv_x, tlv.fv_x, TWEEN_MAX_LOOK, &sc_l.fv_x, &want_l.fv_w);
+	tween_probe(&st.st_lv.fv_y, tlv.fv_y, TWEEN_MAX_LOOK, &sc_l.fv_y, &want_l.fv_h);
+	tween_probe(&st.st_lv.fv_z, tlv.fv_z, TWEEN_MAX_LOOK, &sc_l.fv_z, &want_l.fv_d);
 
-	tween_probe(&st.st_ux, tuv.fv_x, TWEEN_MAX_UP, &sc_u.fv_x, &want_u.fv_w);
-	tween_probe(&st.st_uy, tuv.fv_y, TWEEN_MAX_UP, &sc_u.fv_y, &want_u.fv_h);
-	tween_probe(&st.st_uz, tuv.fv_z, TWEEN_MAX_UP, &sc_u.fv_z, &want_u.fv_d);
+	tween_probe(&st.st_uv.fv_x, tuv.fv_x, TWEEN_MAX_UP, &sc_u.fv_x, &want_u.fv_w);
+	tween_probe(&st.st_uv.fv_y, tuv.fv_y, TWEEN_MAX_UP, &sc_u.fv_y, &want_u.fv_h);
+	tween_probe(&st.st_uv.fv_z, tuv.fv_z, TWEEN_MAX_UP, &sc_u.fv_z, &want_u.fv_d);
 
 	scale = MIN3(sc.fv_x, sc.fv_y, sc.fv_z);
 	scale_l = MIN3(sc_l.fv_x, sc_l.fv_y, sc_l.fv_z);
 	scale_u = MIN3(sc_u.fv_x, sc_u.fv_y, sc_u.fv_z);
 
-	tween_recalc(&st.st_x, scale, want.fv_w);
-	tween_recalc(&st.st_y, scale, want.fv_h);
-	tween_recalc(&st.st_z, scale, want.fv_d);
+	tween_recalc(&st.st_v.fv_x, scale, want.fv_w);
+	tween_recalc(&st.st_v.fv_y, scale, want.fv_h);
+	tween_recalc(&st.st_v.fv_z, scale, want.fv_d);
 
-	tween_recalc(&st.st_lx, scale_l, want_l.fv_w);
-	tween_recalc(&st.st_ly, scale_l, want_l.fv_h);
-	tween_recalc(&st.st_lz, scale_l, want_l.fv_d);
+	tween_recalc(&st.st_lv.fv_x, scale_l, want_l.fv_w);
+	tween_recalc(&st.st_lv.fv_y, scale_l, want_l.fv_h);
+	tween_recalc(&st.st_lv.fv_z, scale_l, want_l.fv_d);
 
-	tween_recalc(&st.st_ux, scale_u, want_u.fv_w);
-	tween_recalc(&st.st_uy, scale_u, want_u.fv_h);
-	tween_recalc(&st.st_uz, scale_u, want_u.fv_d);
+	tween_recalc(&st.st_uv.fv_x, scale_u, want_u.fv_w);
+	tween_recalc(&st.st_uv.fv_y, scale_u, want_u.fv_h);
+	tween_recalc(&st.st_uv.fv_z, scale_u, want_u.fv_d);
 
 	if (want.fv_w || want.fv_h || want.fv_d ||
 	    want_l.fv_w || want_l.fv_h || want_l.fv_d ||
@@ -134,19 +134,19 @@ tween_push(int opts)
 {
 	if (st.st_opts & OP_TWEEN) {
 		if (opts & TWF_POS) {
-			sv.fv_x = st.st_x;  st.st_x = tv.fv_x;
-			sv.fv_y = st.st_y;  st.st_y = tv.fv_y;
-			sv.fv_z = st.st_z;  st.st_z = tv.fv_z;
+			sv.fv_x = st.st_v.fv_x;  st.st_v.fv_x = tv.fv_x;
+			sv.fv_y = st.st_v.fv_y;  st.st_v.fv_y = tv.fv_y;
+			sv.fv_z = st.st_v.fv_z;  st.st_v.fv_z = tv.fv_z;
 		}
 		if (opts & TWF_LOOK) {
-			slv.fv_x = st.st_lx;  st.st_lx = tlv.fv_x;
-			slv.fv_y = st.st_ly;  st.st_ly = tlv.fv_y;
-			slv.fv_z = st.st_lz;  st.st_lz = tlv.fv_z;
+			slv.fv_x = st.st_lv.fv_x;  st.st_lv.fv_x = tlv.fv_x;
+			slv.fv_y = st.st_lv.fv_y;  st.st_lv.fv_y = tlv.fv_y;
+			slv.fv_z = st.st_lv.fv_z;  st.st_lv.fv_z = tlv.fv_z;
 		}
 		if (opts & TWF_UP) {
-			suv.fv_x = st.st_ux;  st.st_ux = tuv.fv_x;
-			suv.fv_y = st.st_uy;  st.st_uy = tuv.fv_y;
-			suv.fv_z = st.st_uz;  st.st_uz = tuv.fv_z;
+			suv.fv_x = st.st_uv.fv_x;  st.st_uv.fv_x = tuv.fv_x;
+			suv.fv_y = st.st_uv.fv_y;  st.st_uv.fv_y = tuv.fv_y;
+			suv.fv_z = st.st_uv.fv_z;  st.st_uv.fv_z = tuv.fv_z;
 		}
 	}
 }
@@ -156,19 +156,19 @@ tween_pop(int opts)
 {
 	if (st.st_opts & OP_TWEEN) {
 		if (opts & TWF_POS) {
-			tv.fv_x = st.st_x;  st.st_x = sv.fv_x;
-			tv.fv_y = st.st_y;  st.st_y = sv.fv_y;
-			tv.fv_z = st.st_z;  st.st_z = sv.fv_z;
+			tv.fv_x = st.st_x;  st.st_v.fv_x = sv.fv_x;
+			tv.fv_y = st.st_y;  st.st_v.fv_y = sv.fv_y;
+			tv.fv_z = st.st_z;  st.st_v.fv_z = sv.fv_z;
 		}
 		if (opts & TWF_LOOK) {
-			tlv.fv_x = st.st_lx;  st.st_lx = slv.fv_x;
-			tlv.fv_y = st.st_ly;  st.st_ly = slv.fv_y;
-			tlv.fv_z = st.st_lz;  st.st_lz = slv.fv_z;
+			tlv.fv_x = st.st_lv.fv_x;  st.st_lv.fv_x = slv.fv_x;
+			tlv.fv_y = st.st_lv.fv_y;  st.st_lv.fv_y = slv.fv_y;
+			tlv.fv_z = st.st_lv.fv_z;  st.st_lv.fv_z = slv.fv_z;
 		}
 		if (opts & TWF_UP) {
-			tuv.fv_x = st.st_ux;  st.st_ux = suv.fv_x;
-			tuv.fv_y = st.st_uy;  st.st_uy = suv.fv_y;
-			tuv.fv_z = st.st_uz;  st.st_uz = suv.fv_z;
+			tuv.fv_x = st.st_uv.fv_x;  st.st_uv.fv_x = suv.fv_x;
+			tuv.fv_y = st.st_uv.fv_y;  st.st_uv.fv_y = suv.fv_y;
+			tuv.fv_z = st.st_uv.fv_z;  st.st_uv.fv_z = suv.fv_z;
 		}
 	} else
 		st.st_rf |= RF_CAM;

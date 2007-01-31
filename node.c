@@ -280,20 +280,20 @@ node_goto(struct node *n)
 	case VM_PHYS:
 		vec_set(&st.st_uv, 0.0, 1.0, 0.0);
 
-		st.st_lx = 0.0f;
-		st.st_ly = 0.0f;
+		st.st_lv.fv_x = 0.0f;
+		st.st_lv.fv_y = 0.0f;
 
-		st.st_y += 0.5 * NODEHEIGHT;
+		st.st_v.fv_y += 0.5 * NODEHEIGHT;
 
 		node_physpos(n, &pc);
 		node_getmodpos(pc.pc_n, &row, &col);
 		/* Right side (positive z). */
 		if (row == 1) {
-			st.st_z += NODEDEPTH + GOTO_DIST_PHYS;
-			st.st_lz = -1.0;
+			st.st_v.fv_z += NODEDEPTH + GOTO_DIST_PHYS;
+			st.st_lv.fv_z = -1.0;
 		} else {
-			st.st_z -= GOTO_DIST_PHYS;
-			st.st_lz = 1.0;
+			st.st_v.fv_z -= GOTO_DIST_PHYS;
+			st.st_lv.fv_z = 1.0;
 		}
 		break;
 	case VM_WIRED:

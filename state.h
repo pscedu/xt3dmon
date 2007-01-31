@@ -40,14 +40,6 @@ struct state {
 #define st_x st_v.fv_x
 #define st_y st_v.fv_y
 #define st_z st_v.fv_z
-
-#define st_lx st_lv.fv_x
-#define st_ly st_lv.fv_y
-#define st_lz st_lv.fv_z
-
-#define st_ux st_uv.fv_x
-#define st_uy st_uv.fv_y
-#define st_uz st_uv.fv_z
 };
 
 /* Pipe modes. */

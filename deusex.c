@@ -231,43 +231,19 @@ dxp_cuban8(const struct dx_action *dxa)
 
 	switch (dxa->dxa_cuban8_dim) {
 	case DIM_X:
-		st.st_x = 0;
-		st.st_y = sv.fv_x;
-		st.st_z = sv.fv_y;
-
-		st.st_ux = 0.0;
-		st.st_uy = uv.fv_x;
-		st.st_uz = uv.fv_y;
-
-		st.st_lx = 0.0;
-		st.st_ly = lv.fv_x;
-		st.st_lz = lv.fv_y;
+		vec_set(&st.st_v, 0.0, sv.fv_x, sv.fv_y);
+		vec_set(&st.st_lv, 0.0, lv.fv_x, lv.fv_y);
+		vec_set(&st.st_uv, 0.0, uv.fv_x, uv.fv_y);
 		break;
 	case DIM_Y:
-		st.st_x = sv.fv_x;
-		st.st_y = 0;
-		st.st_z = sv.fv_y;
-
-		st.st_ux = uv.fv_x;
-		st.st_uy = 0.0;
-		st.st_uz = uv.fv_y;
-
-		st.st_lx = lv.fv_x;
-		st.st_ly = 0.0;
-		st.st_lz = lv.fv_y;
+		vec_set(&st.st_v, sv.fv_x, 0.0, sv.fv_y);
+		vec_set(&st.st_lv, lv.fv_x, 0.0, lv.fv_y);
+		vec_set(&st.st_uv, uv.fv_x, 0.0, uv.fv_y);
 		break;
 	case DIM_Z:
-		st.st_x = sv.fv_x;
-		st.st_y = sv.fv_y;
-		st.st_z = 0;
-
-		st.st_ux = uv.fv_x;
-		st.st_uy = uv.fv_y;
-		st.st_uz = 0.0;
-
-		st.st_lx = lv.fv_x;
-		st.st_ly = lv.fv_y;
-		st.st_lz = 0.0;
+		vec_set(&st.st_v, sv.fv_x, sv.fv_y, 0.0);
+		vec_set(&st.st_lv, lv.fv_x, lv.fv_y, 0.0);
+		vec_set(&st.st_uv, uv.fv_x, uv.fv_y, 0.0);
 		break;
 	}
 

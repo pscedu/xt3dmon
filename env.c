@@ -124,9 +124,9 @@ focus_cluster(struct fvec *cen)
 		break;
 	case VM_WIRED:
 		dist = MAX3(WIV_SWIDTH, WIV_SHEIGHT, WIV_SDEPTH) / 4.0;
-		cen->fv_x = st.st_x + st.st_lx * dist;
-		cen->fv_y = st.st_y + st.st_ly * dist;
-		cen->fv_z = st.st_z + st.st_lz * dist;
+		cen->fv_x = st.st_v.fv_x + st.st_lv.fv_x * dist;
+		cen->fv_y = st.st_v.fv_y + st.st_lv.fv_y * dist;
+		cen->fv_z = st.st_v.fv_z + st.st_lv.fv_z * dist;
 		break;
 	case VM_WIONE:
 		cen->fv_x = st.st_winsp.iv_x * (widim.iv_w / 2.0f + st.st_wioff.iv_x);

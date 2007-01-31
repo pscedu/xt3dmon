@@ -44,30 +44,28 @@ cam_move(int dir, double amt)
 {
 	static struct fvec fv;
 
-	if (dir == DIR_LEFT ||
-	    dir == DIR_BACK ||
-	    dir == DIR_DOWN)
+	if (dir == DIR_LEFT || dir == DIR_BACK || dir == DIR_DOWN)
 		amt *= -1;
 
 	switch (dir) {
 	case DIR_LEFT:
 	case DIR_RIGHT:
 		vec_crossprod(&fv, &st.st_lv, &st.st_uv);
-		st.st_x += fv.fv_x * amt;
-		st.st_y += fv.fv_y * amt;
-		st.st_z += fv.fv_z * amt;
+		st.st_v.fv_x += fv.fv_x * amt;
+		st.st_v.fv_y += fv.fv_y * amt;
+		st.st_v.fv_z += fv.fv_z * amt;
 		break;
 	case DIR_FORW:
 	case DIR_BACK:
-		st.st_x += st.st_lx * amt;
-		st.st_y += st.st_ly * amt;
-		st.st_z += st.st_lz * amt;
+		st.st_v.fv_x += st.st_lv.fv_x * amt;
+		st.st_v.fv_y += st.st_lv.fv_y * amt;
+		st.st_v.fv_z += st.st_lv.fv_z * amt;
 		break;
 	case DIR_UP:
 	case DIR_DOWN:
-		st.st_x += st.st_uv.fv_x * amt;
-		st.st_y += st.st_uv.fv_y * amt;
-		st.st_z += st.st_uv.fv_z * amt;
+		st.st_v.fv_x += st.st_uv.fv_x * amt;
+		st.st_v.fv_y += st.st_uv.fv_y * amt;
+		st.st_v.fv_z += st.st_uv.fv_z * amt;
 		break;
 	}
 }
@@ -254,9 +252,9 @@ cam_revolvefocus(double dt, double dp)
 		switch (st.st_vmode) {
 		case VM_WIRED:
 			dst = MAX3(WIV_SWIDTH, WIV_SHEIGHT, WIV_SDEPTH) / 4.0;
-			fv.fv_x = st.st_x + st.st_lx * dst;
-			fv.fv_y = st.st_y + st.st_ly * dst;
-			fv.fv_z = st.st_z + st.st_lz * dst;
+			fv.fv_x = st.st_v.fv_x + st.st_lv.fv_x * dst;
+			fv.fv_y = st.st_v.fv_y + st.st_lv.fv_y * dst;
+			fv.fv_z = st.st_v.fv_z + st.st_lv.fv_z * dst;
 			fvp = &fv;
 			cam_revolve(fvp, 1, dt, dp, revolve_type);
 			break;
@@ -348,9 +346,9 @@ cam_look(void)
 {
 	glLoadIdentity();
 	gluLookAt(st.st_x, st.st_y, st.st_z,
-	    st.st_x + st.st_lx,
-	    st.st_y + st.st_ly,
-	    st.st_z + st.st_lz,
+	    st.st_v.fv_x + st.st_lv.fv_x,
+	    st.st_v.fv_y + st.st_lv.fv_y,
+	    st.st_v.fv_z + st.st_lv.fv_z,
 	    st.st_uv.fv_x,
 	    st.st_uv.fv_y,
 	    st.st_uv.fv_z);
