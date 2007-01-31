@@ -35,6 +35,7 @@ struct node {
 #define NF_SUBSEL	(1<<2)			/* subselection membership */
 #define NF_VMVIS	(1<<3)			/* visibility in vmode */
 
+/* Lustre status. */
 #define LS_CLEAN	0
 #define LS_DIRTY	1
 #define LS_RECOVER	2
