@@ -95,7 +95,6 @@ todo
 - moving the cursor should not cause panel recompiles
 - update libpng/libz on win32
 - use buf.c routines in base64 routines instead of bufsize guesswork
-- rename phys.conf to mach.conf
 - only flag RF_CLUSTER on sn_remove() when the node to remove is at the
   front of the list (it otherwise won't need to be rebuilt)
 - tween bug when holding <home> or <end>

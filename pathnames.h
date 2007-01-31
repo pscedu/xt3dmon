@@ -10,7 +10,7 @@
 #define _PATH_DXSCRIPTS	"scripts"
 #define _PATH_HOTKEY	"data/hotkey-%c"
 
-#define _PATH_PHYSCONF	"data/phys.conf"
+#define _PATH_MACHCONF	"data/mach.conf"
 #define _PATH_COLORS	"data/colors"
 #define _PATH_SELNIDS	"data/selnids"
 

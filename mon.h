@@ -105,8 +105,8 @@ void		 restart(void);
 
 int		 roundclass(double, double, double, int);
 
-/* parse-phys.y */
-void		 parse_physconf(const char *);
+/* mach-parse.y */
+void		 parse_machconf(const char *);
 
 /* png.c */
 void 		*png_load(char *, unsigned int *, unsigned int *);

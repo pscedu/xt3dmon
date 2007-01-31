@@ -12,8 +12,9 @@
 #include "env.h"
 #include "pathnames.h"
 #include "phys.h"
+#include "mach.h"
 
-#define yyin physin
+#define yyin machin
 
 int yylex(void);
 int yyerror(const char *, ...);
@@ -21,7 +22,7 @@ int yyparse(void);
 
 struct physdim *physdim_get(const char *);
 
-int phys_lineno = 1;
+int mach_lineno = 1;
 static int errors;
 
 struct physdim *physdim;
@@ -123,7 +124,7 @@ yyerror(const char *fmt, ...)
 	va_list ap;
 
 	va_start(ap, fmt);
-	fprintf(stderr, "%s:%d: ", progname, phys_lineno);
+	fprintf(stderr, "%s:%d: ", progname, mach_lineno);
 	vfprintf(stderr, fmt, ap);
 	fprintf(stderr, "\n");
 	va_end(ap);
@@ -174,7 +175,7 @@ physdim_check(void)
 }
 
 void
-parse_physconf(const char *fn)
+parse_machconf(const char *fn)
 {
 	FILE *fp;
 	extern FILE *yyin;
@@ -183,7 +184,7 @@ parse_physconf(const char *fn)
 	if ((fp = fopen(fn, "r")) == NULL)
 		err(1, "%s", fn);
 	yyin = fp;
-	phys_lineno = 1;
+	mach_lineno = 1;
 	yyparse();
 	fclose(fp);
 

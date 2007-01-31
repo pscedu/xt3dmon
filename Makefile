@@ -28,6 +28,8 @@ SRCS+= http.c
 SRCS+= job.c
 SRCS+= key.c
 SRCS+= lnseg.c
+SRCS+= mach-lex.l
+SRCS+= mach-parse.y
 SRCS+= main.c
 SRCS+= mark.c
 SRCS+= math.c
@@ -36,8 +38,6 @@ SRCS+= node.c
 SRCS+= objlist.c
 SRCS+= panel.c
 SRCS+= parse.c
-SRCS+= phys-lex.l
-SRCS+= phys-parse.y
 SRCS+= png.c
 SRCS+= prefresh.c
 SRCS+= reel.c
@@ -100,7 +100,7 @@ CSRCS+= $(patsubst %.y,%.c,$(filter %.y,${SRCS}))
 CSRCS+= $(patsubst %.l,%.c,$(filter %.l,${SRCS}))
 
 CLEAN+= gmon.out dx-lex.c dx-parse.c dx-parse.h
-CLEAN+= phys-lex.c phys-parse.c phys-parse.h
+CLEAN+= mach-lex.c mach-parse.c mach-parse.h
 
 all: ${PROG}
 
@@ -130,8 +130,8 @@ tags: ${SRCS}
 	${CTAGS} ${SRCS}
 
 lines:
-	@shopt -s extglob && eval 'wc -l !(phys-parse|dx-parse).h \
-	    !(phys-parse|phys-lex|dx-parse|dx-lex).c *.y *.l' | tail -1
+	@shopt -s extglob && eval 'wc -l !(mach-parse|dx-parse).h \
+	    !(mach-parse|mach-lex|dx-parse|dx-lex).c *.y *.l' | tail -1
 
 run: xt3dmon
 	./xt3dmon

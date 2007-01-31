@@ -1,9 +1,9 @@
 xt3dmon
 client-snap
 gmon.out
-phys-lex.c
-phys-parse.c
-phys-parse.h
+mach-lex.c
+mach-parse.c
+mach-parse.h
 dx-lex.c
 dx-parse.c
 dx-parse.h

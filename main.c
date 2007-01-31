@@ -753,7 +753,7 @@ void
 usage(void)
 {
 	fprintf(stderr,
-	    "usage: %s [-dMp] [-c physconf] [-H height] [-W width] [-U uri]\n"
+	    "usage: %s [-dMp] [-c machconf] [-H height] [-W width] [-U uri]\n"
 	    "    [-x script]\n", progname);
 	exit(1);
 }
@@ -773,7 +773,7 @@ main(int argc, char *argv[])
 	ds_setlive();
 	srandom(time(NULL));
 
-	cfgfn = _PATH_PHYSCONF;
+	cfgfn = _PATH_MACHCONF;
 
 	Mflag = 0;
 	flags = GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE;
@@ -855,7 +855,7 @@ glutInitWindowPosition(0, 0);
 	st.st_rf |= RF_INIT;
 
 	parse_colors(_PATH_COLORS);
-	parse_physconf(cfgfn);
+	parse_machconf(cfgfn);
 
 	if (server_mode)
 		serv_init();

@@ -8,11 +8,12 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include "phys-parse.h"
+#include "mach-parse.h"
+#include "mach.h"
 #include "phys.h"
 
-#define yyerror physerror
-#define yylval physlval
+#define yyerror macherror
+#define yylval machlval
 
 int yyerror(const char *, ...);
 
@@ -52,7 +53,7 @@ skel				{ return (SKEL); }
 					return (STRING);
 				}
 #.*				{ ; }
-\n				{ phys_lineno++; }
+\n				{ mach_lineno++; }
 [\t ]+				{ ; }
 .				{ yyerror("%s: invalid token", yytext); }
 
