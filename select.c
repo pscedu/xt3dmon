@@ -282,10 +282,6 @@ gscb_node(struct glname *gn, int flags)
 			sn_set(n, &gn->gn_offv);
 			break;
 		}
-		if (SLIST_EMPTY(&selnodes))
-			panel_hide(PANEL_NINFO);
-		else
-			panel_show(PANEL_NINFO);
 	}
 }
 
@@ -547,6 +543,9 @@ gscb_pw_wiadj(struct glname *gn, int flags)
 		st.st_rf |= RF_CLUSTER | RF_GROUND | RF_CAM |
 		    RF_SELNODE | RF_VMODE;
 
+		/*
+		 * Reorient camera by revolving ever so slightly.
+		 */
 		tween_push(TWF_POS | TWF_LOOK | TWF_UP);
 		cam_revolvefocus(0.0, 0.001);
 		tween_pop(TWF_POS | TWF_LOOK | TWF_UP);

@@ -25,13 +25,14 @@ sn_replace(struct selnode *sn, struct node *n)
 	sn->sn_nodep->n_flags &= ~NF_SELNODE;
 	sn->sn_nodep = n;
 	n->n_flags |= NF_SELNODE;
+
 	if (flyby_mode == FBM_REC) {
 		flyby_writeselnode(sn->sn_nodep->n_nid, &sn->sn_offv);
 		flyby_writeselnode(n->n_nid, &fv_zero);
 	}
 	st.st_rf |= RF_SELNODE;
 	if (st.st_vmode == VM_VNEIGHBOR)
-		st.st_rf |= RF_CLUSTER;
+		st.st_rf |= RF_VMODE;
 	selnode_clean = 0;
 }
 
@@ -50,22 +51,16 @@ sn_insert(struct node *n, const struct fvec *offv)
 	sn->sn_nodep = n;
 	sn->sn_offv = *offv;
 	SLIST_INSERT_HEAD(&selnodes, sn, sn_next);
+
 	if (flyby_mode == FBM_REC)
 		flyby_writeselnode(n->n_nid, offv);
-#if 0
-	switch (st.st_dmode) {
-	case DM_JOBS:
-		if (n->n_state == JST_USED)
-			n->n_job->j_oh.oh_flags |= OHF_SEL;
-		break;
-	case DM_TEMP:
-		break;
-	}
-#endif
 	st.st_rf |= RF_SELNODE;
 	if (st.st_vmode == VM_VNEIGHBOR)
-		st.st_rf |= RF_CLUSTER;
+		st.st_rf |= RF_VMODE;
 	nselnodes++;
+	if (flyby_mode != FBM_PLAY)
+		panel_show(PANEL_NINFO);
+	selnode_clean = 0;
 }
 
 /*
@@ -80,7 +75,6 @@ sn_add(struct node *n, const struct fvec *offv)
 		if (sn->sn_nodep == n)
 			return;
 	sn_insert(n, offv);
-	selnode_clean = 0;
 }
 
 void
@@ -103,9 +97,8 @@ sn_clear(void)
 
 	st.st_rf |= RF_SELNODE;
 	if (st.st_vmode == VM_VNEIGHBOR)
-		st.st_rf |= RF_CLUSTER;
+		st.st_rf |= RF_VMODE;
 	nselnodes = 0;
-
 	if (flyby_mode != FBM_PLAY)
 		panel_hide(PANEL_NINFO);
 	selnode_clean = 0;
@@ -121,11 +114,12 @@ sn_del(struct node *n)
 			n->n_flags &= ~NF_SELNODE;
 			*prev = SLIST_NEXT(sn, sn_next);
 			free(sn);
+
 			if (flyby_mode == FBM_REC)
 				flyby_writeselnode(n->n_nid, &fv_zero);
 			st.st_rf |= RF_SELNODE;
 			if (st.st_vmode == VM_VNEIGHBOR)
-				st.st_rf |= RF_CLUSTER;
+				st.st_rf |= RF_VMODE;
 			if (--nselnodes == 0 && flyby_mode != FBM_PLAY)
 				panel_hide(PANEL_NINFO);
 			selnode_clean = 0;
@@ -137,10 +131,8 @@ sn_del(struct node *n)
 void
 sn_toggle(struct node *n, const struct fvec *offv)
 {
-	if (!sn_del(n)) {
+	if (!sn_del(n))
 		sn_insert(n, offv);
-		selnode_clean = 0;
-	}
 }
 
 void
