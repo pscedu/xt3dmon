@@ -16,6 +16,7 @@
 #include "flyby.h"
 #include "gl.h"
 #include "job.h"
+#include "mach.h"
 #include "node.h"
 #include "nodeclass.h"
 #include "panel.h"
@@ -87,7 +88,7 @@ uinpcb_gotonode(void)
 
 	s = buf_get(&uinp.uinp_buf);
 	l = strtol(s, NULL, 10);
-	if (l < 0 || l > NID_MAX || !isdigit(*s))
+	if (l < 0 || l > machine.m_nidmax || !isdigit(*s))
 		return;
 	nid = (int)l;
 

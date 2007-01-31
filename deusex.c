@@ -15,6 +15,7 @@
 #include "dx-parse.h"
 #include "env.h"
 #include "lnseg.h"
+#include "mach.h"
 #include "mark.h"
 #include "node.h"
 #include "nodeclass.h"
@@ -567,7 +568,7 @@ dxp_selnc(const struct dx_action *dxa)
 	if (dxa->dxa_selnc == DXNC_RND) {
 		if (job_list.ol_cur > 0) {
 			do {
-				n = node_for_nid(random() % NID_MAX);
+				n = node_for_nid(random() % machine.m_nidmax);
 			} while (n == NULL || n->n_job == NULL);
 			sn_add(n, &fv_zero);
 			panel_show(PANEL_NINFO);

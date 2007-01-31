@@ -13,6 +13,7 @@
 
 #include "deusex.h"
 #include "env.h"
+#include "mach.h"
 #include "node.h"
 #include "nodeclass.h"
 #include "panel.h"
@@ -220,7 +221,7 @@ nidlist		: STRING {
 						s++;
 					if (*s == '\0' &&
 					    (l = strtol(p, NULL, 10)) >= 0 &&
-					    l < NID_MAX)
+					    l < machine.m_nidmax)
 						nidlist_add(nl, l);
 					else
 						yyerror("invalid node ID: %s", p);

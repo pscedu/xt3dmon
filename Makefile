@@ -30,6 +30,7 @@ SRCS+= key.c
 SRCS+= lnseg.c
 SRCS+= mach-lex.l
 SRCS+= mach-parse.y
+SRCS+= mach.c
 SRCS+= main.c
 SRCS+= mark.c
 SRCS+= math.c

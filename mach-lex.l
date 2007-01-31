@@ -22,13 +22,15 @@ int yyerror(const char *, ...);
 %%
 
 contains			{ return (CONTAINS); }
+coredim				{ return (COREDIM); }
 dim				{ return (DIM); }
 mag				{ return (MAG); }
+nidmax				{ return (NIDMAX); }
 offset				{ return (OFFSET); }
 size				{ return (SIZE); }
+skel				{ return (SKEL); }
 space				{ return (SPACE); }
 spans				{ return (SPANS); }
-skel				{ return (SKEL); }
 
 "{"				{ return (LBRACKET); }
 "}"				{ return (RBRACKET); }

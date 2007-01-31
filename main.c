@@ -17,6 +17,7 @@
 #include "flyby.h"
 #include "gl.h"
 #include "job.h"
+#include "mach.h"
 #include "mark.h"
 #include "node.h"
 #include "nodeclass.h"
@@ -45,7 +46,7 @@
 #define STARTLZ		(-0.62)
 
 struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
-struct node		*invmap[NID_MAX];
+struct node		**invmap;
 struct node		*wimap[WIDIM_WIDTH][WIDIM_HEIGHT][WIDIM_DEPTH];
 
 char			 login_auth[BUFSIZ];
@@ -856,6 +857,9 @@ glutInitWindowPosition(0, 0);
 
 	parse_colors(_PATH_COLORS);
 	parse_machconf(cfgfn);
+
+	if ((invmap = calloc(machine.m_nidmax, sizeof(*invmap))) == NULL)
+		err(1, "calloc");
 
 	if (server_mode)
 		serv_init();

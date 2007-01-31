@@ -31,7 +31,17 @@ LIST_HEAD(, physdim) physdims;
 
 %}
 
-%token CONTAINS DIM MAG OFFSET SIZE SKEL SPACE SPANS
+%token CONTAINS
+%token COREDIM
+%token DIM
+%token MAG
+%token NIDMAX
+%token OFFSET
+%token SIZE
+%token SKEL
+%token SPACE
+%token SPANS
+
 %token COMMA LANGLE LBRACKET RANGLE RBRACKET
 
 %token <string> STRING
@@ -59,6 +69,20 @@ conf		: DIM STRING LBRACKET {
 				yyerror("no magnitude specified");
 //			if (!physdim->pd_spans)
 //				yyerror("no span specified");
+		}
+		| NIDMAX INTG {
+			machine.m_nidmax = $2;
+			if ($2 <= 0)
+				yyerror("invalid nidmax: %d", $2);
+		}
+		| COREDIM LANGLE INTG COMMA INTG COMMA INTG RANGLE {
+			if ($3 <= 0)
+				yyerror("invalid core X dimension: %d", $3);
+			if ($5 <= 0)
+				yyerror("invalid core Y dimension: %d", $5);
+			if ($7 <= 0)
+				yyerror("invalid core Z dimension: %d", $7);
+			ivec_set(&machine.m_coredim, $3, $5, $7);
 		}
 		;
 

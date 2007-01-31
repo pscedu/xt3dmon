@@ -7,6 +7,7 @@
 
 #include "env.h"
 #include "fill.h"
+#include "mach.h"
 #include "node.h"
 #include "state.h"
 #include "tween.h"
@@ -260,7 +261,7 @@ node_neighbor(int vm, struct node *n, int rd, int *flip)
 struct node *
 node_for_nid(int nid)
 {
-	if (nid > NID_MAX || nid < 0)
+	if (nid > machine.m_nidmax || nid < 0)
 		return (NULL);
 	return (invmap[nid]);
 }

@@ -44,6 +44,7 @@
 #include "fill.h"
 #include "flyby.h"
 #include "job.h"
+#include "mach.h"
 #include "node.h"
 #include "nodeclass.h"
 #include "objlist.h"
@@ -633,7 +634,9 @@ panel_refresh_ninfo(struct panel *p)
 	if (n->n_job || n->n_yod)
 		panel_add_content(p, "\nCores in use: %d/%d",
 		    n->n_yod && n->n_yod->y_single ? 1 : 2,
-		    coredim.iv_x * coredim.iv_y * coredim.iv_z);
+		    machine.m_coredim.iv_x *
+		    machine.m_coredim.iv_y *
+		    machine.m_coredim.iv_z);
 
 	if (n->n_temp == DV_NODATA)
 		panel_add_content(p, "\nTemperature: N/A");

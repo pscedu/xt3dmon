@@ -16,6 +16,7 @@
 #include "fill.h"
 #include "flyby.h"
 #include "job.h"
+#include "mach.h"
 #include "node.h"
 #include "nodeclass.h"
 #include "parse.h"
@@ -265,7 +266,7 @@ parse_node(const struct datasrc *ds)
 			goto bad;
 		}
 
-		PARSENUM(s, nid, NID_MAX);
+		PARSENUM(s, nid, machine.m_nidmax);
 		PARSENUM(s, r, NROWS);
 		PARSENUM(s, cb, NCABS);
 		PARSENUM(s, cg, NCAGES);

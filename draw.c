@@ -15,6 +15,7 @@
 #include "gl.h"
 #include "job.h"
 #include "lnseg.h"
+#include "mach.h"
 #include "mark.h"
 #include "node.h"
 #include "nodeclass.h"
@@ -34,8 +35,6 @@
 #define SKEL_GAP	(0.1f)
 
 float	 snap_to_grid(float, float, float);
-
-struct ivec	coredim = {{ 1, 1, 2 }};	/* 0x0x2 CPU cores per node */
 
 struct fvec	wi_repstart;
 struct fvec	wi_repdim;
@@ -389,18 +388,22 @@ draw_node_cores(const struct node *n, const struct fill *fp)
 {
 	struct fvec dim, adj;
 	struct ivec iv, lvl;
+	struct ivec *coredim;
 	int ncores;
 
 	ncores = n->n_yod && n->n_yod->y_single ? 1 : 2;
 
-	/* Geometry for core size in each dimension. */
-	adj.fv_w = n->n_dimp->fv_w / coredim.iv_w;
-	adj.fv_h = n->n_dimp->fv_h / coredim.iv_h;
-	adj.fv_d = n->n_dimp->fv_d / coredim.iv_d;
+	coredim = &machine.m_coredim;
 
-	lvl.iv_x = (ncores % (coredim.iv_x * coredim.iv_z)) / coredim.iv_z;
-	lvl.iv_y = ncores / (coredim.iv_x * coredim.iv_z);
-	lvl.iv_z = ncores % coredim.iv_z;
+	/* Geometry for core size in each dimension. */
+	adj.fv_w = n->n_dimp->fv_w / coredim->iv_w;
+	adj.fv_h = n->n_dimp->fv_h / coredim->iv_h;
+	adj.fv_d = n->n_dimp->fv_d / coredim->iv_d;
+
+	lvl.iv_x = (ncores %
+	    (coredim->iv_x * coredim->iv_z)) / coredim->iv_z;
+	lvl.iv_y = ncores / (coredim->iv_x * coredim->iv_z);
+	lvl.iv_z = ncores % coredim->iv_z;
 
 	/* Draw at most three cubes to represent the cores. */
 	dim.fv_w = n->n_dimp->fv_w;
@@ -444,30 +447,30 @@ draw_node_cores(const struct node *n, const struct fill *fp)
 	    fill_frame.f_b, fill_frame.f_a);
 	glBegin(GL_LINES);
 	/* Draw core-separating lines in X. */
-	for (iv.iv_y = 0; iv.iv_y <= coredim.iv_h; iv.iv_y++)
-		for (iv.iv_z = 0; iv.iv_z <= coredim.iv_d; iv.iv_z++) {
-			glVertex3d(-0.0002, iv.iv_y * dim.fv_h / coredim.iv_h,
-			    iv.iv_z * dim.fv_d / coredim.iv_d);
-			glVertex3d(dim.fv_w, iv.iv_y * dim.fv_h / coredim.iv_h,
-			    iv.iv_z * dim.fv_d / coredim.iv_d);
+	for (iv.iv_y = 0; iv.iv_y <= coredim->iv_h; iv.iv_y++)
+		for (iv.iv_z = 0; iv.iv_z <= coredim->iv_d; iv.iv_z++) {
+			glVertex3d(-0.0002, iv.iv_y * dim.fv_h / coredim->iv_h,
+			    iv.iv_z * dim.fv_d / coredim->iv_d);
+			glVertex3d(dim.fv_w, iv.iv_y * dim.fv_h / coredim->iv_h,
+			    iv.iv_z * dim.fv_d / coredim->iv_d);
 		}
 
 	/* Draw core-separating lines in Y. */
-	for (iv.iv_x = 0; iv.iv_x <= coredim.iv_w; iv.iv_x++)
-		for (iv.iv_z = 0; iv.iv_z <= coredim.iv_d; iv.iv_z++) {
-			glVertex3d(iv.iv_x * dim.fv_w / coredim.iv_w,
-			    -0.0002, iv.iv_z * dim.fv_d / coredim.iv_z);
-			glVertex3d(iv.iv_x * dim.fv_w / coredim.iv_w,
-			    dim.fv_h, iv.iv_z * dim.fv_d / coredim.iv_z);
+	for (iv.iv_x = 0; iv.iv_x <= coredim->iv_w; iv.iv_x++)
+		for (iv.iv_z = 0; iv.iv_z <= coredim->iv_d; iv.iv_z++) {
+			glVertex3d(iv.iv_x * dim.fv_w / coredim->iv_w,
+			    -0.0002, iv.iv_z * dim.fv_d / coredim->iv_z);
+			glVertex3d(iv.iv_x * dim.fv_w / coredim->iv_w,
+			    dim.fv_h, iv.iv_z * dim.fv_d / coredim->iv_z);
 		}
 
 	/* Draw core-separating lines in Z. */
-	for (iv.iv_x = 0; iv.iv_x <= coredim.iv_w; iv.iv_x++)
-		for (iv.iv_y = 0; iv.iv_y <= coredim.iv_h; iv.iv_y++) {
-			glVertex3d(iv.iv_x * dim.fv_w / coredim.iv_w,
-			    iv.iv_y * dim.fv_h / coredim.iv_h, -0.0002);
-			glVertex3d(iv.iv_x * dim.fv_w / coredim.iv_w,
-			    iv.iv_y * dim.fv_h / coredim.iv_h, dim.fv_d);
+	for (iv.iv_x = 0; iv.iv_x <= coredim->iv_w; iv.iv_x++)
+		for (iv.iv_y = 0; iv.iv_y <= coredim->iv_h; iv.iv_y++) {
+			glVertex3d(iv.iv_x * dim.fv_w / coredim->iv_w,
+			    iv.iv_y * dim.fv_h / coredim->iv_h, -0.0002);
+			glVertex3d(iv.iv_x * dim.fv_w / coredim->iv_w,
+			    iv.iv_y * dim.fv_h / coredim->iv_h, dim.fv_d);
 		}
 	glEnd();
 	glPopMatrix();
