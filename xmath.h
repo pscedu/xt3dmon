@@ -17,7 +17,7 @@
 	    SQUARE((a)->fv_y - (b)->fv_y) +		\
 	    SQUARE((a)->fv_z - (b)->fv_z)))
 
-#define DEG_TO_RAD(x)	((x) * M_PI / 180)
+#define DEG_TO_RAD(x)	((x) * M_PI / 180.0)
 
 #define IVEC_FOREACH(tiv, iv)				\
 	for ((tiv)->iv_x = 0;				\
