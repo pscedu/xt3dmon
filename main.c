@@ -112,7 +112,7 @@ struct state st = {
 	{ { STARTLX, STARTLY, STARTLZ } },		/* (lx,ly,lz) */
 	0.0, 0,						/* (ur,urev) */
 	OP_FRAMES | OP_TWEEN | OP_GROUND | 		/* options */
-	    OP_NODEANIM | OP_CAPTION |
+	    OP_NODEANIM | OP_CAPTION | OP_CORES |
 	    OP_SELNLABELS | OP_CAPFBONLY,
 	DM_JOB,						/* which data to show */
 	VM_PHYS,					/* viewing mode */
