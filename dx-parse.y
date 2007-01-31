@@ -239,11 +239,11 @@ nidlist		: STRING {
 		;
 
 conf		: DGT_BIRD {
-			INIT_DXA($1);
+			INIT_DXA(DGT_BIRD);
 			INIT_DXA(DGT_CAMSYNC);
 		}
 		| DGT_CAMLOOK dbl COMMA dbl COMMA dbl {
-			INIT_DXA($1);
+			INIT_DXA(DGT_CAMLOOK);
 			vec_set(&dxa.dxa_cam_lv, $2, $4, $6);
 			if (vec_mag(&dxa.dxa_cam_lv) == 0.0)
 				vec_set(&dxa.dxa_cam_lv, 1.0, 0.0, 0.0);
@@ -251,28 +251,28 @@ conf		: DGT_BIRD {
 				vec_normalize(&dxa.dxa_cam_lv);
 		}
 		| DGT_CAMPOS dbl COMMA dbl COMMA dbl {
-			INIT_DXA($1);
+			INIT_DXA(DGT_CAMPOS);
 			vec_set(&dxa.dxa_cam_v, $2, $4, $6);
 		}
 		| DGT_CAMUPROT dbl {
-			INIT_DXA($1);
+			INIT_DXA(DGT_CAMUPROT);
 			dxa.dxa_cam_ur = $2;
 		}
 		| DGT_CLRSN {
-			INIT_DXA($1);
+			INIT_DXA(DGT_CLRSN);
 		}
 		| DGT_CORKSCREW dim {
-			INIT_DXA($1);
+			INIT_DXA(DGT_CORKSCREW);
 			dxa.dxa_screw_dim = $2;
 			INIT_DXA(DGT_CAMSYNC);
 		}
 		| DGT_CUBAN8 dim {
-			INIT_DXA($1);
+			INIT_DXA(DGT_CUBAN8);
 			dxa.dxa_cuban8_dim = $2;
 			INIT_DXA(DGT_CAMSYNC);
 		}
 		| DGT_CURLYQ setmodifier dim orbit_revs orbit_secs {
-			INIT_DXA($1);
+			INIT_DXA(DGT_CURLYQ);
 			dxa.dxa_orbit_dir = ($2 == DXV_OFF) ? -1 : 1;
 			dxa.dxa_orbit_dim = $3;
 
@@ -288,13 +288,13 @@ conf		: DGT_BIRD {
 			INIT_DXA(DGT_CAMSYNC);
 		}
 		| DGT_CYCLENC cycle_method {
-			INIT_DXA($1);
+			INIT_DXA(DGT_CYCLENC);
 			dxa.dxa_cycle_meth = $2;;
 		}
 		| DGT_DMODE STRING {
 			int i;
 
-			INIT_DXA($1);
+			INIT_DXA(DGT_DMODE);
 			for (i = 0; i < NDM; i++)
 				if (dmodes[i].dm_abbr &&
 				    strcasecmp(dmodes[i].dm_abbr, $2) == 0) {
@@ -306,14 +306,14 @@ conf		: DGT_BIRD {
 			free($2);
 		}
 		| DGT_EXIT {
-			INIT_DXA($1);
+			INIT_DXA(DGT_EXIT);
 		}
 		| DGT_FOCUS dbl COMMA dbl COMMA dbl {
-			INIT_DXA($1);
+			INIT_DXA(DGT_FOCUS);
 			vec_set(&dxa.dxa_focus, $2, $4, $6);
 		}
 		| DGT_HL STRING {
-			INIT_DXA($1);
+			INIT_DXA(DGT_HL);
 			if (strcasecmp($2, "all") == 0)
 				dxa.dxa_hl = NC_ALL;
 			else if (strcasecmp($2, "seldm") == 0)
@@ -323,7 +323,7 @@ conf		: DGT_BIRD {
 			free($2);
 		}
 		| DGT_MOVE STRING dbl move_secs {
-			INIT_DXA($1);
+			INIT_DXA(DGT_MOVE);
 			if (strcasecmp($2, "forward") == 0 ||
 			    strcasecmp($2, "forw") == 0)
 				dxa.dxa_move_dir = DIR_FORW;
@@ -341,12 +341,12 @@ conf		: DGT_BIRD {
 			INIT_DXA(DGT_CAMSYNC);
 		}
 		| DGT_OPT setmodifier opts_l {
-			INIT_DXA($1);
+			INIT_DXA(DGT_OPT);
 			dxa.dxa_opt_mode = $2;
 			dxa.dxa_opts = $3;
 		}
 		| DGT_ORBIT setmodifier dim orbit_revs orbit_secs {
-			INIT_DXA($1);
+			INIT_DXA(DGT_ORBIT);
 			dxa.dxa_orbit_dir = ($2 == DXV_OFF) ? -1 : 1;
 			dxa.dxa_orbit_dim = $3;
 
@@ -362,12 +362,12 @@ conf		: DGT_BIRD {
 			INIT_DXA(DGT_CAMSYNC);
 		}
 		| DGT_PANEL setmodifier panels_l {
-			INIT_DXA($1);
+			INIT_DXA(DGT_PANEL);
 			dxa.dxa_panel_mode = $2;
 			dxa.dxa_panels = $3;
 		}
 		| DGT_PIPEMODE STRING {
-			INIT_DXA($1);
+			INIT_DXA(DGT_PIPEMODE);
 			if (strcasecmp($2, "torus") == 0)
 				dxa.dxa_pipemode = PM_DIR;
 			else if (strcasecmp($2, "rte") == 0)
@@ -377,12 +377,12 @@ conf		: DGT_BIRD {
 			free($2);
 		}
 		| DGT_PLAYREEL INTG STRING {
-			INIT_DXA($1);
+			INIT_DXA(DGT_PLAYREEL);
 			dxa.dxa_reel_delay = $2;
 			dxa.dxa_reel = $3;
 		}
 		| DGT_PSTICK STRING panels_l {
-			INIT_DXA($1);
+			INIT_DXA(DGT_PSTICK);
 			if (strcasecmp($2, "tl") == 0)
 				dxa.dxa_pstick = PSTICK_TL;
 			else if (strcasecmp($2, "tr") == 0)
@@ -397,14 +397,14 @@ conf		: DGT_BIRD {
 			dxa.dxa_panels = $3;
 		}
 		| DGT_REFOCUS {
-			INIT_DXA($1);
+			INIT_DXA(DGT_REFOCUS);
 			INIT_DXA(DGT_CAMSYNC);
 		}
 		| DGT_REFRESH {
-			INIT_DXA($1);
+			INIT_DXA(DGT_REFRESH);
 		}
 		| DGT_SELNC STRING {
-			INIT_DXA($1);
+			INIT_DXA(DGT_SELNC);
 			if (strcasecmp($2, "random") == 0)
 				dxa.dxa_selnc = DXNC_RND;
 			else
@@ -412,20 +412,20 @@ conf		: DGT_BIRD {
 			free($2);
 		}
 		| DGT_SELNODE setmodifier selnode_list {
-			INIT_DXA($1);
+			INIT_DXA(DGT_SELNODE);
 			dxa.dxa_selnode_mode = $2;
 			dxa.dxa_selnode_list = $3;
 		}
 		| DGT_SETCAP STRING  {
-			INIT_DXA($1);
+			INIT_DXA(DGT_SETCAP);
 			dxa.dxa_caption = $2;
 		}
 		| DGT_STALL dbl {
-			INIT_DXA($1);
+			INIT_DXA(DGT_STALL);
 			dxa.dxa_stall_secs = $2;
 		}
 		| DGT_SSCTL STRING STRING {
-			INIT_DXA($1);
+			INIT_DXA(DGT_SSCTL);
 			if (strcasecmp($2, "vc") == 0) {
 				dxa.dxa_ssctl_type = DXSST_VC;
 				if (strcasecmp($3, "0") == 0)
@@ -455,12 +455,12 @@ conf		: DGT_BIRD {
 			free($3);
 		}
 		| DGT_SUBSEL setmodifier subsel_list {
-			INIT_DXA($1);
+			INIT_DXA(DGT_SUBSEL);
 			dxa.dxa_subsel_mode = $2;
 			dxa.dxa_subsel_list = $3;
 		}
 		| DGT_VMODE STRING {
-			INIT_DXA($1);
+			INIT_DXA(DGT_VMODE);
 			if (strcasecmp($2, "phys") == 0)
 				dxa.dxa_vmode = VM_PHYS;
 			else if (strcasecmp($2, "wired") == 0)
@@ -474,7 +474,7 @@ conf		: DGT_BIRD {
 			INIT_DXA(DGT_NODESYNC);
 		}
 		| DGT_WINSP setmodifier INTG setmodifier INTG setmodifier INTG {
-			INIT_DXA($1);
+			INIT_DXA(DGT_WINSP);
 			dxa.dxa_winsp_mode.iv_x = $2;
 			dxa.dxa_winsp_mode.iv_y = $4;
 			dxa.dxa_winsp_mode.iv_z = $6;
@@ -485,7 +485,7 @@ conf		: DGT_BIRD {
 			INIT_DXA(DGT_NODESYNC);
 		}
 		| DGT_WIOFF setmodifier INTG setmodifier INTG setmodifier INTG {
-			INIT_DXA($1);
+			INIT_DXA(DGT_WIOFF);
 			dxa.dxa_wioff_mode.iv_x = $2;
 			dxa.dxa_wioff_mode.iv_y = $4;
 			dxa.dxa_wioff_mode.iv_z = $6;
