@@ -229,7 +229,7 @@ cam_revolvefocus(double dt, double dp)
 			err(1, "malloc");
 		j = 0;
 		SLIST_FOREACH(sn, &selnodes, sn_next) {
-			nfvp = &sn->sn_nodep->n_vcur;
+			nfvp = &sn->sn_nodep->n_v;
 			fvp[j].fv_x = nfvp->fv_x + sn->sn_nodep->n_dimp->fv_w / 2.0;
 			fvp[j].fv_y = nfvp->fv_y + sn->sn_nodep->n_dimp->fv_y / 2.0;
 			fvp[j].fv_z = nfvp->fv_z + sn->sn_nodep->n_dimp->fv_z / 2.0;

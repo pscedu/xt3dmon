@@ -488,13 +488,13 @@ draw_node(struct node *n, int flags)
 		 */
 		if ((st.st_opts & OP_STOP) == 0 &&
 		    (flags & NDF_NOTWEEN) == 0 &&
-		    (node_tween_dir(&n->n_vcur.fv_x, &n->n_vfin.fv_x) |
-		     node_tween_dir(&n->n_vcur.fv_y, &n->n_vfin.fv_y) |
-		     node_tween_dir(&n->n_vcur.fv_z, &n->n_vfin.fv_z)))
+		    (node_tween_dir(&n->n_v.fv_x, &n->n_vtwe.fv_x) |
+		     node_tween_dir(&n->n_v.fv_y, &n->n_vtwe.fv_y) |
+		     node_tween_dir(&n->n_v.fv_z, &n->n_vtwe.fv_z)))
 			st.st_rf |= RF_CLUSTER | RF_SELNODE;
 	}
 	glPushMatrix();
-	glTranslatef(n->n_vcur.fv_x, n->n_vcur.fv_y, n->n_vcur.fv_z);
+	glTranslatef(n->n_v.fv_x, n->n_v.fv_y, n->n_v.fv_z);
 
 	df = DF_FRAME;
 	if ((flags & NDF_IGNSN) == 0 && n->n_flags & NF_SELNODE) {
@@ -1198,7 +1198,7 @@ draw_scene(void)
 				draw_pipes(1);
 			NODE_FOREACH(n, &iv)
 				if (n && node_show(n) &&
-				    distance(&st.st_v, &n->n_vfin, &v) < clip - max)
+				    distance(&st.st_v, &n->n_v, &v) < clip - max)
 					draw_node(n, NDF_NOTWEEN);
 			if (st.st_opts & OP_SKEL)
 				draw_skel();

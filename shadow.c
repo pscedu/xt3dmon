@@ -157,8 +157,8 @@ draw_shadow_mods(const struct physcoord *pc, int *dl)
 				continue;
 
 			glPushMatrix();
-			glTranslatef(node->n_vfin.fv_x,
-			    node->n_vfin.fv_y, node->n_vfin.fv_z);
+			glTranslatef(node->n_v.fv_x,
+			    node->n_v.fv_y, node->n_v.fv_z);
 			glPushName(gsn_get(0, &fv_zero, gscb_node,
 			    node->n_nid, 0, NULL, NULL));
 			draw_shadow_node(dl, node);
@@ -189,9 +189,9 @@ draw_shadow_winodes(int *dl, struct wiselstep *ws, const struct fvec *cloffp)
 
 				glPushMatrix();
 				glTranslatef(
-				    node->n_vfin.fv_x + cloffp->fv_x,
-				    node->n_vfin.fv_y + cloffp->fv_y,
-				    node->n_vfin.fv_z + cloffp->fv_z);
+				    node->n_v.fv_x + cloffp->fv_x,
+				    node->n_v.fv_y + cloffp->fv_y,
+				    node->n_v.fv_z + cloffp->fv_z);
 				glPushName(gsn_get(0, cloffp, gscb_node,
 				    node->n_nid, 0, NULL, NULL));
 				draw_shadow_node(dl, node);

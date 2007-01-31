@@ -244,10 +244,12 @@ opt_flip(int fopts)
 			struct node *n;
 			struct ivec iv;
 
-			NODE_FOREACH(n, &iv)
-				if (n)
-					n->n_vcur = n->n_vfin;
-			st.st_rf |= RF_CLUSTER;
+			if (!on) {
+				NODE_FOREACH(n, &iv)
+					if (n)
+						n->n_v = n->n_vtwe;
+				st.st_rf |= RF_CLUSTER;
+			}
 			break;
 		    }
 		case OP_REEL:
@@ -510,6 +512,7 @@ vmode_change(void)
 	struct node *n, *nodep;
 	struct ivec iv, adjv;
 	struct selnode *sn;
+	struct fvec *nposp;
 
 	maxhops = 0; /* gcc */
 	ncnt = NULL;
@@ -566,15 +569,17 @@ vmode_change(void)
 	}
 
 	NODE_FOREACH(n, &iv)
-		if (n)
+		if (n) {
+			nposp = (st.st_opts & OP_NODEANIM) ?
+			    &n->n_vtwe : &n->n_v;
 			switch (st.st_vmode) {
 			case VM_PHYS:
 				n->n_flags |= NF_VMVIS;
-				node_setphyspos(n, &n->n_vfin);
+				node_setphyspos(n, nposp);
 				break;
 			case VM_VNEIGHBOR:
 				if (n == nodep)
-					vec_set(&n->n_vfin, 0.0, 0.0, 0.0);
+					vec_set(nposp, 0.0, 0.0, 0.0);
 				else if (n->n_job == nodep->n_job) {
 					n->n_flags |= NF_VMVIS;
 
@@ -586,7 +591,7 @@ vmode_change(void)
 					    2.0 * M_PI / nneighbors[nhops];
 					fv.fv_p = M_PI * 0.5 - nhops * 0.01;
 
-					vec_sphere2cart(&fv, &n->n_vfin);
+					vec_sphere2cart(&fv, nposp);
 				} else
 					n->n_flags &= ~NF_VMVIS;
 				break;
@@ -604,11 +609,12 @@ vmode_change(void)
 				wrapv.fv_y = floor((iv.iv_y + st.st_wioff.iv_y) / (double)widim.iv_h) * spdim.fv_h;
 				wrapv.fv_z = floor((iv.iv_z + st.st_wioff.iv_z) / (double)widim.iv_d) * spdim.fv_d;
 
-				n->n_vfin.fv_x = n->n_wiv.iv_x * st.st_winsp.iv_x + wrapv.fv_x;
-				n->n_vfin.fv_y = n->n_wiv.iv_y * st.st_winsp.iv_y + wrapv.fv_y;
-				n->n_vfin.fv_z = n->n_wiv.iv_z * st.st_winsp.iv_z + wrapv.fv_z;
+				nposp->fv_x = n->n_wiv.iv_x * st.st_winsp.iv_x + wrapv.fv_x;
+				nposp->fv_y = n->n_wiv.iv_y * st.st_winsp.iv_y + wrapv.fv_y;
+				nposp->fv_z = n->n_wiv.iv_z * st.st_winsp.iv_z + wrapv.fv_z;
 				break;
 			}
+		}
 	free(nneighbors);
 	free(ncnt);
 }

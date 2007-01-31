@@ -25,8 +25,8 @@ struct node {
 	struct seastar	 n_sstar;
 
 	struct ivec	 n_wiv;			/* wired view position */
-	struct fvec	 n_vfin;		/* where the node should be */
-	struct fvec	 n_vcur;		/* where the node is (tweening) */
+	struct fvec	 n_vtwe;		/* where the node is going (tweening) */
+	struct fvec	 n_v;			/* node position */
 	struct fvec	*n_dimp;		/* dimensions */
 };
 
