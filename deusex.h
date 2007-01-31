@@ -44,7 +44,7 @@ struct dx_action {
 
 #define dxa_cam_v		dxa_fv
 #define dxa_cam_lv		dxa_fv
-#define dxa_cam_uv		dxa_fv
+#define dxa_cam_ur		dxa_dbl
 #define dxa_caption		dxa_str
 #define dxa_cuban8_dim		dxa_intg
 #define dxa_cycle_meth		dxa_intg

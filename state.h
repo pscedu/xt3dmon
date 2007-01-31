@@ -24,7 +24,8 @@
 struct state {
 	struct fvec	 st_v;			/* camera position */
 	struct fvec	 st_lv;			/* camera look direction */
-	struct fvec	 st_uv;			/* up direction */
+	float		 st_ur;			/* #radians "up" is rotated */
+	int		 st_urev;		/* whether "up" is reversed */
 	int		 st_opts;		/* view options */
 	int		 st_dmode;		/* data mode */
 	int		 st_vmode;		/* view mode */

@@ -30,6 +30,7 @@
 #include "server.h"
 #include "state.h"
 #include "status.h"
+#include "tween.h"
 #include "uinp.h"
 #include "xmath.h"
 #include "xssl.h"
@@ -43,18 +44,10 @@
 #define STARTLY		(-0.34)
 #define STARTLZ		(-0.62)
 
-#define STARTUX		( 0.25)
-#define STARTUY		( 0.94)
-#define STARTUZ		(-0.22)
-
 struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
 struct node		*invmap[NID_MAX];
 struct node		*wimap[WIDIM_WIDTH][WIDIM_HEIGHT][WIDIM_DEPTH];
 struct ivec		 coredim = {{ 2, 4, 4 }};	/* 2x4x4 CPU cores per node */
-
-struct fvec		 tv  = { { STARTX,  STARTY,  STARTZ } };
-struct fvec		 tlv = { { STARTLX, STARTLY, STARTLZ } };
-struct fvec		 tuv = { { STARTUX, STARTUY, STARTUZ } };
 
 char			 login_auth[BUFSIZ];
 
@@ -118,7 +111,7 @@ struct dmode dmodes[] = {
 struct state st = {
 	{ { STARTX,  STARTY,  STARTZ  } },		/* (x,y,z) */
 	{ { STARTLX, STARTLY, STARTLZ } },		/* (lx,ly,lz) */
-	{ { STARTUX, STARTUY, STARTUZ } },		/* (ux,uy,uz) */
+	0.0, 0,						/* (ur,urev) */
 	OP_FRAMES | OP_TWEEN | OP_GROUND | 		/* options */
 	    OP_NODEANIM | OP_CAPTION |
 	    OP_SELNLABELS | OP_CAPFBONLY,
@@ -195,9 +188,7 @@ opt_flip(int fopts)
 
 		switch (1 << i) {
 		case OP_TWEEN:
-			tv = st.st_v;
-			tlv = st.st_lv;
-			tuv = st.st_uv;
+			tween_toggle();
 			break;
 		case OP_GOVERN:
 			gl_setidleh();
@@ -265,20 +256,16 @@ opt_flip(int fopts)
 				reel_load();
 			break;
 		case OP_STOP: {
-			static struct fvec sv, slv, suv;
+			static struct fvec sv, slv;
+			static float sur;
+			static int surev;
 
 			if (on) {
-				sv = tv;
-				slv = tlv;
-				suv = tuv;
-
-				tv = st.st_v;
-				tlv = st.st_lv;
-				tuv = st.st_uv;
+				tween_getdst(&sv, &slv, &sur, &surev);
+				tween_setdst(&st.st_v, &st.st_lv,
+				    st.st_ur, st.st_urev);
 			} else {
-				tv = sv;
-				tlv = slv;
-				tuv = suv;
+				tween_setdst(&sv, &slv, sur, surev);
 
 				/*
 				 * Rebuild the cluster because
@@ -296,12 +283,14 @@ opt_flip(int fopts)
 void
 load_state(struct state *nst)
 {
-	struct fvec sv, slv, suv;
-	int opts, rf;
+	int surev, opts, rf;
+	struct fvec sv, slv;
+	float sur;
 
 	sv = st.st_v;
 	slv = st.st_lv;
-	suv = st.st_uv;
+	sur = st.st_ur;
+	surev = st.st_urev;
 
 	rf = RF_CAM;
 	if (st.st_dmode != nst->st_dmode)
@@ -325,13 +314,12 @@ load_state(struct state *nst)
 	opt_flip(st.st_opts ^ nst->st_opts);
 
 	if (st.st_opts & OP_TWEEN) {
-		tv = st.st_v;
-		tlv = st.st_lv;
-		tuv = st.st_uv;
+		tween_setdst(&st.st_v, &st.st_lv, st.st_ur, st.st_urev);
 
 		st.st_v = sv;
 		st.st_lv = slv;
-		st.st_uv = suv;
+		st.st_ur = sur;
+		st.st_urev = surev;
 	}
 }
 
@@ -878,6 +866,9 @@ glutInitWindowPosition(0, 0);
 
 	if (Mflag)
 		glutFullScreen();
+
+	if (st.st_opts & OP_TWEEN)
+		tween_toggle();
 
 	glutMainLoop();
 	/* NOTREACHED */

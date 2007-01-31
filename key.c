@@ -658,18 +658,20 @@ gl_keyh_bird(unsigned char key, __unused int u, __unused int v)
 
 	switch (key) {
 	case '1':
-		tween_push(TWF_LOOK | TWF_POS | TWF_UP);
+		tween_push();
 		vec_set(&st.st_v, -56.40, 23.00, 31.00);
 		vec_set(&st.st_lv,  1.00,  0.00,  0.00);
-		vec_set(&st.st_uv,  0.00,  1.00,  0.00);
-		tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
+		st.st_ur = 0.0;
+		st.st_urev = 0;
+		tween_pop();
 		break;
 	case '2':
-		tween_push(TWF_LOOK | TWF_POS | TWF_UP);
+		tween_push();
 		vec_set(&st.st_v,  98.40, 23.00, 31.00);
 		vec_set(&st.st_lv, -1.00,  0.00,  0.00);
-		vec_set(&st.st_uv,  0.00,  1.00,  0.00);
-		tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
+		st.st_ur = 0.0;
+		st.st_urev = 0;
+		tween_pop();
 		break;
 	}
 }
@@ -691,20 +693,21 @@ gl_keyh_recpos(unsigned char key, __unused int u, __unused int v)
 			warn("%s", fn);
 		return;
 	}
-	fprintf(fp, "%f %f %f\n%f %f %f\n%f %f %f\n",
+	fprintf(fp, "%f %f %f\n%f %f %f\n%f %d\n",
 	    st.st_v.fv_x, st.st_v.fv_y, st.st_v.fv_z,
 	    st.st_lv.fv_x, st.st_lv.fv_y, st.st_lv.fv_z,
-	    st.st_uv.fv_x, st.st_uv.fv_y, st.st_uv.fv_z);
+	    st.st_ur, st.st_urev);
 	fclose(fp);
 }
 
 void
 gl_keyh_loadpos(unsigned char key, __unused int cu, __unused int cv)
 {
-	struct fvec v, lv, uv;
 	char fn[PATH_MAX];
+	struct fvec v, lv;
+	int urev, ret;
+	float ur;
 	FILE *fp;
-	int ret;
 
 	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
@@ -717,10 +720,10 @@ gl_keyh_loadpos(unsigned char key, __unused int cu, __unused int cv)
 			warn("%s", fn);
 		return;
 	}
-	ret = fscanf(fp, "%f %f %f\n%f %f %f\n%f %f %f",
+	ret = fscanf(fp, "%f %f %f\n%f %f %f\n%f %d",
 	    &v.fv_x,  &v.fv_y,  &v.fv_z,
 	    &lv.fv_x, &lv.fv_y, &lv.fv_z,
-	    &uv.fv_x, &uv.fv_y, &uv.fv_z);
+	    &ur, &urev);
 	if (ferror(fp))
 		warn("%s", fn);
 	fclose(fp);
@@ -728,19 +731,16 @@ gl_keyh_loadpos(unsigned char key, __unused int cu, __unused int cv)
 	if (ret != 9)
 		return;
 
-	tween_push(TWF_LOOK | TWF_POS | TWF_UP);
+	tween_push();
 	vec_copyto(&v, &st.st_v);
 	vec_copyto(&lv, &st.st_lv);
-	vec_copyto(&uv, &st.st_uv);
+	st.st_ur = ur;
+	st.st_urev = ur;
 	if (vec_eq(&st.st_lv, &fv_zero))
 		vec_set(&st.st_lv, 1.0, 0.0, 0.0);
 	else
 		vec_normalize(&st.st_lv);
-	if (vec_eq(&st.st_uv, &fv_zero))
-		vec_set(&st.st_uv, 0.0, 1.0, 0.0);
-	else
-		vec_normalize(&st.st_uv);
-	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
+	tween_pop();
 }
 
 void
@@ -775,9 +775,9 @@ gl_keyh_default(unsigned char key, int u, int v)
 		case '8': dv =  0.02; break;
 		}
 
-		tween_push(TWF_LOOK | TWF_POS | TWF_UP);
+		tween_push();
 		cam_revolvefocus(du, -dv);
-		tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
+		tween_pop();
 		break;
 	    }
 	case 'a':
@@ -862,9 +862,9 @@ gl_keyh_default(unsigned char key, int u, int v)
 		glutKeyboardFunc(gl_keyh_dmode);
 		break;
 	case 'O':
-		tween_push(TWF_LOOK | TWF_POS | TWF_UP);
+		tween_push();
 		cam_bird();
-		tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
+		tween_pop();
 		break;
 	case 'o':
 		glutKeyboardFunc(gl_keyh_option);
@@ -975,14 +975,14 @@ gl_spkeyh_default(int key, __unused int u, __unused int v)
 		restart();
 		/* NOTREACHED */
 	case GLUT_KEY_HOME:
-		tween_push(TWF_UP);
+		tween_push();
 		cam_roll(0.1);
-		tween_pop(TWF_UP);
+		tween_pop();
 		return;
 	case GLUT_KEY_END:
-		tween_push(TWF_UP);
+		tween_push();
 		cam_roll(-0.1);
-		tween_pop(TWF_UP);
+		tween_pop();
 		return;
 	case GLUT_KEY_LEFT:
 		dir = DIR_LEFT;
@@ -1038,7 +1038,7 @@ gl_spkeyh_default(int key, __unused int u, __unused int v)
 	switch (st.st_vmode) {
 	case VM_PHYS:
 		r = sqrt(SQUARE(st.st_x - XCENTER) + SQUARE(st.st_z - ZCENTER));
-		adj = pow(2, r / (ROWWIDTH / 2.0f));
+		adj = pow(2, r / (ROWWIDTH / 2.0f)); // XXX 2.0
 		if (adj > 50.0f)
 			adj = 50.0f;
 		amt *= adj;
@@ -1046,11 +1046,11 @@ gl_spkeyh_default(int key, __unused int u, __unused int v)
 	case VM_WIRED:
 	case VM_WIONE:
 		amt *= pow(fabs(st.st_winsp.iv_x) * fabs(st.st_winsp.iv_y) *
-		    fabs(st.st_winsp.iv_z), 1/3.0);
+		    fabs(st.st_winsp.iv_z), 1/3.0); // XXX 1.0
 		break;
 	}
 
-	tween_push(TWF_POS);
+	tween_push();
 	cam_move(dir, amt);
-	tween_pop(TWF_POS);
+	tween_pop();
 }

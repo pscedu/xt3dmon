@@ -127,7 +127,7 @@ gl_motionh_default(int u, int v)
 	if (abs(du) + abs(dv) <= 1)
 		return;
 
-	tween_push(TWF_LOOK | TWF_POS | TWF_UP);
+	tween_push();
 	if (spkey & GLUT_ACTIVE_SHIFT) {
 		struct fvec center;
 
@@ -137,7 +137,7 @@ gl_motionh_default(int u, int v)
 		cam_revolve(&center, 1, du * 0.01, -dv * 0.01, REVT_LKCEN);
 	} else
 		cam_revolvefocus(du * 0.01, -dv * 0.01);
-	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
+	tween_pop();
 
 	mousev.iv_x = u;
 	mousev.iv_y = v;

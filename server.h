@@ -5,7 +5,6 @@
 struct session {
 	int	 ss_click;
 	int	 ss_jobid;
-	int	 ss_reorient;
 	char	 ss_sid[SID_LEN + 1];
 };
 

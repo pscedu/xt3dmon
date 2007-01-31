@@ -399,9 +399,9 @@ gscb_pw_help(struct glname *gn, int flags)
 			sn_clear();
 			break;
 		case HF_REORIENT:
-			tween_push(TWF_POS | TWF_LOOK | TWF_UP);
+			tween_push();
 			cam_bird();
-			tween_pop(TWF_POS | TWF_LOOK | TWF_UP);
+			tween_pop();
 			break;
 		case HF_PRTSN:
 			SLIST_FOREACH(sn, &selnodes, sn_next)
@@ -546,9 +546,9 @@ gscb_pw_wiadj(struct glname *gn, int flags)
 		/*
 		 * Reorient camera by revolving ever so slightly.
 		 */
-		tween_push(TWF_POS | TWF_LOOK | TWF_UP);
+		tween_push();
 		cam_revolvefocus(0.0, 0.001);
-		tween_pop(TWF_POS | TWF_LOOK | TWF_UP);
+		tween_pop();
 	}
 }
 

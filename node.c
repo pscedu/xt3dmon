@@ -274,15 +274,15 @@ node_goto(struct node *n)
 	struct physcoord pc;
 	int row, col;
 
-	tween_push(TWF_LOOK | TWF_POS | TWF_UP);
+	tween_push();
 	st.st_v = n->n_vcur;
 	switch (st.st_vmode) {
 	case VM_PHYS:
-		vec_set(&st.st_uv, 0.0, 1.0, 0.0);
+		st.st_ur = 0.0;
+		st.st_urev = 0;
 
 		st.st_lv.fv_x = 0.0f;
 		st.st_lv.fv_y = 0.0f;
-
 		st.st_v.fv_y += 0.5 * NODEHEIGHT;
 
 		node_physpos(n, &pc);
@@ -300,15 +300,16 @@ node_goto(struct node *n)
 	case VM_WIONE:
 	case VM_VNEIGHBOR:
 		/* Set to the front where the label is. */
-		st.st_x -= GOTO_DIST_LOG;
-		st.st_y += 0.5 * n->n_dimp->fv_h;
-		st.st_z += 0.5 * n->n_dimp->fv_w;
+		st.st_v.fv_x -= GOTO_DIST_LOG;
+		st.st_v.fv_y += 0.5 * n->n_dimp->fv_h;
+		st.st_v.fv_z += 0.5 * n->n_dimp->fv_w;
 
 		vec_set(&st.st_lv, 1.0, 0.0, 0.0);
-		vec_set(&st.st_uv, 0.0, 1.0, 0.0);
+		st.st_ur = 0.0;
+		st.st_urev = 0;
 		break;
 	}
-	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
+	tween_pop();
 }
 
 __inline int

@@ -133,9 +133,9 @@ dxp_orbit(const struct dx_action *dxa)
 
 	amt += fabs(adj);
 
-	tween_push(TWF_POS | TWF_LOOK | TWF_UP);
+	tween_push();
 	cam_revolvefocus(du, dv);
-	tween_pop(TWF_POS | TWF_LOOK | TWF_UP);
+	tween_pop();
 
 	/*
 	 * Add a small skew amount here (0.001)
@@ -168,9 +168,9 @@ dxp_curlyq(const struct dx_action *dxa)
 		fwadj = DST(&st.st_v, &focus) / (fps * wait);
 	}
 
-	tween_push(TWF_POS | TWF_LOOK | TWF_UP);
+	tween_push();
 	cam_move(DIR_FORW, fwadj);
-	tween_pop(TWF_POS | TWF_LOOK | TWF_UP);
+	tween_pop();
 
 	ret = 0;
 	if (dxp_orbit(dxa)) {
@@ -185,8 +185,8 @@ dxp_cuban8(const struct dx_action *dxa)
 {
 	static double t;
 
-	struct fvec sv, uv, lv, xv, axis;
-	double roll, a, b, max;
+	struct fvec sv, lv, axis;
+	double a, b, max;
 	float mag;
 	int ret;
 
@@ -210,40 +210,28 @@ dxp_cuban8(const struct dx_action *dxa)
 	if (t < 2 * M_PI) {
 		sv.fv_x = a * sin(t - M_PI/2) + max;
 		sv.fv_y = b * cos(t - M_PI/2);
-
-		uv.fv_x = sin(t - M_PI/2);
-		uv.fv_y = cos(t - M_PI/2);
 	} else {
 		sv.fv_x = -a * sin(t - M_PI/2) - max;
 		sv.fv_y = b * cos(t - M_PI/2);
-
-		uv.fv_x = sin(t - M_PI/2);
-		uv.fv_y = -cos(t - M_PI/2);
 	}
 	sv.fv_z = 0.0;
-	uv.fv_z = 0.0;
 
-	vec_set(&xv, 0.0, 0.0, 1.0);
-	vec_normalize(&uv);
-	vec_crossprod(&lv, &uv, &xv);
+	tween_push();
 
-	tween_push(TWF_LOOK | TWF_POS | TWF_UP);
+errx(1, "look not updated yet");
 
 	switch (dxa->dxa_cuban8_dim) {
 	case DIM_X:
 		vec_set(&st.st_v, 0.0, sv.fv_x, sv.fv_y);
 		vec_set(&st.st_lv, 0.0, lv.fv_x, lv.fv_y);
-		vec_set(&st.st_uv, 0.0, uv.fv_x, uv.fv_y);
 		break;
 	case DIM_Y:
 		vec_set(&st.st_v, sv.fv_x, 0.0, sv.fv_y);
 		vec_set(&st.st_lv, lv.fv_x, 0.0, lv.fv_y);
-		vec_set(&st.st_uv, uv.fv_x, 0.0, uv.fv_y);
 		break;
 	case DIM_Z:
 		vec_set(&st.st_v, sv.fv_x, sv.fv_y, 0.0);
 		vec_set(&st.st_lv, lv.fv_x, lv.fv_y, 0.0);
-		vec_set(&st.st_uv, uv.fv_x, uv.fv_y, 0.0);
 		break;
 	}
 
@@ -261,20 +249,15 @@ dxp_cuban8(const struct dx_action *dxa)
 	st.st_y += YCENTER;
 	st.st_z += ZCENTER;
 
-	roll = 0.0;
+	st.st_ur = 0.0;
 	if (t > M_PI / 2.0 && t < 3 * M_PI / 2.0)
-		roll = t - M_PI / 2.0;
+		st.st_ur = t - M_PI / 2.0;
 	else if (t > 3 * M_PI / 2.0 && t < 5 * M_PI/2.0)
-		roll = M_PI;
+		st.st_ur = M_PI;
 	else if (t > 5 * M_PI / 2.0 && t < 7 * M_PI / 2.0)
-		roll = M_PI + t - 5 * M_PI / 2.0;
+		st.st_ur = M_PI + t - 5 * M_PI / 2.0;
 
-	while (roll > 0.1) {
-		vec_rotate(&st.st_uv, &st.st_lv, 0.1);
-		roll -= 0.1;
-	}
-
-	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
+	tween_pop();
 
 //	dxp_refocus();
 
@@ -319,7 +302,7 @@ dxp_corkscrew(const struct dx_action *dxa)
 	sv.fv_y = a * sin(t / c * 4.0 * M_PI);
 	sv.fv_z = b * cos(t / c * 4.0 * M_PI);
 
-	tween_push(TWF_LOOK | TWF_POS | TWF_UP);
+	tween_push();
 
 	switch (dxa->dxa_screw_dim) {
 	case DIM_X:
@@ -328,8 +311,8 @@ dxp_corkscrew(const struct dx_action *dxa)
 		st.st_z = ZCENTER + sv.fv_z;
 
 		if (t == 0.0) {
-			vec_set(&st.st_uv, 0.0, 1.0, 0.0);
 			vec_set(&st.st_lv, 1.0, 0.0, 0.0);
+			st.st_ur = 0.0;
 		}
 		break;
 	case DIM_Y:
@@ -338,8 +321,8 @@ dxp_corkscrew(const struct dx_action *dxa)
 		st.st_z = ZCENTER + sv.fv_z;
 
 		if (t == 0.0) {
-			vec_set(&st.st_uv, 0.0, 0.0, 1.0);
 			vec_set(&st.st_lv, 0.0, 1.0, 0.0);
+			st.st_ur = 0.0;
 		}
 		break;
 	case DIM_Z:
@@ -348,14 +331,14 @@ dxp_corkscrew(const struct dx_action *dxa)
 		st.st_z = t;
 
 		if (t == 0.0) {
-			vec_set(&st.st_uv, 0.0, 1.0, 0.0);
 			vec_set(&st.st_lv, 0.0, 0.0, 1.0);
+			st.st_ur = 0.0;
 		}
 		break;
 	}
 
-	vec_rotate(&st.st_uv, &st.st_lv, 2.0 * M_PI / c);
-	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
+st.st_ur = 2.0 * M_PI / c;
+	tween_pop();
 
 	t += 0.5;
 	if (t > c) {
@@ -368,9 +351,9 @@ dxp_corkscrew(const struct dx_action *dxa)
 int
 dxp_bird(__unused const struct dx_action *dxa)
 {
-	tween_push(TWF_LOOK | TWF_POS | TWF_UP);
+	tween_push();
 	cam_bird();
-	tween_pop(TWF_LOOK | TWF_POS | TWF_UP);
+	tween_pop();
 	return (1);
 }
 
@@ -426,9 +409,9 @@ dxp_playreel(const struct dx_action *dxa)
 int
 dxp_refocus(__unused const struct dx_action *dxa)
 {
-	tween_push(TWF_POS | TWF_UP | TWF_LOOK);
+	tween_push();
 	cam_revolvefocus(0.0, 0.001);
-	tween_pop(TWF_POS | TWF_UP | TWF_LOOK);
+	tween_pop();
 	return (1);
 }
 
@@ -548,18 +531,20 @@ dxp_subsel(const struct dx_action *dxa)
 			break;
 		case DXN_VIS:
 			NODE_FOREACH(n, &iv)
-				if (n && n->n_fillp->f_a)
+				if (n && n->n_fillp->f_a) {
 					if (off)
 						n->n_flags &= ~NF_SUBSEL;
 					else
 						n->n_flags |= NF_SUBSEL;
+				}
 			break;
 		default:
-			if ((n = node_for_nid(nid->n_nid)) != NULL)
+			if ((n = node_for_nid(nid->n_nid)) != NULL) {
 				if (off)
 					n->n_flags &= ~NF_SUBSEL;
 				else
 					n->n_flags |= NF_SUBSEL;
+			}
 			break;
 		}
 	st.st_rf |= RF_CLUSTER | RF_SELNODE;
@@ -679,36 +664,39 @@ dxp_pstick(const struct dx_action *dxa)
 int
 dxp_camsync(__unused const struct dx_action *dxa)
 {
-	if (st.st_opts & OP_TWEEN)
-		return (DST(&st.st_v, &tv) < 0.1);
-	else
+	struct fvec fv;
+
+	if (st.st_opts & OP_TWEEN) {
+		tween_getdst(&fv, NULL, NULL, NULL);
+		return (DST(&st.st_v, &fv) < 0.1);
+	} else
 		return (1);
 }
 
 int
 dxp_camlook(const struct dx_action *dxa)
 {
-	tween_push(TWF_LOOK);
+	tween_push();
 	st.st_lv = dxa->dxa_cam_lv;
-	tween_pop(TWF_LOOK);
+	tween_pop();
 	return (1);
 }
 
 int
 dxp_campos(const struct dx_action *dxa)
 {
-	tween_push(TWF_POS);
+	tween_push();
 	st.st_v = dxa->dxa_cam_v;
-	tween_pop(TWF_POS);
+	tween_pop();
 	return (1);
 }
 
 int
-dxp_camup(const struct dx_action *dxa)
+dxp_camuprot(const struct dx_action *dxa)
 {
-	tween_push(TWF_UP);
-	st.st_uv = dxa->dxa_cam_uv;
-	tween_pop(TWF_UP);
+	tween_push();
+	st.st_ur = dxa->dxa_cam_ur;
+	tween_pop();
 	return (1);
 }
 
@@ -860,9 +848,9 @@ dxp_cam_move(const struct dx_action *dxa)
 	if (adj == 0.0)
 		adj = dxa->dxa_move_amt / (dxa->dxa_move_secs * fps);
 
-	tween_push(TWF_POS);
+	tween_push();
 	cam_move(dxa->dxa_move_dir, adj);
-	tween_pop(TWF_POS);
+	tween_pop();
 
 	amt += adj;
 
@@ -963,7 +951,7 @@ struct dxent {
 	{ DGT_CAMSYNC,	dxp_camsync },
 	{ DGT_CAMLOOK,	dxp_camlook },
 	{ DGT_CAMPOS,	dxp_campos },
-	{ DGT_CAMUP,	dxp_camup },
+	{ DGT_CAMUPROT,	dxp_camuprot },
 	{ DGT_CLRSN,	dxp_clrsn },
 	{ DGT_CORKSCREW,dxp_corkscrew },
 	{ DGT_CUBAN8,	dxp_cuban8 },

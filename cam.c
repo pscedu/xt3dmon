@@ -42,7 +42,7 @@ int revolve_type = REVT_LKAVG;
 void
 cam_move(int dir, double amt)
 {
-	static struct fvec fv;
+	struct fvec fv, uv;
 
 	if (dir == DIR_LEFT || dir == DIR_BACK || dir == DIR_DOWN)
 		amt *= -1;
@@ -50,7 +50,8 @@ cam_move(int dir, double amt)
 	switch (dir) {
 	case DIR_LEFT:
 	case DIR_RIGHT:
-		vec_crossprod(&fv, &st.st_lv, &st.st_uv);
+		cam_calcuv(&uv);
+		vec_crossprod(&fv, &st.st_lv, &uv);
 		st.st_v.fv_x += fv.fv_x * amt;
 		st.st_v.fv_y += fv.fv_y * amt;
 		st.st_v.fv_z += fv.fv_z * amt;
@@ -63,9 +64,10 @@ cam_move(int dir, double amt)
 		break;
 	case DIR_UP:
 	case DIR_DOWN:
-		st.st_v.fv_x += st.st_uv.fv_x * amt;
-		st.st_v.fv_y += st.st_uv.fv_y * amt;
-		st.st_v.fv_z += st.st_uv.fv_z * amt;
+		cam_calcuv(&uv);
+		st.st_v.fv_x += uv.fv_x * amt;
+		st.st_v.fv_y += uv.fv_y * amt;
+		st.st_v.fv_z += uv.fv_z * amt;
 		break;
 	}
 }
@@ -75,18 +77,7 @@ cam_revolve(struct fvec *focuspts, int nfocus, double dt, double dp, int revt)
 {
 	struct fvec minv, maxv, center, diff, sph, sphfocus;
 	double maxdiff, dst;
-	int upinv, j;
-
-	upinv = 0;
-	if (st.st_uv.fv_y < 0.0) {
-		/*
-		 * If we are already looking upside,
-		 * direction is reversed.
-		 */
-		upinv = !upinv;
-		dp *= -1.0;
-		dt *= -1.0;
-	}
+	int j;
 
 	vec_set(&maxv, -DBL_MAX, -DBL_MAX, -DBL_MAX);
 	vec_set(&minv, DBL_MAX, DBL_MAX, DBL_MAX);
@@ -109,9 +100,8 @@ cam_revolve(struct fvec *focuspts, int nfocus, double dt, double dp, int revt)
 	center.fv_z /= nfocus;
 
 	/*
-	 * Manually change the revolution type
-	 * to avoid jumps around extremes and
-	 * move the camera slightly so we don't
+	 * Manually change the revolution type to avoid jumps around
+	 * extremes and move the camera slightly so we don't
 	 * continually toggle this manual switch.
 	 */
 	if (revt == REVT_LKAVG || revt == REVT_LKFIT) {
@@ -130,6 +120,11 @@ cam_revolve(struct fvec *focuspts, int nfocus, double dt, double dp, int revt)
 	vec_sub(&diff, &st.st_v, &center);
 	vec_cart2sphere(&diff, &sph);
 
+	if (st.st_urev) {
+		dp *= -1.0;
+		dt *= -1.0;
+	}
+
 	sph.fv_t += dt;
 	sph.fv_p += dp;
 
@@ -141,7 +136,7 @@ cam_revolve(struct fvec *focuspts, int nfocus, double dt, double dp, int revt)
 		 */
 		sph.fv_t += M_PI;
 		sph.fv_p *= -1.0;
-		upinv = !upinv;
+		st.st_urev = !st.st_urev;
 	}
 
 	sph.fv_t = negmodf(sph.fv_t, 2.0 * M_PI);
@@ -203,6 +198,7 @@ cam_revolve(struct fvec *focuspts, int nfocus, double dt, double dp, int revt)
 			minp = MIN(minp, sph.fv_p);
 			maxp = MAX(maxp, sph.fv_p);
 		}
+//		sph.fv_r = 1.0;
 		sph.fv_t = (mint + maxt) / 2.0;
 		sph.fv_p = (minp + maxp) / 2.0;
 		vec_sphere2cart(&sph, &st.st_lv);
@@ -210,13 +206,6 @@ cam_revolve(struct fvec *focuspts, int nfocus, double dt, double dp, int revt)
 	    }
 	}
 	vec_normalize(&st.st_lv);
-
-	vec_cart2sphere(&st.st_lv, &sph);
-	sph.fv_p -= M_PI / 2.0;
-	if (upinv)
-		sph.fv_p += M_PI;
-	vec_sphere2cart(&sph, &st.st_uv);
-	vec_normalize(&st.st_uv);
 }
 
 /*
@@ -240,7 +229,7 @@ cam_revolvefocus(double dt, double dp)
 			err(1, "malloc");
 		j = 0;
 		SLIST_FOREACH(sn, &selnodes, sn_next) {
-			nfvp = &sn->sn_nodep->n_vfin;
+			nfvp = &sn->sn_nodep->n_vcur;
 			fvp[j].fv_x = nfvp->fv_x + sn->sn_nodep->n_dimp->fv_w / 2.0;
 			fvp[j].fv_y = nfvp->fv_y + sn->sn_nodep->n_dimp->fv_y / 2.0;
 			fvp[j].fv_z = nfvp->fv_z + sn->sn_nodep->n_dimp->fv_z / 2.0;
@@ -289,16 +278,16 @@ cam_revolvefocus(double dt, double dp)
 			cam_revolve(nfv, NENTRIES(nfv), dt, dp, revolve_type);
 			break;
 		case VM_VNEIGHBOR:
-			cam_revolve(&focus, 1, dt, dp, REVT_LKCEN);
+			cam_revolve(&focus, 1, dt, dp, revolve_type);
 			break;
 		}
 	}
 }
 
-void
+__inline void
 cam_roll(double amt)
 {
-	vec_rotate(&st.st_uv, &st.st_lv, amt);
+	st.st_ur = negmodf(st.st_ur + amt, 2.0 * M_PI);
 }
 
 void
@@ -311,11 +300,13 @@ cam_bird(void)
 		/* XXX: depend on CL_WIDTH/HEIGHT/DEPTH */
 		vec_set(&st.st_v, -17.80, 30.76, 51.92);
 		vec_set(&st.st_lv,  0.71, -0.34, -0.62);
-		vec_set(&st.st_uv,  0.25,  0.94, -0.22);
+		st.st_ur = 0.0;
+		st.st_urev = 0.0;
 		break;
 	case VM_WIRED:
 	case VM_WIONE:
-		vec_set(&st.st_uv, 0.0, 1.0, 0.0);
+		st.st_ur = 0.0;
+		st.st_urev = 0.0;
 		vec_set(&cen,
 		    1.0 * widim.iv_x * st.st_winsp.iv_x,
 		    1.0 * widim.iv_y * st.st_winsp.iv_y,
@@ -336,7 +327,8 @@ cam_bird(void)
 		vec_sphere2cart(&sph, &st.st_v);
 		vec_set(&st.st_lv, -st.st_v.fv_x, -st.st_v.fv_y, -st.st_v.fv_z);
 		vec_normalize(&st.st_lv);
-		vec_set(&st.st_uv, 0.0, 1.0, 0.0);
+		st.st_ur = 0.0;
+		st.st_urev = 0.0;
 		break;
 	}
 }
@@ -344,12 +336,26 @@ cam_bird(void)
 __inline void
 cam_look(void)
 {
+	struct fvec uv;
+
+	cam_calcuv(&uv);
 	glLoadIdentity();
-	gluLookAt(st.st_x, st.st_y, st.st_z,
+	gluLookAt(st.st_v.fv_x, st.st_v.fv_y, st.st_v.fv_z,
 	    st.st_v.fv_x + st.st_lv.fv_x,
 	    st.st_v.fv_y + st.st_lv.fv_y,
 	    st.st_v.fv_z + st.st_lv.fv_z,
-	    st.st_uv.fv_x,
-	    st.st_uv.fv_y,
-	    st.st_uv.fv_z);
+	    uv.fv_x, uv.fv_y, uv.fv_z);
+}
+
+void
+cam_calcuv(struct fvec *uvp)
+{
+	struct fvec sph;
+
+	vec_cart2sphere(&st.st_lv, &sph);
+	sph.fv_p -= M_PI * 0.5;
+	if (st.st_urev)
+		sph.fv_p += M_PI;
+	vec_sphere2cart(&sph, uvp);
+	vec_rotate(uvp, &st.st_lv, st.st_ur);
 }

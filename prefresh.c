@@ -863,24 +863,22 @@ panel_refresh_gotojob(struct panel *p)
 void
 panel_refresh_pos(struct panel *p)
 {
-	struct fvec lsph, usph;
+	struct fvec lsph;
 
 	if ((st.st_rf & RF_CAM) == 0 && panel_ready(p))
 		return;
 
 	vec_cart2sphere(&st.st_lv, &lsph);
-	vec_cart2sphere(&st.st_uv, &usph);
 
 	panel_set_content(p, "- Camera -\n"
 	    "Position (%.2f,%.2f,%.2f)\n"
 	    "Look (%.2f,%.2f,%.2f) (t=%.3f,p=%.3f)\n"
-	    "Up (%.2f,%.2f,%.2f) (t=%.3f,p=%.3f)\n"
+	    "Up (rot=%.3f,rev=%d)\n"
 	    "Focus (%.2f,%.2f,%.2f)",
 	    st.st_v.fv_x, st.st_v.fv_y, st.st_v.fv_z,
 	    st.st_lv.fv_x, st.st_lv.fv_y, st.st_lv.fv_z,
 	    lsph.fv_t, lsph.fv_p,
-	    st.st_uv.fv_x, st.st_uv.fv_y, st.st_uv.fv_z,
-	    usph.fv_t, usph.fv_p,
+	    st.st_ur, st.st_urev,
 	    focus.fv_x, focus.fv_y, focus.fv_z);
 }
 

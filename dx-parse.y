@@ -23,6 +23,13 @@
 
 #define yyin dxin
 
+#define INIT_DXA(type)				\
+	do {					\
+		memset(&dxa, 0, sizeof(dxa));	\
+		dxa.dxa_type = (type);		\
+		dxa_add(&dxa);			\
+	} while (0)
+
 int yylex(void);
 int yyparse(void);
 int yyerror(const char *, ...);
@@ -32,42 +39,43 @@ void nidlist_add(struct nidlist *, int);
 int dx_lineno;
 static int errors;
 struct dxlist dxlist = TAILQ_HEAD_INITIALIZER(dxlist);
+static struct dx_action dxa;
 
 %}
 
-%token DGT_BIRD
-%token DGT_CAMSYNC		/* no grammar */
-%token DGT_CAMLOOK
-%token DGT_CAMPOS
-%token DGT_CAMUP
-%token DGT_CLRSN
-%token DGT_CORKSCREW
-%token DGT_CUBAN8
-%token DGT_CURLYQ
-%token DGT_CYCLENC
-%token DGT_DMODE
-%token DGT_EXIT
-%token DGT_FOCUS
-%token DGT_HL
-%token DGT_MOVE
-%token DGT_NODESYNC
-%token DGT_OPT
-%token DGT_ORBIT
-%token DGT_PANEL
-%token DGT_PIPEMODE
-%token DGT_PLAYREEL
-%token DGT_PSTICK
-%token DGT_REFOCUS
-%token DGT_REFRESH
-%token DGT_SELNC
-%token DGT_SELNODE
-%token DGT_SETCAP
-%token DGT_SSCTL
-%token DGT_STALL
-%token DGT_SUBSEL
-%token DGT_VMODE
-%token DGT_WINSP
-%token DGT_WIOFF
+%token <intg> DGT_BIRD
+%token <intg> DGT_CAMSYNC		/* no grammar */
+%token <intg> DGT_CAMLOOK
+%token <intg> DGT_CAMPOS
+%token <intg> DGT_CAMUPROT
+%token <intg> DGT_CLRSN
+%token <intg> DGT_CORKSCREW
+%token <intg> DGT_CUBAN8
+%token <intg> DGT_CURLYQ
+%token <intg> DGT_CYCLENC
+%token <intg> DGT_DMODE
+%token <intg> DGT_EXIT
+%token <intg> DGT_FOCUS
+%token <intg> DGT_HL
+%token <intg> DGT_MOVE
+%token <intg> DGT_NODESYNC
+%token <intg> DGT_OPT
+%token <intg> DGT_ORBIT
+%token <intg> DGT_PANEL
+%token <intg> DGT_PIPEMODE
+%token <intg> DGT_PLAYREEL
+%token <intg> DGT_PSTICK
+%token <intg> DGT_REFOCUS
+%token <intg> DGT_REFRESH
+%token <intg> DGT_SELNC
+%token <intg> DGT_SELNODE
+%token <intg> DGT_SETCAP
+%token <intg> DGT_SSCTL
+%token <intg> DGT_STALL
+%token <intg> DGT_SUBSEL
+%token <intg> DGT_VMODE
+%token <intg> DGT_WINSP
+%token <intg> DGT_WIOFF
 
 %token COMMA LANGLE LBRACKET RANGLE RBRACKET LS_MINUS LS_PLUS
 
@@ -231,84 +239,40 @@ nidlist		: STRING {
 		;
 
 conf		: DGT_BIRD {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_BIRD;
-			dxa_add(&dxa);
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_CAMSYNC;
-			dxa_add(&dxa);
+			INIT_DXA($1);
+			INIT_DXA(DGT_CAMSYNC);
 		}
 		| DGT_CAMLOOK dbl COMMA dbl COMMA dbl {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_CAMLOOK;
+			INIT_DXA($1);
 			vec_set(&dxa.dxa_cam_lv, $2, $4, $6);
 			if (vec_mag(&dxa.dxa_cam_lv) == 0.0)
 				vec_set(&dxa.dxa_cam_lv, 1.0, 0.0, 0.0);
 			else
 				vec_normalize(&dxa.dxa_cam_lv);
-			dxa_add(&dxa);
 		}
 		| DGT_CAMPOS dbl COMMA dbl COMMA dbl {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_CAMPOS;
+			INIT_DXA($1);
 			vec_set(&dxa.dxa_cam_v, $2, $4, $6);
-			dxa_add(&dxa);
 		}
-		| DGT_CAMUP dbl COMMA dbl COMMA dbl {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_CAMUP;
-			vec_set(&dxa.dxa_cam_uv, $2, $4, $6);
-			if (vec_mag(&dxa.dxa_cam_uv) == 0.0)
-				vec_set(&dxa.dxa_cam_uv, 0.0, 1.0, 0.0);
-			else
-				vec_normalize(&dxa.dxa_cam_uv);
-			dxa_add(&dxa);
+		| DGT_CAMUPROT dbl {
+			INIT_DXA($1);
+			dxa.dxa_cam_ur = $2;
 		}
 		| DGT_CLRSN {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_CLRSN;
-			dxa_add(&dxa);
+			INIT_DXA($1);
 		}
 		| DGT_CORKSCREW dim {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_CORKSCREW;
+			INIT_DXA($1);
 			dxa.dxa_screw_dim = $2;
-			dxa_add(&dxa);
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_CAMSYNC;
-			dxa_add(&dxa);
+			INIT_DXA(DGT_CAMSYNC);
 		}
 		| DGT_CUBAN8 dim {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_CUBAN8;
+			INIT_DXA($1);
 			dxa.dxa_cuban8_dim = $2;
-			dxa_add(&dxa);
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_CAMSYNC;
-			dxa_add(&dxa);
+			INIT_DXA(DGT_CAMSYNC);
 		}
 		| DGT_CURLYQ setmodifier dim orbit_revs orbit_secs {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_CURLYQ;
+			INIT_DXA($1);
 			dxa.dxa_orbit_dir = ($2 == DXV_OFF) ? -1 : 1;
 			dxa.dxa_orbit_dim = $3;
 
@@ -320,26 +284,17 @@ conf		: DGT_BIRD {
 			if ($5 < 0)
 				yyerror("invalid curlyq #secs: %d", $5);
 			dxa.dxa_orbit_secs = $5;
-			dxa_add(&dxa);
 
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_CAMSYNC;
-			dxa_add(&dxa);
+			INIT_DXA(DGT_CAMSYNC);
 		}
 		| DGT_CYCLENC cycle_method {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_CYCLENC;
+			INIT_DXA($1);
 			dxa.dxa_cycle_meth = $2;;
-			dxa_add(&dxa);
 		}
 		| DGT_DMODE STRING {
-			struct dx_action dxa;
 			int i;
 
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_DMODE;
+			INIT_DXA($1);
 			for (i = 0; i < NDM; i++)
 				if (dmodes[i].dm_abbr &&
 				    strcasecmp(dmodes[i].dm_abbr, $2) == 0) {
@@ -349,30 +304,16 @@ conf		: DGT_BIRD {
 			if (i >= NDM)
 				yyerror("invalid dmode: %s", $2);
 			free($2);
-			dxa_add(&dxa);
 		}
 		| DGT_EXIT {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_EXIT;
-			dxa_add(&dxa);
+			INIT_DXA($1);
 		}
 		| DGT_FOCUS dbl COMMA dbl COMMA dbl {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_FOCUS;
-			dxa.dxa_focus.fv_x = $2;
-			dxa.dxa_focus.fv_y = $4;
-			dxa.dxa_focus.fv_z = $6;
-			dxa_add(&dxa);
+			INIT_DXA($1);
+			vec_set(&dxa.dxa_focus, $2, $4, $6);
 		}
 		| DGT_HL STRING {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_HL;
+			INIT_DXA($1);
 			if (strcasecmp($2, "all") == 0)
 				dxa.dxa_hl = NC_ALL;
 			else if (strcasecmp($2, "seldm") == 0)
@@ -380,13 +321,9 @@ conf		: DGT_BIRD {
 			else
 				yyerror("invalid hl: %s", $2);
 			free($2);
-			dxa_add(&dxa);
 		}
 		| DGT_MOVE STRING dbl move_secs {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_MOVE;
+			INIT_DXA($1);
 			if (strcasecmp($2, "forward") == 0 ||
 			    strcasecmp($2, "forw") == 0)
 				dxa.dxa_move_dir = DIR_FORW;
@@ -400,26 +337,16 @@ conf		: DGT_BIRD {
 			if ($4 <= 0)
 				yyerror("invalid move #secs: %f", $4);
 			dxa.dxa_move_secs = $4;
-			dxa_add(&dxa);
 
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_CAMSYNC;
-			dxa_add(&dxa);
+			INIT_DXA(DGT_CAMSYNC);
 		}
 		| DGT_OPT setmodifier opts_l {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_OPT;
+			INIT_DXA($1);
 			dxa.dxa_opt_mode = $2;
 			dxa.dxa_opts = $3;
-			dxa_add(&dxa);
 		}
 		| DGT_ORBIT setmodifier dim orbit_revs orbit_secs {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_ORBIT;
+			INIT_DXA($1);
 			dxa.dxa_orbit_dir = ($2 == DXV_OFF) ? -1 : 1;
 			dxa.dxa_orbit_dim = $3;
 
@@ -431,26 +358,16 @@ conf		: DGT_BIRD {
 			if ($5 < 0)
 				yyerror("invalid orbit #secs: %d", $5);
 			dxa.dxa_orbit_secs = $5;
-			dxa_add(&dxa);
 
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_CAMSYNC;
-			dxa_add(&dxa);
+			INIT_DXA(DGT_CAMSYNC);
 		}
 		| DGT_PANEL setmodifier panels_l {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_PANEL;
+			INIT_DXA($1);
 			dxa.dxa_panel_mode = $2;
 			dxa.dxa_panels = $3;
-			dxa_add(&dxa);
 		}
 		| DGT_PIPEMODE STRING {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_PIPEMODE;
+			INIT_DXA($1);
 			if (strcasecmp($2, "torus") == 0)
 				dxa.dxa_pipemode = PM_DIR;
 			else if (strcasecmp($2, "rte") == 0)
@@ -458,21 +375,14 @@ conf		: DGT_BIRD {
 			else
 				yyerror("invalid pipemode: %s", $2);
 			free($2);
-			dxa_add(&dxa);
 		}
 		| DGT_PLAYREEL INTG STRING {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_PLAYREEL;
+			INIT_DXA($1);
 			dxa.dxa_reel_delay = $2;
 			dxa.dxa_reel = $3;
-			dxa_add(&dxa);
 		}
 		| DGT_PSTICK STRING panels_l {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
+			INIT_DXA($1);
 			if (strcasecmp($2, "tl") == 0)
 				dxa.dxa_pstick = PSTICK_TL;
 			else if (strcasecmp($2, "tr") == 0)
@@ -484,70 +394,38 @@ conf		: DGT_BIRD {
 			else
 				yyerror("invalid pstick: %s", $2);
 			free($2);
-			dxa.dxa_type = DGT_PSTICK;
 			dxa.dxa_panels = $3;
-			dxa_add(&dxa);
 		}
 		| DGT_REFOCUS {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_REFOCUS;
-			dxa_add(&dxa);
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_CAMSYNC;
-			dxa_add(&dxa);
+			INIT_DXA($1);
+			INIT_DXA(DGT_CAMSYNC);
 		}
 		| DGT_REFRESH {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_REFRESH;
-			dxa_add(&dxa);
+			INIT_DXA($1);
 		}
 		| DGT_SELNC STRING {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_SELNC;
+			INIT_DXA($1);
 			if (strcasecmp($2, "random") == 0)
 				dxa.dxa_selnc = DXNC_RND;
 			else
 				yyerror("invalid node class: %s", $2);
 			free($2);
-			dxa_add(&dxa);
 		}
 		| DGT_SELNODE setmodifier selnode_list {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_SELNODE;
+			INIT_DXA($1);
 			dxa.dxa_selnode_mode = $2;
 			dxa.dxa_selnode_list = $3;
-			dxa_add(&dxa);
 		}
 		| DGT_SETCAP STRING  {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_SETCAP;
+			INIT_DXA($1);
 			dxa.dxa_caption = $2;
-			dxa_add(&dxa);
 		}
 		| DGT_STALL dbl {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_STALL;
+			INIT_DXA($1);
 			dxa.dxa_stall_secs = $2;
-			dxa_add(&dxa);
 		}
 		| DGT_SSCTL STRING STRING {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_SSCTL;
+			INIT_DXA($1);
 			if (strcasecmp($2, "vc") == 0) {
 				dxa.dxa_ssctl_type = DXSST_VC;
 				if (strcasecmp($3, "0") == 0)
@@ -575,22 +453,14 @@ conf		: DGT_BIRD {
 				yyerror("invalid ssctl type: %s", $2);
 			free($2);
 			free($3);
-			dxa_add(&dxa);
 		}
 		| DGT_SUBSEL setmodifier subsel_list {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_SUBSEL;
+			INIT_DXA($1);
 			dxa.dxa_subsel_mode = $2;
 			dxa.dxa_subsel_list = $3;
-			dxa_add(&dxa);
 		}
 		| DGT_VMODE STRING {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_VMODE;
+			INIT_DXA($1);
 			if (strcasecmp($2, "phys") == 0)
 				dxa.dxa_vmode = VM_PHYS;
 			else if (strcasecmp($2, "wired") == 0)
@@ -600,45 +470,30 @@ conf		: DGT_BIRD {
 			else
 				yyerror("invalid vmode: %s", $2);
 			free($2);
-			dxa_add(&dxa);
 
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_NODESYNC;
-			dxa_add(&dxa);
+			INIT_DXA(DGT_NODESYNC);
 		}
 		| DGT_WINSP setmodifier INTG setmodifier INTG setmodifier INTG {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_WINSP;
+			INIT_DXA($1);
 			dxa.dxa_winsp_mode.iv_x = $2;
 			dxa.dxa_winsp_mode.iv_y = $4;
 			dxa.dxa_winsp_mode.iv_z = $6;
 			dxa.dxa_winsp.iv_x = $3;
 			dxa.dxa_winsp.iv_y = $5;
 			dxa.dxa_winsp.iv_z = $7;
-			dxa_add(&dxa);
 
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_NODESYNC;
-			dxa_add(&dxa);
+			INIT_DXA(DGT_NODESYNC);
 		}
 		| DGT_WIOFF setmodifier INTG setmodifier INTG setmodifier INTG {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_WIOFF;
+			INIT_DXA($1);
 			dxa.dxa_wioff_mode.iv_x = $2;
 			dxa.dxa_wioff_mode.iv_y = $4;
 			dxa.dxa_wioff_mode.iv_z = $6;
 			dxa.dxa_wioff.iv_x = $3;
 			dxa.dxa_wioff.iv_y = $5;
 			dxa.dxa_wioff.iv_z = $7;
-			dxa_add(&dxa);
 
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_NODESYNC;
-			dxa_add(&dxa);
+			INIT_DXA(DGT_NODESYNC);
 		}
 		| STRING args_l {
 			yyerror("unrecognized action: %s", $1);

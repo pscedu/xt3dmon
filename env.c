@@ -6,6 +6,7 @@
 #include <time.h>
 
 #include "cdefs.h"
+#include "cam.h"
 #include "env.h"
 #include "flyby.h"
 #include "gl.h"
@@ -39,13 +40,16 @@ struct keyh keyhtab[] = {
 __inline void
 frustum_init(struct frustum *fr)
 {
+	struct fvec uv;
+
 	fr->fr_ratio = ASPECT;
 	fr->fr_radians = DEG_TO_RAD(FOVY / 2.0);
 	fr->fr_wd2 = FOCAL_POINT * tan(fr->fr_radians);
 	fr->fr_ndfl = FOCAL_POINT / FOCAL_LENGTH;
 	fr->fr_eyesep = ST_EYESEP;
 
-	vec_crossprod(&fr->fr_stereov, &st.st_lv, &st.st_uv);
+	cam_calcuv(&uv);
+	vec_crossprod(&fr->fr_stereov, &st.st_lv, &uv);
 	vec_normalize(&fr->fr_stereov);
 	fr->fr_stereov.fv_x *= fr->fr_eyesep / 2.0f;
 	fr->fr_stereov.fv_y *= fr->fr_eyesep / 2.0f;
@@ -124,9 +128,9 @@ focus_cluster(struct fvec *cen)
 		break;
 	case VM_WIRED:
 		dist = MAX3(WIV_SWIDTH, WIV_SHEIGHT, WIV_SDEPTH) / 4.0;
-		cen->fv_x = st.st_v.fv_x + st.st_lv.fv_x * dist;
-		cen->fv_y = st.st_v.fv_y + st.st_lv.fv_y * dist;
-		cen->fv_z = st.st_v.fv_z + st.st_lv.fv_z * dist;
+		cen->fv_x = st.st_x + st.st_lv.fv_x * dist;
+		cen->fv_y = st.st_y + st.st_lv.fv_y * dist;
+		cen->fv_z = st.st_z + st.st_lv.fv_z * dist;
 		break;
 	case VM_WIONE:
 		cen->fv_x = st.st_winsp.iv_x * (widim.iv_w / 2.0f + st.st_wioff.iv_x);
