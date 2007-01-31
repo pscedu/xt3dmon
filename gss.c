@@ -113,7 +113,9 @@ gss_valid(const char *host)
 
 	if (GSS_ERROR(major) || gss_otoken.length == 0) {
 		gss_finish();
-		warnx("gss_init_sec_context"); // XXX get gss errstr
+		if (major != GSS_S_FAILURE)
+			errx(1, "gss_init_sec_context; major=%d; minor=%d",
+			    major, minor);
 		valid = 0;
 	}
 	return (valid);
