@@ -28,13 +28,13 @@
 #include "tween.h"
 #include "xmath.h"
 
-#define TWEEN_MAXADJ_POS	(2.00)
-#define TWEEN_MAXADJ_LOOK	(0.06)
-#define TWEEN_MAXADJ_UPROT	(0.06)
+#define TWEEN_MAXADJ_POS	(2.00f)
+#define TWEEN_MAXADJ_LOOK	(0.06f)
+#define TWEEN_MAXADJ_UPROT	(0.06f)
 
-#define TWEEN_THRES_POS		(0.005)
-#define TWEEN_THRES_LOOK	(0.001)
-#define TWEEN_THRES_UPROT	(0.0001)
+#define TWEEN_THRES_POS		(0.005f)
+#define TWEEN_THRES_LOOK	(0.001f)
+#define TWEEN_THRES_UPROT	(0.0001f)
 
 double	tween_intv = 0.05;	/* 5% */
 double	tween_scale = 1.0;	/* 100% (no perf. degradation) */
@@ -51,7 +51,7 @@ static float sur;
 static int surev;
 
 __inline void
-tween_probe(float *cur, double stop, double max, float *scale, float *want, double thres)
+tween_probe(float *cur, float stop, float max, float *scale, float *want, float thres)
 {
 	float diff;
 
@@ -70,7 +70,7 @@ tween_probe(float *cur, double stop, double max, float *scale, float *want, doub
 }
 
 __inline void
-tween_recalc(float *cur, double scale, double want)
+tween_recalc(float *cur, float scale, float want)
 {
 	if (want) {
 		if (scale < 0.001)
