@@ -640,12 +640,8 @@ conf		: DGT_BIRD {
 		}
 		;
 
-args_l		: STRING {
-			free($1);
-		}
-		| args_l STRING {
-			free($2);
-		}
+args_l		: 		{ }
+		| args_l STRING	{ free($2); }
 		;
 
 %%
@@ -661,7 +657,6 @@ nidlist_add(struct nidlist *nl, int nid)
 	n->n_nid = nid;
 	SLIST_INSERT_HEAD(nl, n, n_link);
 }
-
 
 int
 yyerror(const char *fmt, ...)
