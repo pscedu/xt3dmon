@@ -178,7 +178,7 @@ nc_apply(void (*f)(struct fill *), size_t nc)
 		return (0);
 	hlop = nc_gethlop(f);
 	if (hlop != FBHLOP_UNKNOWN)
-		flyby_writehlnc(nc, hlop);
+		flyby_writehlnc((int)nc, hlop);
 	return (0);
 }
 
@@ -253,9 +253,9 @@ nc_set(int nc)
 		nc_runsn(fill_setopaque);
 		break;
 	default:
-		if (nc_getfp(nc) != NULL) {
+		if (nc_getfp((unsigned)nc) != NULL) {
 			nc_runall(fill_setxparent);
-			nc_apply(fill_setopaque, nc);
+			nc_apply(fill_setopaque, (unsigned)nc);
 			ret = 0;
 		}
 		break;
