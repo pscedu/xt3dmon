@@ -233,6 +233,13 @@ cam_revolvefocus(double dt, double dp)
 			fvp[j].fv_x = nfvp->fv_x + sn->sn_nodep->n_dimp->fv_w / 2.0;
 			fvp[j].fv_y = nfvp->fv_y + sn->sn_nodep->n_dimp->fv_y / 2.0;
 			fvp[j].fv_z = nfvp->fv_z + sn->sn_nodep->n_dimp->fv_z / 2.0;
+
+			if (st.st_vmode == VM_WIRED) {
+				fvp[j].fv_x += sn->sn_offv.fv_x;
+				fvp[j].fv_y += sn->sn_offv.fv_y;
+				fvp[j].fv_z += sn->sn_offv.fv_z;
+			}
+
 			j++;
 		}
 		cam_revolve(fvp, j, dt, dp, revolve_type);
