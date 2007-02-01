@@ -347,6 +347,30 @@ cubeno_to_v(int cubeno, int cuts, struct wiselstep *ws)
 }
 
 __inline struct glname *
+vneighbor_shadow(int *dl, int flags)
+{
+	struct node *n, **np;
+	struct glname *gn;
+	int nrecs;
+
+	sel_begin();
+	NODE_FOREACH_WI(n, np)
+		if (node_show(n)) {
+			glPushMatrix();
+			glTranslatef(n->n_v.fv_x, n->n_v.fv_y, n->n_v.fv_z);
+			glPushName(gsn_get(0, &fv_zero, gscb_node,
+			    n->n_nid, 0, NULL, NULL));
+			draw_shadow_node(dl, n);
+			glPopName();
+			glPopMatrix();
+		}
+	nrecs = sel_end();
+	if (nrecs && (gn = sel_process(nrecs, 0, flags)) != NULL)
+		return (gn);
+	return (NULL);
+}
+
+__inline struct glname *
 phys_shadow(int *dl, int flags)
 {
 	struct physcoord pc, chance;

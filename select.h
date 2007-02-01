@@ -75,6 +75,7 @@ struct glname	*sel_process(int, int, int);
 
 struct glname	*wi_shadow(int *, int, const struct fvec *);
 struct glname	*phys_shadow(int *, int);
+struct glname	*vneighbor_shadow(int *, int);
 
 unsigned int	 gsn_get(int, const struct fvec *, gscb_t, int, int, void *, void *);
 void		 gscb_miss(struct glname *, int);

@@ -386,6 +386,9 @@ gl_select(int flags)
 		goto end;
 
 	switch (st.st_vmode) {
+	case VM_VNEIGHBOR:
+		gn = vneighbor_shadow(dl, flags);
+		break;
 	case VM_PHYS:
 		gn = phys_shadow(dl, flags);
 		break;
