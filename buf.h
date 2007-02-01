@@ -24,7 +24,7 @@ struct buf {
 
 void	 buf_init(struct buf *);
 void	 buf_realloc(struct buf *);
-void	 buf_append(struct buf *, char);
+void	 buf_append(struct buf *, int);
 void	 buf_appendv(struct buf *, const char *);
 void	 buf_appendfv(struct buf *, const char *, ...);
 char	*buf_get(const struct buf *);

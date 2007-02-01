@@ -53,8 +53,9 @@ struct ustream *
 http_open(struct http_req *req, struct http_res *res)
 {
 	char *s, *p, **hdr, buf[BUFSIZ];
-	int flags, fd, ust, len;
+	int flags, fd, ust;
 	struct ustream *us;
+	size_t len;
 	long l;
 
 	fd = net_connect(req->htreq_server, req->htreq_port);

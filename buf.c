@@ -31,7 +31,7 @@ buf_realloc(struct buf *buf)
 }
 
 void
-buf_append(struct buf *buf, char ch)
+buf_append(struct buf *buf, int ch)
 {
 	if (++buf->buf_pos >= buf->buf_max) {
 		buf->buf_max += BUF_GROWAMT;

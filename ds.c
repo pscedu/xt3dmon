@@ -484,7 +484,7 @@ dsc_clone(int type, const char *sid)
 	/* XXXXXXXX: use us_read */
 	while ((n = read(ds->ds_us->us_fd, &buf,
 	    sizeof(buf))) != -1 && n != 0)
-		if (write(fd, buf, n) != n)
+		if (write(fd, buf, (size_t)n) != n)
 			err(1, "write");
 	if (n == -1)
 		err(1, "read");

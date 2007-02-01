@@ -401,7 +401,8 @@ dxp_playreel(const struct dx_action *dxa)
 		save_reel_pos = reel_pos;
 	}
 	if (!ret && !dxt_set) {
-		glutTimerFunc(dxa->dxa_reel_delay, dxpcb_playreel, 0);
+		glutTimerFunc((unsigned)dxa->dxa_reel_delay,
+		    dxpcb_playreel, 0);
 		dxt_set = 1;
 	}
 	return (ret);
@@ -730,7 +731,8 @@ dxp_stall(const struct dx_action *dxa)
 		ret = 1;
 	}
 	if (!ret && !dxt_set) {
-		glutTimerFunc(dxa->dxa_stall_secs * 1000, dxpcb_stall, 0);
+		glutTimerFunc((unsigned)dxa->dxa_stall_secs * 1000,
+		    dxpcb_stall, 0);
 		dxt_set = 1;
 	}
 	return (ret);
@@ -902,7 +904,8 @@ dxp_cyclenc(const struct dx_action *dxa)
 			error = nc_set(dx_cycle_nc);
 			break;
 		case DACM_GROW:
-			error = nc_apply(fill_setopaque, dx_cycle_nc);
+			error = nc_apply(fill_setopaque,
+			    (size_t)dx_cycle_nc);
 			break;
 		}
 		if (error) {
