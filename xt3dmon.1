@@ -10,7 +10,7 @@
 .Sh SYNOPSIS
 .Nm xt3dmon
 .Op Fl dMp
-.Op Fl c Ar physconf
+.Op Fl c Ar machconf
 .Op Fl H Ar height
 .Op Fl W Ar width
 .Op Fl U Ar urispec
@@ -34,12 +34,15 @@ The command-line options are as follows:
 .\" .Nm
 .\" will manage buffers for both the left and right eyes to be
 .\" overlaid on the same window.
-.It Fl c Ar physconf
+.It Fl c Ar machconf
 Specify an alternative
-.Pa phys.conf
-machine physical layout description file.
+.Pa mach.conf
+machine description file.
 Default is
-.Pa data/phys.conf .
+.Pa data/mach.conf .
+See
+.Sx MACH.CONF FORMAT
+below for more information on this file.
 .It Fl d
 Enable
 .Dq daemon
@@ -277,6 +280,8 @@ Switch to job data mode (default).
 Switch to temperature data mode.
 .It Ic my
 Switch to yod data mode.
+.It Ic oC
+Toggle the display of node CPU cores.
 .It Ic od
 Toggle screen capture.
 Files with sequenced names are written into the
@@ -394,6 +399,10 @@ or router errors.
 Save the list of currently selected nodes for later restoration via the
 .Ic L
 command.
+.It Ic vn
+Switch to the wired job neighbor mode.
+In this mode, nodes within a job are drawn according to proximity to
+their neighbors, with the selected node at the center.
 .It Ic vo
 Switch to the wired viewing mode with only one cluster drawn.
 .It Ic vp
@@ -416,7 +425,7 @@ The syntax and grammar for these scripts are as follows.
 Empty lines and lines beginning with a
 .Sq #
 are ignored.
-All other lines are expected to contain one action directive,
+All other lines must contain one action directive,
 which may be any of the following:
 .Bl -tag -width Ds
 .It Ic bird
@@ -438,13 +447,10 @@ Set the camera position vector to
 .Fa x , Ns Fa y , Ns Fa z
 .Pc .
 .It Xo
-.Ic camup
-.Fa x , Ns Fa y , Ns Fa z
+.Ic camuprot
+.Fa r
 .Xc
-Set the camera up vector to
-.Po
-.Fa x , Ns Fa y , Ns Fa z
-.Pc .
+Set the camera up rotation in radians.
 .It Ic clrsn
 Clear any selected nodes.
 .It Ic corkscrew Ar dim
@@ -891,6 +897,78 @@ which will increase the offset,
 which will decrease the offset, or nothing, in which case the
 offset in that dimension will be set to the given value.
 .El
+.Sh MACH.CONF FORMAT
+The
+.Pa mach.conf
+file is used to describe the cluster's characteristics including
+physical node layout and wired dimensions.
+The syntax and grammar for this file is as follows.
+.Pp
+Empty lines and lines beginning with a
+.Sq #
+are ignored.
+All other lines must contain one variable definition,
+which may be any of the following:
+.Bl -tag -width Ds
+.It Ic coredim Aq Ar x , y , z
+Specify the layout of node CPU cores.
+For example, the value
+.Dq 1,1,2
+specifies a total of
+.Pq 1 * 1 * 2
+= 2 cores with one core spread across the X distance, one core spread
+across the Y distance, and two cores spread across the Z distance of a
+node.
+.It Ic cubedim Aq Ar x , y , z
+Specify the wired node dimension bounds.
+.It Ic nidmax Ar n
+Specify the maximum (exclusive) node ID
+.Pq Dq nid .
+.It Ic dim Ar name Li { ... }
+Specify a physical dimension.
+Each dimension block may contain the following directives:
+.Bl -tag -width
+.It Ic contains Ar name
+Specify parent/child relationship of dimensions.
+There must be a direct relationship (i.e. all dimensions are contained
+by one and only one parent dimension) of all dimensions specify in
+.Pa mach.conf .
+The innermost dimension is specified implicitly by not having
+.Ic contains
+directive.
+.It Ic skel Ar bool
+Specify whether skeleton outlines of this dimension should
+be drawn when the skeleton outline option is enabled within
+.Nm .
+.Ar bool
+may be
+.Ic yes
+or
+.Ic no .
+.It Ic mag Ar n
+Specifies the magnitude, or number, of occurrences, of this
+dimension with respect to its parent dimension.
+.It Ic offset Aq Ar x , y , z
+Specifies the XYZ offset applied to subsequent reoccurances of this
+dimension.
+.It Ic size Aq Ar x , y , z
+Specifies the size of this dimension.
+.It Ic space Ar n
+Specifies the spacing between occurances of this dimension
+within its parent dimension.
+Spacing can only be applied to the XYZ dimension a physical
+dimension spans (see the
+.Ic spans
+directive).
+.It Ic spans Ar dim
+Specify with XYZ dimension this physical dimension spans across.
+.Ar dim
+may be
+.Ic x , y ,
+or
+.Ic z .
+.El
+.El
 .Sh DATA FILES
 .Nm
 gathers its data from the following files, accessed through the
@@ -931,8 +1009,8 @@ default flyby file
 hotkey camera positions
 .It Pa data/latest-archive
 default archive reel directory
-.It Pa data/phys.conf
-cluster physical description file
+.It Pa data/mach.conf
+machine description file
 .It Pa data/selnids
 saved selected node ID list
 .It Pa scripts/
