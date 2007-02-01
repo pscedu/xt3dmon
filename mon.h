@@ -17,11 +17,6 @@
 #define NMODS		8
 #define NNODES		4
 
-/* Wired dimensions -- XXX remove hardcode. */
-#define WIDIM_WIDTH	11
-#define WIDIM_HEIGHT	12
-#define WIDIM_DEPTH	16
-
 /* Physical machine dimensions -- XXX remove hardcode. */
 #define ROWSPACE	(10.0f)
 #define CABSPACE	(5.0f)
@@ -55,9 +50,9 @@
 #define YCENTER		(NODESPACE + CL_HEIGHT / 2.0)
 #define ZCENTER		(NODESPACE + CL_DEPTH  / 2.0)
 
-#define WIV_SWIDTH	(WIDIM_WIDTH  * st.st_winsp.iv_x)
-#define WIV_SHEIGHT	(WIDIM_HEIGHT * st.st_winsp.iv_y)
-#define WIV_SDEPTH	(WIDIM_DEPTH  * st.st_winsp.iv_z)
+#define WIV_SWIDTH	(widim.iv_w * st.st_winsp.iv_x)
+#define WIV_SHEIGHT	(widim.iv_h * st.st_winsp.iv_y)
+#define WIV_SDEPTH	(widim.iv_d * st.st_winsp.iv_z)
 #define WIV_CLIPX	(st.st_winsp.iv_x * vmodes[st.st_vmode].vm_clip)
 #define WIV_CLIPY	(st.st_winsp.iv_y * vmodes[st.st_vmode].vm_clip)
 #define WIV_CLIPZ	(st.st_winsp.iv_z * vmodes[st.st_vmode].vm_clip)

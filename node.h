@@ -38,19 +38,13 @@ struct node {
 #define LS_DIRTY	1
 #define LS_RECOVER	2
 
-#define NODE_FOREACH(n, iv)						\
-	for ((iv)->iv_x = 0;						\
-	    (iv)->iv_x < widim.iv_w;					\
-	    (iv)->iv_x++)						\
-		for ((iv)->iv_y = 0;					\
-		    (iv)->iv_y < widim.iv_h;				\
-		    (iv)->iv_y++)					\
-			for ((iv)->iv_z = 0;				\
-			    (iv)->iv_z < widim.iv_d &&			\
-			    (((n) = wimap[(iv)->iv_x][(iv)->iv_y]	\
-			        [(iv)->iv_z]) || 1);			\
-			    (iv)->iv_z++)
-//				if (n)
+#define NODE_FOREACH_PHYS(n, np)						\
+	for (np = node_nidmap; np - node_nidmap < machine.m_nidmax; np++)	\
+		if ((n = *np) != NULL)
+
+#define NODE_FOREACH_WI(n, np)							\
+	for (np = node_wimap; np - node_wimap < node_wimap_len; np++)		\
+		if ((n = *np) != NULL)
 
 struct node	*node_neighbor(int, struct node *, int, int *);
 int		 node_wineighbor_nhops(const struct node *, const struct node *);
@@ -63,6 +57,10 @@ void		 node_goto(struct node *);
 int		 node_show(const struct node *);
 void		 node_center(const struct node *, struct fvec *);
 
+#define NODE_WIMAP(x, y, z) \
+	node_wimap[(x) * widim.iv_y * widim.iv_z + (y) * widim.iv_z + (z)]
+
 extern struct node	  nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
-extern struct node	**invmap;
-extern struct node	 *wimap[WIDIM_WIDTH][WIDIM_HEIGHT][WIDIM_DEPTH];
+extern struct node	**node_nidmap;
+extern struct node	**node_wimap;
+extern int		  node_wimap_len;

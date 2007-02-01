@@ -183,7 +183,7 @@ draw_shadow_winodes(int *dl, struct wiselstep *ws, const struct fvec *cloffp)
 				adjv.iv_x = negmod(iv.iv_x + st.st_wioff.iv_x, widim.iv_w);
 				adjv.iv_y = negmod(iv.iv_y + st.st_wioff.iv_y, widim.iv_h);
 				adjv.iv_z = negmod(iv.iv_z + st.st_wioff.iv_z, widim.iv_d);
-				node = wimap[adjv.iv_x][adjv.iv_y][adjv.iv_z];
+				node = NODE_WIMAP(adjv.iv_x, adjv.iv_y, adjv.iv_z);
 				if (node == NULL || !node_show(node))
 					continue;
 

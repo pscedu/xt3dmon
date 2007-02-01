@@ -23,6 +23,7 @@ int yyerror(const char *, ...);
 
 contains			{ return (CONTAINS); }
 coredim				{ return (COREDIM); }
+cubedim				{ return (CUBEDIM); }
 dim				{ return (DIM); }
 mag				{ return (MAG); }
 nidmax				{ return (NIDMAX); }

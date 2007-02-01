@@ -12,6 +12,7 @@ reminders:
 - remove some size_t's (pointer sizes)
 - delint
 - ensure nothing modifies st.st_opt and uses opt_flip() instead
+- use recent libpng/libz/freeglut/openssl on win32
 
 maybe not:
 - keybinding to enable rebuild flags
@@ -23,11 +24,11 @@ maybe not:
 - kill nselnodes (if SLIST_EMPTY())
 
 bs
-- make selnode drawing respect n_curv
 - add arg to getcol() to set the texids
 - function to do rebuild option diffs
 - (server mode) use overlay display cleanup of damaged glut win in
   generated screenshots
+- in draw_node(), if (!show) n_curv = *v
 
 todo
 - tourjob mode - use captions
@@ -47,8 +48,6 @@ todo
 - dsc chdir to avoid races
 - show other things in the queue (other pbs queues)
 - support variable font widths/antialiased fonts
-- draw_node, if (!show) n_curv = *v
-- replace WIDIM_WIDTH, ... with widim.iv_[whd]
 - check that the server dsc-copies fresh data in case data is no
   longer automatically refreshing itself
 - add recursive check to gl_run() to protect against that kind of
@@ -93,7 +92,6 @@ todo
   no files
 - rename POPT_REFRESH to POPT_REDRAW, POPT_DIRTY to POPT_REBUILD
 - moving the cursor should not cause panel recompiles
-- update libpng/libz on win32
 - use buf.c routines in base64 routines instead of bufsize guesswork
 - only flag RF_CLUSTER on sn_remove() when the node to remove is at the
   front of the list (it otherwise won't need to be rebuilt)

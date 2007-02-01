@@ -887,17 +887,15 @@ __inline void
 draw_physpipes(int selpipes)
 {
 	int class, port, rd, r, c, ngr, ngc, dim, neg;
-	struct node *n, *ng, *gn, *ln;
+	struct node **np, *n, *ng, *gn, *ln;
 	struct physcoord pc, ngpc;
 	struct fvec s, d;
 	struct fill *fp;
-	struct ivec iv;
 	double ox, oy, oz;
 
 	glLineWidth(5.0);
-	NODE_FOREACH(n, &iv) {
-		if (n == NULL || !node_show(n) ||
-		    !SELNODE_IF_NEEDED(n, selpipes))
+	NODE_FOREACH_WI(n, np) {
+		if (!node_show(n) || !SELNODE_IF_NEEDED(n, selpipes))
 			continue;
 
 		for (rd = 0; rd < NRD; rd++) {
@@ -1041,7 +1039,7 @@ draw_physpipes(int selpipes)
 __inline void
 draw_pipes(int selpipes)
 {
-	struct node *n;
+	struct node *n, **np;
 	struct ivec iv;
 
 	switch (st.st_vmode) {
@@ -1062,8 +1060,8 @@ draw_pipes(int selpipes)
 				break;
 			/* FALLTHROUGH */
 		case PM_RTE:
-			NODE_FOREACH(n, &iv)
-				if (n && node_show(n) &&
+			NODE_FOREACH_WI(n, np)
+				if (node_show(n) &&
 				    SELNODE_IF_NEEDED(n, selpipes))
 					draw_node_pipes(n, 0);
 			return;
@@ -1093,8 +1091,7 @@ draw_pipes(int selpipes)
 __inline void
 draw_cluster(void)
 {
-	struct ivec iv;
-	struct node *n;
+	struct node *n, **np;
 
 	switch (st.st_vmode) {
 	case VM_WIRED:
@@ -1104,8 +1101,8 @@ draw_cluster(void)
 	case VM_VNEIGHBOR:
 		if (st.st_opts & OP_PIPES)
 			draw_pipes(0);
-		NODE_FOREACH(n, &iv)
-			if (n && node_show(n))
+		NODE_FOREACH_WI(n, np)
+			if (node_show(n))
 				draw_node(n, NDF_IGNSN);
 		if (st.st_opts & OP_SKEL)
 			draw_skel();
@@ -1181,8 +1178,7 @@ make_selnodes(void)
 __inline void
 draw_scene(void)
 {
-	static struct node *n;
-	static struct ivec iv;
+	static struct node *n, **np;
 	static struct fvec v;
 	static double max;
 
@@ -1200,8 +1196,8 @@ draw_scene(void)
 				draw_pipes(0);
 			else if (st.st_opts & OP_SELPIPES)
 				draw_pipes(1);
-			NODE_FOREACH(n, &iv)
-				if (n && node_show(n) &&
+			NODE_FOREACH_WI(n, np)
+				if (node_show(n) &&
 				    distance(&st.st_v, &n->n_v, &v) < clip - max)
 					draw_node(n, NDF_NOTWEEN);
 			if (st.st_opts & OP_SKEL)

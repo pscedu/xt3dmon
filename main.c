@@ -45,10 +45,6 @@
 #define STARTLY		(-0.34)
 #define STARTLZ		(-0.62)
 
-struct node		 nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
-struct node		**invmap;
-struct node		*wimap[WIDIM_WIDTH][WIDIM_HEIGHT][WIDIM_DEPTH];
-
 char			 login_auth[BUFSIZ];
 
 const struct fvec	 fv_zero = { { 0.0, 0.0, 0.0 } };
@@ -172,6 +168,7 @@ opt_disable(int ops)
 void
 opt_flip(int fopts)
 {
+	struct node *n, **np;
 	struct physdim *pd;
 	const char *s;
 	int i, on;
@@ -241,18 +238,13 @@ opt_flip(int fopts)
 				flyby_rstautoto();
 			}
 			break;
-		case OP_NODEANIM: {
-			struct node *n;
-			struct ivec iv;
-
+		case OP_NODEANIM:
 			if (!on) {
-				NODE_FOREACH(n, &iv)
-					if (n)
-						n->n_v = n->n_vtwe;
+				NODE_FOREACH_WI(n, np)
+					n->n_v = n->n_vtwe;
 				st.st_rf |= RF_CLUSTER;
 			}
 			break;
-		    }
 		case OP_REEL:
 			if (on)
 				reel_load();
@@ -369,9 +361,8 @@ roundclass(double t, double min, double max, int nclasses)
 void
 dmode_change(void)
 {
-	struct node *n, *ng;
+	struct node **np, *n, *ng;
 	int rd, i, port;
-	struct ivec iv;
 
 	dmode_data_clean = 0;
 
@@ -400,14 +391,10 @@ dmode_change(void)
 	}
 
 	if (st.st_dmode == DM_RTUNK)
-		NODE_FOREACH(n, &iv)
-			if (n)
-				n->n_fillp = &fill_xparent;
+		NODE_FOREACH_WI(n, np)
+			n->n_fillp = &fill_xparent;
 
-	NODE_FOREACH(n, &iv) {
-		if (n == NULL)
-			continue;
-
+	NODE_FOREACH_WI(n, np)
 		switch (st.st_dmode) {
 		case DM_JOB:
 			if (n->n_job)
@@ -478,18 +465,15 @@ dmode_change(void)
 //			dbg_crash();
 //			break;
 		}
-	}
 }
 
 void
 geom_setall(int mode)
 {
-	struct node *n;
-	struct ivec iv;
+	struct node *n, **np;
 
-	NODE_FOREACH(n, &iv)
-		if (n)
-			n->n_geom = mode;
+	NODE_FOREACH_WI(n, np)
+		n->n_geom = mode;
 	// XXX: flyby
 	st.st_rf |= RF_DIM | RF_CLUSTER | RF_SELNODE;
 }
@@ -497,12 +481,10 @@ geom_setall(int mode)
 void
 dim_update(void)
 {
-	struct node *n;
-	struct ivec iv;
+	struct node *n, **np;
 
-	NODE_FOREACH(n, &iv)
-		if (n)
-			n->n_dimp = &vmodes[st.st_vmode].vm_ndim[n->n_geom];
+	NODE_FOREACH_WI(n, np)
+		n->n_dimp = &vmodes[st.st_vmode].vm_ndim[n->n_geom];
 }
 
 void
@@ -510,7 +492,7 @@ vmode_change(void)
 {
 	int maxhops, nhops, *nneighbors, *ncnt;
 	struct fvec spdim, wrapv, fv;
-	struct node *n, *nodep;
+	struct node **np, *n, *nodep;
 	struct ivec iv, adjv;
 	struct selnode *sn;
 	struct fvec *nposp;
@@ -544,19 +526,18 @@ vmode_change(void)
 		 * The user does not have a valid one selected, so
 		 * traverse each node until we find one we can use.
 		 */
-		NODE_FOREACH(n, &iv)
-			if (n) {
-				if (n->n_job == NULL)
-					continue;
-				if (nodep == NULL)
-					nodep = n;
-				else if (nodep->n_job == n->n_job) {
-					nhops = node_wineighbor_nhops(nodep, n);
-					if (nhops >= maxhops)
-						errx(1, "hops greater than max");
-					nneighbors[nhops]++;
-				}
+		NODE_FOREACH_WI(n, np) {
+			if (n->n_job == NULL)
+				continue;
+			if (nodep == NULL)
+				nodep = n;
+			else if (nodep->n_job == n->n_job) {
+				nhops = node_wineighbor_nhops(nodep, n);
+				if (nhops >= maxhops)
+					errx(1, "hops greater than max");
+				nneighbors[nhops]++;
 			}
+		}
 		if (nodep == NULL)
 			errx(1, "XXX no nodes");
 		break;
@@ -569,53 +550,61 @@ vmode_change(void)
 		break;
 	}
 
-	NODE_FOREACH(n, &iv)
-		if (n) {
+	switch (st.st_vmode) {
+	case VM_PHYS:
+		NODE_FOREACH_WI(n, np) {
 			nposp = (st.st_opts & OP_NODEANIM) ?
 			    &n->n_vtwe : &n->n_v;
-			switch (st.st_vmode) {
-			case VM_PHYS:
-				n->n_flags |= NF_VMVIS;
-				node_setphyspos(n, nposp);
-				break;
-			case VM_VNEIGHBOR:
-				if (n == nodep)
-					vec_set(nposp, 0.0, 0.0, 0.0);
-				else if (n->n_job == nodep->n_job) {
-					n->n_flags |= NF_VMVIS;
-
-					nhops = node_wineighbor_nhops(nodep, n);
-					if (nhops >= maxhops)
-						errx(1, "hops greater than max");
-					fv.fv_r = nhops * 8.0;
-					fv.fv_t = ncnt[nhops]++ *
-					    2.0 * M_PI / nneighbors[nhops];
-					fv.fv_p = M_PI * 0.5 - nhops * 0.01;
-
-					vec_sphere2cart(&fv, nposp);
-				} else
-					n->n_flags &= ~NF_VMVIS;
-				break;
-			case VM_WIONE:
-			case VM_WIRED:
-				adjv.iv_x = negmod(iv.iv_x + st.st_wioff.iv_x, widim.iv_w);
-				adjv.iv_y = negmod(iv.iv_y + st.st_wioff.iv_y, widim.iv_h);
-				adjv.iv_z = negmod(iv.iv_z + st.st_wioff.iv_z, widim.iv_d);
-				n = wimap[adjv.iv_x][adjv.iv_y][adjv.iv_z];
-				if (n == NULL)
-					continue;
-				n->n_flags |= NF_VMVIS;
-
-				wrapv.fv_x = floor((iv.iv_x + st.st_wioff.iv_x) / (double)widim.iv_w) * spdim.fv_w;
-				wrapv.fv_y = floor((iv.iv_y + st.st_wioff.iv_y) / (double)widim.iv_h) * spdim.fv_h;
-				wrapv.fv_z = floor((iv.iv_z + st.st_wioff.iv_z) / (double)widim.iv_d) * spdim.fv_d;
-
-				nposp->fv_x = n->n_wiv.iv_x * st.st_winsp.iv_x + wrapv.fv_x;
-				nposp->fv_y = n->n_wiv.iv_y * st.st_winsp.iv_y + wrapv.fv_y;
-				nposp->fv_z = n->n_wiv.iv_z * st.st_winsp.iv_z + wrapv.fv_z;
-				break;
-			}
+			n->n_flags |= NF_VMVIS;
+			node_setphyspos(n, nposp);
 		}
+		break;
+	case VM_VNEIGHBOR:
+		NODE_FOREACH_WI(n, np) {
+			nposp = (st.st_opts & OP_NODEANIM) ?
+			    &n->n_vtwe : &n->n_v;
+			if (n == nodep)
+				vec_set(nposp, 0.0, 0.0, 0.0);
+			else if (n->n_job == nodep->n_job) {
+				n->n_flags |= NF_VMVIS;
+
+				nhops = node_wineighbor_nhops(nodep, n);
+				if (nhops >= maxhops)
+					errx(1, "hops greater than max");
+				fv.fv_r = nhops * 8.0;
+				fv.fv_t = ncnt[nhops]++ *
+				    2.0 * M_PI / nneighbors[nhops];
+				fv.fv_p = M_PI * 0.5 - nhops * 0.01;
+
+				vec_sphere2cart(&fv, nposp);
+			} else
+				n->n_flags &= ~NF_VMVIS;
+		}
+		break;
+	case VM_WIONE:
+	case VM_WIRED:
+		IVEC_FOREACH(&iv, &widim) {
+			adjv.iv_x = negmod(iv.iv_x + st.st_wioff.iv_x, widim.iv_w);
+			adjv.iv_y = negmod(iv.iv_y + st.st_wioff.iv_y, widim.iv_h);
+			adjv.iv_z = negmod(iv.iv_z + st.st_wioff.iv_z, widim.iv_d);
+			n = NODE_WIMAP(adjv.iv_x, adjv.iv_y, adjv.iv_z);
+			if (n == NULL)
+				continue;
+			n->n_flags |= NF_VMVIS;
+			nposp = (st.st_vmode == VM_WIONE &&
+			    st.st_opts & OP_NODEANIM) ?
+			    &n->n_vtwe : &n->n_v;
+
+			wrapv.fv_x = floor((iv.iv_x + st.st_wioff.iv_x) / (double)widim.iv_w) * spdim.fv_w;
+			wrapv.fv_y = floor((iv.iv_y + st.st_wioff.iv_y) / (double)widim.iv_h) * spdim.fv_h;
+			wrapv.fv_z = floor((iv.iv_z + st.st_wioff.iv_z) / (double)widim.iv_d) * spdim.fv_d;
+
+			nposp->fv_x = n->n_wiv.iv_x * st.st_winsp.iv_x + wrapv.fv_x;
+			nposp->fv_y = n->n_wiv.iv_y * st.st_winsp.iv_y + wrapv.fv_y;
+			nposp->fv_z = n->n_wiv.iv_z * st.st_winsp.iv_z + wrapv.fv_z;
+		}
+		break;
+	}
 	free(nneighbors);
 	free(ncnt);
 }
@@ -858,7 +847,13 @@ glutInitWindowPosition(0, 0);
 	parse_colors(_PATH_COLORS);
 	parse_machconf(cfgfn);
 
-	if ((invmap = calloc(machine.m_nidmax, sizeof(*invmap))) == NULL)
+	if ((node_nidmap = calloc(machine.m_nidmax,
+	    sizeof(*node_nidmap))) == NULL)
+		err(1, "calloc");
+	/* XXX overflow */
+	node_wimap_len = widim.iv_x * widim.iv_y * widim.iv_z;
+	if ((node_wimap = calloc(node_wimap_len,
+	    sizeof(*node_wimap))) == NULL)
 		err(1, "calloc");
 
 	if (server_mode)

@@ -13,6 +13,12 @@
 #include "tween.h"
 #include "xmath.h"
 
+struct node	  nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
+struct node	**node_nidmap;		/* node ID (nid) lookup to node pointer */
+struct node	**node_wimap;		/* X/Y/Z lookup to node pointer */
+int		  node_wimap_len;
+struct ivec	  widim;		/* wired dimension bounds */
+
 /*
  * Determine row/column within module.
  *
@@ -145,7 +151,7 @@ node_neighbor(int vm, struct node *n, int rd, int *flip)
 		do {
 			iv.iv_val[dim] = negmod(iv.iv_val[dim] + adj,
 			    widim.iv_val[dim]);
-			ng = wimap[iv.iv_x][iv.iv_y][iv.iv_z];
+			ng = NODE_WIMAP(iv.iv_x, iv.iv_y, iv.iv_z);
 
 			if (flip &&
 			    ((adj > 0 && iv.iv_val[dim] == 0) ||
@@ -263,7 +269,7 @@ node_for_nid(int nid)
 {
 	if (nid > machine.m_nidmax || nid < 0)
 		return (NULL);
-	return (invmap[nid]);
+	return (node_nidmap[nid]);
 }
 
 #define GOTO_DIST_PHYS 2.5

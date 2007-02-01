@@ -29,7 +29,6 @@
 struct route	 rt_max;
 struct route	 rt_zero;
 struct seastar	 ss_max;
-struct ivec	 widim;
 unsigned long	 vmem;
 long		 rmem;
 
@@ -220,14 +219,16 @@ parse_node(const struct datasrc *ds)
 	int lineno, r, cb, cg, m, n, nid, x, y, z, stat;
 	int enabled, jobid, temp, yodid, nfails, lustat;
 	char buf[BUFSIZ], *s, *field;
+	struct ivec twidim;
 	struct node *node;
 	struct job *job;
 	struct yod *yod;
 	size_t j;
 
-	widim.iv_w = widim.iv_h = widim.iv_d = 0;
-	memset(invmap, 0, sizeof(invmap));
-	memset(wimap, 0, sizeof(wimap));
+	ivec_set(&twidim, 0, 0, 0);
+	/* XXX overflow */
+	memset(node_nidmap, 0, machine.m_nidmax * sizeof(*node_nidmap));
+	memset(node_wimap, 0, node_wimap_len * sizeof(*node_wimap));
 	mach_drain = 0;
 
 	/* Explicitly initialize all nodes. */
@@ -272,9 +273,9 @@ parse_node(const struct datasrc *ds)
 		PARSENUM(s, cg, NCAGES);
 		PARSENUM(s, m, NMODS);
 		PARSENUM(s, n, NNODES);
-		PARSENUM(s, x, WIDIM_WIDTH);
-		PARSENUM(s, y, WIDIM_HEIGHT);
-		PARSENUM(s, z, WIDIM_DEPTH);
+		PARSENUM(s, x, widim.iv_w);
+		PARSENUM(s, y, widim.iv_h);
+		PARSENUM(s, z, widim.iv_d);
 		PARSECHAR(s, stat);
 		PARSENUM(s, enabled, 2);
 		PARSENUM(s, jobid, INT_MAX);
@@ -285,15 +286,15 @@ parse_node(const struct datasrc *ds)
 
 		node = &nodes[r][cb][cg][m][n];
 		node->n_nid = nid;
-		invmap[nid] = node;
-		wimap[x][y][z] = node;
+		node_nidmap[nid] = node;
+		NODE_WIMAP(x, y, z) = node;
 		node->n_wiv.iv_x = x;
 		node->n_wiv.iv_y = y;
 		node->n_wiv.iv_z = z;
 
-		widim.iv_w = MAX(x, widim.iv_w);
-		widim.iv_h = MAX(y, widim.iv_h);
-		widim.iv_d = MAX(z, widim.iv_d);
+		twidim.iv_w = MAX(x, twidim.iv_w);
+		twidim.iv_h = MAX(y, twidim.iv_h);
+		twidim.iv_d = MAX(z, twidim.iv_d);
 
 		switch (stat) {
 		case 'c': /* compute */
@@ -372,15 +373,11 @@ bad:
 		col_get_hash(&yod->y_oh, yod->y_id, &yod->y_fill);
 	}
 
-	if (++widim.iv_w != WIDIM_WIDTH ||
-	    ++widim.iv_h != WIDIM_HEIGHT ||
-	    ++widim.iv_d != WIDIM_DEPTH) {
+	if (++twidim.iv_w != widim.iv_w ||
+	    ++twidim.iv_h != widim.iv_h ||
+	    ++twidim.iv_d != widim.iv_d)
 		errx(1, "wired cluster dimensions have changed (%d,%d,%d)",
-		    widim.iv_w, widim.iv_y, widim.iv_z);
-		widim.iv_w = WIDIM_WIDTH;
-		widim.iv_h = WIDIM_HEIGHT;
-		widim.iv_d = WIDIM_DEPTH;
-	}
+		    twidim.iv_w, twidim.iv_y, twidim.iv_z);
 }
 
 void
@@ -501,13 +498,11 @@ parse_rt(const struct datasrc *ds)
 {
 	int port, lineno, recover, fatal, router;
 	char *s, buf[BUFSIZ], nid[BUFSIZ];
+	struct node *n, **np;
 	struct physcoord pc;
-	struct node *n;
-	struct ivec iv;
 
-	NODE_FOREACH(n, &iv)
-		if (n)
-			memset(&n->n_route, 0, sizeof(n->n_route));
+	NODE_FOREACH_WI(n, np)
+		memset(&n->n_route, 0, sizeof(n->n_route));
 	memset(&rt_max, 0, sizeof(rt_max));
 
 	lineno = 0;
@@ -561,14 +556,12 @@ parse_ss(const struct datasrc *ds)
 {
 	char *s, buf[BUFSIZ], nid[BUFSIZ];
 	int lineno, vc, cnt;
+	struct node *n, **np;
 	struct physcoord pc;
 	struct seastar ss;
-	struct node *n;
-	struct ivec iv;
 
-	NODE_FOREACH(n, &iv)
-		if (n)
-			memset(&n->n_sstar, 0, sizeof(n->n_sstar));
+	NODE_FOREACH_WI(n, np)
+		memset(&n->n_sstar, 0, sizeof(n->n_sstar));
 	memset(&ss_max, 0, sizeof(ss_max));
 
 	lineno = 0;

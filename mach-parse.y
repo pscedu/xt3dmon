@@ -33,6 +33,7 @@ LIST_HEAD(, physdim) physdims;
 
 %token CONTAINS
 %token COREDIM
+%token CUBEDIM
 %token DIM
 %token MAG
 %token NIDMAX
@@ -83,6 +84,15 @@ conf		: DIM STRING LBRACKET {
 			if ($7 <= 0)
 				yyerror("invalid core Z dimension: %d", $7);
 			ivec_set(&machine.m_coredim, $3, $5, $7);
+		}
+		| CUBEDIM LANGLE INTG COMMA INTG COMMA INTG RANGLE {
+			if ($3 <= 0)
+				yyerror("invalid cube X dimension: %d", $3);
+			if ($5 <= 0)
+				yyerror("invalid cube Y dimension: %d", $5);
+			if ($7 <= 0)
+				yyerror("invalid cube Z dimension: %d", $7);
+			ivec_set(&widim, $3, $5, $7);
 		}
 		;
 

@@ -145,10 +145,9 @@ sn_set(struct node *n, const struct fvec *offv)
 void
 sn_addallvis(void)
 {
-	struct ivec iv;
-	struct node *n;
+	struct node *n, **np;
 
-	NODE_FOREACH(n, &iv)
-		if (n && node_show(n))
+	NODE_FOREACH_WI(n, np)
+		if (node_show(n))
 			sn_add(n, &fv_zero);
 }

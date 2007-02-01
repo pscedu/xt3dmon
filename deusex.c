@@ -446,10 +446,9 @@ dx_selnode(struct node *n, int off)
 int
 dxp_selnode(const struct dx_action *dxa)
 {
+	struct node *n, **np;
 	struct selnode *sn;
 	struct nid *nid;
-	struct node *n;
-	struct ivec iv;
 	int off;
 
 	off = (dxa->dxa_selnode_mode == DXV_OFF);
@@ -458,13 +457,12 @@ dxp_selnode(const struct dx_action *dxa)
 	SLIST_FOREACH(nid, dxa->dxa_selnode_list, n_link)
 		switch (nid->n_nid) {
 		case DXN_ALL:
-			NODE_FOREACH(n, &iv)
-				if (n)
-					dx_selnode(n, off);
+			NODE_FOREACH_WI(n, np)
+				dx_selnode(n, off);
 			break;
 		case DXN_VIS:
-			NODE_FOREACH(n, &iv)
-				if (n && n->n_fillp->f_a)
+			NODE_FOREACH_WI(n, np)
+				if (n->n_fillp->f_a)
 					dx_selnode(n, off);
 			break;
 		case DXN_SEL:
@@ -474,7 +472,7 @@ dxp_selnode(const struct dx_action *dxa)
 			break;
 		case DXN_RND:
 			do {
-				n = node_for_nid(random() % 1000);
+				n = node_for_nid(random() % machine.m_nidmax);
 			} while (n == NULL);
 			dx_selnode(n, off);
 			break;
@@ -502,21 +500,19 @@ dx_subsel(struct node *n, int off)
 int
 dxp_subsel(const struct dx_action *dxa)
 {
+	struct node *n, **np;
 	struct nid *nid;
-	struct node *n;
-	struct ivec iv;
 	int off;
 
 	off = (dxa->dxa_subsel_mode == DXV_OFF);
 	if (dxa->dxa_subsel_mode == DXV_SET)
-		NODE_FOREACH(n, &iv)
-			if (n)
-				n->n_flags &= ~NF_SUBSEL;
+		NODE_FOREACH_WI(n, np)
+			n->n_flags &= ~NF_SUBSEL;
 	SLIST_FOREACH(nid, dxa->dxa_subsel_list, n_link)
 		switch (nid->n_nid) {
 		case DXN_ALL:
-			NODE_FOREACH(n, &iv)
-				if (n)
+			NODE_FOREACH_WI(n, np)
+				if (off)
 					n->n_flags &= ~NF_SUBSEL;
 				else
 					n->n_flags |= NF_SUBSEL;
@@ -531,8 +527,8 @@ dxp_subsel(const struct dx_action *dxa)
 				n->n_flags |= NF_SUBSEL;
 			break;
 		case DXN_VIS:
-			NODE_FOREACH(n, &iv)
-				if (n && n->n_fillp->f_a) {
+			NODE_FOREACH_WI(n, np)
+				if (n->n_fillp->f_a) {
 					if (off)
 						n->n_flags &= ~NF_SUBSEL;
 					else
