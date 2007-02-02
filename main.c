@@ -572,9 +572,21 @@ vmode_change(void)
 				if (nhops >= maxhops)
 					errx(1, "hops greater than max");
 				fv.fv_r = nhops * 8.0;
-				fv.fv_t = ncnt[nhops]++ *
-				    2.0 * M_PI / nneighbors[nhops];
-				fv.fv_p = M_PI * 0.5 - nhops * 0.01;
+
+				if (0) {
+					fv.fv_t = ncnt[nhops]++ *
+					    2.0 * M_PI / nneighbors[nhops];
+					fv.fv_p = M_PI * 0.5;
+				} else {
+					fv.fv_t = ncnt[nhops]++ *
+					    M_PI / (8.0 * (nhops + 1));
+					fv.fv_p = M_PI * 0.5 - ncnt[nhops] * 0.001;
+				}
+
+//				fv.fv_t = ncnt[nhops]++ *
+//				    M_PI / (4.0 * (nhops + 1));
+//				fv.fv_p = M_PI * 0.5 - nhops * 0.01;
+//				fv.fv_p = M_PI * 0.5 - ncnt[nhops] * 0.01;
 
 				vec_sphere2cart(&fv, nposp);
 			} else
