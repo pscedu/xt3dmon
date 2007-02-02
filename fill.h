@@ -104,7 +104,8 @@ extern struct fill	 fill_checked;
 extern struct fill	 fill_unchecked;
 extern struct fill	 fill_button;
 extern struct fill	 fill_frame;
-extern struct fill	 fill_singlecore;
+extern struct fill	 fill_vnproxring;
+extern struct fill	 fill_vnproxring2;
 
 /* Interface object colors. */
 extern struct fill	 fill_panel;
