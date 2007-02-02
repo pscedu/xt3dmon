@@ -538,6 +538,8 @@ draw_ground(void)
 {
 	struct fvec fv, dim, *ndim;
 	struct fill *fp;
+	int max, j;
+	float r;
 
 	/* Anti-aliasing */
 	glEnable(GL_BLEND);
@@ -568,6 +570,8 @@ draw_ground(void)
 	glDisable(GL_BLEND);
 	glDisable(GL_LINE_SMOOTH);
 
+	ndim = &vmodes[VM_WIONE].vm_ndim[GEOM_CUBE];
+
 	/* Ground */
 	switch (st.st_vmode) {
 	case VM_WIONE:
@@ -575,7 +579,6 @@ draw_ground(void)
 		fv.fv_y = -0.2f + st.st_wioff.iv_y * st.st_winsp.iv_y;
 		fv.fv_z = st.st_winsp.iv_z * (st.st_wioff.iv_z - 1);
 
-		ndim = &vmodes[VM_WIONE].vm_ndim[GEOM_CUBE];
 		dim.fv_w = (widim.iv_w + 1) * st.st_winsp.iv_w + ndim->fv_w;
 		dim.fv_y = -0.2f / 2.0f;
 		dim.fv_d = (widim.iv_d + 1) * st.st_winsp.iv_d + ndim->fv_d;
@@ -590,15 +593,34 @@ draw_ground(void)
 		fv.fv_y = -0.2f;
 		fv.fv_z = -5.0f;
 
-		dim.fv_w = physdim_top->pd_size.fv_w - 2.0 * fv.fv_x;
+		dim.fv_w = machine.m_dim.fv_w - 2.0 * fv.fv_x;
 		dim.fv_h = -fv.fv_y / 2.0f;
-		dim.fv_d = physdim_top->pd_mag *
-		    (physdim_top->pd_size.fv_d + physdim_top->pd_space);
+		dim.fv_d = machine.m_dim.fv_d - 2.0 * fv.fv_z;
 
 		glPushMatrix();
 		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
 		draw_cube(&dim, &fill_ground, DF_FRAME);
 		glPopMatrix();
+		break;
+	case VM_VNEIGHBOR:
+		max = (widim.iv_w + widim.iv_h + widim.iv_d) / 2;
+		for (j = 0; j <= max; j++) {
+			glPushMatrix();
+			glTranslatef(ndim->fv_w * 0.5, //-ndim->fv_h * 0.5 +
+			    //sin(j * M_PI * 0.3 / max) * 20.0,
+			    ndim->fv_h * 0.5
+//			    + 8 * j * cos(M_PI * 0.5 - j * 0.01),
+				,
+			    ndim->fv_d * 0.5);
+
+			fp = j % 2 ? &fill_vnproxring2 : &fill_vnproxring;
+
+			glRotatef(-90.0, 1.0, 0.0, 0.0);
+			glColor3f(fp->f_r, fp->f_g, fp->f_b);
+			r = j * 8.0;// - ndim->fv_w / 2.0;
+			gluDisk(quadric, r - .2, r, 100, 3);
+			glPopMatrix();
+		}
 		break;
 	}
 }
