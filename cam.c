@@ -21,6 +21,7 @@
 #include "cdefs.h"
 #include "cam.h"
 #include "env.h"
+#include "mach.h"
 #include "node.h"
 #include "selnode.h"
 #include "state.h"
@@ -274,14 +275,16 @@ cam_revolvefocus(double dt, double dp)
 			cam_revolve(nfv, NENTRIES(nfv), dt, dp, revolve_type);
 			break;
 		case VM_PHYS:
+			fvp = &machine.m_dim;
+			/* XXX not (0,0,0) use machine.m_origin */
 			vec_set(&nfv[0], 0.0,		0.0,		0.0);
-			vec_set(&nfv[1], CL_WIDTH,	0.0,		0.0);
-			vec_set(&nfv[2], 0.0,		CL_HEIGHT,	0.0);
-			vec_set(&nfv[3], 0.0,		0.0,		CL_DEPTH);
-			vec_set(&nfv[4], CL_WIDTH,	CL_HEIGHT,	0.0);
-			vec_set(&nfv[5], CL_WIDTH,	0.0,		CL_DEPTH);
-			vec_set(&nfv[6], 0.0,		CL_HEIGHT,	CL_DEPTH);
-			vec_set(&nfv[7], CL_WIDTH,	CL_HEIGHT,	CL_DEPTH);
+			vec_set(&nfv[1], fvp->fv_w,	0.0,		0.0);
+			vec_set(&nfv[2], 0.0,		fvp->fv_h,	0.0);
+			vec_set(&nfv[3], 0.0,		0.0,		fvp->fv_d);
+			vec_set(&nfv[4], fvp->fv_w,	fvp->fv_h,	0.0);
+			vec_set(&nfv[5], fvp->fv_w,	0.0,		fvp->fv_d);
+			vec_set(&nfv[6], 0.0,		fvp->fv_h,	fvp->fv_d);
+			vec_set(&nfv[7], fvp->fv_w,	fvp->fv_h,	fvp->fv_d);
 			cam_revolve(nfv, NENTRIES(nfv), dt, dp, revolve_type);
 			break;
 		case VM_VNEIGHBOR:

@@ -17,6 +17,7 @@
 #include "flyby.h"
 #include "gl.h"
 #include "job.h"
+#include "mach.h"
 #include "node.h"
 #include "nodeclass.h"
 #include "panel.h"
@@ -1006,11 +1007,12 @@ gl_spkeyh_default(int key, __unused int u, __unused int v)
 		return;
 	}
 
+	amt = 0.3f;
+	spkey = glutGetModifiers();
+	if (spkey & GLUT_ACTIVE_SHIFT)
+		amt *= 3.0f;
+
 	if (st.st_opts & OP_EDITFOCUS) {
-		amt = 0.2;
-		spkey = glutGetModifiers();
-		if (spkey & GLUT_ACTIVE_SHIFT)
-			amt *= 3;
 		switch (dir) {
 		case DIR_UP:
 			focus.fv_y += amt;
@@ -1034,11 +1036,12 @@ gl_spkeyh_default(int key, __unused int u, __unused int v)
 		return;
 	}
 
-	amt = 0.3f;
 	switch (st.st_vmode) {
 	case VM_PHYS:
-		r = sqrt(SQUARE(st.st_x - XCENTER) + SQUARE(st.st_z - ZCENTER));
-		adj = pow(2, r / (ROWWIDTH / 2.0f)); // XXX 2.0
+		r = sqrt(
+		    SQUARE(st.st_x - machine.m_center.fv_x) +
+		    SQUARE(st.st_z - machine.m_center.fv_z));
+		adj = pow(2.0, r / (machine.m_dim.fv_w / 2.0f));
 		if (adj > 50.0f)
 			adj = 50.0f;
 		amt *= adj;
@@ -1046,7 +1049,7 @@ gl_spkeyh_default(int key, __unused int u, __unused int v)
 	case VM_WIRED:
 	case VM_WIONE:
 		amt *= pow(fabs(st.st_winsp.iv_x) * fabs(st.st_winsp.iv_y) *
-		    fabs(st.st_winsp.iv_z), 1/3.0); // XXX 1.0
+		    fabs(st.st_winsp.iv_z), 1.0 / 3.0);
 		break;
 	}
 

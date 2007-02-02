@@ -194,16 +194,16 @@ dxp_cuban8(const struct dx_action *dxa)
 	a = b = 0.0; /* gcc */
 	switch (dxa->dxa_cuban8_dim) {
 	case DIM_X:
-		a = CABHEIGHT / 4.0;
+		a = machine.m_dim.fv_h / 4.0;
 		b = ROWDEPTH / 4.0;
 		break;
 	case DIM_Y:
-		a = ROWWIDTH / 4.0;
-		b = CABHEIGHT / 2.0;
+		a = machine.m_dim.fv_w / 4.0;
+		b = machine.m_dim.fv_h / 2.0;
 		break;
 	case DIM_Z:
-		a = ROWWIDTH / 4.0 - CABWIDTH;
-		b = CABHEIGHT / 4.0;
+		a = machine.m_dim.fv_w / 4.0 - CABWIDTH;
+		b = machine.m_dim.fv_h / 4.0;
 		break;
 	}
 	max = MAX(a, b);
@@ -246,9 +246,7 @@ errx(1, "look not updated yet");
 	st.st_x = st.st_x * mag;
 	st.st_y = st.st_y * mag;
 	st.st_z = st.st_z * mag;
-	st.st_x += XCENTER;
-	st.st_y += YCENTER;
-	st.st_z += ZCENTER;
+	vec_addto(&machine.m_center, &st.st_v);
 
 	st.st_ur = 0.0;
 	if (t > M_PI / 2.0 && t < 3 * M_PI / 2.0)
@@ -283,18 +281,18 @@ dxp_corkscrew(const struct dx_action *dxa)
 	a = b = c = 0.0; /* gcc */
 	switch (dxa->dxa_screw_dim) {
 	case DIM_X:
-		a = CABHEIGHT / 4.0;
-		b = CL_DEPTH / 4.0;
-		c = ROWWIDTH;
+		a = machine.m_dim.fv_h / 4.0;
+		b = machine.m_dim.fv_d / 4.0;
+		c = machine.m_dim.fv_w;
 		break;
 	case DIM_Y:
-		a = ROWWIDTH;
+		a = machine.m_dim.fv_w;
 		b = ROWDEPTH;
-		c = CABHEIGHT;
+		c = machine.m_dim.fv_h;
 		break;
 	case DIM_Z:
-		a = ROWWIDTH;
-		b = CABHEIGHT;
+		a = machine.m_dim.fv_w;
+		b = machine.m_dim.fv_h;
 		c = ROWDEPTH;
 		break;
 	}
@@ -308,8 +306,8 @@ dxp_corkscrew(const struct dx_action *dxa)
 	switch (dxa->dxa_screw_dim) {
 	case DIM_X:
 		st.st_x = t;
-		st.st_y = YCENTER + sv.fv_y;
-		st.st_z = ZCENTER + sv.fv_z;
+		st.st_y = machine.m_center.fv_y + sv.fv_y;
+		st.st_z = machine.m_center.fv_z + sv.fv_z;
 
 		if (t == 0.0) {
 			vec_set(&st.st_lv, 1.0, 0.0, 0.0);
@@ -317,9 +315,9 @@ dxp_corkscrew(const struct dx_action *dxa)
 		}
 		break;
 	case DIM_Y:
-		st.st_x = XCENTER + sv.fv_y;
+		st.st_x = machine.m_center.fv_x + sv.fv_y;
 		st.st_y = t;
-		st.st_z = ZCENTER + sv.fv_z;
+		st.st_z = machine.m_center.fv_z + sv.fv_z;
 
 		if (t == 0.0) {
 			vec_set(&st.st_lv, 0.0, 1.0, 0.0);
@@ -327,8 +325,8 @@ dxp_corkscrew(const struct dx_action *dxa)
 		}
 		break;
 	case DIM_Z:
-		st.st_x = XCENTER + sv.fv_y;
-		st.st_y = YCENTER + sv.fv_z;
+		st.st_x = machine.m_center.fv_x + sv.fv_y;
+		st.st_y = machine.m_center.fv_y + sv.fv_z;
 		st.st_z = t;
 
 		if (t == 0.0) {

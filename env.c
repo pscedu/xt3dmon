@@ -10,6 +10,7 @@
 #include "env.h"
 #include "flyby.h"
 #include "gl.h"
+#include "mach.h"
 #include "node.h"
 #include "queue.h"
 #include "selnode.h"
@@ -122,9 +123,7 @@ focus_cluster(struct fvec *cen)
 		vec_set(cen, 0.0, 0.0, 0.0);
 		break;
 	case VM_PHYS:
-		cen->fv_x = XCENTER;
-		cen->fv_y = YCENTER;
-		cen->fv_z = ZCENTER;
+		vec_copyto(&machine.m_center, cen);
 		break;
 	case VM_WIRED:
 		dist = MAX3(WIV_SWIDTH, WIV_SHEIGHT, WIV_SDEPTH) / 4.0;

@@ -17,6 +17,7 @@
 #include "env.h"
 #include "fill.h"
 #include "gl.h"
+#include "mach.h"
 #include "node.h"
 #include "select.h"
 #include "state.h"
@@ -61,8 +62,8 @@ draw_shadow_rows(void)
 	v.fv_y = NODESPACE;
 	v.fv_z = NODESPACE;
 
-	dim.fv_w = ROWWIDTH;
-	dim.fv_h = CABHEIGHT;
+	dim.fv_w = machine.m_dim.fv_w;
+	dim.fv_h = machine.m_dim.fv_h;
 	dim.fv_d = ROWDEPTH;
 
 	for (r = 0; r < NROWS; r++, v.fv_z += ROWSPACE + ROWDEPTH) {
@@ -86,7 +87,7 @@ draw_shadow_cabs(const struct physcoord *pc)
 	v.fv_z = NODESPACE + pc->pc_r * (ROWSPACE + ROWDEPTH);
 
 	dim.fv_w = CABWIDTH;
-	dim.fv_h = CABHEIGHT;
+	dim.fv_h = machine.m_dim.fv_h;
 	dim.fv_d = ROWDEPTH;
 
 	for (cb = 0; cb < NCABS; cb++, v.fv_x += CABWIDTH + CABSPACE) {
