@@ -37,18 +37,8 @@
 #define CAGEHEIGHT	(NODEHEIGHT * (NNODES / 2) + \
 			    (NODESPACE * (NNODES / 2 - 1)))
 #define CABWIDTH	(MODWIDTH * NMODS + MODSPACE * (NMODS - 1))
-#define CABHEIGHT 	(CAGEHEIGHT * NCAGES + CAGESPACE * (NCAGES - 1))
 
-#define ROWWIDTH	(CABWIDTH * NCABS + CABSPACE * (NCABS - 1))
 #define ROWDEPTH	(MODDEPTH)
-
-#define CL_WIDTH	(ROWWIDTH)
-#define CL_HEIGHT	(CABHEIGHT)
-#define CL_DEPTH	(ROWDEPTH * NROWS + ROWSPACE * (NROWS - 1))
-
-#define XCENTER		(NODESPACE + CL_WIDTH  / 2.0)
-#define YCENTER		(NODESPACE + CL_HEIGHT / 2.0)
-#define ZCENTER		(NODESPACE + CL_DEPTH  / 2.0)
 
 #define WIV_SWIDTH	(widim.iv_w * st.st_winsp.iv_x)
 #define WIV_SHEIGHT	(widim.iv_h * st.st_winsp.iv_y)
@@ -124,9 +114,6 @@ extern const char	*progname;
 extern int		 verbose;
 
 extern long		 fps, fps_cnt;
-
-extern unsigned long	 vmem;
-extern long		 rmem;
 
 extern char		 login_auth[BUFSIZ];
 
