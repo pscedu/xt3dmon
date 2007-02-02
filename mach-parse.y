@@ -38,6 +38,7 @@ LIST_HEAD(, physdim) physdims;
 %token MAG
 %token NIDMAX
 %token OFFSET
+%token ORIGIN
 %token SIZE
 %token SKEL
 %token SPACE
@@ -48,6 +49,8 @@ LIST_HEAD(, physdim) physdims;
 %token <string> STRING
 %token <intg> INTG
 %token <dbl> DBL
+
+%type <dbl> dbl
 
 %union {
 	char	*string;
@@ -62,19 +65,26 @@ grammar		: /* empty */
 		}
 		;
 
+dbl		: INTG		{ $$ = (double)$1; }
+		| DBL		{ $$ = $1; }
+		;
+
 conf		: DIM STRING LBRACKET {
 			physdim = physdim_get($2);
 			free($2);
-		} opts_l RBRACKET {
+		} dimopts_l RBRACKET {
 			if (physdim->pd_mag == 0)
 				yyerror("no magnitude specified");
 //			if (!physdim->pd_spans)
 //				yyerror("no span specified");
 		}
 		| NIDMAX INTG {
-			machine.m_nidmax = $2;
 			if ($2 <= 0)
 				yyerror("invalid nidmax: %d", $2);
+			machine.m_nidmax = $2;
+		}
+		| ORIGIN LANGLE dbl COMMA dbl COMMA dbl RANGLE {
+			vec_set(&machine.m_origin, $3, $5, $7);
 		}
 		| COREDIM LANGLE INTG COMMA INTG COMMA INTG RANGLE {
 			if ($3 <= 0)
@@ -96,22 +106,19 @@ conf		: DIM STRING LBRACKET {
 		}
 		;
 
-opts_l		: /* empty */
-		| opts opts_l
+dimopts_l	: /* empty */
+		| dimopts dimopts_l
 		;
 
-opts		: MAG INTG {
+dimopts		: MAG INTG {
 			physdim->pd_mag = $2;
 		}
-		| OFFSET LANGLE DBL COMMA DBL COMMA DBL RANGLE {
+		| OFFSET LANGLE dbl COMMA dbl COMMA dbl RANGLE {
 			physdim->pd_offset.fv_x = $3;
 			physdim->pd_offset.fv_y = $5;
 			physdim->pd_offset.fv_z = $7;
 		}
-		| SPACE INTG {
-			physdim->pd_space = $2;
-		}
-		| SPACE DBL {
+		| SPACE dbl {
 			physdim->pd_space = $2;
 		}
 		| SPANS STRING {
@@ -143,7 +150,7 @@ opts		: MAG INTG {
 			LIST_REMOVE(pd, pd_link);
 			free($2);
 		}
-		| SIZE LANGLE DBL COMMA DBL COMMA DBL RANGLE {
+		| SIZE LANGLE dbl COMMA dbl COMMA dbl RANGLE {
 			physdim->pd_size.fv_x = $3;
 			physdim->pd_size.fv_y = $5;
 			physdim->pd_size.fv_z = $7;
@@ -211,8 +218,9 @@ physdim_check(void)
 void
 parse_machconf(const char *fn)
 {
-	FILE *fp;
 	extern FILE *yyin;
+	struct physdim *pd;
+	FILE *fp;
 
 	LIST_INIT(&physdims);
 	if ((fp = fopen(fn, "r")) == NULL)
@@ -227,6 +235,25 @@ parse_machconf(const char *fn)
 
 	if (errors)
 		errx(1, "%d error(s) encountered", errors);
+
+	LIST_FOREACH(pd, &physdims, pd_link)
+		machine.m_nphysdim++;
+
+	vec_copyto(&physdim_top->pd_size, &machine.m_dim);
+	/*
+	 * XXX just push another physdim atop physdim_top
+	 * to reuse code from physdim_check().
+	 *
+	 * XXX respect pd_offset
+	 */
+	machine.m_dim.fv_val[physdim_top->pd_spans] =
+	    physdim_top->pd_size.fv_val[physdim_top->pd_spans] * physdim_top->pd_mag +
+	    physdim_top->pd_space * (physdim_top->pd_mag - 1);
+
+	vec_set(&machine.m_center,
+	    machine.m_origin.fv_x + machine.m_dim.fv_w / 2.0,
+	    machine.m_origin.fv_y + machine.m_dim.fv_h / 2.0,
+	    machine.m_origin.fv_z + machine.m_dim.fv_d / 2.0);
 }
 
 struct physdim *

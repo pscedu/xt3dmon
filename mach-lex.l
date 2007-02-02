@@ -28,6 +28,7 @@ dim				{ return (DIM); }
 mag				{ return (MAG); }
 nidmax				{ return (NIDMAX); }
 offset				{ return (OFFSET); }
+origin				{ return (ORIGIN); }
 size				{ return (SIZE); }
 skel				{ return (SKEL); }
 space				{ return (SPACE); }
