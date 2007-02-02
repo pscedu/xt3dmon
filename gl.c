@@ -382,7 +382,7 @@ gl_select(int flags)
 	draw_shadow_panels();
 	nrecs = sel_end();
 	if (nrecs && (gn = sel_process(nrecs, 0,
-	    SPF_2D | flags)) != NULL)
+	    SPF_2D | flags)) != NULL || flags & SPF_2D)
 		goto end;
 
 	switch (st.st_vmode) {
