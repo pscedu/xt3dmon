@@ -64,14 +64,14 @@ SRCS+= vec.c
 SRCS+= widget.c
 SRCS+= yod.c
 
-CFLAGS += -Wall -W -g
+CFLAGS += -Wall -W -g -pipe
 CFLAGS += -Wno-parentheses -Wshadow -Wredundant-decls
 CFLAGS += -D_GSS
 CFLAGS += -D_LIVE_PROTO=\"file\" -D_LIVE_PATH=_PATH_DATA
 #CFLAGS += -Wconversion
 CFLAGS += -DYY_NO_UNPUT
-CFLAGS += -O3 -Wuninitialized -fomit-frame-pointer
-CFLAGS += -fno-strict-aliasing
+#CFLAGS += -O3 -Wuninitialized -fomit-frame-pointer
+#CFLAGS += -fno-strict-aliasing
 CFLAGS += -I/usr/X11R6/include
 
 LIBS += -lGL -lGLU -lglut -lssl -lpng -lz
@@ -100,8 +100,8 @@ CSRCS = $(filter %.c,${SRCS})
 CSRCS+= $(patsubst %.y,%.c,$(filter %.y,${SRCS}))
 CSRCS+= $(patsubst %.l,%.c,$(filter %.l,${SRCS}))
 
-CLEAN+= gmon.out dx-lex.c dx-parse.c dx-parse.h
-CLEAN+= mach-lex.c mach-parse.c mach-parse.h
+CLEAN+= gmon.out dx-lex.c dx-parse.c dx-parse.h dx-parse.output
+CLEAN+= mach-lex.c mach-parse.c mach-parse.h mach-parse.output
 
 all: ${PROG}
 
