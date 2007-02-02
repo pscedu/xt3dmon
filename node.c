@@ -148,6 +148,7 @@ node_neighbor(int vm, struct node *n, int rd, int *flip)
 	switch (vm) {
 	case VM_WIRED:
 	case VM_WIONE:
+	case VM_VNEIGHBOR:
 		do {
 			iv.iv_val[dim] = negmod(iv.iv_val[dim] + adj,
 			    widim.iv_val[dim]);
