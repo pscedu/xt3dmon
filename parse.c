@@ -29,8 +29,6 @@
 struct route	 rt_max;
 struct route	 rt_zero;
 struct seastar	 ss_max;
-unsigned long	 vmem;
-long		 rmem;
 
 int		 job_ca_cookie;
 int		 yod_ca_cookie;
@@ -378,19 +376,6 @@ bad:
 	    ++twidim.iv_d != widim.iv_d)
 		errx(1, "wired cluster dimensions have changed (%d,%d,%d)",
 		    twidim.iv_w, twidim.iv_y, twidim.iv_z);
-}
-
-void
-parse_mem(const struct datasrc *ds)
-{
-	FILE *fp;
-
-	fp = ds->ds_us->us_fp; /* XXXXXXX use us_scanf. */
-	fscanf(fp, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u "
-	    "%*u %*u %*d %*d %*d %*d %*d %*d %*u %lu %ld", &vmem, &rmem);
-	if (ferror(fp))
-		warn("fscanf");
-	errno = 0;
 }
 
 /*
