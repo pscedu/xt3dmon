@@ -406,10 +406,12 @@ draw_node_cores(const struct node *n, const struct fill *fp)
 	lvl.iv_z = ncores % coredim->iv_z;
 
 	/* Draw at most three cubes to represent the cores. */
-	dim.fv_w = n->n_dimp->fv_w;
-	dim.fv_h = lvl.iv_y * adj.fv_h;
-	dim.fv_d = n->n_dimp->fv_d;
-	draw_cube(&dim, fp, 0);
+	if (lvl.iv_y) {
+		dim.fv_w = n->n_dimp->fv_w;
+		dim.fv_h = lvl.iv_y * adj.fv_h;
+		dim.fv_d = n->n_dimp->fv_d;
+		draw_cube(&dim, fp, 0);
+	}
 
 	if (lvl.iv_x) {
 		dim.fv_w = lvl.iv_x * adj.fv_w;
