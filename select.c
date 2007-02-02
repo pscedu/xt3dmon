@@ -192,7 +192,7 @@ sel_process(int nrecs, int rank, int flags)
 	if (gn == NULL)
 		return (NULL);
 
-	if (gn->gn_cb != NULL)
+	if (gn->gn_cb != NULL && (flags & SPF_LOOKUP) == 0)
 		gn->gn_cb(gn, flags & ~SPF_2D);
 	return (gn);
 }
