@@ -99,6 +99,7 @@ todo
 - text_wrap has a bug:
 	char buf[BUFSIZ] = "yod -size 3072 -small_pages -stack 8000000 /usr/users/8/quinnt/src/pkdgrav/gasoline.noiob -wall 460 drgas.param";
 	text_wrap(buf, 40)
+- don't glEnable(POLYGON_SMOOTH) blindly
 
 xtwmon
 - rename arbiter-raw.pl?data=nodes to data=node
