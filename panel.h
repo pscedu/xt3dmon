@@ -33,7 +33,8 @@
 #define PANEL_KEYH	(1<<26)
 #define PANEL_DXCHO	(1<<27)
 #define PANEL_DSCHO	(1<<28)
-#define NPANELS		29
+#define PANEL_VNMODE	(1<<29)
+#define NPANELS		30
 
 struct pwidget;
 TAILQ_HEAD(pwidget_group_list, pwidget);
@@ -173,6 +174,7 @@ void panel_refresh_sstar(struct panel *);
 void panel_refresh_status(struct panel *);
 void panel_refresh_vmode(struct panel *);
 void panel_refresh_wiadj(struct panel *);
+void panel_refresh_vnmode(struct panel *);
 
 extern struct panels	 panels;
 extern struct pinfo	 pinfo[];

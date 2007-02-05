@@ -677,3 +677,17 @@ gscb_pw_snap(__unused struct glname *gn, int flags)
 		panel_rebuild(PANEL_SS);
 	}
 }
+
+void
+gscb_pw_vnmode(struct glname *gn, int flags)
+{
+	int vnm = gn->gn_arg_int;
+
+	if (flags & SPF_PROBE)
+		cursor_set(GLUT_CURSOR_INFO);
+	else if (flags == 0) {
+		st.st_vnmode = vnm;
+		st.st_rf |= RF_VMODE;
+		panel_rebuild(PANEL_VNMODE);
+	}
+}

@@ -350,8 +350,8 @@ void
 panel_refresh_legend(struct panel *p)
 {
 	int (*cmp)(const void *, const void *);
+	int i, sawchecked, ischecked;
 	size_t j;
-	int i;
 
 	if (dmode_data_clean & PANEL_LEGEND &&
 	    hlnc_clean & PANEL_LEGEND && panel_ready(p))
@@ -371,21 +371,34 @@ panel_refresh_legend(struct panel *p)
 		    PWARG_GSCB, gscb_pw_hlnc,
 		    PWARG_CBARG_INT, NC_ALL, PWARG_LAST);
 
+		sawchecked = 0;
+		pwidget_group_start(p);
 		for (j = 0; j < NSC; j++) {
 			if (statusclass[j].nc_nmemb == 0)
 				continue;
+			ischecked = (!sawchecked && nc_getfp(j)->f_a ? 1 : 0);
+			if (ischecked)
+				sawchecked = 1;
 			pwidget_add(p, &statusclass[j].nc_fill,
 			    statusclass[j].nc_name,
 			    PWARG_SPRIO, NSC - j,
 			    PWARG_GSCB, gscb_pw_hlnc,
+			    PWARG_GRP_CHECKED, ischecked,
 			    PWARG_CBARG_INT, j, PWARG_LAST);
 		}
-		for (j = 0; j < job_list.ol_cur; j++)
+		for (j = 0; j < job_list.ol_cur; j++) {
+			ischecked = (!sawchecked && nc_getfp(NSC + j)->f_a ? 1 : 0);
+			if (ischecked)
+				sawchecked = 1;
 			pwidget_add(p, &OLE(job_list, j, job)->j_fill,
 			    OLE(job_list, j, job)->j_name,
 			    PWARG_SPRIO, 0,
 			    PWARG_GSCB, gscb_pw_hlnc,
+			    PWARG_GRP_CHECKED, ischecked,
 			    PWARG_CBARG_INT, NSC + j, PWARG_LAST);
+		}
+		pwidget_group_end(p);
+
 		cmp = pwidget_cmp;
 		break;
 	case DM_TEMP:
@@ -1653,3 +1666,29 @@ panel_refresh_dscho(struct panel *p)
 		ncols = 5;
 	pwidget_endlist(p, ncols);
 }
+
+const char *vnmodes[] = {
+	"A", "B", "C", "D"
+};
+
+void
+panel_refresh_vnmode(struct panel *p)
+{
+	int i;
+
+	if (panel_ready(p))
+		return;
+
+	panel_set_content(p, "- VNeighbor Mode -");
+	pwidget_startlist(p);
+	pwidget_group_start(p);
+	for (i = 0; i < NVNM; i++)
+		pwidget_add(p, (st.st_vnmode == i ? &fill_checked : &fill_unchecked),
+		    vnmodes[i],
+		    PWARG_GSCB, gscb_pw_vnmode,
+		    PWARG_CBARG_INT, i,
+		    PWARG_LAST);
+	pwidget_group_end(p);
+	pwidget_endlist(p, 2);
+}
+

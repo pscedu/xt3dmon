@@ -98,5 +98,6 @@ void		 gscb_pw_ssmode(struct glname *, int);
 void		 gscb_pw_ssvc(struct glname *, int);
 void		 gscb_pw_vmode(struct glname *, int);
 void		 gscb_pw_wiadj(struct glname *, int);
+void		 gscb_pw_vnmode(struct glname *, int);
 
 #endif /* _SELECT_H_ */

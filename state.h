@@ -34,6 +34,7 @@ struct state {
 	int		 st_ssvc;		/* seastar vc */
 	int		 st_rtepset;		/* route error port set */
 	int		 st_rtetype;		/* route error type */
+	int		 st_vnmode;		/* VNEIGHBOR mode */
 	int		 st_eggs;		/* Easter eggs */
 	struct ivec	 st_wioff;		/* wired mode offsets */
 	struct ivec	 st_winsp;		/* wired node spacing */
@@ -42,6 +43,12 @@ struct state {
 #define st_y st_v.fv_y
 #define st_z st_v.fv_z
 };
+
+#define VNM_A		0
+#define VNM_B		1
+#define VNM_C		2
+#define VNM_D		3
+#define NVNM		4
 
 /* Pipe modes. */
 #define PM_DIR		0

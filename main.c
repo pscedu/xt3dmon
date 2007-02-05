@@ -118,6 +118,7 @@ struct state st = {
 	0,						/* seastar vc */
 	RPS_NEG,					/* rte port set */
 	RT_RECOVER,					/* rte type */
+	0,						/* vnmode */
 	0,						/* eggs */
 	{ { 0, 0, 0 } },				/* wired mode offset */
 	{ { 4, 4, 4 } },				/* wired node spacing */
@@ -497,6 +498,9 @@ vmode_change(void)
 	struct selnode *sn;
 	struct fvec *nposp;
 
+	if (st.st_vmode == VM_VNEIGHBOR)
+		panel_show(PANEL_VNMODE);
+
 	maxhops = 0; /* gcc */
 	ncnt = NULL;
 	nodep = NULL;
@@ -527,7 +531,7 @@ vmode_change(void)
 		 * traverse each node until we find one we can use.
 		 */
 		NODE_FOREACH_WI(n, np) {
-			if (n->n_job == NULL)
+			if (n->n_job == NULL || n->n_fillp->f_a == 0.0f)
 				continue;
 			if (nodep == NULL)
 				nodep = n;
@@ -538,8 +542,6 @@ vmode_change(void)
 				nneighbors[nhops]++;
 			}
 		}
-		if (nodep == NULL)
-			errx(1, "XXX no nodes");
 		break;
 	case VM_WIONE:
 	case VM_WIRED:
@@ -563,9 +565,10 @@ vmode_change(void)
 		NODE_FOREACH_WI(n, np) {
 			nposp = (st.st_opts & OP_NODEANIM) ?
 			    &n->n_vtwe : &n->n_v;
-			if (n == nodep)
+			if (n == nodep) {
+				n->n_flags |= NF_VMVIS;
 				vec_set(nposp, 0.0, 0.0, 0.0);
-			else if (n->n_job == nodep->n_job) {
+			} else if (nodep && n->n_job == nodep->n_job) {
 				n->n_flags |= NF_VMVIS;
 
 				nhops = node_wineighbor_nhops(nodep, n);
@@ -573,21 +576,31 @@ vmode_change(void)
 					errx(1, "hops greater than max");
 				fv.fv_r = nhops * 8.0;
 
-				if (0) {
+				switch (st.st_vnmode) {
+				case VNM_A:
 					fv.fv_t = ncnt[nhops]++ *
 					    2.0 * M_PI / nneighbors[nhops];
 					fv.fv_p = M_PI * 0.5;
-				} else {
+					break;
+				case VNM_B:
 					fv.fv_t = ncnt[nhops]++ *
-					    M_PI / (8.0 * (nhops + 1));
+					    M_PI / (4.0 * (nhops + 1));
 					fv.fv_p = M_PI * 0.5 - ncnt[nhops] * 0.001;
+					break;
+				case VNM_C:
+					fv.fv_t = (ncnt[nhops]++ + 1) / 2 *
+					    M_PI / (4.0 * (nhops + 1));
+					if (ncnt[nhops] % 2)
+						fv.fv_t *= -1.0;
+					fv.fv_p = M_PI * 0.5 - ncnt[nhops] * 0.001;
+					break;
+				case VNM_D:
+					fv.fv_t = ncnt[nhops]++ *
+					    M_PI / (4.0 * (nhops + 1));
+					fv.fv_p = M_PI * 0.5 - nhops * 0.01;
+					fv.fv_p = M_PI * 0.5 - ncnt[nhops] * 0.01;
+					break;
 				}
-
-//				fv.fv_t = ncnt[nhops]++ *
-//				    M_PI / (4.0 * (nhops + 1));
-//				fv.fv_p = M_PI * 0.5 - nhops * 0.01;
-//				fv.fv_p = M_PI * 0.5 - ncnt[nhops] * 0.01;
-
 				vec_sphere2cart(&fv, nposp);
 			} else
 				n->n_flags &= ~NF_VMVIS;
