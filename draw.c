@@ -605,6 +605,9 @@ draw_ground(void)
 		glPopMatrix();
 		break;
 	case VM_VNEIGHBOR:
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 		max = (widim.iv_w + widim.iv_h + widim.iv_d) / 2;
 		for (j = 0; j <= max; j++) {
 			glPushMatrix();
@@ -617,12 +620,15 @@ draw_ground(void)
 
 			fp = j % 2 ? &fill_vnproxring2 : &fill_vnproxring;
 
+			/* XXX glText the disks */
 			glRotatef(-90.0, 1.0, 0.0, 0.0);
-			glColor3f(fp->f_r, fp->f_g, fp->f_b);
+			glColor4f(fp->f_r, fp->f_g, fp->f_b, fp->f_a);
 			r = j * 8.0;// - ndim->fv_w / 2.0;
 			gluDisk(quadric, r - .2, r, 100, 3);
 			glPopMatrix();
 		}
+
+		glDisable(GL_BLEND);
 		break;
 	}
 }
