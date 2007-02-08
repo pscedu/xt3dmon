@@ -729,7 +729,7 @@ gl_keyh_loadpos(unsigned char key, __unused int cu, __unused int cv)
 		warn("%s", fn);
 	fclose(fp);
 
-	if (ret != 9)
+	if (ret != 8)
 		return;
 
 	tween_push();
