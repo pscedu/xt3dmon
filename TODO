@@ -48,6 +48,7 @@ todo
 - dsc chdir to avoid races
 - show other things in the queue (other pbs queues)
 - support variable font widths/antialiased fonts
+- leverage ftgl in panel character drawing
 - check that the server dsc-copies fresh data in case data is no
   longer automatically refreshing itself
 - add recursive check to gl_run() to protect against that kind of
@@ -62,14 +63,14 @@ todo
 - finish send-command-to-login-node-panel
 - merge gl and env files?
 - bring back option for SEL_GAP things
-- add flag to NODE_FOREACH for wired/physical ordered traversal (fix phys alpha problem)
+- use NODE_FOREACH_PHYS to fix physvmode alpha problem
 - add panel reporting when new data is available
 - vec_rotate() is busted for large amounts
 - on macos, fix node labels on solid node colors from distances
 - rename NODEWIDTH/HEIGHT/DEPTH cause its phys-only
 - kill job_findbyid, just use obj_get with a flag that prevents creation
 - make job searching bsearch again, since it is sorted
-- add subtitle for when machine down
+- add subtitle for when the machine is down
 - add cam_refocus() and factor the code out of cam_revolve()
 - add "extended help" panel -- contents description get updated on each item moused over
 - modify the pipe code to determine absolute points based on
@@ -95,20 +96,23 @@ todo
 - use buf.c routines in base64 routines instead of bufsize guesswork
 - only flag RF_CLUSTER on sn_remove() when the node to remove is at the
   front of the list (it otherwise won't need to be rebuilt)
-- tween bug when holding <home> or <end>
 - text_wrap has a bug:
 	char buf[BUFSIZ] = "yod -size 3072 -small_pages -stack 8000000 /usr/users/8/quinnt/src/pkdgrav/gasoline.noiob -wall 460 drgas.param";
 	text_wrap(buf, 40)
-- don't glEnable(POLYGON_SMOOTH) blindly
+- don't glEnable(POLYGON_SMOOTH) blindly, it makes the underlying triangles
+  visible
 
 xtwmon
 - rename arbiter-raw.pl?data=nodes to data=node
 
 tweening
 - fix tween to real stack: once point is reached, pop it then move on
+	problem: the camera will speed up then slow down to reach the
+	first state, then speed up and slow down to reach the second,
+	etc. and jerk around instead of being smooth when there are
+	multiple tween positions on the tween stack
 - increase tween limit when fps is high, or when "stack" contains many layers
 - use vec_rotate() instead of fractional values for up/look when spinning around
 	- ensure tweening leaves normalized vectors
-- make a tween stack of like 30 states
 - for tweening, calculate the % moved by one (e.g. move), then apply
   that % to the others, instead of use MAX_{LOOK,TWEEN} values
