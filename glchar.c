@@ -32,10 +32,9 @@ draw_text(const char *buf, struct fvec *dim, struct fill *fp)
 	else
 		/* Box is too small vertically, scale by X. */
 		scale = fabs(dim->fv_w) / sw;
+	glTranslatef(0.0, dim->fv_h / 2.0f, 0.0);
 	glScaled(scale, scale, scale);
-//	glTranslatef(
-//	    -bl.fv_x - (tr.fv_x - bl.fv_x) / 2.0f,
-//	    -bl.fv_y - (tr.fv_y - bl.fv_y) / 2.0f, 0.0);
+	glTranslatef(0.0, -ch / 2.0f, 0.0);
 
 	glColor3f(fp->f_r, fp->f_g, fp->f_b);
 	for (; *buf != '\0'; buf++) {
@@ -163,16 +162,7 @@ gluBeginPolygon(t);
 gluNextContour(t, GLU_EXTERIOR);
 
 int i = 0;
-gluTessVertex(t, v[i], v[i]); i++;
-gluTessVertex(t, v[i], v[i]); i++;
-gluTessVertex(t, v[i], v[i]); i++;
-gluTessVertex(t, v[i], v[i]); i++;
-gluTessVertex(t, v[i], v[i]); i++;
-gluTessVertex(t, v[i], v[i]); i++;
-gluTessVertex(t, v[i], v[i]); i++;
-gluTessVertex(t, v[i], v[i]); i++;
-gluTessVertex(t, v[i], v[i]); i++;
-gluTessVertex(t, v[i], v[i]); i++;
+for (i = 0; i < sizeof(v) / sizeof(v[0]); i++)
 gluTessVertex(t, v[i], v[i]); i++;
 
 gluEndPolygon(t);
@@ -181,8 +171,125 @@ gluEndPolygon(t);
 
 			break;
 		case '2':
+			/*
+			 *       (w/8,h)             (7w/8,h)
+			 *               ###########
+			 *             ##############
+			 *             ###(w/8,78)#### (w,7h/8)
+			 *    (0,7h/8)    (w/8,3/4)###
+			 *                         ###
+			 *                         ###
+			 *   (w/8,3.5h/8)   (7w8,) ### (w,3.5h/8)
+			 *               ############
+			 *              ############ (7w/8,h/3)
+			 *    (0,h/3)  ### (w/8,h/3)
+			 *             ###
+			 *             ### (w/8,h/8)  (w,h/8)
+			 *             ###############
+			 *             ###############
+			 *      (0,0)                  (w,0)
+			 */
+			 {
+			GLdouble v[][3] = {
+				{ 0.0,			0.0,		0.0 },
+				{ cw,			0.0,		0.0 },
+				{ cw,			ch / 8.0,	0.0 },
+				{ cw / 8.0,		ch / 8.0,	0.0 },
+				{ cw / 8.0,		ch / 3.0,	0.0 },
+				{ 7.0 * cw / 8.0,	ch / 3.0,	0.0 },
+				{ cw,			3.5 * ch / 8.0,	0.0 },
+				{ cw,			7.0 * ch / 8.0,	0.0 },
+				{ 7.0 * cw / 8.0,	ch,		0.0 },
+				{ cw / 8.0,		ch,		0.0 },
+				{ 0.0,			7.0 * ch / 8.0,	0.0 },
+				{ cw / 8.0,		3.0 * ch / 4.0,	0.0 },
+				{ cw / 3.0,		7.0 * ch / 8.0,	0.0 },
+				{ 2.0 * cw / 3.0,	7.0 * ch / 8.0,	0.0 },
+				{ 7.0 * cw / 8.0,	3.0 * ch / 4.0,	0.0 },
+				{ 7.0 * cw / 8.0,	3.5 * ch / 8.0,	0.0 },
+				{ cw / 8.0,		3.5 * ch / 8.0,	0.0 },
+				{ 0.0,			ch / 3.0,	0.0 }
+			};
+
+GLUtesselator *t = gluNewTess();
+gluTessCallback(t, GLU_BEGIN, glBegin);
+gluTessCallback(t, GLU_VERTEX, glVertex3dv);
+gluTessCallback(t, GLU_END, glEnd);
+gluBeginPolygon(t);
+gluNextContour(t, GLU_EXTERIOR);
+
+int i = 0;
+for (i = 0; i < sizeof(v) / sizeof(v[0]); i++)
+gluTessVertex(t, v[i], v[i]); i++;
+
+gluEndPolygon(t);
+
+}
 			break;
 		case '3':
+			/*
+			 *        (w/8,h)            (7w/8,h)
+			 *                ##########
+			 *              #############
+			 *             #####(13(23#### (w,7w/8)
+			 *     (0,7h/8) ###        ###
+			 *               (.5w/8)   ###
+			 *                         ###
+			 *                        #### (w,5h/8)
+			 *                  #########
+			 *                 ######### (7w/8,h/2)
+			 *                  #########
+			 *                        #### (w,3h/8)
+			 *                         ###
+			 *                         ###
+			 *      (0,     ###        ###
+			 *             #####      #### (w,h/8)
+			 *              #############
+			 *                ##########
+			 *        (w/8,0)            (7w/8,0)
+			 */
+			 {
+			GLdouble v[][3] = {
+				{ cw / 8.0,		0.0,		0.0 },
+				{ 7.0 * cw / 8.0,	0.0,		0.0 },
+				{ cw,			ch / 8.0,	0.0 },
+				{ cw,			3.0 * ch / 8.0,	0.0 },
+				{ 7.0 * cw / 8.0,	ch / 2.0,	0.0 },
+				{ cw,			5.0 * ch / 8.0,	0.0 },
+				{ cw,			7.0 * ch / 8.0,	0.0 },
+				{ 7.0 * cw / 8.0,	ch,		0.0 },
+				{ cw / 8.0,		ch,		0.0 },
+				{ 0.0,			7.0 * ch / 8.0,	0.0 },
+				{ 0.5 * cw / 8.0,	3.0 * ch / 4.0,	0.0 },
+				{ cw / 3.0,		7.0 * ch / 8.0,	0.0 },
+				{ 2.0 * cw / 3.0,	7.0 * ch / 8.0,	0.0 },
+				{ 7.0 * cw / 8.0,	3.0 * ch / 4.0,	0.0 },
+				{ 3.0 * cw / 4.0,	5.0 * ch / 8.0,	0.0 },
+				{ cw / 2.0,		4.5 * ch / 8.0,	0.0 },
+				{ cw / 3.0,		ch / 2.0,	0.0 },
+				{ cw / 2.0,		3.5 * ch / 8.0,	0.0 },
+				{ 3.0 * cw / 4.0,	3.0 * ch / 8.0,	0.0 },
+				{ 7.0 * cw / 8.0,	ch / 4.0,	0.0 },
+				{ 2.0 * cw / 3.0,	ch / 8.0,	0.0 },
+				{ cw / 3.0,		ch / 8.0,	0.0 },
+				{ 0.5 * cw / 8.0,	ch / 4.0,	0.0 },
+				{ 0.0,			ch / 8.0,	0.0 },
+			};
+
+GLUtesselator *t = gluNewTess();
+gluTessCallback(t, GLU_BEGIN, glBegin);
+gluTessCallback(t, GLU_VERTEX, glVertex3dv);
+gluTessCallback(t, GLU_END, glEnd);
+gluBeginPolygon(t);
+gluNextContour(t, GLU_EXTERIOR);
+
+int i = 0;
+for (i = 0; i < sizeof(v) / sizeof(v[0]); i++)
+gluTessVertex(t, v[i], v[i]); i++;
+
+gluEndPolygon(t);
+
+}
 			break;
 		case '4':
 			break;
@@ -205,13 +312,13 @@ gluEndPolygon(t);
 	glDisable(GL_POLYGON_SMOOTH);
 
 #if 0
- #####   #####  #       #######  #####  #######  #####   #####
-#     # #     # #    #  #       #     # #    #  #     # #     #
-      #       # #    #  #       #           #   #     # #     #
- #####   #####  #    #  ######  ######     #     #####   ######
-#             # #######       # #     #   #     #     #       #
-#       #     #      #  #     # #     #   #     #     # #     #
-#######  #####       #   #####   #####    #      #####   #####
+#       #######  #####  #######  #####   #####
+#    #  #       #     # #    #  #     # #     #
+#    #  #       #           #   #     # #     #
+#    #  ######  ######     #     #####   ######
+#######       # #     #   #     #     #       #
+     #  #     # #     #   #     #     # #     #
+     #   #####   #####    #      #####   #####
 #endif
 
 }
