@@ -78,10 +78,9 @@ void		 dbg_crash(void);
 
 /* eggs.c */
 void		 egg_toggle(int);
-void		 egg_borg(void);
-void		 egg_matrix(void);
 
 /* main.c */
+void		 opt_set(int);
 void		 opt_flip(int);
 void		 opt_enable(int);
 void		 opt_disable(int);

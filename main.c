@@ -126,8 +126,8 @@ struct state st = {
 };
 
 /*
- * Enable options: remove all options already on then flip remaining
- * one specified.  Disable works similarily.
+ * Enable options: flip all options specified which are not
+ * already enabled.  opt_disable() works similarily.
  */
 void
 opt_enable(int ops)
@@ -161,6 +161,12 @@ opt_disable(int ops)
 	}
 	if (fopts)
 		opt_flip(fopts);
+}
+
+void
+opt_set(int opts)
+{
+	opt_flip(st.st_opts ^ opts);
 }
 
 /*
@@ -488,11 +494,13 @@ dim_update(void)
 		n->n_dimp = &vmodes[st.st_vmode].vm_ndim[n->n_geom];
 }
 
+#include "lnseg.h"
+
 void
 vmode_change(void)
 {
 	int maxhops, nhops, *nneighbors, *ncnt;
-	struct fvec spdim, wrapv, fv;
+	struct fvec spdim, wrapv, fv, lastfv;
 	struct node **np, *n, *nodep;
 	struct ivec iv, adjv;
 	struct selnode *sn;
@@ -578,9 +586,62 @@ vmode_change(void)
 
 				switch (st.st_vnmode) {
 				case VNM_A:
-					fv.fv_t = ncnt[nhops]++ *
-					    2.0 * M_PI / nneighbors[nhops];
-					fv.fv_p = M_PI * 0.5;
+					if (nhops == 6) {
+#if 0
+struct fvec _a, _b;
+
+						fv.fv_t = ncnt[nhops] % (nneighbors[nhops] / 2) *
+						    8.0 * M_PI / nneighbors[nhops];
+						if (ncnt[nhops] > nneighbors[nhops] / 2)
+							fv.fv_t = -fv.fv_t;
+
+fv.fv_p = M_PI * 0.5;
+vec_sphere2cart(&fv, &_a);
+
+if (ncnt[nhops] < nneighbors[nhops] / 3)
+	fv.fv_p = M_PI * 0.25;
+else if (ncnt[nhops] < 2 * nneighbors[nhops] / 3.0)
+	fv.fv_p = M_PI * 0.5;
+else
+	fv.fv_p = M_PI * 0.75;
+
+
+//						fv.fv_p = M_PI * 0.25 +
+//						    ((int)(ncnt[nhops] / 4)) * 4.0 * 0.75 * M_PI / nneighbors[nhops];
+
+vec_sphere2cart(&fv, &_b);
+lnseg_add(&_a, &_b);
+
+
+if (nhops == 5)
+  printf("  %.4f %.4f\n", fv.fv_t, fv.fv_p);
+
+
+
+#endif
+
+						double h = -1.0 + 2.0 * (ncnt[nhops]) /
+						    (double)nneighbors[nhops];
+						fv.fv_t = acos(h);
+						if (ncnt[nhops] == 0 ||
+						    ncnt[nhops] == nneighbors[nhops] - 1)
+							fv.fv_p = 0;
+						else
+							fv.fv_p = fmod(lastfv.fv_p + 3.6 / sqrt(nneighbors[nhops] * (1.0 - SQUARE(h))), 2 * M_PI);
+						lastfv.fv_p = fv.fv_p;
+					} else {
+n->n_flags &= ~NF_VMVIS;
+//						fv.fv_t = ncnt[nhops] *
+//						    2.0 * M_PI / nneighbors[nhops];
+//						fv.fv_p = M_PI * 0.5;
+					}
+
+#if 0
+	fv.fv_t = ncnt[nhops]++ *
+	    2.0 * M_PI / (nneighbors[nhops] / 2);
+	fv.fv_p = M_PI / (nneighbors[nhops] / 2);
+#endif
+					ncnt[nhops]++;
 					break;
 				case VNM_B:
 					fv.fv_t = ncnt[nhops]++ *
@@ -791,7 +852,7 @@ main(int argc, char *argv[])
 	cfgfn = _PATH_MACHCONF;
 
 	Mflag = 0;
-	flags = GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE;
+	flags = GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE | GLUT_MULTISAMPLE;
 	glutInit(&argc, argv);
 	sw = glutGet(GLUT_SCREEN_WIDTH);
 	sh = glutGet(GLUT_SCREEN_HEIGHT) - 30;

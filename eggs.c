@@ -7,17 +7,6 @@
 #include "tween.h"
 
 void
-egg_toggle(int diff)
-{
-	st.st_eggs ^= diff;
-	if (diff & EGG_BORG)
-		egg_borg();
-	if (diff & EGG_MATRIX)
-		egg_matrix();
-}
-
-/* Borg mode Easter egg. */
-void
 egg_borg(void)
 {
 	static struct state ost;
@@ -47,7 +36,7 @@ egg_borg(void)
 	}
 	tween_pop();
 
-	st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_DMODE | RF_GROUND;
+	st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_DMODE | RF_GROUND | RF_VMODE;
 }
 
 void
@@ -85,5 +74,52 @@ egg_matrix(void)
 	}
 	tween_pop();
 
-	st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_DMODE | RF_GROUND;
+	st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_DMODE | RF_GROUND | RF_VMODE;
 }
+
+void
+egg_hackers(void)
+{
+	static struct state ost;
+
+	tween_push();
+	if (st.st_eggs & EGG_HACKERS) {
+		ost = st;
+
+		st.st_vmode = VM_PHYS;
+		st.st_dmode = DM_HACKERS;
+		opt_set(OP_GROUND | OP_FRAMES);
+
+		vec_set(&st.st_v, 128.0, 6.25, 8.0);
+		vec_set(&st.st_lv, -1.0, 0.0, 0.0);
+		st.st_ur = 0.0;
+		st.st_urev = 0;
+
+		glClearColor(0.0, 0.0, 0.0, 1.0);
+	} else {
+		opt_set(ost.st_opts);
+		st.st_dmode = ost.st_dmode;
+		st.st_v = ost.st_v;
+		st.st_lv = ost.st_lv;
+		st.st_ur = ost.st_ur;
+		st.st_urev = 0;
+
+		glClearColor(fill_bg.f_r, fill_bg.f_g, fill_bg.f_b, 1.0);
+	}
+	tween_pop();
+
+	st.st_rf |= RF_CLUSTER | RF_SELNODE | RF_DMODE | RF_GROUND | RF_VMODE;
+}
+
+void
+egg_toggle(int diff)
+{
+	st.st_eggs ^= diff;
+	if (diff & EGG_BORG)
+		egg_borg();
+	if (diff & EGG_MATRIX)
+		egg_matrix();
+	if (diff & EGG_HACKERS)
+		egg_hackers();
+}
+

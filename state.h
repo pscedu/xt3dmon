@@ -6,13 +6,14 @@
 #define DM_JOB		0
 #define DM_TEMP		1
 #define DM_YOD		2
-#define DM_BORG		3
-#define DM_MATRIX	4
+#define DM_BORG		3	/* egg */
+#define DM_MATRIX	4	/* egg */
 #define DM_SAME		5
 #define DM_RTUNK	6
 #define DM_SEASTAR	7
 #define DM_LUSTRE	8
-#define NDM		9
+#define DM_HACKERS	9	/* egg */
+#define NDM		10
 
 /* View mode. */
 #define VM_PHYS		0
@@ -73,6 +74,7 @@ struct state {
 
 #define EGG_BORG 	(1<<0)
 #define EGG_MATRIX 	(1<<1)
+#define EGG_HACKERS 	(1<<2)
 
 /* Options. */
 #define OP_TEX		(1<<0)

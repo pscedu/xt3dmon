@@ -134,6 +134,8 @@ uinpcb_eggs(void)
 		egg_toggle(EGG_BORG);
 	else if (strcmp(cmd, "matrix") == 0)
 		egg_toggle(EGG_MATRIX);
+	else if (strcmp(cmd, "hackers") == 0)
+		egg_toggle(EGG_HACKERS);
 }
 
 void
