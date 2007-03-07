@@ -171,6 +171,7 @@ serv_displayh(void)
 
 	/* Reset some things for the new session. */
 	st.st_opts &= ~(OP_SKEL);
+	/* XXX: use opt_disable() */
 
 	sz = 0;
 	memset(&ss, 0, sizeof(ss));
@@ -231,9 +232,11 @@ snap:
 		}
 		if (!dsc_load(DS_NODE, ss.ss_sid))
 			goto drop;
+		if (!dsc_load(DS_YOD, ss.ss_sid))
+			goto drop;
 
 		dsm = st_dsmode();
-		if (dsm != DS_INV)
+		if (dsm == DS_JOB)
 			if (!dsc_load(dsm, ss.ss_sid))
 				goto drop;
 		rf &= ~RF_DATASRC;
