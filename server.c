@@ -132,13 +132,13 @@ serv_init(void)
 	if ((p = panel_for_id(PANEL_DATE)) != NULL) {
 		p->p_u = 0;
 		p->p_v = 40; /* XXX: hack to font size */
-		p->p_w = 80;
+		p->p_w = 110;
 		p->p_h = 40;
 	}
 
-	fill_bg.f_r = 0.0f;
-	fill_bg.f_g = 0.0f;
-	fill_bg.f_b = 0.0f;
+	fill_bg.f_r = 0.1f;
+	fill_bg.f_g = 0.2f;
+	fill_bg.f_b = 0.3f;
 
 	qsort(sv_cmds, sizeof(sv_cmds) / sizeof(sv_cmds[0]),
 	    sizeof(sv_cmds[0]), svc_cmp);
