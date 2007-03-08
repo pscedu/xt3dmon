@@ -91,6 +91,8 @@ LFLAGS += -P"$$(echo $@ | sed 's/-.*//')"
 
 INCS = $$(echo ${CFLAGS} | \
     awk '{for (n = 1; n <= NF; n++) if (match($$n, /^-I/)) printf "%s ", $$n }')
+INCS += $$(if cc -v 2>&1 | grep -q gcc; then cc -print-search-dirs | \
+    grep install | awk '{print "-I" $$2 "include"}' | sed 's/:/ -I/'; fi) 
 
 OBJS = $(patsubst %.c,%.o,$(filter %.c,${SRCS}))
 OBJS+= $(patsubst %.y,%.o,$(filter %.y,${SRCS}))
