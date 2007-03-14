@@ -918,8 +918,8 @@ draw_physpipes(int selpipes)
 {
 	int class, port, rd, r, c, ngr, ngc, dim, neg;
 	struct node **np, *n, *ng, *gn, *ln;
-	struct physcoord pc, ngpc;
-	struct fvec s, d;
+	struct physcoord pc, ngpc, tpc;
+	struct fvec s, d, tfv;
 	struct fill *fp;
 	double ox, oy, oz;
 
@@ -1055,10 +1055,39 @@ draw_physpipes(int selpipes)
 				}
 				break;
 			case DIM_Z:
-				if (pc.pc_r != ngpc.pc_r)
-					break;
-				glVertex3d(s.fv_x, s.fv_y, s.fv_z);
-				glVertex3d(d.fv_x, d.fv_y, d.fv_z);
+				if (pc.pc_r == ngpc.pc_r) {
+					glVertex3d(s.fv_x, s.fv_y, s.fv_z);
+					glVertex3d(d.fv_x, d.fv_y, d.fv_z);
+				} else if (pc.pc_cg == ngpc.pc_cg) {
+					ox = 0.1 * CABSPACE;
+					if (pc.pc_m)
+						ox *= -1.0;
+
+					oy = NODEHEIGHT / 3.0;
+					if (c)
+						oy *= -1.0;
+					glVertex3d(s.fv_x,	s.fv_y + oy, s.fv_z);
+					glVertex3d(s.fv_x - ox,	s.fv_y + oy, s.fv_z);
+					glVertex3d(d.fv_x - ox,	d.fv_y + oy, d.fv_z);
+					glVertex3d(d.fv_x,	d.fv_y + oy, d.fv_z);
+				} else {
+					if (pc.pc_cg)
+						ox = 0.2 * CABSPACE;
+					else
+						ox = 0.3 * CABSPACE;
+					if (pc.pc_m)
+						ox *= -1.0;
+					if (pc.pc_m != ngpc.pc_m && pc.pc_m) {
+						ox *= -1.0;
+						SWAP(pc, ngpc, tpc);
+						SWAP(s, d, tfv);
+					}
+					glVertex3d(s.fv_x,	s.fv_y, s.fv_z);
+					glVertex3d(s.fv_x - ox, s.fv_y, s.fv_z);
+					glVertex3d(s.fv_x - ox, d.fv_y, d.fv_z);
+					glVertex3d(d.fv_x - ox, d.fv_y, d.fv_z);
+					glVertex3d(d.fv_x,	d.fv_y, d.fv_z);
+				}
 				break;
 			}
 			glEnd();
