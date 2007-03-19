@@ -18,18 +18,29 @@ tex_init(void *data, int ifmt, unsigned int w, unsigned int h)
 	static unsigned int id;
 	int nd;
 
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+
 	nd = GL_TEXTURE_2D;
 	glGenTextures(1, &id);
 	glBindTexture(nd, id);
 
+	glTexImage2D(nd, 128, ifmt, w, h, 1, GL_RGBA,
+	    GL_UNSIGNED_BYTE, data);
+
 	glTexParameteri(nd, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(nd, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-	glTexParameteri(nd, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(nd, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glTexImage2D(nd, 0, ifmt, w, h, 0, GL_RGBA,
+	glTexParameterf(nd, GL_TEXTURE_MIN_FILTER,
+	    GL_LINEAR_MIPMAP_LINEAR);
+	gluBuild2DMipmaps(nd, ifmt, w, h, GL_RGBA,
 	    GL_UNSIGNED_BYTE, data);
+
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+	glDisable(GL_LIGHTING);
+	glDisable(GL_LIGHT0);
 	return (id++);
 }
 
