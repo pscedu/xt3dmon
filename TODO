@@ -101,6 +101,8 @@ todo
 	text_wrap(buf, 40)
 - don't glEnable(POLYGON_SMOOTH) blindly, it makes the underlying triangles
   visible
+- remove SPF_PROBE and replace with different callback
+	- XXX remove callback entirely?
 
 xtwmon
 - rename arbiter-raw.pl?data=nodes to data=node
