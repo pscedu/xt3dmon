@@ -1156,11 +1156,19 @@ draw_cluster(void)
 	case VM_WIRED:
 		break;
 	case VM_WIONE:
-	case VM_PHYS:
 	case VM_VNEIGHBOR:
 		if (st.st_opts & OP_PIPES)
 			draw_pipes(0);
 		NODE_FOREACH_WI(n, np)
+			if (node_show(n))
+				draw_node(n, NDF_IGNSN);
+		if (st.st_opts & OP_SKEL)
+			draw_skel();
+		break;
+	case VM_PHYS:
+		if (st.st_opts & OP_PIPES)
+			draw_pipes(0);
+		NODE_FOREACH_PHYS(n, np)
 			if (node_show(n))
 				draw_node(n, NDF_IGNSN);
 		if (st.st_opts & OP_SKEL)
