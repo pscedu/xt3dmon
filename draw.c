@@ -642,7 +642,7 @@ draw_pd_skel(struct physdim *pdp, struct physdim *targetpd,
     struct fvec *fvp)
 {
 	struct fvec fv;
-	size_t i;
+	int i;
 
 	fv = *fvp;
 	if (pdp == targetpd) {

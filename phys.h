@@ -5,7 +5,7 @@
 
 struct physdim {
 	char			*pd_name;
-	size_t			 pd_mag;
+	int			 pd_mag;
 	double			 pd_space;
 	struct physdim		*pd_contains;
 	struct physdim		*pd_containedby;
