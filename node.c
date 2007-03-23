@@ -13,7 +13,8 @@
 #include "tween.h"
 #include "xmath.h"
 
-struct node	  nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
+struct node	 *nodes;
+size_t		  nodessiz;
 struct node	**node_nidmap;		/* node ID (nid) lookup to node pointer */
 struct node	**node_wimap;		/* X/Y/Z lookup to node pointer */
 int		  node_wimap_len;
@@ -92,7 +93,7 @@ node_physpos(struct node *node, struct physcoord *pc)
 {
 	int pos;
 
-	pos = node - &nodes[0][0][0][0][0];
+	pos = node - nodes;
 
 	pc->pc_r = pos / (NCABS * NCAGES * NMODS * NNODES);
 	pos %= NCABS * NCAGES * NMODS * NNODES;
@@ -258,11 +259,22 @@ node_neighbor(int vm, struct node *n, int rd, int *flip)
 				pc.pc_r %= NROWS;
 				break;
 			}
-			ng = &nodes[pc.pc_r][pc.pc_cb][pc.pc_cg][pc.pc_m][pc.pc_n];
+			ng = node_for_pc(&pc);
 		} while ((ng->n_flags & NF_VALID) == 0);
 		break;
 	}
 	return (ng);
+}
+
+struct node *
+node_for_pc(const struct physcoord *pc)
+{
+	return (&nodes[
+	    pc->pc_r * (NNODES * NMODS * NCAGES * NCABS) +
+	    pc->pc_cb * (NNODES * NMODS * NCAGES) +
+	    pc->pc_cg * (NNODES * NMODS) +
+	    pc->pc_m * (NNODES) +
+	    pc->pc_n]);
 }
 
 struct node *

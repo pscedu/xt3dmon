@@ -146,14 +146,15 @@ draw_shadow_node(int *dl, struct node *n)
 }
 
 void
-draw_shadow_mods(const struct physcoord *pc, int *dl)
+draw_shadow_mods(const struct physcoord *pcp, int *dl)
 {
+	struct physcoord pc;
 	struct node *node;
-	int m, n;
 
-	for (m = 0; m < NMODS; m++) {
-		for (n = 0; n < NNODES; n++) {
-			node = &nodes[pc->pc_r][pc->pc_cb][pc->pc_cg][m][n];
+	pc = *pcp;
+	for (pc.pc_m = 0; pc.pc_m < NMODS; pc.pc_m++) {
+		for (pc.pc_n = 0; pc.pc_n < NNODES; pc.pc_n++) {
+			node = node_for_pc(&pc);
 			if (!node_show(node))
 				continue;
 

@@ -56,11 +56,13 @@ struct node	*node_for_nid(int);
 void		 node_goto(struct node *);
 int		 node_show(const struct node *);
 void		 node_center(const struct node *, struct fvec *);
+struct node	*node_for_pc(const struct physcoord *);
 
 #define NODE_WIMAP(x, y, z) \
 	node_wimap[(x) * widim.iv_y * widim.iv_z + (y) * widim.iv_z + (z)]
 
-extern struct node	  nodes[NROWS][NCABS][NCAGES][NMODS][NNODES];
+extern struct node	 *nodes;
+extern size_t		  nodessiz;
 extern struct node	**node_nidmap;
 extern struct node	**node_wimap;
 extern int		  node_wimap_len;

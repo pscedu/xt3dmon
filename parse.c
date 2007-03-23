@@ -214,9 +214,10 @@ prerror(const char *fn, int lineno, const char *bufp, const char *s)
 void
 parse_node(const struct datasrc *ds)
 {
-	int lineno, r, cb, cg, m, n, nid, x, y, z, stat;
 	int enabled, jobid, temp, yodid, nfails, lustat;
+	int lineno, nid, x, y, z, stat;
 	char buf[BUFSIZ], *s, *field;
+	struct physcoord pc;
 	struct ivec twidim;
 	struct node *node;
 	struct job *job;
@@ -224,22 +225,11 @@ parse_node(const struct datasrc *ds)
 	size_t j;
 
 	ivec_set(&twidim, 0, 0, 0);
+	memset(nodes, 0, nodessiz);
 	/* XXX overflow */
 	memset(node_nidmap, 0, machine.m_nidmax * sizeof(*node_nidmap));
 	memset(node_wimap, 0, node_wimap_len * sizeof(*node_wimap));
 	mach_drain = 0;
-
-	/* Explicitly initialize all nodes. */
-	for (r = 0; r < NROWS; r++)
-		for (cb = 0; cb < NCABS; cb++)
-			for (cg = 0; cg < NCAGES; cg++)
-				for (m = 0; m < NMODS; m++)
-					for (n = 0; n < NNODES; n++) {
-						node = &nodes[r][cb][cg][m][n];
-						node->n_flags &= ~NF_VALID;
-						node->n_job = NULL;
-						node->n_yod = NULL;
-					}
 
 	lineno = 0;
 	while (us_gets(ds->ds_us, buf, sizeof(buf)) != NULL) {
@@ -266,11 +256,11 @@ parse_node(const struct datasrc *ds)
 		}
 
 		PARSENUM(s, nid, machine.m_nidmax);
-		PARSENUM(s, r, NROWS);
-		PARSENUM(s, cb, NCABS);
-		PARSENUM(s, cg, NCAGES);
-		PARSENUM(s, m, NMODS);
-		PARSENUM(s, n, NNODES);
+		PARSENUM(s, pc.pc_r, NROWS);
+		PARSENUM(s, pc.pc_cb, NCABS);
+		PARSENUM(s, pc.pc_cg, NCAGES);
+		PARSENUM(s, pc.pc_m, NMODS);
+		PARSENUM(s, pc.pc_n, NNODES);
 		PARSENUM(s, x, widim.iv_w);
 		PARSENUM(s, y, widim.iv_h);
 		PARSENUM(s, z, widim.iv_d);
@@ -282,7 +272,7 @@ parse_node(const struct datasrc *ds)
 		PARSENUM(s, nfails, INT_MAX);
 		PARSECHAR(s, lustat);
 
-		node = &nodes[r][cb][cg][m][n];
+		node = node_for_pc(&pc);
 		node->n_nid = nid;
 		node_nidmap[nid] = node;
 		NODE_WIMAP(x, y, z) = node;
@@ -502,7 +492,7 @@ parse_rt(const struct datasrc *ds)
 		if (parsestr(&s, nid, sizeof(nid), 0) ||
 		    parsenid(nid, &pc))
 			goto bad;
-		n = &nodes[pc.pc_r][pc.pc_cb][pc.pc_cg][pc.pc_m][pc.pc_n];
+		n = node_for_pc(&pc);
 
 		PARSENUM(s, port, 7);
 		PARSENUM(s, recover, INT_MAX);
@@ -561,7 +551,7 @@ parse_ss(const struct datasrc *ds)
 		if (parsestr(&s, nid, sizeof(nid), 0) ||
 		    parsenid(nid, &pc))
 			goto bad;
-		n = &nodes[pc.pc_r][pc.pc_cb][pc.pc_cg][pc.pc_m][pc.pc_n];
+		n = node_for_pc(&pc);
 
 		for (vc = 0; vc < NVC; vc++)
 			PARSEDBL(s, ss.ss_cnt[SSCNT_NBLK][vc]);

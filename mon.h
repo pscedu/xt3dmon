@@ -7,38 +7,37 @@
 
 #include <stdio.h>
 
+#include "phys.h"
+
 /* File chooser flags. */
 #define CHF_DIR		(1<<0)
 
 /* Physical machine dimensions -- XXX remove hardcode. */
-#define NROWS		2
-#define NCABS		11
-#define NCAGES		3
-#define NMODS		8
-#define NNODES		4
+#define NROWS		physdim_top->pd_mag
+#define NCABS		physdim_top->pd_contains->pd_mag
+#define NCAGES		physdim_top->pd_contains->pd_contains->pd_mag
+#define NMODS		physdim_top->pd_contains->pd_contains->pd_contains->pd_mag
+#define NNODES		(physdim_top->pd_contains->pd_contains->pd_contains->pd_contains->pd_mag * \
+			physdim_top->pd_contains->pd_contains->pd_contains->pd_contains->pd_contains->pd_mag)
 
-/* Physical machine dimensions -- XXX remove hardcode. */
-#define ROWSPACE	(10.0f)
-#define CABSPACE	(5.0f)
-#define CAGESPACE	(2.0f)
-#define MODSPACE	(0.8f)
-#define NODESPACE	(0.2f)
+#define ROWSPACE	physdim_top->pd_space
+#define ROWDEPTH	physdim_top->pd_size.fv_d
 
-#define NODEWIDTH	(vmodes[VM_PHYS].vm_ndim[GEOM_CUBE].fv_w)
-#define NODEHEIGHT	(vmodes[VM_PHYS].vm_ndim[GEOM_CUBE].fv_h)
-#define NODEDEPTH	(vmodes[VM_PHYS].vm_ndim[GEOM_CUBE].fv_d)
-#define NODESHIFT	(0.6f)
+#define CABSPACE	physdim_top->pd_contains->pd_space
+#define CABWIDTH	physdim_top->pd_contains->pd_size.fv_w
 
-#define MODWIDTH	(NODEWIDTH)
-#define MODHEIGHT	(NODEHEIGHT * (NNODES / 2) + NODESPACE * (NNODES / 2 - 1))
-#define MODDEPTH	(NODEDEPTH * (NNODES / 2) + \
-			    (NODESPACE + NODESHIFT) * (NNODES / 2 - 1))
+#define CAGESPACE	physdim_top->pd_contains->pd_contains->pd_space
+#define CAGEHEIGHT	physdim_top->pd_contains->pd_contains->pd_size.fv_h
 
-#define CAGEHEIGHT	(NODEHEIGHT * (NNODES / 2) + \
-			    (NODESPACE * (NNODES / 2 - 1)))
-#define CABWIDTH	(MODWIDTH * NMODS + MODSPACE * (NMODS - 1))
+#define MODWIDTH	physdim_top->pd_contains->pd_contains->pd_contains->pd_size.fv_w
+#define MODDEPTH	physdim_top->pd_contains->pd_contains->pd_contains->pd_size.fv_d
+#define MODSPACE	physdim_top->pd_contains->pd_contains->pd_contains->pd_space
 
-#define ROWDEPTH	(MODDEPTH)
+#define NODESPACE	physdim_top->pd_contains->pd_contains->pd_contains->pd_contains->pd_contains->pd_space
+#define NODESHIFT	physdim_top->pd_contains->pd_contains->pd_contains->pd_contains->pd_offset.fv_d
+#define NODEWIDTH	physdim_top->pd_contains->pd_contains->pd_contains->pd_contains->pd_contains->pd_size.fv_w
+#define NODEHEIGHT	physdim_top->pd_contains->pd_contains->pd_contains->pd_contains->pd_contains->pd_size.fv_h
+#define NODEDEPTH	physdim_top->pd_contains->pd_contains->pd_contains->pd_contains->pd_contains->pd_size.fv_d
 
 #define WIV_SWIDTH	(widim.iv_w * st.st_winsp.iv_x)
 #define WIV_SHEIGHT	(widim.iv_h * st.st_winsp.iv_y)
