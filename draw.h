@@ -18,6 +18,8 @@ struct fill;
 #define NDF_NOTWEEN	(1<<0)		/* don't perform node tweening */
 #define NDF_IGNSN	(1<<1)		/* ignore selnode mods */
 
+__BEGIN_DECLS
+
 /* draw.c */
 void	 draw_scene(void);
 void	 draw_node(struct node *, int);
@@ -30,10 +32,14 @@ void	 make_ground(void);
 void	 make_cluster(void);
 void	 make_selnodes(void);
 
+void	 draw_text(const char *, struct fvec *, struct fill *);
+
 /* widget.c */
 void	 draw_cube(const struct fvec *, const struct fill *, int);
 void	 draw_sphere(const struct fvec *, const struct fill *, int);
 void	 draw_square(const struct fvec *, const struct fill *);
+
+__END_DECLS
 
 extern unsigned int dl_cluster[2];
 extern unsigned int dl_ground[2];

@@ -59,6 +59,8 @@ struct ivec {
 #define iv_v iv_y
 };
 
+__BEGIN_DECLS
+
 /* math.c */
 int	 negmod(int, int);
 double	 negmodf(double, double);
@@ -79,5 +81,7 @@ void	 vec_addto(const struct fvec *, struct fvec *);
 void	 vec_subfrom(const struct fvec *, struct fvec *);
 void	 vec_sub(struct fvec *, const struct fvec *, const struct fvec *);
 void	 vec_rotate(struct fvec *, const struct fvec *, double deg);
+
+__END_DECLS
 
 #endif /* _XMATH_H_ */
