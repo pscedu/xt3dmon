@@ -14,7 +14,6 @@
 #include "xmath.h"
 
 struct node	 *nodes;
-size_t		  nodessiz;
 struct node	**node_nidmap;		/* node ID (nid) lookup to node pointer */
 struct node	**node_wimap;		/* X/Y/Z lookup to node pointer */
 int		  node_wimap_len;

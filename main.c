@@ -839,6 +839,7 @@ main(int argc, char *argv[])
 {
 	int flags, c, sw, sh, j, Mflag;
 	const char *cfgfn;
+	size_t siz;
 	long l;
 
 	progname = argv[0];
@@ -933,8 +934,8 @@ glutInitWindowPosition(0, 0);
 	parse_colors(_PATH_COLORS);
 	parse_machconf(cfgfn);
 
-	nodessiz = NROWS * NCABS * NCAGES * NMODS * NNODES;
-	if ((nodes = calloc(nodessiz, sizeof(*nodes))) == NULL)
+	nodes = NROWS * NCABS * NCAGES * NMODS * NNODES;
+	if ((nodes = calloc(siz, sizeof(*nodes))) == NULL)
 		err(1, "calloc");
 	if ((node_nidmap = calloc(machine.m_nidmax,
 	    sizeof(*node_nidmap))) == NULL)

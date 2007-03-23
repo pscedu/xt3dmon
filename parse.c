@@ -225,7 +225,6 @@ parse_node(const struct datasrc *ds)
 	size_t j;
 
 	ivec_set(&twidim, 0, 0, 0);
-	memset(nodes, 0, nodessiz);
 	/* XXX overflow */
 	memset(node_nidmap, 0, machine.m_nidmax * sizeof(*node_nidmap));
 	memset(node_wimap, 0, node_wimap_len * sizeof(*node_wimap));

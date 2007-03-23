@@ -62,7 +62,6 @@ struct node	*node_for_pc(const struct physcoord *);
 	node_wimap[(x) * widim.iv_y * widim.iv_z + (y) * widim.iv_z + (z)]
 
 extern struct node	 *nodes;
-extern size_t		  nodessiz;
 extern struct node	**node_nidmap;
 extern struct node	**node_wimap;
 extern int		  node_wimap_len;
