@@ -203,6 +203,8 @@ physdim_check(void)
 			for (; pd != NULL && pd->pd_containedby != NULL;
 			    pd = spd) {
 				spd = pd->pd_containedby;
+				if (!vec_eq(&spd->pd_size, &fv_zero))
+					continue;
 				spd->pd_size = pd->pd_size;
 				spd->pd_size.fv_val[pd->pd_spans] =
 				    pd->pd_size.fv_val[pd->pd_spans] * pd->pd_mag +
