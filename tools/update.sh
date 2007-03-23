@@ -39,3 +39,6 @@ perl xtwmon.pl
 if ! [ -e $servroot/data/node ]; then
 	echo "data/node not there!!" >&2
 fi
+
+[ -e $servroot/data/latest-archive/.last/node ] && \
+    gzip $servroot/data/latest-archive/.last/node
