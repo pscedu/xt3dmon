@@ -1,5 +1,8 @@
 /* $Id$ */
 
+#ifndef _PHYS_H
+#define _PHYS_H
+
 #include "queue.h"
 #include "xmath.h"
 
@@ -20,3 +23,5 @@ struct physdim {
 #define PDF_SKEL (1<<0)
 
 extern struct physdim	*physdim_top;
+
+#endif /* _PHYS_H */
