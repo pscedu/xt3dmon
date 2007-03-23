@@ -964,8 +964,9 @@ panel_refresh_date(struct panel *p)
 		struct stat stb;
 
 		/* XXX save stat info in ds_open */
-		snprintf(fn, sizeof(fn), "%s/%s",
-		    _PATH_SESSIONS, ssp->ss_sid);
+		snprintf(fn, sizeof(fn), "%s/%s/%s",
+		    _PATH_SESSIONS, ssp->ss_sid,
+		    datasrcs[DS_NODE].ds_name);
 		if (stat(fn, &stb) == -1)
 			err(1, "stat %s", fn);
 		now = stb.st_mtime;
