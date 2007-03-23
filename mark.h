@@ -11,7 +11,7 @@ struct mark {
 
 SLIST_HEAD(markhd, mark);
 
-void mark_add(struct fvec *, struct fill *fp);
+void mark_add(struct fvec *, struct fill *);
 void mark_clear(void);
 void mark_draw(void);
 
