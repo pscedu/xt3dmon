@@ -217,9 +217,9 @@ parse_node(const struct datasrc *ds)
 	int enabled, jobid, temp, yodid, nfails, lustat;
 	int lineno, nid, x, y, z, stat;
 	char buf[BUFSIZ], *s, *field;
+	struct node *n, **np;
 	struct physcoord pc;
 	struct ivec twidim;
-	struct node *node;
 	struct job *job;
 	struct yod *yod;
 	size_t j;
@@ -229,6 +229,12 @@ parse_node(const struct datasrc *ds)
 	memset(node_nidmap, 0, machine.m_nidmax * sizeof(*node_nidmap));
 	memset(node_wimap, 0, node_wimap_len * sizeof(*node_wimap));
 	mach_drain = 0;
+
+	NODE_FOREACH_WI(n, np) {
+		n->n_flags &= ~NF_VALID;
+		n->n_job = NULL;
+		n->n_yod = NULL;
+	}
 
 	lineno = 0;
 	while (us_gets(ds->ds_us, buf, sizeof(buf)) != NULL) {
@@ -271,13 +277,13 @@ parse_node(const struct datasrc *ds)
 		PARSENUM(s, nfails, INT_MAX);
 		PARSECHAR(s, lustat);
 
-		node = node_for_pc(&pc);
-		node->n_nid = nid;
-		node_nidmap[nid] = node;
-		NODE_WIMAP(x, y, z) = node;
-		node->n_wiv.iv_x = x;
-		node->n_wiv.iv_y = y;
-		node->n_wiv.iv_z = z;
+		n = node_for_pc(&pc);
+		n->n_nid = nid;
+		node_nidmap[nid] = n;
+		NODE_WIMAP(x, y, z) = n;
+		n->n_wiv.iv_x = x;
+		n->n_wiv.iv_y = y;
+		n->n_wiv.iv_z = z;
 
 		twidim.iv_w = MAX(x, twidim.iv_w);
 		twidim.iv_h = MAX(y, twidim.iv_h);
@@ -285,16 +291,16 @@ parse_node(const struct datasrc *ds)
 
 		switch (stat) {
 		case 'c': /* compute */
-			node->n_state = SC_FREE;
+			n->n_state = SC_FREE;
 
 			if (enabled == 0)
-				node->n_state = SC_DISABLED;
+				n->n_state = SC_DISABLED;
 			break;
 		case 'n': /* down */
-			node->n_state = SC_DOWN;
+			n->n_state = SC_DOWN;
 			break;
 		case 'i': /* service */
-			node->n_state = SC_SVC;
+			n->n_state = SC_SVC;
 			break;
 		default:
 			warnx("node %d: bad state %c",
@@ -304,13 +310,13 @@ parse_node(const struct datasrc *ds)
 
 		switch (lustat) {
 		case 'c':
-			node->n_lustat = LS_CLEAN;
+			n->n_lustat = LS_CLEAN;
 			break;
 		case 'd':
-			node->n_lustat = LS_DIRTY;
+			n->n_lustat = LS_DIRTY;
 			break;
 		case 'r':
-			node->n_lustat = LS_RECOVER;
+			n->n_lustat = LS_RECOVER;
 			break;
 		default:
 			warnx("node %d: invalid lustat %c",
@@ -318,31 +324,31 @@ parse_node(const struct datasrc *ds)
 			goto bad;
 		}
 
-		node->n_temp = temp ? temp : DV_NODATA;
+		n->n_temp = temp ? temp : DV_NODATA;
 
 		if (jobid) {
-			if (node->n_state == SC_FREE)
-				node->n_state = SC_USED;
-			node->n_job = obj_get(&jobid, &job_list);
-			node->n_job->j_id = jobid;
-			if (strcmp(node->n_job->j_name, "") == 0)
-				snprintf(node->n_job->j_name,
-				    sizeof(node->n_job->j_name),
+			if (n->n_state == SC_FREE)
+				n->n_state = SC_USED;
+			n->n_job = obj_get(&jobid, &job_list);
+			n->n_job->j_id = jobid;
+			if (strcmp(n->n_job->j_name, "") == 0)
+				snprintf(n->n_job->j_name,
+				    sizeof(n->n_job->j_name),
 				    "job %d", jobid);
 		}
 
 		if (yodid) {
-			if (node->n_state == SC_FREE)
-				node->n_state = SC_USED;
-			node->n_yod = obj_get(&yodid, &yod_list);
-			node->n_yod->y_id = yodid;
-			if (strcmp(node->n_yod->y_cmd, "") == 0)
-				snprintf(node->n_yod->y_cmd,
-				    sizeof(node->n_yod->y_cmd),
+			if (n->n_state == SC_FREE)
+				n->n_state = SC_USED;
+			n->n_yod = obj_get(&yodid, &yod_list);
+			n->n_yod->y_id = yodid;
+			if (strcmp(n->n_yod->y_cmd, "") == 0)
+				snprintf(n->n_yod->y_cmd,
+				    sizeof(n->n_yod->y_cmd),
 				    "yod %d", yodid);
 		}
 
-		node->n_flags |= NF_VALID;
+		n->n_flags |= NF_VALID;
 		continue;
 bad:
 		prerror("node", lineno, buf, s);
