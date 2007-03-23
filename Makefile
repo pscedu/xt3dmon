@@ -137,7 +137,7 @@ lines:
 	    !(mach-parse|mach-lex|dx-parse|dx-lex).c *.y *.l' | tail -1
 
 run: xt3dmon
-	./xt3dmon
+	./xt3dmon -M
 
 # -gldebug
 debug: xt3dmon
