@@ -92,7 +92,7 @@ LFLAGS += -P"$$(echo $@ | sed 's/-.*//')"
 INCS = $$(echo ${CFLAGS} | \
     awk '{for (n = 1; n <= NF; n++) if (match($$n, /^-I/)) printf "%s ", $$n }')
 INCS += $$(if cc -v 2>&1 | grep -q gcc; then cc -print-search-dirs | \
-    grep install | awk '{print "-I" $$2 "include"}' | sed 's/:/ -I/'; fi) 
+    grep install | awk '{print "-I" $$2 "include"}' | sed 's/:/ -I/'; fi)
 
 OBJS = $(patsubst %.c,%.o,$(filter %.c,${SRCS}))
 OBJS+= $(patsubst %.y,%.o,$(filter %.y,${SRCS}))
@@ -136,12 +136,12 @@ lines:
 	@shopt -s extglob && eval 'wc -l !(mach-parse|dx-parse).h \
 	    !(mach-parse|mach-lex|dx-parse|dx-lex).c *.y *.l' | tail -1
 
-run: xt3dmon
-	./xt3dmon -M
+run: ${PROG}
+	./${PROG} -M
 
 # -gldebug
-debug: xt3dmon
-	gdb -q ./xt3dmon
+debug: ${PROG}
+	gdb -q ./${PROG}
 
 DIST_LN_DIRS = img data scripts
 DIST_DIRS = snaps
