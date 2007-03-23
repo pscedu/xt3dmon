@@ -386,9 +386,10 @@ node_tween_dir(float *curpos, float *targetpos)
 __inline void
 draw_node_cores(const struct node *n, const struct fill *fp)
 {
+	const struct fill *fr_fp;
+	struct ivec *coredim;
 	struct fvec dim, adj;
 	struct ivec iv, lvl;
-	struct ivec *coredim;
 	int ncores;
 
 	ncores = n->n_yod && n->n_yod->y_single ? 1 : 2;
@@ -442,11 +443,16 @@ draw_node_cores(const struct node *n, const struct fill *fp)
 
 	dim = *n->n_dimp;
 
+	if (fp->f_flags & FF_SKEL)
+		fr_fp = fp;
+	else
+		fr_fp = &fill_frame;
+
 	glPushMatrix();
 	glTranslatef(0.0001, 0.0001, 0.0001);
 	glLineWidth(0.01f);
-	glColor4f(fill_frame.f_r, fill_frame.f_g,
-	    fill_frame.f_b, fill_frame.f_a);
+	glColor4f(fr_fp->f_r, fr_fp->f_g,
+	    fr_fp->f_b, fr_fp->f_a);
 	glBegin(GL_LINES);
 	/* Draw core-separating lines in X. */
 	for (iv.iv_y = 0; iv.iv_y <= coredim->iv_h; iv.iv_y++)
