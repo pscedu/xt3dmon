@@ -1,7 +1,7 @@
 /* $Id$ */
 
-#ifndef _COMPAT_H
-#define _COMPAT_H
+#ifndef _COMPAT_H_
+#define _COMPAT_H_
 
 #ifdef _MSC_VER
 
@@ -149,4 +149,4 @@ void post_redisplay(void);
 #define EBADE 1001
 #endif
 
-#endif /* _COMPAT_H */
+#endif /* _COMPAT_H_ */

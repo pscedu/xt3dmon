@@ -1,7 +1,7 @@
 /* $Id$ */
 
-#ifndef _PHYS_H
-#define _PHYS_H
+#ifndef _PHYS_H_
+#define _PHYS_H_
 
 #include "queue.h"
 #include "xmath.h"
@@ -24,4 +24,4 @@ struct physdim {
 
 extern struct physdim	*physdim_top;
 
-#endif /* _PHYS_H */
+#endif /* _PHYS_H_ */

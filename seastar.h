@@ -1,9 +1,7 @@
 /* $Id$ */
 
-#ifndef __SEASTAR_H__
-#define __SEASTAR_H__
-
-#include "mon.h"
+#ifndef _SEASTAR_H_
+#define _SEASTAR_H_
 
 #define NVC		4
 
