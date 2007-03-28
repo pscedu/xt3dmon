@@ -224,17 +224,18 @@ parse_node(const struct datasrc *ds)
 	struct yod *yod;
 	size_t j;
 
-	ivec_set(&twidim, 0, 0, 0);
-	/* XXX overflow */
-	memset(node_nidmap, 0, machine.m_nidmax * sizeof(*node_nidmap));
-	memset(node_wimap, 0, node_wimap_len * sizeof(*node_wimap));
-	mach_drain = 0;
 
 	NODE_FOREACH_WI(n, np) {
 		n->n_flags &= ~NF_VALID;
 		n->n_job = NULL;
 		n->n_yod = NULL;
 	}
+
+	ivec_set(&twidim, 0, 0, 0);
+	/* XXX overflow */
+	memset(node_nidmap, 0, machine.m_nidmax * sizeof(*node_nidmap));
+	memset(node_wimap, 0, node_wimap_len * sizeof(*node_wimap));
+	mach_drain = 0;
 
 	lineno = 0;
 	while (us_gets(ds->ds_us, buf, sizeof(buf)) != NULL) {
