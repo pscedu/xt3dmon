@@ -103,6 +103,7 @@ todo
   visible
 - remove SPF_PROBE and replace with different callback
 	- XXX remove callback entirely?
+- investigate MGL for X-less OpenGL for server mode
 
 xtwmon
 - rename arbiter-raw.pl?data=nodes to data=node
