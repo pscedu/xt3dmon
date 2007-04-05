@@ -96,12 +96,13 @@ struct dmode dmodes[] = {
  /* 0 */ { "job",	"Job" },
  /* 1 */ { "temp",	"Temperature" },
  /* 2 */ { "yod",	"Yod" },
- /* 3 */ { NULL,	NULL },				/* Egg */
- /* 4 */ { NULL,	NULL },				/* Egg */
+ /* 3 */ { NULL,	NULL },				/* egg */
+ /* 4 */ { NULL,	NULL },				/* egg */
  /* 5 */ { NULL,	"Same" },
  /* 6 */ { "rte",	"Routing Errors" },
  /* 7 */ { "seastar",	"Seastar" },
- /* 8 */ { NULL,	"Lustre Status" }
+ /* 8 */ { NULL,	"Lustre Status" },
+ /* 9 */ { NULL,	NULL }				/* egg */
 };
 
 struct state st = {
