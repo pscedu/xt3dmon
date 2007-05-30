@@ -12,7 +12,7 @@ my $err = 1;
 # start config
 
 my $smwhost = "smw";
-my $port = 3306;
+my $port = 3307;
 my $user = "sys_mgmt";
 my $pass = "sys_mgmt";
 my $db   = "XTAdmin";
