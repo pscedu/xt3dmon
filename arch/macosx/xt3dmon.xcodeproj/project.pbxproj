@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4FB991290C90973E00078347 /* mach-lex.c in Sources */ = {isa = PBXBuildFile; fileRef = 4FB991280C90973E00078347 /* mach-lex.c */; };
+		4FB9912B0C90975100078347 /* mach-parse.c in Sources */ = {isa = PBXBuildFile; fileRef = 4FB9912A0C90975100078347 /* mach-parse.c */; };
+		4FB991300C90978A00078347 /* mach.c in Sources */ = {isa = PBXBuildFile; fileRef = 4FB9912F0C90978A00078347 /* mach.c */; };
 		6D0818630B56226100BBEAE2 /* selnid.c in Sources */ = {isa = PBXBuildFile; fileRef = 6D0818620B56226100BBEAE2 /* selnid.c */; };
 		6DBE1E4A0919605200AFFCDC /* buf.c in Sources */ = {isa = PBXBuildFile; fileRef = 6DBE1E250919605200AFFCDC /* buf.c */; };
 		6DBE1E4B0919605200AFFCDC /* callout.c in Sources */ = {isa = PBXBuildFile; fileRef = 6DBE1E270919605200AFFCDC /* callout.c */; };
@@ -44,8 +47,6 @@
 		6DFABA75096ECF12001374A0 /* text.c in Sources */ = {isa = PBXBuildFile; fileRef = 6DFABA6C096ECF12001374A0 /* text.c */; };
 		6DFABA76096ECF12001374A0 /* ustream.c in Sources */ = {isa = PBXBuildFile; fileRef = 6DFABA6D096ECF12001374A0 /* ustream.c */; };
 		6DFABA77096ECF12001374A0 /* yod.c in Sources */ = {isa = PBXBuildFile; fileRef = 6DFABA6E096ECF12001374A0 /* yod.c */; };
-		6DFABA95096ED0AB001374A0 /* phys-lex.c in Sources */ = {isa = PBXBuildFile; fileRef = 6DFABA92096ED0AB001374A0 /* phys-lex.c */; };
-		6DFABA96096ED0AB001374A0 /* phys-parse.c in Sources */ = {isa = PBXBuildFile; fileRef = 6DFABA93096ED0AB001374A0 /* phys-parse.c */; };
 		6DFABAA0096ED102001374A0 /* widget.c in Sources */ = {isa = PBXBuildFile; fileRef = 6DFABA9F096ED102001374A0 /* widget.c */; };
 		9B61523F0A7922110008CDA2 /* rte.c in Sources */ = {isa = PBXBuildFile; fileRef = 9B61523E0A7922110008CDA2 /* rte.c */; };
 		9B6152500A7940D60008CDA2 /* gss.c in Sources */ = {isa = PBXBuildFile; fileRef = 9B61524F0A7940D60008CDA2 /* gss.c */; };
@@ -70,9 +71,12 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		4FB991280C90973E00078347 /* mach-lex.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = "mach-lex.c"; path = "../../mach-lex.c"; sourceTree = SOURCE_ROOT; };
+		4FB9912A0C90975100078347 /* mach-parse.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = "mach-parse.c"; path = "../../mach-parse.c"; sourceTree = SOURCE_ROOT; };
+		4FB9912F0C90978A00078347 /* mach.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = mach.c; path = ../../mach.c; sourceTree = SOURCE_ROOT; };
 		6D0818620B56226100BBEAE2 /* selnid.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = selnid.c; path = ../../selnid.c; sourceTree = SOURCE_ROOT; };
 		6D1A30320976C79A008279F3 /* xmath.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = xmath.h; path = ../../xmath.h; sourceTree = SOURCE_ROOT; };
-		6DBE1E0B09195F5800AFFCDC /* xt3dmon.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = xt3dmon.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6DBE1E0B09195F5800AFFCDC /* xt3dmon.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = xt3dmon.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6DBE1E250919605200AFFCDC /* buf.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = buf.c; path = ../../buf.c; sourceTree = SOURCE_ROOT; };
 		6DBE1E260919605200AFFCDC /* buf.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = buf.h; path = ../../buf.h; sourceTree = SOURCE_ROOT; };
 		6DBE1E270919605200AFFCDC /* callout.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = callout.c; path = ../../callout.c; sourceTree = SOURCE_ROOT; };
@@ -117,8 +121,6 @@
 		6DFABA6C096ECF12001374A0 /* text.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = text.c; path = ../../text.c; sourceTree = SOURCE_ROOT; };
 		6DFABA6D096ECF12001374A0 /* ustream.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = ustream.c; path = ../../ustream.c; sourceTree = SOURCE_ROOT; };
 		6DFABA6E096ECF12001374A0 /* yod.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = yod.c; path = ../../yod.c; sourceTree = SOURCE_ROOT; };
-		6DFABA92096ED0AB001374A0 /* phys-lex.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = "phys-lex.c"; path = "../../phys-lex.c"; sourceTree = SOURCE_ROOT; };
-		6DFABA93096ED0AB001374A0 /* phys-parse.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = "phys-parse.c"; path = "../../phys-parse.c"; sourceTree = SOURCE_ROOT; };
 		6DFABA9F096ED102001374A0 /* widget.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = widget.c; path = ../../widget.c; sourceTree = SOURCE_ROOT; };
 		6DFABAA1096ED116001374A0 /* y.tab.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = y.tab.h; path = ../../y.tab.h; sourceTree = SOURCE_ROOT; };
 		9B61523E0A7922110008CDA2 /* rte.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = rte.c; path = ../../rte.c; sourceTree = SOURCE_ROOT; };
@@ -283,6 +285,9 @@
 				D2ABB87B0A18E10F005762AF /* env.c */,
 				D2ABB87C0A18E10F005762AF /* fill.c */,
 				D2ABB87D0A18E10F005762AF /* mark.c */,
+				4FB991280C90973E00078347 /* mach-lex.c */,
+				4FB9912F0C90978A00078347 /* mach.c */,
+				4FB9912A0C90975100078347 /* mach-parse.c */,
 				D2ABB8690A18E01C005762AF /* prefresh.c */,
 				D2ABB86A0A18E01C005762AF /* reel.c */,
 				D25936CB09BE11DE00961C5E /* ssl.c */,
@@ -312,8 +317,6 @@
 				6DBE1E3A0919605200AFFCDC /* objlist.c */,
 				6DBE1E3B0919605200AFFCDC /* panel.c */,
 				6DBE1E3C0919605200AFFCDC /* parse.c */,
-				6DFABA92096ED0AB001374A0 /* phys-lex.c */,
-				6DFABA93096ED0AB001374A0 /* phys-parse.c */,
 				6DBE1E3E0919605200AFFCDC /* png.c */,
 				6DBE1E400919605200AFFCDC /* select.c */,
 				6DBE1E410919605200AFFCDC /* selnode.c */,
@@ -419,8 +422,6 @@
 				6DFABA75096ECF12001374A0 /* text.c in Sources */,
 				6DFABA76096ECF12001374A0 /* ustream.c in Sources */,
 				6DFABA77096ECF12001374A0 /* yod.c in Sources */,
-				6DFABA95096ED0AB001374A0 /* phys-lex.c in Sources */,
-				6DFABA96096ED0AB001374A0 /* phys-parse.c in Sources */,
 				6DFABAA0096ED102001374A0 /* widget.c in Sources */,
 				D25936D209BE11DE00961C5E /* ssl.c in Sources */,
 				D25936D309BE11DE00961C5E /* ustrdtab.c in Sources */,
@@ -440,6 +441,9 @@
 				9B6152500A7940D60008CDA2 /* gss.c in Sources */,
 				6DF424570B55AAD60021806F /* ustrop-gzip.c in Sources */,
 				6D0818630B56226100BBEAE2 /* selnid.c in Sources */,
+				4FB991290C90973E00078347 /* mach-lex.c in Sources */,
+				4FB9912B0C90975100078347 /* mach-parse.c in Sources */,
+				4FB991300C90978A00078347 /* mach.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
