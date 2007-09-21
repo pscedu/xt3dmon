@@ -291,16 +291,21 @@ parse_node(const struct datasrc *ds)
 			nstate = SC_SVC;
 			break;
 		default:
-			warnx("node %d: bad state %c",
-			    nid, stat);
+			warnx("node %d: bad state %c", nid, stat);
 			goto bad;
 		}
 
 		n = node_for_pc(&pc);
+		if (node_nidmap[nid]) {
+			warnx("already saw node with nid %d", nid);
+			goto bad;
+		}
+		if (NODE_WIMAP(x, y, z)) {
+			warnx("already saw node wiv %d:%d:%d", x, y, z);
+			goto bad;
+		}
 		n->n_nid = nid;
-// XXX if (node_nidmap[nid]) goto bad;
 		node_nidmap[nid] = n;
-// XXX if (NODE_WIMAP(x, y, z)) goto bad;
 		NODE_WIMAP(x, y, z) = n;
 		n->n_wiv.iv_x = x;
 		n->n_wiv.iv_y = y;
