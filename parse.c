@@ -215,7 +215,7 @@ void
 parse_node(const struct datasrc *ds)
 {
 	int enabled, jobid, temp, yodid, nfails, lustat;
-	int lineno, nid, x, y, z, stat;
+	int lineno, nid, x, y, z, stat, nstate;
 	char buf[BUFSIZ], *s, *field;
 	struct node *n, **np;
 	struct physcoord pc;
@@ -223,7 +223,6 @@ parse_node(const struct datasrc *ds)
 	struct job *job;
 	struct yod *yod;
 	size_t j;
-
 
 	NODE_FOREACH_WI(n, np) {
 		n->n_flags &= ~NF_VALID;
@@ -278,36 +277,39 @@ parse_node(const struct datasrc *ds)
 		PARSENUM(s, nfails, INT_MAX);
 		PARSECHAR(s, lustat);
 
-		n = node_for_pc(&pc);
-		n->n_nid = nid;
-		node_nidmap[nid] = n;
-		NODE_WIMAP(x, y, z) = n;
-		n->n_wiv.iv_x = x;
-		n->n_wiv.iv_y = y;
-		n->n_wiv.iv_z = z;
-
-		twidim.iv_w = MAX(x, twidim.iv_w);
-		twidim.iv_h = MAX(y, twidim.iv_h);
-		twidim.iv_d = MAX(z, twidim.iv_d);
-
 		switch (stat) {
 		case 'c': /* compute */
-			n->n_state = SC_FREE;
+			nstate = SC_FREE;
 
 			if (enabled == 0)
-				n->n_state = SC_DISABLED;
+				nstate = SC_DISABLED;
 			break;
 		case 'n': /* down */
-			n->n_state = SC_DOWN;
+			nstate = SC_DOWN;
 			break;
 		case 'i': /* service */
-			n->n_state = SC_SVC;
+			nstate = SC_SVC;
 			break;
 		default:
 			warnx("node %d: bad state %c",
 			    nid, stat);
 			goto bad;
 		}
+
+		n = node_for_pc(&pc);
+		n->n_nid = nid;
+// XXX if (node_nidmap[nid]) goto bad;
+		node_nidmap[nid] = n;
+// XXX if (NODE_WIMAP(x, y, z)) goto bad;
+		NODE_WIMAP(x, y, z) = n;
+		n->n_wiv.iv_x = x;
+		n->n_wiv.iv_y = y;
+		n->n_wiv.iv_z = z;
+		n->n_state = nstate;
+
+		twidim.iv_w = MAX(x, twidim.iv_w);
+		twidim.iv_h = MAX(y, twidim.iv_h);
+		twidim.iv_d = MAX(z, twidim.iv_d);
 
 		switch (lustat) {
 		case 'c':
