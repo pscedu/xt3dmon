@@ -427,6 +427,7 @@ panel_refresh_legend(struct panel *p)
 		    PWARG_GSCB, gscb_pw_hlnc,
 		    PWARG_CBARG_INT, NC_ALL, PWARG_LAST);
 
+		pwidget_group_start(p);
 		for (j = 0; j < NSC; j++) {
 			if (statusclass[j].nc_nmemb == 0)
 				continue;
@@ -442,6 +443,8 @@ panel_refresh_legend(struct panel *p)
 			    PWARG_SPRIO, 0,
 			    PWARG_GSCB, gscb_pw_hlnc,
 			    PWARG_CBARG_INT, NSC + j, PWARG_LAST);
+		pwidget_group_end(p);
+
 		cmp = pwidget_cmp;
 		break;
 	case DM_RTUNK:
