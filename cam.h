@@ -9,7 +9,7 @@ void	 cam_rotate(const struct fvec *, const struct fvec *, int, int);
 void	 cam_roll(double);
 void	 cam_look(void);
 void	 cam_calcuv(struct fvec *);
-void	 cam_bird(void);
+void	 cam_bird(int);
 
 #define REVT_LKAVG	0	/* Average look across center. */
 #define REVT_LKCEN	1	/* Always look at center. */

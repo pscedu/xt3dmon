@@ -52,6 +52,8 @@ struct dx_action {
 #define dxa_focus		dxa_fv
 #define dxa_hl			dxa_intg
 
+#define dxa_bird_vmode		dxa_intg
+
 #define dxa_move_amt		dxa_dbl
 #define dxa_move_dir		dxa_intg
 #define dxa_move_secs		dxa_intg2

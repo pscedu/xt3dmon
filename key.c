@@ -864,7 +864,7 @@ gl_keyh_default(unsigned char key, int u, int v)
 		break;
 	case 'O':
 		tween_push();
-		cam_bird();
+		cam_bird(st.st_vmode);
 		tween_pop();
 		break;
 	case 'o':

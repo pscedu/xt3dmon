@@ -81,6 +81,7 @@ struct dxlist dxlist = TAILQ_HEAD_INITIALIZER(dxlist);
 %type <intg>	cycle_method;
 %type <intg>	dim;
 %type <intg>	setmodifier;
+%type <intg>	birdvm;
 %type <intg>	opts opts_l panels panels_l;
 %type <nidlist>	nidlist subsel_list selnode_list;
 
@@ -230,11 +231,26 @@ nidlist		: STRING {
 		}
 		;
 
-conf		: DGT_BIRD {
+birdvm		: STRING {
+			if (strcmp($1, "phys") == 0)
+				$$ = VM_PHYS;
+			else if (strcmp($1, "wione") == 0)
+				$$ = VM_WIONE;
+			else if (strcmp($1, "wired") == 0)
+				$$ = VM_WIRED;
+			else if (strcmp($1, "vneighbor") == 0)
+				$$ = VM_VNEIGHBOR;
+			else
+				yyerror("invalid bird vmode: %s", $1);
+			free($1);
+		} |		{ $$ = -1; }
+
+conf		: DGT_BIRD birdvm {
 			struct dx_action dxa;
 
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DGT_BIRD;
+			dxa.dxa_bird_vmode = $2;
 			dxa_add(&dxa);
 
 			memset(&dxa, 0, sizeof(dxa));

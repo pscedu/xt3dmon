@@ -400,7 +400,7 @@ gscb_pw_help(struct glname *gn, int flags)
 			break;
 		case HF_REORIENT:
 			tween_push();
-			cam_bird();
+			cam_bird(st.st_vmode);
 			tween_pop();
 			break;
 		case HF_PRTSN:

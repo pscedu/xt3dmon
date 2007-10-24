@@ -428,8 +428,14 @@ are ignored.
 All other lines must contain one action directive,
 which may be any of the following:
 .Bl -tag -width Ds
-.It Ic bird
+.It Ic bird Op Ar vmode
 Move to a bird's eye view.
+Recognized values for
+.Ar vmode
+are
+.Ic phys , wione , wired ,
+and
+.Ic vneighbor .
 .It Xo
 .Ic camlook
 .Fa x , Ns Fa y , Ns Fa z

@@ -348,10 +348,11 @@ st.st_ur = 2.0 * M_PI / c;
 }
 
 int
-dxp_bird(__unused const struct dx_action *dxa)
+dxp_bird(const struct dx_action *dxa)
 {
 	tween_push();
-	cam_bird();
+	cam_bird(dxa->dxa_bird_vmode == -1 ?
+	    st.st_vmode : dxa->dxa_bird_vmode);
 	tween_pop();
 	return (1);
 }

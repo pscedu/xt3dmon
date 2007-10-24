@@ -301,11 +301,11 @@ cam_roll(double amt)
 }
 
 void
-cam_bird(void)
+cam_bird(int vm)
 {
 	struct fvec cen, sph;
 
-	switch (st.st_vmode) {
+	switch (vm) {
 	case VM_PHYS:
 		/* XXX: depend on CL_WIDTH/HEIGHT/DEPTH */
 		vec_set(&st.st_v, -17.80, 30.76, 51.92);
@@ -321,12 +321,12 @@ cam_bird(void)
 		    1.0 * widim.iv_x * st.st_winsp.iv_x,
 		    1.0 * widim.iv_y * st.st_winsp.iv_y,
 		    1.0 * widim.iv_z * st.st_winsp.iv_z);
-		sph.fv_r = 2.5 * widim.iv_x * st.st_winsp.iv_x;
+		sph.fv_r = 2.7 * widim.iv_x * st.st_winsp.iv_x;
 		sph.fv_t = M_PI / 2.0 + atan2(cen.fv_z, cen.fv_x);
-		sph.fv_p = M_PI / 4.0;
+		sph.fv_p = M_PI / 3.0;
 		vec_sphere2cart(&sph, &st.st_v);
 		st.st_v.fv_x += st.st_wioff.iv_x * st.st_winsp.iv_x + cen.fv_w / 2.0;
-		st.st_v.fv_y += st.st_wioff.iv_y * st.st_winsp.iv_y + cen.fv_h / 2.0;
+		st.st_v.fv_y += st.st_wioff.iv_y * st.st_winsp.iv_y + cen.fv_h / 4.0;
 		st.st_v.fv_z += st.st_wioff.iv_z * st.st_winsp.iv_z + cen.fv_d / 2.0;
 		cam_revolvefocus(0.0, 0.01);
 		break;
