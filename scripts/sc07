@@ -1,0 +1,22 @@
+setcap "Viewing jobs in wired mode"
+orbit +x 3.0 45.0
+
+setcap "Changing to physical mode"
+bird phys
+vmode phys
+stall 2
+setcap "Changing to temperature view"
+dmode temp
+stall 2
+setcap "Viewing node temperatures in physical mode"
+orbit +x 1.0 10.0
+
+setcap "Changing to wired mode"
+bird wione
+vmode wione
+stall 2
+setcap "Changing to job view"
+dmode job
+stall 2
+
+exit
