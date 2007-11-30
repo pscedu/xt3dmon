@@ -37,8 +37,9 @@ todo
 - provide if-modified-since in http headers to avoid extra work on
 - divide color wheel among all modes (free/down/disabled/etc)
   and probably keep these the same always
-- cache the current selected stuff to check for short circuiting --
-  if it follows the cursor, this should save on small movements
+- selection shouldn't start from the top down each time; it should
+  start from pretty much where it left off last time and go from
+  bottom to the top (and at each level back down)
 - find some way to alloc wi sel steps once
 - in wione, draw the cube outer planes first, then inner, so gl
   tries to optimize
@@ -66,7 +67,6 @@ todo
 - use NODE_FOREACH_PHYS to fix physvmode alpha problem
 - add panel reporting when new data is available
 - vec_rotate() is busted for large amounts
-- on macos, fix node labels on solid node colors from distances
 - rename NODEWIDTH/HEIGHT/DEPTH cause its phys-only
 - kill job_findbyid, just use obj_get with a flag that prevents creation
 - make job searching bsearch again, since it is sorted
