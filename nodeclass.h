@@ -18,7 +18,11 @@
 #define SC_DOWN		2
 #define SC_USED		3
 #define SC_SVC		4
-#define NSC		5
+#define SC_ADMDOWN	5
+#define SC_ROUTE	6
+#define SC_SUSPECT	7
+#define SC_UNAVAIL	8
+#define NSC		9
 
 /* Temperature class constants. */
 #define TEMP_MIN	18

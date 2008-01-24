@@ -290,6 +290,18 @@ parse_node(const struct datasrc *ds)
 		case 'i': /* service */
 			nstate = SC_SVC;
 			break;
+		case 'd': /* admindown */
+			nstate = SC_ADMDOWN;
+			break;
+		case 'r': /* route */
+			nstate = SC_ROUTE;
+			break;
+		case 's': /* suspect */
+			nstate = SC_SUSPECT;
+			break;
+		case 'u': /* unavail */
+			nstate = SC_UNAVAIL;
+			break;
 		default:
 			warnx("node %d: bad state %c", nid, stat);
 			goto bad;

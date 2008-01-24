@@ -20,7 +20,11 @@ struct nodeclass statusclass[] = {
 	{ "Disabled (PBS)",	FILL_INIT(1.00f, 0.00f, 0.00f), 0 },
 	{ "Down (CPA)",		FILL_INIT(0.66f, 0.66f, 0.66f), 0 },
 	{ "Allocated",		FILL_INITF(1.00f, 0.00f, 0.00f, FF_SKEL), 0 },
-	{ "Service",		FILL_INIT(1.00f, 1.00f, 0.00f), 0 }
+	{ "Service",		FILL_INIT(1.00f, 1.00f, 0.00f), 0 },
+	{ "Admin down",		FILL_INIT(0.33f, 0.66f, 1.00f), 0 },
+	{ "Route",		FILL_INIT(1.00f, 0.80f, 0.00f), 0 },
+	{ "Suspect",		FILL_INIT(0.00f, 1.00f, 0.00f), 0 },
+	{ "Unavail",		FILL_INIT(0.30f, 0.30f, 0.50f), 0 }
 };
 
 struct nodeclass tempclass[] = {
