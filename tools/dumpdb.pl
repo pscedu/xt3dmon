@@ -158,8 +158,17 @@ print { $fh{node} }
 
 $sth->execute();
 while ($row = $sth->fetchrow_hashref()) {
-	my $status = $row->{status} eq "down" ? "n" :
-	    ($row->{type} eq "service" ? "i" : "c");
+	my %stat = (
+		admindown	=> "d",
+		down		=> "n",
+		route		=> "r",
+		suspect		=> "s",
+		unavail		=> "u",
+		up		=> "c",
+	);
+	my $status = $stat{$row->{status}};
+	$status = "i" if $row->{type} eq "service";
+
 	my $lustat = substr $row->{lustat}, 0, 1;
 
 	my $temp = $temp[$row->{r}][$row->{cb}][$row->{cg}][$row->{m}][$row->{n}];
