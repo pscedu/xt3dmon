@@ -361,6 +361,7 @@
 		D37C16800833BE1100B1AA74 /* Project object */ = {
 			isa = PBXProject;
 			buildConfigurationList = 6D787DEF09280CED00D59424 /* Build configuration list for PBXProject "xt3dmon" */;
+			compatibilityVersion = "Xcode 2.4";
 			hasScannedForEncodings = 0;
 			mainGroup = D37C167C0833BE1100B1AA74;
 			productRefGroup = D37C168D0833BE3600B1AA74 /* Products */;
