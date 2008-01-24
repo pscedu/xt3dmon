@@ -982,7 +982,7 @@ panel_refresh_date(struct panel *p)
 	localtime_r(&now, &tm);
 
 	strftime(tmbuf, sizeof(tmbuf), date_fmt, &tm);
-	panel_set_content(p, "(c) 2007 PSC\n%s", tmbuf);
+	panel_set_content(p, "(c) 2008 PSC\n%s", tmbuf);
 }
 
 void
