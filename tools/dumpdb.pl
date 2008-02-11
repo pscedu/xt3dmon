@@ -177,9 +177,9 @@ while ($row = $sth->fetchrow_hashref()) {
 	my $jobid = exists $jmap{$row->{nid}} ? $jmap{$row->{nid}} : 0;
 	my $yodid = exists $ymap{$row->{nid}} ? $ymap{$row->{nid}} : 0;
 
-	$row->{x} = "-1" unless defined $x->{x};
-	$row->{y} = "-1" unless defined $x->{y};
-	$row->{z} = "-1" unless defined $x->{z};
+	$row->{x} = -1 unless defined $row->{x};
+	$row->{y} = -1 unless defined $row->{y};
+	$row->{z} = -1 unless defined $row->{z};
 
 	printf { $fh{node} }
 	#    1   2  3   4   5  6   7  8  9   10  11  12  13  14  15    16
