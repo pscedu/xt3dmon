@@ -1706,7 +1706,6 @@ void
 panel_refresh_pipedim(struct panel *p)
 {
 	static int sav_pipedim;
-	int i;
 
 	if (panel_ready(p) && sav_pipedim == st.st_pipedim)
 		return;
