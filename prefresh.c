@@ -1119,7 +1119,13 @@ panel_refresh_help(struct panel *p)
 			pwidget_add(p, &fill_xparent, "Subselect Selnodes",
 			    PWARG_GSCB, gscb_pw_help,
 			    PWARG_CBARG_INT, HF_SUBSN, PWARG_LAST);
+			pwidget_add(p, &fill_xparent, "Subtoggle Selnodes",
+			    PWARG_GSCB, gscb_pw_help,
+			    PWARG_CBARG_INT, HF_SUBTOG, PWARG_LAST);
 		}
+		pwidget_add(p, &fill_xparent, "Clear Subset",
+		    PWARG_GSCB, gscb_pw_help,
+		    PWARG_CBARG_INT, HF_SUBCL, PWARG_LAST);
 	} else {
 		pwidget_add(p, &fill_xparent,
 		    (p->p_info->pi_stick == PSTICK_TL ||

@@ -30,7 +30,7 @@ struct node {
 
 #define NF_VALID	(1<<0)			/* valid node */
 #define NF_SELNODE	(1<<1)			/* is selected */
-#define NF_SUBSEL	(1<<2)			/* subselection membership */
+#define NF_SUBSET	(1<<2)			/* subset membership */
 #define NF_VMVIS	(1<<3)			/* visibility in vmode */
 
 /* Lustre status. */

@@ -826,7 +826,7 @@ gl_keyh_default(unsigned char key, int u, int v)
 		struct selnode *sn;
 
 		SLIST_FOREACH(sn, &selnodes, sn_next)
-			sn->sn_nodep->n_flags ^= NF_SUBSEL;
+			sn->sn_nodep->n_flags ^= NF_SUBSET;
 		st.st_rf |= RF_CLUSTER | RF_SELNODE;
 		break;
 	    }
