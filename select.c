@@ -710,3 +710,16 @@ gscb_pw_vnmode(struct glname *gn, int flags)
 		panel_rebuild(PANEL_VNMODE);
 	}
 }
+
+void
+gscb_pw_pipedim(struct glname *gn, int flags)
+{
+	int pd = gn->gn_arg_int;
+
+	if (flags & SPF_PROBE)
+		cursor_set(GLUT_CURSOR_INFO);
+	else if (flags == 0) {
+		st.st_pipedim ^= pd;
+		st.st_rf |= RF_CLUSTER | RF_SELNODE;
+	}
+}

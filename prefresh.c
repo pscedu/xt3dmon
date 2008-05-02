@@ -1702,3 +1702,29 @@ panel_refresh_vnmode(struct panel *p)
 	pwidget_endlist(p, 2);
 }
 
+void
+panel_refresh_pipedim(struct panel *p)
+{
+	static int sav_pipedim;
+	int i;
+
+	if (panel_ready(p) && sav_pipedim == st.st_pipedim)
+		return;
+	sav_pipedim = st.st_pipedim;
+
+	panel_set_content(p, "- Pipe Dimensions -");
+	pwidget_startlist(p);
+	pwidget_add(p, (st.st_pipedim & PDIM_X ?
+	    &fill_checked : &fill_unchecked), "X",
+	    PWARG_GSCB, gscb_pw_pipedim,
+	    PWARG_CBARG_INT, PDIM_X, PWARG_LAST);
+	pwidget_add(p, (st.st_pipedim & PDIM_Y ?
+	    &fill_checked : &fill_unchecked), "Y",
+	    PWARG_GSCB, gscb_pw_pipedim,
+	    PWARG_CBARG_INT, PDIM_Y, PWARG_LAST);
+	pwidget_add(p, (st.st_pipedim & PDIM_Z ?
+	    &fill_checked : &fill_unchecked), "Z",
+	    PWARG_GSCB, gscb_pw_pipedim,
+	    PWARG_CBARG_INT, PDIM_Z, PWARG_LAST);
+	pwidget_endlist(p, 1);
+}

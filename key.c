@@ -605,7 +605,7 @@ gl_keyh_pipes(unsigned char key, __unused int u, __unused int v)
 	case 'r': /* color by route errors */
 		st.st_pipemode = PM_RTE;
 		break;
-	case 'd': /* color by direction */
+	case 'd': /* color by torus interconnect dimension */
 		st.st_pipemode = PM_DIR;
 		break;
 	}

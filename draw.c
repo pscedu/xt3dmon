@@ -787,18 +787,24 @@ draw_node_pipes(struct node *n, int is_sel)
 			rsign = -1;
 			/* FALLTHROUGH */
 		case RD_POSX:
+			if ((st.st_pipedim & PDIM_X) == 0)
+				continue;
 			dim = DIM_X;
 			break;
 		case RD_NEGY:
 			rsign = -1;
 			/* FALLTHROUGH */
 		case RD_POSY:
+			if ((st.st_pipedim & PDIM_Y) == 0)
+				continue;
 			dim = DIM_Y;
 			break;
 		case RD_NEGZ:
 			rsign = -1;
 			/* FALLTHROUGH */
 		case RD_POSZ:
+			if ((st.st_pipedim & PDIM_Z) == 0)
+				continue;
 			dim = DIM_Z;
 			break;
 		}
@@ -944,18 +950,24 @@ draw_physpipes(int selpipes)
 				neg = 1;
 				/* FALLTHROUGH */
 			case RD_POSX:
+				if ((st.st_pipedim & PDIM_X) == 0)
+					continue;
 				dim = DIM_X;
 				break;
 			case RD_NEGY:
 				neg = 1;
 				/* FALLTHROUGH */
 			case RD_POSY:
+				if ((st.st_pipedim & PDIM_Y) == 0)
+					continue;
 				dim = DIM_Y;
 				break;
 			case RD_NEGZ:
 				neg = 1;
 				/* FALLTHROUGH */
 			case RD_POSZ:
+				if ((st.st_pipedim & PDIM_Z) == 0)
+					continue;
 				dim = DIM_Z;
 				break;
 			default:

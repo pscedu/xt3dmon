@@ -115,6 +115,7 @@ struct state st = {
 	DM_JOB,						/* which data to show */
 	VM_PHYS,					/* viewing mode */
 	PM_DIR,						/* pipe mode */
+	PDIM_X | PDIM_Y | PDIM_Z,			/* pipe dimensions */
 	SSCNT_NBLK,					/* seastar mode */
 	0,						/* seastar vc */
 	RPS_NEG,					/* rte port set */

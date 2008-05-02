@@ -34,7 +34,8 @@
 #define PANEL_DXCHO	(1<<27)
 #define PANEL_DSCHO	(1<<28)
 #define PANEL_VNMODE	(1<<29)
-#define NPANELS		30
+#define PANEL_PIPEDIM	(1<<30)
+#define NPANELS		31
 
 struct pwidget;
 TAILQ_HEAD(pwidget_group_list, pwidget);
@@ -175,6 +176,7 @@ void panel_refresh_status(struct panel *);
 void panel_refresh_vmode(struct panel *);
 void panel_refresh_wiadj(struct panel *);
 void panel_refresh_vnmode(struct panel *);
+void panel_refresh_pipedim(struct panel *);
 
 extern struct panels	 panels;
 extern struct pinfo	 pinfo[];

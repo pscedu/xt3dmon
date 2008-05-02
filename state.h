@@ -31,6 +31,7 @@ struct state {
 	int		 st_dmode;		/* data mode */
 	int		 st_vmode;		/* view mode */
 	int		 st_pipemode;		/* pipe mode */
+	int		 st_pipedim;		/* which pipe dimensions */
 	int		 st_ssmode;		/* seastar mode */
 	int		 st_ssvc;		/* seastar vc */
 	int		 st_rtepset;		/* route error port set */
@@ -55,6 +56,11 @@ struct state {
 #define PM_DIR		0
 #define PM_RTE		1
 #define NPM		2
+
+/* Pipe dimensions. */
+#define PDIM_X		(1<<0)
+#define PDIM_Y		(1<<1)
+#define PDIM_Z		(1<<2)
 
 /* Rebuild flags. */
 #define RF_DATASRC	(1<<0)
