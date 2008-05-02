@@ -1148,19 +1148,22 @@ draw_pipes(int selpipes)
 		}
 
 		ivec_set(&iv, 0, 0, 0);
-		for (iv.iv_x = 0; iv.iv_x < widim.iv_w; iv.iv_x++)
-			for (iv.iv_y = 0; iv.iv_y < widim.iv_h; iv.iv_y++)
-				draw_pipe(&iv, DIM_Z);
-
-		ivec_set(&iv, 0, 0, 0);
-		for (iv.iv_z = 0; iv.iv_z < widim.iv_d; iv.iv_z++)
+		if (st.st_pipedim & PDIM_X)
 			for (iv.iv_x = 0; iv.iv_x < widim.iv_w; iv.iv_x++)
-				draw_pipe(&iv, DIM_Y);
+				for (iv.iv_y = 0; iv.iv_y < widim.iv_h; iv.iv_y++)
+					draw_pipe(&iv, DIM_Z);
 
 		ivec_set(&iv, 0, 0, 0);
-		for (iv.iv_y = 0; iv.iv_y < widim.iv_h; iv.iv_y++)
+		if (st.st_pipedim & PDIM_Y)
 			for (iv.iv_z = 0; iv.iv_z < widim.iv_d; iv.iv_z++)
-				draw_pipe(&iv, DIM_X);
+				for (iv.iv_x = 0; iv.iv_x < widim.iv_w; iv.iv_x++)
+					draw_pipe(&iv, DIM_Y);
+
+		ivec_set(&iv, 0, 0, 0);
+		if (st.st_pipedim & PDIM_Z)
+			for (iv.iv_y = 0; iv.iv_y < widim.iv_h; iv.iv_y++)
+				for (iv.iv_z = 0; iv.iv_z < widim.iv_d; iv.iv_z++)
+					draw_pipe(&iv, DIM_X);
 		break;
 	case VM_PHYS:
 		draw_physpipes(selpipes);
