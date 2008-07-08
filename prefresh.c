@@ -561,11 +561,13 @@ panel_refresh_ninfo(struct panel *p)
 		ol = NULL; /* gcc */
 		switch (st.st_dmode) {
 		case DM_JOB:
-			buf_appendv(&b_data, "Job ID(s): ");
+			if (job_list.ol_cur)
+				buf_appendv(&b_data, "Job ID(s): ");
 			ol = &job_list;
 			break;
 		case DM_YOD:
-			buf_appendv(&b_data, "Yod ID(s): ");
+			if (yod_list.ol_cur)
+				buf_appendv(&b_data, "Yod ID(s): ");
 			ol = &yod_list;
 			break;
 		}
