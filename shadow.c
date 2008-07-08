@@ -124,8 +124,8 @@ draw_shadow_cages(const struct physcoord *pc)
 	}
 }
 
-__inline void
-draw_shadow_node(int *dl, struct node *n)
+void
+draw_shadow_node(int *dl, const struct node *n)
 {
 	if (dl[n->n_geom]) {
 		glCallList(dl[n->n_geom]);
