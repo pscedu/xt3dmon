@@ -20,10 +20,10 @@ errh()
 set -e
 trap errh ERR
 
-ssh -qgNL 3307:$sdb:3306 $host &
+ssh -qNL 3307:$sdb:3306 $host &
 pid=$(jobs -l | awk '{print $2}')
 
-sleep 2
+sleep 5
 
 cd $servroot/tools
 perl dumpdb.pl
