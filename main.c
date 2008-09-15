@@ -98,7 +98,7 @@ struct dmode dmodes[] = {
  /* 2 */ { "yod",	"Yod" },
  /* 3 */ { NULL,	NULL },				/* egg */
  /* 4 */ { NULL,	NULL },				/* egg */
- /* 5 */ { NULL,	"Same" },
+ /* 5 */ { "same",	"Same" },
  /* 6 */ { "rte",	"Routing Errors" },
  /* 7 */ { "seastar",	"Seastar" },
  /* 8 */ { NULL,	"Lustre Status" },
