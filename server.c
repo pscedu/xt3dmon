@@ -371,7 +371,7 @@ serv_displayh(void)
 		if (TAILQ_FIRST(&renderq) == NULL) {
 			if (gettimeofday(&tv, NULL) == -1)
 				err(1, "gettimeofday");
-			ts.tv_sec = tv.tv_sec + 10;
+			ts.tv_sec = tv.tv_sec;
 			ts.tv_nsec = tv.tv_usec * 1000 + 3e5;
 			rv = pthread_cond_timedwait(&renderq_waitq,
 			    &renderq_lock, &ts);
