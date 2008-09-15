@@ -372,7 +372,11 @@ serv_displayh(void)
 			if (gettimeofday(&tv, NULL) == -1)
 				err(1, "gettimeofday");
 			ts.tv_sec = tv.tv_sec;
-			ts.tv_nsec = tv.tv_usec * 1000 + 3e5;
+			ts.tv_nsec = tv.tv_usec * 1000 + 300000;
+			if (ts.tv_nsec > 1000000) {
+				ts.tv_sec += ts.tv_nsec / 1000000;
+				ts.tv_nsec = ts.tv_nsec % 1000000;
+			}
 			rv = pthread_cond_timedwait(&renderq_waitq,
 			    &renderq_lock, &ts);
 			if (rv != 0 && rv != ETIMEDOUT)
