@@ -874,7 +874,7 @@ errx(1, "broken");
 			break;
 		case 'H':
 			l = strtol(optarg, NULL, 10);
-			if (l < 0 || l > INT_MAX)
+			if (l <= 0 || l > INT_MAX)
 				err(1, "invalid screen height: %s", optarg);
 			sh = (int)l;
 			break;
@@ -894,7 +894,7 @@ errx(1, "broken");
 			break;
 		case 'W':
 			l = strtol(optarg, NULL, 10);
-			if (l < 0 || l > INT_MAX)
+			if (l <= 0 || l > INT_MAX)
 				err(1, "invalid screen width: %s", optarg);
 			sw = (int)l;
 			break;
