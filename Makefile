@@ -74,7 +74,7 @@ CFLAGS += -DYY_NO_UNPUT
 #CFLAGS += -fno-strict-aliasing
 CFLAGS += -I/usr/X11R6/include
 
-LIBS += -lGL -lGLU -lglut -lssl -lpng -lz
+LIBS += -lGL -lGLU -lglut -lssl -lpng -lz -lpthread
 
 # static compiles:
 # LIBS += -lGL -lGLU -lglut -lssl -lpng12 -lz -lm -lgssapi_krb5

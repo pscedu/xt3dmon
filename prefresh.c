@@ -964,13 +964,13 @@ panel_refresh_date(struct panel *p)
 	 * If a session is live, assume directory exists.
 	 * (race conditions...)
 	 */
-	if (ssp != NULL) {
+	if (curses != NULL) {
 		char fn[PATH_MAX];
 		struct stat stb;
 
 		/* XXX save stat info in ds_open */
 		snprintf(fn, sizeof(fn), "%s/%s/%s",
-		    _PATH_SESSIONS, ssp->ss_sid,
+		    _PATH_SESSIONS, curses->cs_sid,
 		    datasrcs[DS_NODE].ds_name);
 		if (stat(fn, &stb) == -1)
 			err(1, "stat %s", fn);

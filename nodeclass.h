@@ -11,6 +11,7 @@
 #define NC_ALL		(-1)
 #define NC_NONE		(-2)
 #define NC_SELDM	(-3)
+#define NC_INVAL	(-4)
 
 /* Node status classes. */
 #define SC_FREE		0
