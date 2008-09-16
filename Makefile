@@ -136,6 +136,9 @@ lines:
 	@shopt -s extglob && eval 'wc -l !(mach-parse|dx-parse).h \
 	    !(mach-parse|mach-lex|dx-parse|dx-lex).c *.y *.l' | tail -1
 
+cs:
+	cscope -b ${SRCS}
+
 run: ${PROG}
 	./${PROG} -M
 
