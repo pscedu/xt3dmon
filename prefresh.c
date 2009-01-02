@@ -953,7 +953,7 @@ panel_refresh_eggs(struct panel *p)
 void
 panel_refresh_date(struct panel *p)
 {
-	static char tmbuf[TMBUF_SIZ];
+	static char yrbuf[5], tmbuf[TMBUF_SIZ];
 	struct tm tm;
 	time_t now;
 
@@ -984,7 +984,8 @@ panel_refresh_date(struct panel *p)
 	localtime_r(&now, &tm);
 
 	strftime(tmbuf, sizeof(tmbuf), date_fmt, &tm);
-	panel_set_content(p, "(c) 2008 PSC\n%s", tmbuf);
+	strftime(yrbuf, sizeof(yrbuf), "%Y", &tm);
+	panel_set_content(p, "(c) %s PSC\n%s", yrbuf, tmbuf);
 }
 
 void
