@@ -22,6 +22,8 @@ Prerequisites:
   - OpenGL
   - GLUT (freeglut works well on Win32 and Linux)
   - libpng
+  - gmake
+  - a compiler such as gcc
 
 To build for Linux, run "make".
 
