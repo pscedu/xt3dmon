@@ -1,0 +1,573 @@
+? cscope.out
+? patches
+? phys.c
+? tt
+? data/font.ttf
+? doc/xtwmon-design.png
+Index: Makefile
+===================================================================
+RCS file: /var/cvs/proj/xt3dmon/Makefile,v
+retrieving revision 1.134
+diff -u -p -r1.134 Makefile
+--- Makefile	16 Sep 2008 20:16:42 -0000	1.134
++++ Makefile	16 Mar 2010 19:10:55 -0000
+@@ -52,6 +52,7 @@ SRCS+= ssl.c
+ SRCS+= status.c
+ SRCS+= tex.c
+ SRCS+= text.c
++SRCS+= phys.c
+ SRCS+= tween.c
+ SRCS+= uinp.c
+ SRCS+= ustrdtab.c
+@@ -63,18 +64,21 @@ SRCS+= util.c
+ SRCS+= vec.c
+ SRCS+= widget.c
+ SRCS+= yod.c
++#SRCS+= ftgl.cc
++#SRCS+= glchar.c
+ 
+ CFLAGS += -Wall -W -g -pipe
+ CFLAGS += -Wno-parentheses -Wshadow -Wredundant-decls
+ CFLAGS += -D_GSS
+-CFLAGS += -D_LIVE_PROTO=\"file\" -D_LIVE_PATH=_PATH_DATA
++#CFLAGS += -D_LIVE_PROTO=\"file\" -D_LIVE_PATH=_PATH_DATA
+ #CFLAGS += -Wconversion
+ CFLAGS += -DYY_NO_UNPUT
+ #CFLAGS += -O3 -Wuninitialized -fomit-frame-pointer
+ #CFLAGS += -fno-strict-aliasing
+-CFLAGS += -I/usr/X11R6/include
++CFLAGS += -I/usr/X11R6/include `freetype-config --cflags`
++CXXFLAGS += `freetype-config --cflags`
+ 
+-LIBS += -lGL -lGLU -lglut -lssl -lpng -lz -lpthread
++LIBS += -lGL -lGLU -lglut -lssl -lpng -lz -lpthread -lftgl
+ 
+ # static compiles:
+ # LIBS += -lGL -lGLU -lglut -lssl -lpng12 -lz -lm -lgssapi_krb5
+@@ -97,6 +101,7 @@ INCS += $$(if cc -v 2>&1 | grep -q gcc; 
+ OBJS = $(patsubst %.c,%.o,$(filter %.c,${SRCS}))
+ OBJS+= $(patsubst %.y,%.o,$(filter %.y,${SRCS}))
+ OBJS+= $(patsubst %.l,%.o,$(filter %.l,${SRCS}))
++OBJS+= $(patsubst %.cc,%.o,$(filter %.cc,${SRCS}))
+ 
+ CSRCS = $(filter %.c,${SRCS})
+ CSRCS+= $(patsubst %.y,%.c,$(filter %.y,${SRCS}))
+@@ -140,7 +145,7 @@ cs:
+ 	cscope -b ${SRCS}
+ 
+ run: ${PROG}
+-	./${PROG} -M
++	LD_LIBRARY_PATH=/usr/local/lib ./${PROG} -M
+ 
+ # -gldebug
+ debug: ${PROG}
+Index: capture.c
+===================================================================
+RCS file: /var/cvs/proj/xt3dmon/capture.c,v
+retrieving revision 1.42
+diff -u -p -r1.42 capture.c
+--- capture.c	2 Nov 2006 21:56:26 -0000	1.42
++++ capture.c	16 Mar 2010 19:10:55 -0000
+@@ -35,7 +35,7 @@ struct capture_format {
+ 
+ struct ivec virtwinv = { { 7200, 5400, 0 } };
+ 
+-int capture_mode = CM_PNG;
++int capture_mode = CM_PPM;
+ int capture_usevirtual;
+ int capture_pos;
+ 
+Index: draw.c
+===================================================================
+RCS file: /var/cvs/proj/xt3dmon/draw.c,v
+retrieving revision 1.282
+diff -u -p -r1.282 draw.c
+--- draw.c	2 May 2008 23:14:30 -0000	1.282
++++ draw.c	16 Mar 2010 19:10:55 -0000
+@@ -635,6 +635,10 @@ draw_ground(void)
+ 			r = j * 8.0;// - ndim->fv_w / 2.0;
+ 			gluDisk(quadric, r - .2, r, 100, 3);
+ 			glPopMatrix();
++
++			glColor4f(fp->f_r, fp->f_g, fp->f_b, 0.1);
++if (j == 6)
++			gluSphere(quadric, r, 100, 100);
+ 		}
+ 
+ 		glDisable(GL_BLEND);
+Index: env.c
+===================================================================
+RCS file: /var/cvs/proj/xt3dmon/env.c,v
+retrieving revision 1.25
+diff -u -p -r1.25 env.c
+--- env.c	2 Feb 2007 19:26:10 -0000	1.25
++++ env.c	16 Mar 2010 19:10:55 -0000
+@@ -196,6 +196,7 @@ caption_setdrain(time_t t)
+ 		snprintf(capbuf, sizeof(capbuf),
+ 		    "Drain set for %s", capfmt);
+ 		caption_set(capbuf);
+-	} else
+-		caption_set(NULL);
++	}
++//	else
++//		caption_set(NULL);
+ }
+Index: ftgl.cc
+===================================================================
+RCS file: /var/cvs/proj/xt3dmon/ftgl.cc,v
+retrieving revision 1.1
+diff -u -p -r1.1 ftgl.cc
+--- ftgl.cc	6 Feb 2007 23:01:47 -0000	1.1
++++ ftgl.cc	16 Mar 2010 19:10:55 -0000
+@@ -25,9 +25,6 @@ draw_text(const char *buf, struct fvec *
+ 	else
+ 		glRotatef(90.0, 0.0, -1.0, 0.0);
+ 	glColor3f(fp->f_r, fp->f_g, fp->f_b);
+-if (st.st_rf & RF_CLUSTER)
+-	f->FaceSize(2);
+-else
+ 	f->FaceSize(12);
+ 
+ 	f->BBox(buf, bl.fv_x, bl.fv_y, bl.fv_z,
+Index: gl.c
+===================================================================
+RCS file: /var/cvs/proj/xt3dmon/gl.c,v
+retrieving revision 1.48
+diff -u -p -r1.48 gl.c
+--- gl.c	2 Feb 2007 20:21:42 -0000	1.48
++++ gl.c	16 Mar 2010 19:10:55 -0000
+@@ -20,7 +20,7 @@
+ #include "tween.h"
+ 
+ #define FPS_TO_USEC(x)	(1e6 / (x))	/* Convert FPS to microseconds. */
+-#define GOVERN_FPS	30		/* FPS to govern at. */
++#define GOVERN_FPS	24		/* FPS to govern at. */
+ 
+ long	 fps = 50;			/* Last FPS sample. */
+ long	 fps_cnt = 0;			/* Current FPS counter. */
+@@ -385,6 +385,9 @@ gl_select(int flags)
+ 	    SPF_2D | flags)) != NULL || flags & SPF_2D)
+ 		goto end;
+ 
++	if ((gn = sel_waslast(dl, flags)) != NULL)
++		goto end;
++
+ 	switch (st.st_vmode) {
+ 	case VM_VNEIGHBOR:
+ 		gn = vneighbor_shadow(dl, flags);
+Index: main.c
+===================================================================
+RCS file: /var/cvs/proj/xt3dmon/main.c,v
+retrieving revision 1.325
+diff -u -p -r1.325 main.c
+--- main.c	15 Sep 2008 20:31:59 -0000	1.325
++++ main.c	16 Mar 2010 19:10:55 -0000
+@@ -86,7 +86,7 @@ struct xoption options[] = {
+ };
+ 
+ struct vmode vmodes[] = {
+-	{ "Physical",		1000,	{ { { 0.2f, 1.2f, 1.2f } }, { { .4f, 1.0f, 1.0f } } } },
++	{ "Physical",		1000,	{ { { 0.15f, 1.0f, 1.0f } }, { { .4f, 1.0f, 1.0f } } } },
+ 	{ "Wired (repeat)",	7,	{ { { 0.5f, 0.5f, 0.5f } }, { { .4f, 1.0f, 1.0f } } } },
+ 	{ "Wired (single)",	1000,	{ { { 2.0f, 2.0f, 2.0f } }, { { .4f, 1.0f, 1.0f } } } },
+ 	{ "Virtual Neighbor",	1000,	{ { { 2.0f, 2.0f, 2.0f } }, { { .4f, 1.0f, 1.0f } } } }
+@@ -966,6 +966,9 @@ glutInitWindowPosition(0, 0);
+ 	if (st.st_opts & OP_TWEEN)
+ 		tween_toggle();
+ 
++printf("cur>  %.3f,%.3f,%.3f\n", CABWIDTH, CAGEHEIGHT, MODDEPTH);
++printf("want> %.3f,%.3f,%.3f\n", 6.56, 2.6, 9.3);
++
+ 	glutMainLoop();
+ 	/* NOTREACHED */
+ 	exit(0);
+Index: panel.c
+===================================================================
+RCS file: /var/cvs/proj/xt3dmon/panel.c,v
+retrieving revision 1.160
+diff -u -p -r1.160 panel.c
+--- panel.c	2 May 2008 23:00:19 -0000	1.160
++++ panel.c	16 Mar 2010 19:10:55 -0000
+@@ -67,19 +67,19 @@ void uinpcb_eggs(void);
+ struct pinfo pinfo[] = {
+  /*  0 */ { "fps",	"FPS",			panel_refresh_fps,	PSTICK_TR, 0,					0,		NULL },
+  /*  1 */ { "ninfo",	"Node Info",		panel_refresh_ninfo,	PSTICK_TR, 0,					0,		NULL },
+- /*  2 */ { "cmd",	"Command",		panel_refresh_cmd,	PSTICK_TR, PIF_UINP | PIF_HIDE,			UINPO_LINGER,	uinpcb_cmd },
++ /*  2 */ { "cmd",	"Command",		panel_refresh_cmd,	PSTICK_TR, PIF_UINP | PIF_FBIGN | PIF_HIDE,	UINPO_LINGER,	uinpcb_cmd },
+  /*  3 */ { "legend",	"Legend",		panel_refresh_legend,	PSTICK_TR, 0,					0,		NULL },
+  /*  4 */ { "fbstat",	"Flyby Controls",	panel_refresh_flyby,	PSTICK_TR, PIF_FBIGN,				0,		NULL },
+- /*  5 */ { "gotonode",	"Goto Node",		panel_refresh_gotonode,	PSTICK_TR, PIF_UINP,				0,		uinpcb_gotonode },
++ /*  5 */ { "gotonode",	"Goto Node",		panel_refresh_gotonode,	PSTICK_TR, PIF_UINP | PIF_FBIGN,		0,		uinpcb_gotonode },
+  /*  6 */ { "cam",	"Camera Position",	panel_refresh_pos,	PSTICK_TR, 0,					0,		NULL },
+- /*  7 */ { "sshot",	"Screenshot",		panel_refresh_ss,	PSTICK_TR, PIF_UINP,				0,		uinpcb_ss },
++ /*  7 */ { "sshot",	"Screenshot",		panel_refresh_ss,	PSTICK_TR, PIF_UINP | PIF_FBIGN,		0,		uinpcb_ss },
+  /*  8 */ { "status",	"Status Log",		panel_refresh_status,	PSTICK_TR, 0,					0,		NULL },
+- /*  9 */ { "eggs",	NULL,			panel_refresh_eggs,	PSTICK_TR, PIF_UINP | PIF_HIDE,			0,		uinpcb_eggs },
++ /*  9 */ { "eggs",	NULL,			panel_refresh_eggs,	PSTICK_TR, PIF_UINP | PIF_FBIGN | PIF_HIDE,	0,		uinpcb_eggs },
+  /* 10 */ { "date",	"Date",			panel_refresh_date,	PSTICK_BL, PIF_XPARENT,				0,		NULL },
+  /* 11 */ { "options",	"Options",		panel_refresh_opts,	PSTICK_TL, PIF_FBIGN,				0,		NULL },
+- /* 12 */ { "gotojob",	"Goto Job",		panel_refresh_gotojob,	PSTICK_TR, PIF_UINP,				0,		uinpcb_gotojob },
++ /* 12 */ { "gotojob",	"Goto Job",		panel_refresh_gotojob,	PSTICK_TR, PIF_UINP | PIF_FBIGN,		0,		uinpcb_gotojob },
+  /* 13 */ { "panels",	NULL,			panel_refresh_panels,	PSTICK_TL, PIF_HIDE | PIF_FBIGN,		0,		NULL },
+- /* 14 */ { "login",	"Login",		panel_refresh_login,	PSTICK_TR, PIF_UINP,				UINPO_LINGER,	uinpcb_login },
++ /* 14 */ { "login",	"Login",		panel_refresh_login,	PSTICK_TR, PIF_UINP | PIF_FBIGN,		UINPO_LINGER,	uinpcb_login },
+  /* 15 */ { "help",	"Help",			panel_refresh_help,	PSTICK_BR, PIF_HIDE | PIF_FBIGN | PIF_XPARENT,	0,		NULL },
+  /* 16 */ { "vmode",	"View Mode",		panel_refresh_vmode,	PSTICK_TL, 0,					0,		NULL },
+  /* 17 */ { "dmode",	"Data Mode",		panel_refresh_dmode,	PSTICK_TL, 0,					0,		NULL },
+@@ -95,7 +95,8 @@ struct pinfo pinfo[] = {
+  /* 27 */ { "dxcho",	"Deus Ex Chooser",	panel_refresh_dxcho,	PSTICK_TR, PIF_FBIGN,				0,		NULL },
+  /* 28 */ { "dscho",	"Dataset Chooser",	panel_refresh_dscho,	PSTICK_TR, PIF_FBIGN,				0,		NULL },
+  /* 29 */ { "vnmode",	"VNeighbor Mode",	panel_refresh_vnmode,	PSTICK_TL, 0,					0,		NULL },
+- /* 30 */ { "pipedim",	"Pipe Dimensions",	panel_refresh_pipedim,	PSTICK_TR, 0,					0,		NULL }
++ /* 30 */ { "pipedim",	"Pipe Dimensions",	panel_refresh_pipedim,	PSTICK_TR, 0,					0,		NULL },
++ /* 31 */ { "reserve",	"Reservation",		panel_refresh_reserve,	PSTICK_TR, PIF_UINP | PIF_FBIGN,		0,		uinpcb_reserve }
+ };
+ 
+ #define PVOFF_TL 0
+Index: panel.h
+===================================================================
+RCS file: /var/cvs/proj/xt3dmon/panel.h,v
+retrieving revision 1.38
+diff -u -p -r1.38 panel.h
+--- panel.h	2 May 2008 23:00:19 -0000	1.38
++++ panel.h	16 Mar 2010 19:10:55 -0000
+@@ -35,7 +35,8 @@
+ #define PANEL_DSCHO	(1<<28)
+ #define PANEL_VNMODE	(1<<29)
+ #define PANEL_PIPEDIM	(1<<30)
+-#define NPANELS		31
++#define PANEL_RESERVE	(1<<31)
++#define NPANELS		32
+ 
+ struct pwidget;
+ TAILQ_HEAD(pwidget_group_list, pwidget);
+@@ -105,6 +106,7 @@ struct panel {
+ #define POPT_CANSYNC	(1<<6)			/* stereo: just sync draw */
+ 
+ #define POPT_LOGIN_ATPASS (POPT_USR1)
++#define POPT_RESERVE_ATSIZE (POPT_USR1)
+ 
+ TAILQ_HEAD(panels, panel);
+ 
+@@ -177,6 +179,7 @@ void panel_refresh_vmode(struct panel *)
+ void panel_refresh_wiadj(struct panel *);
+ void panel_refresh_vnmode(struct panel *);
+ void panel_refresh_pipedim(struct panel *);
++void panel_refresh_reserve(struct panel *);
+ 
+ extern struct panels	 panels;
+ extern struct pinfo	 pinfo[];
+Index: prefresh.c
+===================================================================
+RCS file: /var/cvs/proj/xt3dmon/prefresh.c,v
+retrieving revision 1.100
+diff -u -p -r1.100 prefresh.c
+--- prefresh.c	2 Jan 2009 22:37:39 -0000	1.100
++++ prefresh.c	16 Mar 2010 19:10:55 -0000
+@@ -1730,3 +1730,21 @@ panel_refresh_pipedim(struct panel *p)
+ 	    PWARG_CBARG_INT, PDIM_Z, PWARG_LAST);
+ 	pwidget_endlist(p, 1);
+ }
++
++void
++panel_refresh_reserve(struct panel *p)
++{
++	int i, atsize;
++
++	if (panel_ready(p))
++		return;
++
++	atsize = (p->p_opts & POPT_RESERVE_ATSIZE);
++
++	panel_set_content(p, "- Reservation -\n"
++	    "Exclude NID list (comma-separate): %s"
++	    "%s%s",
++	    atsize ? reserve_exlist : buf_get(&uinp.uinp_buf),
++	    atsize ? "\nSize (e.g. \"4x4x4\"): " : "",
++	    atsize ? buf_get(&uinp.uinp_buf) : "");
++}
+Index: select.c
+===================================================================
+RCS file: /var/cvs/proj/xt3dmon/select.c,v
+retrieving revision 1.78
+diff -u -p -r1.78 select.c
+--- select.c	2 May 2008 23:00:19 -0000	1.78
++++ select.c	16 Mar 2010 19:10:55 -0000
+@@ -208,6 +208,39 @@ sel_end(void)
+ 	return (glRenderMode(GL_RENDER));
+ }
+ 
++int		lastselnid = -1;
++struct fvec	lastselcloffv;
++
++struct glname *
++sel_waslast(int *dl, int flags)
++{
++	struct glname *gn;
++	struct node *n;
++	int nrecs;
++
++	if (lastselnid != -1) {
++		n = node_for_nid(lastselnid);
++		lastselnid = -1;	/* reassigned later if successful */
++
++		sel_begin();
++
++		glPushMatrix();
++		glTranslatef(
++		    n->n_v.fv_x + lastselcloffv.fv_x,
++		    n->n_v.fv_y + lastselcloffv.fv_y,
++		    n->n_v.fv_z + lastselcloffv.fv_z);
++		glPushName(gsn_get(0, &lastselcloffv,
++		    NULL, n->n_nid, 0, NULL, NULL));
++		draw_shadow_node(dl, n);
++		glPopName();
++		glPopMatrix();
++
++		nrecs = sel_end();
++		gn = sel_process(nrecs, 0, flags);
++	}
++	return (gn);
++}
++
+ /*
+  * Obtain a unique GL selection name.
+  * Batches of these must be called within a
+@@ -282,6 +315,9 @@ gscb_node(struct glname *gn, int flags)
+ 			sn_set(n, &gn->gn_offv);
+ 			break;
+ 		}
++		lastselnid = nid;
++		if (!vec_eq(&lastselcloffv, &gn->gn_offv))
++			lastselcloffv = gn->gn_offv;
+ 	}
+ }
+ 
+Index: select.h
+===================================================================
+RCS file: /var/cvs/proj/xt3dmon/select.h,v
+retrieving revision 1.35
+diff -u -p -r1.35 select.h
+--- select.h	2 May 2008 23:00:19 -0000	1.35
++++ select.h	16 Mar 2010 19:10:55 -0000
+@@ -16,6 +16,8 @@
+ #define SPF_LOOKUP	(1<<4)
+ 
+ struct glname;
++struct node;
++
+ typedef void (*gscb_t)(struct glname *, int);
+ 
+ struct glname {
+@@ -74,10 +76,12 @@ struct glname {
+ void		 sel_begin(void);
+ int		 sel_end(void);
+ struct glname	*sel_process(int, int, int);
++struct glname	*sel_waslast(int *, int);
+ 
+ struct glname	*wi_shadow(int *, int, const struct fvec *);
+ struct glname	*phys_shadow(int *, int);
+ struct glname	*vneighbor_shadow(int *, int);
++void		 draw_shadow_node(int *, const struct node *n);
+ 
+ unsigned int	 gsn_get(int, const struct fvec *, gscb_t, int, int, void *, void *);
+ void		 gscb_miss(struct glname *, int);
+Index: uinp.c
+===================================================================
+RCS file: /var/cvs/proj/xt3dmon/uinp.c,v
+retrieving revision 1.45
+diff -u -p -r1.45 uinp.c
+--- uinp.c	8 Feb 2007 23:34:46 -0000	1.45
++++ uinp.c	16 Mar 2010 19:10:55 -0000
+@@ -28,6 +28,7 @@
+ #include "util.h"
+ 
+ char authbuf[BUFSIZ];
++char reserve_exlist[BUFSIZ];
+ 
+ void
+ uinpcb_cmd(void)
+@@ -227,3 +228,115 @@ uinpcb_fbnew(void)
+ 		errno = 0;
+ 	}
+ }
++
++void
++uinpcb_reserve(void)
++{
++	struct pinfo *pi;
++	struct panel *p;
++	size_t siz;
++	char *s;
++
++	s = buf_get(&uinp.uinp_buf);
++
++	if ((p = panel_for_id(PANEL_RESERVE)) != NULL) {
++		if (p->p_opts & POPT_RESERVE_ATSIZE) {
++			if (!invalid)
++				panel_tremove(p);
++		} else {
++			/* Handle empty as a cancellation. */
++			if (strcmp(s, "") == 0) {
++				panel_tremove(p);
++				return;
++			}
++
++			snprintf(reserve_exlist,
++			    sizeof(reserve_exlist), "%s", s);
++
++			pi = &pinfo[baseconv(p->p_id) - 1];
++			p->p_opts |= POPT_RESERVE_ATSIZE | POPT_REFRESH;
++			glutKeyboardFunc(gl_keyh_uinput);
++			uinp.uinp_panel = p;
++			uinp.uinp_opts = pi->pi_uinpopts;
++			uinp.uinp_callback = pi->pi_uinpcb;
++		}
++	}
++}
++
++struct exnode {
++	struct node		*x_nid;
++	SLIST_ENTRY(exnode)	 x_entry;
++};
++
++SLIST_HEAD(exnodehd, exnode);
++
++int
++reserve_fits(struct ivec *iv, struct ivec *dim, struct exnodehd *exhdp)
++{
++	struct exnode *x;
++
++	SLIST_FOREACH(exhdp, x, x_list) {
++		if ()
++			return (0);
++	}
++	return (1);
++}
++
++int
++reserve_find(const char *o_exlist, const char *o_size)
++{
++	char *exlist, *size, *s, *t;
++	struct exnode *x, *xt;
++	struct exnodehd exhd;
++	struct ivec iv, dim;
++	int rc, idx;
++	long l;
++
++	rc = 0;
++	SLIST_INIT(&exhd);
++	if ((exlist = strdup(o_exlist)) == NULL)
++		err("strdup");
++	if ((size = strdup(o_size)) == NULL)
++		err("strdup");
++
++	for (s = size, idx = 0; *s; s = t, idx++) {
++		if ((t = strchr(s, 'x')) != NULL)
++			*t++ = '\0';
++		l = strtol(s, NULL, 10);
++		if (l <= 0 || l > widim.iv_val[idx]) {
++			rc = -1;
++			goto done;
++		}
++		dim.iv_val[idx] = (int)l;
++	}
++
++	for (s = exlist; *s; s = t) {
++		if ((t = strchr(s, ',')) != NULL)
++			*t++ = '\0';
++		l = strtol(s, NULL, 10);
++		n = node_for_nid(l);
++		if (n == NULL)
++			goto done;
++		x = malloc(sizeof(*x));
++		if (x == NULL)
++			err("malloc");
++		memset(x, 0, sizeof(*x));
++		x->x_node = n;
++		SLIST_INSERT_HEAD(&exhd, x, x_entry);
++	}
++
++	for (iv.iv_x = 0; iv.iv_x + dim.iv_w < widim.iv_w; iv.iv_x++)
++		for (iv.iv_y = 0; iv.iv_y + dim.iv_h < widim.iv_h; iv.iv_y++)
++			for (iv.iv_z = 0; iv.iv_z + dim.iv_d < widim.iv_d; iv.iv_z++)
++				if (reserve_fits(&iv, &dim, &exhd))
++					goto done;
++
++	/* If we made it here, no reservation is possible. */
++
++ done:
++	SLIST_FOREACH_PREVPTR(x, xt, &exhd, x_list)
++		free(x);
++	free(exlist);
++	free(size);
++	return (rc);
++}
+Index: uinp.h
+===================================================================
+RCS file: /var/cvs/proj/xt3dmon/uinp.h,v
+retrieving revision 1.3
+diff -u -p -r1.3 uinp.h
+--- uinp.h	8 Jun 2006 16:00:20 -0000	1.3
++++ uinp.h	16 Mar 2010 19:10:55 -0000
+@@ -15,9 +15,11 @@ struct uinput {
+ void	 uinpcb_cmd(void);
+ void	 uinpcb_gotonode(void);
+ void	 uinpcb_gotojob(void);
++void	 uinpcb_reserve(void);
+ void	 uinpcb_login(void);
+ void	 uinpcb_fbnew(void);
+ 
+ extern struct uinput	 uinp;
+ 
+ extern char authbuf[BUFSIZ];
++extern char reserve_exlist[BUFSIZ];
+Index: data/mach.conf
+===================================================================
+RCS file: /var/cvs/proj/xt3dmon/data/mach.conf,v
+retrieving revision 1.8
+diff -u -p -r1.8 mach.conf
+--- data/mach.conf	2 Feb 2007 19:22:50 -0000	1.8
++++ data/mach.conf	16 Mar 2010 19:10:55 -0000
+@@ -1,5 +1,6 @@
+ # $Id$
+ 
++#coredim <4, 4, 5>
+ coredim <1, 1, 2>
+ cubedim <11, 12, 16>
+ nidmax 2784
+@@ -7,7 +8,7 @@ origin <0.1, 0.1, 0.1>
+ 
+ dim node {
+ 	mag 2
+-	size <0.2, 1.2, 1.2>
++	size <0.15, 1.0, 1.0>
+ 	space 0.2
+ 	spans z
+ }
+@@ -24,7 +25,7 @@ dim bladerow {
+ dim blade {
+ 	contains bladerow
+ 	mag 8
+-	space .8
++	space .4
+ 	spans x
+ 	#skel yes
+ }
+@@ -32,7 +33,7 @@ dim blade {
+ dim cage {
+ 	contains blade
+ 	mag 3
+-	space 2
++	space 1
+ 	spans y
+ #	skel yes
+ }
+@@ -43,6 +44,7 @@ dim cabinet {
+ 	space 5
+ 	spans x
+ 	skel yes
++#	size <2.6, 9.3, 6.56>
+ }
+ 
+ dim row {
