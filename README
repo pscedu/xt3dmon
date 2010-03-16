@@ -1,0 +1,46 @@
+$Id$
+
+xt3dmon - 3-d OpenGL Cray XT3 monitor
+=====================================
+
+This C program loads datasets from the management database of Cray XT3 systems
+into a 3-d environment that can be used to correlate data in a visual
+representation of both the physical and wiring/network topology of a system.
+
+In order to load datasets, the management information must be extracted into a
+format xt3dmon understands.  The scripts in the "tools" directory can be used
+to generate this data.  The tools/update.sh script is mainly in charge of this
+and has configuration parameters it loads from the top of the file as well as
+from the cfg-* files.
+
+--------------------------------------------------------------------------------
+
+Prerequisites:
+
+  - OpenSSL (if capability is needed to access XT3 management data over the Web)
+  - GSSAPI (if needed to authenticate for data over the Web)
+  - OpenGL
+  - GLUT (freeglut works well on Win32 and Linux)
+  - libpng
+
+To build for Linux, run "make".
+
+To build for Mac OS X, navigate to arch/macosx and open the xt3dmon Xcode
+project file.
+
+To build for Windows, navigate to arch/win32 and open the xt3dmon Visual Studio
+project.
+
+--------------------------------------------------------------------------------
+
+For documentation regarding program use, view the documentation manual:
+
+  $ nroff -mandoc xt3dmon.1 | less
+
+Some additional documentation is contained within the "doc" directory.
+
+--------------------------------------------------------------------------------
+
+Contact: Pittsburgh Supercomputing Center
+E-mail: support@psc.edu
+Web: http://www.psc.edu/
