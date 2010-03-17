@@ -1002,7 +1002,7 @@ panel_refresh_date(struct panel *p)
 
 	strftime(tmbuf, sizeof(tmbuf), date_fmt, &tm);
 	strftime(yrbuf, sizeof(yrbuf), "%Y", &tm);
-	panel_set_content(p, "(c) %s PSC\n%s", yrbuf, tmbuf);
+	panel_set_content(p, "(c)%s psc.edu\n%s", yrbuf, tmbuf);
 }
 
 void
