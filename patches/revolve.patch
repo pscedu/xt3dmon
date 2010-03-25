@@ -1,0 +1,205 @@
+Index: cam.c
+===================================================================
+RCS file: /var/cvs/proj/xt3dmon/cam.c,v
+retrieving revision 1.51
+diff -u -p -r1.51 cam.c
+--- cam.c	21 Jun 2006 14:43:56 -0000	1.51
++++ cam.c	17 Jul 2006 17:49:33 -0000
+@@ -62,10 +62,15 @@ cam_move(int dir, float amt)
+ 	}
+ }
+ 
++#include "mark.h"
++#include "fill.h"
++
++
+ void
+ cam_revolve(struct fvec *center, int nfocus, double dt, double dp)
+ {
+-	struct fvec focuspt, diff, sph;
++	struct fvec min, max, focuspt, diff, sph;
++	double mint, maxt, minp, maxp;
+ 	int upinv, j;
+ 
+ 	upinv = 0;
+@@ -117,6 +122,14 @@ cam_revolve(struct fvec *center, int nfo
+ 	st.st_lv.fv_x = 0.0;
+ 	st.st_lv.fv_y = 0.0;
+ 	st.st_lv.fv_z = 0.0;
++
++mint = 8 * M_PI;
++minp = 8 * M_PI;
++maxt = -8 * M_PI;
++maxp = -8 * M_PI;
++
++	vec_set(&max, -1.0, -1.0, -1.0);
++	vec_set(&min,  1.0,  1.0,  1.0);
+ 	for (j = 0; j < nfocus; j++) {
+ 		struct fvec lv;
+ 
+@@ -125,13 +138,62 @@ cam_revolve(struct fvec *center, int nfo
+ 		lv.fv_z = center[j].fv_z - st.st_v.fv_z;
+ 		vec_normalize(&lv);
+ 
+-		vec_addto(&lv, &st.st_lv);
+-	}
+-	st.st_lv.fv_x /= nfocus;
+-	st.st_lv.fv_y /= nfocus;
+-	st.st_lv.fv_z /= nfocus;
++	vec_cart2sphere(&lv, &sph);
++
++	mint = MIN(mint, sph.fv_t + 2 * M_PI);
++	minp = MIN(minp, sph.fv_p + 2 * M_PI);
++
++	maxt = MAX(maxt, sph.fv_t + 2 * M_PI);
++	maxp = MAX(maxp, sph.fv_p + 2 * M_PI);
++
++#if 0
++		max.fv_x = MAX(max.fv_x, lv.fv_x);
++		max.fv_y = MAX(max.fv_y, lv.fv_y);
++		max.fv_z = MAX(max.fv_z, lv.fv_z);
++
++		min.fv_x = MIN(min.fv_x, lv.fv_x);
++		min.fv_y = MIN(min.fv_y, lv.fv_y);
++		min.fv_z = MIN(min.fv_z, lv.fv_z);
++	}
++	vec_addto(&min, &st.st_lv);
++	vec_addto(&max, &st.st_lv);
++#endif
++
++}
++
++if (mint > M_PI && maxt > 2 * M_PI)
++	maxt -= 2 * M_PI;
++
++sph.fv_t = (mint + maxt) / 2.0;
++sph.fv_p = (minp + maxp) / 2.0;
++sph.fv_r = 1.0;
++
++printf("t(%f %f) p(%f %f) %f %f\n", mint, maxt, minp, maxp, sph.fv_t, sph.fv_p);
++
++vec_sphere2cart(&sph, &st.st_lv);
++
++#if 0
++{ struct fvec m;
++
++mark_clear();
++
++m = min;
++vec_scale(&m, 2.0);
++vec_addto(&st.st_v, &m);
++mark_add(&m, &fill_white);
++
++m = max;
++vec_scale(&m, 2.0);
++vec_addto(&st.st_v, &m);
++mark_add(&m, &fill_light_blue);
++}
++
++	st.st_lv.fv_x /= 2;
++	st.st_lv.fv_y /= 2;
++	st.st_lv.fv_z /= 2;
+ 	vec_normalize(&st.st_lv);
+ 
++#endif
+ 	vec_cart2sphere(&st.st_lv, &sph);
+ 	sph.fv_p -= M_PI / 2.0;
+ 	if (upinv)
+@@ -149,9 +211,9 @@ cam_revolve(struct fvec *center, int nfo
+ __inline void
+ cam_revolvefocus(double dt, double dp)
+ {
+-	struct fvec *fvp;
+-	struct fvec fv;
+-	double dst;
++	struct fvec *ndim, *fvp, fv, nfv[8];
++	double dst, x, y, z, w, h, d;
++	int n;
+ 
+ 	fvp = &focus;
+ 	if (st.st_vmode == VM_WIRED && nselnodes == 0) {
+@@ -162,15 +224,42 @@ cam_revolvefocus(double dt, double dp)
+ 		fvp = &fv;
+ 	}
+ 
++	n = 0;
+ 	if (st.st_vmode == VM_PHYS && nselnodes == 0) {
+-		struct fvec nfv[2] = {
+-			{ { NODESPACE, NODESPACE + CL_HEIGHT / 2.0, CL_DEPTH / 2.0 } },
+-			{ { NODESPACE + CL_WIDTH, NODESPACE + CL_HEIGHT / 2.0, CL_DEPTH / 2.0 } }
+-		};
++		x = y = z = NODESPACE;
++		w = CL_WIDTH;
++		h = CL_HEIGHT;
++		d = CL_DEPTH;
++
++/* 1 */		vec_set(&nfv[n++], x,		y,	z);
++/* 2 */		vec_set(&nfv[n++], x,		y,	z + d);
++/* 3 */		vec_set(&nfv[n++], x,		y + h,	z);
++/* 4 */		vec_set(&nfv[n++], x,		y + h,	z + d);
++/* 5 */		vec_set(&nfv[n++], x + w,	y,	z);
++/* 6 */		vec_set(&nfv[n++], x + w,	y,	z + d);
++/* 7 */		vec_set(&nfv[n++], x + w,	y + h,	z);
++/* 8 */		vec_set(&nfv[n++], x + w,	y + h,	z + d);
++
++		fvp = nfv;
++	} else if (st.st_vmode == VM_WIONE && nselnodes == 0) {
++		x = y = z = 0.0;
++		w = (widim.iv_w - 1) * st.st_winsp.iv_x + ndim->fv_w;
++		h = (widim.iv_h - 1) * st.st_winsp.iv_y + ndim->fv_h;
++		d = (widim.iv_d - 1) * st.st_winsp.iv_z + ndim->fv_d;
++
++/* 1 */		vec_set(&nfv[n++], x,		y,	z);
++/* 2 */		vec_set(&nfv[n++], x,		y,	z + d);
++/* 3 */		vec_set(&nfv[n++], x,		y + h,	z);
++/* 4 */		vec_set(&nfv[n++], x,		y + h,	z + d);
++/* 5 */		vec_set(&nfv[n++], x + w,	y,	z);
++/* 6 */		vec_set(&nfv[n++], x + w,	y,	z + d);
++/* 7 */		vec_set(&nfv[n++], x + w,	y + h,	z);
++/* 8 */		vec_set(&nfv[n++], x + w,	y + h,	z + d);
+ 
+-		cam_revolve(nfv, 2, dt, dp);
++		fvp = nfv;
+ 	} else
+-		cam_revolve(fvp, 1, dt, dp);
++		n = 1;
++	cam_revolve(fvp, n, dt, dp);
+ }
+ 
+ void
+Index: vec.c
+===================================================================
+RCS file: /var/cvs/proj/xt3dmon/vec.c,v
+retrieving revision 1.19
+diff -u -p -r1.19 vec.c
+--- vec.c	14 Jun 2006 20:15:10 -0000	1.19
++++ vec.c	17 Jul 2006 17:49:33 -0000
+@@ -16,6 +16,14 @@ ivec_eq(const struct ivec *a, const stru
+ }
+ 
+ void
++vec_scale(struct fvec *fvp, double m)
++{
++	fvp->fv_x *= m;
++	fvp->fv_y *= m;
++	fvp->fv_z *= m;
++}
++
++void
+ vec_normalize(struct fvec *fvp)
+ {
+ 	float mag;
+Index: xmath.h
+===================================================================
+RCS file: /var/cvs/proj/xt3dmon/xmath.h,v
+retrieving revision 1.9
+diff -u -p -r1.9 xmath.h
+--- xmath.h	26 Jun 2006 17:28:04 -0000	1.9
++++ xmath.h	17 Jul 2006 17:49:33 -0000
+@@ -71,5 +71,6 @@ void	 vec_addto(const struct fvec *, str
+ void	 vec_subfrom(const struct fvec *, struct fvec *);
+ void	 vec_sub(struct fvec *, const struct fvec *, const struct fvec *);
+ void	 vec_rotate(struct fvec *, const struct fvec *, double deg);
++void	 vec_scale(struct fvec *, double);
+ 
+ #endif /* _XMATH_H_ */

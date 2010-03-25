@@ -1,0 +1,40 @@
+Index: main.c
+===================================================================
+RCS file: /var/cvs/proj/xt3dmon/main.c,v
+retrieving revision 1.262
+diff -u -p -r1.262 main.c
+--- main.c	25 Jul 2006 20:11:37 -0000	1.262
++++ main.c	26 Jul 2006 15:27:33 -0000
+@@ -309,6 +309,12 @@ dmode_change(void)
+ 	struct node *n, *ng;
+ 	int rd, i, port;
+ 	struct ivec iv;
++<<<<<<< main.c
++	struct node *n;
++	float alpha;
++	int i;
++=======
++>>>>>>> 1.255
+ 
+ 	dmode_data_clean = 0;
+ 
+@@ -349,6 +355,11 @@ dmode_change(void)
+ 		if (n == NULL)
+ 			continue;
+ 
++		if (n->n_fillp)
++			alpha = n->n_fillp->f_a;
++		else
++			alpha = 1.0f;
++
+ 		switch (st.st_dmode) {
+ 		case DM_JOB:
+ 			if (n->n_job)
+@@ -428,6 +439,7 @@ dmode_change(void)
+ //			dbg_crash();
+ //			break;
+ 		}
++		n->n_fillp->f_a = alpha;
+ 	}
+ }
+ 
