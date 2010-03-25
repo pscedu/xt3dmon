@@ -20,22 +20,19 @@
 /*
  * prefresh -- guts of per-panel contents building.
  *
- * This file name should probably be named pbuild.c
- * or something instead to avoid confusion with the
- * actual drawing calculations of panels which are
- * instead done in panel.c.
+ * This file name should probably be named pbuild.c or something
+ * instead to avoid confusion with the actual drawing calculations of
+ * panels which are instead done in panel.c.
  *
  * Panel Widget Groups
- *	Pwidgets can optionallly be sorted into groups
- * 	where the only added functionality is the use of
- *	the arrow keys to flip between choices.  In order
- * 	to specify this functionality in the refresh
- * 	routines, the following API is provided:
+ *	Pwidgets can optionallly be sorted into groups where the only
+ *	added functionality is the use of the arrow keys to flip between
+ *	choices.  In order to specify this functionality in the refresh
+ *	routines, the following API is provided:
  *
  *	  pwidget_group_start()
- *		Start a new group.  All widgets added
- *		between this and its corresponding end()
- *		call will be in the group.
+ *		Start a new group.  All widgets added between this and
+ *		its corresponding end() call will be in the group.
  *
  *	  pwidget_group_end()
  *		End the current widget group.
