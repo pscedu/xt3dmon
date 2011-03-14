@@ -31,17 +31,17 @@
  *      <--------------------- p_w --------------------->
  *	+-----------------------------------------------+ / \
  *	|						|  |
- *	|   - - - - - - - - - - - - - - - - - - - - - 	|  |
+ *	|   - - - - - - - - - - - - - - - - - - - - -	|  |
  *	|  |p_str		|		     |	|  |
- *	|   PANEL_PADDING			      	|  |
+ *	|   PANEL_PADDING				|  |
  *	|  |+---+		|+---+		     |	|  |
- *	|   |   | pw_str	 |   | pw_str	      	|
+ *	|   |   | pw_str	 |   | pw_str		|
  *	|  |+---+		|+---+		     |	|  p_h
- *	|   PANEL_PADDING			      	|
+ *	|   PANEL_PADDING				|
  *	|  |+---+		|+---+		     |	|  |
- *	|   |   | pw_str	 |   | pw_str	      	|  |
+ *	|   |   | pw_str	 |   | pw_str		|  |
  *	|  |+---+		|+---+		     |	|  |
- *	|   - - - - - - - - - - - - - - - - - - - - - 	|  |
+ *	|   - - - - - - - - - - - - - - - - - - - - -	|  |
  *	|						|  |
  *	+-----------------------------------------------+ \ /
  *
@@ -84,19 +84,19 @@ void uinpcb_eggs(void);
 struct pinfo pinfo[] = {
  /*  0 */ { "fps",	"FPS",			panel_refresh_fps,	PSTICK_TR, 0,					0,		NULL },
  /*  1 */ { "ninfo",	"Node Info",		panel_refresh_ninfo,	PSTICK_TR, 0,					0,		NULL },
- /*  2 */ { "cmd",	"Command",		panel_refresh_cmd,	PSTICK_TR, PIF_UINP | PIF_HIDE,			UINPO_LINGER,	uinpcb_cmd },
+ /*  2 */ { "cmd",	"Command",		panel_refresh_cmd,	PSTICK_TR, PIF_UINP | PIF_FBIGN | PIF_HIDE,	UINPO_LINGER,	uinpcb_cmd },
  /*  3 */ { "legend",	"Legend",		panel_refresh_legend,	PSTICK_TR, 0,					0,		NULL },
  /*  4 */ { "fbstat",	"Flyby Controls",	panel_refresh_flyby,	PSTICK_TR, PIF_FBIGN,				0,		NULL },
- /*  5 */ { "gotonode",	"Goto Node",		panel_refresh_gotonode,	PSTICK_TR, PIF_UINP,				0,		uinpcb_gotonode },
+ /*  5 */ { "gotonode",	"Goto Node",		panel_refresh_gotonode,	PSTICK_TR, PIF_UINP | PIF_FBIGN,		0,		uinpcb_gotonode },
  /*  6 */ { "cam",	"Camera Position",	panel_refresh_pos,	PSTICK_TR, 0,					0,		NULL },
- /*  7 */ { "sshot",	"Screenshot",		panel_refresh_ss,	PSTICK_TR, PIF_UINP,				0,		uinpcb_ss },
+ /*  7 */ { "sshot",	"Screenshot",		panel_refresh_ss,	PSTICK_TR, PIF_UINP | PIF_FBIGN,		0,		uinpcb_ss },
  /*  8 */ { "status",	"Status Log",		panel_refresh_status,	PSTICK_TR, 0,					0,		NULL },
- /*  9 */ { "eggs",	NULL,			panel_refresh_eggs,	PSTICK_TR, PIF_UINP | PIF_HIDE,			0,		uinpcb_eggs },
+ /*  9 */ { "eggs",	NULL,			panel_refresh_eggs,	PSTICK_TR, PIF_UINP | PIF_FBIGN | PIF_HIDE,	0,		uinpcb_eggs },
  /* 10 */ { "date",	"Date",			panel_refresh_date,	PSTICK_BL, PIF_XPARENT,				0,		NULL },
  /* 11 */ { "options",	"Options",		panel_refresh_opts,	PSTICK_TL, PIF_FBIGN,				0,		NULL },
- /* 12 */ { "gotojob",	"Goto Job",		panel_refresh_gotojob,	PSTICK_TR, PIF_UINP,				0,		uinpcb_gotojob },
+ /* 12 */ { "gotojob",	"Goto Job",		panel_refresh_gotojob,	PSTICK_TR, PIF_UINP | PIF_FBIGN,		0,		uinpcb_gotojob },
  /* 13 */ { "panels",	NULL,			panel_refresh_panels,	PSTICK_TL, PIF_HIDE | PIF_FBIGN,		0,		NULL },
- /* 14 */ { "login",	"Login",		panel_refresh_login,	PSTICK_TR, PIF_UINP,				UINPO_LINGER,	uinpcb_login },
+ /* 14 */ { "login",	"Login",		panel_refresh_login,	PSTICK_TR, PIF_UINP | PIF_FBIGN,		UINPO_LINGER,	uinpcb_login },
  /* 15 */ { "help",	"Help",			panel_refresh_help,	PSTICK_BR, PIF_HIDE | PIF_FBIGN | PIF_XPARENT,	0,		NULL },
  /* 16 */ { "vmode",	"View Mode",		panel_refresh_vmode,	PSTICK_TL, 0,					0,		NULL },
  /* 17 */ { "dmode",	"Data Mode",		panel_refresh_dmode,	PSTICK_TL, 0,					0,		NULL },
