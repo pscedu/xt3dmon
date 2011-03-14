@@ -225,6 +225,41 @@ sel_end(void)
 	return (glRenderMode(GL_RENDER));
 }
 
+#if 0
+int		lastselnid = -1;
+struct fvec	lastselcloffv;
+
+struct glname *
+sel_waslast(int *dl, int flags)
+{
+	struct glname *gn;
+	struct node *n;
+	int nrecs;
+
+	if (lastselnid != -1) {
+		n = node_for_nid(lastselnid);
+		lastselnid = -1;	/* reassigned later if successful */
+
+		sel_begin();
+
+		glPushMatrix();
+		glTranslatef(
+		    n->n_v.fv_x + lastselcloffv.fv_x,
+		    n->n_v.fv_y + lastselcloffv.fv_y,
+		    n->n_v.fv_z + lastselcloffv.fv_z);
+		glPushName(gsn_get(0, &lastselcloffv,
+		    NULL, n->n_nid, 0, NULL, NULL));
+		draw_shadow_node(dl, n);
+		glPopName();
+		glPopMatrix();
+
+		nrecs = sel_end();
+		gn = sel_process(nrecs, 0, flags);
+	}
+	return (gn);
+}
+#endif
+
 /*
  * Obtain a unique GL selection name.
  * Batches of these must be called within a
@@ -299,6 +334,9 @@ gscb_node(struct glname *gn, int flags)
 			sn_set(n, &gn->gn_offv);
 			break;
 		}
+//		lastselnid = nid;
+//		if (!vec_eq(&lastselcloffv, &gn->gn_offv))
+//			lastselcloffv = gn->gn_offv;
 	}
 }
 
