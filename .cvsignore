@@ -7,3 +7,4 @@ mach-parse.h
 dx-lex.c
 dx-parse.c
 dx-parse.h
+cscope.*out
