@@ -319,6 +319,7 @@ draw_cube(const struct fvec *dimp, const struct fill *fp, int flags)
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, fp->f_blfunc ?
 		    fp->f_blfunc : GL_DST_COLOR);
+//		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 		glHint(GL_POLYGON_SMOOTH_HINT, gl_drawhint);
 	}
 
