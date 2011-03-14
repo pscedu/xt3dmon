@@ -37,7 +37,7 @@
 #include "tween.h"
 
 #define FPS_TO_USEC(x)	(1e6 / (x))	/* Convert FPS to microseconds. */
-#define GOVERN_FPS	30		/* FPS to govern at. */
+#define GOVERN_FPS	24		/* FPS to govern at. */
 
 long	 fps = 50;			/* Last FPS sample. */
 long	 fps_cnt = 0;			/* Current FPS counter. */
@@ -401,6 +401,9 @@ gl_select(int flags)
 	if (nrecs && (gn = sel_process(nrecs, 0,
 	    SPF_2D | flags)) != NULL || flags & SPF_2D)
 		goto end;
+
+//	if ((gn = sel_waslast(dl, flags)) != NULL)
+//		goto end;
 
 	switch (st.st_vmode) {
 	case VM_VNEIGHBOR:
