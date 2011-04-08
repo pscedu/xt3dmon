@@ -17,7 +17,6 @@
 #include "nodeclass.h"
 #include "panel.h"
 #include "pathnames.h"
-#include "seastar.h"
 #include "state.h"
 #include "status.h"
 
@@ -105,7 +104,7 @@ dbl		: INTG			{ $$ = $1; }
 
 setmodifier	: /* empty */		{ $$ = DXV_SET; }
 		| LS_PLUS		{ $$ = DXV_ON;  }
-		| LS_MINUS 		{ $$ = DXV_OFF; }
+		| LS_MINUS		{ $$ = DXV_OFF; }
 		;
 
 opts		: STRING {
@@ -161,7 +160,7 @@ orbit_revs	:			{ $$ = 1.0; }
 		;
 
 orbit_secs	:			{ $$ = 0.0; }
-		| dbl 			{ $$ = $1; }
+		| dbl			{ $$ = $1; }
 		;
 
 move_secs	:			{ $$ = 3.0; }
@@ -656,7 +655,7 @@ conf		: DGT_BIRD birdvm {
 		}
 		;
 
-args_l		: 		{ }
+args_l		:		{ }
 		| args_l STRING	{ free($2); }
 		;
 

@@ -117,24 +117,21 @@ struct dmode dmodes[] = {
  /* 4 */ { NULL,	NULL },				/* egg */
  /* 5 */ { "same",	"Same" },
  /* 6 */ { "rte",	"Routing Errors" },
- /* 7 */ { "seastar",	"Seastar" },
- /* 8 */ { NULL,	"Lustre Status" },
- /* 9 */ { NULL,	NULL }				/* egg */
+ /* 7 */ { NULL,	"Lustre Status" },
+ /* 8 */ { NULL,	NULL }				/* egg */
 };
 
 struct state st = {
 	{ { STARTX,  STARTY,  STARTZ  } },		/* (x,y,z) */
 	{ { STARTLX, STARTLY, STARTLZ } },		/* (lx,ly,lz) */
 	0.0, 0,						/* (ur,urev) */
-	OP_FRAMES | OP_TWEEN | OP_GROUND | 		/* options */
+	OP_FRAMES | OP_TWEEN | OP_GROUND |		/* options */
 	    OP_NODEANIM | OP_CAPTION | OP_CORES |
 	    OP_SELNLABELS | OP_CAPFBONLY,
 	DM_JOB,						/* which data to show */
 	VM_PHYS,					/* viewing mode */
 	PM_DIR,						/* pipe mode */
 	PDIM_X | PDIM_Y | PDIM_Z,			/* pipe dimensions */
-	SSCNT_NBLK,					/* seastar mode */
-	0,						/* seastar vc */
 	RPS_NEG,					/* rte port set */
 	RT_RECOVER,					/* rte type */
 	0,						/* vnmode */
@@ -406,10 +403,6 @@ dmode_change(void)
 		for (i = 0; i < NRTC; i++)
 			rtclass[i].nc_nmemb = 0;
 		break;
-	case DM_SEASTAR:
-		for (i = 0; i < NSSC; i++)
-			ssclass[i].nc_nmemb = 0;
-		break;
 	case DM_LUSTRE:
 		for (i = 0; i < NLUSTC; i++)
 			lustreclass[i].nc_nmemb = 0;
@@ -475,12 +468,6 @@ dmode_change(void)
 				n->n_fillp = &rtclass[i].nc_fill;
 				rtclass[i].nc_nmemb++;
 			}
-			break;
-		case DM_SEASTAR:
-			i = roundclass(n->n_sstar.ss_cnt[st.st_ssmode][st.st_ssvc],
-			    0, ss_max.ss_cnt[st.st_ssmode][st.st_ssvc], NSSC);
-			n->n_fillp = &ssclass[i].nc_fill;
-			ssclass[i].nc_nmemb++;
 			break;
 		case DM_LUSTRE:
 			n->n_fillp = &lustreclass[n->n_lustat].nc_fill;

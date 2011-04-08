@@ -72,7 +72,6 @@ struct datasrc datasrcs[] = {
 	{ "job",  0, "", parse_job,  DSF_LIVE,	NULL,	   NULL,	NULL },
 	{ "yod",  0, "", parse_yod,  DSF_LIVE,	NULL,	   NULL,	NULL },
 	{ "rt",   0, "", parse_rt,   0,		NULL,	   NULL,	NULL },
-	{ "ss",   0, "", parse_ss,   0,		NULL,	   NULL,	NULL }
 };
 
 struct objlist ds_list = { NULL, 0, 0, 0, 0, 10, sizeof(struct fnent), fe_eq };

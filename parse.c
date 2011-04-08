@@ -45,7 +45,6 @@
 
 struct route	 rt_max;
 struct route	 rt_zero;
-struct seastar	 ss_max;
 
 int		 job_ca_cookie;
 int		 yod_ca_cookie;
@@ -558,59 +557,6 @@ parse_rt(const struct datasrc *ds)
 		continue;
 bad:
 		prerror("rt", lineno, buf, s);
-	}
-	if (us_sawerror(ds->ds_us))
-		warnx("us_gets: %s", us_errstr(ds->ds_us));
-	errno = 0;
-}
-
-/*
- * nid       	nblk		nflt		npkt
- * c9-1c0s7s0	0 0 0 0		0 0 0 0		0 0 0 0
- */
-void
-parse_ss(const struct datasrc *ds)
-{
-	char *s, buf[BUFSIZ], nid[BUFSIZ];
-	int lineno, vc, cnt;
-	struct node *n, **np;
-	struct physcoord pc;
-	struct seastar ss;
-
-	NODE_FOREACH_WI(n, np)
-		memset(&n->n_sstar, 0, sizeof(n->n_sstar));
-	memset(&ss_max, 0, sizeof(ss_max));
-
-	lineno = 0;
-	while (us_gets(ds->ds_us, buf, sizeof(buf)) != NULL) {
-		lineno++;
-		s = buf;
-		while (isspace(*s))
-			s++;
-		if (*s == '#' || *s == '\0')
-			continue;
-
-		if (parsestr(&s, nid, sizeof(nid), 0) ||
-		    parsenid(nid, &pc))
-			goto bad;
-		n = node_for_pc(&pc);
-
-		for (vc = 0; vc < NVC; vc++)
-			PARSEDBL(s, ss.ss_cnt[SSCNT_NBLK][vc]);
-		for (vc = 0; vc < NVC; vc++)
-			PARSEDBL(s, ss.ss_cnt[SSCNT_NFLT][vc]);
-		for (vc = 0; vc < NVC; vc++)
-			PARSEDBL(s, ss.ss_cnt[SSCNT_NPKT][vc]);
-
-		for (vc = 0; vc < NVC; vc++)
-			for (cnt = 0; cnt < NSSCNT; cnt++)
-				if (ss.ss_cnt[cnt][vc] > ss_max.ss_cnt[cnt][vc])
-					ss_max.ss_cnt[cnt][vc] = ss.ss_cnt[cnt][vc];
-
-		memcpy(&n->n_sstar, &ss, sizeof(n->n_sstar));
-		continue;
-bad:
-		warnx("rt:%d: malformed line [%s] [%s]", lineno, buf, s);
 	}
 	if (us_sawerror(ds->ds_us))
 		warnx("us_gets: %s", us_errstr(ds->ds_us));
