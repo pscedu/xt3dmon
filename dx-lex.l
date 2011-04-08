@@ -45,7 +45,6 @@ refresh					{ return (DGT_REFRESH); }
 seljob					{ return (DGT_SELNC); }
 selnode					{ return (DGT_SELNODE); }
 setcap					{ return (DGT_SETCAP); }
-ssctl					{ return (DGT_SSCTL); }
 stall					{ return (DGT_STALL); }
 subsel					{ return (DGT_SUBSEL); }
 vmode					{ return (DGT_VMODE); }

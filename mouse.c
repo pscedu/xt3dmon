@@ -43,14 +43,16 @@ struct panel	*panel_mobile;
 
 
 void
-gl_mouseh_null(__unusedx int button, __unused int state, __unused int u, __unused int v)
+gl_mouseh_null(__unusedx int button, __unusedx int state,
+    __unusedx int u, __unusedx int v)
 {
 //	spkey = glutGetModifiers();
 //	flyby_rstautoto();
 }
 
 void
-gl_mouseh_default(__unusedx int button, __unused int state, int u, int v)
+gl_mouseh_default(__unusedx int button, __unusedx int state, int u,
+    int v)
 {
 	static int reset;
 	struct glname *gn;

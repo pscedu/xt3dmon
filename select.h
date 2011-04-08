@@ -25,24 +25,24 @@
 #include "objlist.h"
 #include "xmath.h"
 
-/* Selection processing flags. */
-#define SPF_2D		(1<<0)
-#define SPF_PROBE	(1<<1)
-#define SPF_SQUIRE	(1<<2)
-#define SPF_DESQUIRE	(1<<3)
-#define SPF_LOOKUP	(1<<4)
+/* Selection processing flags */
+#define SPF_2D		(1 << 0)	/* Element is on 2-d canvas (panel */
+#define SPF_PROBE	(1 << 1)
+#define SPF_SQUIRE	(1 << 2)	/* Scroll event */
+#define SPF_DESQUIRE	(1 << 3)
+#define SPF_LOOKUP	(1 << 4)
 
 struct glname;
 typedef void (*gscb_t)(struct glname *, int);
 
 struct glname {
 	struct objhdr	  gn_oh;
-	unsigned int 	  gn_name;	/* GL name. */
+	unsigned int	  gn_name;	/* GL name */
 	int		  gn_flags;
 	struct fvec	  gn_offv;
 	gscb_t		  gn_cb;
 
-	int		  gn_arg_int;	/* Callback "args". */
+	int		  gn_arg_int;	/* Callback "args" */
 	int		  gn_arg_int2;
 	void		 *gn_arg_ptr;
 	void		 *gn_arg_ptr2;
@@ -55,8 +55,8 @@ struct glname {
 	int		  gn_w;
 };
 
-#define GNF_2D		(1<<0)
-#define GNF_PWIDGET	(1<<1)		/* is panel widget */
+#define GNF_2D		(1 << 0)
+#define GNF_PWIDGET	(1 << 1)	/* is panel widget */
 
 #define HF_HIDEHELP	0
 #define HF_SHOWHELP	1
@@ -64,9 +64,9 @@ struct glname {
 #define HF_UPDATE	3
 #define HF_PRTSN	4
 #define HF_REORIENT	5
-#define HF_SUBSN	6 /* subselect selnodes */
-#define HF_SUBTOG	7 /* toggle selnodes for subset */
-#define HF_SUBCL	8 /* clear subset */
+#define HF_SUBSN	6		/* subselect selnodes */
+#define HF_SUBTOG	7		/* toggle selnodes for subset */
+#define HF_SUBCL	8		/* clear subset */
 
 #define SWF_NSPX	0
 #define SWF_NSPY	1
@@ -113,8 +113,6 @@ void		 gscb_pw_panel(struct glname *, int);
 void		 gscb_pw_pipe(struct glname *, int);
 void		 gscb_pw_rt(struct glname *, int);
 void		 gscb_pw_snap(struct glname *, int);
-void		 gscb_pw_ssmode(struct glname *, int);
-void		 gscb_pw_ssvc(struct glname *, int);
 void		 gscb_pw_vmode(struct glname *, int);
 void		 gscb_pw_wiadj(struct glname *, int);
 void		 gscb_pw_vnmode(struct glname *, int);

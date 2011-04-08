@@ -509,32 +509,6 @@ gscb_pw_dmode(struct glname *gn, int flags)
 }
 
 void
-gscb_pw_ssvc(struct glname *gn, int flags)
-{
-	int vc = gn->gn_arg_int;
-
-	if (flags & SPF_PROBE)
-		cursor_set(GLUT_CURSOR_INFO);
-	else if (flags == 0) {
-		st.st_ssvc = vc;
-		st.st_rf |= RF_DMODE;
-	}
-}
-
-void
-gscb_pw_ssmode(struct glname *gn, int flags)
-{
-	int m = gn->gn_arg_int;
-
-	if (flags & SPF_PROBE)
-		cursor_set(GLUT_CURSOR_INFO);
-	else if (flags == 0) {
-		st.st_ssmode = m;
-		st.st_rf |= RF_DMODE;
-	}
-}
-
-void
 gscb_pw_pipe(struct glname *gn, int flags)
 {
 	int m = gn->gn_arg_int;

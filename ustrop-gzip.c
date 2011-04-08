@@ -52,7 +52,7 @@ ustrop_gzip_close(const struct ustream *usp)
 
 __inline ssize_t
 ustrop_gzip_write(__unusedx struct ustream *usp,
-    __unusedx const void *buf, __unused size_t siz)
+    __unusedx const void *buf, __unusedx size_t siz)
 {
 	errx(1, "not supported"); /* XXX */
 }

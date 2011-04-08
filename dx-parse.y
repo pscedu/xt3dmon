@@ -61,7 +61,6 @@ struct dxlist dxlist = TAILQ_HEAD_INITIALIZER(dxlist);
 %token DGT_SELNC
 %token DGT_SELNODE
 %token DGT_SETCAP
-%token DGT_SSCTL
 %token DGT_STALL
 %token DGT_SUBSEL
 %token DGT_VMODE
@@ -550,40 +549,6 @@ conf		: DGT_BIRD birdvm {
 			memset(&dxa, 0, sizeof(dxa));
 			dxa.dxa_type = DGT_STALL;
 			dxa.dxa_stall_secs = $2;
-			dxa_add(&dxa);
-		}
-		| DGT_SSCTL STRING STRING {
-			struct dx_action dxa;
-
-			memset(&dxa, 0, sizeof(dxa));
-			dxa.dxa_type = DGT_SSCTL;
-			if (strcasecmp($2, "vc") == 0) {
-				dxa.dxa_ssctl_type = DXSST_VC;
-				if (strcasecmp($3, "0") == 0)
-					dxa.dxa_ssctl_value = 0;
-				else if (strcasecmp($3, "1") == 0)
-					dxa.dxa_ssctl_value = 1;
-				else if (strcasecmp($3, "2") == 0)
-					dxa.dxa_ssctl_value = 2;
-				else if (strcasecmp($3, "3") == 0)
-					dxa.dxa_ssctl_value = 3;
-				else
-					yyerror("invalid ssctl vc: %s", $3);
-			} else if (strcasecmp($2, "mode") == 0) {
-				dxa.dxa_ssctl_type = DXSST_MODE;
-
-				if (strcasecmp($3, "cycles") == 0)
-					dxa.dxa_ssctl_value = SSCNT_NBLK;
-				else if (strcasecmp($3, "packets") == 0)
-					dxa.dxa_ssctl_value = SSCNT_NPKT;
-				else if (strcasecmp($3, "flits") == 0)
-					dxa.dxa_ssctl_value = SSCNT_NFLT;
-				else
-					yyerror("invalid ssctl mode: %s", $3);
-			} else
-				yyerror("invalid ssctl type: %s", $2);
-			free($2);
-			free($3);
 			dxa_add(&dxa);
 		}
 		| DGT_SUBSEL setmodifier subsel_list {

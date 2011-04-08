@@ -97,7 +97,7 @@ draw_info(const char *p)
 }
 
 __inline void
-draw_compass(int u, __unusedx int w, int v, __unused int h)
+draw_compass(int u, __unusedx int w, int v, __unusedx int h)
 {
 	double cl, mvm[16], pvm[16], x, y, z;
 	struct fill *fp;
