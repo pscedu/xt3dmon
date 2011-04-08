@@ -166,4 +166,8 @@ void post_redisplay(void);
 #define EBADE 1001
 #endif
 
+#ifndef PTHREAD_ERRORCHECK_MUTEX_INITIALIZER_NP
+#define PTHREAD_ERRORCHECK_MUTEX_INITIALIZER_NP PTHREAD_MUTEX_INITIALIZER
+#endif
+
 #endif /* _COMPAT_H_ */

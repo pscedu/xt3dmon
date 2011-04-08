@@ -24,37 +24,36 @@
 #endif
 
 #ifndef __unusedx
-#define __unusedx __attribute__((__unused__))
+# define __unusedx __attribute__((__unused__))
 #endif
 
-#define MID(max, min) (((max) + (min)) / 2.0)
+#define MID(max, min)	(((max) + (min)) / 2)
 
 #ifndef MIN
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
+# define MIN(a, b)	((a) < (b) ? (a) : (b))
 #endif
 
 #ifndef MIN3
-#define MIN3(a, b, c) MIN(MIN((a), (b)), (c))
+# define MIN3(a, b, c)	MIN(MIN((a), (b)), (c))
 #endif
 
 #ifndef MAX
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
+# define MAX(a, b)	((a) > (b) ? (a) : (b))
 #endif
 
 #ifndef MAX3
-#define MAX3(a, b, c) MAX(MAX((a), (b)), (c))
+# define MAX3(a, b, c)	MAX(MAX((a), (b)), (c))
 #endif
 
-#ifndef howmany
-#define howmany(x, y) (((x) + ((y) + 1)) / (y))
-#endif
+#undef howmany
+#define howmany(x, y)	(((x) + (y) + 1) / (y))
 
-#ifndef NENTRIES
-#define NENTRIES(t) (sizeof(t) / sizeof(t[0]))
+#ifndef nitems
+# define nitems(t)	(sizeof(t) / sizeof(t[0]))
 #endif
 
 #if defined(__FLT_MAX__) && !defined(FLT_MAX)
-#define FLT_MAX __FLT_MAX__
+# define FLT_MAX __FLT_MAX__
 #endif
 
 #if 0

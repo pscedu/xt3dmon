@@ -120,7 +120,7 @@ dxp_orbit(const struct dx_action *dxa)
 {
 	static double amt, adj;
 	static int t, sample;
-	double wait, du, dv, max;
+	double waitlen, du, dv, max;
 	int ret;
 
 	/* Get a good FPS sample before we start. */
@@ -130,11 +130,11 @@ dxp_orbit(const struct dx_action *dxa)
 	max = 2 * M_PI * dxa->dxa_orbit_frac;
 	if (t == 0) {
 		if (dxa->dxa_orbit_secs)
-			wait = dxa->dxa_orbit_secs;
+			waitlen = dxa->dxa_orbit_secs;
 		else
-			wait = 1.1 * ceil(log(DST(&st.st_v, &focus) /
+			waitlen = 1.1 * ceil(log(DST(&st.st_v, &focus) /
 			    log(1.1)));
-		adj = max / (fps * wait);
+		adj = max / (fps * waitlen);
 		amt = 0.0;
 	}
 
@@ -174,16 +174,16 @@ dxp_curlyq(const struct dx_action *dxa)
 {
 	static double fwadj;
 	static int t;
-	double wait;
+	double waitlen;
 	int ret;
 
 	if (t == 0) {
 		if (dxa->dxa_orbit_secs)
-			wait = dxa->dxa_orbit_secs;
+			waitlen = dxa->dxa_orbit_secs;
 		else
-			wait = 1.1 * ceil(log(DST(&st.st_v, &focus) /
+			waitlen = 1.1 * ceil(log(DST(&st.st_v, &focus) /
 			    log(1.1)));
-		fwadj = DST(&st.st_v, &focus) / (fps * wait);
+		fwadj = DST(&st.st_v, &focus) / (fps * waitlen);
 	}
 
 	tween_push();
@@ -988,10 +988,10 @@ dx_update(void)
 	}
 
 	if (de == NULL) {
-		for (j = 0; j < NENTRIES(dxtab); j++)
+		for (j = 0; j < nitems(dxtab); j++)
 			if (dxtab[j].de_val == dx_action->dxa_type)
 				break;
-		if (j >= NENTRIES(dxtab))
+		if (j >= nitems(dxtab))
 			errx(1, "internal error: unknown dx type %d",
 			    dx_action->dxa_type);
 		de = &dxtab[j];

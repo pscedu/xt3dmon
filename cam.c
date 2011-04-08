@@ -289,7 +289,7 @@ cam_revolvefocus(double dt, double dp)
 			vec_set(&nfv[5], fv.fv_x + dim.fv_w,	fv.fv_y,		fv.fv_z + dim.fv_d);
 			vec_set(&nfv[6], fv.fv_x,		fv.fv_y + dim.fv_h,	fv.fv_z + dim.fv_d);
 			vec_set(&nfv[7], fv.fv_x + dim.fv_w,	fv.fv_y + dim.fv_h,	fv.fv_z + dim.fv_d);
-			cam_revolve(nfv, NENTRIES(nfv), dt, dp, revolve_type);
+			cam_revolve(nfv, nitems(nfv), dt, dp, revolve_type);
 			break;
 		case VM_PHYS:
 			fvp = &machine.m_dim;
@@ -302,7 +302,7 @@ cam_revolvefocus(double dt, double dp)
 			vec_set(&nfv[5], fvp->fv_w,	0.0,		fvp->fv_d);
 			vec_set(&nfv[6], 0.0,		fvp->fv_h,	fvp->fv_d);
 			vec_set(&nfv[7], fvp->fv_w,	fvp->fv_h,	fvp->fv_d);
-			cam_revolve(nfv, NENTRIES(nfv), dt, dp, revolve_type);
+			cam_revolve(nfv, nitems(nfv), dt, dp, revolve_type);
 			break;
 		case VM_VNEIGHBOR:
 			cam_revolve(&focus, 1, dt, dp, revolve_type);

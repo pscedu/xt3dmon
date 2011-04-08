@@ -54,7 +54,7 @@ nc_gethlop(void (*f)(struct fill *))
 	};
 	size_t j;
 
-	for (j = 0; j < NENTRIES(hlops); j++)
+	for (j = 0; j < nitems(hlops); j++)
 		if (hlops[j] == f)
 			return (j);
 	warnx("flyby: unknown fill operation");
