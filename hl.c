@@ -40,7 +40,6 @@
 #include "queue.h"
 #include "selnode.h"
 #include "state.h"
-#include "yod.h"
 
 int
 nc_gethlop(void (*f)(struct fill *))
@@ -81,12 +80,6 @@ nc_runall(void (*f)(struct fill *))
 	case DM_TEMP:
 		for (i = 0; i < NTEMPC; i++)
 			f(&tempclass[i].nc_fill);
-		break;
-	case DM_YOD:
-		for (i = 0; i < yod_list.ol_cur; i++)
-			f(&OLE(yod_list, i, yod)->y_fill);
-		for (i = 0; i < NSC; i++)
-			f(&statusclass[i].nc_fill);
 		break;
 	case DM_RTUNK:
 		for (i = 0; i < NRTC; i++)
@@ -139,12 +132,6 @@ nc_getfp(size_t nc)
 	case DM_TEMP:
 		if (nc < NTEMPC)
 			return (&tempclass[nc].nc_fill);
-		break;
-	case DM_YOD:
-		if (nc < NSC)
-			return (&statusclass[nc].nc_fill);
-		else if (nc - NSC < yod_list.ol_cur)
-			return (&OLE(yod_list, nc - NSC, yod)->y_fill);
 		break;
 	case DM_RTUNK:
 		if (nc < NRTC)
@@ -222,10 +209,6 @@ nc_runsn(void (*f)(struct fill *))
 			if (n->n_route.rt_err[RP_UNK][st.st_rtetype])
 				f(n->n_fillp);
 			/* XXX: neighbor detection */
-			break;
-		case DM_YOD:
-			if (n->n_yod != NULL)
-				f(&n->n_yod->y_fill);
 			break;
 		case DM_LUSTRE:
 		case DM_MATRIX:

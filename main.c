@@ -52,7 +52,6 @@
 #include "uinp.h"
 #include "xmath.h"
 #include "xssl.h"
-#include "yod.h"
 
 #define STARTX		(-17.80)
 #define STARTY		( 30.76)
@@ -112,13 +111,12 @@ struct vmode vmodes[] = {
 struct dmode dmodes[] = {
  /* 0 */ { "job",	"Job" },
  /* 1 */ { "temp",	"Temperature" },
- /* 2 */ { "yod",	"Yod" },
+ /* 2 */ { NULL,	NULL },				/* egg */
  /* 3 */ { NULL,	NULL },				/* egg */
- /* 4 */ { NULL,	NULL },				/* egg */
- /* 5 */ { "same",	"Same" },
- /* 6 */ { "rte",	"Routing Errors" },
- /* 7 */ { NULL,	"Lustre Status" },
- /* 8 */ { NULL,	NULL }				/* egg */
+ /* 4 */ { "same",	"Same" },
+ /* 5 */ { "rte",	"Routing Errors" },
+ /* 6 */ { NULL,	"Lustre Status" },
+ /* 7 */ { NULL,	NULL }				/* egg */
 };
 
 struct state st = {
@@ -391,7 +389,6 @@ dmode_change(void)
 
 	switch (st.st_dmode) {
 	case DM_JOB:
-	case DM_YOD:
 		for (i = 0; i < NSC; i++)
 			statusclass[i].nc_nmemb = 0;
 		break;
@@ -418,14 +415,6 @@ dmode_change(void)
 		case DM_JOB:
 			if (n->n_job)
 				n->n_fillp = &n->n_job->j_fill;
-			else {
-				n->n_fillp = &statusclass[n->n_state].nc_fill;
-				statusclass[n->n_state].nc_nmemb++;
-			}
-			break;
-		case DM_YOD:
-			if (n->n_yod)
-				n->n_fillp = &n->n_yod->y_fill;
 			else {
 				n->n_fillp = &statusclass[n->n_state].nc_fill;
 				statusclass[n->n_state].nc_nmemb++;
@@ -770,7 +759,6 @@ rebuild(int opts)
 	if (opts & RF_DATASRC) {
 		ds_refresh(DS_NODE, dsfopts);
 		ds_refresh(DS_JOB, dsfopts);
-		ds_refresh(DS_YOD, dsfopts);
 		ds_refresh(DS_RT, DSFO_IGN);
 		ds_refresh(DS_SS, DSFO_IGN);
 //		ds_refresh(DS_MEM, DSFO_IGN);

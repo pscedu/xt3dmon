@@ -42,10 +42,8 @@ struct datasrc {
 #define DS_INV		(-1)
 #define DS_NODE		0
 #define DS_JOB		1
-#define DS_YOD		2
-#define DS_RT		3
-#define DS_SS		4
-#define NDS		5
+#define DS_RT		2
+#define NDS		3
 
 void		 ds_setlive(void);
 void		 ds_seturi(int, const char *);
@@ -67,7 +65,7 @@ int		 st_dsmode(void);
 int		 gss_valid(const char *);
 void		 gss_build_auth(struct ustream *);
 
-extern int	 	 dsfopts;
+extern int		 dsfopts;
 extern struct datasrc	 datasrcs[];
 extern char		 ds_dir[];
 extern char		 ds_browsedir[];

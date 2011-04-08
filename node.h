@@ -22,7 +22,6 @@
 
 struct fill;
 struct job;
-struct yod;
 
 struct node {
 	int		 n_nid;
@@ -33,7 +32,6 @@ struct node {
 	int		 n_geom;
 
 	struct job	*n_job;
-	struct yod	*n_yod;
 	int		 n_temp;
 	struct route	 n_route;
 

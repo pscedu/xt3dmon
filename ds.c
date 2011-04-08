@@ -70,7 +70,6 @@
 struct datasrc datasrcs[] = {
 	{ "node", 0, "", parse_node, DSF_LIVE,	dsfi_node, dsff_node,	NULL },
 	{ "job",  0, "", parse_job,  DSF_LIVE,	NULL,	   NULL,	NULL },
-	{ "yod",  0, "", parse_yod,  DSF_LIVE,	NULL,	   NULL,	NULL },
 	{ "rt",   0, "", parse_rt,   0,		NULL,	   NULL,	NULL },
 };
 
@@ -123,21 +122,19 @@ ds_setlive(void)
 
 /*
  * Since parse_node uses obj_get() for creating/finding
- * jobs and yods, we protect the job and yod lists when
+ * jobs, we protect the job lists when
  * starting and finalizing node data source fetches.
  */
 void
 dsfi_node(__unusedx const struct datasrc *ds)
 {
 	obj_batch_start(&job_list);
-	obj_batch_start(&yod_list);
 }
 
 void
 dsff_node(__unusedx const struct datasrc *ds)
 {
 	obj_batch_end(&job_list);
-	obj_batch_end(&yod_list);
 }
 
 __inline void
@@ -565,9 +562,6 @@ st_dsmode(void)
 	switch (st.st_dmode) {
 	case DM_JOB:
 		ds = DS_JOB;
-		break;
-	case DM_YOD:
-		ds = DS_YOD;
 		break;
 	}
 	return (ds);

@@ -24,9 +24,9 @@ struct objhdr {
 	int		  oh_flags;
 };
 
-#define OHF_TMP		(1<<0)		/* Trashable temporary flag */
-#define OHF_OLD		(1<<1)		/* Object has been around */
-#define OHF_USR1	(1<<2)		/* Type-specific flag */
+#define OHF_TMP		(1 << 0)	/* Trashable temporary flag */
+#define OHF_OLD		(1 << 1)	/* Object has been around */
+#define OHF_USR1	(1 << 2)	/* Type-specific flag */
 
 struct fnent {
 	struct objhdr	  fe_oh;
@@ -60,6 +60,5 @@ extern struct objlist	 glname_list;
 extern struct objlist	 job_list;
 extern struct objlist	 reel_list;
 extern struct objlist	 reelframe_list;
-extern struct objlist	 yod_list;
 
 #endif /* _OBJLIST_H_ */

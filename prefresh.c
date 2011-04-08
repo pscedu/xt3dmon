@@ -73,7 +73,6 @@
 #include "status.h"
 #include "uinp.h"
 #include "util.h"
-#include "yod.h"
 
 int	 dmode_data_clean;
 int	 selnode_clean;
@@ -432,35 +431,6 @@ panel_refresh_legend(struct panel *p)
 			    PWARG_CBARG_INT, i, PWARG_LAST);
 		}
 		break;
-	case DM_YOD:
-		panel_set_content(p, "- Node Legend (Yods) -\n"
-		    "Total yods: %lu", yod_list.ol_cur);
-
-		pwidget_add(p, &fill_showall, "Show all",
-		    PWARG_SPRIO, NSC + 1,
-		    PWARG_GSCB, gscb_pw_hlnc,
-		    PWARG_CBARG_INT, NC_ALL, PWARG_LAST);
-
-		pwidget_group_start(p);
-		for (j = 0; j < NSC; j++) {
-			if (statusclass[j].nc_nmemb == 0)
-				continue;
-			pwidget_add(p, &statusclass[j].nc_fill,
-			    statusclass[j].nc_name,
-			    PWARG_SPRIO, NSC - j,
-			    PWARG_GSCB, gscb_pw_hlnc,
-			    PWARG_CBARG_INT, j, PWARG_LAST);
-		}
-		for (j = 0; j < yod_list.ol_cur; j++)
-			pwidget_add(p, &OLE(yod_list, j, yod)->y_fill,
-			    OLE(yod_list, j, yod)->y_cmd,
-			    PWARG_SPRIO, 0,
-			    PWARG_GSCB, gscb_pw_hlnc,
-			    PWARG_CBARG_INT, NSC + j, PWARG_LAST);
-		pwidget_group_end(p);
-
-		cmp = pwidget_cmp;
-		break;
 	case DM_RTUNK:
 		panel_set_content(p, "- Node Legend (Route Errors) -");
 
@@ -563,11 +533,6 @@ panel_refresh_ninfo(struct panel *p)
 				buf_appendv(&b_data, "Job ID(s): ");
 			ol = &job_list;
 			break;
-		case DM_YOD:
-			if (yod_list.ol_cur)
-				buf_appendv(&b_data, "Yod ID(s): ");
-			ol = &yod_list;
-			break;
 		}
 
 		j = 0;
@@ -583,10 +548,6 @@ panel_refresh_ninfo(struct panel *p)
 			case DM_JOB:
 				if (n->n_job)
 					n->n_job->j_oh.oh_flags |= OHF_TMP;
-				break;
-			case DM_YOD:
-				if (n->n_yod)
-					n->n_yod->y_oh.oh_flags |= OHF_TMP;
 				break;
 			}
 			j++;
@@ -604,10 +565,6 @@ panel_refresh_ninfo(struct panel *p)
 				case DM_JOB:
 					buf_appendfv(&b_data, "%d,",
 					    ((struct job *)ohp)->j_id);
-					break;
-				case DM_YOD:
-					buf_appendfv(&b_data, "%d,",
-					    ((struct yod *)ohp)->y_id);
 					break;
 				}
 			}
@@ -647,9 +604,8 @@ panel_refresh_ninfo(struct panel *p)
 	    iv->iv_x, iv->iv_y, iv->iv_z,
 	    statusclass[n->n_state].nc_name);
 
-	if (n->n_job || n->n_yod)
-		panel_add_content(p, "\nCores in use: %d/%d",
-		    n->n_yod && n->n_yod->y_single ? 1 : 2,
+	if (n->n_job)
+		panel_add_content(p, "\nCores in use: %d/%d", 2,
 		    machine.m_coredim.iv_x *
 		    machine.m_coredim.iv_y *
 		    machine.m_coredim.iv_z);
@@ -725,25 +681,6 @@ panel_refresh_ninfo(struct panel *p)
 		}
 	}
 
-	if (n->n_yod) {
-		panel_add_content(p,
-		    "\n\n"
-		    "Yod ID: %d\n"
-		    "Yod partition ID: %d\n"
-		    "Yod CPUs: %d",
-		    n->n_yod->y_id,
-		    n->n_yod->y_partid,
-		    n->n_yod->y_ncpus);
-
-		if (strcmp(n->n_yod->y_cmd, DV_NOAUTH) != 0) {
-			struct buf bw_ycmd;
-
-			text_wrap(&bw_ycmd, n->n_yod->y_cmd, 40, "\n  ", 2);
-			panel_add_content(p, "\nYod command: %s", buf_get(&bw_ycmd));
-			buf_free(&bw_ycmd);
-		}
-	}
-
 	pwidget_startlist(p);
 	if (n->n_temp != DV_NODATA) {
 		j = roundclass(n->n_temp, TEMP_MIN, TEMP_MAX, NTEMPC);
@@ -751,13 +688,6 @@ panel_refresh_ninfo(struct panel *p)
 		    PWARG_GSCB, gscb_pw_dmnc,
 		    PWARG_CBARG_INT, DM_TEMP,
 		    PWARG_CBARG_INT2, j, PWARG_LAST);
-	}
-	if (n->n_yod) {
-		yod_findbyid(n->n_yod->y_id, &j);
-		pwidget_add(p, &n->n_yod->y_fill, "Show yod",
-		    PWARG_GSCB, gscb_pw_dmnc,
-		    PWARG_CBARG_INT, DM_YOD,
-		    PWARG_CBARG_INT2, NSC + j, PWARG_LAST);
 	}
 	if (n->n_job) {
 		job_findbyid(n->n_job->j_id, &j);

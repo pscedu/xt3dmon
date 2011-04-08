@@ -283,9 +283,6 @@ gl_keyh_dmode(unsigned char key, __unusedx int u, __unusedx int v)
 	case 't':
 		st.st_dmode = DM_TEMP;
 		break;
-	case 'y':
-		st.st_dmode = DM_YOD;
-		break;
 	default:
 		return;
 	}

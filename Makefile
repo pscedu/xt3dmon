@@ -62,7 +62,6 @@ SRCS+=		ustrop-ssl.c
 SRCS+=		util.c
 SRCS+=		vec.c
 SRCS+=		widget.c
-SRCS+=		yod.c
 
 CFLAGS+=	-Wall -W -g -pipe
 CFLAGS+=	-Wno-parentheses -Wshadow -Wredundant-decls

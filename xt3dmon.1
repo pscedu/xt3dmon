@@ -110,12 +110,12 @@ below.
 .El
 .Pp
 There are a number of different data displays available:
-job, yod, temperature, Lustre status, and various routing statistics
+job, temperature, Lustre status, and various routing statistics
 .Pq see the key assignments below for how to enable these modes .
 Each mode assigns every cluster node a color corresponding to its
 status with respect to that display mode.
 .Pp
-In the job and yod modes, cluster nodes may be in any of the following
+In the job mode, cluster nodes may be in any of the following
 states, differentiated by color/texture:
 .Pp
 .Bl -tag -width "Disabled (PBS)" -offset indent -compact
@@ -292,8 +292,6 @@ Maximize window.
 Switch to job data mode (default).
 .It Ic mt
 Switch to temperature data mode.
-.It Ic my
-Switch to yod data mode.
 .It Ic oC
 Toggle the display of node CPU cores.
 .It Ic od
@@ -513,9 +511,9 @@ Set the data mode.
 Recognized values for
 .Ar dm
 are
-.Ic job , temp , rte ,
+.Ic job , temp ,
 and
-.Ic yod .
+.Ic rte .
 .It Xo
 .Ic focus
 .Fa x , Ns Fa y , Ns Fa z
@@ -983,8 +981,6 @@ flag:
 node information
 .It Pa job
 job information
-.It Pa yod
-yod information
 .It Pa rt
 .Xr xtnetwatch 1
 routing error data

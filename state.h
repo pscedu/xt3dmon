@@ -22,14 +22,13 @@
 /* Data mode. */
 #define DM_JOB		0
 #define DM_TEMP		1
-#define DM_YOD		2
-#define DM_BORG		3	/* egg */
-#define DM_MATRIX	4	/* egg */
-#define DM_SAME		5
-#define DM_RTUNK	6
-#define DM_LUSTRE	8
-#define DM_HACKERS	9	/* egg */
-#define NDM		9
+#define DM_BORG		2	/* egg */
+#define DM_MATRIX	3	/* egg */
+#define DM_SAME		4
+#define DM_RTUNK	5
+#define DM_LUSTRE	6
+#define DM_HACKERS	7	/* egg */
+#define NDM		8
 
 /* View mode. */
 #define VM_PHYS		0

@@ -30,7 +30,6 @@
 #include "objlist.h"
 #include "util.h"
 #include "select.h"
-#include "yod.h"
 
 struct nodeclass statusclass[] = {
 	{ "Free",		FILL_INIT(1.00f, 1.00f, 1.00f), 0 },

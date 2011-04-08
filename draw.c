@@ -45,7 +45,6 @@
 #include "state.h"
 #include "util.h"
 #include "xmath.h"
-#include "yod.h"
 
 #define SELNODE_IF_NEEDED(n, selpipes) \
 	((selpipes) ? (n)->n_flags & NF_SELNODE : 1)
@@ -412,8 +411,7 @@ draw_node_cores(const struct node *n, const struct fill *fp)
 	struct ivec iv, lvl;
 	int ncores;
 
-	ncores = n->n_yod && n->n_yod->y_single ? 1 : 2;
-
+	ncores = 2;
 	coredim = &machine.m_coredim;
 
 	/* Geometry for core size in each dimension. */
@@ -542,7 +540,7 @@ draw_node(struct node *n, int flags)
 
 	switch (n->n_geom) {
 	case GEOM_CUBE:
-		if (st.st_opts & OP_CORES && n->n_yod)
+		if (st.st_opts & OP_CORES)
 			draw_node_cores(n, fp);
 		else
 			draw_cube(n->n_dimp, fp, df);

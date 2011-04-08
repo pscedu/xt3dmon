@@ -39,7 +39,6 @@
 #include "parse.h"
 #include "state.h"
 #include "ustream.h"
-#include "yod.h"
 
 #define PS_ALLOWSPACE (1<<0)
 
@@ -47,7 +46,6 @@ struct route	 rt_max;
 struct route	 rt_zero;
 
 int		 job_ca_cookie;
-int		 yod_ca_cookie;
 
 /*
  *	s	points to start of number in a string
@@ -230,20 +228,18 @@ prerror(const char *fn, int lineno, const char *bufp, const char *s)
 void
 parse_node(const struct datasrc *ds)
 {
-	int enabled, jobid, temp, yodid, nfails, lustat;
+	int enabled, jobid, temp, nfails, lustat;
 	int lineno, nid, x, y, z, stat, nstate;
 	char buf[BUFSIZ], *s, *field;
 	struct node *n, **np;
 	struct physcoord pc;
 	struct ivec twidim;
 	struct job *job;
-	struct yod *yod;
 	size_t j;
 
 	NODE_FOREACH_WI(n, np) {
 		n->n_flags &= ~NF_VALID;
 		n->n_job = NULL;
-		n->n_yod = NULL;
 	}
 
 	ivec_set(&twidim, 0, 0, 0);
@@ -289,7 +285,6 @@ parse_node(const struct datasrc *ds)
 		PARSENUM(s, enabled, 2);
 		PARSENUM(s, jobid, INT_MAX);
 		PARSENUM(s, temp, INT_MAX);
-		PARSENUM(s, yodid, INT_MAX);
 		PARSENUM(s, nfails, INT_MAX);
 		PARSECHAR(s, lustat);
 
@@ -373,17 +368,6 @@ parse_node(const struct datasrc *ds)
 				    "job %d", jobid);
 		}
 
-		if (yodid) {
-			if (n->n_state == SC_FREE)
-				n->n_state = SC_USED;
-			n->n_yod = obj_get(&yodid, &yod_list);
-			n->n_yod->y_id = yodid;
-			if (strcmp(n->n_yod->y_cmd, "") == 0)
-				snprintf(n->n_yod->y_cmd,
-				    sizeof(n->n_yod->y_cmd),
-				    "yod %d", yodid);
-		}
-
 		n->n_flags |= NF_VALID;
 		continue;
 bad:
@@ -397,59 +381,12 @@ bad:
 		job = OLE(job_list, j, job);
 		col_get_hash(&job->j_oh, job->j_id, &job->j_fill);
 	}
-	for (j = 0; j < yod_list.ol_tcur; j++) {
-		yod = OLE(yod_list, j, yod);
-		col_get_hash(&yod->y_oh, yod->y_id, &yod->y_fill);
-	}
 
 	if (++twidim.iv_w != widim.iv_w ||
 	    ++twidim.iv_h != widim.iv_h ||
 	    ++twidim.iv_d != widim.iv_d)
 		errx(1, "wired cluster dimensions have changed (%d,%d,%d)",
 		    twidim.iv_w, twidim.iv_y, twidim.iv_z);
-}
-
-/*
- *	yodid	partid	ncpus	cmd
- *	12253	6864	128	yod /usr/
- */
-void
-parse_yod(const struct datasrc *ds)
-{
-	struct yod *y, y_fake;
-	char *s, buf[BUFSIZ];
-	int lineno;
-
-	lineno = 0;
-	while (us_gets(ds->ds_us, buf, sizeof(buf)) != NULL) {
-		lineno++;
-		s = buf;
-		while (isspace(*s))
-			s++;
-		if (*s == '#' || *s == '\0')
-			continue;
-
-		PARSENUM(s, y_fake.y_id, INT_MAX);
-
-		if ((y = yod_findbyid(y_fake.y_id, NULL)) == NULL)
-			continue;
-
-		y_fake = *y;
-		PARSENUM(s, y_fake.y_partid, INT_MAX);
-		PARSENUM(s, y_fake.y_ncpus, INT_MAX);
-		if (parsestr(&s, y_fake.y_cmd, sizeof(y_fake.y_cmd),
-		    PS_ALLOWSPACE))
-			goto bad;
-
-		*y = y_fake;
-		yod_init(y);
-		continue;
-bad:
-		prerror("yod", lineno, buf, s);
-	}
-	if (us_sawerror(ds->ds_us))
-		warnx("us_gets: %s", us_errstr(ds->ds_us));
-	errno = 0;
 }
 
 /*

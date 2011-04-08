@@ -243,7 +243,6 @@ svc_dmode(char *t, int *used, struct client_session *cs)
 	static struct svc_enum *sve, tab[] = {
 		{ "temp",	DM_TEMP },
 		{ "jobs",	DM_JOB },
-		{ "yods",	DM_YOD },
 		{ NULL,		0 }
 	};
 
@@ -436,11 +435,8 @@ serv_displayh(void)
 			nsessions++;
 			dsc_clone(DS_NODE, cs->cs_sid);
 			dsc_clone(DS_JOB, cs->cs_sid);
-			dsc_clone(DS_YOD, cs->cs_sid);
 		}
 		if (!dsc_load(DS_NODE, cs->cs_sid))
-			goto drop;
-		if (!dsc_load(DS_YOD, cs->cs_sid))
 			goto drop;
 
 		dsm = st_dsmode();

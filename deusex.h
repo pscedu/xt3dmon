@@ -94,9 +94,6 @@ struct dx_action {
 #define dxa_selnode_mode	dxa_intg
 #define dxa_selnode_list	dxa_nidlist
 
-#define dxa_ssctl_type		dxa_intg
-#define dxa_ssctl_value		dxa_intg2
-
 #define dxa_stall_secs		dxa_dbl
 
 #define dxa_subsel_mode		dxa_intg
