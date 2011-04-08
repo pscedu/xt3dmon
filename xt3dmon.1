@@ -386,8 +386,6 @@ The
 key will temporarily hide this panel when it is open,
 useful generating screenshots without the panel itself
 being shown.
-.It Ic pt
-Toggle the SeaStar-mode control panel.
 .It Ic pV
 Toggle the view mode selector panel.
 .It Ic pw
@@ -716,8 +714,6 @@ Archive reel selector.
 Route-mode controls.
 .It Ic sshot
 Interactive screenshot saver.
-.It Ic sstar
-Seastar-mode controls.
 .It Ic status
 Program status information.
 .It Ic vmode
@@ -823,24 +819,6 @@ changed to the given
 Captions may be optionally surrounded by double quotes
 .Pq Dq \&
 to allow spaces.
-.It Ic ssctl Ar type value
-Set the value of a SeaStar-mode control.
-Recognized types and their values are:
-.Bl -tag -offset indent -width Ds
-.It Ic vc
-Set the SeaStar
-.Tn VC
-being viewed to one of
-.Ic 0 , 1 , 2 ,
-or
-.Ic 3 .
-.It Ic mode
-Set which SeaStar counter value to display.
-May be one of
-.Ic blocked , packets ,
-or
-.Ic flits .
-.El
 .It Ic stall Ar nsecs
 Remain still for the specified number of seconds
 .Ar nsecs ,
@@ -1007,8 +985,6 @@ node information
 job information
 .It Pa yod
 yod information
-.It Pa ss
-SeaStar register data
 .It Pa rt
 .Xr xtnetwatch 1
 routing error data

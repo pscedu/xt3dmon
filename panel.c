@@ -102,24 +102,23 @@ struct pinfo pinfo[] = {
  /* 17 */ { "dmode",	"Data Mode",		panel_refresh_dmode,	PSTICK_TL, 0,					0,		NULL },
  /* 18 */ { "reel",	"Reel",			panel_refresh_reel,	PSTICK_TR, PIF_FBIGN,				0,		NULL },
  /* 19 */ { "pipe",	"Pipe Mode",		panel_refresh_pipe,	PSTICK_TR, 0,					0,		NULL },
- /* 20 */ { "sstar",	"Seastar",		panel_refresh_sstar,	PSTICK_TR, 0,					0,		NULL },
- /* 21 */ { "wiadj",	"Wired Controls",	panel_refresh_wiadj,	PSTICK_BL, 0,					0,		NULL },
- /* 22 */ { "rt",	"Route Controls",	panel_refresh_rt,	PSTICK_TR, 0,					0,		NULL },
- /* 23 */ { "fbcho",	"Flyby Chooser",	panel_refresh_fbcho,	PSTICK_TR, PIF_FBIGN,				0,		NULL },
- /* 24 */ { "fbcreat",	"Flyby Creator",	panel_refresh_fbnew,	PSTICK_TR, PIF_FBIGN | PIF_UINP,		0,		uinpcb_fbnew },
- /* 25 */ { "compass",	"Compass",		panel_refresh_cmp,	PSTICK_BL, PIF_FBIGN,				0,		NULL },
- /* 26 */ { "keyh",	"Key Handler",		panel_refresh_keyh,	PSTICK_BL, 0,					0,		NULL },
- /* 27 */ { "dxcho",	"Deus Ex Chooser",	panel_refresh_dxcho,	PSTICK_TR, PIF_FBIGN,				0,		NULL },
- /* 28 */ { "dscho",	"Dataset Chooser",	panel_refresh_dscho,	PSTICK_TR, PIF_FBIGN,				0,		NULL },
- /* 29 */ { "vnmode",	"VNeighbor Mode",	panel_refresh_vnmode,	PSTICK_TL, 0,					0,		NULL },
- /* 30 */ { "pipedim",	"Pipe Dimensions",	panel_refresh_pipedim,	PSTICK_TR, 0,					0,		NULL }
+ /* 20 */ { "wiadj",	"Wired Controls",	panel_refresh_wiadj,	PSTICK_BL, 0,					0,		NULL },
+ /* 21 */ { "rt",	"Route Controls",	panel_refresh_rt,	PSTICK_TR, 0,					0,		NULL },
+ /* 22 */ { "fbcho",	"Flyby Chooser",	panel_refresh_fbcho,	PSTICK_TR, PIF_FBIGN,				0,		NULL },
+ /* 23 */ { "fbcreat",	"Flyby Creator",	panel_refresh_fbnew,	PSTICK_TR, PIF_FBIGN | PIF_UINP,		0,		uinpcb_fbnew },
+ /* 24 */ { "compass",	"Compass",		panel_refresh_cmp,	PSTICK_BL, PIF_FBIGN,				0,		NULL },
+ /* 25 */ { "keyh",	"Key Handler",		panel_refresh_keyh,	PSTICK_BL, 0,					0,		NULL },
+ /* 26 */ { "dxcho",	"Deus Ex Chooser",	panel_refresh_dxcho,	PSTICK_TR, PIF_FBIGN,				0,		NULL },
+ /* 27 */ { "dscho",	"Dataset Chooser",	panel_refresh_dscho,	PSTICK_TR, PIF_FBIGN,				0,		NULL },
+ /* 28 */ { "vnmode",	"VNeighbor Mode",	panel_refresh_vnmode,	PSTICK_TL, 0,					0,		NULL },
+ /* 29 */ { "pipedim",	"Pipe Dimensions",	panel_refresh_pipedim,	PSTICK_TR, 0,					0,		NULL }
 };
 
-#define PVOFF_TL 0
-#define PVOFF_TR 1
-#define PVOFF_BL 2
-#define PVOFF_BR 3
-#define NPVOFF 4
+#define PVOFF_TL	0
+#define PVOFF_TR	1
+#define PVOFF_BL	2
+#define PVOFF_BR	3
+#define NPVOFF		4
 
 struct panels	 panels = TAILQ_HEAD_INITIALIZER(panels);
 int		 panel_offset[NPVOFF];

@@ -94,10 +94,6 @@ nc_runall(void (*f)(struct fill *))
 		f(&fill_rtesnd);
 		f(&fill_rtercv);
 		break;
-	case DM_SEASTAR:
-		for (i = 0; i < NSSC; i++)
-			f(&ssclass[i].nc_fill);
-		break;
 	case DM_MATRIX:
 		f(&fill_matrix);
 		break;
@@ -157,10 +153,6 @@ nc_getfp(size_t nc)
 			return (&fill_rtesnd);
 		else if (nc == RTC_RCV)
 			return (&fill_rtercv);
-		break;
-	case DM_SEASTAR:
-		if (nc < NSSC)
-			return (&ssclass[nc].nc_fill);
 		break;
 	case DM_BORG:
 		return (&fill_borg);
@@ -235,7 +227,6 @@ nc_runsn(void (*f)(struct fill *))
 			if (n->n_yod != NULL)
 				f(&n->n_yod->y_fill);
 			break;
-		case DM_SEASTAR:
 		case DM_LUSTRE:
 		case DM_MATRIX:
 		case DM_SAME:

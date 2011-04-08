@@ -21,38 +21,37 @@
 #include "queue.h"
 #include "select.h"
 
-#define PANEL_FPS	(1<<0)
-#define PANEL_NINFO	(1<<1)
-#define PANEL_CMD	(1<<2)
-#define PANEL_LEGEND	(1<<3)
-#define PANEL_FLYBY	(1<<4)
-#define PANEL_GOTONODE	(1<<5)
-#define PANEL_POS	(1<<6)
-#define PANEL_SS	(1<<7)
-#define PANEL_STATUS	(1<<8)
-#define PANEL_EGGS	(1<<9)
-#define PANEL_DATE	(1<<10)
-#define PANEL_OPTS	(1<<11)
-#define PANEL_GOTOJOB	(1<<12)
-#define PANEL_PANELS	(1<<13)
-#define PANEL_LOGIN	(1<<14)
-#define PANEL_HELP	(1<<15)
-#define PANEL_VMODE	(1<<16)
-#define PANEL_DMODE	(1<<17)
-#define PANEL_REEL	(1<<18)
-#define PANEL_PIPE	(1<<19)
-#define PANEL_SSTAR	(1<<20)
-#define PANEL_WIADJ	(1<<21)
-#define PANEL_RT	(1<<22)
-#define PANEL_FBCHO	(1<<23)
-#define PANEL_FBNEW	(1<<24)
-#define PANEL_CMP	(1<<25)
-#define PANEL_KEYH	(1<<26)
-#define PANEL_DXCHO	(1<<27)
-#define PANEL_DSCHO	(1<<28)
-#define PANEL_VNMODE	(1<<29)
-#define PANEL_PIPEDIM	(1<<30)
-#define NPANELS		31
+#define PANEL_FPS	(1 <<  0)
+#define PANEL_NINFO	(1 <<  1)
+#define PANEL_CMD	(1 <<  2)
+#define PANEL_LEGEND	(1 <<  3)
+#define PANEL_FLYBY	(1 <<  4)
+#define PANEL_GOTONODE	(1 <<  5)
+#define PANEL_POS	(1 <<  6)
+#define PANEL_SS	(1 <<  7)
+#define PANEL_STATUS	(1 <<  8)
+#define PANEL_EGGS	(1 <<  9)
+#define PANEL_DATE	(1 << 10)
+#define PANEL_OPTS	(1 << 11)
+#define PANEL_GOTOJOB	(1 << 12)
+#define PANEL_PANELS	(1 << 13)
+#define PANEL_LOGIN	(1 << 14)
+#define PANEL_HELP	(1 << 15)
+#define PANEL_VMODE	(1 << 16)
+#define PANEL_DMODE	(1 << 17)
+#define PANEL_REEL	(1 << 18)
+#define PANEL_PIPE	(1 << 19)
+#define PANEL_WIADJ	(1 << 20)
+#define PANEL_RT	(1 << 21)
+#define PANEL_FBCHO	(1 << 22)
+#define PANEL_FBNEW	(1 << 23)
+#define PANEL_CMP	(1 << 24)
+#define PANEL_KEYH	(1 << 25)
+#define PANEL_DXCHO	(1 << 26)
+#define PANEL_DSCHO	(1 << 27)
+#define PANEL_VNMODE	(1 << 28)
+#define PANEL_PIPEDIM	(1 << 29)
+#define NPANELS		30
 
 struct pwidget;
 TAILQ_HEAD(pwidget_group_list, pwidget);
@@ -83,7 +82,7 @@ struct pwidget {
 	int			  pw_h;
 };
 
-#define PWF_HIDE	(1<<0)
+#define PWF_HIDE		(1 << 0)
 
 struct pinfo;
 
@@ -113,37 +112,37 @@ struct panel {
 	void			(*p_extdrawf)(struct panel *);
 };
 
-#define POPT_REMOVE	(1<<0)			/* being removed */
-#define POPT_DIRTY	(1<<1)			/* panel needs redrawn, but same contents */
-#define POPT_REFRESH	(1<<2)			/* panel needs contents rebuilt */
-#define POPT_MOBILE	(1<<3)			/* being dragged */
-#define POPT_COMPILE	(1<<4)			/* stereo: panel was compiled */
-#define POPT_USR1	(1<<5)			/* panel-specific flag */
-#define POPT_CANSYNC	(1<<6)			/* stereo: just sync draw */
+#define POPT_REMOVE		(1 << 0)	/* being removed */
+#define POPT_DIRTY		(1 << 1)	/* panel needs redrawn, but same contents */
+#define POPT_REFRESH		(1 << 2)	/* panel needs contents rebuilt */
+#define POPT_MOBILE		(1 << 3)	/* being dragged */
+#define POPT_COMPILE		(1 << 4)	/* stereo: panel was compiled */
+#define POPT_USR1		(1 << 5)	/* panel-specific flag */
+#define POPT_CANSYNC		(1 << 6)	/* stereo: just sync draw */
 
 #define POPT_LOGIN_ATPASS (POPT_USR1)
 
 TAILQ_HEAD(panels, panel);
 
 struct pinfo {
-	const char	 *pi_abbr;
-	const char	 *pi_name;
-	void		(*pi_refresh)(struct panel *);
-	int		  pi_stick;
-	int		  pi_flags;
-	int		  pi_uinpopts;
-	void		(*pi_uinpcb)(void);
+	const char		 *pi_abbr;
+	const char		 *pi_name;
+	void			(*pi_refresh)(struct panel *);
+	int			  pi_stick;
+	int			  pi_flags;
+	int			  pi_uinpopts;
+	void			(*pi_uinpcb)(void);
 };
 
-#define PIF_UINP	(1<<0)
-#define PIF_XPARENT	(1<<1)			/* panel is transparent */
-#define PIF_HIDE	(1<<2)
-#define PIF_FBIGN	(1<<3)			/* ignore in flybys */
+#define PIF_UINP		(1 << 0)
+#define PIF_XPARENT		(1 << 1)	/* panel is transparent */
+#define PIF_HIDE		(1 << 2)
+#define PIF_FBIGN		(1 << 3)	/* ignore in flybys */
 
-#define PSTICK_TL	1
-#define PSTICK_TR	2
-#define PSTICK_BL	3
-#define PSTICK_BR	4
+#define PSTICK_TL		1
+#define PSTICK_TR		2
+#define PSTICK_BL		3
+#define PSTICK_BR		4
 
 void		 pwidget_grouplist_free(struct panel *);
 
@@ -188,7 +187,6 @@ void panel_refresh_pos(struct panel *);
 void panel_refresh_reel(struct panel *);
 void panel_refresh_rt(struct panel *);
 void panel_refresh_ss(struct panel *);
-void panel_refresh_sstar(struct panel *);
 void panel_refresh_status(struct panel *);
 void panel_refresh_vmode(struct panel *);
 void panel_refresh_wiadj(struct panel *);

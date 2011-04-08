@@ -483,22 +483,6 @@ panel_refresh_legend(struct panel *p)
 			    PWARG_CBARG_INT, j, PWARG_LAST);
 		}
 		break;
-	case DM_SEASTAR:
-		panel_set_content(p, "- Node Legend (SeaStar) -");
-
-		pwidget_add(p, &fill_showall, "Show all",
-		    PWARG_GSCB, gscb_pw_hlnc,
-		    PWARG_CBARG_INT, NC_ALL, PWARG_LAST);
-
-		for (j = 0; j < NSSC; j++) {
-			if (ssclass[j].nc_nmemb == 0)
-				continue;
-			pwidget_add(p, &ssclass[j].nc_fill,
-			    ssclass[j].nc_name,
-			    PWARG_GSCB, gscb_pw_hlnc,
-			    PWARG_CBARG_INT, j, PWARG_LAST);
-		}
-		break;
 	case DM_SAME:
 		panel_set_content(p, "- Node Legend -");
 
@@ -759,26 +743,6 @@ panel_refresh_ninfo(struct panel *p)
 			buf_free(&bw_ycmd);
 		}
 	}
-
-#if 0
-	panel_add_content(p,
-	    "\n\n"
-	    "nblk=%e %e %e %e\n"
-	    "nflt=%e %e %e %e\n"
-	    "npkt=%e %e %e %e",
-	    n->n_sstar.ss_cnt[SSCNT_NBLK][0],
-	    n->n_sstar.ss_cnt[SSCNT_NBLK][1],
-	    n->n_sstar.ss_cnt[SSCNT_NBLK][2],
-	    n->n_sstar.ss_cnt[SSCNT_NBLK][3],
-	    n->n_sstar.ss_cnt[SSCNT_NFLT][0],
-	    n->n_sstar.ss_cnt[SSCNT_NFLT][1],
-	    n->n_sstar.ss_cnt[SSCNT_NFLT][2],
-	    n->n_sstar.ss_cnt[SSCNT_NFLT][3],
-	    n->n_sstar.ss_cnt[SSCNT_NPKT][0],
-	    n->n_sstar.ss_cnt[SSCNT_NPKT][1],
-	    n->n_sstar.ss_cnt[SSCNT_NPKT][2],
-	    n->n_sstar.ss_cnt[SSCNT_NPKT][3]);
-#endif
 
 	pwidget_startlist(p);
 	if (n->n_temp != DV_NODATA) {
@@ -1207,53 +1171,6 @@ panel_refresh_dmode(struct panel *p)
 	pwidget_group_end(p);
 	pwidget_endlist(p, 2);
 }
-
-char *ssvclabels[] = {
-	"VC0",
-	"VC1",
-	"VC2",
-	"VC3"
-};
-
-char *ssmodelabels[] = {
-	"# Blocked cycles",
-	"# Flits",
-	"# Packets"
-};
-
-void
-panel_refresh_sstar(struct panel *p)
-{
-	static int sav_mode, sav_vc;
-	int i;
-
-	if (panel_ready(p) && sav_mode == st.st_ssmode &&
-	    sav_vc == st.st_ssvc)
-		return;
-	sav_mode = st.st_ssmode;
-	sav_vc = st.st_ssvc;
-
-	panel_set_content(p, "- Seastar Controls -");
-	pwidget_startlist(p);
-	for (i = 0; i < NVC; i++) {
-		pwidget_add(p, (st.st_ssvc == i ?
-		    &fill_checked : &fill_unchecked), ssvclabels[i],
-		    PWARG_GSCB, gscb_pw_ssvc,
-		    PWARG_CBARG_INT, i, PWARG_LAST);
-	}
-	for (i = 0; i < NSSCNT; i++) {
-		pwidget_add(p, (st.st_ssmode == i ?
-		    &fill_checked : &fill_unchecked), ssmodelabels[i],
-		    PWARG_GSCB, gscb_pw_ssmode,
-		    PWARG_CBARG_INT, i, PWARG_LAST);
-	}
-	pwidget_endlist(p, 2);
-}
-
-char *pipemodelabels[] = {
-	"Torus directions",
-	"Routing errors"
-};
 
 void
 panel_refresh_pipe(struct panel *p)

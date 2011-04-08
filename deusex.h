@@ -17,34 +17,30 @@
  * %PSC_END_COPYRIGHT%
  */
 
+#include <stdarg.h>
+
 #include "queue.h"
 #include "xmath.h"
 
-#include <stdarg.h>
+#define DX_DEFAULT		"full"
 
-#define DX_DEFAULT "full"
+/* Set mode values */
+#define DXV_ON			0
+#define DXV_OFF			1
+#define DXV_SET			2
 
-/* Set mode values. */
-#define DXV_ON		0
-#define DXV_OFF		1
-#define DXV_SET		2
+/* Cycle action methods */
+#define DACM_GROW		0
+#define DACM_CYCLE		1
 
-/* Cycle action methods. */
-#define DACM_GROW	0
-#define DACM_CYCLE	1
+/* Extra node classes */
+#define DXNC_RND		(-1)
 
-/* Extra node classes. */
-#define DXNC_RND	(-1)
-
-/* Node pseudo-classes. */
-#define DXN_RND		(-1)	/* Random. */
-#define DXN_SEL 	(-2)	/* Selected nodes. */
-#define DXN_VIS		(-3)	/* All visible. */
-#define DXN_ALL		(-4)
-
-/* SeaStar control types. */
-#define DXSST_VC	0
-#define DXSST_MODE	1
+/* Node pseudo-classes */
+#define DXN_RND			(-1)	/* Random */
+#define DXN_SEL			(-2)	/* Selected nodes */
+#define DXN_VIS			(-3)	/* All visible */
+#define DXN_ALL			(-4)
 
 struct dx_action {
 	TAILQ_ENTRY(dx_action)	 dxa_link;

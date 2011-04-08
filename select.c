@@ -501,10 +501,7 @@ gscb_pw_dmode(struct glname *gn, int flags)
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
 	else if (flags == 0) {
-		if (dm == DM_SEASTAR ||
-		    st.st_dmode == DM_SEASTAR)
-			geom_setall(dm == DM_SEASTAR ?
-			    GEOM_SPHERE : GEOM_CUBE);
+		geom_setall(GEOM_CUBE);
 
 		st.st_dmode = dm;
 		st.st_rf |= RF_DMODE;

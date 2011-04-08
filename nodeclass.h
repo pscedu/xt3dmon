@@ -30,7 +30,7 @@
 #define NC_SELDM	(-3)
 #define NC_INVAL	(-4)
 
-/* Node status classes. */
+/* Node status classes */
 #define SC_FREE		0
 #define SC_DISABLED	1
 #define SC_DOWN		2
@@ -42,20 +42,17 @@
 #define SC_UNAVAIL	8
 #define NSC		9
 
-/* Temperature class constants. */
+/* Temperature class constants */
 #define TEMP_MIN	18
 #define TEMP_MAX	73
 #define NTEMPC		14
 
-/* Route error class constants. */
+/* Route error class constants */
 #define NRTC		10
 #define RTC_SND		11
 #define RTC_RCV		12
 
-/* Seastar class constants. */
-#define NSSC		10
-
-/* Lustre class constants. */
+/* Lustre class constants */
 #define NLUSTC		3
 
 struct nodeclass {
@@ -74,5 +71,4 @@ extern struct nodeclass	 statusclass[];
 extern struct nodeclass	 tempclass[NTEMPC];	/* XXX SPOT */
 extern struct nodeclass	 rtclass[NRTC];		/* XXX SPOT */
 extern struct nodeclass	 rtpipeclass[NRTC];	/* XXX SPOT */
-extern struct nodeclass	 ssclass[NSSC];		/* XXX SPOT */
 extern struct nodeclass	 lustreclass[];
