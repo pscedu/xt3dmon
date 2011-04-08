@@ -63,7 +63,7 @@
 #endif
 
 #ifndef _LIVE_PATH
-# define _LIVE_PATH "bigben-monitor.psc.edu/arbiter-raw.pl?data=%s"
+# define _LIVE_PATH "mugatu.psc.edu:24240/UView"
 #endif
 
 /* Must match DS_* defines in ds.h. */
