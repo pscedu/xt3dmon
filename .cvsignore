@@ -1,10 +1,11 @@
-xt3dmon
+*.gdbhist
 client-snap
+dx-lex.c
 gmon.out
 mach-lex.c
 mach-parse.c
 mach-parse.h
-dx-lex.c
+xt3dmon
 dx-parse.c
 dx-parse.h
 cscope.*out
