@@ -1,0 +1,181 @@
+? misc.patch
+? data/font.ttf
+? doc/xtwmon-design.png
+Index: Makefile
+===================================================================
+RCS file: /var/cvs/proj/xt3dmon/Makefile,v
+retrieving revision 1.134
+diff -u -p -r1.134 Makefile
+--- Makefile	16 Sep 2008 20:16:42 -0000	1.134
++++ Makefile	8 Apr 2011 15:37:39 -0000
+@@ -52,6 +52,7 @@ SRCS+= ssl.c
+ SRCS+= status.c
+ SRCS+= tex.c
+ SRCS+= text.c
++SRCS+= phys.c
+ SRCS+= tween.c
+ SRCS+= uinp.c
+ SRCS+= ustrdtab.c
+@@ -63,6 +64,8 @@ SRCS+= util.c
+ SRCS+= vec.c
+ SRCS+= widget.c
+ SRCS+= yod.c
++#SRCS+= ftgl.cc
++#SRCS+= glchar.c
+ 
+ CFLAGS += -Wall -W -g -pipe
+ CFLAGS += -Wno-parentheses -Wshadow -Wredundant-decls
+@@ -72,9 +75,11 @@ CFLAGS += -D_LIVE_PROTO=\"file\" -D_LIVE
+ CFLAGS += -DYY_NO_UNPUT
+ #CFLAGS += -O3 -Wuninitialized -fomit-frame-pointer
+ #CFLAGS += -fno-strict-aliasing
+-CFLAGS += -I/usr/X11R6/include
++CFLAGS += -I/usr/X11R6/include `freetype-config --cflags`
++CXXFLAGS += `freetype-config --cflags`
+ 
+ LIBS += -lGL -lGLU -lglut -lssl -lpng -lz -lpthread
++#-lftgl
+ 
+ # static compiles:
+ # LIBS += -lGL -lGLU -lglut -lssl -lpng12 -lz -lm -lgssapi_krb5
+@@ -97,6 +102,7 @@ INCS += $$(if cc -v 2>&1 | grep -q gcc; 
+ OBJS = $(patsubst %.c,%.o,$(filter %.c,${SRCS}))
+ OBJS+= $(patsubst %.y,%.o,$(filter %.y,${SRCS}))
+ OBJS+= $(patsubst %.l,%.o,$(filter %.l,${SRCS}))
++OBJS+= $(patsubst %.cc,%.o,$(filter %.cc,${SRCS}))
+ 
+ CSRCS = $(filter %.c,${SRCS})
+ CSRCS+= $(patsubst %.y,%.c,$(filter %.y,${SRCS}))
+Index: draw.c
+===================================================================
+RCS file: /var/cvs/proj/xt3dmon/draw.c,v
+retrieving revision 1.283
+diff -u -p -r1.283 draw.c
+--- draw.c	17 Mar 2010 02:54:48 -0000	1.283
++++ draw.c	8 Apr 2011 15:37:39 -0000
+@@ -652,6 +652,10 @@ draw_ground(void)
+ 			r = j * 8.0;// - ndim->fv_w / 2.0;
+ 			gluDisk(quadric, r - .2, r, 100, 3);
+ 			glPopMatrix();
++
++			glColor4f(fp->f_r, fp->f_g, fp->f_b, 0.1);
++if (j == 6)
++			gluSphere(quadric, r, 100, 100);
+ 		}
+ 
+ 		glDisable(GL_BLEND);
+Index: env.c
+===================================================================
+RCS file: /var/cvs/proj/xt3dmon/env.c,v
+retrieving revision 1.26
+diff -u -p -r1.26 env.c
+--- env.c	17 Mar 2010 02:54:48 -0000	1.26
++++ env.c	8 Apr 2011 15:37:39 -0000
+@@ -213,6 +213,7 @@ caption_setdrain(time_t t)
+ 		snprintf(capbuf, sizeof(capbuf),
+ 		    "Drain set for %s", capfmt);
+ 		caption_set(capbuf);
+-	} else
+-		caption_set(NULL);
++	}
++//	else
++//		caption_set(NULL);
+ }
+Index: ftgl.cc
+===================================================================
+RCS file: /var/cvs/proj/xt3dmon/ftgl.cc,v
+retrieving revision 1.1
+diff -u -p -r1.1 ftgl.cc
+--- ftgl.cc	6 Feb 2007 23:01:47 -0000	1.1
++++ ftgl.cc	8 Apr 2011 15:37:39 -0000
+@@ -25,9 +25,6 @@ draw_text(const char *buf, struct fvec *
+ 	else
+ 		glRotatef(90.0, 0.0, -1.0, 0.0);
+ 	glColor3f(fp->f_r, fp->f_g, fp->f_b);
+-if (st.st_rf & RF_CLUSTER)
+-	f->FaceSize(2);
+-else
+ 	f->FaceSize(12);
+ 
+ 	f->BBox(buf, bl.fv_x, bl.fv_y, bl.fv_z,
+Index: panel.h
+===================================================================
+RCS file: /var/cvs/proj/xt3dmon/panel.h,v
+retrieving revision 1.39
+diff -u -p -r1.39 panel.h
+--- panel.h	17 Mar 2010 03:01:53 -0000	1.39
++++ panel.h	8 Apr 2011 15:37:39 -0000
+@@ -52,7 +52,8 @@
+ #define PANEL_DSCHO	(1<<28)
+ #define PANEL_VNMODE	(1<<29)
+ #define PANEL_PIPEDIM	(1<<30)
+-#define NPANELS		31
++#define PANEL_RESERVE	(1<<31)
++#define NPANELS		32
+ 
+ struct pwidget;
+ TAILQ_HEAD(pwidget_group_list, pwidget);
+@@ -122,6 +123,7 @@ struct panel {
+ #define POPT_CANSYNC	(1<<6)			/* stereo: just sync draw */
+ 
+ #define POPT_LOGIN_ATPASS (POPT_USR1)
++#define POPT_RESERVE_ATSIZE (POPT_USR1)
+ 
+ TAILQ_HEAD(panels, panel);
+ 
+@@ -194,6 +196,7 @@ void panel_refresh_vmode(struct panel *)
+ void panel_refresh_wiadj(struct panel *);
+ void panel_refresh_vnmode(struct panel *);
+ void panel_refresh_pipedim(struct panel *);
++void panel_refresh_reserve(struct panel *);
+ 
+ extern struct panels	 panels;
+ extern struct pinfo	 pinfo[];
+Index: select.h
+===================================================================
+RCS file: /var/cvs/proj/xt3dmon/select.h,v
+retrieving revision 1.36
+diff -u -p -r1.36 select.h
+--- select.h	17 Mar 2010 03:01:53 -0000	1.36
++++ select.h	8 Apr 2011 15:37:39 -0000
+@@ -33,6 +33,8 @@
+ #define SPF_LOOKUP	(1<<4)
+ 
+ struct glname;
++struct node;
++
+ typedef void (*gscb_t)(struct glname *, int);
+ 
+ struct glname {
+@@ -91,10 +93,12 @@ struct glname {
+ void		 sel_begin(void);
+ int		 sel_end(void);
+ struct glname	*sel_process(int, int, int);
++struct glname	*sel_waslast(int *, int);
+ 
+ struct glname	*wi_shadow(int *, int, const struct fvec *);
+ struct glname	*phys_shadow(int *, int);
+ struct glname	*vneighbor_shadow(int *, int);
++void		 draw_shadow_node(int *, const struct node *n);
+ 
+ unsigned int	 gsn_get(int, const struct fvec *, gscb_t, int, int, void *, void *);
+ void		 gscb_miss(struct glname *, int);
+Index: uinp.h
+===================================================================
+RCS file: /var/cvs/proj/xt3dmon/uinp.h,v
+retrieving revision 1.4
+diff -u -p -r1.4 uinp.h
+--- uinp.h	17 Mar 2010 03:01:53 -0000	1.4
++++ uinp.h	8 Apr 2011 15:37:39 -0000
+@@ -32,9 +32,11 @@ struct uinput {
+ void	 uinpcb_cmd(void);
+ void	 uinpcb_gotonode(void);
+ void	 uinpcb_gotojob(void);
++void	 uinpcb_reserve(void);
+ void	 uinpcb_login(void);
+ void	 uinpcb_fbnew(void);
+ 
+ extern struct uinput	 uinp;
+ 
+ extern char authbuf[BUFSIZ];
++extern char reserve_exlist[BUFSIZ];
