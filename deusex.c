@@ -375,7 +375,7 @@ dxp_bird(const struct dx_action *dxa)
 }
 
 void
-dxpcb_playreel(__unused int a)
+dxpcb_playreel(__unusedx int a)
 {
 	dxt_done = 1;
 	reel_advance();
@@ -425,7 +425,7 @@ dxp_playreel(const struct dx_action *dxa)
 }
 
 int
-dxp_refocus(__unused const struct dx_action *dxa)
+dxp_refocus(__unusedx const struct dx_action *dxa)
 {
 	tween_push();
 	cam_revolvefocus(0.0, 0.001);
@@ -434,7 +434,7 @@ dxp_refocus(__unused const struct dx_action *dxa)
 }
 
 int
-dxp_refresh(__unused const struct dx_action *dxa)
+dxp_refresh(__unusedx const struct dx_action *dxa)
 {
 	static const char *cap;
 	int ret;
@@ -581,7 +581,7 @@ dxp_selnc(const struct dx_action *dxa)
 }
 
 int
-dxp_clrsn(__unused const struct dx_action *dxa)
+dxp_clrsn(__unusedx const struct dx_action *dxa)
 {
 	sn_clear();
 	panel_hide(PANEL_NINFO);
@@ -662,7 +662,7 @@ dxp_pstick(const struct dx_action *dxa)
 }
 
 int
-dxp_camsync(__unused const struct dx_action *dxa)
+dxp_camsync(__unusedx const struct dx_action *dxa)
 {
 	struct fvec fv;
 
@@ -701,7 +701,7 @@ dxp_camuprot(const struct dx_action *dxa)
 }
 
 void
-dxpcb_stall(__unused int a)
+dxpcb_stall(__unusedx int a)
 {
 	dxt_done = 1;
 }
@@ -741,7 +741,7 @@ dxp_stall(const struct dx_action *dxa)
 }
 
 int
-dxp_nodesync(__unused const struct dx_action *dxa)
+dxp_nodesync(__unusedx const struct dx_action *dxa)
 {
 	return ((st.st_rf & RF_CLUSTER) == 0);
 }
@@ -867,7 +867,7 @@ dxp_cam_move(const struct dx_action *dxa)
 }
 
 void
-dxpcb_cyclenc(__unused int a)
+dxpcb_cyclenc(__unusedx int a)
 {
 	dx_cycle_nc++;
 	dxt_done = 1;
@@ -933,7 +933,7 @@ dxp_caption(const struct dx_action *dxa)
 }
 
 int
-dxp_exit(__unused const struct dx_action *dxa)
+dxp_exit(__unusedx const struct dx_action *dxa)
 {
 	exit(0);
 }

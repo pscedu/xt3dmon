@@ -27,7 +27,7 @@
 #include "state.h"
 
 void
-cocb_fps(__unused int a)
+cocb_fps(__unusedx int a)
 {
 	fps = fps_cnt;
 	fps_cnt = 0;
@@ -36,7 +36,7 @@ cocb_fps(__unused int a)
 }
 
 void
-cocb_datasrc(__unused int a)
+cocb_datasrc(__unusedx int a)
 {
 	st.st_rf |= RF_DATASRC | RF_CLUSTER;
 	glutTimerFunc(1000, cocb_datasrc, 0);
@@ -44,7 +44,7 @@ cocb_datasrc(__unused int a)
 
 /* Reset auto-flyby timeout. */
 void
-cocb_autoto(__unused int a)
+cocb_autoto(__unusedx int a)
 {
 	if (st.st_opts & OP_AUTOFLYBY &&
 	    flyby_mode == FBM_OFF &&

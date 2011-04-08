@@ -501,7 +501,7 @@ drop:
 }
 
 void *
-serv_readthr_main(__unused void *arg)
+serv_readthr_main(__unusedx void *arg)
 {
 	struct client_session *cs;
 	struct timeval tv;
@@ -563,7 +563,7 @@ serv_readthr_main(__unused void *arg)
 }
 
 void *
-serv_listenthr_main(__unused void *arg)
+serv_listenthr_main(__unusedx void *arg)
 {
 	struct client_session *cs;
 	struct sockaddr_in sa_in;

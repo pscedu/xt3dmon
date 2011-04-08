@@ -289,7 +289,7 @@ gsn_get(int flags, const struct fvec *offv, gscb_t cb,
  * GL selection callbacks.
  */
 void
-gscb_miss(__unused struct glname *gn, int flags)
+gscb_miss(__unusedx struct glname *gn, int flags)
 {
 	if (flags & SPF_PROBE) {
 		cursor_set(GLUT_CURSOR_CYCLE);
@@ -669,7 +669,7 @@ gscb_pw_keyh(struct glname *gn, int flags)
 }
 
 void
-gscb_pw_dscho(__unused struct glname *gn, int flags)
+gscb_pw_dscho(__unusedx struct glname *gn, int flags)
 {
 	if (flags & SPF_PROBE)
 		cursor_set(GLUT_CURSOR_INFO);
@@ -734,7 +734,7 @@ gscb_pw_dir(struct glname *gn, int flags)
 }
 
 void
-gscb_pw_snap(__unused struct glname *gn, int flags)
+gscb_pw_snap(__unusedx struct glname *gn, int flags)
 {
 	int w = gn->gn_arg_int;
 	int h = gn->gn_arg_int2;

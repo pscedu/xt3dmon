@@ -127,14 +127,14 @@ ds_setlive(void)
  * starting and finalizing node data source fetches.
  */
 void
-dsfi_node(__unused const struct datasrc *ds)
+dsfi_node(__unusedx const struct datasrc *ds)
 {
 	obj_batch_start(&job_list);
 	obj_batch_start(&yod_list);
 }
 
 void
-dsff_node(__unused const struct datasrc *ds)
+dsff_node(__unusedx const struct datasrc *ds)
 {
 	obj_batch_end(&job_list);
 	obj_batch_end(&yod_list);
@@ -287,7 +287,7 @@ done:
 
 struct ustream *
 ds_http(const char *server, const char *port, const char *path,
-    struct http_res *res, __unused int flags)
+    struct http_res *res, __unusedx int flags)
 {
 	struct http_req req;
 

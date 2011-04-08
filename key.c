@@ -51,19 +51,19 @@ struct uinput	uinp;
 int		keyh = KEYH_DEF;
 
 void
-gl_spkeyh_null(__unused int key, __unused int u, __unused int v)
+gl_spkeyh_null(__unusedx int key, __unused int u, __unused int v)
 {
 	flyby_rstautoto();
 }
 
 void
-gl_spkeyh_actflyby(__unused int key, __unused int u, __unused int v)
+gl_spkeyh_actflyby(__unusedx int key, __unused int u, __unused int v)
 {
 	flyby_end();
 }
 
 void
-gl_keyh_actflyby(__unused unsigned char key, __unused int u, __unused int v)
+gl_keyh_actflyby(__unusedx unsigned char key, __unused int u, __unused int v)
 {
 	if (key == ' ') {
 		opt_flip(OP_STOP);
@@ -73,7 +73,7 @@ gl_keyh_actflyby(__unused unsigned char key, __unused int u, __unused int v)
 }
 
 void
-gl_keyh_flyby(unsigned char key, __unused int u, __unused int v)
+gl_keyh_flyby(unsigned char key, __unusedx int u, __unused int v)
 {
 	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
@@ -112,7 +112,7 @@ gl_keyh_flyby(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-gl_keyh_uinput(unsigned char key, __unused int u, __unused int v)
+gl_keyh_uinput(unsigned char key, __unusedx int u, __unused int v)
 {
 	struct panel *p;
 	int opts;
@@ -160,7 +160,7 @@ gl_keyh_uinput(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-gl_keyh_panel(unsigned char key, __unused int u, __unused int v)
+gl_keyh_panel(unsigned char key, __unusedx int u, __unused int v)
 {
 	int j;
 
@@ -266,7 +266,7 @@ gl_keyh_panel(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-gl_keyh_dmode(unsigned char key, __unused int u, __unused int v)
+gl_keyh_dmode(unsigned char key, __unusedx int u, __unused int v)
 {
 	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
@@ -296,7 +296,7 @@ gl_keyh_dmode(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-gl_keyh_vmode(unsigned char key, __unused int u, __unused int v)
+gl_keyh_vmode(unsigned char key, __unusedx int u, __unused int v)
 {
 	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
@@ -320,7 +320,7 @@ gl_keyh_vmode(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-gl_keyh_option(unsigned char key, __unused int u, __unused int v)
+gl_keyh_option(unsigned char key, __unusedx int u, __unused int v)
 {
 	int opts = 0;
 
@@ -388,7 +388,7 @@ gl_keyh_option(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-gl_keyh_decr(unsigned char key, __unused int u, __unused int v)
+gl_keyh_decr(unsigned char key, __unusedx int u, __unused int v)
 {
 	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
@@ -414,7 +414,7 @@ gl_keyh_decr(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-gl_keyh_incr(unsigned char key, __unused int u, __unused int v)
+gl_keyh_incr(unsigned char key, __unusedx int u, __unused int v)
 {
 	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
@@ -440,7 +440,7 @@ gl_keyh_incr(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-gl_spkeyh_wiadj(int key, __unused int u, __unused int v)
+gl_spkeyh_wiadj(int key, __unusedx int u, __unused int v)
 {
 	flyby_rstautoto();
 	spkey = glutGetModifiers();
@@ -470,7 +470,7 @@ gl_spkeyh_wiadj(int key, __unused int u, __unused int v)
 }
 
 void
-gl_spkeyh_node(int key, __unused int u, __unused int v)
+gl_spkeyh_node(int key, __unusedx int u, __unused int v)
 {
 	struct selnode *sn;
 	struct node *n;
@@ -512,7 +512,7 @@ gl_spkeyh_node(int key, __unused int u, __unused int v)
 }
 
 void
-gl_keyh_keyh(unsigned char key, __unused int u, __unused int v)
+gl_keyh_keyh(unsigned char key, __unusedx int u, __unused int v)
 {
 	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
@@ -533,7 +533,7 @@ gl_keyh_keyh(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-gl_keyh_alpha(unsigned char key, __unused int u, __unused int v)
+gl_keyh_alpha(unsigned char key, __unusedx int u, __unused int v)
 {
 	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
@@ -556,7 +556,7 @@ gl_keyh_alpha(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-gl_keyh_wioffdecr(unsigned char key, __unused int u, __unused int v)
+gl_keyh_wioffdecr(unsigned char key, __unusedx int u, __unused int v)
 {
 	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
@@ -585,7 +585,7 @@ gl_keyh_wioffdecr(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-gl_keyh_wioffincr(unsigned char key, __unused int u, __unused int v)
+gl_keyh_wioffincr(unsigned char key, __unusedx int u, __unused int v)
 {
 	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
@@ -614,7 +614,7 @@ gl_keyh_wioffincr(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-gl_keyh_pipes(unsigned char key, __unused int u, __unused int v)
+gl_keyh_pipes(unsigned char key, __unusedx int u, __unused int v)
 {
 	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
@@ -630,7 +630,7 @@ gl_keyh_pipes(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-gl_keyh_route(unsigned char key, __unused int u, __unused int v)
+gl_keyh_route(unsigned char key, __unusedx int u, __unused int v)
 {
 	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
@@ -658,7 +658,7 @@ gl_keyh_route(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-gl_keyh_server(unsigned char key, __unused int u, __unused int v)
+gl_keyh_server(unsigned char key, __unusedx int u, __unused int v)
 {
 	switch (key) {
 	case 'Q':
@@ -669,7 +669,7 @@ gl_keyh_server(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-gl_keyh_bird(unsigned char key, __unused int u, __unused int v)
+gl_keyh_bird(unsigned char key, __unusedx int u, __unused int v)
 {
 	flyby_rstautoto();
 	glutKeyboardFunc(gl_keyh_default);
@@ -695,7 +695,7 @@ gl_keyh_bird(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-gl_keyh_recpos(unsigned char key, __unused int u, __unused int v)
+gl_keyh_recpos(unsigned char key, __unusedx int u, __unused int v)
 {
 	char fn[PATH_MAX];
 	FILE *fp;
@@ -719,7 +719,7 @@ gl_keyh_recpos(unsigned char key, __unused int u, __unused int v)
 }
 
 void
-gl_keyh_loadpos(unsigned char key, __unused int cu, __unused int cv)
+gl_keyh_loadpos(unsigned char key, __unusedx int cu, __unused int cv)
 {
 	char fn[PATH_MAX];
 	struct fvec v, lv;
@@ -970,7 +970,7 @@ pwidget_rel(struct pwidget_group *pwg, int key)
 }
 
 void
-gl_spkeyh_default(int key, __unused int u, __unused int v)
+gl_spkeyh_default(int key, __unusedx int u, __unused int v)
 {
 	struct pwidget *pw;
 	struct glname *gn;
