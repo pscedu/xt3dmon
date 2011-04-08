@@ -760,7 +760,6 @@ rebuild(int opts)
 		ds_refresh(DS_NODE, dsfopts);
 		ds_refresh(DS_JOB, dsfopts);
 		ds_refresh(DS_RT, DSFO_IGN);
-		ds_refresh(DS_SS, DSFO_IGN);
 //		ds_refresh(DS_MEM, DSFO_IGN);
 
 		/* XXX save mtime and check in panel_refresh_date */
