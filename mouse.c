@@ -36,7 +36,7 @@
 #include "xmath.h"
 
 struct ivec	 mousev;
-int	 	 spkey;
+int		 spkey;
 int		 motion_select_id;
 int		 motion_select_reset;
 struct panel	*panel_mobile;

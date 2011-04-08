@@ -46,8 +46,8 @@ struct fvec	focus;			/* 3D point of revolution */
 
 struct ivec	winv = { { 800, 600, 0 } };
 
-int	 	window_ids[2];
-int	 	wid = WINID_DEF;	/* Current window ID */
+int		window_ids[2];
+int		wid = WINID_DEF;	/* Current window ID */
 
 struct keyh keyhtab[] = {
 	{ "Camera movement",	gl_spkeyh_default },

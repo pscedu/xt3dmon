@@ -464,7 +464,7 @@ wi_shadow(int *dl, int flags, const struct fvec *offp)
 		nrecs = sel_end();
 		if (nrecs && (gn = sel_process(nrecs, ws[pos].ws_chance,
 		    flags)) != NULL) {
-		    	if (lasttry)
+			if (lasttry)
 				goto done;
 			cubeno = gn->gn_arg_int;
 			cubeno_to_v(cubeno, ncuts, &ws[++pos]);

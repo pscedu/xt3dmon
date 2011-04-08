@@ -99,8 +99,8 @@ int		 flyby_pos;
 static FILE	*flyby_fp;
 struct state	 sav_st;			/* preserve old state during flyby */
 struct objlist	 flyby_list = { NULL, 0, 0, 0, 0, 10, sizeof(struct fnent), fe_eq };
-char 		 flyby_fn[PATH_MAX] = _PATH_FLYBYDIR "/" FLYBY_DEFAULT;
-char 		 flyby_dir[PATH_MAX] = _PATH_FLYBYDIR;
+char		 flyby_fn[PATH_MAX] = _PATH_FLYBYDIR "/" FLYBY_DEFAULT;
+char		 flyby_dir[PATH_MAX] = _PATH_FLYBYDIR;
 
 void
 flyby_calclen(void)
