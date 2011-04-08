@@ -37,7 +37,7 @@
 #include "tween.h"
 
 #define FPS_TO_USEC(x)	(1e6 / (x))	/* Convert FPS to microseconds. */
-#define GOVERN_FPS	24		/* FPS to govern at. */
+#define GOVERN_FPS	32		/* FPS to govern at. */
 
 long	 fps = 50;			/* Last FPS sample. */
 long	 fps_cnt = 0;			/* Current FPS counter. */

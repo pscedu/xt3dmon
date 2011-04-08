@@ -33,13 +33,13 @@ void *
 png_load(char *file, unsigned int *w, unsigned int *h)
 {
 	unsigned char header[10];
-	png_bytepp rows = NULL;
-	png_structp ptr = NULL;
-	png_infop info = NULL;
-	png_infop einfo = NULL;
-	png_bytep data = NULL;
 	png_uint_32 depth, ctype;
-	FILE *fp = NULL;
+	png_bytepp rows;
+	png_structp img;
+	png_infop info;
+	png_infop einfo;
+	png_bytep data;
+	FILE *fp;
 	size_t i;
 
 	/* Open the PNG in binary mode */
@@ -57,18 +57,20 @@ png_load(char *file, unsigned int *w, unsigned int *h)
 
 	if (png_sig_cmp((png_bytep)(header), 0, 8))
 		errx(1, "%s: invalid PNG file", file);
-	/* Create png_struct and png_info structures */
-	if ((ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING,
-	    NULL, NULL, NULL)) == NULL)
+	img = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL,
+	    NULL);
+	if (img == NULL)
 		errx(1, "png_create_read_struct");
 
-	if ((info = png_create_info_struct(ptr)) == NULL) {
-		png_destroy_read_struct(&ptr, NULL, NULL);
+	info = png_create_info_struct(img);
+	if (info == NULL) {
+		png_destroy_read_struct(&img, NULL, NULL);
 		errx(1, "png_create_info_struct");
 	}
 
-	if ((einfo = png_create_info_struct(ptr)) == NULL) {
-		png_destroy_read_struct(&ptr, &info, NULL);
+	einfo = png_create_info_struct(img);
+	if (einfo == NULL) {
+		png_destroy_read_struct(&img, &info, NULL);
 		errx(1, "png_create_info_struct");
 	}
 
@@ -76,16 +78,16 @@ png_load(char *file, unsigned int *w, unsigned int *h)
 	 * Set jump points for png errors
 	 * (Control returns to this point on error)
 	 */
-	if (setjmp(png_jmpbuf(ptr))) {
-		png_destroy_read_struct(&ptr, &info, &einfo);
+	if (setjmp(png_jmpbuf(img))) {
+		png_destroy_read_struct(&img, &info, &einfo);
 		err(1, "setjmp");
 	}
 
 	/* Use standard fread() */
-	png_init_io(ptr, fp);
+	png_init_io(img, fp);
 
 	/* Tell it we read the first 8 bytes of header already */
-	png_set_sig_bytes(ptr, 8);
+	png_set_sig_bytes(img, 8);
 
 	/*
 	 * +++++++++++++++++++++++++++++++
@@ -97,31 +99,31 @@ png_load(char *file, unsigned int *w, unsigned int *h)
 	 * the array size, it's always 4; I guess this assumes
 	 * that there is an alpha channel?
 	 */
-	png_read_info(ptr, info);
+	png_read_info(img, info);
 
-	depth = png_get_bit_depth(ptr, info);
-	ctype = png_get_color_type(ptr, info);
+	depth = png_get_bit_depth(img, info);
+	ctype = png_get_color_type(img, info);
 
 	if (ctype == PNG_COLOR_TYPE_PALETTE)
-		png_set_palette_to_rgb(ptr);
+		png_set_palette_to_rgb(img);
 
 	if (ctype == PNG_COLOR_TYPE_GRAY && depth < 8)
-		png_set_expand_gray_1_2_4_to_8(ptr);
+		png_set_expand_gray_1_2_4_to_8(img);
 
 	if (ctype == PNG_COLOR_TYPE_GRAY ||
 	    ctype == PNG_COLOR_TYPE_GRAY_ALPHA)
-		png_set_gray_to_rgb(ptr);
+		png_set_gray_to_rgb(img);
 
-	if (png_get_valid(ptr, info, PNG_INFO_tRNS))
-		png_set_tRNS_to_alpha(ptr);
+	if (png_get_valid(img, info, PNG_INFO_tRNS))
+		png_set_tRNS_to_alpha(img);
 	else
-		png_set_filler(ptr, 0xff, PNG_FILLER_AFTER);
+		png_set_filler(img, 0xff, PNG_FILLER_AFTER);
 
 	if (depth == 16)
-		png_set_strip_16(ptr);
+		png_set_strip_16(img);
 
 	/* Update what has changed */
-	png_read_update_info(ptr, info);
+	png_read_update_info(img, info);
 
 	/* +++++++++++++++++++++++++++++++ */
 
@@ -129,12 +131,12 @@ png_load(char *file, unsigned int *w, unsigned int *h)
 	** Read the PNG with no transformation
 	** PNG_TRANSFORM_BGR - for BGR & BGRA formats
 	*/
-	//OLD: png_read_png(ptr, info, PNG_TRANSFORM_IDENTITY, NULL);
+	//OLD: png_read_png(img, info, PNG_TRANSFORM_IDENTITY, NULL);
 
 	/* Get the size of the image */
-	*h = png_get_image_height(ptr, info);
-	*w = png_get_image_width(ptr, info);
-	//OLD: rowbytes = png_get_rowbytes(ptr, info);
+	*h = png_get_image_height(img, info);
+	*w = png_get_image_width(img, info);
+	//OLD: rowbytes = png_get_rowbytes(img, info);
 
 	/* Buffers for the data */
 	if ((rows = (malloc(*h * sizeof(png_bytep)))) == NULL)
@@ -152,14 +154,14 @@ png_load(char *file, unsigned int *w, unsigned int *h)
 			rows[*h - 1 - i] = data + (*w * i * 4);
 
 		/* Read the image rows */
-		png_read_image(ptr, rows);
+		png_read_image(img, rows);
 
 		/* They will be stored in data, so free rows */
 		free(rows);
 	}
 
 	/* Dispose of the read structure */
-	png_destroy_read_struct(&ptr, &info, &einfo);
+	png_destroy_read_struct(&img, &info, &einfo);
 
 	fclose(fp);
 	return (data);

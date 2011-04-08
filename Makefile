@@ -71,7 +71,7 @@ CFLAGS+=	-D_LIVE_PROTO=\"file\" -D_LIVE_PATH=_PATH_DATA
 CFLAGS+=	-DYY_NO_UNPUT
 #CFLAGS+=	-O3 -Wuninitialized -fomit-frame-pointer
 #CFLAGS+=	-fno-strict-aliasing
-CFLAGS+=	-I/usr/X11R6/include
+CFLAGS+=	-I/opt/local/include -I/usr/X11R6/include
 
 LIBS+=		-lGL -lGLU -lglut -lssl -lpng -lz -pthread -lgss -lcrypto
 

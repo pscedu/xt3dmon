@@ -49,7 +49,7 @@
 #define MODDEPTH	physdim_top->pd_contains->pd_contains->pd_contains->pd_size.fv_d
 #define MODSPACE	physdim_top->pd_contains->pd_contains->pd_contains->pd_space
 
-#define NODESPACE	physdim_top->pd_contains->pd_contains->pd_contains->pd_contains->pd_contains->pd_space
+#define NODESPACE	physdim_top->pd_contains->pd_contains->pd_contains->pd_contains->pd_space
 #define NODESHIFT	physdim_top->pd_contains->pd_contains->pd_contains->pd_contains->pd_offset.fv_d
 #define NODEWIDTH	physdim_top->pd_contains->pd_contains->pd_contains->pd_contains->pd_contains->pd_size.fv_w
 #define NODEHEIGHT	physdim_top->pd_contains->pd_contains->pd_contains->pd_contains->pd_contains->pd_size.fv_h
