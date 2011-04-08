@@ -111,12 +111,12 @@ node_physpos(struct node *node, struct physcoord *pc)
 
 	pos = node - nodes;
 
-	pc->pc_r = pos / (NCABS * NCAGES * NMODS * NNODES);
-	pos %= NCABS * NCAGES * NMODS * NNODES;
-	pc->pc_cb = pos / (NCAGES * NMODS * NNODES);
-	pos %= NCAGES * NMODS * NNODES;
-	pc->pc_cg = pos / (NMODS * NNODES);
-	pos %= NMODS * NNODES;
+	pc->pc_r = pos / (NRACKS * NIRQS * NBLADES * NNODES);
+	pos %= NRACKS * NIRQS * NBLADES * NNODES;
+	pc->pc_cb = pos / (NIRQS * NBLADES * NNODES);
+	pos %= NIRQS * NBLADES * NNODES;
+	pc->pc_cg = pos / (NBLADES * NNODES);
+	pos %= NBLADES * NNODES;
 	pc->pc_m = pos / NNODES;
 	pos %= NNODES;
 	pc->pc_n = pos;
@@ -186,12 +186,12 @@ node_neighbor(int vm, struct node *n, int rd, int *flip)
 				pc.pc_m += adj;
 				if (pc.pc_m < 0) {
 					pc.pc_cb--;
-					pc.pc_m += NMODS;
-					pc.pc_cb += NCABS;
-				} else if (pc.pc_m >= NMODS)
+					pc.pc_m += NBLADES;
+					pc.pc_cb += NRACKS;
+				} else if (pc.pc_m >= NBLADES)
 					pc.pc_cb++;
-				pc.pc_m %= NMODS;
-				pc.pc_cb %= NCABS;
+				pc.pc_m %= NBLADES;
+				pc.pc_cb %= NRACKS;
 				break;
 			case RD_POSY:
 			case RD_NEGY:
@@ -221,7 +221,7 @@ node_neighbor(int vm, struct node *n, int rd, int *flip)
 					 */
 					if (row == 1) {
 						pc.pc_cg--;
-						pc.pc_cg += NCAGES;
+						pc.pc_cg += NIRQS;
 					}
 				} else {
 					/*
@@ -231,7 +231,7 @@ node_neighbor(int vm, struct node *n, int rd, int *flip)
 					if (row == 0)
 						pc.pc_cg++;
 				}
-				pc.pc_cg %= NCAGES;
+				pc.pc_cg %= NIRQS;
 				break;
 			case RD_POSX:
 			case RD_NEGX:
@@ -286,9 +286,9 @@ struct node *
 node_for_pc(const struct physcoord *pc)
 {
 	return (&nodes[
-	    pc->pc_r * (NNODES * NMODS * NCAGES * NCABS) +
-	    pc->pc_cb * (NNODES * NMODS * NCAGES) +
-	    pc->pc_cg * (NNODES * NMODS) +
+	    pc->pc_r * (NNODES * NBLADES * NIRQS * NRACKS) +
+	    pc->pc_cb * (NNODES * NBLADES * NIRQS) +
+	    pc->pc_cg * (NNODES * NBLADES) +
 	    pc->pc_m * (NNODES) +
 	    pc->pc_n]);
 }

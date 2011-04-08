@@ -101,12 +101,12 @@ job_drawlabels(void)
 	glPushMatrix();
 
 	for (r = 0; r < NROWS; r++) {
-		for (cb = 0; cb < NCABS; cb++) {
+		for (cb = 0; cb < NRACKS; cb++) {
 
 			memset(jobstats, '\0', siz);
 
-			for (cg = 0; cg < NCAGES; cg++)
-				for (m = 0; m < NMODS; m++)
+			for (cg = 0; cg < NIRQS; cg++)
+				for (m = 0; m < NBLADES; m++)
 					for (n = 0; n < NNODES; n++) {
 						np = &nodes[r][cb][cg][m][n];
 						if (np->n_job) {

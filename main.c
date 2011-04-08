@@ -927,7 +927,7 @@ glutInitWindowPosition(0, 0);
 	parse_colors(_PATH_COLORS);
 	parse_machconf(cfgfn);
 
-	siz = NROWS * NCABS * NCAGES * NMODS * NNODES;
+	siz = NROWS * NRACKS * NIRQS * NBLADES * NNODES;
 	if ((nodes = calloc(siz, sizeof(*nodes))) == NULL)
 		err(1, "calloc");
 	if ((node_nidmap = calloc(machine.m_nidmax,

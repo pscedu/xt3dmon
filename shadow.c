@@ -107,7 +107,7 @@ draw_shadow_cabs(const struct physcoord *pc)
 	dim.fv_h = machine.m_dim.fv_h;
 	dim.fv_d = ROWDEPTH;
 
-	for (cb = 0; cb < NCABS; cb++, v.fv_x += CABWIDTH + CABSPACE) {
+	for (cb = 0; cb < NRACKS; cb++, v.fv_x += CABWIDTH + CABSPACE) {
 		glPushMatrix();
 		glTranslatef(v.fv_x, v.fv_y, v.fv_z);
 		glPushName(gsn_get(0, &fv_zero, NULL, cb, 0, NULL, NULL));
@@ -131,7 +131,7 @@ draw_shadow_cages(const struct physcoord *pc)
 	dim.fv_h = CAGEHEIGHT;
 	dim.fv_d = ROWDEPTH;
 
-	for (cg = 0; cg < NCAGES; cg++, v.fv_y += CAGEHEIGHT + CAGESPACE) {
+	for (cg = 0; cg < NIRQS; cg++, v.fv_y += CAGEHEIGHT + CAGESPACE) {
 		glPushMatrix();
 		glTranslatef(v.fv_x, v.fv_y, v.fv_z);
 		glPushName(gsn_get(0, &fv_zero, NULL, cg, 0, NULL, NULL));
@@ -169,7 +169,7 @@ draw_shadow_mods(const struct physcoord *pcp, int *dl)
 	struct node *node;
 
 	pc = *pcp;
-	for (pc.pc_m = 0; pc.pc_m < NMODS; pc.pc_m++) {
+	for (pc.pc_m = 0; pc.pc_m < NBLADES; pc.pc_m++) {
 		for (pc.pc_n = 0; pc.pc_n < NNODES; pc.pc_n++) {
 			node = node_for_pc(&pc);
 			if (!node_show(node))
@@ -404,7 +404,7 @@ phys_shadow(int *dl, int flags)
 		    flags)) == NULL)
 			break;
 		pc.pc_r = gn->gn_arg_int;
-		for (chance.pc_cb = 0; chance.pc_cb < NCABS; chance.pc_cb++) {
+		for (chance.pc_cb = 0; chance.pc_cb < NRACKS; chance.pc_cb++) {
 			sel_begin();
 			draw_shadow_cabs(&pc);
 			nrecs = sel_end();
@@ -412,7 +412,7 @@ phys_shadow(int *dl, int flags)
 			    flags)) == NULL)
 				break;
 			pc.pc_cb = gn->gn_arg_int;
-			for (chance.pc_cg = 0; chance.pc_cg < NCAGES; chance.pc_cg++) {
+			for (chance.pc_cg = 0; chance.pc_cg < NIRQS; chance.pc_cg++) {
 				sel_begin();
 				draw_shadow_cages(&pc);
 				nrecs = sel_end();

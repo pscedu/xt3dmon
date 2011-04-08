@@ -155,7 +155,7 @@ parsenid(char *nid, struct physcoord *pc)
 		return (1);
 	*t++ = '\0';
 	l = strtol(s, NULL, 10);
-	if (l < 0 || l >= NCABS)
+	if (l < 0 || l >= NRACKS)
 		return (1);
 	pc->pc_cb = l;
 
@@ -177,7 +177,7 @@ parsenid(char *nid, struct physcoord *pc)
 		return (1);
 	*t++ = '\0';
 	l = strtol(s, NULL, 10);
-	if (l < 0 || l >= NCAGES)
+	if (l < 0 || l >= NIRQS)
 		return (1);
 	pc->pc_cg = l;
 
@@ -188,7 +188,7 @@ parsenid(char *nid, struct physcoord *pc)
 		return (1);
 	*t++ = '\0';
 	l = strtol(s, NULL, 10);
-	if (l < 0 || l >= NMODS)
+	if (l < 0 || l >= NBLADES)
 		return (1);
 	pc->pc_m = l;
 
@@ -274,9 +274,9 @@ parse_node(const struct datasrc *ds)
 
 		PARSENUM(s, nid, machine.m_nidmax);
 		PARSENUM(s, pc.pc_r, NROWS);
-		PARSENUM(s, pc.pc_cb, NCABS);
-		PARSENUM(s, pc.pc_cg, NCAGES);
-		PARSENUM(s, pc.pc_m, NMODS);
+		PARSENUM(s, pc.pc_cb, NRACKS);
+		PARSENUM(s, pc.pc_cg, NIRQS);
+		PARSENUM(s, pc.pc_m, NBLADES);
 		PARSENUM(s, pc.pc_n, NNODES);
 		PARSENUM(s, x, widim.iv_w);
 		PARSENUM(s, y, widim.iv_h);

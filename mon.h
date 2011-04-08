@@ -27,15 +27,14 @@
 #include "phys.h"
 
 /* File chooser flags. */
-#define CHF_DIR		(1<<0)
+#define CHF_DIR		(1 << 0)
 
 /* Physical machine dimensions -- XXX remove hardcode. */
 #define NROWS		physdim_top->pd_mag
-#define NCABS		physdim_top->pd_contains->pd_mag
-#define NCAGES		physdim_top->pd_contains->pd_contains->pd_mag
-#define NMODS		physdim_top->pd_contains->pd_contains->pd_contains->pd_mag
-#define NNODES		(physdim_top->pd_contains->pd_contains->pd_contains->pd_contains->pd_mag * \
-			physdim_top->pd_contains->pd_contains->pd_contains->pd_contains->pd_contains->pd_mag)
+#define NRACKS		physdim_top->pd_contains->pd_mag
+#define NIRQS		physdim_top->pd_contains->pd_contains->pd_mag
+#define NBLADES		physdim_top->pd_contains->pd_contains->pd_contains->pd_mag
+#define NNODES		(physdim_top->pd_contains->pd_contains->pd_contains->pd_contains->pd_mag)
 
 #define ROWSPACE	physdim_top->pd_space
 #define ROWDEPTH	physdim_top->pd_size.fv_d
@@ -109,7 +108,7 @@ int		 roundclass(double, double, double, int);
 void		 parse_machconf(const char *);
 
 /* png.c */
-void 		*png_load(char *, unsigned int *, unsigned int *);
+void		*png_load(char *, unsigned int *, unsigned int *);
 void		 png_write(FILE *, unsigned char *, long, long);
 
 /* selnid.c */
