@@ -1172,6 +1172,11 @@ panel_refresh_dmode(struct panel *p)
 	pwidget_endlist(p, 2);
 }
 
+char *pipemodelabels[] = {
+	"Torus directions",
+	"Routing errors"
+};
+
 void
 panel_refresh_pipe(struct panel *p)
 {
