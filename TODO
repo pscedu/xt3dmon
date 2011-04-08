@@ -120,3 +120,11 @@ tweening
 	- ensure tweening leaves normalized vectors
 - for tweening, calculate the % moved by one (e.g. move), then apply
   that % to the others, instead of use MAX_{LOOK,TWEEN} values
+
+g3mon/gsm
+- physcoord should be int[]
+  (o) other problems:
+      - phys SELECTION
+      - physpipes
+      - VM node.n_v/RF_PHYSMODE
+- specify physcoord info in mach.conf for extracting data/node fields
