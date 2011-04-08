@@ -73,7 +73,7 @@ CFLAGS+=	-DYY_NO_UNPUT
 #CFLAGS+=	-fno-strict-aliasing
 CFLAGS+=	-I/usr/X11R6/include
 
-LIBS+=		-lGL -lGLU -lglut -lssl -lpng -lz -lpthread
+LIBS+=		-lGL -lGLU -lglut -lssl -lpng -lz -pthread -lgss -lcrypto
 
 # static compiles:
 # LIBS+=	-lGL -lGLU -lglut -lssl -lpng12 -lz -lm -lgssapi_krb5
@@ -81,12 +81,13 @@ LIBS+=		-lGL -lGLU -lglut -lssl -lpng -lz -lpthread
 # LIBS+=	-lcom_err -lk5crypto -lresolv -lkrb5support -lpthread
 # LDFLAGS+=	-static -L/usr/X11R6/lib/modules/extensions
 
+LDFLAGS+=	-L/opt/local/lib
 LDFLAGS+=	-L/usr/X11R6/lib
 
 YFLAGS+=	-d -b "$$(echo $@ | sed 's/-.*//')"			\
 		-p "$$(echo $@ | sed 's/-.*//')"			\
 		-o $@
-LFLAGS += -P"$$(echo $@ | sed 's/-.*//')"
+LFLAGS+=	-P"$$(echo $@ | sed 's/-.*//')"
 
 INCS=		$$(echo ${CFLAGS} |					\
 		awk '{for (n = 1; n <= NF; n++) if (match($$n, /^-I/)) printf "%s ", $$n }')

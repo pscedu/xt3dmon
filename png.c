@@ -106,7 +106,7 @@ png_load(char *file, unsigned int *w, unsigned int *h)
 		png_set_palette_to_rgb(ptr);
 
 	if (ctype == PNG_COLOR_TYPE_GRAY && depth < 8)
-		png_set_gray_1_2_4_to_8(ptr);
+		png_set_expand_gray_1_2_4_to_8(ptr);
 
 	if (ctype == PNG_COLOR_TYPE_GRAY ||
 	    ctype == PNG_COLOR_TYPE_GRAY_ALPHA)
