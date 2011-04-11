@@ -29,6 +29,7 @@
 
 #include "cdefs.h"
 #include "ds.h"
+#include "dynarray.h"
 #include "env.h"
 #include "fill.h"
 #include "flyby.h"
@@ -129,80 +130,9 @@ parsestr(char **sp, char *buf, size_t siz, int flags)
 	s = t;
 
 	error = 0;
-bad:
+ bad:
 	*sp = s;
 	return (error);
-}
-
-/*
- * c9-1c0s7s0
- */
-int
-parsenid(char *nid, struct physcoord *pc)
-{
-	char *s, *t;
-	long l;
-
-	s = nid;
-	while (isspace(*s))
-		s++;
-	if (*s != 'c')
-		return (1);
-	t = ++s;
-	while (isdigit(*t))
-		t++;
-	if (*t != '-')
-		return (1);
-	*t++ = '\0';
-	l = strtol(s, NULL, 10);
-	if (l < 0 || l >= NRACKS)
-		return (1);
-	pc->pc_cb = l;
-
-	s = t;
-	while (isdigit(*++t))
-		;
-	if (*t != 'c')
-		return (1);
-	*t++ = '\0';
-	l = strtol(s, NULL, 10);
-	if (l < 0 || l >= NROWS)
-		return (1);
-	pc->pc_r = l;
-
-	s = t;
-	while (isdigit(*++t))
-		;
-	if (*t != 's')
-		return (1);
-	*t++ = '\0';
-	l = strtol(s, NULL, 10);
-	if (l < 0 || l >= NIRQS)
-		return (1);
-	pc->pc_cg = l;
-
-	s = t;
-	while (isdigit(*++t))
-		;
-	if (*t != 's')
-		return (1);
-	*t++ = '\0';
-	l = strtol(s, NULL, 10);
-	if (l < 0 || l >= NBLADES)
-		return (1);
-	pc->pc_m = l;
-
-	s = t;
-	while (isdigit(*++t))
-		;
-	if (*t != '\0')
-		return (1);
-	l = strtol(s, NULL, 10);
-	if (l < 0 || l >= NNODES)
-		return (1);
-	pc->pc_n = l;
-
-	return (0);
 }
 
 void
@@ -220,146 +150,341 @@ prerror(const char *fn, int lineno, const char *bufp, const char *s)
 	    buf + (s - bufp));
 }
 
-/*
- * Example line:
- *	nid	r cb cb m n	x y z	stat	enabled	jobid	temp	yodid	UNUSED	lustat
- *	1848	0 7  0  1 6	7 0 9	c	1	6036	45	10434	0	c
- */
+struct datafield {
+	char				*df_name;
+	int				 df_type;
+	union {
+		struct buf		 dfu_scalar;
+		struct dynarray		 dfu_array;
+	}				 df_udata;
+#define df_scalar	df_udata.dfu_scalar
+#define df_array	df_udata.dfu_array
+#define df_mapfields	df_udata.dfu_array
+};
+
+#define DFT_SCALAR	(1 << 0)
+#define DFT_ARRAY	(1 << 1)
+#define DFT_MAP		(1 << 2)
+
 void
-parse_node(const struct datasrc *ds)
+datafield_new(int type)
 {
-	int enabled, jobid, temp, nfails, lustat;
-	int lineno, nid, x, y, z, stat, nstate;
+	struct datafield *df;
+
+	df = malloc(sizeof(*df));
+	buf_init(&df->df_name);
+	df->df_type = type;
+	switch (type) {
+	case DFT_SCALAR:
+		buf_init(&df->df_scalar);
+		break;
+	case DFT_ARRAY:
+		dynarray_init(&df->df_array);
+		break;
+	case DFT_MAP:
+		dynarray_init(&df->df_mapfields);
+		break;
+	}
+	return (df);
+}
+
+void
+datafield_free(struct datafield *df)
+{
+	struct dynarray a;
+	int i;
+
+	dynarray_init(a);
+	dynarray_push(a, df);
+	while (dynarray_len(a)) {
+		free(df->df_name);
+
+		df = dynarray_getpos(a, 0);
+		switch (df->df_type) {
+		case DFT_SCALAR:
+			buf_free(df->df_scalar);
+			break;
+		case DFT_ARRAY:
+			DYNARRAY_FOREACH(df, i, &df->df_array)
+				dynarray_push(a, df);
+			dynarray_free(df->df_array);
+			break;
+		case DFT_MAP:
+			DYNARRAY_FOREACH(df, i, &df->df_mapfields)
+				dynarray_push(a, df);
+			dynarray_free(df->df_mapfields);
+			break;
+		}
+	}
+	dynarray_free(a);
+}
+
+struct datafield *
+datafield_map_getkeyvalue(struct datafield *p, const char *name)
+{
+	struct datafield *df;
+	int n;
+
+	if (p->df_type != DFT_MAP)
+		return (NULL);
+	DYNARRAY_FOREACH(df, n, p->df_mapfields)
+		if (strcmp(buf_get(&df->df_name), name) == 0)
+			return (df);
+	return (NULL);
+}
+
+#define PARSE_ERROR(ds, fmt, ...)
+
+struct datafield *
+parse_datafield_scalar(struct datasrc *ds)
+{
+	struct datafield *df;
+	int ch;
+
+	df = datafield_new(DFT_SCALAR);
+	do {
+		ch = us_getchar(ds->ds_us);
+		switch (ch) {
+		case '\\':
+			if (esc)
+				buf_append(&df->df_scalar, ch);
+			ch = 0;
+			break;
+		case '"':
+			if (esc) {
+				buf_append(&df->df_scalar, ch);
+				/* hack for loop */
+				ch = 0;
+			}
+			break;
+		case '\0':
+			PARSE_ERROR(ds, );
+			free(df);
+			return (NULL);
+		default:
+			buf_append(&df->df_scalar, ch);
+			break;
+		}
+		esc = (ch == '\\');
+	} while (ch != '"')
+	buf_nul(&df->df_scalar);
+
+	ch = us_getchar(ds->ds_us);
+	while (isspace(ch))
+		ch = us_getchar(ds->ds_us);
+	us_ungetchar(ds->ds_us, ch);
+	return (df);
+}
+
+struct datafield *
+parse_datafield_map(struct datasrc *ds)
+{
+	struct datafield *df, *c;
+	int ch;
+
+	df = datafield_new(DFT_ARRAY);
+
+	ch = us_getchar(ds->ds_us);
+	if (ch != ']') {
+		PARSE_ERROR(ds, );
+		return;
+	}
+	do {
+	} while (ch != ']');
+
+	ch = us_getchar(ds->ds_us);
+	while (isspace(ch))
+		ch = us_getchar(ds->ds_us);
+	us_ungetchar(ds->ds_us, ch);
+}
+
+struct datafield *
+parse_datafield_map(struct datasrc *ds)
+{
+	struct datafield *df, *c;
+	int ch;
+
+	df = datafield_new(DFT_MAP);
+
+	ch = us_getchar(ds->ds_us);
+	if (ch != '{') {
+		PARSE_ERROR(ds, );
+		return;
+	}
+	do {
+		ch = us_getchar(ds->ds_us);
+		switch (ch) {
+		case '"':
+			c = parse_datafield(ds);
+			if (c == NULL) {
+				PARSE_ERROR(ds, );
+				return;
+			}
+
+			dynarray_push(df->df_mapfields, c);
+			ch = us_getchar(ds->ds_us);
+			switch (ch) {
+			case '}':
+				break;
+			case ',':
+				break;
+			default:
+				PARSE_ERROR(ds, );
+				return;
+			}
+			break;
+		case '}':
+			break;
+		default:
+			PARSE_ERROR(ds, );
+			return;
+		}
+	} while (ch != '}');
+
+	ch = us_getchar(ds->ds_us);
+	while (isspace(ch))
+		ch = us_getchar(ds->ds_us);
+	us_ungetchar(ds->ds_us, ch);
+}
+
+struct datafield *
+parse_datafield(struct datasrc *ds)
+{
+	struct datafield *df = NULL;
+	struct buf namebuf;
+	int ch, type;
+
+	buf_init(&namebuf);
+	ch = us_getchar(ds->ds_us);
+	do {
+		switch (ch) {
+		case '"':
+			break;
+		case '\0':
+			PARSE_ERROR(ds, );
+			return (NULL);
+		default:
+			buf_append(&namebuf, ch);
+			break;
+		}
+	} while (ch != '"')
+
+	buf_nul(&namebuf);
+	ch = us_getchar(ds->ds_us);
+	while (isspace(ch))
+		ch = us_getchar(ds->ds_us);
+	if (ch != ':') {
+		PARSE_ERROR(ds, );
+		return (NULL);
+	}
+	ch = us_getchar(ds->ds_us);
+	while (isspace(ch))
+		ch = us_getchar(ds->ds_us);
+
+	switch (ch) {
+	case '"':
+		df = parse_datafield_scalar(ds)
+		break;
+	case '[':
+		df = parse_datafield_array(ds)
+		break;
+	case '{':
+		df = parse_datafield_map(ds)
+		break;
+	default:
+		PARSE_ERROR(ds, );
+		return (NULL);
+	}
+
+	df->df_name = buf_get(&namebuf);
+
+	ch = us_getchar(ds->ds_us);
+	while (isspace(ch))
+		ch = us_getchar(ds->ds_us);
+	us_ungetchar(ds->ds_us, ch);
+	return (df);
+}
+
+/*
+	data = {"version":"1.1","result":{
+		"jobs":[{"session_id":"174067",...},...],
+		"history":[{"session_id":"174004",...},...],
+		"queue":[{"Job_Name":"12s-4-4-1",...},...],
+		"sysinfo":{"mempercpu":8,"gb_per_memnode":64,"mem":16384}}}
+*/
+void
+parse_data(const struct datasrc *ds)
+{
 	char buf[BUFSIZ], *s, *field;
+	int nid, stat, nstate, enabled, jobid, n;
+	struct datafield *data, *p, *j;
 	struct node *n, **np;
 	struct physcoord pc;
-	struct ivec twidim;
 	struct job *job;
 	size_t j;
 
-	NODE_FOREACH_WI(n, np) {
+	NODE_FOREACH_PHYS(n, np) {
 		n->n_flags &= ~NF_VALID;
 		n->n_job = NULL;
 	}
 
-	ivec_set(&twidim, 0, 0, 0);
-	/* XXX overflow */
-	memset(node_nidmap, 0, machine.m_nidmax * sizeof(*node_nidmap));
-	memset(node_wimap, 0, node_wimap_len * sizeof(*node_wimap));
-	mach_drain = 0;
+	READ_STRLIT(ds->ds_us, "data");
+	READ_SPACE(ds->ds_us);
+	READ_STRLIT(ds->ds_us, "=");
+	READ_SPACE(ds->ds_us);
+	data = parse_datafield_map(ds);
 
-	lineno = 0;
+	p = datafield_map_getkeyvalue(data, "sysinfo");
+	if (p && p->dfp_type == DFT_MAP) {
+		df = datafield_map_getkeyvalue(p, "nodes");
+		if (df) {
+			for ()
+				switch (state) {
+				case 'b':
+					n->n_state = SC_BOOT;
+					break;
+				case 'x':
+					n->n_state = SC_BOOT;
+					break;
+				case 'a':
+					n->n_state = SC_ALLOC;
+					break;
+				case 'f':
+					n->n_state = SC_ALLOC;
+					break;
+				}
+		}
+	}
+
+	p = datafield_map_getkeyvalue(data, "jobs");
+	if (p && p->dfp_type == DFT_ARRAY) {
+		FOREACH() {
+		}
+	}
+
+	datafield_free(data);
+
 	while (us_gets(ds->ds_us, buf, sizeof(buf)) != NULL) {
-		lineno++;
 		s = buf;
 		while (isspace(*s))
 			s++;
-		if (*s == '#' || *s == '\0')
-			continue;
-
-		if (*s == '@') {
-			s++;
-
-			field = "drain";
-			if (strncmp(s, field, strlen(field)) == 0) {
-				s += strlen(field);
-				if (!isspace(*s))
-					goto bad;
-				PARSENUM(s, mach_drain, INT_MAX); /* XXX TIME_T_MAX */
-				continue;
-			}
-
-			goto bad;
-		}
 
 		PARSENUM(s, nid, machine.m_nidmax);
 		PARSENUM(s, pc.pc_r, NROWS);
-		PARSENUM(s, pc.pc_cb, NRACKS);
-		PARSENUM(s, pc.pc_cg, NIRQS);
-		PARSENUM(s, pc.pc_m, NBLADES);
 		PARSENUM(s, pc.pc_n, NNODES);
-		PARSENUM(s, x, widim.iv_w);
-		PARSENUM(s, y, widim.iv_h);
-		PARSENUM(s, z, widim.iv_d);
 		PARSECHAR(s, stat);
 		PARSENUM(s, enabled, 2);
 		PARSENUM(s, jobid, INT_MAX);
-		PARSENUM(s, temp, INT_MAX);
-		PARSENUM(s, nfails, INT_MAX);
-		PARSECHAR(s, lustat);
-
-		switch (stat) {
-		case 'c': /* compute */
-			nstate = SC_FREE;
-
-			if (enabled == 0)
-				nstate = SC_DISABLED;
-			break;
-		case 'n': /* down */
-			nstate = SC_DOWN;
-			break;
-		case 'i': /* service */
-			nstate = SC_SVC;
-			break;
-		case 'd': /* admindown */
-			nstate = SC_ADMDOWN;
-			break;
-		case 'r': /* route */
-			nstate = SC_ROUTE;
-			break;
-		case 's': /* suspect */
-			nstate = SC_SUSPECT;
-			break;
-		case 'u': /* unavail */
-			nstate = SC_UNAVAIL;
-			break;
-		default:
-			warnx("node %d: bad state %c", nid, stat);
-			goto bad;
-		}
 
 		n = node_for_pc(&pc);
 		if (node_nidmap[nid]) {
 			warnx("already saw node with nid %d", nid);
 			goto bad;
 		}
-		if (NODE_WIMAP(x, y, z)) {
-			warnx("already saw node wiv %d:%d:%d", x, y, z);
-			goto bad;
-		}
 		n->n_nid = nid;
 		node_nidmap[nid] = n;
-		NODE_WIMAP(x, y, z) = n;
-		n->n_wiv.iv_x = x;
-		n->n_wiv.iv_y = y;
-		n->n_wiv.iv_z = z;
-		n->n_state = nstate;
-
-		twidim.iv_w = MAX(x, twidim.iv_w);
-		twidim.iv_h = MAX(y, twidim.iv_h);
-		twidim.iv_d = MAX(z, twidim.iv_d);
-
-		switch (lustat) {
-		case 'c':
-			n->n_lustat = LS_CLEAN;
-			break;
-		case 'd':
-			n->n_lustat = LS_DIRTY;
-			break;
-		case 'r':
-			n->n_lustat = LS_RECOVER;
-			break;
-		default:
-			warnx("node %d: invalid lustat %c",
-			    nid, lustat);
-			goto bad;
-		}
-
-		n->n_temp = temp ? temp : DV_NODATA;
 
 		if (jobid) {
-			if (n->n_state == SC_FREE)
-				n->n_state = SC_USED;
 			n->n_job = obj_get(&jobid, &job_list);
 			n->n_job->j_id = jobid;
 			if (strcmp(n->n_job->j_name, "") == 0)
@@ -370,8 +495,8 @@ parse_node(const struct datasrc *ds)
 
 		n->n_flags |= NF_VALID;
 		continue;
-bad:
-		prerror("node", lineno, buf, s);
+ bad:
+		prerror("node", 0, buf, s);
 	}
 	if (us_sawerror(ds->ds_us))
 		warnx("us_gets: %s", us_errstr(ds->ds_us));
@@ -381,12 +506,6 @@ bad:
 		job = OLE(job_list, j, job);
 		col_get_hash(&job->j_oh, job->j_id, &job->j_fill);
 	}
-
-	if (++twidim.iv_w != widim.iv_w ||
-	    ++twidim.iv_h != widim.iv_h ||
-	    ++twidim.iv_d != widim.iv_d)
-		errx(1, "wired cluster dimensions have changed (%d,%d,%d)",
-		    twidim.iv_w, twidim.iv_y, twidim.iv_z);
 }
 
 /*
@@ -434,66 +553,8 @@ parse_job(const struct datasrc *ds)
 
 		*j = j_fake;
 		continue;
-bad:
+ bad:
 		prerror("job", lineno, buf, s);
-	}
-	if (us_sawerror(ds->ds_us))
-		warnx("us_gets: %s", us_errstr(ds->ds_us));
-	errno = 0;
-}
-
-/*
- * nid        port recover fatal router
- * c9-1c0s7s0 0    0       1     1
- */
-void
-parse_rt(const struct datasrc *ds)
-{
-	int port, lineno, recover, fatal, router;
-	char *s, buf[BUFSIZ], nid[BUFSIZ];
-	struct node *n, **np;
-	struct physcoord pc;
-
-	NODE_FOREACH_WI(n, np)
-		memset(&n->n_route, 0, sizeof(n->n_route));
-	memset(&rt_max, 0, sizeof(rt_max));
-
-	lineno = 0;
-	while (us_gets(ds->ds_us, buf, sizeof(buf)) != NULL) {
-		lineno++;
-		s = buf;
-		while (isspace(*s))
-			s++;
-		if (*s == '#' || *s == '\0')
-			continue;
-
-		if (parsestr(&s, nid, sizeof(nid), 0) ||
-		    parsenid(nid, &pc))
-			goto bad;
-		n = node_for_pc(&pc);
-
-		PARSENUM(s, port, 7);
-		PARSENUM(s, recover, INT_MAX);
-		PARSENUM(s, fatal, INT_MAX);
-		PARSENUM(s, router, INT_MAX);
-
-/* XXX: max vs. total? */
-
-/*
-		rt_max.rt_err[port][RT_RECOVER] = MAX(recover, rt_max.rt_err[port][RT_RECOVER]);
-		rt_max.rt_err[port][RT_FATAL]   = MAX(fatal,   rt_max.rt_err[port][RT_FATAL]);
-		rt_max.rt_err[port][RT_ROUTER]  = MAX(router,  rt_max.rt_err[port][RT_ROUTER]);
-*/
-		rt_max.rt_err[port][RT_RECOVER] += recover;
-		rt_max.rt_err[port][RT_FATAL]   += fatal;
-		rt_max.rt_err[port][RT_ROUTER]  += router;
-
-		n->n_route.rt_err[port][RT_RECOVER] = recover;
-		n->n_route.rt_err[port][RT_FATAL]   = fatal;
-		n->n_route.rt_err[port][RT_ROUTER]  = router;
-		continue;
-bad:
-		prerror("rt", lineno, buf, s);
 	}
 	if (us_sawerror(ds->ds_us))
 		warnx("us_gets: %s", us_errstr(ds->ds_us));
@@ -549,7 +610,7 @@ parse_colors(const char *fn)
 		c = obj_get(&cv, &col_list);
 		memcpy(c->c_rgb, col, sizeof(c->c_rgb));
 		continue;
-bad:
+ bad:
 		warnx("col:%d: malformed line [%s] [%s]", lineno, buf, s);
 	}
 	if (ferror(fp))
