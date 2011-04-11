@@ -75,6 +75,8 @@ CFLAGS+=	-I/opt/local/include -I/usr/X11R6/include
 
 LIBS+=		-lGL -lGLU -lglut -lssl -lpng -lz -pthread -lgss -lcrypto
 
+# -lgssapi_krb5
+
 # static compiles:
 # LIBS+=	-lGL -lGLU -lglut -lssl -lpng12 -lz -lm -lgssapi_krb5
 # LIBS+=	-lcrypto -lXext -lX11 -ldl -lXxf86vm -lkrb5
@@ -98,7 +100,8 @@ CSRCS=		$(filter %.c,${SRCS})
 CSRCS+=		$(patsubst %.y,%.c,$(filter %.y,${SRCS}))
 CSRCS+=		$(patsubst %.l,%.c,$(filter %.l,${SRCS}))
 
-OBJS=		$(patsubst %.c,obj/%.o,$(filter %.c,${CSRCS}))
+OBJDIR=		obj
+OBJS=		$(patsubst %.c,${OBJDIR}/%.o,$(filter %.c,${CSRCS}))
 
 CLEAN+=		gmon.out dx-lex.c dx-parse.c dx-parse.h
 CLEAN+=		mach-lex.c mach-parse.c mach-parse.h
@@ -111,13 +114,16 @@ ${PROG}: ${OBJS}
 .y.c:
 	${YACC} ${YFLAGS} $<
 
-obj/%.o: %.c
+${OBJDIR}:
+	mkdir -p ${OBJDIR}
+
+${OBJDIR}/%.o: %.c | ${OBJDIR}
 	${CC} ${CFLAGS} -c $< -o $@
 
 depend: ${CSRCS}
 	@touch .depend
 	${MKDEP} ${INCS} ${CSRCS}
-	perl -i -pe 's!^[a-z]*.o:!obj/$$&!' .depend
+	perl -i -pe 's!^[a-z]*.o:!${OBJDIR}/$$&!' .depend
 
 clean:
 	rm -rf ${PROG} ${OBJS} ${CLEAN}
