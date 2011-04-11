@@ -68,9 +68,7 @@
 
 /* Must match DS_* defines in ds.h. */
 struct datasrc datasrcs[] = {
-	{ "node", 0, "", parse_node, DSF_LIVE,	dsfi_node, dsff_node,	NULL },
-	{ "job",  0, "", parse_job,  DSF_LIVE,	NULL,	   NULL,	NULL },
-	{ "rt",   0, "", parse_rt,   0,		NULL,	   NULL,	NULL },
+	{ "data", 0, "", parse_data, DSF_LIVE,	dsfi_node, dsff_node,	NULL },
 };
 
 struct objlist ds_list = { NULL, 0, 0, 0, 0, 10, sizeof(struct fnent), fe_eq };
@@ -278,7 +276,7 @@ ds_refresh(int type, int flags)
 	}
 	ds->ds_flags &= ~DSF_FORCE;
 	ds_read(ds);
-done:
+ done:
 	ds_close(ds);
 }
 

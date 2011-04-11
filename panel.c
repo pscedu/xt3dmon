@@ -485,7 +485,7 @@ if (col > nc)
 		    (s - pw->pw_str) * LETTER_WIDTH;
 		pw->pw_h = PWIDGET_HEIGHT;
 
-next:
+ next:
 		npw++;
 	}
 
@@ -699,7 +699,7 @@ panel_draw(struct panel *p, int winid)
 
 	make_panel(p, winid, compile, toff);
 
-done:
+ done:
 	/* spacing */
 	switch (p->p_info->pi_stick) {
 	case PSTICK_TL:

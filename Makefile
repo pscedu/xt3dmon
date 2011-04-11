@@ -73,7 +73,7 @@ CFLAGS+=	-DYY_NO_UNPUT
 #CFLAGS+=	-fno-strict-aliasing
 CFLAGS+=	-I/opt/local/include -I/usr/X11R6/include
 
-LIBS+=		-lGL -lGLU -lglut -lssl -lpng -lz -pthread -lgss -lcrypto
+LIBS+=		-lGL -lGLU -lglut -lssl -lpng -lz -pthread -lgssapi_krb5 -lcrypto
 
 # -lgssapi_krb5
 

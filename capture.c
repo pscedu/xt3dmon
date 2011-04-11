@@ -214,7 +214,7 @@ capture_virtual(const char *fn, int mode)
 	capture_formats[mode].cf_writef(fp, buf,
 	    virtwinv.iv_w, virtwinv.iv_h);
 	fclose(fp);
-done:
+ done:
 	free(buf);
 
 	st.st_rf |= RF_CAM;

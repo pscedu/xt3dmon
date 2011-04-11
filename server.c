@@ -490,7 +490,7 @@ serv_displayh(void)
 	curses = NULL;
 
 	capture_snapfd(cs->cs_fd, CM_PNG);
-drop:
+ drop:
 	dbg_warn("Closing connection\n");
 	close(cs->cs_fd);
 	free(cs);

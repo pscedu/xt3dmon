@@ -58,8 +58,8 @@ us_close(struct ustream *usp)
 }
 
 /*
- * Yes, this shouldn't be here, but it's needed
- * for socket communication.
+ * Yes, this shouldn't be here, but it's needed for socket
+ * communication.
  */
 __inline ssize_t
 us_write(struct ustream *usp, const void *buf, size_t siz)

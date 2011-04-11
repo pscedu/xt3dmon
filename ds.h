@@ -40,10 +40,8 @@ struct datasrc {
 
 /* Data sources -- order impacts datasrc[] in ds.c. */
 #define DS_INV		(-1)
-#define DS_NODE		0
-#define DS_JOB		1
-#define DS_RT		2
-#define NDS		3
+#define DS_DATA		0
+#define NDS		1
 
 void		 ds_setlive(void);
 void		 ds_seturi(int, const char *);

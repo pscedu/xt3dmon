@@ -421,7 +421,7 @@ gl_select(int flags)
 		gn = wi_shadow(dl, flags, &fv_zero);
 		break;
 	}
-end:
+ end:
 	for (i = 0; i < NGEOM; i++)
 		if (dl[i])
 			glDeleteLists(dl[i], 1);

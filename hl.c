@@ -184,7 +184,7 @@ nc_apply(void (*f)(struct fill *), size_t nc)
 
 /*
  * Run a fill operation on all node classes for which
- * any currently selected node are a member.
+ * any currently selected node is a member.
  */
 void
 nc_runsn(void (*f)(struct fill *))

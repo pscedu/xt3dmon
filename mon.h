@@ -67,11 +67,11 @@
 #define DV_NOAUTH	"???"
 
 struct physcoord {				/* XXX: become just dynamic array */
-	int	 pc_r;
-	int	 pc_cb;
-	int	 pc_cg;
-	int	 pc_m;
-	int	 pc_n;
+	int	 pc_row;
+	int	 pc_rack;
+	int	 pc_irq;
+	int	 pc_blade;
+	int	 pc_node;
 };
 
 typedef int (*cmpf_t)(const void *, const void *);

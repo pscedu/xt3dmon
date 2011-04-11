@@ -410,7 +410,7 @@ dmode_change(void)
 		NODE_FOREACH_WI(n, np)
 			n->n_fillp = &fill_xparent;
 
-	NODE_FOREACH_WI(n, np)
+	NODE_FOREACH_PHYS(n, np)
 		switch (st.st_dmode) {
 		case DM_JOB:
 			if (n->n_job)
@@ -928,15 +928,16 @@ glutInitWindowPosition(0, 0);
 	parse_machconf(cfgfn);
 
 	siz = NROWS * NRACKS * NIRQS * NBLADES * NNODES;
-	if ((nodes = calloc(siz, sizeof(*nodes))) == NULL)
+	nodes = calloc(siz, sizeof(*nodes));
+	if (nodes == NULL)
 		err(1, "calloc");
-	if ((node_nidmap = calloc(machine.m_nidmax,
-	    sizeof(*node_nidmap))) == NULL)
+	node_nidmap = calloc(machine.m_nidmax, sizeof(*node_nidmap));
+	if (node_nidmap == NULL)
 		err(1, "calloc");
 	/* XXX overflow */
 	node_wimap_len = widim.iv_x * widim.iv_y * widim.iv_z;
-	if ((node_wimap = calloc(node_wimap_len,
-	    sizeof(*node_wimap))) == NULL)
+	node_wimap = calloc(node_wimap_len, sizeof(*node_wimap));
+	if (node_wimap == NULL)
 		err(1, "calloc");
 
 	if (server_mode)

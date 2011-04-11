@@ -700,7 +700,7 @@ panel_refresh_ninfo(struct panel *p)
 		    PWARG_GSCB, gscb_pw_dmnc,
 		    PWARG_CBARG_INT, DM_JOB,
 		    PWARG_CBARG_INT2, n->n_state, PWARG_LAST);
-done:
+ done:
 	pwidget_endlist(p, 2);
 }
 

@@ -92,7 +92,7 @@ text_wrap(struct buf *bufp, const char *s, size_t maxlen, const char *ins,
 				p++;
 		} else
 			buf_append(bufp, *p);
-next:
+ next:
 		;
 	}
 	buf_append(bufp, '\0');

@@ -475,7 +475,7 @@ wi_shadow(int *dl, int flags, const struct fvec *offp)
 			ws[pos].ws_chance++;
 		}
 	}
-done:
+ done:
 	free(ws);
 	return (gn);
 }

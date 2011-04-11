@@ -20,10 +20,10 @@
 #include "fill.h"
 
 /*
- * Generic/global node classes.
- * If the value of a nodeclass is something other than
- * these values, it is a value specific to the current
- * dmode.
+ * Generic/global node classes
+ *
+ * If the value of a nodeclass is something other than these values, it
+ * is a value specific to the current dmode.
  */
 #define NC_ALL		(-1)
 #define NC_NONE		(-2)
@@ -32,15 +32,10 @@
 
 /* Node status classes */
 #define SC_FREE		0
-#define SC_DISABLED	1
-#define SC_DOWN		2
-#define SC_USED		3
-#define SC_SVC		4
-#define SC_ADMDOWN	5
-#define SC_ROUTE	6
-#define SC_SUSPECT	7
-#define SC_UNAVAIL	8
-#define NSC		9
+#define SC_BOOT		1
+#define SC_ALLOC	2
+#define SC_NOTSCHED	3
+#define NSC		4
 
 /* Temperature class constants */
 #define TEMP_MIN	18
