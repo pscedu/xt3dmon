@@ -27,13 +27,13 @@ struct fill;
  * possible dimensions.  This gives a section of a texture
  * without stretching it.
  */
-#define TEXCOORD(x, max) (1.0 / (max / x))
+#define TEXCOORD(x, max) (1.0 / ((max) / (x)))
 
-#define DF_FRAME	(1<<0)		/* draw with frame */
+#define DF_FRAME	(1 << 0)	/* draw with frame */
 
 /* Node drawing flags. */
-#define NDF_NOTWEEN	(1<<0)		/* don't perform node tweening */
-#define NDF_IGNSN	(1<<1)		/* ignore selnode mods */
+#define NDF_NOTWEEN	(1 << 0)	/* don't perform node tweening */
+#define NDF_IGNSN	(1 << 1)	/* ignore selnode mods */
 
 __BEGIN_DECLS
 

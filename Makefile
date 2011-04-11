@@ -94,13 +94,11 @@ INCS=		$$(echo ${CFLAGS} |					\
 INCS+=		$$(if cc -v 2>&1 | grep -q gcc; then cc -print-search-dirs | \
 		grep install | awk '{print "-I" $$2 "include"}' | sed 's/:/ -I/'; fi)
 
-OBJS=		$(patsubst %.c,%.o,$(filter %.c,${SRCS}))
-OBJS+=		$(patsubst %.y,%.o,$(filter %.y,${SRCS}))
-OBJS+=		$(patsubst %.l,%.o,$(filter %.l,${SRCS}))
-
 CSRCS=		$(filter %.c,${SRCS})
 CSRCS+=		$(patsubst %.y,%.c,$(filter %.y,${SRCS}))
 CSRCS+=		$(patsubst %.l,%.c,$(filter %.l,${SRCS}))
+
+OBJS=		$(patsubst %.c,obj/%.o,$(filter %.c,${CSRCS}))
 
 CLEAN+=		gmon.out dx-lex.c dx-parse.c dx-parse.h
 CLEAN+=		mach-lex.c mach-parse.c mach-parse.h
@@ -113,12 +111,13 @@ ${PROG}: ${OBJS}
 .y.c:
 	${YACC} ${YFLAGS} $<
 
-.c.o:
-	${CC} ${CFLAGS} -c $<
+obj/%.o: %.c
+	${CC} ${CFLAGS} -c $< -o $@
 
 depend: ${CSRCS}
 	@touch .depend
 	${MKDEP} ${INCS} ${CSRCS}
+	perl -i -pe 's!^[a-z]*.o:!obj/$$&!' .depend
 
 clean:
 	rm -rf ${PROG} ${OBJS} ${CLEAN}
@@ -141,10 +140,6 @@ cs:
 
 run: ${PROG}
 	./${PROG} -M
-
-# -gldebug
-debug: ${PROG}
-	gdb -q ./${PROG}
 
 DIST_LN_DIRS = img data scripts
 DIST_DIRS = snaps

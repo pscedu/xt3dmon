@@ -41,7 +41,7 @@ struct fill fill_yellow		= FILL_INIT  (1.0f, 1.0f, 0.0f);
 struct fill fill_pink		= FILL_INIT  (1.0f, 0.6f, 1.0f);
 struct fill fill_green		= FILL_INIT  (0.0f, 1.0f, 0.0f);
 
-struct fill fill_bg		= FILL_INIT  (0.15f, 0.3f, 0.15f);
+struct fill fill_bg		= FILL_INIT  (0.1f, 0.1f, 0.1f);
 struct fill fill_font		= FILL_INIT  (0.0f, 0.0f, 0.0f);
 struct fill fill_nodata		= FILL_INITF (1.0f, 1.0f, 0.0f, FF_SKEL);
 struct fill fill_rtesnd		= FILL_INITF (1.0f, 1.0f, 0.0f, FF_SKEL);
@@ -49,7 +49,7 @@ struct fill fill_rtercv		= FILL_INITF (1.0f, 0.0f, 1.0f, FF_SKEL);
 struct fill fill_same		= FILL_INIT  (1.0f, 1.0f, 1.0f);
 struct fill fill_selnode	= FILL_INIT  (0.2f, 0.4f, 0.6f);
 struct fill fill_clskel		= FILL_INITAF(0.6f, 1.0f, 0.6f, 0.8f, FF_SKEL);
-struct fill fill_ground		= FILL_INITAB(0.3f, 0.3f, 0.3f, 0.1f, GL_ONE_MINUS_SRC_COLOR);
+struct fill fill_ground		= FILL_INITAB(0.7f, 0.7f, 0.7f, 0.4f, GL_ONE_MINUS_SRC_COLOR);
 struct fill fill_showall	= FILL_INITA (1.0f, 1.0f, 1.0f, 0.0f);
 struct fill fill_checked	= FILL_INIT  (1.0f, 1.0f, 1.0f);
 struct fill fill_unchecked	= FILL_INITF (1.0f, 1.0f, 0.0f, FF_SKEL);
@@ -58,19 +58,19 @@ struct fill fill_frame		= FILL_INIT  (0.0f, 0.0f, 0.0f);
 struct fill fill_vnproxring	= FILL_INITA (0.9f, 0.9f, 0.9f, 0.5f);
 struct fill fill_vnproxring2	= FILL_INITA (0.8f, 0.8f, 0.9f, 0.5f);
 
-struct fill fill_panel		= FILL_INITA (0.1f, 0.7f, 0.4f, 0.8f);
+struct fill fill_panel		= FILL_INITA (0.2f, 0.2f, 0.5f, 0.8f);
 struct fill fill_ipanel		= FILL_INITA (0.5f, 0.7f, 0.9f, 0.9f);
 struct fill fill_nopanel	= FILL_INITAF(0.1f, 0.7f, 0.4f, 0.0f, FF_SKEL);
-struct fill fill_panelbd	= FILL_INITA (0.1f, 0.5f, 0.2f, 1.0f);
+struct fill fill_panelbd	= FILL_INITA (0.05f, 0.05f, 0.25f, 1.0f);
 
 struct fill fill_borg		= FILL_INIT  (0.0f, 0.0f, 0.0f);
 struct fill fill_matrix		= FILL_INITF (0.0f, 1.0f, 0.0f, FF_SKEL);
 struct fill fill_matrix_reloaded= FILL_INITA (0.0f, 1.0f, 0.0f, 0.3f);
 
 struct fill fill_dim[] = {
-	FILL_INIT(0.0f, 0.0f, 1.0f),	/* x - blue */
-	FILL_INIT(1.0f, 0.0f, 0.0f),	/* y - red */
-	FILL_INIT(0.0f, 1.0f, 0.0f)	/* z - green */
+	FILL_INIT(0.6f, 0.6f, 1.0f),	/* x - blue */
+	FILL_INIT(1.0f, 0.6f, 0.6f),	/* y - red */
+	FILL_INIT(0.2f, 1.0f, 0.2f)	/* z - green */
 };
 
 int

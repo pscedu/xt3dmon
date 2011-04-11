@@ -29,14 +29,14 @@ struct datasrc {
 };
 
 /* Data source flags. */
-#define DSF_FORCE	(1<<0)
-#define DSF_LIVE	(1<<1)		/* Real-time data (not interval). */
+#define DSF_FORCE	(1 << 0)
+#define DSF_LIVE	(1 << 1)	/* Real-time data (not interval) */
 
 /* Data source fetching options. */
-#define DSFO_CRIT	(1<<0)
-#define DSFO_IGN	(1<<1)
-#define DSFO_ALERT	(1<<2)
-#define DSFO_LIVE	(1<<3)		/* All live-able sources are using src. */
+#define DSFO_CRIT	(1 << 0)
+#define DSFO_IGN	(1 << 1)
+#define DSFO_ALERT	(1 << 2)
+#define DSFO_LIVE	(1 << 3)	/* All live sources are using src */
 
 /* Data sources -- order impacts datasrc[] in ds.c. */
 #define DS_INV		(-1)

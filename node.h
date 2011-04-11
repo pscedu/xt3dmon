@@ -71,7 +71,7 @@ int		 node_show(const struct node *);
 void		 node_center(const struct node *, struct fvec *);
 struct node	*node_for_pc(const struct physcoord *);
 
-#define NODE_WIMAP(x, y, z) \
+#define NODE_WIMAP(x, y, z)						\
 	node_wimap[(x) * widim.iv_y * widim.iv_z + (y) * widim.iv_z + (z)]
 
 extern struct node	 *nodes;

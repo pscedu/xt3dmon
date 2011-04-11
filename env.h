@@ -22,12 +22,12 @@
 
 #include "xmath.h"
 
-/* Frustum. */
+/* Frustum */
 #define NEARCLIP	(1.0)
 #define FOVY		(45.0f)
 #define ASPECT		(winv.iv_w / (double)winv.iv_h)
 
-/* Relative directions. */
+/* Relative directions */
 #define DIR_LEFT	0
 #define DIR_RIGHT	1
 #define DIR_UP		2
@@ -35,13 +35,13 @@
 #define DIR_FORW	4
 #define DIR_BACK	5
 
-/* Dimensions. */
+/* Dimensions */
 #define DIM_X		0
 #define DIM_Y		1
 #define DIM_Z		2
 #define NDIM		3
 
-/* Relative directions. */
+/* Relative directions */
 #define RD_NEGX		0
 #define RD_POSX		1
 #define RD_NEGY		2
@@ -50,24 +50,24 @@
 #define RD_POSZ		5
 #define NRD		6
 
-/* Geometries. */
+/* Geometries */
 #define GEOM_CUBE	0
 #define GEOM_SPHERE	1
 #define NGEOM		2
 
-/* Stereo display mode types. */
+/* Stereo display mode types */
 #define STM_NONE	0
 #define STM_ACT		1
 #define STM_PASV	2
 
-/* GL window identifiers for passive stereo. */
+/* GL window identifiers for passive stereo */
 #define WINID_LEFT	0
 #define WINID_RIGHT	1
 
 #define WINID_MASTER	0
 #define WINID_DEF	0
 
-/* Key handlers. */
+/* Key handlers */
 #define KEYH_DEF	0
 #define KEYH_NEIGH	1
 #define KEYH_WIADJ	2
@@ -121,7 +121,7 @@ void		 caption_set(const char *);
 void		 caption_setdrain(time_t);
 const char	*caption_get(void);
 
-/* Loop through wired repetitions. */
+/* Loop through wired repetitions */
 #define WIREP_FOREACH(fvp)							\
 	for ((fvp)->fv_x = wi_repstart.fv_x;					\
 	    (fvp)->fv_x < wi_repstart.fv_x + wi_repdim.fv_w;			\

@@ -54,16 +54,16 @@
 #include "ustream.h"
 #include "util.h"
 
-#define MAX_PROTO_LEN 20
-#define MAX_PORT_LEN 6
-#define MAX_PATH_LEN BUFSIZ
+#define MAX_PROTO_LEN	20
+#define MAX_PORT_LEN	6
+#define MAX_PATH_LEN	BUFSIZ
 
 #ifndef _LIVE_PROTO
-# define _LIVE_PROTO "gssapi"
+# define _LIVE_PROTO	"gssapi"
 #endif
 
 #ifndef _LIVE_PATH
-# define _LIVE_PATH "mugatu.psc.edu:24240/UView"
+# define _LIVE_PATH	"http://mugatu.psc.edu:24240/UView"
 #endif
 
 /* Must match DS_* defines in ds.h. */

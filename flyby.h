@@ -36,9 +36,9 @@ struct state;
 #define FLYBY_DEFAULT		"default"
 
 char	*flyby_set(const char *, int);
-void 	 flyby_begin(int);
-void 	 flyby_beginauto(void);
-void 	 flyby_end(void);
+void	 flyby_begin(int);
+void	 flyby_beginauto(void);
+void	 flyby_end(void);
 void	 flyby_read(void);
 void	 flyby_update(void);
 void	 flyby_writeinit(struct state *);
@@ -51,6 +51,6 @@ void	 flyby_rstautoto(void);
 void	 flyby_clear(void);
 
 extern int	flyby_mode;
-extern int 	flyby_nautoto;
-extern char 	flyby_fn[];
-extern char 	flyby_dir[];
+extern int	flyby_nautoto;
+extern char	flyby_fn[];
+extern char	flyby_dir[];

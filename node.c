@@ -22,6 +22,7 @@
 #include <err.h>
 #include <stdlib.h>
 
+#include "cdefs.h"
 #include "env.h"
 #include "fill.h"
 #include "mach.h"
@@ -351,9 +352,9 @@ node_goto(struct node *n)
 __inline int
 node_show(const struct node *n)
 {
-	if (st.st_opts & OP_SUBSET && (n->n_flags & NF_SUBSET) == 0)
+	if ((st.st_opts & OP_SUBSET) && (n->n_flags & NF_SUBSET) == 0)
 		return (0);
-	if ((n->n_flags & (NF_VALID | NF_VMVIS)) == (NF_VALID | NF_VMVIS) &&
+	if (ATTR_TESTALL(n->n_flags, NF_VALID | NF_VMVIS) &&
 	    n->n_fillp->f_a > 0.01f)
 		return (1);
 	return (0);

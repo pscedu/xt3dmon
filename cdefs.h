@@ -60,3 +60,6 @@
 #undef __inline
 #define __inline
 #endif
+
+#define ATTR_TESTANY(v, fl)	((v) & (fl))
+#define ATTR_TESTALL(v, fl)	(((v) & (fl)) == (fl))

@@ -24,7 +24,7 @@
 
 #include "objlist.h"
 
-/* HSV constants. */
+/* HSV constants */
 #define HUE_MIN		0
 #define HUE_MAX		360
 #define SAT_MIN		(0.3)
@@ -34,7 +34,7 @@
 
 struct fill {
 	float		f_rgba[4];
-	int	 	f_flags;
+	int		f_flags;
 	int		f_blfunc;
 	unsigned int	f_texid[2];
 	unsigned int	f_texid_a[2];		/* alpha-loaded texid */
@@ -56,31 +56,31 @@ struct color {
 #define c_b c_rgb[2]
 };
 
-#define FF_SKEL		(1<<0)			/* Fill is outline, not solid. */
-#define FF_TEX		(1<<1)			/* Textured. */
-#define FF_OPAQUE	(1<<2)			/* Ignore alpha channel. */
+#define FF_SKEL		(1 << 0)		/* Fill is outline, not solid */
+#define FF_TEX		(1 << 1)		/* Textured */
+#define FF_OPAQUE	(1 << 2)		/* Ignore alpha channel */
 
-#define FILL_INIT(r, g, b)				\
+#define FILL_INIT(r, g, b)						\
 	FILL_INITAFB((r), (g), (b), 1.0, 0, 0)
 
-#define FILL_INITA(r, g, b, a)				\
+#define FILL_INITA(r, g, b, a)						\
 	FILL_INITAFB((r), (g), (b), (a), 0, 0)
 
-#define FILL_INITAB(r, g, b, a, blf)			\
+#define FILL_INITAB(r, g, b, a, blf)					\
 	FILL_INITAFB((r), (g), (b), (a), 0, (blf))
 
-#define FILL_INITF(r, g, b, flags)			\
+#define FILL_INITF(r, g, b, flags)					\
 	FILL_INITAFB((r), (g), (b), 1.0, (flags), 0)
 
-#define FILL_INITAF(r, g, b, a, flags)			\
+#define FILL_INITAF(r, g, b, a, flags)					\
 	FILL_INITAFB((r), (g), (b), (a), (flags), 0)
 
-#define FILL_INITAFB(r, g, b, a, flags, blf)		\
+#define FILL_INITAFB(r, g, b, a, flags, blf)				\
 	{ { (r), (g), (b), (a) }, (flags), (blf), { 0, 0 }, { 0, 0 } }
 
 struct objhdr;
 
-void 	 fill_contrast(struct fill *);
+void	 fill_contrast(struct fill *);
 void	 fill_setopaque(struct fill *);
 void	 fill_setxparent(struct fill *);
 void	 fill_alphainc(struct fill *);
@@ -96,7 +96,7 @@ void	 col_get_hash(struct objhdr *, int, struct fill *);
 
 extern struct objlist	 col_list;
 
-/* Common colors. */
+/* Common colors */
 extern struct fill	 fill_black;
 extern struct fill	 fill_grey;
 extern struct fill	 fill_light_blue;
@@ -106,7 +106,7 @@ extern struct fill	 fill_yellow;
 extern struct fill	 fill_pink;
 extern struct fill	 fill_green;
 
-/* Environment object colors. */
+/* Environment object colors */
 extern struct fill	 fill_bg;
 extern struct fill	 fill_font;
 extern struct fill	 fill_nodata;
@@ -124,13 +124,13 @@ extern struct fill	 fill_frame;
 extern struct fill	 fill_vnproxring;
 extern struct fill	 fill_vnproxring2;
 
-/* Interface object colors. */
+/* Interface object colors */
 extern struct fill	 fill_panel;
 extern struct fill	 fill_nopanel;
 extern struct fill	 fill_ipanel;
 extern struct fill	 fill_panelbd;
 
-/* Textures. */
+/* Textures */
 extern struct fill	 fill_borg;
 extern struct fill	 fill_matrix;
 extern struct fill	 fill_matrix_reloaded;
