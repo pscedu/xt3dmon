@@ -127,9 +127,10 @@ ustrop_ssl_eof(const struct ustream *usp)
 }
 
 __inline int
-ustrop_ssl_getc(const struct ustream *usp)
+ustrop_ssl_getc(struct ustream *usp)
 {
-	int c;
+	char *p;
+	char c;
 
 	if (ustrop_ssl_eof(usp) || ustrop_ssl_sawerror(usp))
 		return (EOF);
@@ -138,7 +139,7 @@ ustrop_ssl_getc(const struct ustream *usp)
 }
 
 __inline void
-ustrop_ssl_ungetc(const struct ustream *usp, int c)
+ustrop_ssl_ungetc(struct ustream *usp, int c)
 {
 	if (usp->us_bufstart == usp->us_buf)
 		errx(1, "unable to put back to before buffer start");

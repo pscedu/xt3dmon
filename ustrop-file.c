@@ -128,9 +128,9 @@ ustrop_file_getc(struct ustream *usp)
 }
 
 __inline void
-ustrop_file_ungetc(struct ustream *usp)
+ustrop_file_ungetc(struct ustream *usp, int c)
 {
-	return (ungetc(usp->us_fp));
+	return (ungetc(c, usp->us_fp));
 }
 
 struct ustrdtab ustrdtab_file = {

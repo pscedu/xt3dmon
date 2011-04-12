@@ -59,17 +59,17 @@ struct node {
 	for ((np) = node_wimap; (np) - node_wimap < node_wimap_len; (np)++)	\
 		if (((n) = *(np)) != NULL)
 
-struct node	*node_neighbor(int, struct node *, int, int *);
-int		 node_wineighbor_nhops(const struct node *, const struct node *);
-void		 node_physpos(struct node *, struct physcoord *);
-void		 node_getmodpos(int, int *, int *);
 void		 node_adjmodpos(int, struct fvec *);
-void		 node_setphyspos(struct node *, struct fvec *);
-struct node	*node_for_nid(int);
-void		 node_goto(struct node *);
-int		 node_show(const struct node *);
 void		 node_center(const struct node *, struct fvec *);
+struct node	*node_for_nid(int);
 struct node	*node_for_pc(const struct physcoord *);
+void		 node_getmodpos(int, int *, int *);
+void		 node_goto(struct node *);
+struct node	*node_neighbor(int, struct node *, int, int *);
+void		 node_physpos(struct node *, struct physcoord *);
+void		 node_setphyspos(struct node *, struct fvec *);
+int		 node_show(const struct node *);
+int		 node_wineighbor_nhops(const struct node *, const struct node *);
 
 #define NODE_WIMAP(x, y, z)						\
 	node_wimap[(x) * widim.iv_y * widim.iv_z + (y) * widim.iv_z + (z)]

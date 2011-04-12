@@ -358,7 +358,7 @@ parse_datafield_array(struct datasrc *ds)
 struct datafield *
 parse_datafield_map(struct datasrc *ds)
 {
-	struct datafield *df, *c;
+	struct datafield *df, *ch;
 	int c;
 
 	df = datafield_new(DFT_MAP);
@@ -373,13 +373,13 @@ parse_datafield_map(struct datasrc *ds)
 		c = us_getchar(ds->ds_us);
 		switch (c) {
 		case '"':
-			c = parse_datafield(ds);
-			if (c == NULL) {
+			ch = parse_datafield(ds);
+			if (ch == NULL) {
 				PARSE_ERROR(ds, "");
 				return (NULL);
 			}
 
-			dynarray_push(df->df_mapfields, c);
+			dynarray_push(df->df_mapfields, ch);
 			c = us_getchar(ds->ds_us);
 			switch (c) {
 			case '}':
@@ -451,25 +451,194 @@ parse_datafield(struct datasrc *ds)
 	return (df);
 }
 
-#define FOREACH_NIDINLIST()						\
-	for () {				\
-	}
+void
+nidlist_getnextrange(const char **s, int *min, int *max)
+{
+	const char *p;
+	char *endp;
+	long l;
+
+	*min = 0;
+	*max = -1;
+
+	l = strtol(*s, &endp, 10);
+	if (l <= 0 || l >= INT_MAX || endp == *s || *endp != '-')
+		return;
+	*min = l;
+
+	l = strtol(endp + 1, &endp, 10);
+	if (l <= 0 || l >= INT_MAX || endp == *s ||
+	    (*endp && *endp != ','))
+		return;
+	*max = l;
+
+	p = endp;
+	*s = p + 1;
+}
+
+/* 1168-1295,3216-3343 */
+#define FOREACH_NIDINLIST(nid, min, max, s, nidlist)			\
+	for ((s) = (nidlist); (s); )					\
+		for (nidlist_getnextrange(&(s), &(min), &(max)),	\
+		    (nid) = (min); (nid) <= (max); (nid)++)
 
 void
-walk_node_data(struct datafield *sysinfo, const char name, int state)
+walk_node_data(struct datafield *sysinfo, const char *name, int state)
 {
-	const char *nodes;
+	const char *s, *nidlist;
+	int min, max, nid;
 	struct node *n;
 
-	nodes = datafield_map_getscalar(sysinfo, name);
-	if (nodes == NULL)
+	nidlist = datafield_map_getscalar(sysinfo, name);
+	if (nidlist == NULL)
 		return;
 
-	FOREACH_NIDINLIST() {
+	FOREACH_NIDINLIST(nid, min, max, s, nidlist) {
 		n = node_for_nid(nid);
 		n->n_state = state;
 		n->n_flags |= NF_VALID;
 	}
+}
+
+/*
+ * 96:00:00
+ */
+int
+parse_time(const char *s)
+{
+	char *endp;
+	int n, l;
+
+	l = strtol(s, &endp, 10);
+	if (l < 0 || l >= INT_MAX || endp == s || *endp != ':')
+		return (0);
+	n = l * 60 * 60;
+
+	l = strtol(endp + 1, &endp, 10);
+	if (l < 0 || l >= INT_MAX || endp == s || *endp != ':')
+		return (0);
+	n += l * 60;
+
+	l = strtol(endp + 1, &endp, 10);
+	if (l < 0 || l >= INT_MAX || endp == s || *endp != '\0')
+		return (0);
+	n += l;
+	return (n);
+}
+
+__inline void
+apply_job(struct datafield *job)
+{
+	int jobid, nid, min, max;
+	const char *s, *nidlist;
+	struct datafield *df;
+	struct node *n;
+	struct job *j;
+	char *endp;
+	long l;
+
+	/*
+		"exec_host":"bl0.psc.teragrid.org",
+		"Resource_List":{
+			"walltime_min":"00:00:00",
+			"walltime":"96:00:00",
+			"walltime_max":"00:00:00",
+			"pnum_threads_factor":"16",
+			"ncpus":"128",
+			"nodeset":"146-161:1168-1295,3216-3343"
+		},
+		"Job_Name":"141-3-3-4",
+		"Job_Owner":"mhutchin@tg-login1.blacklight.psc.teragrid.org",
+		"qtime":"1302534343",
+		"resources_used":{
+			"walltime":"26:27:42",
+			"cput":"2189:29:24",
+			"mem":"105132944kb",
+			"vmem":"269585638652kb"
+		},
+		"ctime":"1302330285",
+		"mtime":"1302534345",
+		"start_time":"1302534343",
+		"etime":"1302330285",
+		"comment":"Starting job at 04/11/11 11:05",
+		"queue":"batch_l",
+		"Job_Id":"32254.tg-login1.blacklight.psc.teragrid.org",
+	 */
+
+	s = datafield_map_getscalar(job, "Job_Id");
+	if (s == NULL) {
+		warnx("job ID not present");
+		return;
+	}
+	l = strtol(s, NULL, 10);
+	if (l <= 0 || l >= INT_MAX) {
+		warnx("job ID not present");
+		return;
+	}
+	jobid = l;
+
+	j = n->n_job = obj_get(&jobid, &job_list);
+	j->j_id = jobid;
+	if (strcmp(j->j_name, "") == 0)
+		snprintf(j->j_name, sizeof(j->j_name), "job %d", jobid);
+
+	s = datafield_map_getscalar(job, "owner");
+	if (s) {
+		strlcpy(j->j_owner, s, sizeof(j->j_owner));
+		endp = strchr(j->j_owner, '@');
+		if (endp)
+			*endp = '\0';
+	}
+	s = datafield_map_getscalar(job, "queue");
+	if (s)
+		strlcpy(j->j_queue, s, sizeof(j->j_queue));
+	s = datafield_map_getscalar(job, "Job_Name");
+	if (s)
+		strlcpy(j->j_name, s, sizeof(j->j_name));
+
+	/* apply data from Resource_List */
+	df = datafield_map_getkeyvalue(job, "Resource_List");
+	if (df == NULL || df->df_type != DFT_MAP)
+		return;
+	s = datafield_map_getscalar(df, "ncpus");
+	if (s) {
+		l = strtol(s, &endp, 10);
+		if (l >= 0 && l < INT_MAX && endp != s && *endp)
+			j->j_ncpus = l;
+	}
+	s = datafield_map_getscalar(df, "walltime");
+	if (s)
+		j->j_tmdur = parse_time(s);
+
+	s = datafield_map_getscalar(job, "nodeset");
+	if (s) {
+		nidlist = strchr(s, ':');
+		if (nidlist) {
+			nidlist++;
+			FOREACH_NIDINLIST(nid, min, max, s, nidlist) {
+				n = node_for_nid(nid);
+				if (n == NULL) {
+					warnx("nid %d not found", nid);
+					continue;
+				}
+				n->n_state = SC_ALLOC;
+			}
+		}
+	}
+
+	/* apply data from resources_used */
+	df = datafield_map_getkeyvalue(job, "resources_used");
+	if (df == NULL || df->df_type != DFT_MAP)
+		return;
+	s = datafield_map_getscalar(df, "mem");
+	if (s) {
+		l = strtol(s, &endp, 10);
+		if (l >= 0 && l < INT_MAX && endp != s && *endp == 'k')
+			j->j_mem = l;
+	}
+	s = datafield_map_getscalar(df, "walltime");
+	if (s)
+		j->j_tmuse = parse_time(s);
 }
 
 /*
@@ -482,12 +651,11 @@ walk_node_data(struct datafield *sysinfo, const char name, int state)
 void
 parse_data(struct datasrc *ds)
 {
-	struct datafield *data, *sysinfo, *nodes, *jobs, *job;
-	struct physcoord pc;
+	struct datafield *data, *sysinfo, *jobs, *job;
 	struct node *n, **np;
 	struct job *j;
-	const char *s;
 	size_t k;
+	int i;
 
 	if (skip_data_strlit(ds, "data"))
 		return;
@@ -512,84 +680,9 @@ parse_data(struct datasrc *ds)
 	}
 
 	jobs = datafield_map_getkeyvalue(data, "jobs");
-	if (jobs && jobs->df_type == DFT_ARRAY) {
-		DYNARRAY_FOREACH(job, i, &jobs->df_array) {
-
-			/*
-				"exec_host":"bl0.psc.teragrid.org",
-				"Resource_List":{
-					"walltime_min":"00:00:00",
-					"walltime":"96:00:00",
-					"walltime_max":"00:00:00",
-					"pnum_threads_factor":"16",
-					"ncpus":"128",
-					"nodeset":"146-161:1168-1295,3216-3343"
-				},
-				"Job_Name":"141-3-3-4",
-				"Job_Owner":"mhutchin@tg-login1.blacklight.psc.teragrid.org",
-				"qtime":"1302534343",
-				"resources_used":{
-					"walltime":"26:27:42",
-					"cput":"2189:29:24",
-					"mem":"105132944kb",
-					"vmem":"269585638652kb"
-				},
-				"ctime":"1302330285",
-				"mtime":"1302534345",
-				"start_time":"1302534343",
-				"etime":"1302330285",
-				"comment":"Starting job at 04/11/11 11:05",
-				"queue":"batch_l",
-				"Job_Id":"32254.tg-login1.blacklight.psc.teragrid.org",
-			*/
-
-			s = datafield_map_getscalar(job,
-			    "Job_Id");
-
-			j = n->n_job = obj_get(&jobid, &job_list);
-			j->j_id = jobid;
-			if (strcmp(j->j_name, "") == 0)
-				snprintf(j->j_name, sizeof(j->j_name),
-				    "job %d", jobid);
-
-			s = datafield_map_getscalar(job,
-			    "nodeset");
-			if (s)
-				FOREACH_NIDINLIST(nid, s) {
-					n = node_for_nid(nid);
-					if (n == NULL) {
-						warnx("nid %d not "
-						    "found", nid);
-						continue;
-					}
-					n->n_state = SC_ALLOC;
-				}
-
-			s = datafield_map_getscalar(job,
-			    "owner");
-			if (s) {
-				strlcpy(j->j_owner, s,
-				    sizeof(j->j_owner));
-				s = strchr(j->j_owner, '@');
-				if (s)
-					*s = '\0';
-			}
-
-			PARSENUM(s, j_fake.j_tmdur, INT_MAX);
-			PARSENUM(s, j_fake.j_tmuse, INT_MAX);
-			PARSENUM(s, j_fake.j_mem, INT_MAX);
-			PARSENUM(s, j_fake.j_ncpus, INT_MAX);
-			if (parsestr(&s, j_fake.j_queue, sizeof(j_fake.j_queue), 0))
-				goto bad;
-			if (parsestr(&s, j_fake.j_name, sizeof(j_fake.j_name),
-			    PS_ALLOWSPACE))
-				goto bad;
-
-			if (strcmp(j_fake.j_name, DV_NOAUTH) == 0)
-				snprintf(j_fake.j_name, sizeof(j_fake.j_name),
-				    "job %d", j_fake.j_id);
-		}
-	}
+	if (jobs && jobs->df_type == DFT_ARRAY)
+		DYNARRAY_FOREACH(job, i, &jobs->df_array)
+			apply_job(job);
 
 	datafield_free(data);
 
@@ -598,8 +691,8 @@ parse_data(struct datasrc *ds)
 	errno = 0;
 
 	for (k = 0; k < job_list.ol_tcur; k++) {
-		job = OLE(job_list, k, job);
-		col_get_hash(&job->j_oh, job->j_id, &job->j_fill);
+		j = OLE(job_list, k, job);
+		col_get_hash(&j->j_oh, j->j_id, &j->j_fill);
 	}
 }
 
