@@ -21,7 +21,7 @@ struct datasrc {
 	char		  ds_name[20];
 	time_t		  ds_mtime;
 	char		  ds_uri[BUFSIZ];
-	void		(*ds_parsef)(const struct datasrc *);
+	void		(*ds_parsef)(struct datasrc *);
 	int		  ds_flags;
 	void		(*ds_initf)(const struct datasrc *);
 	void		(*ds_finif)(const struct datasrc *);

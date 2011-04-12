@@ -88,13 +88,13 @@ int		 job_ca_cookie;
 		*(s)++ = '\0';					\
 	} while (0)
 
-#define PARSECHAR(s, ch)					\
+#define PARSECHAR(s, c)						\
 	do {							\
 		while (isspace(*(s)))				\
 			(s)++;					\
 		if (!isalpha(*(s)))				\
 			goto bad;				\
-		(ch) = *(s);					\
+		(c) = *(s);					\
 		if (!isspace(*++(s)))				\
 			goto bad;				\
 	} while (0)
@@ -151,9 +151,40 @@ prerror(const char *fn, int lineno, const char *bufp, const char *s)
 	    buf + (s - bufp));
 }
 
+int
+skip_data_strlit(struct datasrc *ds, const char *str)
+{
+	const char *p;
+	int c;
+
+	for (p = str; *p; p++) {
+		c = us_getchar(ds->ds_us);
+		if (c != *p)
+			return (-1);
+	}
+	return (0);
+}
+
+void
+skip_data_space(struct datasrc *ds)
+{
+	int c;
+
+	do
+		c = us_getchar(ds->ds_us);
+	while (isspace(c));
+	us_ungetchar(ds->ds_us, c);
+}
+
+enum datafield_type {
+	DFT_SCALAR,
+	DFT_ARRAY,
+	DFT_MAP
+};
+
 struct datafield {
 	char				*df_name;
-	int				 df_type;
+	enum datafield_type		 df_type;
 	union {
 		struct buf		 dfu_scalar;
 		struct dynarray		 dfu_array;
@@ -163,12 +194,8 @@ struct datafield {
 #define df_mapfields	df_udata.dfu_array
 };
 
-#define DFT_SCALAR	(1 << 0)
-#define DFT_ARRAY	(1 << 1)
-#define DFT_MAP		(1 << 2)
-
 void
-datafield_new(int type)
+datafield_new(enum datafield_type type)
 {
 	struct datafield *df;
 
@@ -233,7 +260,18 @@ datafield_map_getkeyvalue(struct datafield *p, const char *name)
 	return (NULL);
 }
 
-#define PARSE_ERROR(ds, fmt, ...) warnx("parse error")
+const char *
+datafield_map_getscalar(struct datafield *p, const char *name)
+{
+	struct datafield *df;
+
+	df = datafield_map_getkeyvalue(p, name);
+	return (df && df->df_type == DFT_SCALAR ?
+	    buf_get(&df->df_scalar) : NULL);
+}
+
+
+#define PARSE_ERROR(ds, fmt, ...) warnx("parse error") //prerror("node", 0, buf, s);
 
 struct datafield *parse_datafield(struct datasrc *);
 struct datafield *parse_datafield_array(struct datasrc *);
@@ -243,22 +281,22 @@ struct datafield *
 parse_datafield_scalar(struct datasrc *ds)
 {
 	struct datafield *df;
-	int ch;
+	int c, esc = 0;
 
 	df = datafield_new(DFT_SCALAR);
 	do {
-		ch = us_getchar(ds->ds_us);
-		switch (ch) {
+		c = us_getchar(ds->ds_us);
+		switch (c) {
 		case '\\':
 			if (esc)
-				buf_append(&df->df_scalar, ch);
-			ch = 0;
+				buf_append(&df->df_scalar, c);
+			c = 0;
 			break;
 		case '"':
 			if (esc) {
-				buf_append(&df->df_scalar, ch);
+				buf_append(&df->df_scalar, c);
 				/* hack for loop */
-				ch = 0;
+				c = 0;
 			}
 			break;
 		case '\0':
@@ -266,47 +304,42 @@ parse_datafield_scalar(struct datasrc *ds)
 			free(df);
 			return (NULL);
 		default:
-			buf_append(&df->df_scalar, ch);
+			buf_append(&df->df_scalar, c);
 			break;
 		}
-		esc = (ch == '\\');
-	} while (ch != '"')
+		esc = (c == '\\');
+	} while (c != '"')
 	buf_nul(&df->df_scalar);
-
-	ch = us_getchar(ds->ds_us);
-	while (isspace(ch))
-		ch = us_getchar(ds->ds_us);
-	us_ungetchar(ds->ds_us, ch);
+	skip_data_space(ds);
 	return (df);
 }
 
 struct datafield *
 parse_datafield_array(struct datasrc *ds)
 {
-	struct datafield *df, *c;
-	int ch;
+	struct datafield *df, *ch;
+	int c;
 
 	df = datafield_new(DFT_ARRAY);
 
-	ch = us_getchar(ds->ds_us);
-	if (ch != '[') {
+	c = us_getchar(ds->ds_us);
+	if (c != '[') {
 		PARSE_ERROR(ds, "");
 		return (NULL);
 	}
 	do {
-		c = NULL;
-		while (isspace(ch))
-			ch = us_getchar(ds->ds_us);
-		ch = us_getchar(ds->ds_us);
-		switch (ch) {
+		ch = NULL;
+		skip_data_space(ds);
+		c = us_getchar(ds->ds_us);
+		switch (c) {
 		case '"':
-			c = parse_datafield_scalar(ds);
+			ch = parse_datafield_scalar(ds);
 			break;
 		case '[':
-			c = parse_datafield_array(ds);
+			ch = parse_datafield_array(ds);
 			break;
 		case '{':
-			c = parse_datafield_map(ds);
+			ch = parse_datafield_map(ds);
 			break;
 		case ',':
 		case ']':
@@ -315,34 +348,30 @@ parse_datafield_array(struct datasrc *ds)
 			PARSE_ERROR(ds, "");
 			return (NULL);
 		}
-		if (c)
-			dynarray_push(df->df_array, c);
-	} while (ch != ']');
-
-	ch = us_getchar(ds->ds_us);
-	while (isspace(ch))
-		ch = us_getchar(ds->ds_us);
-	us_ungetchar(ds->ds_us, ch);
+		if (ch)
+			dynarray_push(df->df_array, ch);
+	} while (c != ']');
+	skip_data_space(ds);
+	return (df);
 }
 
 struct datafield *
 parse_datafield_map(struct datasrc *ds)
 {
 	struct datafield *df, *c;
-	int ch;
+	int c;
 
 	df = datafield_new(DFT_MAP);
 
-	ch = us_getchar(ds->ds_us);
-	if (ch != '{') {
+	c = us_getchar(ds->ds_us);
+	if (c != '{') {
 		PARSE_ERROR(ds, "");
 		return (NULL);
 	}
 	do {
-		ch = us_getchar(ds->ds_us);
-		while (isspace(ch))
-			ch = us_getchar(ds->ds_us);
-		switch (ch) {
+		skip_data_space(ds);
+		c = us_getchar(ds->ds_us);
+		switch (c) {
 		case '"':
 			c = parse_datafield(ds);
 			if (c == NULL) {
@@ -351,8 +380,8 @@ parse_datafield_map(struct datasrc *ds)
 			}
 
 			dynarray_push(df->df_mapfields, c);
-			ch = us_getchar(ds->ds_us);
-			switch (ch) {
+			c = us_getchar(ds->ds_us);
+			switch (c) {
 			case '}':
 			case ',':
 				break;
@@ -367,12 +396,8 @@ parse_datafield_map(struct datasrc *ds)
 			PARSE_ERROR(ds, "");
 			return (NULL);
 		}
-	} while (ch != '}');
-
-	ch = us_getchar(ds->ds_us);
-	while (isspace(ch))
-		ch = us_getchar(ds->ds_us);
-	us_ungetchar(ds->ds_us, ch);
+	} while (c != '}');
+	skip_data_space(ds);
 	return (df);
 }
 
@@ -381,36 +406,33 @@ parse_datafield(struct datasrc *ds)
 {
 	struct datafield *df = NULL;
 	struct buf namebuf;
-	int ch, type;
+	int c;
 
 	buf_init(&namebuf);
-	ch = us_getchar(ds->ds_us);
+	c = us_getchar(ds->ds_us);
 	do {
-		switch (ch) {
+		switch (c) {
 		case '"':
 			break;
 		case '\0':
 			PARSE_ERROR(ds, "");
 			return (NULL);
 		default:
-			buf_append(&namebuf, ch);
+			buf_append(&namebuf, c);
 			break;
 		}
-	} while (ch != '"');
+	} while (c != '"');
 
 	buf_nul(&namebuf);
-	ch = us_getchar(ds->ds_us);
-	while (isspace(ch))
-		ch = us_getchar(ds->ds_us);
-	if (ch != ':') {
+	skip_data_space(ds);
+	c = us_getchar(ds->ds_us);
+	if (c != ':') {
 		PARSE_ERROR(ds, "");
 		return (NULL);
 	}
-	ch = us_getchar(ds->ds_us);
-	while (isspace(ch))
-		ch = us_getchar(ds->ds_us);
-
-	switch (ch) {
+	skip_data_space(ds);
+	c = us_getchar(ds->ds_us);
+	switch (c) {
 	case '"':
 		df = parse_datafield_scalar(ds);
 		break;
@@ -424,115 +446,153 @@ parse_datafield(struct datasrc *ds)
 		PARSE_ERROR(ds, "");
 		return (NULL);
 	}
-
 	df->df_name = buf_get(&namebuf);
-
-	ch = us_getchar(ds->ds_us);
-	while (isspace(ch))
-		ch = us_getchar(ds->ds_us);
-	us_ungetchar(ds->ds_us, ch);
+	skip_data_space(ds);
 	return (df);
 }
 
+#define FOREACH_NIDINLIST()						\
+	for () {				\
+	}
+
+void
+walk_node_data(struct datafield *sysinfo, const char name, int state)
+{
+	const char *nodes;
+	struct node *n;
+
+	nodes = datafield_map_getscalar(sysinfo, name);
+	if (nodes == NULL)
+		return;
+
+	FOREACH_NIDINLIST() {
+		n = node_for_nid(nid);
+		n->n_state = state;
+		n->n_flags |= NF_VALID;
+	}
+}
+
 /*
-	data = {"version":"1.1","result":{
-		"jobs":[{"session_id":"174067",...},...],
-		"history":[{"session_id":"174004",...},...],
-		"queue":[{"Job_Name":"12s-4-4-1",...},...],
-		"sysinfo":{"mempercpu":8,"gb_per_memnode":64,"mem":16384}}}
+ * data = {"version":"1.1","result":{
+ *	"jobs":[{"session_id":"174067",...},...],
+ *	"history":[{"session_id":"174004",...},...],
+ *	"queue":[{"Job_Name":"12s-4-4-1",...},...],
+ *	"sysinfo":{"mempercpu":8,"gb_per_memnode":64,"mem":16384}}}
 */
 void
-parse_data(const struct datasrc *ds)
+parse_data(struct datasrc *ds)
 {
-	char buf[BUFSIZ], *s, *field;
-	int nid, stat, nstate, enabled, jobid, i;
-	struct datafield *data, *p, *j, *df, *df_n, *state;
-	struct node *n, **np;
+	struct datafield *data, *sysinfo, *nodes, *jobs, *job;
 	struct physcoord pc;
-	struct job *job;
+	struct node *n, **np;
+	struct job *j;
+	const char *s;
 	size_t k;
+
+	if (skip_data_strlit(ds, "data"))
+		return;
+	skip_data_space(ds);
+	if (skip_data_strlit(ds, "="))
+		return;
+	skip_data_space(ds);
+	data = parse_datafield_map(ds);
+	if (data == NULL)
+		return;
 
 	NODE_FOREACH_PHYS(n, np) {
 		n->n_flags &= ~NF_VALID;
+		n->n_state = SC_NOTSCHED;
 		n->n_job = NULL;
 	}
 
-	READ_STRLIT(ds->ds_us, "data");
-	READ_SPACE(ds->ds_us);
-	READ_STRLIT(ds->ds_us, "=");
-	READ_SPACE(ds->ds_us);
-	data = parse_datafield_map(ds);
-
-	p = datafield_map_getkeyvalue(data, "sysinfo");
-	if (p && p->dfp_type == DFT_MAP) {
-		df = datafield_map_getkeyvalue(p, "nodes");
-		if (df && df->df_type == DFT_ARRAY) {
-			DYNARRAY_FOREACH(df_n, i, df->df_array) {
-				state = datafield_map_getkeyvalue(df_n,
-				    "state");
-				if (state == NULL ||
-				    state->df_type != DFT_SCALAR)
-					continue;
-				switch (buf_get(state->df_scalar)[0]) {
-				case 'b':
-					n->n_state = SC_BOOT;
-					break;
-				case 'x':
-					n->n_state = SC_NOTSCHED;
-					break;
-				case 'a':
-					n->n_state = SC_ALLOC;
-					break;
-				case 'f':
-					n->n_state = SC_FREE;
-					break;
-				}
-			}
-		}
+	sysinfo = datafield_map_getkeyvalue(data, "sysinfo");
+	if (sysinfo && sysinfo->df_type == DFT_MAP) {
+		walk_node_data(sysinfo, "bootnodes", SC_BOOT);
+		walk_node_data(sysinfo, "schednodes", SC_BOOT);
 	}
 
-	p = datafield_map_getkeyvalue(data, "jobs");
-	if (p && p->dfp_type == DFT_ARRAY) {
-		FOREACH() {
+	jobs = datafield_map_getkeyvalue(data, "jobs");
+	if (jobs && jobs->df_type == DFT_ARRAY) {
+		DYNARRAY_FOREACH(job, i, &jobs->df_array) {
+
+			/*
+				"exec_host":"bl0.psc.teragrid.org",
+				"Resource_List":{
+					"walltime_min":"00:00:00",
+					"walltime":"96:00:00",
+					"walltime_max":"00:00:00",
+					"pnum_threads_factor":"16",
+					"ncpus":"128",
+					"nodeset":"146-161:1168-1295,3216-3343"
+				},
+				"Job_Name":"141-3-3-4",
+				"Job_Owner":"mhutchin@tg-login1.blacklight.psc.teragrid.org",
+				"qtime":"1302534343",
+				"resources_used":{
+					"walltime":"26:27:42",
+					"cput":"2189:29:24",
+					"mem":"105132944kb",
+					"vmem":"269585638652kb"
+				},
+				"ctime":"1302330285",
+				"mtime":"1302534345",
+				"start_time":"1302534343",
+				"etime":"1302330285",
+				"comment":"Starting job at 04/11/11 11:05",
+				"queue":"batch_l",
+				"Job_Id":"32254.tg-login1.blacklight.psc.teragrid.org",
+			*/
+
+			s = datafield_map_getscalar(job,
+			    "Job_Id");
+
+			j = n->n_job = obj_get(&jobid, &job_list);
+			j->j_id = jobid;
+			if (strcmp(j->j_name, "") == 0)
+				snprintf(j->j_name, sizeof(j->j_name),
+				    "job %d", jobid);
+
+			s = datafield_map_getscalar(job,
+			    "nodeset");
+			if (s)
+				FOREACH_NIDINLIST(nid, s) {
+					n = node_for_nid(nid);
+					if (n == NULL) {
+						warnx("nid %d not "
+						    "found", nid);
+						continue;
+					}
+					n->n_state = SC_ALLOC;
+				}
+
+			s = datafield_map_getscalar(job,
+			    "owner");
+			if (s) {
+				strlcpy(j->j_owner, s,
+				    sizeof(j->j_owner));
+				s = strchr(j->j_owner, '@');
+				if (s)
+					*s = '\0';
+			}
+
+			PARSENUM(s, j_fake.j_tmdur, INT_MAX);
+			PARSENUM(s, j_fake.j_tmuse, INT_MAX);
+			PARSENUM(s, j_fake.j_mem, INT_MAX);
+			PARSENUM(s, j_fake.j_ncpus, INT_MAX);
+			if (parsestr(&s, j_fake.j_queue, sizeof(j_fake.j_queue), 0))
+				goto bad;
+			if (parsestr(&s, j_fake.j_name, sizeof(j_fake.j_name),
+			    PS_ALLOWSPACE))
+				goto bad;
+
+			if (strcmp(j_fake.j_name, DV_NOAUTH) == 0)
+				snprintf(j_fake.j_name, sizeof(j_fake.j_name),
+				    "job %d", j_fake.j_id);
 		}
 	}
 
 	datafield_free(data);
 
-	while (us_gets(ds->ds_us, buf, sizeof(buf)) != NULL) {
-		s = buf;
-		while (isspace(*s))
-			s++;
-
-		PARSENUM(s, nid, machine.m_nidmax);
-		PARSENUM(s, pc.pc_row, NROWS);
-		PARSENUM(s, pc.pc_node, NNODES);
-		PARSECHAR(s, stat);
-		PARSENUM(s, enabled, 2);
-		PARSENUM(s, jobid, INT_MAX);
-
-		n = node_for_pc(&pc);
-		if (node_nidmap[nid]) {
-			warnx("already saw node with nid %d", nid);
-			goto bad;
-		}
-		n->n_nid = nid;
-		node_nidmap[nid] = n;
-
-		if (jobid) {
-			n->n_job = obj_get(&jobid, &job_list);
-			n->n_job->j_id = jobid;
-			if (strcmp(n->n_job->j_name, "") == 0)
-				snprintf(n->n_job->j_name,
-				    sizeof(n->n_job->j_name),
-				    "job %d", jobid);
-		}
-
-		n->n_flags |= NF_VALID;
-		continue;
- bad:
-		prerror("node", 0, buf, s);
-	}
 	if (us_sawerror(ds->ds_us))
 		warnx("us_gets: %s", us_errstr(ds->ds_us));
 	errno = 0;
@@ -541,59 +601,6 @@ parse_data(const struct datasrc *ds)
 		job = OLE(job_list, k, job);
 		col_get_hash(&job->j_oh, job->j_id, &job->j_fill);
 	}
-}
-
-/*
- * id      owner   tmdur   tmuse   mem     ncpus  queue name
- * 20161   devivo  270     75      37868   320	  batch cmdname
- */
-void
-parse_job(const struct datasrc *ds)
-{
-	struct job j_fake, *j;
-	char *s, buf[BUFSIZ];
-	int lineno;
-
-	lineno = 0;
-	while (us_gets(ds->ds_us, buf, sizeof(buf)) != NULL) {
-		lineno++;
-		s = buf;
-		while (isspace(*s))
-			s++;
-		if (*s == '#' || *s == '\0')
-			continue;
-
-		PARSENUM(s, j_fake.j_id, INT_MAX);
-
-		if ((j = job_findbyid(j_fake.j_id, NULL)) == NULL)
-			continue;
-		else
-			j_fake = *j;
-
-		if (parsestr(&s, j_fake.j_owner, sizeof(j_fake.j_owner), 0))
-			goto bad;
-		PARSENUM(s, j_fake.j_tmdur, INT_MAX);
-		PARSENUM(s, j_fake.j_tmuse, INT_MAX);
-		PARSENUM(s, j_fake.j_mem, INT_MAX);
-		PARSENUM(s, j_fake.j_ncpus, INT_MAX);
-		if (parsestr(&s, j_fake.j_queue, sizeof(j_fake.j_queue), 0))
-			goto bad;
-		if (parsestr(&s, j_fake.j_name, sizeof(j_fake.j_name),
-		    PS_ALLOWSPACE))
-			goto bad;
-
-		if (strcmp(j_fake.j_name, DV_NOAUTH) == 0)
-			snprintf(j_fake.j_name, sizeof(j_fake.j_name),
-			    "job %d", j_fake.j_id);
-
-		*j = j_fake;
-		continue;
- bad:
-		prerror("job", lineno, buf, s);
-	}
-	if (us_sawerror(ds->ds_us))
-		warnx("us_gets: %s", us_errstr(ds->ds_us));
-	errno = 0;
 }
 
 void

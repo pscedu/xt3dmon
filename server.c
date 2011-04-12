@@ -429,8 +429,6 @@ serv_displayh(void)
 
 	rf = st.st_rf | RF_CAM | RF_DATASRC | RF_CLUSTER | RF_DMODE;
 	if (cs->cs_sid) {
-		int dsm;
-
 		if (!dsc_exists(cs->cs_sid)) {
 			nsessions++;
 			dsc_clone(DS_DATA, cs->cs_sid);
