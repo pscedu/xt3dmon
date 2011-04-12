@@ -134,7 +134,7 @@ col_get(int old, size_t n, size_t total, struct fill *fillp)
 	if (!old) {
 		fillp->f_a = 1.0;
 
-		scfp = &statusclass[SC_USED].nc_fill;	/* XXX */
+		scfp = &statusclass[SC_ALLOC].nc_fill;	/* XXX */
 		fillp->f_texid[WINID_LEFT]    = scfp->f_texid[WINID_LEFT];
 		fillp->f_texid[WINID_RIGHT]   = scfp->f_texid[WINID_RIGHT];
 		fillp->f_texid_a[WINID_LEFT]  = scfp->f_texid_a[WINID_LEFT];
@@ -163,7 +163,7 @@ col_get_intv(int *posp, struct fill *fp)
 
 	fp->f_a = 1.0;
 
-	scfp = &statusclass[SC_USED].nc_fill;	/* XXX */
+	scfp = &statusclass[SC_ALLOC].nc_fill;	/* XXX */
 	fp->f_texid[WINID_LEFT]    = scfp->f_texid[WINID_LEFT];
 	fp->f_texid[WINID_RIGHT]   = scfp->f_texid[WINID_RIGHT];
 	fp->f_texid_a[WINID_LEFT]  = scfp->f_texid_a[WINID_LEFT];
@@ -185,7 +185,7 @@ col_get_hash(struct objhdr *oh, int id, struct fill *fp)
 		fp->f_a = 1.0;
 		/* st.st_rf |= ST_HLNC; */
 
-	scfp = &statusclass[SC_USED].nc_fill;	/* XXX */
+	scfp = &statusclass[SC_ALLOC].nc_fill;	/* XXX */
 	fp->f_texid[WINID_LEFT]    = scfp->f_texid[WINID_LEFT];
 	fp->f_texid[WINID_RIGHT]   = scfp->f_texid[WINID_RIGHT];
 	fp->f_texid_a[WINID_LEFT]  = scfp->f_texid_a[WINID_LEFT];

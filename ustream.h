@@ -52,7 +52,7 @@ struct ustream {
 	unsigned int	 us_chunksiz;
 };
 
-#define USF_USR1	(1<<0)
+#define USF_USR1	(1 << 0)
 
 #define USF_HTTP_CHUNK	USF_USR1	/* length-prefixed chunks */
 
@@ -64,6 +64,8 @@ struct ustrdtab {
 	int		 (*ust_sawerror)(const struct ustream *);
 	const char	*(*ust_errstr)(const struct ustream *);
 	int		 (*ust_eof)(const struct ustream *);
+	int		 (*ust_getc)(struct ustream *);
+	void		 (*ust_ungetc)(struct ustream *, int);
 };
 
 struct ustream	*us_init(int, int, const char *);
@@ -73,5 +75,17 @@ char		*us_gets(struct ustream *, char *, int);
 int		 us_sawerror(const struct ustream *);
 const char	*us_errstr(const struct ustream *);
 int		 us_eof(const struct ustream *);
+
+/*
+ * Yes, this shouldn't be here, but it's needed for socket
+ * communication.
+ */
+#define us_write(usp, buf, siz)		(usp)->us_dtab->ust_write((usp), (buf), (siz))
+#define us_gets(usp, s, siz)		(usp)->us_dtab->ust_gets((usp), (s), (siz))
+#define us_sawerror(usp)		(usp)->us_dtab->ust_sawerror(usp)
+#define us_errstr(usp)			(usp)->us_dtab->ust_errstr(usp)
+#define us_eof(usp)			(usp)->us_dtab->ust_eof(usp)
+#define us_getc(usp)			(usp)->us_dtab->ust_getc(usp)
+#define us_ungetc(usp, c)		(usp)->us_dtab->ust_ungetc(usp, c)
 
 extern struct ustrdtab	*ustrdtabs[NUST];

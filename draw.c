@@ -46,7 +46,7 @@
 #include "util.h"
 #include "xmath.h"
 
-#define SELNODE_IF_NEEDED(n, selpipes) \
+#define SELNODE_IF_NEEDED(n, selpipes)					\
 	((selpipes) ? (n)->n_flags & NF_SELNODE : 1)
 
 #define SKEL_GAP	(0.1f)
@@ -1037,8 +1037,8 @@ draw_physpipes(int selpipes)
 			node_center(gn, &d);
 			node_physpos(ln, &pc);
 			node_physpos(gn, &ngpc);
-			node_getmodpos(pc.pc_n, &r, &c);
-			node_getmodpos(ngpc.pc_n, &ngr, &ngc);
+			node_getmodpos(pc.pc_node, &r, &c);
+			node_getmodpos(ngpc.pc_node, &ngr, &ngc);
 
 			glColor3f(fp->f_r, fp->f_g, fp->f_b);
 			glBegin(GL_LINE_STRIP);
@@ -1046,8 +1046,8 @@ draw_physpipes(int selpipes)
 			case DIM_X: {
 				int modoff;
 
-				modoff = (NBLADES * 2) - (pc.pc_m +
-				    (pc.pc_cb % 2) * NBLADES);
+				modoff = (NBLADES * 2) - (pc.pc_blade +
+				    (pc.pc_rack % 2) * NBLADES);
 
 				ox = NODEWIDTH / 3.0;
 				oz = NODEDEPTH;
@@ -1057,9 +1057,9 @@ draw_physpipes(int selpipes)
 					oz *= -1.0;
 				if (s.fv_x > d.fv_x)
 					ox *= -1.0;
-				if (abs(pc.pc_cb - ngpc.pc_cb) != 2)
+				if (abs(pc.pc_rack - ngpc.pc_rack) != 2)
 					oy *= -1.0;
-				if (pc.pc_cb == 0 || ngpc.pc_cb == NRACKS - 1)
+				if (pc.pc_rack == 0 || ngpc.pc_rack == NRACKS - 1)
 					oy *= -1.0;
 
 				glVertex3d(s.fv_x + ox, s.fv_y + oy, s.fv_z);
@@ -1069,16 +1069,16 @@ draw_physpipes(int selpipes)
 				break;
 			    }
 			case DIM_Y:
-				if (pc.pc_cg == ngpc.pc_cg) {
+				if (pc.pc_irq == ngpc.pc_irq) {
 					oy = 0.0;
-					if (pc.pc_m == 0 && r == ngr)
+					if (pc.pc_blade == 0 && r == ngr)
 						oy = NODEHEIGHT / 4.0;
 					glVertex3d(s.fv_x, s.fv_y + oy, s.fv_z);
 					glVertex3d(d.fv_x, d.fv_y + oy, d.fv_z);
 				} else {
 					ox = MODSPACE / 3.0;
 
-					if (abs(pc.pc_cg - ngpc.pc_cg) > 1)
+					if (abs(pc.pc_irq - ngpc.pc_irq) > 1)
 						ox *= 2.0;
 					oy = NODEHEIGHT / 3.0;
 					if (s.fv_y > d.fv_y)
@@ -1091,12 +1091,12 @@ draw_physpipes(int selpipes)
 				}
 				break;
 			case DIM_Z:
-				if (pc.pc_r == ngpc.pc_r) {
+				if (pc.pc_row == ngpc.pc_row) {
 					glVertex3d(s.fv_x, s.fv_y, s.fv_z);
 					glVertex3d(d.fv_x, d.fv_y, d.fv_z);
-				} else if (pc.pc_cg == ngpc.pc_cg) {
+				} else if (pc.pc_irq == ngpc.pc_irq) {
 					ox = 0.1 * CABSPACE;
-					if (pc.pc_m)
+					if (pc.pc_blade)
 						ox *= -1.0;
 
 					oy = NODEHEIGHT / 3.0;
@@ -1107,13 +1107,13 @@ draw_physpipes(int selpipes)
 					glVertex3d(d.fv_x - ox,	d.fv_y + oy, d.fv_z);
 					glVertex3d(d.fv_x,	d.fv_y + oy, d.fv_z);
 				} else {
-					if (pc.pc_cg)
+					if (pc.pc_irq)
 						ox = 0.2 * CABSPACE;
 					else
 						ox = 0.3 * CABSPACE;
-					if (pc.pc_m)
+					if (pc.pc_blade)
 						ox *= -1.0;
-					if (pc.pc_m != ngpc.pc_m && pc.pc_m) {
+					if (pc.pc_blade != ngpc.pc_blade && pc.pc_blade) {
 						ox *= -1.0;
 						SWAP(pc, ngpc, tpc);
 						SWAP(s, d, tfv);

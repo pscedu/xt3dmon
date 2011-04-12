@@ -19,8 +19,5 @@
 
 struct datasrc;
 
-void		 parse_job(const struct datasrc *);
-void		 parse_node(const struct datasrc *);
-void		 parse_rt(const struct datasrc *);
-
+void		 parse_data(const struct datasrc *);
 void		 parse_colors(const char *);

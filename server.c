@@ -207,9 +207,9 @@ svc_hl(char *t, int *used, struct client_session *cs)
 {
 	static struct svc_enum *sve, tab[] = {
 		{ "free",	SC_FREE },
-		{ "disabled",	SC_DISABLED },
-		{ "down",	SC_DOWN },
-		{ "service",	SC_SVC },
+		{ "boot",	SC_BOOT },
+		{ "alloc",	SC_ALLOC },
+		{ "notsched",	SC_NOTSCHED },
 		{ NULL,		0 }
 	};
 
@@ -433,16 +433,15 @@ serv_displayh(void)
 
 		if (!dsc_exists(cs->cs_sid)) {
 			nsessions++;
-			dsc_clone(DS_NODE, cs->cs_sid);
-			dsc_clone(DS_JOB, cs->cs_sid);
+			dsc_clone(DS_DATA, cs->cs_sid);
 		}
-		if (!dsc_load(DS_NODE, cs->cs_sid))
+		if (!dsc_load(DS_DATA, cs->cs_sid))
 			goto drop;
 
-		dsm = st_dsmode();
-		if (dsm == DS_JOB)
-			if (!dsc_load(dsm, cs->cs_sid))
-				goto drop;
+//		dsm = st_dsmode();
+//		if (dsm == DS_JOB)
+//			if (!dsc_load(dsm, cs->cs_sid))
+//				goto drop;
 		rf &= ~RF_DATASRC;
 
 		panel_rebuild(PANEL_DATE);

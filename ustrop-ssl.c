@@ -126,6 +126,25 @@ ustrop_ssl_eof(const struct ustream *usp)
 	return (usp->us_lastread == 0);
 }
 
+__inline int
+ustrop_ssl_getc(const struct ustream *usp)
+{
+	int c;
+
+	if (ustrop_ssl_eof(usp) || ustrop_ssl_sawerror(usp))
+		return (EOF);
+	p = ustrop_ssl_gets(usp, &c, 1);
+	return (p ? c : EOF);
+}
+
+__inline void
+ustrop_ssl_ungetc(const struct ustream *usp, int c)
+{
+	if (usp->us_bufstart == usp->us_buf)
+		errx(1, "unable to put back to before buffer start");
+	*--usp->us_bufstart = c;
+}
+
 struct ustrdtab ustrdtab_ssl = {
 	ustrop_ssl_init,
 	ustrop_ssl_close,
@@ -133,5 +152,7 @@ struct ustrdtab ustrdtab_ssl = {
 	ustrop_ssl_gets,
 	ustrop_ssl_sawerror,
 	ustrop_ssl_errstr,
-	ustrop_ssl_eof
+	ustrop_ssl_eof,
+	ustrop_ssl_getc,
+	ustrop_ssl_ungetc
 };

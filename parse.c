@@ -27,6 +27,7 @@
 #include <string.h>
 #include <limits.h>
 
+#include "buf.h"
 #include "cdefs.h"
 #include "ds.h"
 #include "dynarray.h"
@@ -41,7 +42,7 @@
 #include "state.h"
 #include "ustream.h"
 
-#define PS_ALLOWSPACE (1<<0)
+#define PS_ALLOWSPACE (1 << 0)
 
 struct route	 rt_max;
 struct route	 rt_zero;
@@ -172,7 +173,6 @@ datafield_new(int type)
 	struct datafield *df;
 
 	df = malloc(sizeof(*df));
-	buf_init(&df->df_name);
 	df->df_type = type;
 	switch (type) {
 	case DFT_SCALAR:
@@ -233,7 +233,11 @@ datafield_map_getkeyvalue(struct datafield *p, const char *name)
 	return (NULL);
 }
 
-#define PARSE_ERROR(ds, fmt, ...)
+#define PARSE_ERROR(ds, fmt, ...) warnx("parse error")
+
+struct datafield *parse_datafield(struct datasrc *);
+struct datafield *parse_datafield_array(struct datasrc *);
+struct datafield *parse_datafield_map(struct datasrc *);
 
 struct datafield *
 parse_datafield_scalar(struct datasrc *ds)
@@ -258,7 +262,7 @@ parse_datafield_scalar(struct datasrc *ds)
 			}
 			break;
 		case '\0':
-			PARSE_ERROR(ds, );
+			PARSE_ERROR(ds, "");
 			free(df);
 			return (NULL);
 		default:
@@ -277,7 +281,7 @@ parse_datafield_scalar(struct datasrc *ds)
 }
 
 struct datafield *
-parse_datafield_map(struct datasrc *ds)
+parse_datafield_array(struct datasrc *ds)
 {
 	struct datafield *df, *c;
 	int ch;
@@ -285,11 +289,34 @@ parse_datafield_map(struct datasrc *ds)
 	df = datafield_new(DFT_ARRAY);
 
 	ch = us_getchar(ds->ds_us);
-	if (ch != ']') {
-		PARSE_ERROR(ds, );
-		return;
+	if (ch != '[') {
+		PARSE_ERROR(ds, "");
+		return (NULL);
 	}
 	do {
+		c = NULL;
+		while (isspace(ch))
+			ch = us_getchar(ds->ds_us);
+		ch = us_getchar(ds->ds_us);
+		switch (ch) {
+		case '"':
+			c = parse_datafield_scalar(ds);
+			break;
+		case '[':
+			c = parse_datafield_array(ds);
+			break;
+		case '{':
+			c = parse_datafield_map(ds);
+			break;
+		case ',':
+		case ']':
+			break;
+		default:
+			PARSE_ERROR(ds, "");
+			return (NULL);
+		}
+		if (c)
+			dynarray_push(df->df_array, c);
 	} while (ch != ']');
 
 	ch = us_getchar(ds->ds_us);
@@ -308,36 +335,37 @@ parse_datafield_map(struct datasrc *ds)
 
 	ch = us_getchar(ds->ds_us);
 	if (ch != '{') {
-		PARSE_ERROR(ds, );
-		return;
+		PARSE_ERROR(ds, "");
+		return (NULL);
 	}
 	do {
 		ch = us_getchar(ds->ds_us);
+		while (isspace(ch))
+			ch = us_getchar(ds->ds_us);
 		switch (ch) {
 		case '"':
 			c = parse_datafield(ds);
 			if (c == NULL) {
-				PARSE_ERROR(ds, );
-				return;
+				PARSE_ERROR(ds, "");
+				return (NULL);
 			}
 
 			dynarray_push(df->df_mapfields, c);
 			ch = us_getchar(ds->ds_us);
 			switch (ch) {
 			case '}':
-				break;
 			case ',':
 				break;
 			default:
-				PARSE_ERROR(ds, );
-				return;
+				PARSE_ERROR(ds, "");
+				return (NULL);
 			}
 			break;
 		case '}':
 			break;
 		default:
-			PARSE_ERROR(ds, );
-			return;
+			PARSE_ERROR(ds, "");
+			return (NULL);
 		}
 	} while (ch != '}');
 
@@ -345,6 +373,7 @@ parse_datafield_map(struct datasrc *ds)
 	while (isspace(ch))
 		ch = us_getchar(ds->ds_us);
 	us_ungetchar(ds->ds_us, ch);
+	return (df);
 }
 
 struct datafield *
@@ -361,20 +390,20 @@ parse_datafield(struct datasrc *ds)
 		case '"':
 			break;
 		case '\0':
-			PARSE_ERROR(ds, );
+			PARSE_ERROR(ds, "");
 			return (NULL);
 		default:
 			buf_append(&namebuf, ch);
 			break;
 		}
-	} while (ch != '"')
+	} while (ch != '"');
 
 	buf_nul(&namebuf);
 	ch = us_getchar(ds->ds_us);
 	while (isspace(ch))
 		ch = us_getchar(ds->ds_us);
 	if (ch != ':') {
-		PARSE_ERROR(ds, );
+		PARSE_ERROR(ds, "");
 		return (NULL);
 	}
 	ch = us_getchar(ds->ds_us);
@@ -383,16 +412,16 @@ parse_datafield(struct datasrc *ds)
 
 	switch (ch) {
 	case '"':
-		df = parse_datafield_scalar(ds)
+		df = parse_datafield_scalar(ds);
 		break;
 	case '[':
-		df = parse_datafield_array(ds)
+		df = parse_datafield_array(ds);
 		break;
 	case '{':
-		df = parse_datafield_map(ds)
+		df = parse_datafield_map(ds);
 		break;
 	default:
-		PARSE_ERROR(ds, );
+		PARSE_ERROR(ds, "");
 		return (NULL);
 	}
 
@@ -416,12 +445,12 @@ void
 parse_data(const struct datasrc *ds)
 {
 	char buf[BUFSIZ], *s, *field;
-	int nid, stat, nstate, enabled, jobid, n;
-	struct datafield *data, *p, *j;
+	int nid, stat, nstate, enabled, jobid, i;
+	struct datafield *data, *p, *j, *df, *df_n, *state;
 	struct node *n, **np;
 	struct physcoord pc;
 	struct job *job;
-	size_t j;
+	size_t k;
 
 	NODE_FOREACH_PHYS(n, np) {
 		n->n_flags &= ~NF_VALID;
@@ -437,22 +466,28 @@ parse_data(const struct datasrc *ds)
 	p = datafield_map_getkeyvalue(data, "sysinfo");
 	if (p && p->dfp_type == DFT_MAP) {
 		df = datafield_map_getkeyvalue(p, "nodes");
-		if (df) {
-			for ()
-				switch (state) {
+		if (df && df->df_type == DFT_ARRAY) {
+			DYNARRAY_FOREACH(df_n, i, df->df_array) {
+				state = datafield_map_getkeyvalue(df_n,
+				    "state");
+				if (state == NULL ||
+				    state->df_type != DFT_SCALAR)
+					continue;
+				switch (buf_get(state->df_scalar)[0]) {
 				case 'b':
 					n->n_state = SC_BOOT;
 					break;
 				case 'x':
-					n->n_state = SC_BOOT;
+					n->n_state = SC_NOTSCHED;
 					break;
 				case 'a':
 					n->n_state = SC_ALLOC;
 					break;
 				case 'f':
-					n->n_state = SC_ALLOC;
+					n->n_state = SC_FREE;
 					break;
 				}
+			}
 		}
 	}
 
@@ -470,8 +505,8 @@ parse_data(const struct datasrc *ds)
 			s++;
 
 		PARSENUM(s, nid, machine.m_nidmax);
-		PARSENUM(s, pc.pc_r, NROWS);
-		PARSENUM(s, pc.pc_n, NNODES);
+		PARSENUM(s, pc.pc_row, NROWS);
+		PARSENUM(s, pc.pc_node, NNODES);
 		PARSECHAR(s, stat);
 		PARSENUM(s, enabled, 2);
 		PARSENUM(s, jobid, INT_MAX);
@@ -502,8 +537,8 @@ parse_data(const struct datasrc *ds)
 		warnx("us_gets: %s", us_errstr(ds->ds_us));
 	errno = 0;
 
-	for (j = 0; j < job_list.ol_tcur; j++) {
-		job = OLE(job_list, j, job);
+	for (k = 0; k < job_list.ol_tcur; k++) {
+		job = OLE(job_list, k, job);
 		col_get_hash(&job->j_oh, job->j_id, &job->j_fill);
 	}
 }

@@ -98,11 +98,11 @@ node_setphyspos(struct node *n, struct fvec *fv)
 	struct physcoord pc;
 
 	node_physpos(n, &pc);
-	fv->fv_x = NODESPACE + pc.pc_cb * (CABWIDTH + CABSPACE) +
-	    pc.pc_m * (MODWIDTH + MODSPACE);
-	fv->fv_y = NODESPACE + pc.pc_cg * (CAGEHEIGHT + CAGESPACE);
-	fv->fv_z = NODESPACE + pc.pc_r * (ROWDEPTH + ROWSPACE);
-	node_adjmodpos(pc.pc_n, fv);
+	fv->fv_x = NODESPACE + pc.pc_rack * (CABWIDTH + CABSPACE) +
+	    pc.pc_blade * (MODWIDTH + MODSPACE);
+	fv->fv_y = NODESPACE + pc.pc_irq * (CAGEHEIGHT + CAGESPACE);
+	fv->fv_z = NODESPACE + pc.pc_row * (ROWDEPTH + ROWSPACE);
+	node_adjmodpos(pc.pc_node, fv);
 }
 
 void
@@ -112,15 +112,15 @@ node_physpos(struct node *node, struct physcoord *pc)
 
 	pos = node - nodes;
 
-	pc->pc_r = pos / (NRACKS * NIRQS * NBLADES * NNODES);
+	pc->pc_row = pos / (NRACKS * NIRQS * NBLADES * NNODES);
 	pos %= NRACKS * NIRQS * NBLADES * NNODES;
-	pc->pc_cb = pos / (NIRQS * NBLADES * NNODES);
+	pc->pc_rack = pos / (NIRQS * NBLADES * NNODES);
 	pos %= NIRQS * NBLADES * NNODES;
-	pc->pc_cg = pos / (NBLADES * NNODES);
+	pc->pc_irq = pos / (NBLADES * NNODES);
 	pos %= NBLADES * NNODES;
-	pc->pc_m = pos / NNODES;
+	pc->pc_blade = pos / NNODES;
 	pos %= NNODES;
-	pc->pc_n = pos;
+	pc->pc_node = pos;
 }
 
 struct node *
@@ -184,15 +184,15 @@ node_neighbor(int vm, struct node *n, int rd, int *flip)
 			switch (rd) {
 			case RD_POSZ:
 			case RD_NEGZ:
-				pc.pc_m += adj;
-				if (pc.pc_m < 0) {
-					pc.pc_cb--;
-					pc.pc_m += NBLADES;
-					pc.pc_cb += NRACKS;
-				} else if (pc.pc_m >= NBLADES)
-					pc.pc_cb++;
-				pc.pc_m %= NBLADES;
-				pc.pc_cb %= NRACKS;
+				pc.pc_blade += adj;
+				if (pc.pc_blade < 0) {
+					pc.pc_rack--;
+					pc.pc_blade += NBLADES;
+					pc.pc_rack += NRACKS;
+				} else if (pc.pc_blade >= NBLADES)
+					pc.pc_rack++;
+				pc.pc_blade %= NBLADES;
+				pc.pc_rack %= NRACKS;
 				break;
 			case RD_POSY:
 			case RD_NEGY:
@@ -206,14 +206,14 @@ node_neighbor(int vm, struct node *n, int rd, int *flip)
 				 *	2 | 1
 				 *	1 | 2
 				 */
-				if (pc.pc_n % 2)
-					pc.pc_n++;
+				if (pc.pc_node % 2)
+					pc.pc_node++;
 				else
-					pc.pc_n--;
-				if (pc.pc_n < 0)
-					pc.pc_n += NNODES;
-				pc.pc_n %= NNODES;
-				node_getmodpos(pc.pc_n, &row, &col);
+					pc.pc_node--;
+				if (pc.pc_node < 0)
+					pc.pc_node += NNODES;
+				pc.pc_node %= NNODES;
+				node_getmodpos(pc.pc_node, &row, &col);
 				if (adj == -1) {
 					/*
 					 * If we ended up in the top
@@ -221,8 +221,8 @@ node_neighbor(int vm, struct node *n, int rd, int *flip)
 					 * down, we wrapped.
 					 */
 					if (row == 1) {
-						pc.pc_cg--;
-						pc.pc_cg += NIRQS;
+						pc.pc_irq--;
+						pc.pc_irq += NIRQS;
 					}
 				} else {
 					/*
@@ -230,9 +230,9 @@ node_neighbor(int vm, struct node *n, int rd, int *flip)
 					 * bottom portion, we wrapped.
 					 */
 					if (row == 0)
-						pc.pc_cg++;
+						pc.pc_irq++;
 				}
-				pc.pc_cg %= NIRQS;
+				pc.pc_irq %= NIRQS;
 				break;
 			case RD_POSX:
 			case RD_NEGX:
@@ -246,14 +246,14 @@ node_neighbor(int vm, struct node *n, int rd, int *flip)
 				 *	2 | 3
 				 *	3 | 2
 				 */
-				if (pc.pc_n % 2)
-					pc.pc_n--;
+				if (pc.pc_node % 2)
+					pc.pc_node--;
 				else
-					pc.pc_n++;
-				if (pc.pc_n < 0)
-					pc.pc_n += NNODES;
-				pc.pc_n %= NNODES;
-				node_getmodpos(pc.pc_n, &row, &col);
+					pc.pc_node++;
+				if (pc.pc_node < 0)
+					pc.pc_node += NNODES;
+				pc.pc_node %= NNODES;
+				node_getmodpos(pc.pc_node, &row, &col);
 				if (adj == -1) {
 					/*
 					 * If we ended up in the
@@ -261,8 +261,8 @@ node_neighbor(int vm, struct node *n, int rd, int *flip)
 					 * back, we wrapped.
 					 */
 					if (col == 1) {
-						pc.pc_r--;
-						pc.pc_r += NROWS;
+						pc.pc_row--;
+						pc.pc_row += NROWS;
 					}
 				} else {
 					/*
@@ -271,9 +271,9 @@ node_neighbor(int vm, struct node *n, int rd, int *flip)
 					 * forward, we wrapped.
 					 */
 					if (col == 0)
-						pc.pc_r++;
+						pc.pc_row++;
 				}
-				pc.pc_r %= NROWS;
+				pc.pc_row %= NROWS;
 				break;
 			}
 			ng = node_for_pc(&pc);
@@ -287,11 +287,11 @@ struct node *
 node_for_pc(const struct physcoord *pc)
 {
 	return (&nodes[
-	    pc->pc_r * (NNODES * NBLADES * NIRQS * NRACKS) +
-	    pc->pc_cb * (NNODES * NBLADES * NIRQS) +
-	    pc->pc_cg * (NNODES * NBLADES) +
-	    pc->pc_m * (NNODES) +
-	    pc->pc_n]);
+	    pc->pc_row * (NNODES * NBLADES * NIRQS * NRACKS) +
+	    pc->pc_rack * (NNODES * NBLADES * NIRQS) +
+	    pc->pc_irq * (NNODES * NBLADES) +
+	    pc->pc_blade * (NNODES) +
+	    pc->pc_node]);
 }
 
 struct node *
@@ -323,7 +323,7 @@ node_goto(struct node *n)
 		st.st_v.fv_y += 0.5 * NODEHEIGHT;
 
 		node_physpos(n, &pc);
-		node_getmodpos(pc.pc_n, &row, &col);
+		node_getmodpos(pc.pc_node, &row, &col);
 		/* Right side (positive z). */
 		if (row == 1) {
 			st.st_v.fv_z += NODEDEPTH + GOTO_DIST_PHYS;
@@ -352,6 +352,8 @@ node_goto(struct node *n)
 __inline int
 node_show(const struct node *n)
 {
+return (1);
+printf("hi\n");
 	if ((st.st_opts & OP_SUBSET) && (n->n_flags & NF_SUBSET) == 0)
 		return (0);
 	if (ATTR_TESTALL(n->n_flags, NF_VALID | NF_VMVIS) &&

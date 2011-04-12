@@ -558,9 +558,6 @@ st_dsmode(void)
 	int ds = DS_INV;
 
 	switch (st.st_dmode) {
-	case DM_JOB:
-		ds = DS_JOB;
-		break;
 	}
 	return (ds);
 }

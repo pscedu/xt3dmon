@@ -101,7 +101,7 @@ draw_shadow_cabs(const struct physcoord *pc)
 
 	v.fv_x = NODESPACE;
 	v.fv_y = NODESPACE;
-	v.fv_z = NODESPACE + pc->pc_r * (ROWSPACE + ROWDEPTH);
+	v.fv_z = NODESPACE + pc->pc_row * (ROWSPACE + ROWDEPTH);
 
 	dim.fv_w = CABWIDTH;
 	dim.fv_h = machine.m_dim.fv_h;
@@ -123,9 +123,9 @@ draw_shadow_cages(const struct physcoord *pc)
 	struct fvec dim, v;
 	int cg;
 
-	v.fv_x = NODESPACE + pc->pc_cb * (CABSPACE + CABWIDTH);
+	v.fv_x = NODESPACE + pc->pc_rack * (CABSPACE + CABWIDTH);
 	v.fv_y = NODESPACE;
-	v.fv_z = NODESPACE + pc->pc_r * (ROWSPACE + ROWDEPTH);
+	v.fv_z = NODESPACE + pc->pc_row * (ROWSPACE + ROWDEPTH);
 
 	dim.fv_w = CABWIDTH;
 	dim.fv_h = CAGEHEIGHT;
@@ -169,8 +169,8 @@ draw_shadow_mods(const struct physcoord *pcp, int *dl)
 	struct node *node;
 
 	pc = *pcp;
-	for (pc.pc_m = 0; pc.pc_m < NBLADES; pc.pc_m++) {
-		for (pc.pc_n = 0; pc.pc_n < NNODES; pc.pc_n++) {
+	for (pc.pc_blade = 0; pc.pc_blade < NBLADES; pc.pc_blade++) {
+		for (pc.pc_node = 0; pc.pc_node < NNODES; pc.pc_node++) {
 			node = node_for_pc(&pc);
 			if (!node_show(node))
 				continue;
@@ -396,30 +396,30 @@ phys_shadow(int *dl, int flags)
 	struct glname *gn;
 	int nrecs;
 
-	for (chance.pc_r = 0; chance.pc_r < NROWS; chance.pc_r++) {
+	for (chance.pc_row = 0; chance.pc_row < NROWS; chance.pc_row++) {
 		sel_begin();
 		draw_shadow_rows();
 		nrecs = sel_end();
-		if (nrecs == 0 || (gn = sel_process(nrecs, chance.pc_r,
+		if (nrecs == 0 || (gn = sel_process(nrecs, chance.pc_row,
 		    flags)) == NULL)
 			break;
-		pc.pc_r = gn->gn_arg_int;
-		for (chance.pc_cb = 0; chance.pc_cb < NRACKS; chance.pc_cb++) {
+		pc.pc_row = gn->gn_arg_int;
+		for (chance.pc_rack = 0; chance.pc_rack < NRACKS; chance.pc_rack++) {
 			sel_begin();
 			draw_shadow_cabs(&pc);
 			nrecs = sel_end();
-			if (nrecs == 0 || (gn = sel_process(nrecs, chance.pc_cb,
+			if (nrecs == 0 || (gn = sel_process(nrecs, chance.pc_rack,
 			    flags)) == NULL)
 				break;
-			pc.pc_cb = gn->gn_arg_int;
-			for (chance.pc_cg = 0; chance.pc_cg < NIRQS; chance.pc_cg++) {
+			pc.pc_rack = gn->gn_arg_int;
+			for (chance.pc_irq = 0; chance.pc_irq < NIRQS; chance.pc_irq++) {
 				sel_begin();
 				draw_shadow_cages(&pc);
 				nrecs = sel_end();
 				if (nrecs == 0 || (gn = sel_process(nrecs,
-				    chance.pc_cg, flags)) == NULL)
+				    chance.pc_irq, flags)) == NULL)
 					break;
-				pc.pc_cg = gn->gn_arg_int;
+				pc.pc_irq = gn->gn_arg_int;
 				sel_begin();
 				draw_shadow_mods(&pc, dl);
 				nrecs = sel_end();

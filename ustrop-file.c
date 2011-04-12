@@ -121,6 +121,18 @@ ustrop_file_eof(const struct ustream *usp)
 	return (feof(usp->us_fp));
 }
 
+__inline int
+ustrop_file_getc(struct ustream *usp)
+{
+	return (fgetc(usp->us_fp));
+}
+
+__inline void
+ustrop_file_ungetc(struct ustream *usp)
+{
+	return (ungetc(usp->us_fp));
+}
+
 struct ustrdtab ustrdtab_file = {
 	ustrop_file_init,
 	ustrop_file_close,
@@ -128,5 +140,7 @@ struct ustrdtab ustrdtab_file = {
 	ustrop_file_gets,
 	ustrop_file_sawerror,
 	ustrop_file_errstr,
-	ustrop_file_eof
+	ustrop_file_eof,
+	ustrop_file_getc,
+	ustrop_file_ungetc
 };

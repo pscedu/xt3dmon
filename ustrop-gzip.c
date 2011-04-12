@@ -86,6 +86,18 @@ ustrop_gzip_eof(const struct ustream *usp)
 	return (gzeof(usp->us_zfp));
 }
 
+__inline int
+ustrop_gzip_getch(struct ustream *usp)
+{
+	return (gzgetc(usp->us_zfp));
+}
+
+__inline void
+ustrop_gzip_ungetch(struct ustream *usp)
+{
+	return (gzungetc(usp->us_zfp));
+}
+
 struct ustrdtab ustrdtab_gzip = {
 	ustrop_gzip_init,
 	ustrop_gzip_close,
@@ -93,5 +105,7 @@ struct ustrdtab ustrdtab_gzip = {
 	ustrop_gzip_gets,
 	ustrop_gzip_sawerror,
 	ustrop_gzip_errstr,
-	ustrop_gzip_eof
+	ustrop_gzip_eof,
+	ustrop_gzip_getch,
+	ustrop_gzip_ungetch
 };

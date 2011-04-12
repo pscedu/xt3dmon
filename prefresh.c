@@ -600,7 +600,7 @@ panel_refresh_ninfo(struct panel *p)
 	    "Wired position: <%d,%d,%d>\n"
 	    "Status: %s",
 	    n->n_nid,
-	    pc.pc_cb, pc.pc_r, pc.pc_cg, pc.pc_m, pc.pc_n,
+	    pc.pc_rack, pc.pc_row, pc.pc_irq, pc.pc_blade, pc.pc_node,
 	    iv->iv_x, iv->iv_y, iv->iv_z,
 	    statusclass[n->n_state].nc_name);
 
@@ -879,12 +879,12 @@ panel_refresh_date(struct panel *p)
 		/* XXX save stat info in ds_open */
 		snprintf(fn, sizeof(fn), "%s/%s/%s",
 		    _PATH_SESSIONS, curses->cs_sid,
-		    datasrcs[DS_NODE].ds_name);
+		    datasrcs[DS_DATA].ds_name);
 		if (stat(fn, &stb) == -1)
 			err(1, "stat %s", fn);
 		now = stb.st_mtime;
-	} else if (datasrcs[DS_NODE].ds_mtime) {
-		now = datasrcs[DS_NODE].ds_mtime;
+	} else if (datasrcs[DS_DATA].ds_mtime) {
+		now = datasrcs[DS_DATA].ds_mtime;
 	} else {
 		if (time(&now) == (time_t)-1)
 			err(1, "time");
