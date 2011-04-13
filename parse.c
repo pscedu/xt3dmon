@@ -158,7 +158,7 @@ skip_data_strlit(struct datasrc *ds, const char *str)
 	int c;
 
 	for (p = str; *p; p++) {
-		c = us_getchar(ds->ds_us);
+		c = us_getc(ds->ds_us);
 		if (c != *p)
 			return (-1);
 	}
@@ -171,9 +171,9 @@ skip_data_space(struct datasrc *ds)
 	int c;
 
 	do
-		c = us_getchar(ds->ds_us);
+		c = us_getc(ds->ds_us);
 	while (isspace(c));
-	us_ungetchar(ds->ds_us, c);
+	us_ungetc(ds->ds_us, c);
 }
 
 enum datafield_type {
@@ -285,7 +285,7 @@ parse_datafield_scalar(struct datasrc *ds)
 
 	df = datafield_new(DFT_SCALAR);
 	do {
-		c = us_getchar(ds->ds_us);
+		c = us_getc(ds->ds_us);
 		switch (c) {
 		case '\\':
 			if (esc)
@@ -322,7 +322,7 @@ parse_datafield_array(struct datasrc *ds)
 
 	df = datafield_new(DFT_ARRAY);
 
-	c = us_getchar(ds->ds_us);
+	c = us_getc(ds->ds_us);
 	if (c != '[') {
 		PARSE_ERROR(ds, "");
 		return (NULL);
@@ -330,7 +330,7 @@ parse_datafield_array(struct datasrc *ds)
 	do {
 		ch = NULL;
 		skip_data_space(ds);
-		c = us_getchar(ds->ds_us);
+		c = us_getc(ds->ds_us);
 		switch (c) {
 		case '"':
 			ch = parse_datafield_scalar(ds);
@@ -363,14 +363,14 @@ parse_datafield_map(struct datasrc *ds)
 
 	df = datafield_new(DFT_MAP);
 
-	c = us_getchar(ds->ds_us);
+	c = us_getc(ds->ds_us);
 	if (c != '{') {
 		PARSE_ERROR(ds, "");
 		return (NULL);
 	}
 	do {
 		skip_data_space(ds);
-		c = us_getchar(ds->ds_us);
+		c = us_getc(ds->ds_us);
 		switch (c) {
 		case '"':
 			ch = parse_datafield(ds);
@@ -380,7 +380,7 @@ parse_datafield_map(struct datasrc *ds)
 			}
 
 			dynarray_push(df->df_mapfields, ch);
-			c = us_getchar(ds->ds_us);
+			c = us_getc(ds->ds_us);
 			switch (c) {
 			case '}':
 			case ',':
@@ -409,7 +409,7 @@ parse_datafield(struct datasrc *ds)
 	int c;
 
 	buf_init(&namebuf);
-	c = us_getchar(ds->ds_us);
+	c = us_getc(ds->ds_us);
 	do {
 		switch (c) {
 		case '"':
@@ -425,13 +425,13 @@ parse_datafield(struct datasrc *ds)
 
 	buf_nul(&namebuf);
 	skip_data_space(ds);
-	c = us_getchar(ds->ds_us);
+	c = us_getc(ds->ds_us);
 	if (c != ':') {
 		PARSE_ERROR(ds, "");
 		return (NULL);
 	}
 	skip_data_space(ds);
-	c = us_getchar(ds->ds_us);
+	c = us_getc(ds->ds_us);
 	switch (c) {
 	case '"':
 		df = parse_datafield_scalar(ds);
