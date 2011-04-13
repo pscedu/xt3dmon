@@ -100,7 +100,7 @@ node_setphyspos(struct node *n, struct fvec *fv)
 	node_physpos(n, &pc);
 	fv->fv_x = NODESPACE + pc.pc_rack * (CABWIDTH + CABSPACE) +
 	    pc.pc_blade * (MODWIDTH + MODSPACE);
-	fv->fv_y = NODESPACE + pc.pc_irq * (CAGEHEIGHT + CAGESPACE);
+	fv->fv_y = NODESPACE + pc.pc_iru * (CAGEHEIGHT + CAGESPACE);
 	fv->fv_z = NODESPACE + pc.pc_row * (ROWDEPTH + ROWSPACE);
 	node_adjmodpos(pc.pc_node, fv);
 }
@@ -112,11 +112,11 @@ node_physpos(struct node *node, struct physcoord *pc)
 
 	pos = node - nodes;
 
-	pc->pc_row = pos / (NRACKS * NIRQS * NBLADES * NNODES);
-	pos %= NRACKS * NIRQS * NBLADES * NNODES;
-	pc->pc_rack = pos / (NIRQS * NBLADES * NNODES);
-	pos %= NIRQS * NBLADES * NNODES;
-	pc->pc_irq = pos / (NBLADES * NNODES);
+	pc->pc_row = pos / (NRACKS * NIRUS * NBLADES * NNODES);
+	pos %= NRACKS * NIRUS * NBLADES * NNODES;
+	pc->pc_rack = pos / (NIRUS * NBLADES * NNODES);
+	pos %= NIRUS * NBLADES * NNODES;
+	pc->pc_iru = pos / (NBLADES * NNODES);
 	pos %= NBLADES * NNODES;
 	pc->pc_blade = pos / NNODES;
 	pos %= NNODES;
@@ -221,8 +221,8 @@ node_neighbor(int vm, struct node *n, int rd, int *flip)
 					 * down, we wrapped.
 					 */
 					if (row == 1) {
-						pc.pc_irq--;
-						pc.pc_irq += NIRQS;
+						pc.pc_iru--;
+						pc.pc_iru += NIRUS;
 					}
 				} else {
 					/*
@@ -230,9 +230,9 @@ node_neighbor(int vm, struct node *n, int rd, int *flip)
 					 * bottom portion, we wrapped.
 					 */
 					if (row == 0)
-						pc.pc_irq++;
+						pc.pc_iru++;
 				}
-				pc.pc_irq %= NIRQS;
+				pc.pc_iru %= NIRUS;
 				break;
 			case RD_POSX:
 			case RD_NEGX:
@@ -287,9 +287,9 @@ struct node *
 node_for_pc(const struct physcoord *pc)
 {
 	return (&nodes[
-	    pc->pc_row * (NNODES * NBLADES * NIRQS * NRACKS) +
-	    pc->pc_rack * (NNODES * NBLADES * NIRQS) +
-	    pc->pc_irq * (NNODES * NBLADES) +
+	    pc->pc_row * (NNODES * NBLADES * NIRUS * NRACKS) +
+	    pc->pc_rack * (NNODES * NBLADES * NIRUS) +
+	    pc->pc_iru * (NNODES * NBLADES) +
 	    pc->pc_blade * (NNODES) +
 	    pc->pc_node]);
 }

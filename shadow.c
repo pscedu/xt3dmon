@@ -131,7 +131,7 @@ draw_shadow_cages(const struct physcoord *pc)
 	dim.fv_h = CAGEHEIGHT;
 	dim.fv_d = ROWDEPTH;
 
-	for (cg = 0; cg < NIRQS; cg++, v.fv_y += CAGEHEIGHT + CAGESPACE) {
+	for (cg = 0; cg < NIRUS; cg++, v.fv_y += CAGEHEIGHT + CAGESPACE) {
 		glPushMatrix();
 		glTranslatef(v.fv_x, v.fv_y, v.fv_z);
 		glPushName(gsn_get(0, &fv_zero, NULL, cg, 0, NULL, NULL));
@@ -412,14 +412,14 @@ phys_shadow(int *dl, int flags)
 			    flags)) == NULL)
 				break;
 			pc.pc_rack = gn->gn_arg_int;
-			for (chance.pc_irq = 0; chance.pc_irq < NIRQS; chance.pc_irq++) {
+			for (chance.pc_iru = 0; chance.pc_iru < NIRUS; chance.pc_iru++) {
 				sel_begin();
 				draw_shadow_cages(&pc);
 				nrecs = sel_end();
 				if (nrecs == 0 || (gn = sel_process(nrecs,
-				    chance.pc_irq, flags)) == NULL)
+				    chance.pc_iru, flags)) == NULL)
 					break;
-				pc.pc_irq = gn->gn_arg_int;
+				pc.pc_iru = gn->gn_arg_int;
 				sel_begin();
 				draw_shadow_mods(&pc, dl);
 				nrecs = sel_end();

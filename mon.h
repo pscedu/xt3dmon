@@ -32,7 +32,7 @@
 /* Physical machine dimensions -- XXX remove hardcode. */
 #define NROWS		physdim_top->pd_mag
 #define NRACKS		physdim_top->pd_contains->pd_mag
-#define NIRQS		physdim_top->pd_contains->pd_contains->pd_mag
+#define NIRUS		physdim_top->pd_contains->pd_contains->pd_mag
 #define NBLADES		physdim_top->pd_contains->pd_contains->pd_contains->pd_mag
 #define NNODES		(physdim_top->pd_contains->pd_contains->pd_contains->pd_contains->pd_mag)
 
@@ -69,7 +69,7 @@
 struct physcoord {				/* XXX: become just dynamic array */
 	int	 pc_row;
 	int	 pc_rack;
-	int	 pc_irq;
+	int	 pc_iru;
 	int	 pc_blade;
 	int	 pc_node;
 };

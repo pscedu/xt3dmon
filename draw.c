@@ -1069,7 +1069,7 @@ draw_physpipes(int selpipes)
 				break;
 			    }
 			case DIM_Y:
-				if (pc.pc_irq == ngpc.pc_irq) {
+				if (pc.pc_iru == ngpc.pc_iru) {
 					oy = 0.0;
 					if (pc.pc_blade == 0 && r == ngr)
 						oy = NODEHEIGHT / 4.0;
@@ -1078,7 +1078,7 @@ draw_physpipes(int selpipes)
 				} else {
 					ox = MODSPACE / 3.0;
 
-					if (abs(pc.pc_irq - ngpc.pc_irq) > 1)
+					if (abs(pc.pc_iru - ngpc.pc_iru) > 1)
 						ox *= 2.0;
 					oy = NODEHEIGHT / 3.0;
 					if (s.fv_y > d.fv_y)
@@ -1094,7 +1094,7 @@ draw_physpipes(int selpipes)
 				if (pc.pc_row == ngpc.pc_row) {
 					glVertex3d(s.fv_x, s.fv_y, s.fv_z);
 					glVertex3d(d.fv_x, d.fv_y, d.fv_z);
-				} else if (pc.pc_irq == ngpc.pc_irq) {
+				} else if (pc.pc_iru == ngpc.pc_iru) {
 					ox = 0.1 * CABSPACE;
 					if (pc.pc_blade)
 						ox *= -1.0;
@@ -1107,7 +1107,7 @@ draw_physpipes(int selpipes)
 					glVertex3d(d.fv_x - ox,	d.fv_y + oy, d.fv_z);
 					glVertex3d(d.fv_x,	d.fv_y + oy, d.fv_z);
 				} else {
-					if (pc.pc_irq)
+					if (pc.pc_iru)
 						ox = 0.2 * CABSPACE;
 					else
 						ox = 0.3 * CABSPACE;

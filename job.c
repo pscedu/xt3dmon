@@ -105,7 +105,7 @@ job_drawlabels(void)
 
 			memset(jobstats, '\0', siz);
 
-			for (cg = 0; cg < NIRQS; cg++)
+			for (cg = 0; cg < NIRUS; cg++)
 				for (m = 0; m < NBLADES; m++)
 					for (n = 0; n < NNODES; n++) {
 						np = &nodes[r][cb][cg][m][n];
