@@ -229,7 +229,7 @@ datafield_free(struct datafield *df)
 		df = dynarray_getpos(a, 0);
 		switch (df->df_type) {
 		case DFT_SCALAR:
-			buf_free(df->df_scalar);
+			buf_free(&df->df_scalar);
 			break;
 		case DFT_ARRAY:
 			DYNARRAY_FOREACH(df, i, &df->df_array)
@@ -244,6 +244,7 @@ datafield_free(struct datafield *df)
 		}
 	}
 	dynarray_free(a);
+	free(df);
 }
 
 struct datafield *
@@ -301,7 +302,7 @@ parse_datafield_scalar(struct datasrc *ds)
 			break;
 		case '\0':
 			PARSE_ERROR(ds, "");
-			free(df);
+			datafield_free(df);
 			return (NULL);
 		default:
 			buf_append(&df->df_scalar, c);
@@ -320,13 +321,12 @@ parse_datafield_array(struct datasrc *ds)
 	struct datafield *df, *ch;
 	int c;
 
-	df = datafield_new(DFT_ARRAY);
-
 	c = us_getc(ds->ds_us);
 	if (c != '[') {
 		PARSE_ERROR(ds, "");
 		return (NULL);
 	}
+	df = datafield_new(DFT_ARRAY);
 	do {
 		ch = NULL;
 		skip_data_space(ds);
@@ -346,6 +346,7 @@ parse_datafield_array(struct datasrc *ds)
 			break;
 		default:
 			PARSE_ERROR(ds, "");
+			datafield_free(df);
 			return (NULL);
 		}
 		if (ch)
@@ -361,13 +362,12 @@ parse_datafield_map(struct datasrc *ds)
 	struct datafield *df, *ch;
 	int c;
 
-	df = datafield_new(DFT_MAP);
-
 	c = us_getc(ds->ds_us);
 	if (c != '{') {
 		PARSE_ERROR(ds, "");
 		return (NULL);
 	}
+	df = datafield_new(DFT_MAP);
 	do {
 		skip_data_space(ds);
 		c = us_getc(ds->ds_us);
@@ -376,6 +376,7 @@ parse_datafield_map(struct datasrc *ds)
 			ch = parse_datafield(ds);
 			if (ch == NULL) {
 				PARSE_ERROR(ds, "");
+				datafield_free(df);
 				return (NULL);
 			}
 
@@ -387,6 +388,7 @@ parse_datafield_map(struct datasrc *ds)
 				break;
 			default:
 				PARSE_ERROR(ds, "");
+				datafield_free(df);
 				return (NULL);
 			}
 			break;
@@ -394,6 +396,7 @@ parse_datafield_map(struct datasrc *ds)
 			break;
 		default:
 			PARSE_ERROR(ds, "");
+			datafield_free(df);
 			return (NULL);
 		}
 	} while (c != '}');
