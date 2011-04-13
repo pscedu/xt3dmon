@@ -68,8 +68,8 @@
 
 struct physcoord {				/* XXX: become just dynamic array */
 	int	 pc_row;
-	int	 pc_rack;
-	int	 pc_iru;
+	int	 pc_rack;	/* rackmount cabinet */
+	int	 pc_iru;	/* individual rack unit */
 	int	 pc_blade;
 	int	 pc_node;
 };
