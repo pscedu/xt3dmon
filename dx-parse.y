@@ -634,8 +634,8 @@ nidlist_add(struct nidlist *nl, int nid)
 	if ((n = malloc(sizeof(*n))) == NULL)
 		err(1, "malloc");
 	memset(n, 0, sizeof(*n));
-	n->n_nid = nid;
-	SLIST_INSERT_HEAD(nl, n, n_link);
+	n->ni_nid = nid;
+	SLIST_INSERT_HEAD(nl, n, ni_link);
 }
 
 int

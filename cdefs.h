@@ -63,3 +63,13 @@
 
 #define ATTR_TESTANY(v, fl)	((v) & (fl))
 #define ATTR_TESTALL(v, fl)	(((v) & (fl)) == (fl))
+
+#define SWAP(a, b, t)							\
+	do {								\
+		(t) = (a);						\
+		(a) = (b);						\
+		(b) = (t);						\
+	} while (0)
+
+
+#define CMP(a, b)	((a) < (b) ? -1 : ((a) == (b) ? 0 : 1))

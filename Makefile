@@ -17,6 +17,7 @@ SRCS+=		draw.c
 SRCS+=		ds.c
 SRCS+=		dx-lex.l
 SRCS+=		dx-parse.y
+SRCS+=		dynarray.c
 SRCS+=		eggs.c
 SRCS+=		env.c
 SRCS+=		fill.c

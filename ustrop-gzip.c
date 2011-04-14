@@ -95,7 +95,7 @@ ustrop_gzip_getch(struct ustream *usp)
 __inline void
 ustrop_gzip_ungetch(struct ustream *usp, int c)
 {
-	return (gzungetc(c, usp->us_zfp));
+	gzungetc(c, usp->us_zfp);
 }
 
 struct ustrdtab ustrdtab_gzip = {

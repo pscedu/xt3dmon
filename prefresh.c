@@ -600,7 +600,7 @@ panel_refresh_ninfo(struct panel *p)
 	    "Wired position: <%d,%d,%d>\n"
 	    "Status: %s",
 	    n->n_nid,
-	    pc.pc_rack, pc.pc_row, pc.pc_iru, pc.pc_blade, pc.pc_node,
+	    pc.pc_rack, pc.pc_part, pc.pc_iru, pc.pc_blade, pc.pc_node,
 	    iv->iv_x, iv->iv_y, iv->iv_z,
 	    statusclass[n->n_state].nc_name);
 

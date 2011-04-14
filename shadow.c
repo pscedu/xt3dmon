@@ -101,7 +101,7 @@ draw_shadow_cabs(const struct physcoord *pc)
 
 	v.fv_x = NODESPACE;
 	v.fv_y = NODESPACE;
-	v.fv_z = NODESPACE + pc->pc_row * (ROWSPACE + ROWDEPTH);
+	v.fv_z = NODESPACE + pc->pc_part * (ROWSPACE + ROWDEPTH);
 
 	dim.fv_w = CABWIDTH;
 	dim.fv_h = machine.m_dim.fv_h;
@@ -125,7 +125,7 @@ draw_shadow_cages(const struct physcoord *pc)
 
 	v.fv_x = NODESPACE + pc->pc_rack * (CABSPACE + CABWIDTH);
 	v.fv_y = NODESPACE;
-	v.fv_z = NODESPACE + pc->pc_row * (ROWSPACE + ROWDEPTH);
+	v.fv_z = NODESPACE + pc->pc_part * (ROWSPACE + ROWDEPTH);
 
 	dim.fv_w = CABWIDTH;
 	dim.fv_h = CAGEHEIGHT;
@@ -396,14 +396,14 @@ phys_shadow(int *dl, int flags)
 	struct glname *gn;
 	int nrecs;
 
-	for (chance.pc_row = 0; chance.pc_row < NROWS; chance.pc_row++) {
+	for (chance.pc_part = 0; chance.pc_part < NROWS; chance.pc_part++) {
 		sel_begin();
 		draw_shadow_rows();
 		nrecs = sel_end();
-		if (nrecs == 0 || (gn = sel_process(nrecs, chance.pc_row,
+		if (nrecs == 0 || (gn = sel_process(nrecs, chance.pc_part,
 		    flags)) == NULL)
 			break;
-		pc.pc_row = gn->gn_arg_int;
+		pc.pc_part = gn->gn_arg_int;
 		for (chance.pc_rack = 0; chance.pc_rack < NRACKS; chance.pc_rack++) {
 			sel_begin();
 			draw_shadow_cabs(&pc);

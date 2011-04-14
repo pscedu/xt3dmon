@@ -187,14 +187,14 @@ struct datafield {
 	enum datafield_type		 df_type;
 	union {
 		struct buf		 dfu_scalar;
-		struct dynarray		 dfu_array;
+		struct psc_dynarray	 dfu_array;
 	}				 df_udata;
 #define df_scalar	df_udata.dfu_scalar
 #define df_array	df_udata.dfu_array
 #define df_mapfields	df_udata.dfu_array
 };
 
-void
+struct datafield *
 datafield_new(enum datafield_type type)
 {
 	struct datafield *df;
@@ -206,10 +206,10 @@ datafield_new(enum datafield_type type)
 		buf_init(&df->df_scalar);
 		break;
 	case DFT_ARRAY:
-		dynarray_init(&df->df_array);
+		psc_dynarray_init(&df->df_array);
 		break;
 	case DFT_MAP:
-		dynarray_init(&df->df_mapfields);
+		psc_dynarray_init(&df->df_mapfields);
 		break;
 	}
 	return (df);
@@ -218,32 +218,32 @@ datafield_new(enum datafield_type type)
 void
 datafield_free(struct datafield *df)
 {
-	struct dynarray a;
+	struct psc_dynarray a;
 	int i;
 
-	dynarray_init(a);
-	dynarray_push(a, df);
-	while (dynarray_len(a)) {
+	psc_dynarray_init(&a);
+	psc_dynarray_push(&a, df);
+	while (psc_dynarray_len(&a)) {
 		free(df->df_name);
 
-		df = dynarray_getpos(a, 0);
+		df = psc_dynarray_getpos(&a, 0);
 		switch (df->df_type) {
 		case DFT_SCALAR:
 			buf_free(&df->df_scalar);
 			break;
 		case DFT_ARRAY:
 			DYNARRAY_FOREACH(df, i, &df->df_array)
-				dynarray_push(a, df);
-			dynarray_free(df->df_array);
+				psc_dynarray_push(&a, df);
+			psc_dynarray_free(&df->df_array);
 			break;
 		case DFT_MAP:
 			DYNARRAY_FOREACH(df, i, &df->df_mapfields)
-				dynarray_push(a, df);
-			dynarray_free(df->df_mapfields);
+				psc_dynarray_push(&a, df);
+			psc_dynarray_free(&df->df_mapfields);
 			break;
 		}
 	}
-	dynarray_free(a);
+	psc_dynarray_free(&a);
 	free(df);
 }
 
@@ -255,8 +255,8 @@ datafield_map_getkeyvalue(struct datafield *p, const char *name)
 
 	if (p->df_type != DFT_MAP)
 		return (NULL);
-	DYNARRAY_FOREACH(df, n, p->df_mapfields)
-		if (strcmp(buf_get(&df->df_name), name) == 0)
+	DYNARRAY_FOREACH(df, n, &p->df_mapfields)
+		if (strcmp(df->df_name, name) == 0)
 			return (df);
 	return (NULL);
 }
@@ -309,7 +309,7 @@ parse_datafield_scalar(struct datasrc *ds)
 			break;
 		}
 		esc = (c == '\\');
-	} while (c != '"')
+	} while (c != '"');
 	buf_nul(&df->df_scalar);
 	skip_data_space(ds);
 	return (df);
@@ -350,7 +350,7 @@ parse_datafield_array(struct datasrc *ds)
 			return (NULL);
 		}
 		if (ch)
-			dynarray_push(df->df_array, ch);
+			psc_dynarray_push(&df->df_array, ch);
 	} while (c != ']');
 	skip_data_space(ds);
 	return (df);
@@ -380,7 +380,7 @@ parse_datafield_map(struct datasrc *ds)
 				return (NULL);
 			}
 
-			dynarray_push(df->df_mapfields, ch);
+			psc_dynarray_push(&df->df_mapfields, ch);
 			c = us_getc(ds->ds_us);
 			switch (c) {
 			case '}':
@@ -474,8 +474,9 @@ datafield_map_getscalarint(struct datafield *df, const char *name, int *ip)
 int
 apply_node(struct datafield *node)
 {
-	const char *s, *nidlist;
+	struct physcoord pc;
 	struct node *n;
+	const char *s;
 	int nid, cfg;
 
 	memset(&pc, 0, sizeof(pc));
@@ -494,7 +495,7 @@ apply_node(struct datafield *node)
 	if (datafield_map_getscalarint(node, "configured", &cfg))
 		return (-1);
 
-	s = datafield_map_getscalarint(node, "comment");
+	s = datafield_map_getscalar(node, "comment");
 
 	n = node_for_pc(&pc);
 	if (n == NULL || nid > machine.m_nidmax)
@@ -626,17 +627,22 @@ apply_job(struct datafield *job)
 
 	s = datafield_map_getscalar(job, "owner");
 	if (s) {
-		strlcpy(j->j_owner, s, sizeof(j->j_owner));
+		strncpy(j->j_owner, s, sizeof(j->j_owner) - 1);
+		j->j_owner[sizeof(j->j_owner) - 1] = '\0';
 		endp = strchr(j->j_owner, '@');
 		if (endp)
 			*endp = '\0';
 	}
 	s = datafield_map_getscalar(job, "queue");
-	if (s)
-		strlcpy(j->j_queue, s, sizeof(j->j_queue));
+	if (s) {
+		strncpy(j->j_queue, s, sizeof(j->j_queue));
+		j->j_queue[sizeof(j->j_queue) - 1] = '\0';
+	}
 	s = datafield_map_getscalar(job, "Job_Name");
-	if (s)
-		strlcpy(j->j_name, s, sizeof(j->j_name));
+	if (s) {
+		strncpy(j->j_name, s, sizeof(j->j_name));
+		j->j_name[sizeof(j->j_name) - 1] = '\0';
+	}
 
 	/* apply data from Resource_List */
 	df = datafield_map_getkeyvalue(job, "Resource_List");
@@ -679,6 +685,7 @@ apply_job(struct datafield *job)
 	s = datafield_map_getscalar(df, "walltime");
 	if (s)
 		j->j_tmuse = parse_time(s);
+	return (0);
 }
 
 #define DATA_FORM_ERROR()						\
@@ -698,7 +705,7 @@ apply_job(struct datafield *job)
 void
 parse_data(struct datasrc *ds)
 {
-	struct datafield *data = NULL, *r, *sysinfo, *jobs, *job;
+	struct datafield *data = NULL, *r, *sysinfo, *node, *nodev, *jobs, *job;
 	struct node *n, **np;
 	struct job *j;
 	size_t k;
@@ -735,11 +742,11 @@ parse_data(struct datasrc *ds)
 	if (jobs == NULL || jobs->df_type != DFT_ARRAY)
 		DATA_FORM_ERROR();
 
-	nodes = datafield_map_getkeyvalue(sysinfo, "nodes");
-	if (nodes == NULL || nodes->df_type != DFT_ARRAY)
+	nodev = datafield_map_getkeyvalue(sysinfo, "nodes");
+	if (nodev == NULL || nodev->df_type != DFT_ARRAY)
 		DATA_FORM_ERROR();
 
-	DYNARRAY_FOREACH(node, i, &nodes->df_array)
+	DYNARRAY_FOREACH(node, i, &nodev->df_array)
 		if (node->df_type != DFT_MAP || apply_node(node))
 			DATA_FORM_ERROR();
 
@@ -757,6 +764,11 @@ parse_data(struct datasrc *ds)
 		datafield_free(data);
 
 	errno = 0;
+
+	if (0) {
+ error:
+		warnx("parse error");
+	}
 }
 
 void
