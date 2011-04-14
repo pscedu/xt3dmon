@@ -83,7 +83,7 @@ nidlist_free(struct nidlist *nl)
 
 	for (n = SLIST_FIRST(nl);
 	    n != SLIST_END(nl); n = np) {
-		np = SLIST_NEXT(n, n_link);
+		np = SLIST_NEXT(n, ni_link);
 		free(n);
 	}
 	free(nl);
@@ -471,8 +471,8 @@ dxp_selnode(const struct dx_action *dxa)
 	off = (dxa->dxa_selnode_mode == DXV_OFF);
 	if (dxa->dxa_selnode_mode == DXV_SET)
 		sn_clear();
-	SLIST_FOREACH(nid, dxa->dxa_selnode_list, n_link)
-		switch (nid->n_nid) {
+	SLIST_FOREACH(nid, dxa->dxa_selnode_list, ni_link)
+		switch (nid->ni_nid) {
 		case DXN_ALL:
 			NODE_FOREACH_WI(n, np)
 				dx_selnode(n, off);
@@ -494,7 +494,7 @@ dxp_selnode(const struct dx_action *dxa)
 			dx_selnode(n, off);
 			break;
 		default:
-			if ((n = node_for_nid(nid->n_nid)) != NULL)
+			if ((n = node_for_nid(nid->ni_nid)) != NULL)
 				dx_selnode(n, off);
 			break;
 		}
@@ -525,8 +525,8 @@ dxp_subsel(const struct dx_action *dxa)
 	if (dxa->dxa_subsel_mode == DXV_SET)
 		NODE_FOREACH_WI(n, np)
 			n->n_flags &= ~NF_SUBSET;
-	SLIST_FOREACH(nid, dxa->dxa_subsel_list, n_link)
-		switch (nid->n_nid) {
+	SLIST_FOREACH(nid, dxa->dxa_subsel_list, ni_link)
+		switch (nid->ni_nid) {
 		case DXN_ALL:
 			NODE_FOREACH_WI(n, np)
 				dx_subsel(n, off);
@@ -543,7 +543,7 @@ dxp_subsel(const struct dx_action *dxa)
 					dx_subsel(n, off);
 			break;
 		default:
-			if ((n = node_for_nid(nid->n_nid)) != NULL)
+			if ((n = node_for_nid(nid->ni_nid)) != NULL)
 				dx_subsel(n, off);
 			break;
 		}

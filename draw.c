@@ -1091,7 +1091,7 @@ draw_physpipes(int selpipes)
 				}
 				break;
 			case DIM_Z:
-				if (pc.pc_row == ngpc.pc_row) {
+				if (pc.pc_part == ngpc.pc_part) {
 					glVertex3d(s.fv_x, s.fv_y, s.fv_z);
 					glVertex3d(d.fv_x, d.fv_y, d.fv_z);
 				} else if (pc.pc_iru == ngpc.pc_iru) {

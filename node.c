@@ -101,7 +101,7 @@ node_setphyspos(struct node *n, struct fvec *fv)
 	fv->fv_x = NODESPACE + pc.pc_rack * (CABWIDTH + CABSPACE) +
 	    pc.pc_blade * (MODWIDTH + MODSPACE);
 	fv->fv_y = NODESPACE + pc.pc_iru * (CAGEHEIGHT + CAGESPACE);
-	fv->fv_z = NODESPACE + pc.pc_row * (ROWDEPTH + ROWSPACE);
+	fv->fv_z = NODESPACE + pc.pc_part * (ROWDEPTH + ROWSPACE);
 	node_adjmodpos(pc.pc_node, fv);
 }
 
@@ -112,7 +112,7 @@ node_physpos(struct node *node, struct physcoord *pc)
 
 	pos = node - nodes;
 
-	pc->pc_row = pos / (NRACKS * NIRUS * NBLADES * NNODES);
+	pc->pc_part = pos / (NRACKS * NIRUS * NBLADES * NNODES);
 	pos %= NRACKS * NIRUS * NBLADES * NNODES;
 	pc->pc_rack = pos / (NIRUS * NBLADES * NNODES);
 	pos %= NIRUS * NBLADES * NNODES;
@@ -261,8 +261,8 @@ node_neighbor(int vm, struct node *n, int rd, int *flip)
 					 * back, we wrapped.
 					 */
 					if (col == 1) {
-						pc.pc_row--;
-						pc.pc_row += NROWS;
+						pc.pc_part--;
+						pc.pc_part += NROWS;
 					}
 				} else {
 					/*
@@ -271,9 +271,9 @@ node_neighbor(int vm, struct node *n, int rd, int *flip)
 					 * forward, we wrapped.
 					 */
 					if (col == 0)
-						pc.pc_row++;
+						pc.pc_part++;
 				}
-				pc.pc_row %= NROWS;
+				pc.pc_part %= NROWS;
 				break;
 			}
 			ng = node_for_pc(&pc);
@@ -287,7 +287,7 @@ struct node *
 node_for_pc(const struct physcoord *pc)
 {
 	return (&nodes[
-	    pc->pc_row * (NNODES * NBLADES * NIRUS * NRACKS) +
+	    pc->pc_part * (NNODES * NBLADES * NIRUS * NRACKS) +
 	    pc->pc_rack * (NNODES * NBLADES * NIRUS) +
 	    pc->pc_iru * (NNODES * NBLADES) +
 	    pc->pc_blade * (NNODES) +
