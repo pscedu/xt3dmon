@@ -17,7 +17,6 @@
  * %PSC_END_COPYRIGHT%
  */
 
-#define _PATH_DATA	"data/%s"
 #define _PATH_DATADIR	"data"
 
 #define _PATH_ARCHIVE	"data/archive"

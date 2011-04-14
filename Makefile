@@ -67,7 +67,6 @@ SRCS+=		widget.c
 CFLAGS+=	-Wall -W -g -pipe
 CFLAGS+=	-Wno-parentheses -Wshadow -Wredundant-decls
 CFLAGS+=	-D_GSS
-CFLAGS+=	-D_LIVE_PROTO=\"file\" -D_LIVE_PATH=_PATH_DATA
 #CFLAGS+=	-Wconversion
 CFLAGS+=	-DYY_NO_UNPUT
 #CFLAGS+=	-O3 -Wuninitialized -fomit-frame-pointer
@@ -104,8 +103,9 @@ CSRCS+=		$(patsubst %.l,%.c,$(filter %.l,${SRCS}))
 OBJDIR=		obj
 OBJS=		$(patsubst %.c,${OBJDIR}/%.o,$(filter %.c,${CSRCS}))
 
-CLEAN+=		gmon.out dx-lex.c dx-parse.c dx-parse.h
+CLEAN+=		dx-lex.c dx-parse.c dx-parse.h
 CLEAN+=		mach-lex.c mach-parse.c mach-parse.h
+FULLCLEAN+=	*.out
 
 all: ${PROG}
 
@@ -127,7 +127,11 @@ depend: ${CSRCS}
 	perl -i -pe 's!^[a-z]*.o:!${OBJDIR}/$$&!' .depend
 
 clean:
-	rm -rf ${PROG} ${OBJS} ${CLEAN}
+	rm -rf ${OBJDIR}
+	rm -f ${PROG} ${CLEAN}
+
+distclean: clean
+	rm -f ${FULLCLEAN}
 
 build:
 	${MAKE} clean && ${MAKE} depend && ${MAKE} all

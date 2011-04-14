@@ -62,7 +62,8 @@ gss_build_auth(struct ustream *us)
 	char *p;
 
 	bsiz = (gss_otoken.length + 3) * 4 / 3 + 1;
- printf("base64: have %zd chars\n", bsiz);
+	if (bsiz)
+		errx(1, "overflow");
 	if ((p = malloc(bsiz)) == NULL)
 		err(1, "malloc");
 	base64_encode(gss_otoken.value, p, gss_otoken.length);
@@ -85,7 +86,7 @@ gss_valid(const char *host)
 {
 	static int valid = 1;
 
-	gss_OID_desc krb5_oid = {9, "\x2a\x86\x48\x86\xf7\x12\x01\x02\x02"};
+	gss_OID_desc krb5_oid = { 9, "\x2a\x86\x48\x86\xf7\x12\x01\x02\x02" };
 	gss_buffer_desc itoken = GSS_C_EMPTY_BUFFER;
 	OM_uint32 major, minor, rflags, rtime;
 	const char service[] = "HTTP";

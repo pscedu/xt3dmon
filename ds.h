@@ -37,6 +37,7 @@ struct datasrc {
 #define DSFO_IGN	(1 << 1)
 #define DSFO_ALERT	(1 << 2)
 #define DSFO_LIVE	(1 << 3)	/* All live sources are using src */
+#define DSFO_SSL	(1 << 4)	/* Use HTTPS */
 
 /* Data sources -- order impacts datasrc[] in ds.c. */
 #define DS_INV		(-1)
@@ -66,5 +67,6 @@ void		 gss_build_auth(struct ustream *);
 extern int		 dsfopts;
 extern struct datasrc	 datasrcs[];
 extern char		 ds_dir[];
+extern char		 ds_datasrc[PATH_MAX];
 extern char		 ds_browsedir[];
 extern char		*ds_liveproto;

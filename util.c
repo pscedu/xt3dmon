@@ -123,7 +123,7 @@ smart_dirname(const char *fn)
 void
 escape_printf(struct buf *bufp, const char *s)
 {
-	for (; *s != '\0'; s++) {
+	for (; *s != '\0'; s++)
 		switch (*s) {
 		case '%':
 			buf_append(bufp, '%');
@@ -132,7 +132,6 @@ escape_printf(struct buf *bufp, const char *s)
 			buf_append(bufp, *s);
 			break;
 		}
-	}
 }
 
 void

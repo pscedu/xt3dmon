@@ -47,58 +47,6 @@
 struct route	 rt_max;
 struct route	 rt_zero;
 
-int		 job_ca_cookie;
-
-/*
- *	s	points to start of number in a string
- *	v	variable obtaining numeric result
- *	max	largest value (exclusive)
- */
-#define PARSENUM(s, v, max)					\
-	do {							\
-		char *_p;					\
-		long _l;					\
-								\
-		while (isspace(*(s)))				\
-			(s)++;					\
-		_p = (s);					\
-		while (isdigit(*(s)))				\
-			(s)++;					\
-		if ((s) == _p || !isspace(*(s)))		\
-			goto bad;				\
-		*(s)++ = '\0';					\
-		if ((_l = strtol(_p, NULL, 10)) < 0 ||		\
-		    _l >= (max))				\
-			goto bad;				\
-		(v) = (int)_l;					\
-	} while (0)
-
-#define PARSEDBL(s, v)						\
-	do {							\
-		char *_p;					\
-								\
-		while (isspace(*(s)))				\
-			(s)++;					\
-		_p = (s);					\
-		(v) = strtod((s), &_p);				\
-								\
-		if ((s) == _p || !isspace(*_p))			\
-			goto bad;				\
-		(s) = _p;					\
-		*(s)++ = '\0';					\
-	} while (0)
-
-#define PARSECHAR(s, c)						\
-	do {							\
-		while (isspace(*(s)))				\
-			(s)++;					\
-		if (!isalpha(*(s)))				\
-			goto bad;				\
-		(c) = *(s);					\
-		if (!isspace(*++(s)))				\
-			goto bad;				\
-	} while (0)
-
 int
 parsestr(char **sp, char *buf, size_t siz, int flags)
 {
@@ -224,8 +172,6 @@ datafield_free(struct datafield *df)
 	psc_dynarray_init(&a);
 	psc_dynarray_push(&a, df);
 	while (psc_dynarray_len(&a)) {
-		free(df->df_name);
-
 		df = psc_dynarray_getpos(&a, 0);
 		switch (df->df_type) {
 		case DFT_SCALAR:
@@ -242,9 +188,10 @@ datafield_free(struct datafield *df)
 			psc_dynarray_free(&df->df_mapfields);
 			break;
 		}
+		free(df->df_name);
+		free(df);
 	}
 	psc_dynarray_free(&a);
-	free(df);
 }
 
 struct datafield *
@@ -272,7 +219,8 @@ datafield_map_getscalar(struct datafield *p, const char *name)
 }
 
 
-#define PARSE_ERROR(ds, fmt, ...) warnx("parse error") //prerror("node", 0, buf, s);
+#define PARSE_ERROR(ds, fmt, ...)					\
+	warnx("parse error (line %d): " fmt, __LINE__, ##__VA_ARGS__) //prerror("node", 0, buf, s);
 
 struct datafield *parse_datafield(struct datasrc *);
 struct datafield *parse_datafield_array(struct datasrc *);
@@ -284,32 +232,45 @@ parse_datafield_scalar(struct datasrc *ds)
 	struct datafield *df;
 	int c, esc = 0;
 
+	c = us_getc(ds->ds_us);
+	if (c != '"' && !isdigit(c)) {
+		PARSE_ERROR(ds, "");
+		return (NULL);
+	}
 	df = datafield_new(DFT_SCALAR);
-	do {
-		c = us_getc(ds->ds_us);
-		switch (c) {
-		case '\\':
-			if (esc)
+	if (isdigit(c)) {
+		do {
+			c = us_getc(ds->ds_us);
+			if (isdigit(c))
 				buf_append(&df->df_scalar, c);
-			c = 0;
-			break;
-		case '"':
-			if (esc) {
-				buf_append(&df->df_scalar, c);
-				/* hack for loop */
+		} while (isdigit(c));
+		us_ungetc(ds->ds_us, c);
+	} else
+		do {
+			c = us_getc(ds->ds_us);
+			switch (c) {
+			case '\\':
+				if (esc)
+					buf_append(&df->df_scalar, c);
 				c = 0;
+				break;
+			case '"':
+				if (esc) {
+					buf_append(&df->df_scalar, c);
+					/* hack for loop */
+					c = 0;
+				}
+				break;
+			case '\0':
+				PARSE_ERROR(ds, "");
+				datafield_free(df);
+				return (NULL);
+			default:
+				buf_append(&df->df_scalar, c);
+				break;
 			}
-			break;
-		case '\0':
-			PARSE_ERROR(ds, "");
-			datafield_free(df);
-			return (NULL);
-		default:
-			buf_append(&df->df_scalar, c);
-			break;
-		}
-		esc = (c == '\\');
-	} while (c != '"');
+			esc = (c == '\\');
+		} while (c != '"');
 	buf_nul(&df->df_scalar);
 	skip_data_space(ds);
 	return (df);
@@ -332,13 +293,19 @@ parse_datafield_array(struct datasrc *ds)
 		skip_data_space(ds);
 		c = us_getc(ds->ds_us);
 		switch (c) {
-		case '"':
+		case '0': case '1': case '2':
+		case '3': case '4': case '5':
+		case '6': case '7': case '8':
+		case '9': case '"':
+			us_ungetc(ds->ds_us, c);
 			ch = parse_datafield_scalar(ds);
 			break;
 		case '[':
+			us_ungetc(ds->ds_us, c);
 			ch = parse_datafield_array(ds);
 			break;
 		case '{':
+			us_ungetc(ds->ds_us, c);
 			ch = parse_datafield_map(ds);
 			break;
 		case ',':
@@ -364,7 +331,7 @@ parse_datafield_map(struct datasrc *ds)
 
 	c = us_getc(ds->ds_us);
 	if (c != '{') {
-		PARSE_ERROR(ds, "");
+		PARSE_ERROR(ds, "invalid char '%c'", c);
 		return (NULL);
 	}
 	df = datafield_new(DFT_MAP);
@@ -412,8 +379,8 @@ parse_datafield(struct datasrc *ds)
 	int c;
 
 	buf_init(&namebuf);
-	c = us_getc(ds->ds_us);
 	do {
+		c = us_getc(ds->ds_us);
 		switch (c) {
 		case '"':
 			break;
@@ -436,17 +403,23 @@ parse_datafield(struct datasrc *ds)
 	skip_data_space(ds);
 	c = us_getc(ds->ds_us);
 	switch (c) {
-	case '"':
+	case '0': case '1': case '2':
+	case '3': case '4': case '5':
+	case '6': case '7': case '8':
+	case '9': case '"':
+		us_ungetc(ds->ds_us, c);
 		df = parse_datafield_scalar(ds);
 		break;
 	case '[':
+		us_ungetc(ds->ds_us, c);
 		df = parse_datafield_array(ds);
 		break;
 	case '{':
+		us_ungetc(ds->ds_us, c);
 		df = parse_datafield_map(ds);
 		break;
 	default:
-		PARSE_ERROR(ds, "");
+		PARSE_ERROR(ds, "invalid char '%c'", c);
 		return (NULL);
 	}
 	df->df_name = buf_get(&namebuf);
@@ -688,10 +661,10 @@ apply_job(struct datafield *job)
 	return (0);
 }
 
-#define DATA_FORM_ERROR()						\
+#define DATA_FORM_ERROR(fmt, ...)					\
 	do {								\
-		warnx("data form unexpected format (source line %d)",	\
-		    __LINE__);						\
+		warnx("data form unexpected format (source line %d): "	\
+		    fmt, __LINE__, ##__VA_ARGS__);			\
 		goto out;						\
 	} while (0)
 
@@ -748,7 +721,7 @@ parse_data(struct datasrc *ds)
 
 	DYNARRAY_FOREACH(node, i, &nodev->df_array)
 		if (node->df_type != DFT_MAP || apply_node(node))
-			DATA_FORM_ERROR();
+			DATA_FORM_ERROR("node is wrong type=%d", node->df_type);
 
 	DYNARRAY_FOREACH(job, i, &jobs->df_array)
 		if (job->df_type != DFT_MAP || apply_job(job))

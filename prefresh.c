@@ -981,10 +981,12 @@ panel_refresh_login(struct panel *p)
 
 	if (atpass) {
 		len = strlen(buf_get(&uinp.uinp_buf));
-		for (s = passbuf; s - passbuf < len; s++)
+		for (s = passbuf; s - passbuf < len &&
+		    len < (int)sizeof(passbuf); s++)
 			*s = '*';
 		*s = '\0';
-	}
+	} else
+		dsfopts &= ~DSFO_SSL;
 
 	panel_set_content(p, "- Login -\n"
 	    "Username: %s%s%s",

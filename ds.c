@@ -58,14 +58,6 @@
 #define MAX_PORT_LEN	6
 #define MAX_PATH_LEN	BUFSIZ
 
-#ifndef _LIVE_PROTO
-# define _LIVE_PROTO	"gssapi"
-#endif
-
-#ifndef _LIVE_PATH
-# define _LIVE_PATH	"http://mugatu.psc.edu:24240/UView"
-#endif
-
 /* Must match DS_* defines in ds.h. */
 struct datasrc datasrcs[] = {
 	{ "data", 0, "", parse_data, DSF_LIVE,	dsfi_node, dsff_node,	NULL },
@@ -76,7 +68,7 @@ struct objlist ds_list = { NULL, 0, 0, 0, 0, 10, sizeof(struct fnent), fe_eq };
 int	 dsfopts = DSFO_ALERT | DSFO_LIVE;
 char	 ds_browsedir[PATH_MAX] = _PATH_ARCHIVE;
 char	 ds_dir[PATH_MAX] = _PATH_DATADIR;
-char	*ds_liveproto = _LIVE_PROTO;
+char	 ds_datasrc[PATH_MAX] = "http://mugatu.psc.edu:24240/UView";
 
 __inline int
 uri_has_proto(const char *uri, const char *proto)
@@ -90,27 +82,30 @@ uri_has_proto(const char *uri, const char *proto)
 void
 ds_setlive(void)
 {
-	struct buf path, live;
+	struct buf cache, live;
 	int j;
 
-	buf_init(&path);
-	buf_appendv(&path, "file://");
-	escape_printf(&path, _PATH_DATADIR);
-	buf_appendv(&path, "/%s");
-	buf_nul(&path);
+	buf_init(&cache);
+	buf_appendv(&cache, "file://");
+	escape_printf(&cache, _PATH_DATADIR);
+	buf_appendv(&cache, "/%s");
+	buf_nul(&cache);
 
 	buf_init(&live);
-	escape_printf(&live, ds_liveproto);
-	buf_appendv(&live, "://");
-	buf_appendv(&live, _LIVE_PATH);
+	if (strncmp(ds_datasrc, "http:", 5) == 0 &&
+	    (dsfopts & DSFO_SSL)) {
+		buf_appendv(&live, "https");
+		buf_appendv(&live, ds_datasrc + 4);
+	} else
+		buf_appendv(&live, ds_datasrc);
 	buf_nul(&live);
 
 	for (j = 0; j < NDS; j++)
 		snprintf(datasrcs[j].ds_uri, sizeof(datasrcs[j].ds_uri),
-		    buf_get(datasrcs[j].ds_flags & DSF_LIVE ? &live : &path),
+		    buf_get(datasrcs[j].ds_flags & DSF_LIVE ? &live : &cache),
 		    datasrcs[j].ds_name);
 
-	buf_free(&path);
+	buf_free(&cache);
 	buf_free(&live);
 
 	st.st_rf |= RF_DATASRC;
@@ -299,7 +294,7 @@ ds_http(const char *server, const char *port, const char *path,
 }
 
 /* HTTP data source flags. */
-#define DHF_USEGSS	(1<<0)
+#define DHF_USEGSS	(1 << 0)
 
 struct ustream *
 ds_https(const char *server, const char *port, const char *path,
@@ -382,7 +377,7 @@ ds_open(int type)
 			} else
 #endif
 			{
-				ds_liveproto = "http";
+				dsfopts &= ~DSFO_SSL;
 				snprintf(proto, sizeof(proto), "http");
 				port[0] = '\0';
 				ds_setlive();
@@ -414,6 +409,8 @@ ds_open(int type)
 			}
 			return (NULL);
 		}
+	} else {
+		warnx("unsupported URI protocol");
 	}
 	return (ds);
 }

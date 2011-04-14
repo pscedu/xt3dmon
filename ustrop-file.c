@@ -124,7 +124,10 @@ ustrop_file_eof(const struct ustream *usp)
 __inline int
 ustrop_file_getc(struct ustream *usp)
 {
-	return (fgetc(usp->us_fp));
+	int c;
+
+	c = fgetc(usp->us_fp);
+	return (c);
 }
 
 __inline void

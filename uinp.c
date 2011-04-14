@@ -177,14 +177,11 @@ uinpcb_login(void)
 			panel_tremove(p);
 
 			if (strlen(authbuf) < 4 * sizeof(login_auth) / 3)
-{
- printf("base64: have %zd chars\n", sizeof(login_auth));
 				base64_encode(authbuf, login_auth,
 				    strlen(authbuf));
-}
 			memset(authbuf, 0, sizeof(authbuf));
 
-			ds_liveproto = "https";
+			dsfopts |= DSFO_SSL;
 			ds_setlive();
 		} else {
 			memset(login_auth, 0, sizeof(login_auth));

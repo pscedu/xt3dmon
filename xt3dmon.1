@@ -99,7 +99,7 @@ or
 .Dq job ) .
 Defaults to:
 .Pp
-.D1 gssapi://bigben-monitor.psc.edu/arbiter-raw.pl?data=%s
+.D1 gssapi://mugatu.psc.edu/arbiter-raw.pl?data=%s
 .It Fl x Ar dxscript
 Load and run
 .Ar dxscript
@@ -968,6 +968,13 @@ may be
 or
 .Ic z .
 .El
+.El
+.Sh ENVIRONMENT
+.Bl -tag -width Ev -compact
+.It Ev XT3DMON_DATA_SRC
+Override default source
+.Tn URI
+from which to load data.
 .El
 .Sh DATA FILES
 .Nm

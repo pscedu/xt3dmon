@@ -828,7 +828,7 @@ int
 main(int argc, char *argv[])
 {
 	int flags, c, sw, sh, j, Mflag;
-	const char *cfgfn;
+	const char *cfgfn, *p;
 	size_t siz;
 	long l;
 
@@ -954,6 +954,12 @@ glutInitWindowPosition(0, 0);
 
 	if (st.st_opts & OP_TWEEN)
 		tween_toggle();
+
+	p = getenv("XT3DMON_DATA_SRC");
+	if (p) {
+		strncpy(ds_datasrc, p, sizeof(ds_datasrc) - 1);
+		ds_datasrc[sizeof(ds_datasrc) - 1] = '\0';
+	}
 
 	glutMainLoop();
 	/* NOTREACHED */
