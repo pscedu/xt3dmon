@@ -37,7 +37,15 @@ struct physdim {
 	LIST_ENTRY(physdim)	 pd_link;	/* used only in construction */
 };
 
-#define PDF_SKEL (1<<0)
+#define PDF_SKEL (1 << 0)			/* render skeleton if OP_SKEL */
+
+struct physcoord {				/* XXX: become just dynamic array */
+	int			 pc_part;	/* partition */
+	int			 pc_rack;	/* rackmount cabinet */
+	int			 pc_iru;	/* individual rack unit */
+	int			 pc_blade;
+	int			 pc_node;
+};
 
 extern struct physdim	*physdim_top;
 

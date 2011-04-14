@@ -66,14 +66,6 @@
 #define DV_NODATA	(-1)
 #define DV_NOAUTH	"???"
 
-struct physcoord {				/* XXX: become just dynamic array */
-	int	 pc_row;
-	int	 pc_rack;	/* rackmount cabinet */
-	int	 pc_iru;	/* individual rack unit */
-	int	 pc_blade;
-	int	 pc_node;
-};
-
 typedef int (*cmpf_t)(const void *, const void *);
 
 struct buf;

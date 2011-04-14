@@ -35,7 +35,8 @@
 #define SC_BOOT		1
 #define SC_ALLOC	2
 #define SC_NOTSCHED	3
-#define NSC		4
+#define SC_IO		4
+#define NSC		5
 
 /* Temperature class constants */
 #define TEMP_MIN	18

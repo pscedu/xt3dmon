@@ -35,7 +35,8 @@ struct nodeclass statusclass[] = {
 	{ "Free",		FILL_INIT(1.00f, 1.00f, 1.00f), 0 },
 	{ "Boot",		FILL_INIT(1.00f, 0.00f, 0.00f), 0 },
 	{ "Allocated",		FILL_INITF(1.00f, 0.00f, 0.00f, FF_SKEL), 0 },
-	{ "Not scheduled",	FILL_INIT(0.20f, 0.20f, 0.30f), 0 }
+	{ "Not scheduled",	FILL_INIT(0.20f, 0.20f, 0.30f), 0 },
+	{ "I/O",		FILL_INIT(0.50f, 0.50f, 0.50f), 0 }
 };
 
 struct nodeclass tempclass[] = {

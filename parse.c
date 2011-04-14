@@ -454,6 +454,63 @@ parse_datafield(struct datasrc *ds)
 	return (df);
 }
 
+int
+datafield_map_getscalarint(struct datafield *df, const char *name, int *ip)
+{
+	const char *s;
+	char *endp;
+	long l;
+
+	s = datafield_map_getscalar(df, name);
+	if (s == NULL)
+		return (-1);
+	l = strtol(s, &endp, 10);
+	if (l <= INT_MIN || l >= INT_MAX || endp == s || *endp)
+		return (-1);
+	*ip = l;
+	return (0);
+}
+
+int
+apply_node(struct datafield *node)
+{
+	const char *s, *nidlist;
+	struct node *n;
+	int nid, cfg;
+
+	memset(&pc, 0, sizeof(pc));
+	if (datafield_map_getscalarint(node, "partition_num", &pc.pc_part))
+		return (-1);
+	if (datafield_map_getscalarint(node, "rack", &pc.pc_rack))
+		return (-1);
+	if (datafield_map_getscalarint(node, "iru", &pc.pc_iru))
+		return (-1);
+	if (datafield_map_getscalarint(node, "blade", &pc.pc_blade))
+		return (-1);
+	if (datafield_map_getscalarint(node, "node", &pc.pc_node))
+		return (-1);
+	if (datafield_map_getscalarint(node, "node", &nid))
+		return (-1);
+	if (datafield_map_getscalarint(node, "configured", &cfg))
+		return (-1);
+
+	s = datafield_map_getscalarint(node, "comment");
+
+	n = node_for_pc(&pc);
+	if (n == NULL || nid > machine.m_nidmax)
+		return (-1);
+	n->n_nid = nid;
+	node_nidmap[nid] = n;
+	if (cfg)
+		n->n_state = SC_FREE;
+	else if (s && strcmp(s, "boot") == 0)
+		n->n_state = SC_BOOT;
+	else if (s && strcmp(s, "IB card") == 0)
+		n->n_state = SC_IO;
+	n->n_flags |= NF_VALID;
+	return (0);
+}
+
 void
 nidlist_getnextrange(const char **s, int *min, int *max)
 {
@@ -485,24 +542,6 @@ nidlist_getnextrange(const char **s, int *min, int *max)
 		for (nidlist_getnextrange(&(s), &(min), &(max)),	\
 		    (nid) = (min); (nid) <= (max); (nid)++)
 
-void
-walk_node_data(struct datafield *sysinfo, const char *name, int state)
-{
-	const char *s, *nidlist;
-	int min, max, nid;
-	struct node *n;
-
-	nidlist = datafield_map_getscalar(sysinfo, name);
-	if (nidlist == NULL)
-		return;
-
-	FOREACH_NIDINLIST(nid, min, max, s, nidlist) {
-		n = node_for_nid(nid);
-		n->n_state = state;
-		n->n_flags |= NF_VALID;
-	}
-}
-
 /*
  * 96:00:00
  */
@@ -529,7 +568,7 @@ parse_time(const char *s)
 	return (n);
 }
 
-__inline void
+__inline int
 apply_job(struct datafield *job)
 {
 	int jobid, nid, min, max;
@@ -571,12 +610,12 @@ apply_job(struct datafield *job)
 	s = datafield_map_getscalar(job, "Job_Id");
 	if (s == NULL) {
 		warnx("job ID not present");
-		return;
+		return (0);
 	}
 	l = strtol(s, NULL, 10);
 	if (l <= 0 || l >= INT_MAX) {
 		warnx("job ID not present");
-		return;
+		return (0);
 	}
 	jobid = l;
 
@@ -602,7 +641,7 @@ apply_job(struct datafield *job)
 	/* apply data from Resource_List */
 	df = datafield_map_getkeyvalue(job, "Resource_List");
 	if (df == NULL || df->df_type != DFT_MAP)
-		return;
+		return (0);
 	s = datafield_map_getscalar(df, "ncpus");
 	if (s) {
 		l = strtol(s, &endp, 10);
@@ -614,25 +653,23 @@ apply_job(struct datafield *job)
 		j->j_tmdur = parse_time(s);
 
 	s = datafield_map_getscalar(job, "nodeset");
-	if (s) {
-		nidlist = strchr(s, ':');
-		if (nidlist) {
-			nidlist++;
-			FOREACH_NIDINLIST(nid, min, max, s, nidlist) {
-				n = node_for_nid(nid);
-				if (n == NULL) {
-					warnx("nid %d not found", nid);
-					continue;
-				}
-				n->n_state = SC_ALLOC;
+	if (s)
+		FOREACH_NIDINLIST(nid, min, max, s, nidlist) {
+			n = node_for_nid(nid);
+			if (n == NULL) {
+				warnx("nid %d not found", nid);
+				continue;
 			}
+			if (n->n_state == SC_FREE)
+				n->n_state = SC_ALLOC;
+			else
+				warnx("node state not FREE");
 		}
-	}
 
 	/* apply data from resources_used */
 	df = datafield_map_getkeyvalue(job, "resources_used");
 	if (df == NULL || df->df_type != DFT_MAP)
-		return;
+		return (0);
 	s = datafield_map_getscalar(df, "mem");
 	if (s) {
 		l = strtol(s, &endp, 10);
@@ -644,6 +681,13 @@ apply_job(struct datafield *job)
 		j->j_tmuse = parse_time(s);
 }
 
+#define DATA_FORM_ERROR()						\
+	do {								\
+		warnx("data form unexpected format (source line %d)",	\
+		    __LINE__);						\
+		goto out;						\
+	} while (0)
+
 /*
  * data = {"version":"1.1","result":{
  *	"jobs":[{"session_id":"174067",...},...],
@@ -654,21 +698,24 @@ apply_job(struct datafield *job)
 void
 parse_data(struct datasrc *ds)
 {
-	struct datafield *data, *sysinfo, *jobs, *job;
+	struct datafield *data = NULL, *r, *sysinfo, *jobs, *job;
 	struct node *n, **np;
 	struct job *j;
 	size_t k;
 	int i;
 
 	if (skip_data_strlit(ds, "data"))
-		return;
+		goto error;
 	skip_data_space(ds);
 	if (skip_data_strlit(ds, "="))
-		return;
+		goto error;
 	skip_data_space(ds);
 	data = parse_datafield_map(ds);
 	if (data == NULL)
-		return;
+		goto error;
+
+	if (us_sawerror(ds->ds_us))
+		warnx("read: %s", us_errstr(ds->ds_us));
 
 	NODE_FOREACH_PHYS(n, np) {
 		n->n_flags &= ~NF_VALID;
@@ -676,27 +723,40 @@ parse_data(struct datasrc *ds)
 		n->n_job = NULL;
 	}
 
-	sysinfo = datafield_map_getkeyvalue(data, "sysinfo");
-	if (sysinfo && sysinfo->df_type == DFT_MAP) {
-		walk_node_data(sysinfo, "bootnodes", SC_BOOT);
-		walk_node_data(sysinfo, "schednodes", SC_BOOT);
-	}
+	r = datafield_map_getkeyvalue(data, "result");
+	if (r == NULL || r->df_type != DFT_MAP)
+		DATA_FORM_ERROR();
 
-	jobs = datafield_map_getkeyvalue(data, "jobs");
-	if (jobs && jobs->df_type == DFT_ARRAY)
-		DYNARRAY_FOREACH(job, i, &jobs->df_array)
-			apply_job(job);
+	sysinfo = datafield_map_getkeyvalue(r, "sysinfo");
+	if (sysinfo == NULL || sysinfo->df_type != DFT_MAP)
+		DATA_FORM_ERROR();
 
-	datafield_free(data);
+	jobs = datafield_map_getkeyvalue(r, "jobs");
+	if (jobs == NULL || jobs->df_type != DFT_ARRAY)
+		DATA_FORM_ERROR();
 
-	if (us_sawerror(ds->ds_us))
-		warnx("us_gets: %s", us_errstr(ds->ds_us));
-	errno = 0;
+	nodes = datafield_map_getkeyvalue(sysinfo, "nodes");
+	if (nodes == NULL || nodes->df_type != DFT_ARRAY)
+		DATA_FORM_ERROR();
 
+	DYNARRAY_FOREACH(node, i, &nodes->df_array)
+		if (node->df_type != DFT_MAP || apply_node(node))
+			DATA_FORM_ERROR();
+
+	DYNARRAY_FOREACH(job, i, &jobs->df_array)
+		if (job->df_type != DFT_MAP || apply_job(job))
+			DATA_FORM_ERROR();
+
+ out:
 	for (k = 0; k < job_list.ol_tcur; k++) {
 		j = OLE(job_list, k, job);
 		col_get_hash(&j->j_oh, j->j_id, &j->j_fill);
 	}
+
+	if (data)
+		datafield_free(data);
+
+	errno = 0;
 }
 
 void

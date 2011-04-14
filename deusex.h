@@ -111,8 +111,8 @@ struct dx_action {
 TAILQ_HEAD(dxlist, dx_action);
 
 struct nid {
-	int			n_nid;
-	SLIST_ENTRY(nid)	n_link;
+	int			ni_nid;
+	SLIST_ENTRY(nid)	ni_link;
 };
 
 SLIST_HEAD(nidlist, nid);
