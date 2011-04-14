@@ -281,6 +281,7 @@ parse_datafield_array(struct datasrc *ds)
 {
 	struct datafield *df, *ch;
 	int c;
+printf("ARRAY");
 
 	c = us_getc(ds->ds_us);
 	if (c != '[') {
@@ -329,6 +330,7 @@ parse_datafield_map(struct datasrc *ds)
 	struct datafield *df, *ch;
 	int c;
 
+printf("MAP");
 	c = us_getc(ds->ds_us);
 	if (c != '{') {
 		PARSE_ERROR(ds, "invalid char '%c'", c);
