@@ -57,9 +57,9 @@
 #define STARTY		( 30.76)
 #define STARTZ		( 51.92)
 
-#define STARTLX		( 0.71)
-#define STARTLY		(-0.34)
-#define STARTLZ		(-0.62)
+#define STARTLX		( 0.65)
+#define STARTLY		(-0.35)
+#define STARTLZ		(-0.67)
 
 char			 login_auth[BUFSIZ];
 

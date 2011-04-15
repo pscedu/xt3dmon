@@ -1,0 +1,22 @@
+# $Id$
+
+# modskels
+
+vmode phys
+setcap "Viewing live jobs"
+dmode job
+opt frames,tween,nodeanim,caption,ground,selnlbls
+panel legend
+# pstick bl legend
+bird
+orbit -x
+bird
+
+panel -legend
+orbit -x
+bird
+
+# grab latest data
+setcap "Fetching latest node data..."
+refresh
+setcap "Latest data retrieved successfully"

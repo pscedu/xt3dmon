@@ -326,7 +326,7 @@ cam_bird(int vm)
 	case VM_PHYS:
 		/* XXX: depend on CL_WIDTH/HEIGHT/DEPTH */
 		vec_set(&st.st_v, -17.80, 30.76, 51.92);
-		vec_set(&st.st_lv,  0.71, -0.34, -0.62);
+		vec_set(&st.st_lv,  0.65, -0.35, -0.67);
 		st.st_ur = 0.0;
 		st.st_urev = 0.0;
 		break;
