@@ -83,7 +83,7 @@ draw_shadow_rows(void)
 	dim.fv_h = machine.m_dim.fv_h;
 	dim.fv_d = ROWDEPTH;
 
-	for (r = 0; r < NROWS; r++, v.fv_z += ROWSPACE + ROWDEPTH) {
+	for (r = 0; r < NPARTS; r++, v.fv_z += ROWSPACE + ROWDEPTH) {
 		glPushMatrix();
 		glTranslatef(v.fv_x, v.fv_y, v.fv_z);
 		glPushName(gsn_get(0, &fv_zero, NULL, r, 0, NULL, NULL));
@@ -396,7 +396,7 @@ phys_shadow(int *dl, int flags)
 	struct glname *gn;
 	int nrecs;
 
-	for (chance.pc_part = 0; chance.pc_part < NROWS; chance.pc_part++) {
+	for (chance.pc_part = 0; chance.pc_part < NPARTS; chance.pc_part++) {
 		sel_begin();
 		draw_shadow_rows();
 		nrecs = sel_end();

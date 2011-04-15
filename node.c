@@ -262,7 +262,7 @@ node_neighbor(int vm, struct node *n, int rd, int *flip)
 					 */
 					if (col == 1) {
 						pc.pc_part--;
-						pc.pc_part += NROWS;
+						pc.pc_part += NPARTS;
 					}
 				} else {
 					/*
@@ -273,7 +273,7 @@ node_neighbor(int vm, struct node *n, int rd, int *flip)
 					if (col == 0)
 						pc.pc_part++;
 				}
-				pc.pc_part %= NROWS;
+				pc.pc_part %= NPARTS;
 				break;
 			}
 			ng = node_for_pc(&pc);
@@ -286,6 +286,12 @@ node_neighbor(int vm, struct node *n, int rd, int *flip)
 struct node *
 node_for_pc(const struct physcoord *pc)
 {
+	if (pc->pc_part >= NPARTS ||
+	    pc->pc_rack >= NRACKS ||
+	    pc->pc_iru >= NIRUS ||
+	    pc->pc_blade >= NBLADES ||
+	    pc->pc_node >= NNODES)
+		return (NULL);
 	return (&nodes[
 	    pc->pc_part * (NNODES * NBLADES * NIRUS * NRACKS) +
 	    pc->pc_rack * (NNODES * NBLADES * NIRUS) +

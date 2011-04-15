@@ -167,15 +167,15 @@ datafield_new(enum datafield_type type)
 void
 datafield_free(struct datafield *df)
 {
-	struct datafield *ch;
 	struct psc_dynarray a;
+	struct datafield *ch;
 	int i;
 
 	psc_dynarray_init(&a);
 	psc_dynarray_push(&a, df);
 	while (psc_dynarray_len(&a)) {
 		df = psc_dynarray_getpos(&a, 0);
-		psc_dynarray_remove(&a, 0);
+		psc_dynarray_remove(&a, df);
 		switch (df->df_type) {
 		case DFT_SCALAR:
 			buf_free(&df->df_scalar);
@@ -488,11 +488,14 @@ apply_node(struct datafield *node)
 
 	pc.pc_part--;
 	pc.pc_rack--;
+	if (pc.pc_part)
+		pc.pc_rack -= 4;
 	pc.pc_iru = pc.pc_iru == 1 ? 0 : 1;
 
 	s = datafield_map_getscalar(node, "comment");
 
 	n = node_for_pc(&pc);
+printf("%d %d %d %d %d = %p\n", pc.pc_part, pc.pc_rack, pc.pc_iru, pc.pc_blade, pc.pc_node, n);
 	if (n == NULL || nid > machine.m_nidmax)
 		return (-1);
 	n->n_nid = nid;
@@ -615,7 +618,7 @@ apply_job(struct datafield *job)
 	}
 	jobid = l;
 
-	j = n->n_job = obj_get(&jobid, &job_list);
+	j = obj_get(&jobid, &job_list);
 	j->j_id = jobid;
 	if (strcmp(j->j_name, "") == 0)
 		snprintf(j->j_name, sizeof(j->j_name), "job %d", jobid);

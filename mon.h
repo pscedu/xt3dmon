@@ -30,7 +30,7 @@
 #define CHF_DIR		(1 << 0)
 
 /* Physical machine dimensions -- XXX remove hardcode. */
-#define NROWS		physdim_top->pd_mag
+#define NPARTS		physdim_top->pd_mag
 #define NRACKS		physdim_top->pd_contains->pd_mag
 #define NIRUS		physdim_top->pd_contains->pd_contains->pd_mag
 #define NBLADES		physdim_top->pd_contains->pd_contains->pd_contains->pd_mag
