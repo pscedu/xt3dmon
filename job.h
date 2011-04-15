@@ -17,6 +17,8 @@
  * %PSC_END_COPYRIGHT%
  */
 
+#include <stdint.h>
+
 #include "fill.h"
 #include "objlist.h"
 
@@ -35,7 +37,7 @@ struct job {
 	int		 j_tmdur;		/* minutes */
 	int		 j_tmuse;		/* minutes */
 	int		 j_ncpus;
-	int		 j_mem;			/* KB */
+	int64_t		 j_mem;			/* KB */
 	int		 j_ncores;
 };
 

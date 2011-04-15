@@ -41,7 +41,7 @@ struct fill fill_yellow		= FILL_INIT  (1.0f, 1.0f, 0.0f);
 struct fill fill_pink		= FILL_INIT  (1.0f, 0.6f, 1.0f);
 struct fill fill_green		= FILL_INIT  (0.0f, 1.0f, 0.0f);
 
-struct fill fill_bg		= FILL_INIT  (0.1f, 0.1f, 0.1f);
+struct fill fill_bg		= FILL_INIT  (0.1f, 0.1f, 0.2f);
 struct fill fill_font		= FILL_INIT  (0.0f, 0.0f, 0.0f);
 struct fill fill_nodata		= FILL_INITF (1.0f, 1.0f, 0.0f, FF_SKEL);
 struct fill fill_rtesnd		= FILL_INITF (1.0f, 1.0f, 0.0f, FF_SKEL);

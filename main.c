@@ -261,7 +261,7 @@ opt_flip(int fopts)
 			break;
 		case OP_NODEANIM:
 			if (!on) {
-				NODE_FOREACH_WI(n, np)
+				NODE_FOREACH_PHYS(n, np)
 					n->n_v = n->n_vtwe;
 				st.st_rf |= RF_CLUSTER;
 			}
@@ -407,7 +407,7 @@ dmode_change(void)
 	}
 
 	if (st.st_dmode == DM_RTUNK)
-		NODE_FOREACH_WI(n, np)
+		NODE_FOREACH_PHYS(n, np)
 			n->n_fillp = &fill_xparent;
 
 	NODE_FOREACH_PHYS(n, np)
@@ -433,8 +433,8 @@ dmode_change(void)
 			n->n_fillp = &fill_borg;
 			break;
 		case DM_MATRIX:
-			n->n_fillp = rand() % 2 ? &fill_matrix :
-			    &fill_matrix_reloaded;
+			n->n_fillp = rand() % 2 ?
+			    &fill_matrix : &fill_matrix_reloaded;
 			break;
 		case DM_SAME:
 			n->n_fillp = &fill_same;
@@ -474,7 +474,7 @@ geom_setall(int mode)
 {
 	struct node *n, **np;
 
-	NODE_FOREACH_WI(n, np)
+	NODE_FOREACH_PHYS(n, np)
 		n->n_geom = mode;
 	// XXX: flyby
 	st.st_rf |= RF_DIM | RF_CLUSTER | RF_SELNODE;
@@ -485,7 +485,7 @@ dim_update(void)
 {
 	struct node *n, **np;
 
-	NODE_FOREACH_WI(n, np)
+	NODE_FOREACH_PHYS(n, np)
 		n->n_dimp = &vmodes[st.st_vmode].vm_ndim[n->n_geom];
 }
 
@@ -557,7 +557,7 @@ vmode_change(void)
 
 	switch (st.st_vmode) {
 	case VM_PHYS:
-		NODE_FOREACH_WI(n, np) {
+		NODE_FOREACH_PHYS(n, np) {
 			nposp = (st.st_opts & OP_NODEANIM) ?
 			    &n->n_vtwe : &n->n_v;
 			n->n_flags |= NF_VMVIS;
@@ -904,13 +904,13 @@ if (stereo_mode == STM_PASV)
 else
  glutInitWindowPosition(0, 0);
 	glutInitWindowSize(sw, sh);
-	if ((window_ids[0] = glutCreateWindow("XT3 Monitor")) == GL_FALSE)
+	if ((window_ids[0] = glutCreateWindow("Blacklight Monitor")) == GL_FALSE)
 		errx(1, "glutCreateWindow");
 	if (stereo_mode == STM_PASV) {
 //		glutInitWindowPosition(sw, 0);
 glutInitWindowPosition(0, 0);
 		if ((window_ids[WINID_RIGHT] =
-		    glutCreateWindow("XT3 Monitor")) == GL_FALSE)
+		    glutCreateWindow("Blacklight Monitor")) == GL_FALSE)
 			errx(1, "glutCreateWindow");
 	}
 

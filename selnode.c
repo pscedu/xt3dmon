@@ -164,7 +164,7 @@ sn_addallvis(void)
 {
 	struct node *n, **np;
 
-	NODE_FOREACH_WI(n, np)
+	NODE_FOREACH_PHYS(n, np)
 		if (node_show(n))
 			sn_add(n, &fv_zero);
 }

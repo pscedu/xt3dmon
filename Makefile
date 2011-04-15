@@ -65,7 +65,7 @@ SRCS+=		vec.c
 SRCS+=		widget.c
 
 CFLAGS+=	-Wall -W -g -pipe
-CFLAGS+=	-Wno-parentheses -Wshadow -Wredundant-decls
+CFLAGS+=	-Wno-parentheses -Wshadow
 CFLAGS+=	-D_GSS
 #CFLAGS+=	-Wconversion
 CFLAGS+=	-DYY_NO_UNPUT

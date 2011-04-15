@@ -495,7 +495,6 @@ apply_node(struct datafield *node)
 	s = datafield_map_getscalar(node, "comment");
 
 	n = node_for_pc(&pc);
-printf("%d %d %d %d %d = %p\n", pc.pc_part, pc.pc_rack, pc.pc_iru, pc.pc_blade, pc.pc_node, n);
 	if (n == NULL || nid > machine.m_nidmax)
 		return (-1);
 	n->n_nid = nid;
@@ -506,6 +505,9 @@ printf("%d %d %d %d %d = %p\n", pc.pc_part, pc.pc_rack, pc.pc_iru, pc.pc_blade, 
 		n->n_state = SC_BOOT;
 	else if (s && strcmp(s, "IB card") == 0)
 		n->n_state = SC_IO;
+	else
+		n->n_state = SC_NOTSCHED;
+	n->n_temp = DV_NODATA;
 	n->n_flags |= NF_VALID;
 	return (0);
 }
@@ -517,22 +519,30 @@ nidlist_getnextrange(const char **s, int *min, int *max)
 	char *endp;
 	long l;
 
+	p = *s;
+	*s = NULL;
 	*min = 0;
 	*max = -1;
 
-	l = strtol(*s, &endp, 10);
-	if (l <= 0 || l >= INT_MAX || endp == *s || *endp != '-')
+	l = strtol(p, &endp, 10);
+	if (l <= 0 || l >= INT_MAX || endp == p || *endp != '-')
 		return;
 	*min = l;
 
-	l = strtol(endp + 1, &endp, 10);
-	if (l <= 0 || l >= INT_MAX || endp == *s ||
-	    (*endp && *endp != ','))
+	p = endp + 1;
+
+	l = strtol(p, &endp, 10);
+	if (l <= 0 || l >= INT_MAX || endp == p ||
+	    (*endp && *endp != ',' && *endp != ':'))
 		return;
 	*max = l;
 
-	p = endp;
-	*s = p + 1;
+	if (*endp == ':')
+		*s = NULL;
+	else {
+		p = endp;
+		*s = p + 1;
+	}
 }
 
 /* 1168-1295,3216-3343 */
@@ -553,25 +563,24 @@ parse_time(const char *s)
 	l = strtol(s, &endp, 10);
 	if (l < 0 || l >= INT_MAX || endp == s || *endp != ':')
 		return (0);
-	n = l * 60 * 60;
+	n = l * 60;
 
 	l = strtol(endp + 1, &endp, 10);
 	if (l < 0 || l >= INT_MAX || endp == s || *endp != ':')
 		return (0);
-	n += l * 60;
+	n += l;
 
 	l = strtol(endp + 1, &endp, 10);
 	if (l < 0 || l >= INT_MAX || endp == s || *endp != '\0')
 		return (0);
-	n += l;
 	return (n);
 }
 
 __inline int
 apply_job(struct datafield *job)
 {
-	int jobid, nid, min, max;
-	const char *s, *nidlist;
+	int part, nid, jobid, bladeno, min, max;
+	const char *s, *bladelist;
 	struct datafield *df;
 	struct node *n;
 	struct job *j;
@@ -623,7 +632,7 @@ apply_job(struct datafield *job)
 	if (strcmp(j->j_name, "") == 0)
 		snprintf(j->j_name, sizeof(j->j_name), "job %d", jobid);
 
-	s = datafield_map_getscalar(job, "owner");
+	s = datafield_map_getscalar(job, "Job_Owner");
 	if (s) {
 		strncpy(j->j_owner, s, sizeof(j->j_owner) - 1);
 		j->j_owner[sizeof(j->j_owner) - 1] = '\0';
@@ -646,29 +655,32 @@ apply_job(struct datafield *job)
 	df = datafield_map_getkeyvalue(job, "Resource_List");
 	if (df == NULL || df->df_type != DFT_MAP)
 		return (0);
-	s = datafield_map_getscalar(df, "ncpus");
-	if (s) {
-		l = strtol(s, &endp, 10);
-		if (l >= 0 && l < INT_MAX && endp != s && *endp)
-			j->j_ncpus = l;
-	}
+	datafield_map_getscalarint(df, "ncpus", &j->j_ncpus);
 	s = datafield_map_getscalar(df, "walltime");
 	if (s)
 		j->j_tmdur = parse_time(s);
 
-	s = datafield_map_getscalar(job, "nodeset");
-	if (s)
-		FOREACH_NIDINLIST(nid, min, max, s, nidlist) {
+	part = 0;
+	s = datafield_map_getscalar(job, "exec_host");
+	if (s && strncmp(s, "bl1", 3) == 0)
+		part = 1;
+
+	bladelist = datafield_map_getscalar(df, "nodeset");
+	if (bladelist) {
+		FOREACH_NIDINLIST(bladeno, min, max, s, bladelist) {
+			nid = part * 256 + bladeno;
 			n = node_for_nid(nid);
 			if (n == NULL) {
 				warnx("nid %d not found", nid);
 				continue;
 			}
-			if (n->n_state == SC_FREE)
+			if (n->n_state == SC_FREE) {
 				n->n_state = SC_ALLOC;
-			else
+				n->n_job = j;
+			} else
 				warnx("node state not FREE");
 		}
+	}
 
 	/* apply data from resources_used */
 	df = datafield_map_getkeyvalue(job, "resources_used");

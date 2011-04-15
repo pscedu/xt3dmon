@@ -285,7 +285,7 @@ draw_caption(void)
 		draw_string(u, 10, h, font, s);
 	}
 	if (!server_mode) {
-		s = (const unsigned char *)"PSC BigBen/XT3 Monitor";
+		s = (const unsigned char *)" PSC Blacklight UV Monitor ";
 		w = glutBitmapLength(font, s);
 		u = (winv.iv_w / 2.0) - (w / 2.0);
 		draw_string(u, winv.iv_h - h - 3, h, font, s);
@@ -432,6 +432,10 @@ draw_node_cores(const struct node *n, const struct fill *fp)
 		draw_cube(&dim, fp, 0);
 	}
 
+	adj.fv_w = n->n_dimp->fv_w;
+	adj.fv_h = n->n_dimp->fv_h;
+	adj.fv_d = n->n_dimp->fv_d;
+
 	if (lvl.iv_x) {
 		dim.fv_w = lvl.iv_x * adj.fv_w;
 		dim.fv_h = (lvl.iv_y + 1) * adj.fv_h;
@@ -574,6 +578,7 @@ draw_ground(void)
 	glHint(GL_LINE_SMOOTH_HINT, gl_drawhint);
 
 	glLineWidth(1.0);
+if (0) {
 	glBegin(GL_LINES);
 
 	fp = &fill_dim[DIM_X];
@@ -592,6 +597,7 @@ draw_ground(void)
 	glVertex3f(0.0f, 0.0f, -5000.0f);
 	glVertex3f(0.0f, 0.0f, 5000.0f);
 	glEnd();
+}
 
 	glDisable(GL_BLEND);
 	glDisable(GL_LINE_SMOOTH);
@@ -615,9 +621,9 @@ draw_ground(void)
 		glPopMatrix();
 		break;
 	case VM_PHYS:
-		fv.fv_x = -5.0f;
+		fv.fv_x = -1.0f;
 		fv.fv_y = -0.2f;
-		fv.fv_z = -5.0f;
+		fv.fv_z = -1.0f;
 
 		dim.fv_w = machine.m_dim.fv_w - 2.0 * fv.fv_x;
 		dim.fv_h = -fv.fv_y / 2.0f;
@@ -954,7 +960,7 @@ draw_physpipes(int selpipes)
 	double ox, oy, oz;
 
 	glLineWidth(5.0);
-	NODE_FOREACH_WI(n, np) {
+	NODE_FOREACH_PHYS(n, np) {
 		if (!node_show(n) || !SELNODE_IF_NEEDED(n, selpipes))
 			continue;
 

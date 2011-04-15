@@ -51,9 +51,9 @@
 
 #define NODESPACE	physdim_top->pd_contains->pd_contains->pd_contains->pd_contains->pd_space
 #define NODESHIFT	physdim_top->pd_contains->pd_contains->pd_contains->pd_contains->pd_offset.fv_d
-#define NODEWIDTH	physdim_top->pd_contains->pd_contains->pd_contains->pd_contains->pd_contains->pd_size.fv_w
-#define NODEHEIGHT	physdim_top->pd_contains->pd_contains->pd_contains->pd_contains->pd_contains->pd_size.fv_h
-#define NODEDEPTH	physdim_top->pd_contains->pd_contains->pd_contains->pd_contains->pd_contains->pd_size.fv_d
+#define NODEWIDTH	physdim_top->pd_contains->pd_contains->pd_contains->pd_contains->pd_size.fv_w
+#define NODEHEIGHT	physdim_top->pd_contains->pd_contains->pd_contains->pd_contains->pd_size.fv_h
+#define NODEDEPTH	physdim_top->pd_contains->pd_contains->pd_contains->pd_contains->pd_size.fv_d
 
 #define WIV_SWIDTH	(widim.iv_w * st.st_winsp.iv_x)
 #define WIV_SHEIGHT	(widim.iv_h * st.st_winsp.iv_y)

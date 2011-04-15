@@ -44,6 +44,8 @@ baseconv(int n)
 /*
  * enc buffer must be 4/3+1 the size of buf.
  * Note: enc and buf are NOT C-strings.
+ *
+ * XXX assert on length
  */
 void
 base64_encode(const void *buf, char *enc, size_t siz)
@@ -85,7 +87,6 @@ base64_encode(const void *buf, char *enc, size_t siz)
 	} else if (pos + 2 >= siz)
 		enc[i++] = '=';
 	enc[i++] = '\0';
-printf("base64: wrote %d chars\n", i);
 }
 
 /* Like strchr, but bound before NUL. */
@@ -137,17 +138,17 @@ escape_printf(struct buf *bufp, const char *s)
 void
 fmt_scaled(size_t bytes, char *buf)
 {
-	const char tab[] = "KMGTE";
-	int lvl;
+	const char tab[] = " KMGTE";
 	double siz;
+	int lvl;
 
-	lvl = -1;
+	lvl = 0;
 	siz = bytes;
-	do {
+	while (siz > 1024. && lvl < (int)strlen(tab)) {
+		siz /= 1024.;
 		lvl++;
-		siz /= 1024.0;
-	} while (round(siz * 100.0) >= 100000.0 && lvl < (int)strlen(tab));
-	snprintf(buf, FMT_SCALED_BUFSIZ, "%.2f%cB", siz, tab[lvl]);
+	}
+	snprintf(buf, FMT_SCALED_BUFSIZ, "%.1f%cB", siz, tab[lvl]);
 }
 
 char *
@@ -159,7 +160,7 @@ my_fgets(struct ustream *usp, char *s, int siz,
 	int remaining;
 	ssize_t nr;
 
-	remaining = siz - 1;		/* NUL termination. */
+	remaining = siz - 1;		/* NUL termination */
 	total = 0;
 	ret = s;
 	while (remaining > 0) {

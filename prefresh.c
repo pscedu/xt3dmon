@@ -596,22 +596,16 @@ panel_refresh_ninfo(struct panel *p)
 	panel_set_content(p,
 	    "- Node Information -\n"
 	    "Node ID: %d\n"
-	    "Hardware name: c%d-%dc%ds%dn%d\n"
-	    "Wired position: <%d,%d,%d>\n"
+	    "Hardware name: r%02di%02db%02d\n"
+	    "" //"Wired position: <%d,%d,%d>\n"
 	    "Status: %s",
 	    n->n_nid,
-	    pc.pc_rack, pc.pc_part, pc.pc_iru, pc.pc_blade, pc.pc_node,
-	    iv->iv_x, iv->iv_y, iv->iv_z,
+	    pc.pc_part * 4 + pc.pc_rack + 1, pc.pc_iru ? 23 : 1, pc.pc_blade,
+	    //iv->iv_x, iv->iv_y, iv->iv_z,
 	    statusclass[n->n_state].nc_name);
 
-	if (n->n_job)
-		panel_add_content(p, "\nCores in use: %d/%d", 2,
-		    machine.m_coredim.iv_x *
-		    machine.m_coredim.iv_y *
-		    machine.m_coredim.iv_z);
-
 	if (n->n_temp == DV_NODATA)
-		panel_add_content(p, "\nTemperature: N/A");
+	;//	panel_add_content(p, "\nTemperature: N/A");
 	else
 		panel_add_content(p, "\nTemperature: %dC", n->n_temp);
 
@@ -677,7 +671,7 @@ panel_refresh_ninfo(struct panel *p)
 
 			fmt_scaled(n->n_job->j_mem * 1024, membuf);
 			panel_add_content(p,
-			    "\nJob Login Node Memory: %s", membuf);
+			    "\nJob Used Memory: %s", membuf);
 		}
 	}
 

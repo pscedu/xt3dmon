@@ -465,7 +465,7 @@ gscb_pw_help(struct glname *gn, int flags)
 				    SLIST_NEXT(sn, sn_next) ? "," : "\n");
 			break;
 		case HF_SUBSN:
-			NODE_FOREACH_WI(n, np)
+			NODE_FOREACH_PHYS(n, np)
 				n->n_flags &= ~NF_SUBSET;
 			SLIST_FOREACH(sn, &selnodes, sn_next)
 				sn->sn_nodep->n_flags |= NF_SUBSET;
@@ -479,7 +479,7 @@ gscb_pw_help(struct glname *gn, int flags)
 				st.st_rf |= RF_CLUSTER | RF_SELNODE;
 			break;
 		case HF_SUBCL:
-			NODE_FOREACH_WI(n, np)
+			NODE_FOREACH_PHYS(n, np)
 				n->n_flags &= ~NF_SUBSET;
 			if (st.st_opts & OP_SUBSET) {
 				st.st_rf |= RF_CLUSTER | RF_SELNODE;

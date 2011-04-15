@@ -474,11 +474,11 @@ dxp_selnode(const struct dx_action *dxa)
 	SLIST_FOREACH(nid, dxa->dxa_selnode_list, ni_link)
 		switch (nid->ni_nid) {
 		case DXN_ALL:
-			NODE_FOREACH_WI(n, np)
+			NODE_FOREACH_PHYS(n, np)
 				dx_selnode(n, off);
 			break;
 		case DXN_VIS:
-			NODE_FOREACH_WI(n, np)
+			NODE_FOREACH_PHYS(n, np)
 				if (n->n_fillp->f_a)
 					dx_selnode(n, off);
 			break;
@@ -523,12 +523,12 @@ dxp_subsel(const struct dx_action *dxa)
 
 	off = (dxa->dxa_subsel_mode == DXV_OFF);
 	if (dxa->dxa_subsel_mode == DXV_SET)
-		NODE_FOREACH_WI(n, np)
+		NODE_FOREACH_PHYS(n, np)
 			n->n_flags &= ~NF_SUBSET;
 	SLIST_FOREACH(nid, dxa->dxa_subsel_list, ni_link)
 		switch (nid->ni_nid) {
 		case DXN_ALL:
-			NODE_FOREACH_WI(n, np)
+			NODE_FOREACH_PHYS(n, np)
 				dx_subsel(n, off);
 			break;
 		case DXN_RND:
@@ -538,7 +538,7 @@ dxp_subsel(const struct dx_action *dxa)
 			dx_subsel(n, off);
 			break;
 		case DXN_VIS:
-			NODE_FOREACH_WI(n, np)
+			NODE_FOREACH_PHYS(n, np)
 				if (n->n_fillp->f_a)
 					dx_subsel(n, off);
 			break;

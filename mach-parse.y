@@ -16,17 +16,17 @@
 
 #define yyin machin
 
-int yylex(void);
-int yyerror(const char *, ...);
-int yyparse(void);
+int		yylex(void);
+int		yyerror(const char *, ...);
+int		yyparse(void);
 
 struct physdim *physdim_get(const char *);
 
-int mach_lineno = 1;
-static int errors;
+int		mach_lineno = 1;
+static int	errors;
 
-struct physdim *physdim;
-struct physdim *physdim_top;
+struct physdim	*physdim;
+struct physdim	*physdim_top;
 LIST_HEAD(, physdim) physdims;
 
 %}
@@ -250,7 +250,7 @@ parse_machconf(const char *fn)
 	 */
 	machine.m_dim.fv_val[physdim_top->pd_spans] =
 	    physdim_top->pd_size.fv_val[physdim_top->pd_spans] * physdim_top->pd_mag +
-	    physdim_top->pd_space * (physdim_top->pd_mag - 1);
+	    physdim_top->pd_space * (physdim_top->pd_mag - 1) - 38;
 
 	vec_set(&machine.m_center,
 	    machine.m_origin.fv_x + machine.m_dim.fv_w / 2.0,

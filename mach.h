@@ -17,6 +17,9 @@
  * %PSC_END_COPYRIGHT%
  */
 
+#ifndef _MACH_H_
+#define _MACH_H_
+
 #include "xmath.h"
 
 struct machine {
@@ -31,3 +34,5 @@ struct machine {
 
 extern struct machine	machine;
 extern int		mach_lineno;
+
+#endif /* _MACH_H_ */
