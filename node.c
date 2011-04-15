@@ -352,8 +352,6 @@ node_goto(struct node *n)
 __inline int
 node_show(const struct node *n)
 {
-return (1);
-printf("hi\n");
 	if ((st.st_opts & OP_SUBSET) && (n->n_flags & NF_SUBSET) == 0)
 		return (0);
 	if (ATTR_TESTALL(n->n_flags, NF_VALID | NF_VMVIS) &&
