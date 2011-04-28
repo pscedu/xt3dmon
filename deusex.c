@@ -562,7 +562,6 @@ int
 dxp_selnc(const struct dx_action *dxa)
 {
 	struct node *n;
-//	struct job *j;
 
 	if (dxa->dxa_selnc == DXNC_RND) {
 		if (job_list.ol_cur > 0) {
@@ -574,8 +573,9 @@ dxp_selnc(const struct dx_action *dxa)
 			nc_runall(fill_setxparent);
 			nc_runsn(fill_setopaque);
 		}
-//	} else if (j = job_findbyid(dxa->dxa_seljob)) {
-//		dxp_hlnc(NC_SELDM);
+	} else if (dxa->dxa_selnc == DXNC_SELNODES) {
+		nc_runall(fill_setxparent);
+		nc_runsn(fill_setopaque);
 	}
 	return (1);
 }

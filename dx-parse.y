@@ -521,6 +521,8 @@ conf		: DGT_BIRD birdvm {
 			dxa.dxa_type = DGT_SELNC;
 			if (strcasecmp($2, "random") == 0)
 				dxa.dxa_selnc = DXNC_RND;
+			else if (strcasecmp($2, "selnodes") == 0)
+				dxa.dxa_selnc = DXNC_SELNODES;
 			else
 				yyerror("invalid node class: %s", $2);
 			free($2);

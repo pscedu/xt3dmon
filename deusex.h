@@ -35,6 +35,7 @@
 
 /* Extra node classes */
 #define DXNC_RND		(-1)
+#define DXNC_SELNODES		(-2)
 
 /* Node pseudo-classes */
 #define DXN_RND			(-1)	/* Random */
