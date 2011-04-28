@@ -435,16 +435,14 @@ flyby_update(void)
 /*
  * Reset auto-flyby timeout.
  *
- * flyby_nautoto keeps track of the number of resets
- * that have been triggered.  Once it hits zero, no
- * more reset actions have been triggered, and the
- * auto-flyby may commence (see cocb_autoto).
+ * flyby_nautoto keeps track of the number of resets that have been
+ * triggered.  Once it hits zero, no more reset actions have been
+ * triggered, and the auto-flyby may commence (see cocb_autoto).
  *
- * For example, when the user moves the mouse, a flurry
- * of resets are triggered, and when the timer for each
- * expires, nautoto gets decremented, until the final
- * one expires.  When that happens, and the callback is
- * called, which decrements nautoto to zero, enabling the
+ * For example, when the user moves the mouse, a flurry of resets are
+ * triggered, and when the timer for each expires, nautoto gets
+ * decremented, until the final one expires.  When that happens, and the
+ * callback is called, which decrements nautoto to zero, enabling the
  * auto flyby.
  */
 void
