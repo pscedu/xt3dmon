@@ -105,6 +105,8 @@ todo
 	- XXX remove callback entirely?
 - investigate MGL for X-less OpenGL for server mode
 - change cursors depending on selection activity
+- hide cursor in deusex mode
+- employ maximum acceleration and speed in tweening movement & look vector
 
 xtwmon
 - rename arbiter-raw.pl?data=nodes to data=node
