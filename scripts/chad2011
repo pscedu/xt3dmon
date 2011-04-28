@@ -1,0 +1,43 @@
+# $Id$
+
+opt frames,tween,nodeanim,ground,selnlbls,fancy,govern
+panel -help,dxcho
+bird
+
+# begin movie dump
+
+orbit -x 1.0 10
+stall 2.0
+panel legend
+stall 2.0
+
+orbit -x 1.0 10
+stall 3.0
+panel -legend
+stall 1.0
+
+selnode "103"
+stall 2.0
+refocus
+stall 2.0
+seljob selnodes
+stall 1.0
+opt +nlabels
+stall 1.0
+move forward 35
+orbit -x 1.0 10
+stall 2.0
+
+clrsn
+stall 0.5
+opt +nlabels
+stall 0.5
+move backward 35
+stall 1.0
+bird
+opt -nlabels
+stall 1.0
+hl all
+stall 6.0
+
+exit
