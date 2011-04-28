@@ -31,3 +31,12 @@ void	 cam_bird(int);
 #define REVT_LKAVG	0	/* Average look across center. */
 #define REVT_LKCEN	1	/* Always look at center. */
 #define REVT_LKFIT	2	/* Fit all points. */
+
+/* starting/reorientation position */
+#define STARTX		(-16.78)
+#define STARTY		( 30.76)
+#define STARTZ		( 53.02)
+
+#define STARTLX		( 0.60)
+#define STARTLY		(-0.36)
+#define STARTLZ		(-0.71)

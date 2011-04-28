@@ -24,9 +24,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "cdefs.h"
 #include "buf.h"
+#include "cam.h"
 #include "capture.h"
+#include "cdefs.h"
 #include "deusex.h"
 #include "draw.h"
 #include "ds.h"
@@ -52,14 +53,6 @@
 #include "uinp.h"
 #include "xmath.h"
 #include "xssl.h"
-
-#define STARTX		(-17.80)
-#define STARTY		( 30.76)
-#define STARTZ		( 51.92)
-
-#define STARTLX		( 0.65)
-#define STARTLY		(-0.35)
-#define STARTLZ		(-0.67)
 
 char			 login_auth[BUFSIZ];
 
