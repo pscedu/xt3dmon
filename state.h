@@ -96,19 +96,19 @@ struct state {
 #define EGG_HACKERS	(1 << 2)
 
 /* Options */
-#define OP_TEX		(1 << 0)
-#define OP_FRAMES	(1 << 1)
-#define OP_GROUND	(1 << 2)
-#define OP_TWEEN	(1 << 3)
-#define OP_CAPTURE	(1 << 4)
-#define OP_GOVERN	(1 << 5)
-#define OP_LOOPFLYBY	(1 << 6)
-#define OP_NLABELS	(1 << 7)
-#define OP_MODSKELS	(1 << 8)
-#define OP_PIPES	(1 << 9)
-#define OP_SELPIPES	(1 << 10)
-#define OP_STOP		(1 << 11)
-#define OP_SKEL		(1 << 12)
+#define OP_TEX		(1 << 0)	/* use texture mapping for fill */
+#define OP_FRAMES	(1 << 1)	/* draw lines around nodes */
+#define OP_GROUND	(1 << 2)	/* draw ground/orientation axes */
+#define OP_TWEEN	(1 << 3)	/* smooth camera panning */
+#define OP_CAPTURE	(1 << 4)	/* enable frame dump */
+#define OP_GOVERN	(1 << 5)	/* frames-per-second governor */
+#define OP_LOOPFLYBY	(1 << 6)	/* replay flybys continuously */
+#define OP_NLABELS	(1 << 7)	/* draw nid labels on nodes */
+#define OP_MODSKELS	(1 << 8)	/* draw outlines of blades */
+#define OP_PIPES	(1 << 9)	/* draw interconnection pipes */
+#define OP_SELPIPES	(1 << 10)	/* draw pipes around selected nodes */
+#define OP_STOP		(1 << 11)	/* pause deusex mode */
+#define OP_SKEL		(1 << 12)	/*  */
 #define OP_NODEANIM	(1 << 13)
 #define OP_AUTOFLYBY	(1 << 14)
 #define OP_REEL		(1 << 15)
@@ -117,10 +117,10 @@ struct state {
 #define OP_SUBSET	(1 << 18)
 #define OP_SELNLABELS	(1 << 19)
 #define OP_CAPFBONLY	(1 << 20)
-#define OP_EDITFOCUS	(1 << 21)
-#define OP_FORCEFOCUS	(1 << 22)
-#define OP_FANCY	(1 << 23)
-#define OP_CORES	(1 << 24)
+#define OP_EDITFOCUS	(1 << 21)	/* set manual camera focus point */
+#define OP_FORCEFOCUS	(1 << 22)	/* use manual focus point instead of default */
+#define OP_FANCY	(1 << 23)	/* OpenGL lighting */
+#define OP_CORES	(1 << 24)	/* draw cores within a node */
 #define NOPS		25
 
 struct xoption {
