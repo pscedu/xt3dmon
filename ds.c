@@ -68,7 +68,7 @@ struct objlist ds_list = { NULL, 0, 0, 0, 0, 10, sizeof(struct fnent), fe_eq };
 int	 dsfopts = DSFO_ALERT | DSFO_LIVE;
 char	 ds_browsedir[PATH_MAX] = _PATH_ARCHIVE;
 char	 ds_dir[PATH_MAX] = _PATH_DATADIR;
-char	 ds_datasrc[PATH_MAX] = "http://mugatu.psc.edu:24240/UView";
+char	 ds_datasrc[PATH_MAX] = "http://mugatu.psc.edu:24241/UView";
 
 __inline int
 uri_has_proto(const char *uri, const char *proto)
