@@ -99,15 +99,11 @@ node_setphyspos(struct node *n, struct fvec *fv)
 
 	node_physpos(n, &pc);
 	fv->fv_y = NODESPACE + pc.pc_iru * (CAGEHEIGHT + CAGESPACE);
-	if (pc.pc_blade / 4 % 2) {
+	if (pc.pc_blade >= 8) {
 		/* top blade row */
-		pc.pc_blade -= 4;
+		pc.pc_blade -= 8;
 		fv->fv_y += NODESPACE + NODEHEIGHT;
-	} else {
-		/* bottom blade row */
 	}
-	if (pc.pc_blade > 4)
-		pc.pc_blade -= 4;
 
 	fv->fv_x = NODESPACE + pc.pc_rack * (CABWIDTH + CABSPACE) +
 	    pc.pc_blade * (MODWIDTH + MODSPACE) +
