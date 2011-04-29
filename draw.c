@@ -578,7 +578,7 @@ draw_ground(void)
 	glHint(GL_LINE_SMOOTH_HINT, gl_drawhint);
 
 	glLineWidth(1.0);
-if (0) {
+#if 0
 	glBegin(GL_LINES);
 
 	fp = &fill_dim[DIM_X];
@@ -597,7 +597,7 @@ if (0) {
 	glVertex3f(0.0f, 0.0f, -5000.0f);
 	glVertex3f(0.0f, 0.0f, 5000.0f);
 	glEnd();
-}
+#endif
 
 	glDisable(GL_BLEND);
 	glDisable(GL_LINE_SMOOTH);
@@ -625,9 +625,9 @@ if (0) {
 		fv.fv_y = -0.2f;
 		fv.fv_z = -1.0f;
 
-		dim.fv_w = machine.m_dim.fv_w - 2.0 * fv.fv_x;
+		dim.fv_w = machine.m_dim.fv_w - 2.0 * fv.fv_x + 2.0 * NODESPACE;
 		dim.fv_h = -fv.fv_y / 2.0f;
-		dim.fv_d = machine.m_dim.fv_d - 2.0 * fv.fv_z;
+		dim.fv_d = machine.m_dim.fv_d - 2.0 * fv.fv_z + 2.0 * NODESPACE;
 
 		glPushMatrix();
 		glTranslatef(fv.fv_x, fv.fv_y, fv.fv_z);
