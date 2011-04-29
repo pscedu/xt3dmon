@@ -130,3 +130,5 @@ g3mon/gsm
       - physpipes
       - VM node.n_v/RF_PHYSMODE
 - specify physcoord info in mach.conf for extracting data/node fields
+
+- fix job used mem calc
